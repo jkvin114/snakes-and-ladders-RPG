@@ -1,0 +1,208 @@
+{
+  "obstacles": [
+    { "name": "", "desc": "", "val": 0 },
+    { "name": "Money", "desc": "Receives 10~30$", "val": 1 },
+    { "name": "Money", "desc": "Receives 40~60$", "val": 2 },
+    { "name": "Money", "desc": "Receives 70~100$", "val": 3 },
+    { "name": "Trap", "desc": "HP -10", "val": -1 },
+    { "name": "Robbery", "desc": " -30$", "val": -2 },
+    { "name": "", "desc": "", "val": 0 },
+    { "name": "Mine", "desc": "HP -30 on step out", "val": -2 },
+    { "name": "Knife", "desc": "HP -20", "val": -1 },
+    { "name": "Fruit", "desc": "HP +50", "val": 2 },
+    { "name": "Sleeping pill", "desc": "Silent(can`t use skill)", "val": -1 },
+    {
+      "name": "Potion",
+      "desc": "Reset normal skill cooltimes, reduce ultimate cooltime by 50%",
+      "val": 4
+    },
+    {
+      "name": "Magic castle",
+      "desc": "Skill range x3,+30 damage for skill/basicattack",
+      "val": 2
+    },
+    { "name": "Cobweb", "desc": "Stun", "val": -2 },
+    { "name": "Gamble", "desc": "Receives 10~60$ randomly", "val": 1 },
+    {
+      "name": "Snatcher",
+      "desc": "Other players take 10% each of your money ",
+      "val": -4
+    },
+    { "name": "Snowball", "desc": "HP -20, slowness", "val": -2 },
+    {
+      "name": "Vampire",
+      "desc": "Other players take away 20 HP each",
+      "val": -2
+    },
+    {
+      "name": "Pickpocket",
+      "desc": "Other players take away 30$ each",
+      "val": -3
+    },
+    {
+      "name": "Summon",
+      "desc": "Summon every player in range of 20",
+      "val": 0
+    },
+    {
+      "name": "Change",
+      "desc": "Change position with nearest playere",
+      "val": 0
+    },
+    {
+      "name": "God`s hand",
+      "desc": "Force move one player in range of 5",
+      "val": 4
+    },
+    { "name": "Annuity", "desc": "+30$ every turn ", "val": 3 },
+    {
+      "name": "Daylight Robbery",
+      "desc": "HP -30, -30$, (-3tokens)",
+      "val": -3
+    },
+    {
+      "name": "Shelter",
+      "desc": "HP +70, Invisibility 1turn, get shield",
+      "val": 4
+    },
+    { "name": "Shield", "desc": "Ignore one skill or obstacle", "val": 2 },
+    { "name": "Big mine", "desc": "HP -70 on step out", "val": -3 },
+    { "name": "Murderer", "desc": "HP -100", "val": -4 },
+    { "name": "Poison cobweb", "desc": "stun and slowness", "val": -3 },
+    { "name": "Poison", "desc": "-30 HP each turn", "val": -4 },
+    { "name": "Bomb", "desc": " HP -1/3 of current HP", "val": -5 },
+    {
+      "name": "Nuclear bomb",
+      "desc": " HP -1/2 of lost HP,radiation effect",
+      "val": -5
+    },
+    { "name": "Radiation", "desc": "damage x2 for 1 turn", "val": -6 },
+    {
+      "name": "Kidnapper",
+      "desc": "choose between -300 HP and stun for 2 turns",
+      "val": -5
+    },
+    {
+      "name": "Slavery",
+      "desc": "-80HP for every turn, dies if you reach the end",
+      "val": -7
+    },
+    {
+      "name": "Jail",
+      "desc": "speed effect after stun for 3 turns",
+      "val": -5
+    },
+    {
+      "name": "Hurricane",
+      "desc": "Move back to original position",
+      "val": -0
+    },
+    { "name": "Death Court", "desc": "Roll a roullete", "val": -6 },
+    { "name": "Casino", "desc": "Roll a roullete", "val": 0 },
+    { "name": "fair wind", "desc": "next dice x2", "val": 1 },
+    { "name": "headwind", "desc": "next dice goes back", "val": -3 },
+    { "name": "Net", "desc": "stun 1 turn", "val": -2 },
+    { "name": "Fish", "desc": "HP +50", "val": 2 },
+    { "name": "Jellyfish", "desc": "-30 HP each turn for 3 turns", "val": -3 },
+    { "name": "Shark attack", "desc": "HP -40", "val": -2 },
+    { "name": "Squid", "desc": "Can`t use basic attack for 1 turn", "val": -1 },
+    { "name": "Iceburg", "desc": "slowness, HP -30", "val": 3 },
+    { "name": "gold", "desc": "100~150$", "val": 3 },
+    { "name": "treasure", "desc": "", "val": 4 },
+    { "name": "Pirate", "desc": "HP -30, -50$", "val": -4 },
+    { "name": "Vikings", "desc": "HP -30,ignite effct for 3 turn", "val": -4 },
+    {
+      "name": "Dive",
+      "desc": "Ignore every attack and obstacle for 1 turn",
+      "val": 3
+    },
+    {
+      "name": "Lightning",
+      "desc": "HP -75 for every player in range of 3",
+      "val": -4
+    },
+    {
+      "name": "Tsunami",
+      "desc": "Every player move back by 3, HP -30",
+      "val": -6
+    },
+    {
+      "name": "Blue hole",
+      "desc": "Summon every player in range of 20",
+      "val": 0
+    },
+    {
+      "name": "Storm",
+      "desc": "Randomly move to a square in range of 5",
+      "val": 0
+    },
+    {
+      "name": "Tornado",
+      "desc": "move to random player in range of 30",
+      "val": 0
+    },
+    { "name": "Underwater mine", "desc": "HP -70 on step out", "val": -3 },
+    { "name": "Torpedo", "desc": "HP -120", "val": -4 },
+    { "name": "Whale`s grace", "desc": "speed for 3 turns", "val": 2 },
+    {
+      "name": "Volcano",
+      "desc": "HP - 1/4 of max HP, ignite effct for 3 turn ",
+      "val": -5
+    },
+    { "name": "SLBM", "desc": "HP -175", "val": -6 },
+    { "name": "Loan", "desc": "get 10 tokens, -400$ after 5 turns", "val": 0 },
+    {
+      "name": "Threaten",
+      "desc": "Choose between -50$ or -3 tokens",
+      "val": -3
+    },
+    {
+      "name": "Private loan",
+      "desc": "Can`t earn money, can`t sell tokens for 2 turns ",
+      "val": -4
+    },
+    {
+      "name": "scam",
+      "desc": "take away half of your money and tokens",
+      "val": -6
+    },
+    {
+      "name": "annuity lottery",
+      "desc": "+50$, +1 token for every turn",
+      "val": 4
+    },
+    { "name": "coin store", "desc": "Can sell coin", "val": 3 },
+    {
+      "name": "Street vendor",
+      "desc": "can use store with 20% higher price",
+      "val": 1
+    },
+    { "name": "Lottery", "desc": "get huge amount of money by 7%", "val": 4 },
+    {
+      "name": "Tax collector",
+      "desc": "take away 5% + 2$ x coins for every player",
+      "val": 4
+    },
+    {
+      "name": "Thief",
+      "desc": "take away one of your common items ",
+      "val": -3
+    },
+    {
+      "name": "Curse",
+      "desc": "get worst result for next dice for 2 turns",
+      "val": -6
+    },
+    {
+      "name": "Grief",
+      "desc": "damage by 50% of your money you have",
+      "val": -5
+    },
+    {
+      "name": "Tollgate",
+      "desc": "can pass only if you have more than 150$ or 10 tokens",
+      "val": 0
+    },
+    { "name": "", "desc": "", "val": 0 }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+    "statuseffect":[
+        "[Slowness] next dice -2",
+        "[Speed] next dice +2",
+        "[Stun] can`t throw dice",
+        "[Silent] Can`t use skill",
+        "[Shield] ignore one skill",
+        "[Poison] -30 HP for every turn",
+        "[Radiation] Damage x2",
+        "[Annuity] +20$ for every turn",
+        "[Slavery] -80HP for every turn, die if you reach the end",
+        "next dice goes back",
+        "next dice x2",
+        "[Blind] Can`t use basic attack",
+        "[Ignite] damage by 3% of max hp for every player`s turn",
+        "[Invisibility] Ignore every attack and obstacle",
+        "[Debt] Can`t earn money and sell tokens",
+        "[Lottery annuity] +50$, +1 token for every turn",
+        "[Curse] get worst result for next dice"
+    ]
+    ,"statuseffect_kor":[
+        "[둔화] next dice -2",
+        "[신속] 다음턴 주사위 +2",
+        "[속박] 다음턴 주사위 휴식",
+        "[침묵] 다음턴 스킬사용 불가",
+        "[방어막] 스킬 1회 무시",
+        "[독] 매턴마다 체력 -30",
+        "[방사능] 모든 피해 2배",
+        "[연금] 매턴마다 +20골드",
+        "[노예계약] 매턴마다 체력 -80, 끝지점 도착시 처형",
+        "다음턴 주사위 뒤로",
+        "다음턴 주사위 2배",
+        "[실명] 기본공격을 하지 못함",
+        "[점화] 매 플레이어 턴마다 최대체력의 3% 피해",
+        "[투명화] 모든 장애물과 공격 무시",
+        "[사채] 골드 획득, 토큰 판매 불가",
+        "[연금복권] 매턴마다 +50골드, +1토큰",
+        "[주작] 주사위를 던질때 최악의 결과로 나옴"
+    ]
+    ,"stat":{
+        "AD": "Attack Power",
+        "AP": "Magic Power",
+        "arP": "Attack Penetration",
+        "MP": "Magic Penetration",
+        "AR": "Attack Resistance",
+        "HP": "Maximum HP",
+        "regen": "HP regeneration per turn",
+        "MR": "Magic Resistance",
+        "absorb": "Heal on Every attack",
+        "skillDmgReduction": "Skill Damage Reduction",
+        "adStat": "Adaptative Stat",
+        "addMdmg": "Additional magic damage<br> when attack",
+        "attackRange": "Basic Attack Range",
+        "obsR": "Obstacle damage reduction",
+        "ultHaste": "Ultimate cooltime reduction",
+        "moveSpeed": "Movement speed(additional dice)"
+    }
+    ,"stat_kor":{
+        "AD": "공격력",
+        "AP": "주문력",
+        "arP": "물리 관통력",
+        "MP": "마법 관통력",
+        "AR": "방어력",
+        "HP": "체력",
+        "regen": "턴당 체력재생",
+        "MR": "마법 저항력",
+        "absorb": "모든피해 흡혈",
+        "skillDmgReduction": "스킬 데미지감소",
+        "adStat": "적응형 능력치",
+        "addMdmg": "공격시 최대체력비례 추가 마법피해",
+        "attackRange": "기본공격 사거리",
+        "obsR": "장애물 저항",
+        "ultHaste": "궁극기 가속",
+        "moveSpeed": "이동 속도(=추가 주사위)"
+    },
+
+    "casinolabel" : [
+        "+100$",
+        "Money doubles",
+        "Speed for 2 turns",
+        "HP halves",
+        "Money halves",
+        "Stun, HP-50"
+    ],
+    "casinolabel_kor" : [
+        "+100$",
+        "재산 2배",
+        "신속 2턴",
+        "체력 -50%",
+        "재산 절반몰수",
+        "속박, 체력-50"
+    ],
+    "triallabel" : [
+        "-100$",
+        "Slavery",
+        "Move to nearest player",
+        "Death!",
+        "Stun, HP-50%",
+        "50% chance of death <br>for every player"
+    ],
+    "triallabel_kor" : [
+        "벌금 -100$",
+        "노예계약",
+        "가장 가까운 플레이어에게 이동",
+        "사형",
+        "속박, 체력 -50%",
+        "모든플레이어 각각 <br>50%로 사망"
+    ]
+}

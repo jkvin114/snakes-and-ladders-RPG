@@ -1,0 +1,9 @@
+{
+    "DC_COOL":5,
+    "itemLimit":6,
+    "submarine_cooltime" :1,
+    "pendingObsList":[21, 33, 37, 38, 63, 67],
+    "idleTimeout": 20000,
+    "champnames":["Reaper", "Elephant", "Ghost", "Dinosaur", "Sniper", "Magician", "Kraken","Bird"]
+
+}
