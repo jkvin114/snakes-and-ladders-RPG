@@ -954,7 +954,7 @@ export const die = function (rname: string, killData: any) {
 	if (!room) {
 		return
 	}
-	console.log(killData.target + " died")
+	console.log(killData.turn + " died")
 
 	io.to(rname).emit("server:death", killData)
 }
@@ -1010,12 +1010,12 @@ export const updateSkillInfo = function (rname: string, turn: number, info_kor: 
 	io.to(rname).emit("server:update_skill_info", turn, info_kor, info_eng)
 }
 
-export const effect = function (rname: string, turn: number, type: string) {
+export const effect = function (rname: string, turn: number, type: string,source:number) {
 	if (isInstant(rname)) {
 		return
 	}
 	console.log("effect " + type)
-	io.to(rname).emit("server:visual_effect", turn, type)
+	io.to(rname).emit("server:visual_effect", turn, type,source)
 }
 export const indicateObstacle = function (rname: string, turn: number, obs: number) {
 	if (isInstant(rname)) {
@@ -1133,16 +1133,16 @@ app.get("/string_resource", function (req, res) {
 
 // })
 app.post("/chat", function (req, res) {
-	console.log("chat " + req.body.msg + " " + req.body.rname)
+	console.log("chat " + req.body.msg + " " + req.body.turn)
 	let room = findRoomByName(req.body.rname)
 	if (!room || !room.game) {
 		return
 	}
 	io.to(req.body.rname).emit(
 		"server:receive_message",
-		room.game.players[req.body.turn].name +
+		room.game.players[Number(req.body.turn)].name +
 			"(" +
-			SETTINGS.champnames[room.game.players[req.body.turn].champ] +
+			SETTINGS.champnames[room.game.players[Number(req.body.turn)].champ] +
 			"): " +
 			req.body.msg
 	)

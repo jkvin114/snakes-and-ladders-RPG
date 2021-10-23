@@ -91,8 +91,9 @@ class Creed extends Player {
 		.setGame(this.game)
 		.setSkillRange(30)
 		.setAction(function (target: Player) {
+			
 			target.goto(target.pos - 4, false, "simple")
-			target.stun = true
+			target.effects.obs[ENUM.EFFECT.STUN]=1
 		})
 		.setDuration(2)
 		.build()

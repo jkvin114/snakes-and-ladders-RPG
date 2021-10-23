@@ -65,7 +65,7 @@
       "desc": "HP +70, Invisibility 1turn, get shield",
       "val": 4
     },
-    { "name": "Shield", "desc": "Ignore one skill or obstacle", "val": 2 },
+    { "name": "Shield", "desc": "Ignore one skill", "val": 2 },
     { "name": "Big mine", "desc": "HP -70 on step out", "val": -3 },
     { "name": "Murderer", "desc": "HP -100", "val": -4 },
     { "name": "Poison cobweb", "desc": "stun and slowness", "val": -3 },

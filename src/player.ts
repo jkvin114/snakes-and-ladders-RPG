@@ -11,6 +11,9 @@ import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Game } from "./Game"
 
+const LVL=1   //for test only
+const POS=0
+
 const MAP: Util.Map = new Util.Map([defaultmap, oceanmap, casinomap])
 
 abstract class Player {
@@ -117,8 +120,6 @@ abstract class Player {
 	abstract getSkillDamage(target: number): Util.SkillDamage
 	abstract passive(): void
 	abstract getSkillName(skill: number): string
-	// abstract getBasicAttackName(): string
-	// abstract getBaseBasicAttackDamage(): Util.Damage
 	abstract onSkillDurationCount(): void
 	abstract onSkillDurationEnd(skill: number): void
 	abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
@@ -143,10 +144,10 @@ abstract class Player {
 		this.champ = char //챔피언 코드
 		this.champ_name = champ_name //챔피언 이름
 		this.team = team //0:readteam  1:blue
-		this.pos = 0 //현재위치
+		this.pos = POS //현재위치
 		this.lastpos = 0 //이전위치
 		this.dead = false
-		this.level = 2 //레벨, 1에서시작
+		this.level = LVL //레벨, 1에서시작
 		this.money = 0
 		this.token = 2
 		this.life = 0
@@ -377,7 +378,7 @@ abstract class Player {
 		}
 		let ps = this.players
 		players.sort(function (b, a) {
-			if (Math.abs(ps[a].pos - ps[b].pos) < 5) {
+			if (Math.abs(ps[a].pos - ps[b].pos) < 8) {
 				return ps[b].HP - ps[a].HP
 			} else {
 				return ps[a].pos - ps[b].pos
@@ -388,29 +389,39 @@ abstract class Player {
 	//========================================================================================================
 	getAiProjPos(skilldata: any, skill: number): number {
 		let goal = null
-		let players = this.getPlayersIn(
+		let targets = this.getPlayersIn(
 			this.pos - 3 - Math.floor(skilldata.range / 2),
 			this.pos - 3 + Math.floor(skilldata.range / 2)
 		)
-		console.log("getAiProjPos" + players)
-		if (players.length === 0) {
+		console.log("getAiProjPos" + targets)
+		if (targets.length === 0) {
 			return -1
 		}
-		if (players.length === 1) {
-			goal = players[0]
+		if (targets.length === 1) { //타겟이 1명일경우
+			goal = targets[0]
+			//속박걸렸으면 플레이어 위치 그대로
+			if(this.players[goal].haveEffect(ENUM.EFFECT.STUN)){
+				return Math.floor(this.players[goal].pos)
+			}
 		} else {
+			 //타겟이 여러명일경우
 			let ps = this.players
-			players.sort(function (b: number, a: number): number {
-				if (ps[a].pos === ps[b].pos) {
-					goal = ps[b].HP - ps[a].HP
-				} else {
-					return ps[a].pos - ps[b].pos
-				}
-				return -1
+
+			//앞에있는플레이어 우선
+			targets.sort(function (b: number, a: number): number {
+				return ps[a].pos - ps[b].pos
 			})
-			goal = players[0]
+
+			//속박걸린 플레이어있으면 그 플레이어 위치 그대로
+			for(let t in targets){
+				if(ps[t].haveEffect(ENUM.EFFECT.STUN)){
+					return Math.floor(ps[t].pos)
+				}
+			}
+
+			goal = targets[0]
 		}
-		return Math.floor(Math.min(this.players[goal].pos + 4, this.pos + skilldata.range / 2))
+		return Math.floor(Math.min(this.players[goal].pos + 7-skilldata.size, this.pos + skilldata.range / 2))
 	}
 
 	/**
@@ -451,9 +462,9 @@ abstract class Player {
 	}
 
 	//========================================================================================================
-	showEffect(type: string) {
+	showEffect(type: string,source:number) {
 		if (this.game.instant) return
-		server.effect(this.game.rname, this.turn, type)
+		server.effect(this.game.rname, this.turn, type,source)
 	}
 	//========================================================================================================
 	coolDownBeforeDice() {
@@ -740,6 +751,14 @@ abstract class Player {
 			this.cooltime[skill] -= this.ultHaste
 		}
 	}
+	/**
+	 * 
+	 * @param skill skill
+	 * @param amt has to be positive
+	 */
+	setCooltime(skill:number,amt:number){
+		this.cooltime[skill]=amt
+	}
 
 	isSkillActivated(skill: number) {
 		return this.duration[skill] > 0
@@ -975,8 +994,10 @@ abstract class Player {
 		}
 		let worst = 5
 		let dice = 1
-		for (let i = 0; i < list.length; ++i) {
+		let searchto=list.length - Math.floor(Math.random()*4)   //앞으로 3~6칸(랜덤)중 선택함
+		for (let i = 0; i < searchto; ++i) {
 			let obs = MAP.get(this.mapId).coordinates[list[i]].obs
+			//상점
 			if (obs === 0 && worst > 0 && i > 1) {
 				break
 			}
@@ -988,8 +1009,7 @@ abstract class Player {
 				}
 			}
 		}
-
-		if (Math.random() > 0.3) return dice
+		if (Math.random() < 0.8 && worst < 0) return dice   //가장 나쁜장애물이 -1 이하이면 그대로 반환
 		else if (this.haveEffect(ENUM.EFFECT.BACKDICE)) return 6
 		else return 1
 	}
@@ -1157,7 +1177,7 @@ abstract class Player {
 					// 	return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 					// }
 					let target = this.getNearestPlayer(40, true, false)
-					if (target != null) {
+					if (target != null && target.pos != this.pos) {
 						let pos = this.pos
 						this.goto(target.pos, false, "simple")
 						target.goto(pos, true, "simple")
@@ -1536,9 +1556,8 @@ abstract class Player {
 			return
 		}
 
-		if(this.effects.obs[effect]===0){
-			server.giveEffect(this.game.rname, this.turn, effect, num)
-		}
+		server.giveEffect(this.game.rname, this.turn, effect, num)
+		
 
 		//이펙트 부여하자마자 바로 쿨다운 하기 때문에 지속시간 +1 해줌
 		if(type==="obs"){
@@ -1754,7 +1773,7 @@ abstract class Player {
 				this.stats[ENUM.STAT.DAMAGE_REDUCED] += -1 * damage
 				damage = 0
 
-				this.showEffect(changeData.type)
+				this.showEffect(changeData.type,changeData.source)
 				return false
 			} //if shield exist but can`t absorb all damage
 			else if (this.shield > 0) {
@@ -2029,7 +2048,7 @@ abstract class Player {
 				if (this.distance(p, this) <= range) {
 					targets.push(p.turn)
 				}
-				if (p.haveSign("silver_w", this.turn) && skill_id === ENUM.SKILL.Q && this.distance(p, this) <= range + 5) {
+				else if (p.haveSign("silver_w", this.turn) && skill_id === ENUM.SKILL.Q && this.distance(p, this) <= range + 5) {
 					targets.push(p.turn)
 				}
 			}
@@ -2695,6 +2714,7 @@ class Projectile {
 	UPID: string
 	disappearWhenStep: boolean
 	game: Game
+	trajectorySpeed:number
 
 	constructor(builder: ProjectileBuilder) {
 		// this.id = data.id
@@ -2709,6 +2729,7 @@ class Projectile {
 		this.disappearWhenStep = builder.disappearWhenStep
 		this.game = builder.game
 		this.dur = builder.dur
+		this.trajectorySpeed=builder.trajectorySpeed
 
 		this.pos = -1
 		this.activated = false
@@ -2742,7 +2763,8 @@ class Projectile {
 			scope: this.scope,
 			UPID: id,
 			owner: this.owner.turn,
-			type: this.type
+			type: this.type,
+			trajectorySpeed:this.trajectorySpeed
 		})
 	}
 	remove() {
@@ -2783,6 +2805,7 @@ class ProjectileBuilder {
 	dur: number
 	disappearWhenStep: boolean
 	game: Game
+	trajectorySpeed:number
 	constructor(data: { owner: Player; size: number; type: string; skill: number }) {
 		this.owner = data.owner
 		this.size = data.size
@@ -2795,6 +2818,7 @@ class ProjectileBuilder {
 		this.dur = 0
 		this.disappearWhenStep = true
 		this.game
+		this.trajectorySpeed=0
 	}
 	setGame(game: Game) {
 		this.game = game
@@ -2822,6 +2846,10 @@ class ProjectileBuilder {
 	}
 	setNotDisappearWhenStep() {
 		this.disappearWhenStep = false
+		return this
+	}
+	setTrajectorySpeed(speed:number){
+		this.trajectorySpeed=speed
 		return this
 	}
 	build() {

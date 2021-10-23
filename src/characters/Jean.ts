@@ -25,7 +25,7 @@ class Jean extends Player {
 		this.hpGrowth = 70
 		this.projectile = []
 		this.cooltime_list = [3, 4, 9]
-		this.skill_name = ["gun", "hit", "sniper_r"]
+		this.skill_name = ["gun", "sniper_w", "sniper_r"]
 		this.playersign = [0, 0, 0, 0]
 		this.u_target = -1
 		this.itemtree = {
@@ -41,17 +41,17 @@ class Jean extends Player {
 			this.cooltime_list[0] +
 			"턴<br>사정거리:20, 사용시 대상에게 " +
 			this.getSkillBaseDamage(0) +
-			"의 물리 피해를 입힘. 표식이 있는 대상은 속박시킴."
+			"의 물리 피해를 입힘. 속박된 대상 적중시 Q 쿨타임 2턴을 돌려받음."
 		info[1] =
 			"[둔화의 덫] 쿨타임:" +
 			this.cooltime_list[1] +
-			"턴<br>사정거리:40, 시용시 3칸범위의 덫을 발사, 덫에 맞은 적은 역주사위 1턴, 표식을 남김"
+			"턴<br>사정거리:40, 시용시 3칸범위의 덫을 발사, 덫에 맞은 적은 속박"
 		info[2] =
 			"[저격수의 극장] 쿨타임:" +
 			this.cooltime_list[2] +
 			"턴<br> 사용시 대상 고정 후 3턴동안 최대 3번 발사해 각각" +
 			this.getSkillBaseDamage(2) +
-			"의 물리 피해를 입힘(3번째에는 고정 피해를 입힘, 사용중에는 움직일 수 없음)<br> 다시한번 사용시 중지하고 신속 효과를 받음"
+			"의 물리 피해를 입힘(3번째에는 고정 피해를 입힘, 사용중에는 움직일 수 없음)<br> 다시한번 사용시 중지하고 주사위2배 효과를 받음"
 		return info
 	}
 
@@ -62,17 +62,17 @@ class Jean extends Player {
 			this.cooltime_list[0] +
 			" turns<br>range:20, deals  " +
 			this.getSkillBaseDamage(0) +
-			" attack damage and stuns if the target recently hit by lv2 skill"
+			" attack damage.<br>if the target is rooted, gets back 2 turns of cooltime "
 		info[1] =
 			"[Net Trap] cooltime:" +
 			this.cooltime_list[1] +
-			" turns<br>range:20, Places a projectile with size 3, player steps on it gains backdice effect"
+			" turns<br>range:20, Places a projectile with size 3, player steps on it get rooted"
 		info[2] =
 			"[Target Locked] cooltime:" +
 			this.cooltime_list[2] +
 			" turns<br>range:40 Lock up a target and deals " +
 			this.getSkillBaseDamage(2) +
-			" for 3 turns. 3rd attack deals fixed damage.<br>(Cannot throw dice in use. Can stop by pressing skill button again.)<br>Gains speed effect after use"
+			" for 3 turns. 3rd attack deals fixed damage.<br>(Cannot throw dice in use. Can stop by pressing skill button again.)<br>Gains doubledice effect after use"
 		return info
 	}
 	getSkillTrajectorySpeed(skilltype: string): number {
@@ -89,10 +89,9 @@ class Jean extends Player {
 			type: "sniper_w"
 		})
 			.setGame(this.game)
-			.setSkillRange(20)
+			.setSkillRange(30)
 			.setAction(function (target: Player) {
-				target.applyEffectBeforeSkill(ENUM.EFFECT.BACKDICE, 1)
-				playersign[target.turn] = 3
+				target.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
 			})
 			.setDuration(2)
 			.build()
@@ -139,7 +138,7 @@ class Jean extends Player {
 	}
 	private getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(10 + this.AD)
+			return Math.floor(10 + this.AD*0.8)
 		}
 		if (skill === ENUM.SKILL.ULT) {
 			return Math.floor(60 + 0.7 * this.AD)
@@ -156,9 +155,8 @@ class Jean extends Player {
 				this.startCooltime(ENUM.SKILL.Q)
 				let _this = this
 				let onhit = function (target: Player) {
-					if (_this.playersign[target.turn] > 0) {
-						_this.playersign[target.turn] = 0
-						target.applyEffectAfterSkill(ENUM.EFFECT.STUN, 1)
+					if (target.haveEffect(ENUM.EFFECT.STUN)) {
+						_this.setCooltime(ENUM.SKILL.Q,1)
 					}
 				}
 
@@ -228,7 +226,7 @@ class Jean extends Player {
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
 			this.u_target = -1
-			this.applyEffectAfterSkill(ENUM.EFFECT.SPEED, 2)
+			this.applyEffectAfterSkill(ENUM.EFFECT.DOUBLEDICE, 1)
 			this.resetEffect(ENUM.EFFECT.STUN)
 		}
 	}

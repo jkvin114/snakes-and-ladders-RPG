@@ -8,6 +8,8 @@ import { Bird } from "./characters/Bird"
 import { Silver } from "./characters/Silver"
 import { Jean } from "./characters/Jean"
 import { Jellice } from "./characters/Jellice"
+import { Gorae } from "./characters/Gorae"
+import { Timo } from "./characters/Timo"
 
 
 import { Yangyi } from "./characters/Yangyi"
@@ -104,9 +106,9 @@ class Game {
 			case 1:
 				p = new Silver(this.totalnum, team, this, false, char, name)
 				break
-			// case 2:
-			// 	p = new timo(this.totalnum, team, this, false, char, name)
-			// 	break
+			case 2:
+				p = new Timo(this.totalnum, team, this, false, char, name)
+				break
 			case 3:
 				p = new Yangyi(this.totalnum, team, this, false, char, name)
 				break
@@ -116,9 +118,9 @@ class Game {
 			case 5:
 				p = new Jellice(this.totalnum, team, this, false, char, name)
 				break
-			// case 6:
-			// 	p = new kraken(this.totalnum, team, this, false, char, name)
-			// 	break
+			case 6:
+				p = new Gorae(this.totalnum, team, this, false, char, name)
+				break
 			case 7:
 				p = new Bird(this.totalnum, team, this, false, char, name)
 				break
@@ -145,9 +147,9 @@ class Game {
 			case 1:
 				p = new Silver(this.totalnum, team, this, true, char, name)
 				break
-			// case 2:
-			// 	p = new timo(this.totalnum, team, this, true, char, name)
-			// 	break
+			case 2:
+				p = new Timo(this.totalnum, team, this, true, char, name)
+				break
 			case 3:
 				p = new Yangyi(this.totalnum, team, this, true, char, name)
 				break
@@ -157,9 +159,9 @@ class Game {
 			case 5:
 				p = new Jellice(this.totalnum, team, this, true, char, name)
 				break
-			// case 6:
-			// 	p = new kraken(this.totalnum, team, this, true, char, name)
-			// 	break
+			case 6:
+				p = new Gorae(this.totalnum, team, this, true, char, name)
+				break
 			case 7:
 				p = new Bird(this.totalnum, team, this, true, char, name)
 				break
@@ -545,7 +547,7 @@ class Game {
 	}
 	//========================================================================================================
 
-	aiSkill() {
+	async aiSkill() {
 		let p = this.p()
 		if (p.haveEffect(ENUM.EFFECT.SILENT) || p.dead) {
 			return
@@ -572,7 +574,7 @@ class Game {
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {
 			}
 			if(!this.instant){
-				//await Util.sleep(150)
+				await Util.sleep(150)
 			}
 			
 		}

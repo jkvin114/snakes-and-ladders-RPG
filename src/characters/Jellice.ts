@@ -24,7 +24,7 @@ class Jellice extends Player {
 		this.onoff = [false, false, false]
 		this.hpGrowth = 60
 		this.projectile = []
-		this.cooltime_list = [3, 4, 5]
+		this.cooltime_list = [3, 5, 7]
 		this.skill_name = ["magician_q", "hit", "magician_r"]
 		this.u_used = 0
 		this.itemtree = {
@@ -91,10 +91,11 @@ class Jellice extends Player {
 			.setGame(this.game)
             .setSkillRange(30)
 			.setAction(function (target: Player) {
-				target.applyEffectAfterSkill(ENUM.EFFECT.SILENT,1)
+				target.applyEffectBeforeSkill(ENUM.EFFECT.SILENT,1)
 			})
             .setDamage(new Damage(0,this.getSkillBaseDamage(ENUM.SKILL.ULT),0))
 			.setDuration(2)
+			.setTrajectorySpeed(300)
 			.build()
 	}
 
@@ -115,10 +116,7 @@ class Jellice extends Player {
 				break
 			case ENUM.SKILL.ULT:
                 let range = this.isSkillActivated(ENUM.SKILL.W) ? 60 : 30
-				if(this.u_used===3){
-                    this.startCooltime(ENUM.SKILL.ULT)
-                    this.u_used=0
-                }
+				
 
 				skillTargetSelector
                 .setType(ENUM.SKILL_INIT_TYPE.PROJECTILE)
@@ -133,7 +131,7 @@ class Jellice extends Player {
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
-		this.applyEffectAfterSkill(ENUM.EFFECT.STUN, 1)
+		this.applyEffectBeforeDice(ENUM.EFFECT.STUN, 1)
 	}
 	private useQ() {
 		let end = this.isSkillActivated(ENUM.SKILL.W)? 30 : 15
@@ -183,8 +181,12 @@ class Jellice extends Player {
         if (s === ENUM.SKILL.ULT) {
 			let proj = this.buildProjectile()
 			this.projectile.push(proj)
-			this.startCooltime(ENUM.SKILL.ULT)
-            this.u_used+=1
+			this.u_used+=1
+			if(this.u_used===3){
+				this.startCooltime(ENUM.SKILL.ULT)
+				this.u_used=0
+			}
+
 			return proj
             
 		}

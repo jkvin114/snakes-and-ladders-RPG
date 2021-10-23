@@ -291,8 +291,7 @@ class Yangyi extends Player {
 		})
 
 		for (let p of players) {
-			console.log(ps[p].HP)
-			if (ps[p].HP / ps[p].MaxHP < 0.3) {
+			if (ps[p].HP / ps[p].MaxHP < 0.3 && !ps[p].haveEffect(ENUM.EFFECT.SHIELD)) {
 				return p
 			}
 		}

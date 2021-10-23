@@ -49,7 +49,7 @@ class Silver extends Player {
 			this.cooltime_list[0] +
 			"턴<br>사정거리:3, 표식을 맞은 상대에게는 7,사용시 대상에게 " +
 			this.getSkillBaseDamage(0) +
-			"의 마법 피해 <br> 표식이 있는 대상에게는 30의 추가 피해를 입힘"
+			"의 마법 피해 후 피해량의 30% 회복<br> 표식이 있는 대상에게는 30의 추가 피해를 입히고"
 		info[1] = "[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
 		info[2] =
 			"[실버의 갑옷] 쿨타임:" +
@@ -128,7 +128,7 @@ class Silver extends Player {
 			this.changeAbility("AR", this.u_active_amt)
 			this.changeAbility("MR", this.u_active_amt)
 		}
-		this.showEffect("elephant_r")
+		this.showEffect("elephant_r",this.turn)
 		this.changeApperance("elephant_r")
 
 	}
@@ -169,10 +169,14 @@ class Silver extends Player {
 				this.startCooltime(ENUM.SKILL.Q)
 
 				//실버 인장
-
+				let _this=this
+				let dmg=this.getSkillBaseDamage(s)
 				skillattr = {
-					damage: new Damage(0, this.getSkillBaseDamage(s), 0),
-					skill: ENUM.SKILL.Q
+					damage: new Damage(0, dmg, 0),
+					skill: ENUM.SKILL.Q,
+					onHit:function(){
+						_this.heal(Math.floor(dmg*0.3))
+					}
 				}
 				if (this.players[target].haveSign("silver_w", this.turn)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus,30)
