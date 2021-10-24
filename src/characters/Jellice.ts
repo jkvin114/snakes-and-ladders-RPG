@@ -44,11 +44,11 @@ class Jellice extends Player {
 		info[1] =
 			"[몸체 고정] 쿨타임:" +
 			this.cooltime_list[1] +
-			"턴<br>사용시 한턴 속박 후 모든 스킬 사거리 2배 증가, 다음턴에 신속 효과를 받음,<br>이 상태에서 직선번개 사용시 적중한 적에게 점화 2턴"
+			"턴<br>사용시 한턴 속박 후 모든 스킬 사거리 2배 증가, 다음턴에 신속 효과를 받음,이 상태에서 직선번개 사용시 적중한 적에게 점화 2턴"
 		info[2] =
 			"[번개파티] 쿨타임:" +
 			this.cooltime_list[2] +
-			"턴<br>사정거리:30 , 범위 3칸의 번개 발사, <br> 맞은 플레이어는 침묵에 걸리고 " +
+			"턴<br>사정거리:30 , 범위 3칸의 번개 발사,  맞은 플레이어는 침묵에 걸리고 " +
 			this.getSkillBaseDamage(2) +
 			"의 마법 피해를 받음, 총 3번 시전할 수 있음"
 		return info
@@ -65,11 +65,11 @@ class Jellice extends Player {
 		info[1] =
 			"[Burning Spellbook] cooltime:" +
 			this.cooltime_list[1] +
-			" turns<br>Doubles range for all skills for 1 turn, Applies ignite effect on lv1 skill use.<br>Can`t throw dice this turn, gains speed effect after use"
+			" turns<br>Doubles range for all skills for 1 turn, Applies ignite effect on lv1 skill use.Can`t throw dice this turn, gains speed effect after use"
 		info[2] =
 			"[Dark Sorcery] cooltime:" +
 			this.cooltime_list[2] +
-			" turns<br>range:30 , Places a projectile with size 3, <br>players steps on it receives " +
+			" turns<br>range:30 , Places a projectile with size 3, players steps on it receives " +
 			this.getSkillBaseDamage(2) +
 			"magic damage and silenced, Can use skill 3 times"
 		return info

@@ -45,9 +45,9 @@ class Yangyi extends Player {
 		info[1] =
 			"[양이의 고민] 쿨타임:" +
 			this.cooltime_list[1] +
-			"턴<br>기본지속효과: 뒤쳐져 있으면 주사위숫자 +1 <br>사용시 3턴에 걸쳐 체력" +
+			"턴<br>[기본지속효과]: 뒤쳐져 있으면 주사위숫자 +1 [사용시]: 3턴에 걸쳐 체력" +
 			3 * Math.floor(30 + this.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
-			"회복 후 신속 효과, <br>회복 중엔 움직일 수 없음"
+			"회복 후 신속 효과, 회복 중엔 움직일 수 없음"
 		info[2] =
 			"[양이의 뿔] 쿨타임:" +
 			this.cooltime_list[2] +
@@ -63,13 +63,13 @@ class Yangyi extends Player {
 			this.cooltime_list[0] +
 			" turns<br>When activated, damage all players within 4 sqares with claw,deals " +
 			this.getSkillBaseDamage(0) +
-			" attack damage<br>(-5 Health every turn when activated,damage reduced when attack more than 1 player)"
+			" attack damage(-5 Health every turn when activated,damage reduced when attack more than 1 player)"
 		info[1] =
 			"[Regeneration] cooltime:" +
 			this.cooltime_list[1] +
-			" turns<br> Passive effect: movement speed +1 when fall behind <br>On use: Heals total" +
+			" turns<br> [Passive effect]: movement speed +1 when fall behind [On use]: Heals total" +
 			3 * Math.floor(30 + this.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
-			" for 3 turns,Gains speed effect after use, <br>Cannot throw dice during the heal"
+			" for 3 turns,Gains speed effect after use, Cannot throw dice during the heal"
 		info[2] =
 			"[Burning at the stake] cooltime:" +
 			this.cooltime_list[2] +

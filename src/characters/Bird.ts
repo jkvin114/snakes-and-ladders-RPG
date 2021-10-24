@@ -45,7 +45,7 @@ class Bird extends Player {
 			this.cooltime_list[1] +
 			"턴, 지속시간: 2턴<br>사용시 즉시 신속 효과를 받고 지속중에 기본 공격시  <b>" +
 			Math.floor(10 + this.AP * 0.3) +
-			"</b>, <br>" +
+			"</b>, " +
 			" '날렵한 침' 사용시 " +
 			Math.floor(10 + this.AP * 0.5) +
 			"의 추가 마법 피해를 입히고 속박시킴"
@@ -54,8 +54,8 @@ class Bird extends Player {
 			this.cooltime_list[2] +
 			"턴, 지속시간: 4턴<br> 지속 중에 기본공격 사거리가 2 증가하고 <b>" +
 			Math.floor(this.AD * 0.3) +
-			"</b>의 추가 물리 피해를 입힘.<br>" +
-			"또한 '아기새 소환'의 추가 피해가 2배 증가하고 '날렵한 침' 적중시 <br>" +
+			"</b>의 추가 물리 피해를 입힘." +
+			"또한 '아기새 소환'의 추가 피해가 2배 증가하고 '날렵한 침' 적중시 " +
 			"밟은 적에게 점화 2턴을 주는 영역을 생성함"
 		return info
 	}
@@ -73,7 +73,7 @@ class Bird extends Player {
 			this.cooltime_list[1] +
 			" turn, duration: 2 turn<br>Receive speed effect on use. Basic attack deals additional " +
 			Math.floor(10 + this.AP * 0.3) +
-			" magic damage, <br>" +
+			" magic damage, " +
 			" 'Beak attack' deals additional " +
 			Math.floor(10 + this.AP * 0.5) +
 			" magic damage and stuns target"
@@ -82,8 +82,8 @@ class Bird extends Player {
 			this.cooltime_list[2] +
 			" turn, duration: 4 turn<br> Basic attack range increase by 2, deals additional " +
 			Math.floor(this.AD * 0.3) +
-			" attack damage.<br>" +
-			"Also, 'Baby Bird'`s additional damage doubles, <br>and 'beak attack' creates an area" +
+			" attack damage." +
+			"Also, 'Baby Bird'`s additional damage doubles, and 'beak attack' creates an area" +
 			" that applies ignite effect to players who step on it"
 		return info
 	}

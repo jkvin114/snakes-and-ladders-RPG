@@ -51,7 +51,7 @@ class Jean extends Player {
 			this.cooltime_list[2] +
 			"턴<br> 사용시 대상 고정 후 3턴동안 최대 3번 발사해 각각" +
 			this.getSkillBaseDamage(2) +
-			"의 물리 피해를 입힘(3번째에는 고정 피해를 입힘, 사용중에는 움직일 수 없음)<br> 다시한번 사용시 중지하고 주사위2배 효과를 받음"
+			"의 물리 피해를 입힘(3번째에는 고정 피해를 입힘, 사용중에는 움직일 수 없음)다시한번 사용시 중지하고 주사위2배 효과를 받음"
 		return info
 	}
 
@@ -62,7 +62,7 @@ class Jean extends Player {
 			this.cooltime_list[0] +
 			" turns<br>range:20, deals  " +
 			this.getSkillBaseDamage(0) +
-			" attack damage.<br>if the target is rooted, gets back 2 turns of cooltime "
+			" attack damage.if the target is rooted, gets back 2 turns of cooltime "
 		info[1] =
 			"[Net Trap] cooltime:" +
 			this.cooltime_list[1] +
@@ -72,7 +72,7 @@ class Jean extends Player {
 			this.cooltime_list[2] +
 			" turns<br>range:40 Lock up a target and deals " +
 			this.getSkillBaseDamage(2) +
-			" for 3 turns. 3rd attack deals fixed damage.<br>(Cannot throw dice in use. Can stop by pressing skill button again.)<br>Gains doubledice effect after use"
+			" for 3 turns. 3rd attack deals fixed damage.(Cannot throw dice in use. Can stop by pressing skill button again.)Gains doubledice effect after use"
 		return info
 	}
 	getSkillTrajectorySpeed(skilltype: string): number {

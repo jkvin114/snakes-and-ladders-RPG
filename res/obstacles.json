@@ -174,7 +174,7 @@
     { "name": "coin store", "desc": "Can sell coin", "val": 3 },
     {
       "name": "Street vendor",
-      "desc": "can use store with 20% higher price",
+      "desc": "can use store with 10% higher price",
       "val": 1
     },
     { "name": "Lottery", "desc": "get huge amount of money by 7%", "val": 4 },

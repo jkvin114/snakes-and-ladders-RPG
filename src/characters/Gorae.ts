@@ -45,14 +45,14 @@ class Gorae extends Player {
 			this.cooltime_list[1] +
 			" turn<br>Damage all players within 7 squares, deals " +
 			this.getSkillBaseDamage(1) +
-			" magic damage and slow them.<br> Gains shield of" +
+			" magic damage and slow them. Gains shield of" +
 			Math.floor(0.1 * this.MaxHP)
 		info[2] =
 			"[Predation] cooltime:" +
 			this.cooltime_list[2] +
 			" turn<br>range:20 ,Devour a target, dealing  " +
 			this.getSkillBaseDamage(2)+
-			"fixed damage <br>If the target dies, maximum HP increases permanently by 50."
+			"fixed damage If the target dies, maximum HP increases permanently by 50."
 		return info
 	}
 
@@ -61,7 +61,7 @@ class Gorae extends Player {
 		info[0] =
 			"[촉수 채찍] 쿨타임:" +
 			this.cooltime_list[0] +
-			"턴 <br>사정거리:15 , 범위 2칸의 촉수 설치, <br> 맞은 플레이어에게  " +
+			"턴 <br>사정거리:15 , 범위 2칸의 촉수 설치,  맞은 플레이어에게  " +
 			this.getSkillBaseDamage(0) +
 			"의 마법 피해를 입힘"
 		info[1] =
@@ -69,8 +69,8 @@ class Gorae extends Player {
 			this.cooltime_list[1] +
 			"턴<br>7칸 이내의 플레이어에게 " +
 			this.getSkillBaseDamage(1) +
-			" 의 마법 피해를 입히고 둔화시키고 <br>자신은 " +
-			Math.floor(0.1 * this.MaxHP) +
+			" 의 마법 피해를 입히고 둔화시키고 자신은 " +
+			Math.floor(0.15 * this.MaxHP) +
 			"의 보호막을 얻음"
 		info[2] =
 			"[포식] 쿨타임:" +
@@ -146,7 +146,7 @@ class Gorae extends Player {
 			damage: new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),
 			skill: ENUM.SKILL.W,
 		}
-		this.setShield(Math.floor(0.1 * this.MaxHP), false)
+		this.setShield(Math.floor(0.15 * this.MaxHP), false)
 		for (let p of targets) {
 			this.players[p].applyEffectAfterSkill(ENUM.EFFECT.SLOW, 1)
 			this.hitOneTarget(p, dmg)

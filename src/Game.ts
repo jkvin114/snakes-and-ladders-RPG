@@ -220,8 +220,9 @@ class Game {
 	goNextTurn() {
 		if (this.gameover) {
 			return null
-		}
-
+		}	
+		this.pendingObs=0
+		this.pendingAction=null
 		let p = this.p()
 
 		p.coolDownOnTurnEnd()
@@ -549,7 +550,7 @@ class Game {
 
 	async aiSkill() {
 		let p = this.p()
-		if (p.haveEffect(ENUM.EFFECT.SILENT) || p.dead) {
+		if (p.haveEffect(ENUM.EFFECT.SILENT) || p.dead||this.gameover) {
 			return
 		}
 

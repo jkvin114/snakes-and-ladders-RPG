@@ -49,12 +49,12 @@ class Silver extends Player {
 			this.cooltime_list[0] +
 			"턴<br>사정거리:3, 표식을 맞은 상대에게는 7,사용시 대상에게 " +
 			this.getSkillBaseDamage(0) +
-			"의 마법 피해 후 피해량의 30% 회복<br> 표식이 있는 대상에게는 30의 추가 피해를 입히고"
+			"의 마법 피해 후 피해량의 30% 회복 표식이 있는 대상에게는 30의 추가 피해를 입히고"
 		info[1] = "[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
 		info[2] =
 			"[실버의 갑옷] 쿨타임:" +
 			this.cooltime_list[2] +
-			"턴<br>기본 지속 효과: 잃은 체력에 비례해 방어력과 마법저항력 증가 <br> 사용시: 4턴간 방어력과 마법저항력이 " +
+			"턴<br>[기본 지속 효과]: 잃은 체력에 비례해 방어력과 마법저항력 증가  [사용시]: 4턴간 방어력과 마법저항력이 " +
 			(this.HP < 150 ? 150 : 80) +
 			"증가"
 		return info
@@ -67,7 +67,7 @@ class Silver extends Player {
 			this.cooltime_list[0] +
 			" turns<br>range:3,(7 to players that have mark of ivory),Damage a player by tusk, deals " +
 			this.getSkillBaseDamage(0)+
-			"magic damage <br>Deals 30 more damage if the target has mark of ivory"
+			"magic damageDeals 30 more damage if the target has mark of ivory"
 		info[1] =
 			"[Curse of Ivory]<br> cooltime:" +
 			this.cooltime_list[1] +
@@ -75,7 +75,7 @@ class Silver extends Player {
 		info[2] =
 			"[Strengthen] cooltime:" +
 			this.cooltime_list[2] +
-			" turns<br>Passive effect: attack and magic resistance increase based on missing health <br>On use: Attack and magic resistance increases by" +
+			" turns<br>[Passive effect]: attack and magic resistance increase based on missing health [On use]: Attack and magic resistance increases by" +
 			(this.HP < 150 ? 150 : 80)
 		return info
 	}

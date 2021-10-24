@@ -4,6 +4,7 @@
     "submarine_cooltime" :1,
     "pendingObsList":[21, 33, 37, 38, 63, 67],
     "idleTimeout": 20000,
+    "connectionTimeout": 10000,
     "champnames":["Reaper", "Elephant", "Ghost", "Dinosaur", "Sniper", "Magician", "Kraken","Bird"]
 
 }

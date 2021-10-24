@@ -43,11 +43,11 @@ class Timo extends Player {
 		info[1] =
 			"[재빠른 이동] 쿨타임:" +
 			this.cooltime_list[1] +
-			"턴<br>기본 지속 효과:투명화 상태에서 실명 사용시 대상의 잃은 체력의 30%의 추가 마법피해를 입힘<br>사용시 1턴간 모든 스킬과 장애물/강제이동 무시, "
+			"턴<br>[기본 지속 효과]:투명화 상태에서 실명 사용시 대상의 잃은 체력의 30%의 추가 마법피해를 입힘[사용시]: 1턴간 모든 스킬과 장애물/강제이동 무시, "
 		info[2] =
 			"[죽음의 버섯] 쿨타임:" +
 			this.cooltime_list[2] +
-			"턴<br>사정거리:30 , 범위 4칸의 버섯 설치, <br> 맞은 플레이어는 둔화에 걸리고 3턴에 걸쳐 " +
+			"턴<br>사정거리:30 , 범위 4칸의 버섯 설치, 맞은 플레이어는 둔화에 걸리고 3턴에 걸쳐 " +
 			this.getSkillBaseDamage(2)*3 +
 			"의 마법 피해를 받음"
 		return info
@@ -63,11 +63,11 @@ class Timo extends Player {
 		info[1] =
 			"[Phantom Menace] cooltime:" +
 			this.cooltime_list[1] +
-			" turns<br>Passive:When invisible, deals additional (30% of target`s missing health) magic damage on use of 'Blind curse'<br>On use: Gains invisibility effect for 1 turn., "
+			" turns<br>[Passive]:When invisible, deals additional (30% of target`s missing health) magic damage on use of 'Blind curse'[On use]: Gains invisibility effect for 1 turn., "
 		info[2] =
 			"[Poison Bomb] cooltime:" +
 			this.cooltime_list[2] +
-			" turns<br>range:30 ,Places a projectile with size 4, <br>player steps on it slowed and receive total" +
+			" turns<br>range:30 ,Places a projectile with size 4, player steps on it slowed and receive total" +
 			this.getSkillBaseDamage(2)*3 +
 			"magic damage for 3 turns"
 		return info

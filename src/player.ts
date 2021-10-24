@@ -1440,7 +1440,7 @@ abstract class Player {
 
 	goStore(street_vendor: boolean) {
 		if (this.game.instant) return
-		server.goStore(this.game.rname, this.turn, this.getStoreData(street_vendor ? 1.2 : 1))
+		server.goStore(this.game.rname, this.turn, this.getStoreData(street_vendor ? 1.1 : 1))
 	}
 	/**
 	 * @return 위치가 가장 뒤면 true
