@@ -28,15 +28,15 @@ class Damage {
 	}
 
 	updateMagicDamage(calctype: Function, val: number) {
-		this.magic = Math.floor(calctype(this.magic, Math.floor(val)))
+		this.magic = Math.floor(calctype(this.magic, val))
 		return this
 	}
 	updateAttackDamage(calctype: Function, val: number) {
-		this.attack = Math.floor(calctype(this.attack, Math.floor(val)))
+		this.attack = Math.floor(calctype(this.attack,val))
 		return this
 	}
 	updateTrueDamage(calctype: Function, val: number) {
-		this.fixed = Math.floor(calctype(this.fixed, Math.floor(val)))
+		this.fixed = Math.floor(calctype(this.fixed,val))
 		return this
 	}
 
@@ -146,6 +146,15 @@ export type singleMap = {
 		end: number
 		way_start: number
 		way_end: number
+	}
+	//casino map only
+	subway?:{
+		start:number,
+		end:number,
+		default:number[],
+		rapid:number[],
+		express:number[],
+		prices:number[],
 	}
 }
 

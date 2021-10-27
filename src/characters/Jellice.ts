@@ -103,10 +103,13 @@ class Jellice extends Player {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
 		switch (s) {
 			case ENUM.SKILL.Q:
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)	
                 if (!this.AI) {
-					this.useQ()
+					if(!this.useQ()){
+						skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NO_TARGET)	
+					}
 				}
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)				
+							
                 break
 			case ENUM.SKILL.W:
 				if (!this.AI) {
@@ -133,7 +136,7 @@ class Jellice extends Player {
 		this.duration[ENUM.SKILL.W] = 2
 		this.applyEffectBeforeDice(ENUM.EFFECT.STUN, 1)
 	}
-	private useQ() {
+	private useQ():boolean {
 		let end = this.isSkillActivated(ENUM.SKILL.W)? 30 : 15
 		let start = this.isSkillActivated(ENUM.SKILL.W) ? 0 : 3
 
@@ -148,7 +151,7 @@ class Jellice extends Player {
 		}
 
 		if (targets.length === 0) {
-			return
+			return false
 		}
 		for (let p of targets) {
 			if (this.isSkillActivated(ENUM.SKILL.W)) {
@@ -160,6 +163,7 @@ class Jellice extends Player {
 			this.hitOneTarget(p, dmg)
 		}
 		this.startCooltime(ENUM.SKILL.Q)
+		return true
 	}
 
 	getSkillName(skill: number): string {

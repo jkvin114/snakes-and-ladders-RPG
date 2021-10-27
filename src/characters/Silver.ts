@@ -49,7 +49,7 @@ class Silver extends Player {
 			this.cooltime_list[0] +
 			"턴<br>사정거리:3, 표식을 맞은 상대에게는 7,사용시 대상에게 " +
 			this.getSkillBaseDamage(0) +
-			"의 마법 피해 후 피해량의 30% 회복 표식이 있는 대상에게는 30의 추가 피해를 입히고"
+			"의 마법 피해 후 피해량의 30% 회복, 표식이 있는 대상에게는 30의 추가 피해를 입함"
 		info[1] = "[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
 		info[2] =
 			"[실버의 갑옷] 쿨타임:" +

@@ -18,7 +18,7 @@ class Creed extends Player {
 	private usedQ: boolean
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
-		//hp, ad:40, ar, mr, attackrange,ap
+		//hp:200, ad:40, ar, mr, attackrange,ap
 		let basic_stats: number[] = [200, 20, 7, 7, 0, 0]
 		super(turn, team, game, ai, char, name, "Reaper", basic_stats)
 		this.onoff = [false, false, false]
@@ -92,7 +92,7 @@ class Creed extends Player {
 		.setSkillRange(30)
 		.setAction(function (target: Player) {
 			
-			target.goto(target.pos - 4, false, "simple")
+			target.forceMove(target.pos - 4, false, "simple")
 			target.effects.obs[ENUM.EFFECT.STUN]=1
 		})
 		.setDuration(2)
@@ -183,7 +183,7 @@ class Creed extends Player {
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
 				let originalpos = this.pos
-				this.goto(this.players[target].pos, true, "levitate")
+				this.forceMove(this.players[target].pos, true, "levitate")
 				skillattr = {
 					damage: new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),
 					skill: ENUM.SKILL.ULT

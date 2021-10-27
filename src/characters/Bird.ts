@@ -23,7 +23,7 @@ class Bird extends Player {
 		this.onoff = [false, false, false]
 		this.hpGrowth = 80
 		this.projectile = []
-		this.cooltime_list = [3, 6, 10]
+		this.cooltime_list = [3, 5, 10]
 		this.skill_name = ["hit", "hit", "bird_r"]
 		this.itemtree = {
 			level: 0,
