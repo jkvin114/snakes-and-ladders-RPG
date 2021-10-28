@@ -1,5 +1,5 @@
 import oceanmap = require("../res/ocean_map.json")
-import casinomap = require("../res/casino_map2.json")
+import casinomap = require("../res/casino_map.json")
 import defaultmap = require("../res/map.json")
 import obsInfo = require("../res/obstacles.json")
 import SETTINGS = require("../res/settings.json")
@@ -1120,7 +1120,7 @@ abstract class Player {
 		let dice = 1
 		let searchto = list.length - Math.floor(Math.random() * 4) //앞으로 3~6칸(랜덤)중 선택함
 		for (let i = 0; i < searchto; ++i) {
-			let obs = MAP.get(this.mapId).coordinates[list[i]].obs
+			let obs = this.game.shuffledObstacles[list[i]].obs
 			//상점
 			if (obs === 0 && worst > 0 && i > 1) {
 				break
@@ -1173,7 +1173,7 @@ abstract class Player {
 			}
 		}
 
-		let obs = MAP.get(this.mapId).coordinates[this.pos].obs
+		let obs = this.game.shuffledObstacles[this.pos].obs
 
 		if (obs !== 0) {
 			this.checkProjectile()
@@ -1182,7 +1182,7 @@ abstract class Player {
 		//속박일경우
 		if (this.haveEffect(ENUM.EFFECT.STUN)) {
 			//특정 장애물은 속박무시 
-			if (SETTINGS.ignoreStunObsList.indexOf(obs) >=0) {
+			if (SETTINGS.ignoreStunObsList.includes(obs)) {
 				this.basicAttack()
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
 			}
@@ -1220,7 +1220,7 @@ abstract class Player {
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		}
 
-		let money = MAP.get(this.mapId).coordinates[this.pos].money * 10
+		let money = this.game.shuffledObstacles[this.pos].money * 10
 		if (money > 0) {
 			this.giveMoney(money)
 		}
@@ -1252,8 +1252,8 @@ abstract class Player {
 					this.applyEffectBeforeSkill(ENUM.EFFECT.SILENT, 1)
 					break
 				case 11:
-					this.resetCooltime([0, 1])
-					this.cooltime[2] = Math.floor(this.cooltime[2] / 2)
+					this.resetCooltime([ENUM.SKILL.Q, ENUM.SKILL.W])
+					this.cooltime[ENUM.SKILL.ULT] = Math.floor(this.cooltime[ENUM.SKILL.ULT] / 2)
 					break
 				case 12:
 					this.adamage = 30
@@ -1559,7 +1559,7 @@ abstract class Player {
 		}
 
 		//not ai, not pending obs and forcemoved, not arrive at none
-		if (!this.AI && !(pendingObsList.indexOf(obs) > -1 && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
+		if (!this.AI && !(pendingObsList.includes(obs) && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
 			server.indicateObstacle(this.game.rname, this.turn, obs)
 		}
 
@@ -2028,7 +2028,7 @@ abstract class Player {
 		this.pos = this.getRespawnPoint()
 		console.log("respawn pos" + this.pos)
 		//this.giveEffect('silent',1,-1)
-		let gostore = MAP.getStore(this.mapId).indexOf(this.pos) !== -1
+		let gostore = MAP.getStore(this.mapId).includes(this.pos)
 		if (gostore && this.AI) {
 			this.aiStore()
 		}
@@ -2290,7 +2290,7 @@ abstract class Player {
 		let other = this.getPlayersByCondition(-1, false, true, false, false)
 		for (let o of other) {
 			for (let p of o.projectile) {
-				if (p.activated && p.scope.indexOf(this.pos) !== -1) {
+				if (p.activated && p.scope.includes(this.pos)) {
 					this.hitBySkill(p.damage, o.turn, p.skill, p.action, p.type)
 					if (p.disappearWhenStep) {
 						p.remove()

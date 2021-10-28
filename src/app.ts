@@ -92,16 +92,6 @@ io.on("connect", function (socket: Socket) {
 		let room = new Room(roomName).setSimulation(isSimulation).setNickname(nickName, 0)
 		ROOMS.set(roomName, room)
 
-		// if (isSimulation) {
-		// 	room.instant = true
-		// 	room.simulation = true
-		// }
-
-		// if (nickName !== "") {
-		// 	room.playerlist[0].name = nickName
-		// }
-
-		// roomList.push(room)
 		socket.join(roomName)
 	})
 	//==========================================================================================
@@ -400,105 +390,6 @@ io.on("connect", function (socket: Socket) {
 	})
 })
 
-function goNextTurn(rname: string) {
-	// console.log("function gonextturn")
-	// let room = findRoomByName(rname)
-	// if (!room) {
-	// 	return
-	// }
-	// stopTimeout(room, rname)
-	// let turnUpdateData = room.game.goNextTurn()
-	// io.to(rname).emit("server:nextturn", turnUpdateData)
-	// if (room.game.thisturn === 0) {
-	// 	io.to(rname).emit("server:sync_player_visibility", room.game.getPlayerVisibilitySyncData())
-	// }
-	// if (turnUpdateData == null) return
-	// if (!turnUpdateData.ai && !turnUpdateData.stun) {
-	// 	timeoutNoAction(room, rname)
-	// }
-	// //컴퓨터일경우만 주사위 던짐
-	// if (turnUpdateData.ai && !turnUpdateData.stun) {
-	// 	console.log("ai roll dice")
-	// 	let dice = room.game.rollDice(-1)
-	// 	console.log("stun" + dice)
-	// 	if (room.simulation) {
-	// 		setTimeout(() => io.to(rname).emit("server:rolldice", dice), 150)
-	// 	} else {
-	// 		setTimeout(() => io.to(rname).emit("server:rolldice", dice), 300)
-	// 	}
-	// }
-}
-function checkObstacle(rname: string) {
-	// let room = findRoomByName(rname)
-	// if (!room) {
-	// 	return
-	// }
-	// let obs = room.game.checkObstacle()
-	// console.log("checkobs" + obs)
-	// if (obs === -7) {
-	// 	if (room.simulation_count <= 1) {
-	// 		let winner = room.game.thisturn
-	// 		io.to(rname).emit("server:gameover", winner)
-	// 	}
-	// }
-}
-function checkPendingAction(rname: string) {
-	// let room = findRoomByName(rname)
-	// if (!room) {
-	// 	return
-	// }
-	// console.log("function checkpendingaction" + room.game.pendingAction)
-	// if (!room.game.pendingAction || room.game.p().dead) {
-	// 	showSkillBtn(room, rname)
-	// } else {
-	// 	if (room.game.pendingAction === "submarine") {
-	// 		io.to(rname).emit("server:pending_action:submarine", room.game.p().pos)
-	// 	}
-	// 	if (room.game.pendingAction === "ask_way2") {
-	// 		io.to(rname).emit("server:pending_action:ask_way2")
-	// 	}
-	// 	io.to(rname).emit("server:start_timeout_countdown", room.game.thisturn, SETTINGS.idleTimeout)
-	// 	console.log("timeout")
-	// 	room.idleTimeout = setTimeout(() => {
-	// 		io.to(rname).emit("server:force_nextturn", room.game.thisturn)
-	// 		room.game.processPendingAction(false)
-	// 		goNextTurn(rname)
-	// 	}, SETTINGS.idleTimeout)
-	// }
-}
-function showSkillBtn(room: Room, rname: string) {
-	// let status = room.game.getSkillStatus()
-	// io.to(rname).emit("server:skills", status)
-	// timeoutNoAction(room, rname)
-}
-
-// function stopTimeout(room: Room, rname: string) {
-// 	console.log("stoptimeout")
-// 	io.to(rname).emit("server:stop_timeout_countdown", room.game.thisturn)
-// 	clearTimeout(room.idleTimeout)
-// }
-/**
- * go next turn after 20sec
- */
-function timeoutNoAction(room: Room, rname: string) {
-	// io.to(rname).emit("server:start_timeout_countdown", room.game.thisturn, SETTINGS.idleTimeout)
-	// console.log("start timeout")
-	// if (room.game.gameover) {
-	// 	return
-	// }
-	// room.idleTimeout = setTimeout(() => {
-	// 	io.to(rname).emit("server:force_nextturn", room.game.thisturn)
-	// 	goNextTurn(rname)
-	// }, SETTINGS.idleTimeout)
-}
-/**
- * extend timeout by 20sec
- */
-
-function extendTimeout(room: Room, rname: string, turn: number) {
-	// if(!ROOMS.has(rname)) return
-	// ROOMS.get(rname).extendTimeout(turn)
-}
 
 function isInstant(rname: string) {
 	if (!ROOMS.has(rname)) return true
@@ -506,64 +397,6 @@ function isInstant(rname: string) {
 	return ROOMS.get(rname).instant
 }
 
-function doInstantSimulation(rname: string, room: Room) {
-	// let consolelog = console.log
-	//  console.log = function () {}
-	// let game = room.game
-	// let repeat = room.simulation_total_count
-	// let playercount = game.players.length
-	// const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
-	// bar1.start(repeat - 2, 0)
-	// let startTime: any = new Date()
-	// let i = 0
-	// for (i = 0; i < repeat - 1; ++i) {
-	// 	game.startTurn()
-	// 	let oneGame = true
-	// 	while (oneGame) {
-	// 		try {
-	// 			let obs = simulationNextturn(game)
-	// 			if (obs === -7) {
-	// 				oneGame = false
-	// 			} else {
-	// 				game.aiSkill()
-	// 			}
-	// 		} catch (e) {
-	// 			console.error(e)
-	// 			console.error(game.thisturn)
-	// 		}
-	// 	}
-	// 	//io.to(rname).emit("instant_num", repeat, i)
-	// 	bar1.update(i)
-	// 	console.log("-----------------------------------------------------------------------------------------------------")
-	// 	room.stats.push(room.game.getFinalStatistics())
-	// 	room.game = null
-	// 	room.game = new Game(room.isTeam, room.map, rname, room.simulation, true)
-	// 	for (let i = 0; i < playercount; ++i) {
-	// 		// let champ=room.champ[i]
-	// 		let team = room.playerlist[i].team
-	// 		if (team === null) team = true
-	// 		let p = room.playerlist[i]
-	// 		room.game.addAI(
-	// 			team,
-	// 			p.champ,
-	// 			SETTINGS.champnames[Number(p.champ)] + "_Bot(" + String(room.game.totalnum + 1) + "P) "
-	// 		)
-	// 	}
-	// 	game = room.game
-	// }
-	// bar1.stop()
-	// let endTime: any = new Date()
-	// let timeDiff: any = endTime - startTime
-	// console.log = consolelog
-	// console.warn("total time:" + timeDiff + "ms, " + timeDiff / repeat + "ms per game")
-	// io.to(room.game.rname).emit("server:gameover", 0)
-}
-
-function simulationNextturn(game: Game) {
-	// game.goNextTurn()
-	// game.rollDice(-1)
-	// return game.checkObstacle()
-}
 
 export const updateNextTurn = function (rname: string, turnUpdateData: any) {
 	io.to(rname).emit("server:nextturn", turnUpdateData)
@@ -595,6 +428,8 @@ export const sendPendingAction = function (rname: string, name: string, data: an
 export const simulationOver = function (rname: string) {
 	io.to(rname).emit("server:gameover", 0)
 }
+
+
 
 export const changeHP = function (rname: string, hpChangeData: any) {
 	if (isInstant(rname)) {

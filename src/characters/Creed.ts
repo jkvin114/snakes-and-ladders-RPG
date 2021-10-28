@@ -81,7 +81,7 @@ class Creed extends Player {
 
 
 	private buildProjectile() {
-		let _this: Player = this.getPlayer()
+		let _this: Player = this
 		return new ProjectileBuilder({
 			owner: _this,
 			size: 3,

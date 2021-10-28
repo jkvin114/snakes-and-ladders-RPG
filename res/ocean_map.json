@@ -110,6 +110,7 @@
     "muststop":[15,36,72,89,90,101],
     "respawn":[0,15,36,72,90],
     "store":[15,36,72,90,101],
+    "shuffle":[],
 	"dc_limit_level":4,
     "way2_range":{
       "start":15,

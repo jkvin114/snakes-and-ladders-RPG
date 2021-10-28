@@ -112,7 +112,23 @@ export const copyElementsOnly = function (arr1: number[], arr2: number[]): numbe
 	return arr1
 }
 
-
+export const shuffle=function(array:any[]):any[] {
+	var m = array.length, t, i;
+  
+	// While there remain elements to shuffle…
+	while (m) {
+  
+	  // Pick a remaining element…
+	  i = Math.floor(Math.random() * m--);
+  
+	  // And swap it with the current element.
+	  t = array[m];
+	  array[m] = array[i];
+	  array[i] = t;
+	}
+  
+	return array;
+  }
 export const sleep = (m:any) => new Promise((r) => setTimeout(r, m))
 /**
  * array of zeros
@@ -135,6 +151,7 @@ export type singleMap = {
 	store: number[]
 	dc_limit_level: number
 	goldperturn: number
+	shuffle:{start:number,end:number}[]
 	//ocean map only
 	submarine_range?: {
 		start: number
@@ -178,6 +195,34 @@ class Map {
 	getFinish(id: number): number {
 		return this.map[id].finish
 	}
+
+	getShuffledObstacles(id:number):{obs:number,money:number}[]{
+		let thismap=this.map[id]
+		let obslist=[]
+		for(let c of thismap.coordinates){
+			obslist.push({obs:c.obs,money:c.money})
+		}
+
+		for(let sfdata of thismap.shuffle){
+			let toshuffle=[]
+			for(let i=sfdata.start;i<=sfdata.end;++i){
+				toshuffle.push(thismap.coordinates[i])
+			}
+			toshuffle=shuffle(toshuffle)
+			let j=0
+			for(let i=sfdata.start;i<=sfdata.end;++i){
+				
+				if(obslist[i].obs>0){
+					obslist[i].obs=toshuffle[j].obs
+					obslist[i].money=toshuffle[j].money
+				}
+				
+				++j
+			}
+		}
+
+		return obslist
+	}	
 }
 
 enum HPChangeDataFlag{

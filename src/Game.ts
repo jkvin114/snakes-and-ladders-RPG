@@ -11,14 +11,12 @@ import { Jellice } from "./characters/Jellice"
 import { Gorae } from "./characters/Gorae"
 import { Timo } from "./characters/Timo"
 
-
 import { Yangyi } from "./characters/Yangyi"
 
 import * as ENUM from "./enum"
 import * as Util from "./Util"
 
 import { PassProjectile, Player, Projectile } from "./player"
-
 
 const MAP: Util.Map = new Util.Map([defaultmap, oceanmap, casinomap])
 
@@ -42,15 +40,16 @@ class Game {
 	roullete_result: number
 	nextUPID: number
 	nextPassUPID: number
-	activeProjectileList: Map<string,Projectile>
-	passProjectileList: Map<string,PassProjectile>
+	activeProjectileList: Map<string, Projectile>
+	passProjectileList: Map<string, PassProjectile>
 	passProjectileQueue: PassProjectile[]
 	gameover: boolean
 	itemLimit: number
 	submarine_cool: number
 	submarine_id: string
-	dcitem_id:string
-	totalEffectsApplied:number
+	dcitem_id: string
+	totalEffectsApplied: number
+	shuffledObstacles: { obs: number; money: number }[]
 	killRecord: {
 		pos: number
 		turn: number
@@ -80,17 +79,17 @@ class Game {
 		this.nextUPID = 1
 		this.nextPassUPID = 1
 		this.activeProjectileList = new Map()
-		this.passProjectileList=new Map()
+		this.passProjectileList = new Map()
 		this.passProjectileQueue = []
 		this.gameover = false
-
+		this.shuffledObstacles = MAP.getShuffledObstacles(this.mapId)
 		this.submarine_cool = 0
 		this.submarine_id = "" //잠수함의 upid
-		this.dcitem_id=""
+		this.dcitem_id = ""
 		this.killRecord = []
-		this.totalEffectsApplied=0  //total number of effects applied until now
+		this.totalEffectsApplied = 0 //total number of effects applied until now
 	}
-	p():Player {
+	p(): Player {
 		return this.players[this.thisturn]
 	}
 
@@ -190,8 +189,13 @@ class Game {
 				description: p.skill_description
 			})
 		}
-
-		return { itemLimit: this.itemLimit, simulation: false, isTeam: this.isTeam, playerSettings: setting }
+		return {
+			itemLimit: this.itemLimit,
+			simulation: false,
+			isTeam: this.isTeam,
+			playerSettings: setting,
+			shuffledObstacles: this.shuffledObstacles
+		}
 	}
 
 	//()=>{turn:number,stun:boolean}
@@ -219,11 +223,11 @@ class Game {
 	}
 	//========================================================================================================
 
-	summonSubmarine(){
+	summonSubmarine() {
 		if (this.submarine_cool === 0) {
-			console.log("submarine"+this.submarine_id)
+			console.log("submarine" + this.submarine_id)
 			this.removePassProjById(this.submarine_id)
-			this.submarine_id=""
+			this.submarine_id = ""
 			let pos = 0
 			let submarine_range = MAP.get(this.mapId).submarine_range
 
@@ -239,91 +243,82 @@ class Game {
 		}
 	}
 
-	removePassProjById(id:string){
-		if(id==="") return
-		console.log('REmoved PASSPROJECTILE  PASSPROJECTILE'+id)
+	removePassProjById(id: string) {
+		if (id === "") return
+		console.log("REmoved PASSPROJECTILE  PASSPROJECTILE" + id)
 		// let toremove=this.passProjectileList.filter((p: PassProjectile) => p.UPID === id)
-		let toremove=this.passProjectileList.get(id)
-		if(toremove!==null){
+		let toremove = this.passProjectileList.get(id)
+		if (toremove !== null) {
 			// this.passProjectileList = this.passProjectileList.filter((proj: PassProjectile) => {
 			// 	proj.UPID!==id
 			// })
 			this.passProjectileList.delete(id)
 
 			toremove.removeProj()
-			toremove=null
+			toremove = null
 		}
 	}
 
 	/**
 	 * called on every player`s turn start
-	 * @returns 
+	 * @returns
 	 */
-	summonDicecontrolItem(){
-		let playercount=this.players.length
+	summonDicecontrolItem() {
+		let playercount = this.players.length
 
 		//4:50% fail
-		if(this.dcitem_id === "" && playercount===4 && Math.random()>0.5){
+		if (this.dcitem_id === "" && playercount === 4 && Math.random() > 0.5) {
 			return
-		
 		}
-		
-		this.removePassProjById(this.dcitem_id)
-		this.dcitem_id=""
 
+		this.removePassProjById(this.dcitem_id)
+		this.dcitem_id = ""
 
 		//2명이면 50%, 3명이면 75%확률로 재배치
-		if((playercount===2 && Math.random() > 0.5)||(playercount===3 && Math.random() > 0.75)){
+		if ((playercount === 2 && Math.random() > 0.5) || (playercount === 3 && Math.random() > 0.75)) {
 			return
 		}
-		
-		
-		
+
 		//플레이어 1명 랜덤선택
 		let r = Math.floor(Math.random() * this.players.length)
 
 		//플레이어가 일정레벨이상일시 등장안함
-		if(this.players[r].level>=MAP.get(this.mapId).dc_limit_level)
-			return
+		if (this.players[r].level >= MAP.get(this.mapId).dc_limit_level) return
 
 		//플레이어 앞 1칸~  8칸 사이 배치
-		let range=7
-		let pos=this.players[r].pos+Math.floor(Math.random() * range) +1
-		let bound= MAP.get(this.mapId).respawn[MAP.get(this.mapId).dc_limit_level-1]
+		let range = 7
+		let pos = this.players[r].pos + Math.floor(Math.random() * range) + 1
+		let bound = MAP.get(this.mapId).respawn[MAP.get(this.mapId).dc_limit_level - 1]
 
 		//일정범위 벗어나면 등장안함
-		if(pos<=0 || pos >=bound)
-			return
+		if (pos <= 0 || pos >= bound) return
 
-		this.placePassProj("dicecontrol",pos)
+		this.placePassProj("dicecontrol", pos)
 	}
 
 	/**
 	 * 킬을 해서 추가주사위 던지면 80%로 앞1~ 8칸이내에 주컨아이템 소환
-	 * @param turn 
+	 * @param turn
 	 */
-	summonDicecontrolItemOnkill(turn:number){
-		if(this.players[turn].level>=MAP.get(this.mapId).dc_limit_level)
-			return
+	summonDicecontrolItemOnkill(turn: number) {
+		if (this.players[turn].level >= MAP.get(this.mapId).dc_limit_level) return
 
-		if(Math.random()<0.8){
+		if (Math.random() < 0.8) {
 			this.removePassProjById(this.dcitem_id)
-			let range=8
-			this.placePassProj("dicecontrol", this.players[turn].pos+Math.floor(Math.random() * range)+1)
+			let range = 8
+			this.placePassProj("dicecontrol", this.players[turn].pos + Math.floor(Math.random() * range) + 1)
 		}
 	}
 
 	goNextTurn() {
 		if (this.gameover) {
 			return null
-		}	
-		this.pendingObs=0
-		this.pendingAction=null
+		}
+		this.pendingObs = 0
+		this.pendingAction = null
 		let p = this.p()
 
 		p.coolDownOnTurnEnd()
-
-		
 
 		//다음턴 안넘어감(one more dice)
 		if (p.oneMoreDice) {
@@ -354,7 +349,6 @@ class Game {
 				if (this.mapId === 1) {
 					this.summonSubmarine()
 				}
-				
 			}
 			p = this.p()
 
@@ -380,7 +374,7 @@ class Game {
 		if (p.haveEffect(ENUM.EFFECT.BAD_LUCK)) {
 			effects.push("badluck")
 		}
-		if(this.mapId===2 && p.subwayTicket>=0 && p.isInSubway){
+		if (this.mapId === 2 && p.subwayTicket >= 0 && p.isInSubway) {
 			effects.push("subway")
 		}
 
@@ -392,17 +386,16 @@ class Game {
 		}
 		console.log("adice" + additional_dice + " " + doubledice + " turn" + p.turn)
 
-
 		// //temp
 		// if(p.turn===0){
 		// 	p.diceControl=true
 		// }
 
-		let avaliablepos:number[]=[]
-		if(p.diceControl){
-			avaliablepos=p.getPossiblePosList()
+		let avaliablepos: number[] = []
+		if (p.diceControl) {
+			avaliablepos = p.getPossiblePosList()
 		}
-		console.log("avliablepos"+avaliablepos)
+		console.log("avliablepos" + avaliablepos)
 		return {
 			turn: p.turn,
 			stun: p.haveEffect(ENUM.EFFECT.STUN),
@@ -411,7 +404,7 @@ class Game {
 			dc_cool: p.diceControlCool,
 			adice: additional_dice,
 			effects: effects,
-			avaliablepos:avaliablepos
+			avaliablepos: avaliablepos
 		}
 	}
 
@@ -456,7 +449,7 @@ class Game {
 	}
 
 	rollDice(dicenum: number) {
-		let p:Player = this.p()
+		let p: Player = this.p()
 
 		//return if stun
 		if (p.haveEffect(ENUM.EFFECT.STUN)) {
@@ -468,7 +461,6 @@ class Game {
 		let dcused = false
 
 		//  d=6  //임시
-
 
 		//주사위컨트롤
 		if (dicenum !== null && dicenum !== undefined && dicenum > 0 && p.diceControl) {
@@ -489,9 +481,7 @@ class Game {
 			d = p.getWorstDice()
 		}
 
-
 		let dice = d
-
 
 		//doubledice,backdice
 		if (p.haveEffect(ENUM.EFFECT.BACKDICE)) {
@@ -513,18 +503,15 @@ class Game {
 		dice += p.adice
 		p.adice = 0
 
-		
-
 		//상점 체크
 		dice = p.checkMuststop(dice)
 
 		//지나가는 투사체 체크
-		let result = this.checkPassProj(p,p.pos, dice)
+		let result = this.checkPassProj(p, p.pos, dice)
 		dice = result.dice
 		//컴퓨터면 무시
-		
+
 		this.passProjectileQueue = result.projList
-		
 
 		let currpos = p.pos
 
@@ -537,31 +524,26 @@ class Game {
 		}
 		console.log("move" + dice)
 
-
-		console.log("isinsubway"+p.isInSubway+""+p.turn)
-		if(this.mapId===2 && p.subwayTicket>=0 && p.isInSubway){
-			
-			if(p.subwayTicket===2){
-				d=6
-				dice=6
-			}
-			else if(p.subwayTicket===1){
-				if(MAP.get(this.mapId).subway.rapid.indexOf(p.pos)!==-1){
-					d=3
-					dice=2
+		console.log("isinsubway" + p.isInSubway + "" + p.turn)
+		if (this.mapId === 2 && p.subwayTicket >= 0 && p.isInSubway) {
+			if (p.subwayTicket === 2) {
+				d = 6
+				dice = 6
+			} else if (p.subwayTicket === 1) {
+				if (MAP.get(this.mapId).subway.rapid.includes(p.pos)) {
+					d = 3
+					dice = 2
+				} else {
+					d = 3
+					dice = 1
 				}
-				else{
-					d=3
-					dice=1
-				}
-			}
-			else if(p.subwayTicket===0){
-				d=1
-				dice=1
+			} else if (p.subwayTicket === 0) {
+				d = 1
+				dice = 1
 			}
 
-			if(p.pos+dice>MAP.get(this.mapId).subway.end){
-				dice=MAP.get(this.mapId).subway.end-p.pos
+			if (p.pos + dice > MAP.get(this.mapId).subway.end) {
+				dice = MAP.get(this.mapId).subway.end - p.pos
 			}
 		}
 
@@ -572,9 +554,6 @@ class Game {
 		if (died) {
 			dice = 0
 		}
-
-
-
 
 		return {
 			dice: d,
@@ -588,11 +567,11 @@ class Game {
 	}
 	//========================================================================================================
 
-	checkPassProj(player:Player,currpos: number, dice: number) {
+	checkPassProj(player: Player, currpos: number, dice: number) {
 		let projList = []
 		for (let pp of this.passProjectileList.values()) {
 			if ((pp.pos > currpos && pp.pos <= currpos + dice) || (pp.pos < currpos && pp.pos >= currpos + dice)) {
-				if(player.AI && pp.type==="submarine"){
+				if (player.AI && pp.type === "submarine") {
 					continue
 				}
 				projList.push(pp)
@@ -618,7 +597,7 @@ class Game {
 		let result = p.arriveAtSquare(false)
 
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE) {
-			 p.applyEffectBeforeSkill(ENUM.EFFECT.SILENT, 1)
+			p.applyEffectBeforeSkill(ENUM.EFFECT.SILENT, 1)
 			if (p.AI) {
 				p.aiStore()
 				result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
@@ -696,7 +675,7 @@ class Game {
 
 	async aiSkill() {
 		let p = this.p()
-		if (p.haveEffect(ENUM.EFFECT.SILENT) || p.dead||this.gameover) {
+		if (p.haveEffect(ENUM.EFFECT.SILENT) || p.dead || this.gameover) {
 			return
 		}
 
@@ -720,10 +699,9 @@ class Game {
 				this.useSkillToTarget(skillresult.data)
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {
 			}
-			if(!this.instant){
+			if (!this.instant) {
 				await Util.sleep(150)
 			}
-			
 		}
 	}
 	//========================================================================================================
@@ -742,7 +720,7 @@ class Game {
 	 */
 	initSkill(skill: number) {
 		let p = this.p()
-		console.log("initSkill pendingskill"+skill)
+		console.log("initSkill pendingskill" + skill)
 		p.pendingSkill = skill
 
 		if (!p.isSkillLearned(skill)) {
@@ -755,7 +733,7 @@ class Game {
 			return ENUM.INIT_SKILL_RESULT.NO_COOL
 		}
 
-		let skillTargetSelector:Util.SkillTargetSelector = p.getSkillTargetSelector(skill)
+		let skillTargetSelector: Util.SkillTargetSelector = p.getSkillTargetSelector(skill)
 
 		//-1 when can`t use skill, 0 when it`s not attack skill that used immediately
 		if (skillTargetSelector.isNonTarget()) {
@@ -833,16 +811,16 @@ class Game {
 	placeProj(pos: number) {
 		let p = this.p()
 		let proj = p.getSkillProjectile(-1)
-		let id=this.getUPID()
-		proj.place(pos,id)
-		this.activeProjectileList.set(id,proj)
+		let id = this.getUPID()
+		proj.place(pos, id)
+		this.activeProjectileList.set(id, proj)
 	}
 
 	placeProjNoSelection(proj: Projectile, pos: number) {
 		console.log("placeProjNoSelection" + proj)
-		let id=this.getUPID()
+		let id = this.getUPID()
 		proj.place(pos, id)
-		this.activeProjectileList.set(id,proj)
+		this.activeProjectileList.set(id, proj)
 	}
 
 	removeProjectile(UPID: string) {
@@ -852,7 +830,7 @@ class Game {
 	//========================================================================================================
 
 	isAttackableCoordinate(c: number): boolean {
-		let coor = MAP.get(this.mapId).coordinates
+		let coor = this.shuffledObstacles
 		if (c < 1 || c >= coor.length || coor[c].obs === -1 || coor[c].obs === 0) {
 			return false
 		}
@@ -868,26 +846,22 @@ class Game {
 	placePassProj(type: string, pos: number) {
 		if (type === "submarine") {
 			let proj = new PassProjectile(this, type, () => {}, false)
-			
+
 			let id = this.getPassUPID()
-			this.passProjectileList.set(id,proj)
+			this.passProjectileList.set(id, proj)
 			proj.place(pos, id)
-			console.log('Placed PASSPROJECTILE  PASSPROJECTILE'+id)
+			console.log("Placed PASSPROJECTILE  PASSPROJECTILE" + id)
 			this.submarine_id = id
 		}
-		if(type==="dicecontrol"){
-
+		if (type === "dicecontrol") {
 			let proj = new PassProjectile(this, type, () => {}, false)
 			// this.passProjectileList.push(proj)
 			let id = this.getPassUPID()
-			this.passProjectileList.set(id,proj)
+			this.passProjectileList.set(id, proj)
 			proj.place(pos, id)
-			
+
 			this.dcitem_id = id
-
 		}
-
-
 
 		// this.passProjectileList.sort(function (a, b) {
 		// 	return a.pos - b.pos
@@ -914,11 +888,11 @@ class Game {
 	 * 선택 장애물 대기중일 경우 바로 스킬로 안넘어가고 선택지 전송
 	 * @returns false if no pending obs,  of return {name of obs,argument(false on default)}
 	 */
-	checkPendingObs(): { name: string; argument: number|number[] } {
+	checkPendingObs(): { name: string; argument: number | number[] } {
 		if (this.pendingObs === 0 || this.p().dead) return null
 
 		let name = ""
-		let argument:number|number[] = -1
+		let argument: number | number[] = -1
 		if (this.pendingObs === 21) {
 			//신의손 대기중일 경우 바로 스킬로 안넘어가고 신의손 타겟 전송
 			let target = this.getGodHandTarget()
@@ -957,10 +931,10 @@ class Game {
 		else if (this.pendingObs === 67) {
 			name = "server:pending_obs:sell_token"
 			argument = this.p().token
-		}//지하철
+		} //지하철
 		else if (this.pendingObs === 6) {
 			name = "server:pending_obs:subway"
-			argument=this.p().getSubwayPrices()
+			argument = this.p().getSubwayPrices()
 		}
 
 		return { name: name, argument: argument }
@@ -978,8 +952,8 @@ class Game {
 			if (this.pendingObs === 63) {
 				this.threaten(true)
 			}
-			if(this.pendingObs===6){
-				this.p().selectSubway(0,0)
+			if (this.pendingObs === 6) {
+				this.p().selectSubway(0, 0)
 			}
 
 			this.pendingObs = 0
@@ -1002,10 +976,10 @@ class Game {
 			this.threaten(info.result)
 		} else if (info.type === "sell_token") {
 			this.sellToken(info)
-		}else if (info.type === "subway") {
+		} else if (info.type === "subway") {
 			console.log("subway")
 			console.log(info)
-			this.p().selectSubway(info.result,info.price)
+			this.p().selectSubway(info.result, info.price)
 		}
 		this.pendingObs = 0
 	}
@@ -1023,12 +997,12 @@ class Game {
 		}
 
 		if (info.type === "submarine" && info.complete) {
-			this.p().forceMove(info.pos, false,"levitate")
+			this.p().forceMove(info.pos, false, "levitate")
 		}
 		if (info.type === "ask_way2" && !info.result) {
 			this.p().goWay2()
 		}
-		
+
 		this.pendingAction = null
 	}
 	roulleteComplete() {
