@@ -20,17 +20,17 @@ class Jellice extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		let basic_stats = [170, 30, 6, 6, 1, 50]
-		super(turn, team, game, ai, char, name, "Bird", basic_stats)
+		super(turn, team, game, ai, char, name, "Magician", basic_stats)
 		this.onoff = [false, false, false]
-		this.hpGrowth = 60
+		this.hpGrowth = 80
 		this.projectile = []
 		this.cooltime_list = [3, 5, 7]
 		this.skill_name = ["magician_q", "hit", "magician_r"]
 		this.u_used = 0
 		this.itemtree = {
 			level: 0,
-			items: [4, 23, 4, 32, 19],
-			final: 1,
+			items: [4, 23, 34, 32, 19],
+			final: 4,
 		}
 	}
 	getSkillInfoKor() {
@@ -38,7 +38,7 @@ class Jellice extends Player {
 		info[0] =
 			"[직선 번개] 쿨타임:" +
 			this.cooltime_list[0] +
-			"턴 <br>사용시 앞 3~15칸,뒤 3~8칸 이내 대상들에게 " +
+			"턴 <br>사용시 앞 5~15칸,뒤 3~8칸 이내 대상들에게 " +
 			this.getSkillBaseDamage(0) +
 			"의 마법 피해를 입힘"
 		info[1] =
@@ -59,7 +59,7 @@ class Jellice extends Player {
 		info[0] =
 			"[Spell Attack] cooltime:" +
 			this.cooltime_list[0] +
-			" turns <br>Damage all players within 3~15 squares front, 3~8 squares back, deals " +
+			" turns <br>Damage all players within 5~15 squares front, 3~8 squares back, deals " +
 			this.getSkillBaseDamage(0) +
 			"magic damage"
 		info[1] =
@@ -138,7 +138,7 @@ class Jellice extends Player {
 	}
 	private useQ():boolean {
 		let end = this.isSkillActivated(ENUM.SKILL.W)? 30 : 15
-		let start = this.isSkillActivated(ENUM.SKILL.W) ? 0 : 3
+		let start = this.isSkillActivated(ENUM.SKILL.W) ? 3 : 5
 
 		let targets = this.getPlayersIn(this.pos + start, this.pos + end)
 		targets = targets.concat(
@@ -202,7 +202,7 @@ class Jellice extends Player {
 			return Math.floor(this.AP * 0.8 + 10)
 		}
         if(skill===ENUM.SKILL.ULT){
-			return 60 + Math.floor(0.5 * this.AP)
+			return 60 + Math.floor(0.4 * this.AP)
 		}
 	}
 

@@ -21,13 +21,13 @@ class Gorae extends Player {
 		let basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
 		super(turn, team, game, ai, char, name, "Kraken", basic_stats)
 		this.onoff = [false, false, false]
-		this.hpGrowth = 90
+		this.hpGrowth = 125
 		this.projectile = []
 		this.cooltime_list = [2, 4, 6]
 		this.skill_name = ["kraken_q", "hit", "kraken_r"]
 		this.itemtree = {
 			level: 0,
-			items: [10, 7, 13, 19, 30],
+			items: [33,10, 7, 13, 19],
 			final: 16,
 		}
 	}
@@ -65,7 +65,7 @@ class Gorae extends Player {
 			this.getSkillBaseDamage(0) +
 			"의 마법 피해를 입힘"
 		info[1] =
-			"[점액질 뿌리기] 쿨타임:" +
+			"[보호의 물] 쿨타임:" +
 			this.cooltime_list[1] +
 			"턴<br>7칸 이내의 플레이어에게 " +
 			this.getSkillBaseDamage(1) +
@@ -73,7 +73,7 @@ class Gorae extends Player {
 			Math.floor(0.15 * this.MaxHP) +
 			"의 보호막을 얻음"
 		info[2] =
-			"[포식] 쿨타임:" +
+			"[블랙홀] 쿨타임:" +
 			this.cooltime_list[2] +
 			"턴<br>사정거리:20 ,대상에게  " +
 			this.getSkillBaseDamage(2) +

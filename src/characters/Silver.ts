@@ -27,7 +27,7 @@ class Silver extends Player {
 		this.onoff = [false, false, false]
 		this.projectile = []
 		this.cooltime_list = [2, 4, 9]
-		this.hpGrowth = 100
+		this.hpGrowth = 130
 		this.u_active_amt = 0
 		this.u_passive_amt = 0
 		this.skill_name = ["elephant_q", "hit", "hit"]
@@ -50,7 +50,7 @@ class Silver extends Player {
 			"턴<br>사정거리:3, 표식을 맞은 상대에게는 7,사용시 대상에게 " +
 			this.getSkillBaseDamage(0) +
 			"의 마법 피해 후 피해량의 30% 회복, 표식이 있는 대상에게는 30의 추가 피해를 입함"
-		info[1] = "[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
+		info[1] = "[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴, 사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
 		info[2] =
 			"[실버의 갑옷] 쿨타임:" +
 			this.cooltime_list[2] +

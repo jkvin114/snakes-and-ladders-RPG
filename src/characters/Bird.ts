@@ -21,7 +21,7 @@ class Bird extends Player {
 		let basic_stats: number[] = [200, 30, 7, 7, 0, 30]
 		super(turn, team, game, ai, char, name, "Bird", basic_stats)
 		this.onoff = [false, false, false]
-		this.hpGrowth = 80
+		this.hpGrowth = 100
 		this.projectile = []
 		this.cooltime_list = [3, 5, 10]
 		this.skill_name = ["hit", "hit", "bird_r"]

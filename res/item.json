@@ -11,7 +11,11 @@
 				{ "type": "arP", "value": 15, "type_kor": "방어구 관통" }
 			],
 			"children": [2, 2],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"공격력","eng":"Attack Power"
+			},
+			"category":["attack"]
 		},
 		{
 			"id": 2,
@@ -21,7 +25,12 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "AD", "value": 30, "type_kor": "공격력" }],
 			"children": [3, 3],
-			"parents": [1, 18]
+			"parents": [1, 18],
+			"summary":{
+				"kor":"공격력","eng":"Attack Power"
+			},
+			"category":["attack"]
+			
 		},
 		{
 			"id": 3,
@@ -31,7 +40,11 @@
 			"itemlevel": 1,
 			"ability": [{ "type": "AD", "value": 10, "type_kor": "공격력" }],
 			"children": [],
-			"parents": [2]
+			"parents": [2],
+			"summary":{
+				"kor":"공격력","eng":"Attack Power"
+			},
+			"category":["attack"]
 		},
 		{
 			"id": 4,
@@ -44,7 +57,11 @@
 				{ "type": "MP", "value": 20, "type_kor": "마법 관통" }
 			],
 			"children": [5, 5],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"주문력","eng":"Magic Power"
+			},
+			"category":["magic"]
 		},
 		{
 			"id": 5,
@@ -54,7 +71,11 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "AP", "value": 50, "type_kor": "주문력" }],
 			"children": [6, 6],
-			"parents": [4]
+			"parents": [4,34],
+			"summary":{
+				"kor":"주문력","eng":"Magic Power"
+			},
+			"category":["magic"]
 		},
 		{
 			"id": 6,
@@ -64,7 +85,11 @@
 			"itemlevel": 1,
 			"ability": [{ "type": "AP", "value": 20, "type_kor": "주문력" }],
 			"children": [],
-			"parents": [5]
+			"parents": [5],
+			"summary":{
+				"kor":"주문력","eng":"Magic Power"
+			},
+			"category":["magic"]
 		},
 		{
 			"id": 7,
@@ -78,7 +103,11 @@
 				{ "type": "obsR", "value": 10, "type_kor": "장애물 저항" }
 			],
 			"children": [8, 8],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"방어력","eng":"Attack Resistance"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 8,
@@ -91,7 +120,11 @@
 				{ "type": "AR", "value": 20, "type_kor": "방어력" }
 			],
 			"children": [9, 9],
-			"parents": [7, 16]
+			"parents": [7, 16,34],
+			"summary":{
+				"kor":"방어력","eng":"Attack Resistance"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 9,
@@ -104,7 +137,11 @@
 				{ "type": "AR", "value": 7, "type_kor": "방어력" }
 			],
 			"children": [],
-			"parents": [8]
+			"parents": [8],
+			"summary":{
+				"kor":"방어력","eng":"Attack Resistance"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 10,
@@ -119,7 +156,11 @@
 			"children": [11, 22],
 			"parents": [],
 			"unique_effect": "regenerate 5% of max HP every turn",
-			"unique_effect_kor": "매턴마다 최대체력의 5% 추가회복"
+			"unique_effect_kor": "매턴마다 최대체력의 5% 추가회복",
+			"summary":{
+				"kor":"체력 재생","eng":"HP regen"
+			},
+			"category":["health"]
 		},
 		{
 			"id": 11,
@@ -132,7 +173,11 @@
 				{ "type": "regen", "value": 15, "type_kor": "턴당 체력재생" }
 			],
 			"children": [12, 12],
-			"parents": [10]
+			"parents": [10],
+			"summary":{
+				"kor":"체력 재생","eng":"HP regen"
+			},
+			"category":["health"]
 		},
 		{
 			"id": 12,
@@ -142,7 +187,11 @@
 			"itemlevel": 1,
 			"ability": [{ "type": "regen", "value": 5, "type_kor": "턴당 체력재생" }],
 			"children": [],
-			"parents": [11]
+			"parents": [11,33],
+			"summary":{
+				"kor":"체력 재생","eng":"HP regen"
+			},
+			"category":["health"]
 		},
 		{
 			"id": 13,
@@ -156,7 +205,11 @@
 				{ "type": "obsR", "value": 10, "type_kor": "장애물 저항" }
 			],
 			"children": [14, 14],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"마법 저항","eng":"Magic Resistance"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 14,
@@ -169,7 +222,11 @@
 				{ "type": "MR", "value": 30, "type_kor": "마법 저항력" }
 			],
 			"children": [15, 15],
-			"parents": [13, 16]
+			"parents": [13, 16],
+			"summary":{
+				"kor":"마법 저항","eng":"Magic Resistance"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 15,
@@ -182,7 +239,11 @@
 				{ "type": "MR", "value": 10, "type_kor": "마법 저항력" }
 			],
 			"children": [],
-			"parents": [14]
+			"parents": [14],
+			"summary":{
+				"kor":"마법 저항","eng":"Magic Resistance"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 16,
@@ -200,7 +261,11 @@
 			"parents": [],
 			"unique_effect": "revive when dies (cooldown 5 turns)",
 			"unique_effect_kor": "사망시 부활함 (쿨타임 5턴)",
-			"active_cooltime": 5
+			"active_cooltime": 5,
+			"summary":{
+				"kor":"공격 방어, 사망시 부활","eng":"Defence, Revive on death"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 17,
@@ -212,7 +277,11 @@
 				{ "type": "absorb", "value": 6, "type_kor": "모든 피해 흡혈" }
 			],
 			"children": [],
-			"parents": [18]
+			"parents": [18],
+			"summary":{
+				"kor":"공격시 체력회복","eng":"Heal on attack"
+			},
+			"category":["health","attack"]
 		},
 		{
 			"id": 18,
@@ -225,7 +294,11 @@
 				{ "type": "absorb", "value": 15, "type_kor": "모든 피해 흡혈" }
 			],
 			"children": [2, 17],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"공격력,공격시 체력회복","eng":"Attack Power,Heal on attack"
+			},
+			"category":["health","attack"]
 		},
 		{
 			"id": 19,
@@ -243,7 +316,11 @@
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
 			"children": [20, 22],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"스킬 방어","eng":"Skill defence"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 20,
@@ -259,7 +336,11 @@
 				}
 			],
 			"children": [21, 21],
-			"parents": [19]
+			"parents": [19],
+			"summary":{
+				"kor":"스킬 방어","eng":"Skill defence"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 21,
@@ -275,7 +356,11 @@
 				}
 			],
 			"children": [],
-			"parents": [20]
+			"parents": [20],
+			"summary":{
+				"kor":"스킬 방어","eng":"Skill defence"
+			},
+			"category":["defence"]
 		},
 		{
 			"id": 22,
@@ -283,9 +368,13 @@
 			"kor_name": "다이아몬드 수정",
 			"price": 90,
 			"itemlevel": 2,
-			"ability": [{ "type": "HP", "value": 60, "type_kor": "최대체력" }],
-			"children": [],
-			"parents": [19, 10]
+			"ability": [{ "type": "HP", "value": 50, "type_kor": "최대체력" }],
+			"children": [35],
+			"parents": [19, 10,33],
+			"summary":{
+				"kor":"최대체력","eng":"Maximum HP"
+			},
+			"category":["health"]
 		},
 		{
 			"id": 23,
@@ -303,7 +392,11 @@
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
 			"children": [26, 28],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"공격시 추가피해","eng":"Additional damage on attack"
+			},
+			"category":["attack","magic"]
 		},
 		{
 			"id": 24,
@@ -316,7 +409,11 @@
 				{ "type": "attackRange", "value": 2, "type_kor": "기본 공격 사거리" }
 			],
 			"children": [25, 26],
-			"parents": []
+			"parents": [],
+			"summary":{
+				"kor":"기본공격 강화","eng":"Enhance basic attack"
+			},
+			"category":["attack"]
 		},
 		{
 			"id": 25,
@@ -328,7 +425,11 @@
 				{ "type": "attackRange", "value": 1, "type_kor": "기본 공격 사거리" }
 			],
 			"children": [],
-			"parents": [24]
+			"parents": [24],
+			"summary":{
+				"kor":"기본공격 강화","eng":"Enhance basic attack"
+			},
+			"category":["attack"]
 		},
 		{
 			"id": 26,
@@ -340,7 +441,11 @@
 				{ "type": "adStat", "value": 50, "type_kor": "적응형 능력치" }
 			],
 			"children": [27, 27],
-			"parents": [23, 24]
+			"parents": [23, 24],
+			"summary":{
+				"kor":"적응형 능력치","eng":"Adaptative Stat"
+			},
+			"category":["attack","magic"]
 		},
 		{
 			"id": 27,
@@ -352,7 +457,11 @@
 				{ "type": "adStat", "value": 10, "type_kor": "적응형 능력치" }
 			],
 			"children": [],
-			"parents": [26, 32]
+			"parents": [26, 32],
+			"summary":{
+				"kor":"적응형 능력치","eng":"Adaptative Stat"
+			},
+			"category":["attack","magic"]
 		},
 		{
 			"id": 28,
@@ -368,7 +477,11 @@
 				}
 			],
 			"children": [],
-			"parents": [23, 32]
+			"parents": [23, 32],
+			"summary":{
+				"kor":"공격시 추가피해","eng":"Additional damage on attack"
+			},
+			"category":["attack","magic"]
 		},
 		{
 			"id": 29,
@@ -380,7 +493,11 @@
 			"children": [],
 			"parents": [30],
 			"unique_effect": "dice number +1 when left behind",
-			"unique_effect_kor": "뒤쳐져 있으면 추가 주사위 +1"
+			"unique_effect_kor": "뒤쳐져 있으면 추가 주사위 +1",
+			"summary":{
+				"kor":"빠른 이동","eng":"Faster movement"
+			},
+			"category":["utility"]
 		},
 		{
 			"id": 30,
@@ -395,7 +512,11 @@
 			"children": [29],
 			"parents": [],
 			"unique_effect": "Ignores slow effect",
-			"unique_effect_kor": "둔화 무시"
+			"unique_effect_kor": "둔화 무시",
+			"summary":{
+				"kor":"빠른 이동","eng":"Faster movement"
+			},
+			"category":["utility"]
 		},
 		{
 			"id": 31,
@@ -408,13 +529,17 @@
 				{ "type": "MP", "value": 15, "type_kor": "마법 관통" }
 			],
 			"children": [],
-			"parents": [32]
+			"parents": [32],
+			"summary":{
+				"kor":"탱커 대항","eng":"Anti-tank"
+			},
+			"category":["attack","magic"]
 		},
 		{
 			"id": 32,
 			"name": "Crossbow of Piercing",
 			"kor_name": "관통의 석궁",
-			"price": 330,
+			"price": 300,
 			"itemlevel": 3,
 			"ability": [
 				{
@@ -422,12 +547,72 @@
 					"value": 10,
 					"type_kor": "스킬/기본공격 사용시 추가 마법피해: 상대의 현제 체력의 "
 				},
-				{ "type": "adStat", "value": 20, "type_kor": "적응형 능력치" }
+				{ "type": "adStat", "value": 30, "type_kor": "적응형 능력치" }
 			],
 			"children": [31, 28, 27],
 			"parents": [],
 			"unique_effect": "40% armor and magic penetration",
-			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시"
+			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시",
+			"summary":{
+				"kor":"탱커 대항","eng":"Anti-tank"
+			},
+			"category":["attack","magic"]
+		},
+		{
+			"id": 33,
+			"name": "Diamond Knight",
+			"kor_name": "다이아몬드의 기사",
+			"price": 330,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "HP", "value": 160, "type_kor": "최대체력" },
+				{ "type": "regen", "value": 10, "type_kor": "턴당 체력재생" }
+			],
+			"children": [22,22,12],
+			"parents": [],
+			"unique_effect": "Max Hp increases by 5 permanently on every attack",
+			"unique_effect_kor": "적 공격시 최대체력 5 영구 증가",
+			"summary":{
+				"kor":"최대체력","eng":"Maximum HP"
+			},
+			"category":["health"]
+		},
+		{
+			"id": 34,
+			"name": "Invisibility Cloak",
+			"kor_name": "방어의 투명망토",
+			"price": 300,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "AP", "value": 60, "type_kor": "주문력" },
+				{ "type": "AR", "value": 40, "type_kor": "방어력" },
+				{ "type": "HP", "value": 25, "type_kor": "최대체력" }
+			],
+			"children": [5,8],
+			"parents": [],
+			"unique_effect": "Become invisible for 1 turn if HP goes below 30%(cooltime 5 turns)",
+			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화 (쿨타임 5턴)",
+			"active_cooltime": 5,
+			"summary":{
+				"kor":"주문력,생존","eng":"Magic Power, Survival from attack"
+			},
+			"category":["defence","magic"]
+		},
+		{
+			"id": 35,
+			"name": "Diamond Shard",
+			"kor_name": "다이아몬드 조각",
+			"price": 40,
+			"itemlevel": 1,
+			"ability": [
+				{ "type": "HP", "value": 20, "type_kor": "최대체력" }
+			],
+			"children": [],
+			"parents": [22],
+			"summary":{
+				"kor":"최대체력","eng":"Maximum HP"
+			},
+			"category":["health"]
 		}
 	]
 }

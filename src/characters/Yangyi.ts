@@ -21,7 +21,7 @@ class Yangyi extends Player {
         let basic_stats: number[] = [170, 40, 6, 6, 0, 0]
 		super(turn, team, game, ai, char, name, "Dinosaur", basic_stats)
 		this.onoff = [false, false, false]
-		this.hpGrowth = 90
+		this.hpGrowth = 110
 		this.cooltime_list = [1, 5, 8]   //1 5 8
 		this.w_speed = 0
         this.projectile = []

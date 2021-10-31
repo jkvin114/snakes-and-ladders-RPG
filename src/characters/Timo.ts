@@ -19,15 +19,15 @@ class Timo extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		let basic_stats: number[] = [170, 30, 6, 6, 1, 30]
-		super(turn, team, game, ai, char, name, "Timo", basic_stats)
+		super(turn, team, game, ai, char, name, "Ghost", basic_stats)
 		this.onoff = [false, false, false]
-		this.hpGrowth = 80
+		this.hpGrowth = 100
 		this.projectile = []
 		this.cooltime_list = [3, 6, 6]
 		this.skill_name = ["ghost_q", "hit", "ghost_r"]
 		this.itemtree = {
 			level: 0,
-			items: [4, 23, 4, 10, 19],
+			items: [4, 23, 34, 19, 16],
 			final: 4,
 		}
 	}

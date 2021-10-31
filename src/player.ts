@@ -101,6 +101,7 @@ abstract class Player {
 	bestMultiKill: number
 
 	item: number[]
+	itemSlots:number[]
 	positionRecord: number[]
 	itemRecord: { item_id: number; count: number; turn: number }[]
 	moneyRecord: number[]
@@ -207,15 +208,15 @@ abstract class Player {
 
 		//two lists of effects hae different cooldown timing
 		this.effects = {
-			skill: Util.makeZeroArray(20), //턴 끝날때 쿨다운
-			obs: Util.makeZeroArray(20) //장애물 끝날때 쿨다운
+			skill: Util.makeArrayOf(0,20), //턴 끝날때 쿨다운
+			obs: Util.makeArrayOf(0,20) //장애물 끝날때 쿨다운
 		}
 		//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
 		this.loanTurnLeft = 0
 		this.skilleffects = []
 		this.activeItems = []
 
-		this.stats = Util.makeZeroArray(12)
+		this.stats = Util.makeArrayOf(0,12)
 		//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt
 		//3.healamt  4.moneyearned  5.moneyspent   6.moneytaken  7.damagereduced
 		//8 timesrevived 9 timesforcemoved 10 basicattackused  11 timesexecuted
@@ -225,7 +226,9 @@ abstract class Player {
 
 		this.bestMultiKill = 0
 
-		this.item = Util.makeZeroArray(ItemList.length)
+		this.item = Util.makeArrayOf(0,ItemList.length)
+
+		this.itemSlots=Util.makeArrayOf(-1,SETTINGS.itemLimit)   //보유중인 아이템만 저장(클라이언트 전송용)
 
 		//record positions for every turn
 		this.positionRecord = [0]
@@ -1632,7 +1635,8 @@ abstract class Player {
 		this.message(this.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
 		//	this.item[thiefitem] -= 1
 		this.changeOneItem(thiefitem, -1)
-		server.update(this.game.rname, "item", this.turn, this.item)
+		this.itemSlots=this.convertCountToItemSlots(this.item)
+		server.update(this.game.rname, "item", this.turn, this.itemSlots)
 	}
 	//========================================================================================================
 	/**
@@ -1836,6 +1840,11 @@ abstract class Player {
 			}
 		}
 
+		//다이아몬드 기사 아이템
+		if(this.players[origin].haveItem(32)){
+			this.players[origin].addMaxHP(5)
+		}
+
 		return this.doDamage(damage, changeData)
 	}
 
@@ -1907,9 +1916,17 @@ abstract class Player {
 				this.stats[ENUM.STAT.DAMAGE_REDUCED] += this.shield
 				this.setShield(0, false)
 			}
+			let predictedHP=this.HP-damage
+
+			//투명망토 아이템
+			if(predictedHP >0 && predictedHP <this.MaxHP*0.3 && this.isActiveItemAvaliable(33)){
+				this.applyEffectAfterSkill(ENUM.EFFECT.INVISIBILITY,1)
+				this.useActiveItem(33)
+			}
+
 
 			let reviveType = this.canRevive()
-			if (this.HP - damage <= 0) {
+			if (predictedHP <= 0) {
 				if (reviveType == null) {
 					changeData.setKilled()
 				} else {
@@ -2096,20 +2113,20 @@ abstract class Player {
 		let cancounterattack=[]
 		for (let p of this.players) {
 			if (Math.abs(this.pos - p.pos) <= range && this.isValidOpponent(p)) {
-				this.hitBasicAttack(p)
+				this.hitBasicAttack(p,false)
 				cancounterattack.push(p)
 			}
 		}
 
 		for(let p of cancounterattack){
 			if (!p.dead && p.pos === this.pos && p.turn !== this.turn) {
-				p.hitBasicAttack(this)
+				p.hitBasicAttack(this,true)
 			}
 		}
 	}
 	//========================================================================================================
 
-	hitBasicAttack(target: Player): boolean {
+	hitBasicAttack(target: Player,isCounterAttack:boolean): boolean {
 		if (this.haveSkillEffect("timo_q") || this.haveEffect(ENUM.EFFECT.BLIND)) {
 			return false
 		}
@@ -2121,6 +2138,10 @@ abstract class Player {
 		//지하철에서는 평타피해 40% 감소
 		if(this.game.mapId===2 && this.isInSubway){
 			damage=	damage.updateAttackDamage(Util.CALC_TYPE.multiply,0.6)
+		}
+		//맞공격시 피해 절반 
+		if(isCounterAttack){
+			damage=	damage.updateAttackDamage(Util.CALC_TYPE.multiply,0.5)
 		}
 
 		
@@ -2483,7 +2504,7 @@ abstract class Player {
 
 	getStoreData(priceMultiplier: number) {
 		return {
-			item: this.item,
+			item: this.itemSlots,
 			money: this.money,
 			token: this.token,
 			life: this.life,
@@ -2592,10 +2613,33 @@ abstract class Player {
 		server.updateSkillInfo(this.game.rname, this.turn, info_kor, info_eng)
 	}
 
+	convertCountToItemSlots(items:number[]):number[]{
+		let itemslot=Util.makeArrayOf(-1,SETTINGS.itemLimit)
+		let index=0
+		for(let i=0;i<items.length;++i){
+			for(let _=0;_<items[i];++_){
+
+				itemslot[index]=i
+				index+=1
+			}
+		}
+		return itemslot
+	}
+
+	convertItemSlotsToCount(itemslots:number[]):number[]{
+		let items=Util.makeArrayOf(0,ItemList.length)
+		for(let item of itemslots){
+			items[item]+=1
+		}
+		return items
+	}
+
+
 	//========================================================================================================
 
 	changeOneItem(item: number, count: number) {
 		this.item[item] += count
+
 		let maxHpChange = 0
 		if (count > 0) {
 			if (ItemList[item].itemlevel >= 3) {
@@ -2627,30 +2671,64 @@ abstract class Player {
 		}
 	}
 
+
 	/**
-	 *
-	 * @param {*} data {
-	 * storedata:{item:int[]}
-	 * moneyspend:int
-	 * }
-	 */
+		 *data: 아이템 슬롯 
+		 * @param {*} data {
+		 * storedata:{item:int[]}
+		 * moneyspend:int
+		 * }
+		 */
 	updateItem(data: any) {
+		console.log("updateitem "+data.item)
+		console.log("updatetoken "+data.token)
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		this.changeToken(data.tokenbought)
 		this.changeLife(data.life)
 		this.lifeBought += data.life
 
+		let newitemlist=this.convertItemSlotsToCount(data.item)
+		this.itemSlots=data.item
+
 		for (let i = 0; i < ItemList.length; ++i) {
-			let diff = data.storedata.item[i] - this.item[i]
+			let diff = newitemlist[i] - this.item[i]
 
 			if (diff === 0) {
 				continue
 			}
 			this.changeOneItem(i, diff)
 		}
+		
 		//	this.item = data.storedata.item
 		if (this.game.instant) return
-		server.update(this.game.rname, "item", this.turn, this.item)
+		server.update(this.game.rname, "item", this.turn, this.itemSlots)
+	}
+
+	/**
+	 *data: 아이템 각각의 갯수
+	 * @param {*} data {
+	 * storedata:{item:int[]}
+	 * moneyspend:int
+	 * }
+	 */
+	 aiUpdateItem(data: any) {
+		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
+		this.changeToken(data.tokenbought)
+		this.changeLife(data.life)
+		this.lifeBought += data.life
+
+		for (let i = 0; i < ItemList.length; ++i) {
+			let diff = data.item[i] - this.item[i]
+
+			if (diff === 0) {
+				continue
+			}
+			this.changeOneItem(i, diff)
+		}
+		this.itemSlots=this.convertCountToItemSlots(this.item)
+		//	this.item = data.storedata.item
+		if (this.game.instant) return
+		server.update(this.game.rname, "item", this.turn, this.itemSlots)
 	}
 	//========================================================================================================
 
@@ -2663,7 +2741,7 @@ abstract class Player {
 		let list = this.itemtree
 		let totalMoneySpend = 0
 		let templist = this.item.map((x) => x)
-		if (list.level >= 6 && this.game.mapId === 2) {
+		if (list.level >= 6) {
 			this.aiBuyLife()
 			return
 		}
@@ -2683,10 +2761,8 @@ abstract class Player {
 			// console.log(templist)
 		}
 
-		this.updateItem({
-			storedata: {
-				item: templist
-			},
+		this.aiUpdateItem({
+			item: templist,
 			moneyspend: totalMoneySpend,
 			tokenbought: 0,
 			life: 0,

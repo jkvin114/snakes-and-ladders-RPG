@@ -22,7 +22,7 @@ class Creed extends Player {
 		let basic_stats: number[] = [200, 20, 7, 7, 0, 0]
 		super(turn, team, game, ai, char, name, "Reaper", basic_stats)
 		this.onoff = [false, false, false]
-		this.hpGrowth = 80
+		this.hpGrowth = 100
 		this.projectile = []
 		this.cooltime_list = [3, 4, 10]
 		this.skill_name = ["reaper_q", "hit", "reaper_r"]

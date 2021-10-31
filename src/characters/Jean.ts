@@ -22,7 +22,7 @@ class Jean extends Player {
 		let basic_stats: number[] = [200, 40, 7, 7, 0, 0]
 		super(turn, team, game, ai, char, name, "Sniper", basic_stats)
 		this.onoff = [false, false, false]
-		this.hpGrowth = 70
+		this.hpGrowth = 90
 		this.projectile = []
 		this.cooltime_list = [3, 4, 9]
 		this.skill_name = ["gun", "sniper_w", "sniper_r"]

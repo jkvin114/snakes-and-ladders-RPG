@@ -135,10 +135,10 @@ export const sleep = (m:any) => new Promise((r) => setTimeout(r, m))
  * @param {} count
  * @returns
  */
-export const makeZeroArray = function (count: number): number[] {
+export const makeArrayOf = function (element:number,count: number): number[] {
 	let arr = []
 	for (let i = 0; i < count; ++i) {
-		arr.push(0)
+		arr.push(element)
 	}
 	return arr
 }
