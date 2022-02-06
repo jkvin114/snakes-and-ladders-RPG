@@ -1,8 +1,8 @@
-import { Player, Projectile, ProjectileBuilder } from "../player"
+import { Player} from "../player"
 import * as ENUM from "../enum"
-import { Damage, SkillDamage, SkillTargetSelector } from "../Util"
+import { Damage, SkillDamage, SkillTargetSelector,ShieldEffect } from "../Util"
 import { Game } from "../Game"
-
+import {Projectile,ProjectileBuilder} from "../Projectile"
 class Jean extends Player {
 	onoff: boolean[]
 	hpGrowth: number
@@ -138,10 +138,10 @@ class Jean extends Player {
 	}
 	private getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(10 + this.AD*0.8)
+			return Math.floor(10 + this.ability.AD*0.8)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return Math.floor(60 + 0.7 * this.AD)
+			return Math.floor(60 + 0.7 * this.ability.AD)
 		}
 	}
 
@@ -167,7 +167,7 @@ class Jean extends Player {
 				}
 				break
 			case ENUM.SKILL.ULT:
-				this.setShield(80, false)
+				this.setShield("sniper_r",new ShieldEffect(4,80), false)
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
 					let onhit = function (target: Player) {
 						target.applyEffectAfterSkill(ENUM.EFFECT.SLOW, 1)

@@ -1,7 +1,8 @@
-import { Player, Projectile, ProjectileBuilder } from "../player"
+import { Player} from "../player"
 import * as ENUM from "../enum"
-import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
 import { Game } from "../Game"
+import {Projectile,ProjectileBuilder} from "../Projectile"
 
 class Creed extends Player {
 	onoff: boolean[]
@@ -24,11 +25,11 @@ class Creed extends Player {
 		this.onoff = [false, false, false]
 		this.hpGrowth = 100
 		this.projectile = []
-		this.cooltime_list = [3, 4, 10]
+		this.cooltime_list = [3, 4, 9]
 		this.skill_name = ["reaper_q", "hit", "reaper_r"]
 		this.itemtree = {
 			level: 0,
-			items: [1, 18, 24, 32, 10],
+			items: [36, 1, 18, 24, 32],
 			final: 1
 		}
 		this.usedQ = false
@@ -147,10 +148,10 @@ class Creed extends Player {
 	}
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(20 + this.AD)
+			return Math.floor(20 + this.ability.AD)
 		}
 		if(skill===ENUM.SKILL.ULT){
-			return Math.floor(70 + 0.8 * this.AD)
+			return Math.floor(70 + 0.8 * this.ability.AD)
 		}
 	}
 
@@ -164,6 +165,7 @@ class Creed extends Player {
 				if (this.usedQ) {
 					this.startCooltime(ENUM.SKILL.Q)
 					this.usedQ = false
+					this.setShield("swordsman_q",new ShieldEffect(1,40), false)
 
 
 					skillattr = {
@@ -171,9 +173,9 @@ class Creed extends Player {
 						skill: ENUM.SKILL.Q
 					}
 				} else {
-					this.setShield(30, false)
+					
 					this.usedQ = true
-
+					this.setShield("swordsman_q",new ShieldEffect(1,30), false)
 					skillattr = {
 						damage: new Damage(this.getSkillBaseDamage(s), 0, 0),
 						skill: ENUM.SKILL.Q
@@ -182,6 +184,7 @@ class Creed extends Player {
 				break
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
+				this.setShield("swordsman_r",new ShieldEffect(3,70), false)
 				let originalpos = this.pos
 				this.forceMove(this.players[target].pos, true, "levitate")
 				skillattr = {

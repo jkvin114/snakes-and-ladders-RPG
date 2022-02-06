@@ -1,8 +1,8 @@
-import { Player, Projectile } from "../player"
+import { Player } from "../player"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector } from "../Util"
+import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector,ShieldEffect } from "../Util"
 import { Game } from "../Game"
-
+import {Projectile} from "../Projectile"
 class Silver extends Player {
 	onoff: boolean[]
 	hpGrowth: number
@@ -117,16 +117,16 @@ class Silver extends Player {
 
 	useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.setShield(100, false)
+		this.setShield("elephant_r",new ShieldEffect(4,100), false)
 		this.duration[ENUM.SKILL.ULT] = 4
 		if (this.HP < 150) {
 			this.u_active_amt = 150
-			this.changeAbility("AR", this.u_active_amt)
-			this.changeAbility("MR", this.u_active_amt)
+			this.ability.update("AR", this.u_active_amt)
+			this.ability.update("MR", this.u_active_amt)
 		} else {
 			this.u_active_amt = 80
-			this.changeAbility("AR", this.u_active_amt)
-			this.changeAbility("MR", this.u_active_amt)
+			this.ability.update("AR", this.u_active_amt)
+			this.ability.update("MR", this.u_active_amt)
 		}
 		this.showEffect("elephant_r",this.turn)
 		this.changeApperance("elephant_r")
@@ -149,7 +149,7 @@ class Silver extends Player {
 
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(10 + this.AP * 0.3 + (this.AR + this.MR) * 0.45)
+			return Math.floor(10 + this.ability.AP * 0.3 + (this.ability.AR + this.ability.MR) * 0.45)
 		}
 	}
 	/**
@@ -214,8 +214,8 @@ class Silver extends Player {
 		if (this.level < 3 || this.HP > 250) {
 			return
 		}
-		this.changeAbility("AR", -1 * this.u_passive_amt)
-		this.changeAbility("MR", -1 * this.u_passive_amt)
+		this.ability.update("AR", -1 * this.u_passive_amt)
+		this.ability.update("MR", -1 * this.u_passive_amt)
 
 		if (this.HP > 150) {
 			this.u_passive_amt = 30
@@ -225,8 +225,8 @@ class Silver extends Player {
 			this.u_passive_amt = 60
 		}
 
-		this.changeAbility("AR", this.u_passive_amt)
-		this.changeAbility("MR", this.u_passive_amt)
+		this.ability.update("AR", this.u_passive_amt)
+		this.ability.update("MR", this.u_passive_amt)
 	}
 
 	/**
@@ -240,8 +240,8 @@ class Silver extends Player {
 
 	onSkillDurationEnd(skill:number){
 		if(skill===ENUM.SKILL.ULT){
-			this.changeAbility("AR", -1 * this.u_active_amt)
-			this.changeAbility("MR", -1 * this.u_active_amt)
+			this.ability.update("AR", -1 * this.u_active_amt)
+			this.ability.update("MR", -1 * this.u_active_amt)
 			this.changeApperance("")
 
 		}

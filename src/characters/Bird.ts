@@ -1,8 +1,8 @@
-import { Player, Projectile, ProjectileBuilder } from "../player"
+import { Player} from "../player"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
 import { Game } from "../Game"
-
+import {Projectile,ProjectileBuilder} from "../Projectile"
 class Bird extends Player {
 	onoff: boolean[]
 	hpGrowth: number
@@ -38,22 +38,22 @@ class Bird extends Player {
 			"[날렵한 침] 쿨타임:" +
 			this.cooltime_list[0] +
 			"턴<br>사정거리:20,적을 공격해 <b>" +
-			Math.floor(10 + this.AP) +
+			Math.floor(10 + this.ability.AP) +
 			"</b>의 마법 피해를 입히고 20골드를 빼앗음"
 		info[1] =
 			"[아기새 소환] 쿨타임:" +
 			this.cooltime_list[1] +
 			"턴, 지속시간: 2턴<br>사용시 즉시 신속 효과를 받고 지속중에 기본 공격시  <b>" +
-			Math.floor(10 + this.AP * 0.3) +
+			Math.floor(10 + this.ability.AP * 0.3) +
 			"</b>, " +
 			" '날렵한 침' 사용시 " +
-			Math.floor(10 + this.AP * 0.5) +
+			Math.floor(10 + this.ability.AP * 0.5) +
 			"의 추가 마법 피해를 입히고 속박시킴"
 		info[2] =
 			"[불사조 소환] 쿨타임:" +
 			this.cooltime_list[2] +
 			"턴, 지속시간: 4턴<br> 지속 중에 기본공격 사거리가 2 증가하고 <b>" +
-			Math.floor(this.AD * 0.3) +
+			Math.floor(this.ability.AD * 0.3) +
 			"</b>의 추가 물리 피해를 입힘." +
 			"또한 '아기새 소환'의 추가 피해가 2배 증가하고 '날렵한 침' 적중시 " +
 			"밟은 적에게 점화 2턴을 주는 영역을 생성함"
@@ -72,16 +72,16 @@ class Bird extends Player {
 			"[Baby Birds] cooltime:" +
 			this.cooltime_list[1] +
 			" turn, duration: 2 turn<br>Receive speed effect on use. Basic attack deals additional " +
-			Math.floor(10 + this.AP * 0.3) +
+			Math.floor(10 + this.ability.AP * 0.3) +
 			" magic damage, " +
 			" 'Beak attack' deals additional " +
-			Math.floor(10 + this.AP * 0.5) +
+			Math.floor(10 + this.ability.AP * 0.5) +
 			" magic damage and stuns target"
 		info[2] =
 			"[Summon phenix] cooltime:" +
 			this.cooltime_list[2] +
 			" turn, duration: 4 turn<br> Basic attack range increase by 2, deals additional " +
-			Math.floor(this.AD * 0.3) +
+			Math.floor(this.ability.AD * 0.3) +
 			" attack damage." +
 			"Also, 'Baby Bird'`s additional damage doubles, and 'beak attack' creates an area" +
 			" that applies ignite effect to players who step on it"
@@ -139,9 +139,9 @@ class Bird extends Player {
 	}
 	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.setShield(70, false)
+		this.setShield("bird_r",new ShieldEffect(4,70), false)
 		this.duration[ENUM.SKILL.ULT] = 4
-		this.changeAbility("attackRange", 2)
+		this.ability.update("attackRange", 2)
 		this.changeApperance("bird_r")
 		this.showEffect("bird_r",this.turn)
 	}
@@ -175,7 +175,7 @@ class Bird extends Player {
 	getBaseBasicAttackDamage(): Damage {
 		let damage = super.getBaseBasicAttackDamage()
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
-			damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.AP * 0.3)
+			damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.ability.AP * 0.3)
 		}
 		if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 			damage.updateMagicDamage(CALC_TYPE.multiply, 2)
@@ -190,7 +190,7 @@ class Bird extends Player {
 
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(20 + 0.8 * this.AP)
+			return Math.floor(20 + 0.8 * this.ability.AP)
 		}
 	}
 
@@ -212,14 +212,14 @@ class Bird extends Player {
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
 					this.players[target].applyEffectAfterSkill(ENUM.EFFECT.STUN, 1)
-					damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.AP * 0.5)
+					damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.ability.AP * 0.5)
 				}
 
 				if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 					let proj = this.buildProjectile()
 					this.projectile.push(proj)
 					this.game.placeProjNoSelection(proj, this.players[target].pos - 1)
-					damage.updateMagicDamage(CALC_TYPE.plus, this.AP * 0.5)
+					damage.updateMagicDamage(CALC_TYPE.plus, this.ability.AP * 0.5)
 				}
 				skillattr = {
 					damage: damage,
@@ -232,9 +232,9 @@ class Bird extends Player {
 		return skillattr
 	}
 	onSkillDurationEnd(skill: number) {
-		console.log("birdattackrange:" + this.attackRange)
+		console.log("birdattackrange:" + this.ability.attackRange)
 		if (skill === ENUM.SKILL.ULT) {
-			this.changeAbility("attackRange", -2)
+			this.ability.update("attackRange", -2)
 			this.changeApperance("")
 		}
 		if (skill === ENUM.SKILL.W) {

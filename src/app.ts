@@ -8,7 +8,7 @@ import cors = require("cors")
 import os = require("os")
 import { Server, Socket } from "socket.io"
 import cliProgress = require("cli-progress")
-
+import {GameRecord,Test,SimulationRecord} from "./statistics"
 const app = express()
 
 console.log("start server")
@@ -88,11 +88,17 @@ io.on("connect", function (socket: Socket) {
 			socket.emit("server:room_name_exist")
 			return
 		}
-
+/*
+		Test.create({name:"hello",turn:2,sub:{name:"d"}})
+		.then((resolvedData)=>console.log(resolvedData))
+		.catch((e)=>console.error(e))
+*/
 		let room = new Room(roomName).setSimulation(isSimulation).setNickname(nickName, 0)
 		ROOMS.set(roomName, room)
 
 		socket.join(roomName)
+
+
 	})
 	//==========================================================================================
 	socket.on("user:register", function (rname: string) {
@@ -367,7 +373,13 @@ io.on("connect", function (socket: Socket) {
 		io.to(rname).emit("server:quit")
 		console.log("reset " + findRoomByName(rname))
 
-		room.reset()
+		try{
+			room.reset()
+		}
+		catch(e){
+			console.error(e)
+		}
+		
 		ROOMS.delete(rname)
 	})
 
@@ -568,7 +580,12 @@ export const indicateObstacle = function (rname: string, turn: number, obs: numb
 	}
 	io.to(rname).emit("server:indicate_obstacle", turn, obs)
 }
-
+export const indicateItem = function (rname: string, turn: number, item: number) {
+	if (isInstant(rname)) {
+		return
+	}
+	io.to(rname).emit("server:indicate_item", turn, item)
+}
 export const goStore = function (rname: string, turn: number, storedata: any) {
 	if (isInstant(rname)) {
 		return
@@ -709,6 +726,11 @@ app.get("/stat", function (req: any, res) {
 	let isSimulation = false
 	if (room.stats.length === 0) {
 		stat = room.game.getFinalStatistics()
+
+		GameRecord.create(stat)
+		.then((resolvedData)=>console.log(resolvedData))
+		.catch((e)=>console.error(e))
+
 	} else {
 		stat = {
 			stat: room.stats,
@@ -718,6 +740,9 @@ app.get("/stat", function (req: any, res) {
 		}
 
 		ROOMS.delete(req.query.rname)
+		SimulationRecord.create(stat)
+		.then((resolvedData)=>console.log(resolvedData))
+		.catch((e)=>console.error(e))
 	}
 	let str = JSON.stringify(stat)
 

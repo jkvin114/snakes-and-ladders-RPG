@@ -8,7 +8,7 @@
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "AD", "value": 80, "type_kor": "공격력" },
-				{ "type": "arP", "value": 15, "type_kor": "방어구 관통" }
+				{ "type": "arP", "value": 10, "type_kor": "방어구 관통" }
 			],
 			"children": [2, 2],
 			"parents": [],
@@ -25,7 +25,7 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "AD", "value": 30, "type_kor": "공격력" }],
 			"children": [3, 3],
-			"parents": [1, 18],
+			"parents": [1, 18,36],
 			"summary":{
 				"kor":"공격력","eng":"Attack Power"
 			},
@@ -54,7 +54,7 @@
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "AP", "value": 120, "type_kor": "주문력" },
-				{ "type": "MP", "value": 20, "type_kor": "마법 관통" }
+				{ "type": "MP", "value": 12, "type_kor": "마법 관통" }
 			],
 			"children": [5, 5],
 			"parents": [],
@@ -254,14 +254,13 @@
 			"ability": [
 				{ "type": "HP", "value": 60, "type_kor": "최대체력" },
 				{ "type": "AR", "value": 25, "type_kor": "방어력" },
-				{ "type": "MR", "value": 35, "type_kor": "마법 저항력" },
-				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
+				{ "type": "MR", "value": 35, "type_kor": "마법 저항력" }
 			],
 			"children": [8, 14],
 			"parents": [],
-			"unique_effect": "revive when dies (cooldown 5 turns)",
-			"unique_effect_kor": "사망시 부활함 (쿨타임 5턴)",
-			"active_cooltime": 5,
+			"unique_effect": "revive when dies (cooldown 8 turns)",
+			"unique_effect_kor": "사망시 부활함 (쿨타임 8턴)",
+			"active_cooltime": 8,
 			"summary":{
 				"kor":"공격 방어, 사망시 부활","eng":"Defence, Revive on death"
 			},
@@ -370,7 +369,7 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "HP", "value": 50, "type_kor": "최대체력" }],
 			"children": [35],
-			"parents": [19, 10,33],
+			"parents": [19, 10,33,36],
 			"summary":{
 				"kor":"최대체력","eng":"Maximum HP"
 			},
@@ -590,9 +589,9 @@
 			],
 			"children": [5,8],
 			"parents": [],
-			"unique_effect": "Become invisible for 1 turn if HP goes below 30%(cooltime 5 turns)",
-			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화 (쿨타임 5턴)",
-			"active_cooltime": 5,
+			"unique_effect": "Become invisible for 1 turn if HP is below 30%(cooltime 8 turns)",
+			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화 (쿨타임 8턴)",
+			"active_cooltime": 8,
 			"summary":{
 				"kor":"주문력,생존","eng":"Magic Power, Survival from attack"
 			},
@@ -613,6 +612,26 @@
 				"kor":"최대체력","eng":"Maximum HP"
 			},
 			"category":["health"]
+		},
+		{
+			"id": 36,
+			"name": "Warrior`s Shieldsword",
+			"kor_name": "전사의 방패검",
+			"price": 300,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "HP", "value": 70, "type_kor": "최대체력" },
+				{ "type": "AD", "value": 40, "type_kor": "공격력" }
+			],
+			"children": [2,22],
+			"parents": [],
+			"summary":{
+				"kor":"공격력,생존","eng":"Attack Power, Survival from attack"
+			},
+			"unique_effect": "On lethal damage, gain shield based on attack power for 2 turns(cooltime 7 turns)",
+			"unique_effect_kor": "치명적인 피해를 받으면 2턴간 공격력 비례 방어막 획득(쿨타임 7턴)",
+			"active_cooltime": 7,
+			"category":["health","attack"]
 		}
 	]
 }

@@ -9,13 +9,18 @@ import { items as ItemList } from "../res/item.json"
 
 import * as ENUM from "./enum"
 import * as Util from "./Util"
-import { Game } from "./Game"
+import { Game, MAP } from "./Game"
+import { Projectile } from "./Projectile"
+import Ability from "./PlayerAbility"
+import PlayerStatistics from "./PlayerStatistics"
+import PlayerMapData from "./PlayerMapData"
+import PlayerInventory from "./PlayerInventory"
 
-const LVL = 1 //for test only
+
+//for test only
+const LVL = 1
 const POS = 0
 const MONEY = 0
-
-const MAP: Util.Map = new Util.Map([defaultmap, oceanmap, casinomap])
 
 abstract class Player {
 	game: Game
@@ -56,24 +61,8 @@ abstract class Player {
 
 	HP: number
 	MaxHP: number
-	AD: number
-	AR: number
-	MR: number
-	attackRange: number
-	AP: number
-	basicAttack_multiplier: number
-
-	arP: number
-	MP: number
-	regen: number
-	absorb: number
-	adStat: number
-	skillDmgReduction: number
-	addMdmg: number
-	adStatAD: boolean
-	obsR: number
-	ultHaste: number
-	moveSpeed: number
+	ability: Ability
+	statistics:PlayerStatistics
 
 	shield: number
 	cooltime: number[]
@@ -89,8 +78,8 @@ abstract class Player {
 	loanTurnLeft: number
 	skilleffects: Util.SkillEffect[]
 	activeItems: Util.ActiveItem[]
-
-	stats: number[]
+	shieldEffects: Map<string, Util.ShieldEffect>
+//	stats: number[]
 	//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt
 	//3.healamt  4.moneyearned  5.moneyspent   6.moneytaken  7.damagereduced
 	//8 timesrevived 9 timesforcemoved 10 basicattackused  11 timesexecuted
@@ -101,16 +90,13 @@ abstract class Player {
 	bestMultiKill: number
 
 	item: number[]
-	itemSlots:number[]
-	positionRecord: number[]
-	itemRecord: { item_id: number; count: number; turn: number }[]
-	moneyRecord: number[]
+	itemSlots: number[]
+	
 
 	abstract onoff: boolean[]
 	abstract hpGrowth: number
 	abstract projectile: Projectile[]
 	abstract cooltime_list: number[]
-	// abstract skill_name:string[]
 	abstract itemtree: {
 		level: number
 		items: number[]
@@ -165,7 +151,7 @@ abstract class Player {
 		this.adamage = 0
 		this.adice = 0 //추가 주사위숫자
 		this.onMainWay = true //갈림길 체크시 샤용
-		
+
 		this.pendingSkill = -1
 		this.oneMoreDice = false
 		this.diceControl = false
@@ -176,24 +162,8 @@ abstract class Player {
 
 		this.HP = basic_stats[0]
 		this.MaxHP = basic_stats[0]
-		this.AD = basic_stats[1]
-		this.AR = basic_stats[2]
-		this.MR = basic_stats[3]
-		this.attackRange = basic_stats[4]
-		this.AP = basic_stats[5]
-		this.basicAttack_multiplier = 1 //평타 데미지 계수
-
-		this.arP = 0
-		this.MP = 0
-		this.regen = 0
-		this.absorb = 0
-		this.adStat = 0
-		this.skillDmgReduction = 0
-		this.addMdmg = 0
-		this.adStatAD = true
-		this.obsR = 0
-		this.ultHaste = 0
-		this.moveSpeed = 0
+		this.ability = new Ability(this, basic_stats)
+		this.statistics=new PlayerStatistics(this)
 
 		this.subwayTicket = -1
 		this.isInSubway = false
@@ -208,15 +178,15 @@ abstract class Player {
 
 		//two lists of effects hae different cooldown timing
 		this.effects = {
-			skill: Util.makeArrayOf(0,20), //턴 끝날때 쿨다운
-			obs: Util.makeArrayOf(0,20) //장애물 끝날때 쿨다운
+			skill: Util.makeArrayOf(0, 20), //턴 끝날때 쿨다운
+			obs: Util.makeArrayOf(0, 20) //장애물 끝날때 쿨다운
 		}
 		//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
 		this.loanTurnLeft = 0
 		this.skilleffects = []
 		this.activeItems = []
-
-		this.stats = Util.makeArrayOf(0,12)
+		this.shieldEffects = new Map<string, Util.ShieldEffect>()
+		
 		//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt
 		//3.healamt  4.moneyearned  5.moneyspent   6.moneytaken  7.damagereduced
 		//8 timesrevived 9 timesforcemoved 10 basicattackused  11 timesexecuted
@@ -226,17 +196,11 @@ abstract class Player {
 
 		this.bestMultiKill = 0
 
-		this.item = Util.makeArrayOf(0,ItemList.length)
+		this.item = Util.makeArrayOf(0, ItemList.length)
 
-		this.itemSlots=Util.makeArrayOf(-1,SETTINGS.itemLimit)   //보유중인 아이템만 저장(클라이언트 전송용)
+		this.itemSlots = Util.makeArrayOf(-1, SETTINGS.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
 
-		//record positions for every turn
-		this.positionRecord = [0]
-
-		//record gold earned for every turn
-		this.moneyRecord = [0]
-		//record when and what item the player bought
-		this.itemRecord = []
+		
 	}
 
 	distance(p1: Player, p2: Player): number {
@@ -280,8 +244,7 @@ abstract class Player {
 				this.adice += 3
 			}
 		}
-		this.adice += this.moveSpeed
-
+		this.adice += this.ability.moveSpeed
 
 		//장화 아이템
 		if (this.haveItem(28) && this.isLast()) {
@@ -297,7 +260,7 @@ abstract class Player {
 			this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
 		}
 
-		// this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
+		//	 this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
 		return this.adice
 	}
 
@@ -521,7 +484,7 @@ abstract class Player {
 
 		let died = false
 		//점화
-		died = this.applyIgnite()
+		
 		//독
 		if (this.haveEffect(ENUM.EFFECT.POISON)) {
 			died = this.doObstacleDamage(30, "simple")
@@ -570,13 +533,23 @@ abstract class Player {
 		this.onSkillDurationCount()
 
 		this.decrementAllSkillDuration()
-
+		this.decrementShieldEffectDuration()
 		let died = this.constDamage()
+		died = this.applyIgnite()
 		if (died) {
 			this.applyEffectBeforeSkill(ENUM.EFFECT.SILENT, 1)
 		}
 
 		this.cooldownEffectsBeforeSkill()
+	}
+
+	decrementShieldEffectDuration() {
+		for (const [name, s] of this.shieldEffects) {
+			if (!s.cooldown()) {
+				this.updateTotalShield(-s.amount, true)
+				this.shieldEffects.delete(name)
+			}
+		}
 	}
 
 	/**
@@ -614,13 +587,14 @@ abstract class Player {
 			return
 		}
 		this.damagedby = this.damagedby.map(Util.decrement)
-		
+
 		this.diceControlCooldown()
 		this.signCoolDown()
 		this.skillEffectCoolDown()
 		this.activeItemCoolDown()
 		this.cooldownEffectsAfterSkill()
 		this.regeneration()
+		this.ability.onTurnEnd()
 	}
 	//========================================================================================================
 
@@ -640,10 +614,10 @@ abstract class Player {
 
 	getSubwayPrices(): number[] {
 		let prices = MAP.get(this.mapId).subway.prices.map((x) => x)
-		if(this.subwayTicket>=0){
+		if (this.subwayTicket >= 0) {
 			prices[this.subwayTicket] = 0 //티켓 이미있으면 무료
 		}
-		
+
 		if (this.thisLevelDeathCount >= 3) {
 			return prices.map((p) => Math.max(0, p - 50))
 		} else if (this.thisLevelDeathCount >= 2) {
@@ -659,7 +633,7 @@ abstract class Player {
 	//죽었을경우
 	removeSubwayTicket() {
 		this.subwayTicket = -1
-		this.isInSubway=false
+		this.isInSubway = false
 		server.update(this.game.rname, "isInSubway", this.turn, false)
 	}
 
@@ -667,14 +641,14 @@ abstract class Player {
 		return this.pos > MAP.get(this.mapId).subway.start && this.pos < MAP.get(this.mapId).subway.end
 	}
 
-	exitSubway(){
-		console.log("exitsubway"+this.turn)
+	exitSubway() {
+		console.log("exitsubway" + this.turn)
 		//단순 지하철구간에서 빠져나온 경우
 		this.isInSubway = false
 		server.update(this.game.rname, "subwayTicket", this.turn, -1)
 		server.update(this.game.rname, "isInSubway", this.turn, false)
 	}
-	enterSubwayWithoutSelection(){
+	enterSubwayWithoutSelection() {
 		console.log("enterSubwayWithoutSelection")
 		this.isInSubway = true //지하철 구간에 이동으로 들어온경우
 		if (this.subwayTicket === -1) {
@@ -685,39 +659,41 @@ abstract class Player {
 		server.update(this.game.rname, "isInSubway", this.turn, true)
 	}
 	//지하철 선택칸 도착
-	enterSubwayNormal(){
+	enterSubwayNormal() {
 		console.log("enterSubwayNormal")
 		this.isInSubway = true
-		if (this.subwayTicket ===-1) {
+		if (this.subwayTicket === -1) {
 			this.subwayTicket = 0
 		}
-		if(this.AI){
+		if (this.AI) {
 			this.aiSubwaySelection()
 		}
 		server.update(this.game.rname, "isInSubway", this.turn, true)
 	}
-	aiSubwaySelection(){
-		let prices=this.getSubwayPrices()
-		
-		for(let i=2;i>=0;--i){
-			if(this.money/1.5 > prices[i]){  //돈 여유 있는 선에서 가장 좋은 티켓구입
-				this.subwayTicket=i
+	aiSubwaySelection() {
+		let prices = this.getSubwayPrices()
+
+		for (let i = 2; i >= 0; --i) {
+			if (this.money / 1.5 > prices[i] || prices[i] === 0) {
+				//돈 여유 있는 선에서 가장 좋은 티켓구입/가격 0일시 바로구입
+				this.subwayTicket = i
 				break
 			}
 		}
-		console.log("aiSubwaySelection"+this.subwayTicket)
-		let first=this.getFirstPlayer().pos
-		if (this.pos + 12 < first) { //1등과 격차 12~17: 급행
-			this.subwayTicket=1
+		let first = this.getFirstPlayer().pos
+		if (this.pos + 12 < first) {
+			//1등과 격차 12~17: 급행
+			this.subwayTicket = 1
 		}
-		if (this.pos + 17 < first) {   //격차 17 이상:특급
-			this.subwayTicket=2
+		if (this.pos + 17 < first) {
+			//격차 17 이상:특급
+			this.subwayTicket = 2
 		}
-		this.changemoney(prices[this.subwayTicket],ENUM.CHANGE_MONEY_TYPE.SPEND)
+		this.changemoney(prices[this.subwayTicket], ENUM.CHANGE_MONEY_TYPE.SPEND)
 	}
 
 	//이동시마다 지하철 안인지 밖인지 체크
-	checkSubway(){
+	checkSubway() {
 		if (this.subwayTicket >= 0 && !this.isInSubwayRange()) {
 			this.exitSubway()
 		}
@@ -743,7 +719,6 @@ abstract class Player {
 			return false
 		}
 	}
-	
 
 	goWay2() {
 		this.pos = MAP.get(this.mapId).way2_range.way_start
@@ -751,7 +726,6 @@ abstract class Player {
 		if (this.game.instant) return
 		server.update(this.game.rname, "way", this.turn, false)
 	}
-	
 
 	exitWay2(dice: number) {
 		this.onMainWay = true
@@ -778,18 +752,18 @@ abstract class Player {
 
 	//========================================================================================================
 
-	giveDiceControl(){
-		this.diceControlCool=3
-		this.diceControl=true
-		server.update(this.game.rname,"dc_item",this.turn,1)
+	giveDiceControl() {
+		this.diceControlCool = 3
+		this.diceControl = true
+		server.update(this.game.rname, "dc_item", this.turn, 1)
 	}
-	useDiceControl(){
-		this.diceControlCool=0
-		this.diceControl=false
-		server.update(this.game.rname,"dc_item",this.turn,-1)
+	useDiceControl() {
+		this.diceControlCool = 0
+		this.diceControl = false
+		server.update(this.game.rname, "dc_item", this.turn, -1)
 	}
-	diceControlCooldown(){
-		this.diceControlCool=Math.max(this.diceControlCool-1,0)
+	diceControlCooldown() {
+		this.diceControlCool = Math.max(this.diceControlCool - 1, 0)
 		if (this.diceControlCool === 0) {
 			this.diceControl = false
 			// this.diceControlCool = SETTINGS.DC_COOL
@@ -824,7 +798,7 @@ abstract class Player {
 	}
 
 	forceMove(pos: number, ignoreObstacle: boolean, movetype: string) {
-		this.stats[ENUM.STAT.FORCEMOVE] += 1
+		this.statistics.add(ENUM.STAT.FORCEMOVE,1)
 		this.adice = 0
 		this.game.pendingObs = 0 //강제이동시 장애물무시
 		this.checkWay2ForGoto(pos)
@@ -849,8 +823,7 @@ abstract class Player {
 					movetype === "simple" ? 700 : 1100
 				)
 			}
-		}
-		else if(this.game.mapId===2){
+		} else if (this.game.mapId === 2) {
 			this.checkSubway()
 		}
 	}
@@ -873,7 +846,7 @@ abstract class Player {
 	startCooltime(skill: number) {
 		this.cooltime[skill] = this.cooltime_list[skill]
 		if (skill === ENUM.SKILL.ULT) {
-			this.cooltime[skill] -= this.ultHaste
+			this.cooltime[skill] -= this.ability.ultHaste
 		}
 	}
 	/**
@@ -908,18 +881,19 @@ abstract class Player {
 
 		switch (type) {
 			case ENUM.CHANGE_MONEY_TYPE.EARN: //money earned
-				this.stats[ENUM.STAT.MONEY_EARNED] += m
+				this.statistics.add(ENUM.STAT.MONEY_EARNED,m)
 				if (this.game.instant) return
 				server.changeMoney(this.game.rname, this.turn, m, this.money)
 				break
 			case ENUM.CHANGE_MONEY_TYPE.SPEND: //money spend
-				this.stats[ENUM.STAT.MONEY_SPENT] += -1 * m
+				this.statistics.add(ENUM.STAT.MONEY_SPENT,-m)
 				if (this.game.instant) return
 				server.changeMoney(this.game.rname, this.turn, 0, this.money) //0일 경우 indicator 는 표시안됨
 
 				break
 			case ENUM.CHANGE_MONEY_TYPE.TAKEN: //money taken
-				this.stats[ENUM.STAT.MONEY_TAKEN] += -1 * m
+				this.statistics.add(ENUM.STAT.MONEY_TAKEN,-m)
+
 				if (this.game.instant) return
 				server.changeMoney(this.game.rname, this.turn, m, this.money)
 				break
@@ -981,10 +955,10 @@ abstract class Player {
 
 		if (hp > -4000) {
 			if (data.source >= 0) {
-				this.stats[ENUM.STAT.DAMAGE_TAKEN_BY_CHAMP] += -1 * hp
+				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_CHAMP,-hp)
 			} //챔피언에게 받은 피해
 			else {
-				this.stats[ENUM.STAT.DAMAGE_TAKEN_BY_OBS] += -1 * hp
+				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_OBS,-hp)
 			} //장애물에게 받은 피해
 		}
 		this.MaxHP += data.maxHp
@@ -1024,7 +998,8 @@ abstract class Player {
 			return
 		}
 		let hp = data.hp
-		this.stats[ENUM.STAT.HEAL_AMT] += hp
+		this.statistics.add(ENUM.STAT.HEAL_AMT,hp)
+
 
 		this.MaxHP += data.maxHp
 		this.HP = Math.min(this.HP + hp, this.MaxHP)
@@ -1051,9 +1026,20 @@ abstract class Player {
 	 * @param {*} shield 변화량 + or -
 	 * @param {*} noindicate 글자 표시할지 여부
 	 */
-	setShield(shield: number, noindicate: boolean) {
-		let change = shield - this.shield
-		this.shield = shield
+	setShield(name: string, shield: Util.ShieldEffect, noindicate: boolean) {
+		let change = 0
+		if (this.shieldEffects.has(name)) {
+			change = this.shieldEffects.get(name).reApply(shield.amount)
+		} else {
+			this.shieldEffects.set(name, shield)
+			change = shield.amount
+		}
+
+		this.updateTotalShield(change, noindicate)
+	}
+	updateTotalShield(change: number, noindicate: boolean) {
+		console.log("updateshield" + change)
+		this.shield += change
 		if (this.game.instant) return
 		server.changeShield(this.game.rname, {
 			turn: this.turn,
@@ -1062,6 +1048,7 @@ abstract class Player {
 			indicate: !noindicate
 		})
 	}
+
 	//========================================================================================================
 
 	/**
@@ -1087,10 +1074,10 @@ abstract class Player {
 		let list = []
 		let offset = 1
 		let increase = 1
-		
+
 		if (this.haveEffect(ENUM.EFFECT.DOUBLEDICE)) {
 			increase = 2
-			offset=2
+			offset = 2
 		}
 		if (this.haveEffect(ENUM.EFFECT.BACKDICE)) {
 			increase *= -1
@@ -1098,10 +1085,10 @@ abstract class Player {
 		}
 
 		if (this.haveEffect(ENUM.EFFECT.SLOW)) {
-			offset -=2
+			offset -= 2
 		}
 		if (this.haveEffect(ENUM.EFFECT.SPEED)) {
-			offset +=2
+			offset += 2
 		}
 		offset += this.adice
 
@@ -1109,7 +1096,6 @@ abstract class Player {
 			if (this.pos + i < MAP.get(this.mapId).finish) {
 				list.push(this.pos + i)
 			}
-			
 		}
 		return list
 	}
@@ -1158,7 +1144,7 @@ abstract class Player {
 		if (this.pos < 0) {
 			this.pos = 0
 		}
-		console.log("arriveAtSquare"+this.turn)
+		console.log("arriveAtSquare" + this.turn)
 
 		if (this.game.mapId === 2) {
 			this.checkSubway()
@@ -1184,7 +1170,7 @@ abstract class Player {
 
 		//속박일경우
 		if (this.haveEffect(ENUM.EFFECT.STUN)) {
-			//특정 장애물은 속박무시 
+			//특정 장애물은 속박무시
 			if (SETTINGS.ignoreStunObsList.includes(obs)) {
 				this.basicAttack()
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
@@ -1219,7 +1205,7 @@ abstract class Player {
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE
 		}
 		//투명화   해로운 장애물일경우만 무시
-		if (this.haveEffect(ENUM.EFFECT.INVISIBILITY) && obsInfo.obstacles[obs].val < 0 ) {
+		if (this.haveEffect(ENUM.EFFECT.INVISIBILITY) && obsInfo.obstacles[obs].val < 0) {
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		}
 
@@ -1228,7 +1214,6 @@ abstract class Player {
 			this.giveMoney(money)
 		}
 
-	
 		try {
 			switch (obs) {
 				case 4:
@@ -1238,7 +1223,6 @@ abstract class Player {
 					this.takeMoney(30)
 					break
 				case 6:
-					
 					this.enterSubwayNormal()
 					//subway
 					break
@@ -1508,18 +1492,17 @@ abstract class Player {
 					break
 				case 68:
 					// street_vendor
-					if(this.AI){
+					if (this.AI) {
 						this.aiStore()
-					}
-					else{
+					} else {
 						this.goStore(true)
 					}
-					
+
 					break
 				case 69:
 					let m1 = 0
 					for (let p of this.game.players) {
-						m1 += p.stats[ENUM.STAT.MONEY_EARNED]
+						m1 += p.statistics.stats[ENUM.STAT.MONEY_EARNED]
 					}
 					if (Math.random() > 0.93) {
 						this.giveMoney(m1)
@@ -1531,7 +1514,7 @@ abstract class Player {
 					let m2 = 0
 					others = this.getPlayersByCondition(-1, false, true, true, false)
 					for (let p of others) {
-						let m1=p.token * 2+ Math.floor(p.money * 0.1)
+						let m1 = p.token * 2 + Math.floor(p.money * 0.1)
 						p.takeMoney(m1)
 						m2 += m1
 					}
@@ -1595,12 +1578,9 @@ abstract class Player {
 		for (let i = 1; i < respawn.length; ++i) {
 			if (this.pos >= respawn[i] && this.level <= i && this.onMainWay) {
 				this.addMaxHP(this.hpGrowth)
-				this.MR += this.players.length * 5
-				this.AR += this.players.length * 5
-				this.AD += 10
 				this.level += 1
+				this.ability.onLevelUp(this.players.length * 5)
 
-				this.changeStat()
 				this.resetEffect(ENUM.EFFECT.ANNUITY_LOTTERY) //연금복권 끝
 
 				if (this.level === 3) {
@@ -1612,12 +1592,7 @@ abstract class Player {
 			}
 		}
 	}
-	//게임 길어지는거 방지용 저항 추가부여
-	addExtraResistance(amt: number) {
-		this.MR += amt
-		this.AR += amt
-		this.changeStat()
-	}
+
 	//========================================================================================================
 
 	thief() {
@@ -1635,7 +1610,7 @@ abstract class Player {
 		this.message(this.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
 		//	this.item[thiefitem] -= 1
 		this.changeOneItem(thiefitem, -1)
-		this.itemSlots=this.convertCountToItemSlots(this.item)
+		this.itemSlots = this.convertCountToItemSlots(this.item)
 		server.update(this.game.rname, "item", this.turn, this.itemSlots)
 	}
 	//========================================================================================================
@@ -1768,24 +1743,15 @@ abstract class Player {
 	//========================================================================================================
 
 	regeneration() {
-		if (this.regen > 0) {
-			this.changeHP_heal(new Util.HPChangeData().setHpChange(this.regen))
-		}
 		//1등급 재생열매 효과
 		if (this.haveItem(9)) {
 			this.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.MaxHP * 0.05)))
 		}
 	}
 	//========================================================================================================
-	//모든피해 흡혈
-	absorb_hp(damage: number) {
-		this.changeHP_heal(new Util.HPChangeData().setHpChange(5 + Math.floor((damage * this.absorb) / 100)))
-	}
+
 	//========================================================================================================
 
-	addShield(s: number) {
-		this.setShield(s, false)
-	}
 	//========================================================================================================
 
 	addKill(deadplayer: Player) {
@@ -1841,7 +1807,7 @@ abstract class Player {
 		}
 
 		//다이아몬드 기사 아이템
-		if(this.players[origin].haveItem(32)){
+		if (this.players[origin].haveItem(32)) {
 			this.players[origin].addMaxHP(5)
 		}
 
@@ -1862,7 +1828,29 @@ abstract class Player {
 
 		return this.doDamage(damage, changeData)
 	}
+	/**
+	 * shield absorbs damage
+	 * @param damage
+	 * @returns
+	 */
+	shieldDamage(damage: number): number {
+		let damageLeft = damage
+		for (const [name, s] of this.shieldEffects) {
+			let shieldleft = s.absorbDamage(damageLeft)
 
+			if (shieldleft < 0) {
+				damageLeft = -shieldleft
+				this.shieldEffects.delete(name)
+			} else {
+				damageLeft = 0
+				break
+			}
+		}
+		this.updateTotalShield(-(damage - damageLeft), false)
+		this.statistics.add(ENUM.STAT.DAMAGE_REDUCED,damage - damageLeft)
+
+		return damageLeft
+	}
 	/**
 	 * common damage giver for skill and obstacles
 	 *
@@ -1896,34 +1884,31 @@ abstract class Player {
 			}
 			if (changeData.source >= 0) {
 				this.damagedby[changeData.source] = 3
-				this.players[changeData.source].absorb_hp(damage) //모든피해흡혈, 어시스트저장
+				this.players[changeData.source].ability.absorb_hp(damage) //모든피해흡혈, 어시스트저장
 			} else if (changeData.source === -1) {
-				damage *= 1 - this.obsR / 100 //장애물 저항
+				damage *= 1 - this.ability.obsR / 100 //장애물 저항
+			}
+			let predictedHP = this.HP + this.shield - damage
+
+			//방패검 아이템
+			// console.log("predictedHP"+predictedHP+" "+this.AD*0.4)
+			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.isActiveItemAvaliable(35)) {
+				this.setShield("item_shieldsword", new Util.ShieldEffect(2, Math.floor(0.7 * this.ability.AD)), true)
+				this.useActiveItem(35)
+				server.indicateItem(this.game.rname, this.turn, 35)
 			}
 
-			damage -= this.shield
+			damage = this.shieldDamage(damage)
+			if (damage === 0) this.showEffect(changeData.type, changeData.source)
 
-			//if shield absorb all damage and left
-			if (damage <= 0) {
-				this.setShield(-1 * Math.floor(damage), false)
-				this.stats[ENUM.STAT.DAMAGE_REDUCED] += -1 * damage
-				damage = 0
-
-				this.showEffect(changeData.type, changeData.source)
-				return false
-			} //if shield exist but can`t absorb all damage
-			else if (this.shield > 0) {
-				this.stats[ENUM.STAT.DAMAGE_REDUCED] += this.shield
-				this.setShield(0, false)
-			}
-			let predictedHP=this.HP-damage
+			predictedHP = this.HP - damage
 
 			//투명망토 아이템
-			if(predictedHP >0 && predictedHP <this.MaxHP*0.3 && this.isActiveItemAvaliable(33)){
-				this.applyEffectAfterSkill(ENUM.EFFECT.INVISIBILITY,1)
+			if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.isActiveItemAvaliable(33)) {
+				this.applyEffectAfterSkill(ENUM.EFFECT.INVISIBILITY, 1)
 				this.useActiveItem(33)
+				server.indicateItem(this.game.rname, this.turn, 33)
 			}
-
 
 			let reviveType = this.canRevive()
 			if (predictedHP <= 0) {
@@ -1945,7 +1930,8 @@ abstract class Player {
 						this.players[changeData.source].addKill(this)
 						this.thisLifeKillCount = 0
 					} else {
-						this.stats[ENUM.STAT.EXECUTED] += 1
+						this.statistics.add(ENUM.STAT.EXECUTED,1)
+
 					}
 					return true
 				} else {
@@ -1961,9 +1947,9 @@ abstract class Player {
 	}
 
 	canRevive(): string {
-		if (this.life > 0) return "life"
-
 		if (this.isActiveItemAvaliable(15)) return "guardian_angel"
+
+		if (this.life > 0) return "life"
 
 		return null
 	}
@@ -2067,7 +2053,8 @@ abstract class Player {
 		let health = this.MaxHP
 		if (this.waitingRevival) {
 			health /= 2
-			this.stats[ENUM.STAT.REVIVE] += 1
+			this.statistics.add(ENUM.STAT.REVIVE,1)
+
 		}
 
 		this.changeHP_heal(new Util.HPChangeData().setHpChange(health).setRespawn())
@@ -2100,54 +2087,8 @@ abstract class Player {
 		// return assists
 	}
 
-	getBaseBasicAttackDamage(): Util.Damage {
-		return new Util.Damage(this.AD, 0, 0)
-	}
-	getBasicAttackName(): string {
-		return "basicattack"
-	}
-
-	basicAttack() {
-		let range = this.attackRange
-
-		let cancounterattack=[]
-		for (let p of this.players) {
-			if (Math.abs(this.pos - p.pos) <= range && this.isValidOpponent(p)) {
-				this.hitBasicAttack(p,false)
-				cancounterattack.push(p)
-			}
-		}
-
-		for(let p of cancounterattack){
-			if (!p.dead && p.pos === this.pos && p.turn !== this.turn) {
-				p.hitBasicAttack(this,true)
-			}
-		}
-	}
-	//========================================================================================================
-
-	hitBasicAttack(target: Player,isCounterAttack:boolean): boolean {
-		if (this.haveSkillEffect("timo_q") || this.haveEffect(ENUM.EFFECT.BLIND)) {
-			return false
-		}
-
-		let damage = this.getBaseBasicAttackDamage()
-			.updateAttackDamage(Util.CALC_TYPE.multiply, this.basicAttack_multiplier)
-			.updateMagicDamage(Util.CALC_TYPE.plus, target.HP * this.addMdmg * 0.01)
-
-		//지하철에서는 평타피해 40% 감소
-		if(this.game.mapId===2 && this.isInSubway){
-			damage=	damage.updateAttackDamage(Util.CALC_TYPE.multiply,0.6)
-		}
-		//맞공격시 피해 절반 
-		if(isCounterAttack){
-			damage=	damage.updateAttackDamage(Util.CALC_TYPE.multiply,0.5)
-		}
-
-		
-		this.stats[ENUM.STAT.BASICATTACK] += 1
-		this.stats[ENUM.STAT.DAMAGE_DEALT] += damage.getTotalDmg()
-
+	dealDamageTo(target: Player, damage: Util.Damage, sourceType: string, name: string): boolean {
+		damage.updateMagicDamage(Util.CALC_TYPE.plus, target.HP * this.ability.addMdmg * 0.01)
 		let percentPenetration = 0
 
 		//석궁아이템
@@ -2155,21 +2096,76 @@ abstract class Player {
 			percentPenetration = 40
 		}
 
-		let calculatedDmg = damage.mergeDamageWithResistance({
-			AR: target.AR,
-			MR: target.MR,
-			arP: this.arP,
-			MP: this.MP,
-			percentPenetration
-		})
-
-		target.stats[ENUM.STAT.DAMAGE_REDUCED] += calculatedDmg.reducedDamage
-		let totaldamage = calculatedDmg.damage
-
 		if (this.haveSkillEffectAndOwner("timo_u", target.turn)) {
-			totaldamage /= 2
+			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
 		}
-		return target.doPlayerDamage(totaldamage, this.turn, this.getBasicAttackName(), true)
+
+		let flags = []
+		if(sourceType=="skill"){
+			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1-target.ability.skillDmgReduction * 0.01)
+			damage.updateTrueDamage(Util.CALC_TYPE.plus,this.adamage)
+			
+			if (damage.getTotalDmg() === 0) {
+				flags.push(Util.HPChangeDataFlag.NODMG_HIT)
+			}
+		}
+		else if(sourceType=="basicattack"){
+			
+		}
+
+		let calculatedDmg = this.ability.mergeDamageWithResistance(damage, target, percentPenetration)
+
+		target.statistics.add(ENUM.STAT.DAMAGE_REDUCED,damage.getTotalDmg() - calculatedDmg)
+		this.statistics.add(ENUM.STAT.DAMAGE_DEALT,calculatedDmg)
+
+
+		return target.doPlayerDamage(calculatedDmg, this.turn, name, true,flags)
+	}
+
+	getBaseBasicAttackDamage(): Util.Damage {
+		return new Util.Damage(this.ability.AD, 0, 0)
+	}
+	getBasicAttackName(): string {
+		return "basicattack"
+	}
+
+	basicAttack() {
+		let range = this.ability.attackRange
+
+		let cancounterattack = []
+		for (let p of this.players) {
+			if (Math.abs(this.pos - p.pos) <= range && this.isValidOpponent(p)) {
+				this.hitBasicAttack(p, false)
+				cancounterattack.push(p)
+			}
+		}
+
+		for (let p of cancounterattack) {
+			if (!p.dead && p.pos === this.pos && p.turn !== this.turn) {
+				p.hitBasicAttack(this, true)
+			}
+		}
+	}
+	//========================================================================================================
+
+	hitBasicAttack(target: Player, isCounterAttack: boolean): boolean {
+		if (this.haveSkillEffect("timo_q") || this.haveEffect(ENUM.EFFECT.BLIND)) {
+			return false
+		}
+
+		let damage: Util.Damage = this.ability.basicAttackDamage(target)
+
+		//지하철에서는 평타피해 40% 감소
+		if (this.game.mapId === 2 && this.isInSubway) {
+			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.6)
+		}
+		//맞공격시 피해 절반
+		if (isCounterAttack) {
+			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.5)
+		}
+		this.statistics.add(ENUM.STAT.BASICATTACK,1)
+
+		return this.dealDamageTo(target, damage, "basicattack", this.getBasicAttackName())
 	}
 	//========================================================================================================
 	/**
@@ -2221,11 +2217,11 @@ abstract class Player {
 	}
 	//========================================================================================================
 
-	hitOneTarget(skillto: number, skilldmgdata: Util.SkillDamage) {
+	hitOneTarget(target: number, skilldmgdata: Util.SkillDamage) {
 		//adamage
 		let skill = skilldmgdata.skill
 
-		let died = this.players[skillto].hitBySkill(
+		let died = this.players[target].hitBySkill(
 			skilldmgdata.damage,
 			this.turn,
 			skill,
@@ -2240,61 +2236,25 @@ abstract class Player {
 	/**
 	 *
 	 * @param {*} skilldmg  Util.Damage
-	 * @param {*} skillfrom
+	 * @param {*} source
 	 * @param {*} skill_id  0~
 	 * @param {*} action 데미지 준 후에 발동
 	 */
-	hitBySkill(skilldmg: Util.Damage, skillfrom: number, skill_id: number, onHit: Function, type?: string): boolean {
+	hitBySkill(skilldmg: Util.Damage, source: number, skill_id: number, onHit: Function, type?: string): boolean {
 		//스킬별 이펙트표시를 위한 이름
 		if (type == null) {
-			type = this.players[skillfrom].getSkillName(skill_id)
+			type = this.players[source].getSkillName(skill_id)
 		}
 
 		//방어막 효과
 		if (this.haveEffect(ENUM.EFFECT.SHIELD)) {
 			console.log("shield")
 			this.resetEffect(ENUM.EFFECT.SHIELD)
-			this.doPlayerDamage(0, skillfrom, type, true, [Util.HPChangeDataFlag.SHIELD])
+			this.doPlayerDamage(0, source, type, true, [Util.HPChangeDataFlag.SHIELD])
 			return false
 		}
-
-		skilldmg.updateMagicDamage(Util.CALC_TYPE.plus, this.HP * this.players[skillfrom].addMdmg * 0.01)
-		this.players[skillfrom].stats[ENUM.STAT.DAMAGE_DEALT] += skilldmg.getTotalDmg()
-
-		let percentPenetration = 0
-
-		if (this.players[skillfrom].haveItem(31)) {
-			percentPenetration = 40
-		}
-
-		let calculatedDmg = skilldmg.mergeDamageWithResistance({
-			AR: this.AR,
-			MR: this.MR,
-			arP: this.players[skillfrom].arP,
-			MP: this.players[skillfrom].MP,
-			percentPenetration: percentPenetration
-		})
-
-		this.stats[ENUM.STAT.DAMAGE_REDUCED] += calculatedDmg.reducedDamage
-		let totaldamage = calculatedDmg.damage
-
-		if (this.players[skillfrom].haveSkillEffectAndOwner("timo_u", this.turn)) {
-			totaldamage /= 2
-		}
-
-		totaldamage -= Math.floor(totaldamage * this.skillDmgReduction * 0.01)
-
-		totaldamage += skilldmg.fixed
-		totaldamage += this.players[skillfrom].adamage
-
-		//still show effect even if damage is 0
-		let flags = []
-		if (skilldmg.getTotalDmg() === 0) {
-			flags.push(Util.HPChangeDataFlag.NODMG_HIT)
-		}
-
-		console.log("TYPE " + type)
-		let died = this.doPlayerDamage(totaldamage, skillfrom, type, true, flags)
+		
+		let died=this.players[source].dealDamageTo(this, skilldmg, "skill", type)
 
 		if (onHit != null && !this.dead) {
 			onHit(this)
@@ -2393,15 +2353,11 @@ abstract class Player {
 	 * @returns
 	 */
 	boughtActiveItem(item_id: number) {
-		return this.activeItems.some((ef: Util.ActiveItem) => ef.id === item_id)
+		return this.activeItems.some((i: Util.ActiveItem) => i.id === item_id)
 	}
 
 	activeItemCoolDown() {
-		this.activeItems = this.activeItems.map(function (i: Util.ActiveItem) {
-			i.cooltime = Util.decrement(i.cooltime)
-			return i
-		})
-		console.log(this.activeItems)
+		this.activeItems.forEach((i) => i.cooldown())
 	}
 
 	/**
@@ -2410,7 +2366,7 @@ abstract class Player {
 	 * @returns
 	 */
 	isActiveItemAvaliable(item_id: number) {
-		// console.log(this.item + "" + this.activeItems)
+		//console.log(this.item + "avaliable" + this.activeItems)
 		if (!this.haveItem(item_id)) return false
 
 		return this.activeItems.some((it) => it.id === item_id && it.cooltime === 0)
@@ -2422,8 +2378,7 @@ abstract class Player {
 	 * @returns
 	 */
 	useActiveItem(item_id: number) {
-		let item: Util.ActiveItem = this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0]
-		item.cooltime = item.resetVal
+		this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
 	}
 
 	kidnap(result: boolean) {
@@ -2515,125 +2470,25 @@ abstract class Player {
 		}
 	}
 
-	changeAbility(ability: string, change_amt: number) {
-		let maxHpChange = 0
-		switch (ability) {
-			case "HP":
-				maxHpChange += change_amt
-				break
-			case "AD":
-				this.AD += change_amt
-				if (this.AD > this.AP && this.adStat > 0 && !this.adStatAD) {
-					this.AP -= this.adStat
-					this.AD += this.adStat
-					this.adStatAD = true
-				}
-				break
-			case "AP":
-				this.AP += change_amt
-				if (this.AD < this.AP && this.adStat > 0 && this.adStatAD) {
-					this.AD -= this.adStat
-					this.AP += this.adStat
-					this.adStatAD = false
-				}
-				break
-			case "AR":
-				this.AR += change_amt
-				break
-			case "MR":
-				this.MR += change_amt
-				break
-			case "arP":
-				this.arP += change_amt
-				break
-			case "MP":
-				this.MP += change_amt
-				break
-			case "absorb":
-				this.absorb += change_amt
-				break
-			case "regen":
-				this.regen += Math.min(30, this.skillDmgReduction + change_amt)
-				break
-			case "skillDmgReduction":
-				this.skillDmgReduction = Math.min(75, this.skillDmgReduction + change_amt)
-				break
-			case "adStat":
-				this.adStat += change_amt
-				if (this.AD >= this.AP) {
-					this.AD += change_amt
-					this.adStatAD = true
-				} else {
-					this.AP += change_amt
-					this.adStatAD = false
-				}
-				break
-			case "addMdmg":
-				this.addMdmg += change_amt
-				break
-			case "attackRange":
-				this.attackRange = Math.min(this.attackRange + change_amt, 5)
-				break
-			case "obsR":
-				this.obsR += change_amt
-				break
-			case "ultHaste":
-				this.ultHaste = Math.min(this.ultHaste + change_amt, 3)
-				break
-			case "moveSpeed":
-				this.moveSpeed = Math.min(this.moveSpeed + change_amt, 2)
-				break
-		}
-
-		this.changeStat()
-
-		return maxHpChange
-	}
-	changeStat() {
-		let info_kor = this.getSkillInfoKor()
-		let info_eng = this.getSkillInfoEng()
-
-		if (this.game.instant) return
-		server.update(this.game.rname, "stat", this.turn, {
-			level: this.level,
-			AD: this.AD,
-			AP: this.AP,
-			AR: this.AR,
-			MR: this.MR,
-			regen: this.regen,
-			absorb: this.absorb,
-			arP: this.arP,
-			MP: this.MP,
-			attackRange: this.attackRange,
-			obsR: this.obsR,
-			ultHaste: this.ultHaste,
-			moveSpeed: this.moveSpeed
-		})
-
-		server.updateSkillInfo(this.game.rname, this.turn, info_kor, info_eng)
-	}
-
-	convertCountToItemSlots(items:number[]):number[]{
-		let itemslot=Util.makeArrayOf(-1,SETTINGS.itemLimit)
-		let index=0
-		for(let i=0;i<items.length;++i){
-			for(let _=0;_<items[i];++_){
-
-				itemslot[index]=i
-				index+=1
+	convertCountToItemSlots(items: number[]): number[] {
+		let itemslot = Util.makeArrayOf(-1, SETTINGS.itemLimit)
+		let index = 0
+		for (let i = 0; i < items.length; ++i) {
+			for (let j = 0; j < items[i]; ++j) {
+				itemslot[index] = i
+				index += 1
 			}
 		}
 		return itemslot
 	}
 
-	convertItemSlotsToCount(itemslots:number[]):number[]{
-		let items=Util.makeArrayOf(0,ItemList.length)
-		for(let item of itemslots){
-			items[item]+=1
+	convertItemSlotsToCount(itemslots: number[]): number[] {
+		let items = Util.makeArrayOf(0, ItemList.length)
+		for (let item of itemslots) {
+			items[item] += 1
 		}
 		return items
 	}
-
 
 	//========================================================================================================
 
@@ -2646,7 +2501,7 @@ abstract class Player {
 				this.message(this.name + " bought " + count + " " + ItemList[item].name)
 			}
 
-			this.itemRecord.push({
+			this.statistics.addItemRecord({
 				item_id: item,
 				count: count,
 				turn: this.game.totalturn
@@ -2655,40 +2510,34 @@ abstract class Player {
 		for (let j = 0; j < ItemList[item].ability.length; ++j) {
 			let ability = ItemList[item].ability[j]
 			let change_amt = ability.value * count
-			maxHpChange += this.changeAbility(ability.type, change_amt)
+			maxHpChange += this.ability.update(ability.type, change_amt)
 		}
 		if (maxHpChange !== 0) {
 			this.addMaxHP(maxHpChange)
 		}
 
 		if (ItemList[item].active_cooltime != null && !this.boughtActiveItem(item)) {
-			this.addActiveItem({
-				name: ItemList[item].name,
-				id: item,
-				cooltime: 0,
-				resetVal: ItemList[item].active_cooltime
-			})
+			this.addActiveItem(new Util.ActiveItem(ItemList[item].name, item, ItemList[item].active_cooltime))
 		}
 	}
 
-
 	/**
-		 *data: 아이템 슬롯 
-		 * @param {*} data {
-		 * storedata:{item:int[]}
-		 * moneyspend:int
-		 * }
-		 */
+	 *data: 아이템 슬롯
+	 * @param {*} data {
+	 * storedata:{item:int[]}
+	 * moneyspend:int
+	 * }
+	 */
 	updateItem(data: any) {
-		console.log("updateitem "+data.item)
-		console.log("updatetoken "+data.token)
+		console.log("updateitem " + data.item)
+		console.log("updatetoken " + data.token)
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		this.changeToken(data.tokenbought)
 		this.changeLife(data.life)
 		this.lifeBought += data.life
 
-		let newitemlist=this.convertItemSlotsToCount(data.item)
-		this.itemSlots=data.item
+		let newitemlist = this.convertItemSlotsToCount(data.item)
+		this.itemSlots = data.item
 
 		for (let i = 0; i < ItemList.length; ++i) {
 			let diff = newitemlist[i] - this.item[i]
@@ -2698,7 +2547,7 @@ abstract class Player {
 			}
 			this.changeOneItem(i, diff)
 		}
-		
+
 		//	this.item = data.storedata.item
 		if (this.game.instant) return
 		server.update(this.game.rname, "item", this.turn, this.itemSlots)
@@ -2711,7 +2560,7 @@ abstract class Player {
 	 * moneyspend:int
 	 * }
 	 */
-	 aiUpdateItem(data: any) {
+	aiUpdateItem(data: any) {
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		this.changeToken(data.tokenbought)
 		this.changeLife(data.life)
@@ -2725,7 +2574,7 @@ abstract class Player {
 			}
 			this.changeOneItem(i, diff)
 		}
-		this.itemSlots=this.convertCountToItemSlots(this.item)
+		this.itemSlots = this.convertCountToItemSlots(this.item)
 		//	this.item = data.storedata.item
 		if (this.game.instant) return
 		server.update(this.game.rname, "item", this.turn, this.itemSlots)
@@ -2885,201 +2734,4 @@ abstract class Player {
 	}
 }
 
-class PassProjectile {
-	game: any
-	type: string
-	action: Function
-	stopPlayer: boolean
-	pos: number
-	dur: number
-	UPID: string
-
-	constructor(game: any, name: string, action: Function, stopPlayer: boolean) {
-		this.game = game
-		this.type = name
-		this.action = action
-		this.pos = -1
-		this.dur = 0
-		this.stopPlayer = stopPlayer
-		this.UPID = "" //unique projectile id:  PP1 PP2 ..
-	}
-
-	place(pos: number, upid: string) {
-		if(pos<=0 || pos>=MAP.get(this.game.mapId).finish){
-			return
-		}
-		this.UPID = upid
-		this.pos = pos
-		if (!this.game.isAttackableCoordinate(pos) && pos < MAP.get(this.game.mapId).coordinates.length) {
-			this.pos += 1
-		}
-		console.log("placePassProj"+this.type)
-		server.placePassProj(this.game.rname, this.type, this.pos, this.UPID)
-	}
-
-	removeProj() {
-		server.removeProj(this.game.rname, this.UPID)
-	}
-}
-
-class Projectile {
-	// id: number
-	owner: Player
-	size: number
-	type: string
-	skillrange: number
-	skill: number
-	action: Function
-	owneraction: Function
-	damage: Util.Damage
-	pos: number
-	activated: boolean
-	scope: number[]
-	dur: number
-	UPID: string
-	disappearWhenStep: boolean
-	game: Game
-	trajectorySpeed: number
-
-	constructor(builder: ProjectileBuilder) {
-		// this.id = data.id
-		this.owner = builder.owner
-		this.size = builder.size
-		this.type = builder.type
-		this.skillrange = builder.skillrange
-		this.skill = builder.skill
-		this.action = builder.action
-		this.owneraction = builder.owneraction
-		this.damage = builder.damage
-		this.disappearWhenStep = builder.disappearWhenStep
-		this.game = builder.game
-		this.dur = builder.dur
-		this.trajectorySpeed = builder.trajectorySpeed
-
-		this.pos = -1
-		this.activated = false
-		this.scope = []
-		this.UPID = "" //unique projectile id:  P1 P2 ..
-	}
-
-	/**
-	 * remove the proj from player`s projectile list
-	 * @param list player`s projectule list
-	 * @returns
-	 */
-	removeProjFromList(list: Projectile[]) {
-		return list.filter((proj) => proj.UPID !== this.UPID)
-	}
-
-	place(pos: number, id: string) {
-		this.UPID = id
-		this.pos = pos
-		this.activated = true
-		let c = 0
-		let i = 0
-		while (i < this.size && c < MAP.get(this.owner.mapId).coordinates.length) {
-			if (this.owner.game.isAttackableCoordinate(pos + c)) {
-				this.scope.push(pos + c)
-				i += 1
-			}
-			c += 1
-		}
-		server.placeProj(this.owner.game.rname, {
-			scope: this.scope,
-			UPID: id,
-			owner: this.owner.turn,
-			type: this.type,
-			trajectorySpeed: this.trajectorySpeed
-		})
-	}
-	remove() {
-		this.owner.projectile = this.removeProjFromList(this.owner.projectile)
-		this.game.removeProjectile(this.UPID)
-
-		server.removeProj(this.owner.game.rname, this.UPID)
-		this.pos = -1
-		this.scope = []
-		this.activated = false
-
-		this.damage = null
-		this.dur = 0
-	}
-
-	projCoolDown() {
-		if (!this.activated) {
-			return
-		}
-		console.log("projCoolDown" + this.type + " " + this.dur)
-
-		if (this.dur === 1) {
-			this.remove()
-		}
-		this.dur = Util.decrement(this.dur)
-	}
-}
-
-class ProjectileBuilder {
-	owner: Player
-	size: number
-	type: string
-	skillrange: number
-	skill: number
-	action: Function
-	owneraction: Function
-	damage: Util.Damage
-	dur: number
-	disappearWhenStep: boolean
-	game: Game
-	trajectorySpeed: number
-	constructor(data: { owner: Player; size: number; type: string; skill: number }) {
-		this.owner = data.owner
-		this.size = data.size
-		this.type = data.type
-		this.skillrange = 0
-		this.skill = data.skill
-		this.action = function () {}
-		this.owneraction = function () {}
-		this.damage = new Util.Damage(0, 0, 0)
-		this.dur = 0
-		this.disappearWhenStep = true
-		this.game
-		this.trajectorySpeed = 0
-	}
-	setGame(game: Game) {
-		this.game = game
-		return this
-	}
-	setAction(action: Function) {
-		this.action = action
-		return this
-	}
-	setSkillRange(range: number) {
-		this.skillrange = range
-		return this
-	}
-	setOwnerAction(action: Function) {
-		this.owneraction = action
-		return this
-	}
-	setDamage(damage: Util.Damage) {
-		this.damage = damage
-		return this
-	}
-	setDuration(dur: number) {
-		this.dur = dur
-		return this
-	}
-	setNotDisappearWhenStep() {
-		this.disappearWhenStep = false
-		return this
-	}
-	setTrajectorySpeed(speed: number) {
-		this.trajectorySpeed = speed
-		return this
-	}
-	build() {
-		return new Projectile(this)
-	}
-}
-
-export { Player, Projectile, PassProjectile, ProjectileBuilder }
+export { Player }

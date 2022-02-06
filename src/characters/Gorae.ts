@@ -1,8 +1,8 @@
-import { Player, Projectile, ProjectileBuilder } from "../player"
+import { Player } from "../player"
 import * as ENUM from "../enum"
-import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
 import { Game } from "../Game"
-
+import {Projectile,ProjectileBuilder} from "../Projectile"
 class Gorae extends Player {
 	onoff: boolean[]
 	hpGrowth: number
@@ -146,7 +146,7 @@ class Gorae extends Player {
 			damage: new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),
 			skill: ENUM.SKILL.W,
 		}
-		this.setShield(Math.floor(0.15 * this.MaxHP), false)
+		this.setShield("kraken_w",new ShieldEffect(2,Math.floor(0.15 * this.MaxHP)), false)
 		for (let p of targets) {
 			this.players[p].applyEffectAfterSkill(ENUM.EFFECT.SLOW, 1)
 			this.hitOneTarget(p, dmg)
@@ -165,13 +165,13 @@ class Gorae extends Player {
 	}
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(10 + 0.3 * this.HP + this.AP)
+			return Math.floor(10 + 0.3 * this.HP + this.ability.AP)
 		}
         if(skill===ENUM.SKILL.W){
-			return Math.floor(this.AP * 0.8 + 30)
+			return Math.floor(this.ability.AP * 0.8 + 30)
 		}
 		if(skill===ENUM.SKILL.ULT){
-			return Math.floor(40 + 0.2 * this.MaxHP + 0.6 * this.AD)
+			return Math.floor(40 + 0.2 * this.MaxHP + 0.6 * this.ability.AD)
 		}
 	}
 

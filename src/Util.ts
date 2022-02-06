@@ -39,11 +39,20 @@ class Damage {
 		this.fixed = Math.floor(calctype(this.fixed,val))
 		return this
 	}
+	/**
+	 * update attack and magic damage
+	 * @param calctype 
+	 * @param val 
+	 * @returns 
+	 */
+	updateNormalDamage(calctype:Function,val:number){
+		this.magic = Math.floor(calctype(this.magic, val))
+		this.attack = Math.floor(calctype(this.attack,val))
+		return this
+	}
 
-	mergeDamageWithResistance(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): {
-		damage: number
-		reducedDamage: number
-	} {
+	mergeDamageWithResistance(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): number
+	{
 		let AR: number = data.AR
 		let MR: number = data.MR
 		let arP: number = data.arP
@@ -56,12 +65,7 @@ class Damage {
 		let pdmg = Math.floor(this.attack * (100 / (100 + Math.max(AR - arP, 0))))
 		let mdmg = Math.floor(this.magic * (100 / (100 + Math.max(MR - MP, 0))))
 
-		let reduced = this.attack - pdmg + (this.magic - mdmg)
-
-		return {
-			damage: pdmg + mdmg,
-			reducedDamage: reduced
-		}
+		return pdmg + mdmg + this.fixed
 	}
 }
 class SkillEffect {
@@ -85,12 +89,47 @@ class ActiveItem {
 	id: number
 	cooltime: number
 	resetVal: number
-	constructor(name: string, id: number, cooltime: number, resetVal: number) {
+	constructor(name: string, id: number, resetVal: number) {
 		this.name = name
 		this.id = id
-		this.cooltime = cooltime
+		this.cooltime = 0
 		this.resetVal = resetVal
 	}
+	cooldown(){
+		this.cooltime = decrement(this.cooltime)
+	}
+	use(){
+		this.cooltime = this.resetVal
+	}
+}
+class ShieldEffect{
+	// name:string
+	duration:number
+	amount:number
+	constructor(duration:number,amount:number){
+		this.duration=duration
+		this.amount=amount
+	}
+	reApply(amount:number):number{
+		let change=amount-this.amount
+		this.amount=amount
+		return change
+	}
+	absorbDamage(amount:number):number{
+		let reduceamt=this.amount-amount
+		this.amount-=amount
+		return reduceamt 
+		//+ if damage <  shield, - if damage > shield
+	}
+	cooldown():boolean{
+		this.duration-=1
+		return this.duration>0
+	}
+	isActive():boolean{
+		return this.amount>0 && this.duration>0
+	}
+
+
 }
 export type Skillattr =
 	| number
@@ -296,7 +335,7 @@ class HPChangeData {
 		return this
 	}
 	hasFlag(flag:HPChangeDataFlag){
-		return this.flags.indexOf(flag) !==-1
+		return this.flags.includes(flag)
 	}
 }
 
@@ -341,4 +380,4 @@ class SkillTargetSelector {
 
 //added 2021.07.07
 
-export { Damage, SkillEffect, ActiveItem, Map, HPChangeData, CALC_TYPE, SkillTargetSelector,HPChangeDataFlag }
+export { Damage, SkillEffect, ShieldEffect,ActiveItem, Map, HPChangeData, CALC_TYPE, SkillTargetSelector,HPChangeDataFlag }

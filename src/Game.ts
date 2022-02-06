@@ -15,8 +15,10 @@ import { Yangyi } from "./characters/Yangyi"
 
 import * as ENUM from "./enum"
 import * as Util from "./Util"
+import {  Player } from "./player"
+import {Projectile,ProjectileBuilder} from "./Projectile"
+import {PassProjectile} from "./PassProjectile"
 
-import { PassProjectile, Player, Projectile } from "./player"
 
 const MAP: Util.Map = new Util.Map([defaultmap, oceanmap, casinomap])
 
@@ -25,7 +27,7 @@ class Game {
 	rname: string
 	mapId: number
 	simulation: boolean
-	players: any[]
+	players: Player[]
 	totalturn: number
 	isTeam: boolean
 	PNUM: number
@@ -186,7 +188,7 @@ class Game {
 				name: p.name,
 				champ: p.champ,
 				champ_name: p.champ_name,
-				description: p.skill_description
+				recommendedItem:p.itemtree.items
 			})
 		}
 		return {
@@ -202,7 +204,7 @@ class Game {
 	startTurn() {
 		for (let p of this.players) {
 			p.players = this.players
-			p.changeStat()
+			p.ability.sendToClient()
 		}
 		let p = this.players[0]
 
@@ -340,7 +342,7 @@ class Game {
 				this.totalturn += 1
 				if (this.totalturn >= 30 && this.totalturn % 10 === 0) {
 					for (let p of this.players) {
-						p.addExtraResistance((this.totalturn / 10) * 3)
+						p.ability.addExtraResistance((this.totalturn / 10) * 3)
 					}
 				}
 				this.recordStat()
@@ -428,13 +430,13 @@ class Game {
 	recordStat() {
 		for (let plyr of this.players) {
 			if (plyr.onMainWay) {
-				plyr.positionRecord.push(plyr.pos)
+				plyr.statistics.addPositionRecord(plyr.pos)
 			} else if (MAP.get(this.mapId).way2_range != undefined) {
-				plyr.positionRecord.push(
+				plyr.statistics.addPositionRecord(
 					MAP.get(this.mapId).way2_range.start + (plyr.pos - MAP.get(this.mapId).way2_range.way_start)
 				)
 			}
-			plyr.moneyRecord.push(plyr.stats[4])
+			plyr.statistics.addMoneyRecord()
 		}
 	}
 
@@ -1052,14 +1054,13 @@ class Game {
 
 	getStoreData(turn: number) {
 		let p = this.players[turn]
-		return p.getStoreData()
+		return p.getStoreData(1)
 	}
 	//========================================================================================================
 	getFinalStatistics() {
 		let data = {
 			players: new Array<any>(),
 			totalturn: this.totalturn,
-			itemnames: "",
 			version: 2,
 			map_data: {
 				name: MAP.get(this.mapId).mapname,
@@ -1077,13 +1078,13 @@ class Game {
 				champ: p.champ_name,
 				champ_id: p.champ,
 				turn: p.turn,
-				stats: p.stats,
+				stats: p.statistics.stats,
 				kda: [p.kill, p.death, p.assist],
-				items: p.item,
+				items: p.itemSlots,
 				bestMultiKill: p.bestMultiKill,
-				positionRecord: p.positionRecord,
-				moneyRecord: p.moneyRecord,
-				itemRecord: p.itemRecord
+				positionRecord: p.statistics.positionRecord,
+				moneyRecord: p.statistics.moneyRecord,
+				itemRecord: p.statistics.itemRecord
 			})
 		}
 
@@ -1091,4 +1092,4 @@ class Game {
 	}
 }
 
-export { Game }
+export { Game ,MAP}

@@ -13,7 +13,7 @@
         "next dice x2",
         "[Blind] Can`t use basic attack",
         "[Ignite] damage by 3% of max hp for every player`s turn",
-        "[Invisibility] Ignore every attack and obstacle",
+        "[Invisibility] Ignore enemy attack and harmful obstacle",
         "[Debt] Can`t earn money and sell tokens",
         "[Lottery annuity] +50$, +1 token for every turn",
         "[Curse] get worst result for next dice"
@@ -32,7 +32,7 @@
         "다음턴 주사위 2배",
         "[실명] 기본공격을 하지 못함",
         "[점화] 매 플레이어 턴마다 최대체력의 3% 피해",
-        "[투명화] 모든 장애물과 공격 무시",
+        "[투명화] 해로운 장애물과 적 공격 무시",
         "[사채] 골드 획득, 토큰 판매 불가",
         "[연금복권] 매턴마다 +50골드, +1토큰",
         "[주작] 주사위를 던질때 최악의 결과로 나옴"
@@ -108,8 +108,8 @@
     ],
     "stat_detail":[
         "Skill damage reduction applies up to 75%",
-        "Attack range increase applies up to 5",
-        "Regeneration per turn applies up to 30",
+        "Attack range applies up to 5",
+        "Regeneration per turn applies up to 60",
         "ultimate Haste applies up to 3 turns",
         "movement speed applies up to 2",
         "Adaptative Stat applies to higher one between attack and magic power "
@@ -117,7 +117,7 @@
     "stat_detail_kor":[
         "스킬데미지감소는 75%까지만 적용",
         "기본공격 사거리는 5까지만 증가",
-        "턴당 체력재생은 30까지만 적용",
+        "턴당 체력재생은 60까지만 적용",
         "궁극기 가속은 3턴까지만 적용",
         "이동속도 증가는 2까지만 적용",
         "적응형 능력치는 공격력과 주문력 중 높은 것에 적용됨"

@@ -1,8 +1,8 @@
-import { Player, Projectile } from "../player"
+import { Player } from "../player"
 import * as ENUM from "../enum"
 import { CALC_TYPE, Damage,SkillTargetSelector, SkillDamage } from "../Util"
 import { Game } from "../Game"
-
+import {Projectile} from "../Projectile"
 class Yangyi extends Player {	
     onoff: boolean[]
 	hpGrowth: number
@@ -46,7 +46,7 @@ class Yangyi extends Player {
 			"[양이의 고민] 쿨타임:" +
 			this.cooltime_list[1] +
 			"턴<br>[기본지속효과]: 뒤쳐져 있으면 주사위숫자 +1 [사용시]: 3턴에 걸쳐 체력" +
-			3 * Math.floor(30 + this.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
+			3 * Math.floor(30 + this.ability.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
 			"회복 후 신속 효과, 회복 중엔 움직일 수 없음"
 		info[2] =
 			"[양이의 뿔] 쿨타임:" +
@@ -68,7 +68,7 @@ class Yangyi extends Player {
 			"[Regeneration] cooltime:" +
 			this.cooltime_list[1] +
 			" turns<br> [Passive effect]: movement speed +1 when fall behind [On use]: Heals total" +
-			3 * Math.floor(30 + this.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
+			3 * Math.floor(30 + this.ability.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
 			" for 3 turns,Gains speed effect after use, Cannot throw dice during the heal"
 		info[2] =
 			"[Burning at the stake] cooltime:" +
@@ -81,10 +81,10 @@ class Yangyi extends Player {
 
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(5 + 0.6 * this.AD)
+			return Math.floor(5 + 0.6 * this.ability.AD)
 		}
 		if(skill===ENUM.SKILL.ULT){
-			return Math.floor(40 + 0.7 * this.AD)
+			return Math.floor(40 + 0.7 * this.ability.AD)
 		}
 	}
 
@@ -220,7 +220,7 @@ class Yangyi extends Player {
 		}
 		//w
 		if (this.duration[ENUM.SKILL.W] > 0) {
-			this.heal(Math.floor(30 + this.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)))
+			this.heal(Math.floor(30 + this.ability.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)))
 			this.w_speed += 1
 		}
 	}

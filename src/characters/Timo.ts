@@ -1,8 +1,8 @@
-import { Player, Projectile, ProjectileBuilder } from "../player"
+import { Player} from "../player"
 import * as ENUM from "../enum"
 import { Damage, SkillTargetSelector, SkillDamage, SkillEffect } from "../Util"
 import { Game } from "../Game"
-
+import {Projectile,ProjectileBuilder} from "../Projectile"
 class Timo extends Player {
 	onoff: boolean[]
 	hpGrowth: number
@@ -133,7 +133,7 @@ class Timo extends Player {
 	}
 
     useW(){
-        this.setShield(50, false)
+        
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 1
 		this.applyEffectAfterSkill(ENUM.EFFECT.INVISIBILITY, 1)
@@ -162,10 +162,10 @@ class Timo extends Player {
 	}
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(20 + this.AP*0.8)
+			return Math.floor(20 + this.ability.AP*0.8)
 		}
 		if(skill===ENUM.SKILL.ULT){
-			return Math.floor(30 + 0.5 * this.AP)
+			return Math.floor(30 + 0.5 * this.ability.AP)
 		}
 	}
 

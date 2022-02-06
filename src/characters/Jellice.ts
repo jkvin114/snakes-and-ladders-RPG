@@ -1,8 +1,8 @@
-import { Player, Projectile, ProjectileBuilder } from "../player"
+import { Player} from "../player"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
 import { Game } from "../Game"
-
+import {Projectile,ProjectileBuilder} from "../Projectile"
 class Jellice extends Player {
 	onoff: boolean[]
 	hpGrowth: number
@@ -130,7 +130,7 @@ class Jellice extends Player {
 	}
 
 	private useW() {
-		this.setShield(50, false)
+		this.setShield("magician_w",new ShieldEffect(2,50), false)
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
@@ -199,10 +199,10 @@ class Jellice extends Player {
 
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(this.AP * 0.8 + 10)
+			return Math.floor(this.ability.AP * 0.8 + 10)
 		}
         if(skill===ENUM.SKILL.ULT){
-			return 60 + Math.floor(0.4 * this.AP)
+			return 60 + Math.floor(0.4 * this.ability.AP)
 		}
 	}
 
