@@ -139,16 +139,16 @@ class Gorae extends Player {
 	}
 
     useW() {
-		let targets = this.getPlayersIn(this.pos - 3, this.pos + 3)
+		let targets = this.game.playerSelector.getPlayersIn(this,this.pos - 3, this.pos + 3)
 
 		console.log(targets)
 		let dmg = {
 			damage: new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),
 			skill: ENUM.SKILL.W,
 		}
-		this.setShield("kraken_w",new ShieldEffect(2,Math.floor(0.15 * this.MaxHP)), false)
+		this.effects.setShield("kraken_w",new ShieldEffect(2,Math.floor(0.15 * this.MaxHP)), false)
 		for (let p of targets) {
-			this.players[p].applyEffectAfterSkill(ENUM.EFFECT.SLOW, 1)
+			this.game.playerSelector.get(p).effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
 			this.hitOneTarget(p, dmg)
 		}
 		this.startCooltime(ENUM.SKILL.W)
@@ -227,8 +227,8 @@ class Gorae extends Player {
 			case ENUM.SKILL.W:
 				//사거리내에 1~3 명이상 있으면 사용
 				if (
-					this.getPlayersIn(this.pos - 3, this.pos + 3).length >=
-					this.players.length - 1 || (this.HP/this.MaxHP < 0.3)
+					this.game.playerSelector.getPlayersIn(this,this.pos - 3, this.pos + 3).length >=
+					this.game.totalnum- 1 || (this.HP/this.MaxHP < 0.3)
 				) {
 					this.useW()
 					return {type:ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,data:null}
@@ -244,7 +244,7 @@ class Gorae extends Player {
 		}
 	}
     getUltTarget(players:number[]) {
-		let ps = this.players
+		let ps = this.game.playerSelector.getAll()
 		players.sort((b:number, a:number):number => {
 			return ps[a].pos - ps[b].pos
 		})
@@ -252,7 +252,7 @@ class Gorae extends Player {
 		for (let p of players) {
 			console.log(ps[p].HP)
 			if (ps[p].HP+ ps[p].shield < this.getSkillBaseDamage(ENUM.SKILL.ULT) 
-			&& !ps[p].haveEffect(ENUM.EFFECT.SHIELD)) {
+			&& !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
 				return p
 			}
 		}

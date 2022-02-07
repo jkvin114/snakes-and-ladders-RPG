@@ -1,9 +1,9 @@
-import {Player} from "./player"
-import {update,updateSkillInfo} from "./app"
-import {HPChangeData,CALC_TYPE, Damage} from "./Util"
-class Ability{
-    player:Player
-    AD: number
+import { Player } from "./player"
+import {PlayerClientInterface} from "./app"
+import { HPChangeData, CALC_TYPE, Damage } from "./Util"
+class Ability {
+	player: Player
+	AD: number
 	AR: number
 	MR: number
 	attackRange: number
@@ -20,10 +20,9 @@ class Ability{
 	obsR: number
 	ultHaste: number
 	moveSpeed: number
-
-    constructor(player:Player,basic_stats:number[]){
-        this.player=player
-        this.AD = basic_stats[1]
+	constructor(player: Player, basic_stats: number[]) {
+		this.player = player
+		this.AD = basic_stats[1]
 		this.AR = basic_stats[2]
 		this.MR = basic_stats[3]
 		this.attackRange = basic_stats[4]
@@ -41,9 +40,11 @@ class Ability{
 		this.obsR = 0
 		this.ultHaste = 0
 		this.moveSpeed = 0
+	}
+	transfer(func:Function,...args:any[]){
+        this.player.game.sendToClient(func,...args)
     }
 
-    
 	update(ability: string, change_amt: number) {
 		let maxHpChange = 0
 		switch (ability) {
@@ -118,8 +119,8 @@ class Ability{
 
 		return maxHpChange
 	}
-	getAll(){
-        return {
+	getAll() {
+		return {
 			level: this.player.level,
 			AD: this.AD,
 			AP: this.AP,
@@ -134,53 +135,50 @@ class Ability{
 			ultHaste: this.ultHaste,
 			moveSpeed: this.moveSpeed
 		}
-    }
-    sendToClient() {
+	}
+	sendToClient() {
 		let info_kor = this.player.getSkillInfoKor()
 		let info_eng = this.player.getSkillInfoEng()
 
 		if (this.player.game.instant) return
-		update(this.player.game.rname, "stat", this.player.turn, this.player.ability.getAll())
-
-		updateSkillInfo(this.player.game.rname, this.player.turn, info_kor, info_eng)
+		this.transfer(PlayerClientInterface.update,"stat", this.player.turn, this.getAll())
+		this.transfer(PlayerClientInterface.updateSkillInfo, this.player.turn, info_kor, info_eng)
 	}
 
-    onLevelUp(resistanceChange:number){
-        this.MR += resistanceChange
+	onLevelUp(resistanceChange: number) {
+		this.MR += resistanceChange
 		this.AR += resistanceChange
 		this.AD += 10
 		this.sendToClient()
-    }
-    //게임 길어지는거 방지용 저항 추가부여
+	}
+	//게임 길어지는거 방지용 저항 추가부여
 	addExtraResistance(amt: number) {
 		this.MR += amt
 		this.AR += amt
 		this.sendToClient()
 	}
-    //모든피해 흡혈
+	//모든피해 흡혈
 	absorb_hp(damage: number) {
 		this.player.changeHP_heal(new HPChangeData().setHpChange(5 + Math.floor((damage * this.absorb) / 100)))
 	}
 
-    basicAttackDamage(target:Player){
-        return this.player.getBaseBasicAttackDamage()
-			.updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
-    }
-    onTurnEnd(){
-        if (this.regen > 0) {
+	basicAttackDamage(target: Player) {
+		return this.player.getBaseBasicAttackDamage().updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
+	}
+	onTurnEnd() {
+		if (this.regen > 0) {
 			this.player.changeHP_heal(new HPChangeData().setHpChange(this.regen))
 		}
-    }
-    mergeDamageWithResistance(damage:Damage,target:Player,percentPenetration:number):number{
-        return damage.mergeDamageWithResistance({
+	}
+	mergeDamageWithResistance(damage: Damage, target: Player, percentPenetration: number): number {
+		return damage.mergeDamageWithResistance({
 			AR: target.ability.AR,
 			MR: target.ability.MR,
 			arP: this.arP,
 			MP: this.MP,
 			percentPenetration
 		})
-    }
-
+	}
 }
 
 export default Ability

@@ -1,10 +1,12 @@
-
-
+import {PlayerClientInterface} from "./app"
 import { Game,MAP } from "./Game"
 import { Player } from "./player"
 import * as Util from "./Util"
 import * as server from "./app"
 
+enum PROJECTILE_FLAG{
+	IGNORE_OBSTACLE
+}
 class Projectile {
 	// id: number
 	owner: Player
@@ -23,6 +25,7 @@ class Projectile {
 	disappearWhenStep: boolean
 	game: Game
 	trajectorySpeed: number
+	flags:Map<PROJECTILE_FLAG,boolean>
 
 	constructor(builder: ProjectileBuilder) {
 		// this.id = data.id
@@ -43,8 +46,12 @@ class Projectile {
 		this.activated = false
 		this.scope = []
 		this.UPID = "" //unique projectile id:  P1 P2 ..
+		this.flags=builder.flags
 	}
 
+	hasFlag(flag:PROJECTILE_FLAG){
+		return this.flags.has(flag)
+	}
 	/**
 	 * remove the proj from player`s projectile list
 	 * @param list player`s projectule list
@@ -67,7 +74,7 @@ class Projectile {
 			}
 			c += 1
 		}
-		server.placeProj(this.owner.game.rname, {
+		this.owner.transfer(PlayerClientInterface.placeProj,{
 			scope: this.scope,
 			UPID: id,
 			owner: this.owner.turn,
@@ -78,8 +85,7 @@ class Projectile {
 	remove() {
 		this.owner.projectile = this.removeProjFromList(this.owner.projectile)
 		this.game.removeProjectile(this.UPID)
-
-		server.removeProj(this.owner.game.rname, this.UPID)
+		this.owner.transfer(PlayerClientInterface.removeProj, this.UPID)
 		this.pos = -1
 		this.scope = []
 		this.activated = false
@@ -114,6 +120,8 @@ class ProjectileBuilder {
 	disappearWhenStep: boolean
 	game: Game
 	trajectorySpeed: number
+	flags:Map<PROJECTILE_FLAG,boolean>
+
 	constructor(data: { owner: Player; size: number; type: string; skill: number }) {
 		this.owner = data.owner
 		this.size = data.size
@@ -127,6 +135,8 @@ class ProjectileBuilder {
 		this.disappearWhenStep = true
 		this.game
 		this.trajectorySpeed = 0
+		this.flags=new Map<PROJECTILE_FLAG,boolean>()
+
 	}
 	setGame(game: Game) {
 		this.game = game
@@ -160,8 +170,12 @@ class ProjectileBuilder {
 		this.trajectorySpeed = speed
 		return this
 	}
+	addFlag(flag:PROJECTILE_FLAG){
+		this.flags.set(flag,true)
+		return this
+	}
 	build() {
 		return new Projectile(this)
 	}
 }
-export {Projectile,ProjectileBuilder}
+export {Projectile,ProjectileBuilder,PROJECTILE_FLAG}

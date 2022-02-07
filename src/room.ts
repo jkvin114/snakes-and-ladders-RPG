@@ -333,7 +333,7 @@ class Room {
 		let info = this.game.checkPendingObs()
 
 		if (!info) {
-			if (this.game.players[this.game.thisturn].AI) {
+			if (this.game.p().AI) {
 				setTimeout(() => this.game.aiSkill(), 300)
 				setTimeout(() => this.goNextTurn(), 800)
 
@@ -422,7 +422,7 @@ class Room {
 	}
 
 	user_storeComplete(data: any) {
-		this.game.players[data.turn].updateItem(data)
+		this.game.playerSelector.get(data.turn).inven.updateItem(data)
 	}
 
 	doInstantSimulation() {
@@ -430,7 +430,7 @@ class Room {
 		console.log = function () {}
 		let game = this.game
 		let repeat = this.simulation_total_count
-		let playercount = game.players.length
+		let playercount = game.totalnum
 		const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
 		bar1.start(repeat - 2, 0)
 		let startTime: any = new Date()

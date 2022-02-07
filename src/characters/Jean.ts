@@ -91,7 +91,7 @@ class Jean extends Player {
 			.setGame(this.game)
 			.setSkillRange(30)
 			.setAction(function (target: Player) {
-				target.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
+				target.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			})
 			.setDuration(2)
 			.build()
@@ -155,7 +155,7 @@ class Jean extends Player {
 				this.startCooltime(ENUM.SKILL.Q)
 				let _this = this
 				let onhit = function (target: Player) {
-					if (target.haveEffect(ENUM.EFFECT.STUN)) {
+					if (target.effects.has(ENUM.EFFECT.STUN)) {
 						_this.setCooltime(ENUM.SKILL.Q,1)
 					}
 				}
@@ -167,10 +167,10 @@ class Jean extends Player {
 				}
 				break
 			case ENUM.SKILL.ULT:
-				this.setShield("sniper_r",new ShieldEffect(4,80), false)
+				this.effects.setShield("sniper_r",new ShieldEffect(4,80), false)
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
 					let onhit = function (target: Player) {
-						target.applyEffectAfterSkill(ENUM.EFFECT.SLOW, 1)
+						target.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
 					}
 
 					skillattr = {
@@ -180,7 +180,7 @@ class Jean extends Player {
 					}
 					this.duration[ENUM.SKILL.ULT] = 2
 
-					this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
+					this.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					this.u_target = target
 					this.startCooltime(ENUM.SKILL.ULT)
 				}
@@ -197,9 +197,9 @@ class Jean extends Player {
 
 	onSkillDurationCount() {
 		if (this.duration[ENUM.SKILL.ULT] === 2) {
-			this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
+			this.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			let onhit = function (target: Player) {
-				target.applyEffectAfterSkill(ENUM.EFFECT.SLOW, 1)
+				target.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
 			}
 			let skillattr = {
 				damage: new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0),
@@ -211,7 +211,7 @@ class Jean extends Player {
 		//궁 세번째 공격
 		if (this.duration[ENUM.SKILL.ULT] === 1) {
 			let onhit = function (target: Player) {
-				target.applyEffectAfterSkill(ENUM.EFFECT.SLOW, 1)
+				target.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
 			}
 			let skillattr = {
 				damage: new Damage(0, 0, this.getSkillBaseDamage(ENUM.SKILL.ULT)),
@@ -226,8 +226,8 @@ class Jean extends Player {
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
 			this.u_target = -1
-			this.applyEffectAfterSkill(ENUM.EFFECT.DOUBLEDICE, 1)
-			this.resetEffect(ENUM.EFFECT.STUN)
+			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1,ENUM.EFFECT_TIMING.TURN_END)
+			this.effects.reset(ENUM.EFFECT.STUN)
 		}
 	}
 	/**

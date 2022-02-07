@@ -91,7 +91,7 @@ class Jellice extends Player {
 			.setGame(this.game)
             .setSkillRange(30)
 			.setAction(function (target: Player) {
-				target.applyEffectBeforeSkill(ENUM.EFFECT.SILENT,1)
+				target.effects.apply(ENUM.EFFECT.SILENT,1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			})
             .setDamage(new Damage(0,this.getSkillBaseDamage(ENUM.SKILL.ULT),0))
 			.setDuration(2)
@@ -130,19 +130,19 @@ class Jellice extends Player {
 	}
 
 	private useW() {
-		this.setShield("magician_w",new ShieldEffect(2,50), false)
+		this.effects.setShield("magician_w",new ShieldEffect(2,50), false)
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
-		this.applyEffectBeforeDice(ENUM.EFFECT.STUN, 1)
+		this.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.TURN_START)
 	}
 	private useQ():boolean {
 		let end = this.isSkillActivated(ENUM.SKILL.W)? 30 : 15
 		let start = this.isSkillActivated(ENUM.SKILL.W) ? 3 : 5
 
-		let targets = this.getPlayersIn(this.pos + start, this.pos + end)
+		let targets = this.game.playerSelector.getPlayersIn(this,this.pos + start, this.pos + end)
 		targets = targets.concat(
-			this.getPlayersIn(this.pos - end + 7, this.pos - start)
+			this.game.playerSelector.getPlayersIn(this,this.pos - end + 7, this.pos - start)
 		)
 		let dmg:SkillDamage = {
 			damage: new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),
@@ -156,7 +156,7 @@ class Jellice extends Player {
 		for (let p of targets) {
 			if (this.isSkillActivated(ENUM.SKILL.W)) {
                 dmg.onHit=(target: Player)=>{
-                    target.giveIgniteEffect(2, this.turn)
+                    target.effects.giveIgniteEffect(2, this.turn)
                 }
 				
 			}
@@ -230,10 +230,10 @@ class Jellice extends Player {
 			case ENUM.SKILL.Q:
 				//사거리네에 플레이어 있거나 w 쓰고 사거리안에 1~3명 있을때 사용
 				if (
-					this.getPlayersIn(this.pos - 7, this.pos + 15).length > 0 ||
+					this.game.playerSelector.getPlayersIn(this,this.pos - 7, this.pos + 15).length > 0 ||
 					(this.duration[ENUM.SKILL.W] > 0 &&
-						this.getPlayersIn(this.pos - 23, this.pos + 30).length >=
-							this.players.length - 1)
+						this.game.playerSelector.getPlayersIn(this,this.pos - 23, this.pos + 30).length >=
+							this.game.totalnum- 1)
 				) {
 					this.useQ()
 					return {type:ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,data:null}
@@ -242,8 +242,8 @@ class Jellice extends Player {
 				//q 쿨 있고 사거리내에 1~3 명이상 있으면 사용
 				if (
 					this.cooltime[0] === 0 &&
-					this.getPlayersIn(this.pos - 23, this.pos + 30).length >=
-						this.players.length - 1
+					this.game.playerSelector.getPlayersIn(this,this.pos - 23, this.pos + 30).length >=
+						this.game.totalnum - 1
 				) {
 					this.useW()
 					return {type:ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,data:null}

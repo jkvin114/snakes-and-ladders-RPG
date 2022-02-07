@@ -103,7 +103,7 @@ class Bird extends Player {
 		})
 			.setGame(this.game)
 			.setAction(function (target: Player) {
-				target.giveIgniteEffect(2, _this.turn)
+				target.effects.giveIgniteEffect(2, _this.turn)
 			})
 			.setNotDisappearWhenStep()
 			.setDuration(2)
@@ -134,12 +134,12 @@ class Bird extends Player {
 
 	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
-		this.applyEffectAfterSkill(ENUM.EFFECT.SPEED, 1)
+		this.effects.apply(ENUM.EFFECT.SPEED, 1,ENUM.EFFECT_TIMING.TURN_END)
 		this.duration[ENUM.SKILL.W] = 2
 	}
 	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.setShield("bird_r",new ShieldEffect(4,70), false)
+		this.effects.setShield("bird_r",new ShieldEffect(4,70), false)
 		this.duration[ENUM.SKILL.ULT] = 4
 		this.ability.update("attackRange", 2)
 		this.changeApperance("bird_r")
@@ -204,21 +204,21 @@ class Bird extends Player {
 				let _this=this
 
 				let onhit=function(target:Player){
-					target.takeMoney(20)
-					_this.giveMoney(20)
+					target.inven.takeMoney(20)
+					_this.inven.giveMoney(20)
 				}
 	
 				let damage = new Damage(0,this.getSkillBaseDamage(s) , 0)
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
-					this.players[target].applyEffectAfterSkill(ENUM.EFFECT.STUN, 1)
+					this.game.playerSelector.get(target).effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.TURN_END)
 					damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.ability.AP * 0.5)
 				}
 
 				if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 					let proj = this.buildProjectile()
 					this.projectile.push(proj)
-					this.game.placeProjNoSelection(proj, this.players[target].pos - 1)
+					this.game.placeProjNoSelection(proj, this.game.playerSelector.get(target).pos - 1)
 					damage.updateMagicDamage(CALC_TYPE.plus, this.ability.AP * 0.5)
 				}
 				skillattr = {

@@ -382,10 +382,10 @@
 			"price": 300,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "adStat", "value": 30, "type_kor": "적응형 능력치" },
+				{ "type": "adStat", "value": 50, "type_kor": "적응형 능력치" },
 				{
 					"type": "addMdmg",
-					"value": 15,
+					"value": 7,
 					"type_kor": "스킬/기본공격 사용시 추가 마법피해: 상대의 현제 체력의"
 				},
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
@@ -471,7 +471,7 @@
 			"ability": [
 				{
 					"type": "addMdmg",
-					"value": 5,
+					"value": 3,
 					"type_kor": "스킬/기본공격 사용시 추가 마법피해: 상대의 현제 체력의 "
 				}
 			],
@@ -543,10 +543,10 @@
 			"ability": [
 				{
 					"type": "addMdmg",
-					"value": 10,
+					"value": 5,
 					"type_kor": "스킬/기본공격 사용시 추가 마법피해: 상대의 현제 체력의 "
 				},
-				{ "type": "adStat", "value": 30, "type_kor": "적응형 능력치" }
+				{ "type": "adStat", "value": 40, "type_kor": "적응형 능력치" }
 			],
 			"children": [31, 28, 27],
 			"parents": [],
@@ -589,9 +589,9 @@
 			],
 			"children": [5,8],
 			"parents": [],
-			"unique_effect": "Become invisible for 1 turn if HP is below 30%(cooltime 8 turns)",
-			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화 (쿨타임 8턴)",
-			"active_cooltime": 8,
+			"unique_effect": "Become invisible for 1 turn if HP is below 30%(cooltime 6 turns)",
+			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화 (쿨타임 6턴)",
+			"active_cooltime": 6,
 			"summary":{
 				"kor":"주문력,생존","eng":"Magic Power, Survival from attack"
 			},

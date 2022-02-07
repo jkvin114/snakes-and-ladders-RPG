@@ -28,7 +28,7 @@ class Yangyi extends Player {
 		this.skill_name = ["dinosaur_q", "hit", "dinosaur_r"]
 		this.itemtree = {
 			level: 0,
-			items: [23, 1, 24, 19, 30],
+			items: [23, 36, 24, 1, 30],
 			final: 23,
 		}
 
@@ -132,7 +132,7 @@ class Yangyi extends Player {
 	useW() {
 		if (this.duration[ENUM.SKILL.W] === 0) {
 			this.duration[ENUM.SKILL.W] = 3
-			this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 3)
+			this.effects.apply(ENUM.EFFECT.STUN, 3,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 		} else {
 			this.duration[ENUM.SKILL.W] = 0
 			this.w_end()
@@ -149,7 +149,7 @@ class Yangyi extends Player {
 
 		this.startCooltime(ENUM.SKILL.ULT)
 		let admg = Math.floor(
-			0.5 * (this.players[target].MaxHP - this.players[target].HP)
+			0.5 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP)
 		)
 
         let _this: Player = this.getPlayer()
@@ -192,7 +192,7 @@ class Yangyi extends Player {
 	 */
 	passive() {
 		//w passive
-		if (this.level > 1 && this.isLast()) {
+		if (this.level > 1 && this.game.playerSelector.isLast(this)) {
 			this.adice += 1
 		}
 	}
@@ -205,7 +205,7 @@ class Yangyi extends Player {
 				damage: new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),
 				skill: ENUM.SKILL.Q,
 			}
-			let targets = this.getAvailableTarget(4, ENUM.SKILL.Q)
+			let targets = this.game.playerSelector.getAvailableTarget(this,4, ENUM.SKILL.Q)
 
 			if (targets.length > 0) {
 				//플레이어 2명아면 데미지 20%, 3명아면 40% 감소
@@ -226,9 +226,9 @@ class Yangyi extends Player {
 	}
 
 	w_end() {
-		this.applyEffectBeforeSkill(ENUM.EFFECT.SPEED, this.w_speed)
+		this.effects.apply(ENUM.EFFECT.SPEED, this.w_speed,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 		this.w_speed = 0
-		this.resetEffect(ENUM.EFFECT.STUN)
+		this.effects.reset(ENUM.EFFECT.STUN)
 		this.startCooltime(ENUM.SKILL.W)
 	}
 	/**
@@ -250,10 +250,10 @@ class Yangyi extends Player {
 				//10칸이내에 플레이어가 없거나 체력 30 이하시 비활성화
 				if (
 					(this.duration[ENUM.SKILL.Q] === 0 &&
-						this.getPlayersIn(this.pos - 10, this.pos + 10).length > 0 &&
+						this.game.playerSelector.getPlayersIn(this,this.pos - 10, this.pos + 10).length > 0 &&
 						this.HP >= 30) ||
 					(this.duration[ENUM.SKILL.Q] > 0 &&
-						this.getPlayersIn(this.pos - 10, this.pos + 10).length === 0) ||
+						this.game.playerSelector.getPlayersIn(this,this.pos - 10, this.pos + 10).length === 0) ||
 					(this.duration[ENUM.SKILL.Q] > 0 && this.HP < 30)
 				) {
 					this.useQ()
@@ -285,13 +285,13 @@ class Yangyi extends Player {
 	 * return int
 	 */
 	getUltTarget(players:number[]) {
-		let ps = this.players
+		let ps = this.game.playerSelector.getAll()
 		players.sort((b:number, a:number):number => {
 			return ps[a].pos - ps[b].pos
 		})
 
 		for (let p of players) {
-			if (ps[p].HP / ps[p].MaxHP < 0.3 && !ps[p].haveEffect(ENUM.EFFECT.SHIELD)) {
+			if (ps[p].HP / ps[p].MaxHP < 0.3 && !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
 				return p
 			}
 		}

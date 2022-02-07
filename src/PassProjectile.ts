@@ -2,6 +2,7 @@ import { Game,MAP } from "./Game"
 import { Player } from "./player"
 import * as Util from "./Util"
 import * as server from "./app"
+import {PlayerClientInterface} from "./app"
 
 
 class PassProjectile {
@@ -33,11 +34,11 @@ class PassProjectile {
 			this.pos += 1
 		}
 		console.log("placePassProj"+this.type)
-		server.placePassProj(this.game.rname, this.type, this.pos, this.UPID)
+		this.game.sendToClient(PlayerClientInterface.placePassProj, this.type, this.pos, this.UPID)
 	}
 
 	removeProj() {
-		server.removeProj(this.game.rname, this.UPID)
+		this.game.sendToClient(PlayerClientInterface.removeProj,this.UPID)
 	}
 }
 

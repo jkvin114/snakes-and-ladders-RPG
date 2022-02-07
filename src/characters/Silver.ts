@@ -1,6 +1,6 @@
 import { Player } from "../player"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector,ShieldEffect } from "../Util"
+import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector,ShieldEffect, SkillEffect } from "../Util"
 import { Game } from "../Game"
 import {Projectile} from "../Projectile"
 class Silver extends Player {
@@ -117,7 +117,7 @@ class Silver extends Player {
 
 	useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.setShield("elephant_r",new ShieldEffect(4,100), false)
+		this.effects.setShield("elephant_r",new ShieldEffect(4,100), false)
 		this.duration[ENUM.SKILL.ULT] = 4
 		if (this.HP < 150) {
 			this.u_active_amt = 150
@@ -178,9 +178,9 @@ class Silver extends Player {
 						_this.heal(Math.floor(dmg*0.3))
 					}
 				}
-				if (this.players[target].haveSign("silver_w", this.turn)) {
+				if (this.game.playerSelector.get(target).effects.haveSkillEffectAndSource("silver_w", this.turn)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus,30)
-					this.players[target].removeSign("silver_w", this.turn)
+					this.game.playerSelector.get(target).effects.removeSkillEffect("silver_w", this.turn)
 				}
 
 				break
@@ -188,13 +188,8 @@ class Silver extends Player {
 				this.startCooltime(ENUM.SKILL.W)
 				let myturn=this.turn
 				let onhit=function(target:Player){
-					target.giveSign({
-						type: "silver_w",
-						owner_turn: myturn,
-						dur: 5,
-						name: "Mark of Ivory"
-					})
-					target.applyEffectBeforeDice(ENUM.EFFECT.BAD_LUCK, 1)
+					target.effects.giveSkillEffect(new SkillEffect("silver_w",myturn,5,"Mark of Ivory",null))
+					target.effects.apply(ENUM.EFFECT.BAD_LUCK, 1,ENUM.EFFECT_TIMING.TURN_START)
 				}
 
 				skillattr = {

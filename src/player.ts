@@ -4,27 +4,27 @@ import defaultmap = require("../res/map.json")
 import obsInfo = require("../res/obstacles.json")
 import SETTINGS = require("../res/settings.json")
 
-import * as server from "./app"
+// import * as server from "./app"
 import { items as ItemList } from "../res/item.json"
 
 import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Game, MAP } from "./Game"
-import { Projectile } from "./Projectile"
+import { Projectile ,PROJECTILE_FLAG} from "./Projectile"
 import Ability from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
 import PlayerMapData from "./PlayerMapData"
 import PlayerInventory from "./PlayerInventory"
-
-
+import PlayerStatusEffects from "./PlayerStatusEffect"
+import {PlayerClientInterface} from "./app"
+import {ObstacleHelper,AIHelper} from "./helpers"
 //for test only
 const LVL = 1
-const POS = 0
-const MONEY = 0
+const POS = 13
 
 abstract class Player {
 	game: Game
-	players: Player[]
+//	players: Player[]
 	mapId: number
 	AI: boolean
 	turn: number
@@ -37,20 +37,11 @@ abstract class Player {
 	dead: boolean
 	level: number
 
-	money: number
-	token: number
-	life: number
-	lifeBought: number
 	kill: number
 	death: number
 	assist: number
 	invulnerable: boolean
-	nextdmg: number
-	adamage: number
 	adice: number //추가 주사위숫자
-	onMainWay: boolean //갈림길 체크시 샤용
-	subwayTicket: number
-	isInSubway: boolean
 	pendingSkill: number
 	oneMoreDice: boolean
 	diceControl: boolean
@@ -62,36 +53,24 @@ abstract class Player {
 	HP: number
 	MaxHP: number
 	ability: Ability
-	statistics:PlayerStatistics
-
+	statistics: PlayerStatistics
+	inven:PlayerInventory
+	effects:PlayerStatusEffects
+	mapdata:PlayerMapData
 	shield: number
 	cooltime: number[]
 	duration: number[]
-	stun: boolean
-	signs: object[]
-	igniteSource: number
-	effects: {
-		obs: number[]
-		skill: number[]
-	}
+	
 	//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
-	loanTurnLeft: number
-	skilleffects: Util.SkillEffect[]
-	activeItems: Util.ActiveItem[]
-	shieldEffects: Map<string, Util.ShieldEffect>
-//	stats: number[]
-	//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt
-	//3.healamt  4.moneyearned  5.moneyspent   6.moneytaken  7.damagereduced
-	//8 timesrevived 9 timesforcemoved 10 basicattackused  11 timesexecuted
+	// loanTurnLeft: number
+
 
 	damagedby: number[]
 	//for eath player, turns left to be count as assist(maximum 3)
 
 	bestMultiKill: number
 
-	item: number[]
-	itemSlots: number[]
-	
+	transfer:Function
 
 	abstract onoff: boolean[]
 	abstract hpGrowth: number
@@ -126,7 +105,7 @@ abstract class Player {
 		basic_stats: number[]
 	) {
 		this.game = game
-		this.players = []
+		// this.players = []
 		this.mapId = game.mapId
 
 		this.AI = ai //AI여부
@@ -139,18 +118,12 @@ abstract class Player {
 		this.lastpos = 0 //이전위치
 		this.dead = false
 		this.level = LVL //레벨, 1에서시작
-		this.money = MONEY
-		this.token = 2
-		this.life = 0
-		this.lifeBought = 0
+		
 		this.kill = 0
 		this.death = 0
 		this.assist = 0
 		this.invulnerable = true
-		this.nextdmg = 0
-		this.adamage = 0
 		this.adice = 0 //추가 주사위숫자
-		this.onMainWay = true //갈림길 체크시 샤용
 
 		this.pendingSkill = -1
 		this.oneMoreDice = false
@@ -163,46 +136,27 @@ abstract class Player {
 		this.HP = basic_stats[0]
 		this.MaxHP = basic_stats[0]
 		this.ability = new Ability(this, basic_stats)
-		this.statistics=new PlayerStatistics(this)
-
-		this.subwayTicket = -1
-		this.isInSubway = false
+		this.statistics = new PlayerStatistics(this)
+		this.inven=new PlayerInventory(this)
+		this.effects=new PlayerStatusEffects(this)
+		this.mapdata=new PlayerMapData(this)
 
 		this.shield = 0
 
 		this.cooltime = [0, 0, 0]
 		this.duration = [0, 0, 0]
-		this.stun = false
-		this.signs = []
-		this.igniteSource = -1 //점화효과를 누구에게 받았는지
-
-		//two lists of effects hae different cooldown timing
-		this.effects = {
-			skill: Util.makeArrayOf(0, 20), //턴 끝날때 쿨다운
-			obs: Util.makeArrayOf(0, 20) //장애물 끝날때 쿨다운
-		}
-		//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
-		this.loanTurnLeft = 0
-		this.skilleffects = []
-		this.activeItems = []
-		this.shieldEffects = new Map<string, Util.ShieldEffect>()
-		
-		//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt
-		//3.healamt  4.moneyearned  5.moneyspent   6.moneytaken  7.damagereduced
-		//8 timesrevived 9 timesforcemoved 10 basicattackused  11 timesexecuted
+		// this.loanTurnLeft = 0
 
 		this.damagedby = [0, 0, 0, 0]
 		//for eath player, turns left to be count as assist(maximum 3)
 
 		this.bestMultiKill = 0
-
-		this.item = Util.makeArrayOf(0, ItemList.length)
-
-		this.itemSlots = Util.makeArrayOf(-1, SETTINGS.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
-
-		
+		this.transfer=function(func:Function,...args:any[]){
+			this.game.sendToClient(func,...args)
+		}
 	}
 
+	
 	distance(p1: Player, p2: Player): number {
 		return Math.abs(p1.pos - p2.pos)
 	}
@@ -211,31 +165,18 @@ abstract class Player {
 		return this
 	}
 	message(text: string) {
-		if (this.game.instant) return
-		server.message(this.game.rname, text)
+		this.transfer(PlayerClientInterface.message,text)
 	}
 
-	/**
-	 * 가장 앞에있는 플레이어 반환
-	 */
-	getFirstPlayer(): Player {
-		let first: Player = this
-		for (let p of this.players) {
-			if (p.pos > first.pos) {
-				first = p
-			}
-		}
-		return first
-	}
 
 	calculateAdditionalDice(): number {
-		let first: Player = this.getFirstPlayer()
+		let first: Player = this.game.playerSelector.getFirstPlayer()
 
 		//자신이 1등보다 15칸이상 뒤쳐져있으면 주사위숫자 2 추가,
 		//자신이 1등보다 30칸이상 뒤쳐져있으면 주사위숫자 4 추가
 		//자신이 1등보다 레벨이 2 낮으면 주사위숫자 5 추가
 		//역주사위 효과 있을시 추가안함
-		if (this.pos + 15 < first.pos && !this.haveEffect(ENUM.EFFECT.BACKDICE) && first.onMainWay) {
+		if (this.pos + 15 < first.pos && !this.effects.has(ENUM.EFFECT.BACKDICE) && first.mapdata.onMainWay) {
 			this.adice += 2
 			if (this.pos + 30 < first.pos) {
 				this.adice += 2
@@ -247,161 +188,27 @@ abstract class Player {
 		this.adice += this.ability.moveSpeed
 
 		//장화 아이템
-		if (this.haveItem(28) && this.isLast()) {
+		if (this.inven.haveItem(28) && this.game.playerSelector.isLast(this)) {
 			this.adice += 1
 		}
 
 		//동레벨서 2~3번이상사망시 주사위2배 상시부여
-		if (this.thisLevelDeathCount >= 3 && this.level < 4) {
-			this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
-		} else if (this.thisLevelDeathCount >= 2 && this.level < 2) {
-			this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
-		} else if (this.thisLevelDeathCount >= 7) {
-			this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
-		}
+		if ((this.thisLevelDeathCount >= 3 && this.level < 4) 
+		|| (this.thisLevelDeathCount >= 2 && this.level < 2) 
+		|| (this.thisLevelDeathCount >= 7)) {
 
+			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1,ENUM.EFFECT_TIMING.TURN_START)
+		}
 		//	 this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
 		return this.adice
 	}
-
-	/**
-	 * 조건에 맟는 플레이어 플레이어 반환
-	 * @param {*} range 범위, -1이면 전체범위
-	 * @param {*} includeMe 자신 포함 여부
-	 * @param {*} includeInvulnerable 무적플레이어 포함 여부 (Invulnerable,invisible)
-	 * @param {*} includeDead 죽은플레이어 포함여부
-	 * @param {*} includeMyTeam 우리팀 포함여부
-	 */
-	getPlayersByCondition(
-		range: number,
-		includeMe: boolean,
-		includeInvulnerable: boolean,
-		includeDead: boolean,
-		includeMyTeam: boolean
-	): Player[] {
-		let result: Player[] = this.players
-		//범위가 정해져있을시
-		if (range > -1) {
-			let start = this.pos - range
-			let end = this.pos + range
-
-			result = result.filter((a) => a.pos >= start && a.pos <= end)
-		}
-
-		if (!includeInvulnerable) {
-			let myway = this.onMainWay
-			result = result.filter((a) => !a.invulnerable && !a.haveEffect(ENUM.EFFECT.INVISIBILITY) && a.onMainWay === myway)
-		}
-
-		if (!includeMe) {
-			result = result.filter((a) => a.turn !== this.turn)
-		}
-		if (!includeDead) {
-			result = result.filter((a) => !a.dead)
-		}
-		if (!includeMyTeam && this.game.isTeam) {
-			result = result.filter((a) => a.team !== this.team)
-		}
-		return result
+	getAiTarget(targets:number[]){
+		return AIHelper.getAiTarget(this,targets)
+	}
+	getAiProjPos(skilldata: any, skill: number){
+		return AIHelper.getAiProjPos(this,skilldata,skill)
 	}
 
-	/**
-	 * 공격가능한 플레이어 반환
-	 * @param {*} range
-	 */
-	getAllVaildPlayer(range: number): Player[] {
-		let start = this.pos - range
-		let end = this.pos + range
-		return this.players.filter(
-			(a) =>
-				!a.dead &&
-				!a.invulnerable &&
-				!a.haveEffect(ENUM.EFFECT.INVISIBILITY) &&
-				a.pos >= start &&
-				a.pos <= end &&
-				a.turn !== this.turn
-		)
-	}
-
-	//true if it is itself or same team , false if individual game or in different team
-	isValidOpponent(other: Player) {
-		//자기자신
-		if (this === other) {
-			return false
-		}
-		//무적이거나 투명화효과나 죽었을경우
-		if (other.invulnerable || other.haveEffect(ENUM.EFFECT.INVISIBILITY) || other.dead) {
-			return false
-		}
-		//갈림길에서 다른길
-		if (other.onMainWay !== this.onMainWay) {
-			return false
-		}
-
-		//팀 없거나 다를시
-		if (this.team !== other.team || !this.game.isTeam) {
-			return true
-		}
-		return false
-	}
-	/**
-	 *  가장 앞에있는 플레이어반환
-	 * 거리 5칸 내일시 가장 체력적은 플레이어
-	 * @param {} players int[]
-	 * return int
-	 */
-	getAiTarget(players: number[]): number {
-		if (players.length === 1) {
-			return players[0]
-		}
-		let ps = this.players
-		players.sort(function (b, a) {
-			if (Math.abs(ps[a].pos - ps[b].pos) < 8) {
-				return ps[b].HP - ps[a].HP
-			} else {
-				return ps[a].pos - ps[b].pos
-			}
-		})
-		return players[0]
-	}
-	//========================================================================================================
-	getAiProjPos(skilldata: any, skill: number): number {
-		let goal = null
-		let targets = this.getPlayersIn(
-			this.pos - 3 - Math.floor(skilldata.range / 2),
-			this.pos - 3 + Math.floor(skilldata.range / 2)
-		)
-		console.log("getAiProjPos" + targets)
-		if (targets.length === 0) {
-			return -1
-		}
-		if (targets.length === 1) {
-			//타겟이 1명일경우
-			goal = targets[0]
-			//속박걸렸으면 플레이어 위치 그대로
-			if (this.players[goal].haveEffect(ENUM.EFFECT.STUN)) {
-				return Math.floor(this.players[goal].pos)
-			}
-		} else {
-			//타겟이 여러명일경우
-			let ps = this.players
-
-			//앞에있는플레이어 우선
-			targets.sort(function (b: number, a: number): number {
-				return ps[a].pos - ps[b].pos
-			})
-
-			//속박걸린 플레이어있으면 그 플레이어 위치 그대로
-			for (let t in targets) {
-				if (ps[t].haveEffect(ENUM.EFFECT.STUN)) {
-					return Math.floor(ps[t].pos)
-				}
-			}
-
-			goal = targets[0]
-		}
-		return Math.floor(Math.min(this.players[goal].pos + 7 - skilldata.size, this.pos + skilldata.range / 2))
-	}
 
 	/**
 	 *
@@ -431,9 +238,9 @@ abstract class Player {
 	//========================================================================================================
 
 	constDamage() {
-		if (this.haveSkillEffect("timo_u")) {
-			let skeffect = this.skilleffects.filter((e: Util.SkillEffect) => e.type === "timo_u")[0]
-			this.applyEffectBeforeSkill(ENUM.EFFECT.SLOW, 1)
+		if (this.effects.haveSkillEffect("timo_u")) {
+			let skeffect = this.effects.getSkillEffect("timo_u")
+			this.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			let died = this.hitBySkill(skeffect.skillattr, skeffect.owner_turn, ENUM.SKILL.ULT, null)
 			return died
 			//giveDamage(skeffect.const_damage,skeffect.owner+1,'hit')
@@ -443,114 +250,54 @@ abstract class Player {
 	//========================================================================================================
 	showEffect(type: string, source: number) {
 		if (this.game.instant) return
-		server.effect(this.game.rname, this.turn, type, source)
+		this.game.sendToClient(PlayerClientInterface.visualEffect, this.turn, type, source)
 	}
 	//========================================================================================================
-	coolDownBeforeDice() {
+	onTurnStart() {
 		this.passive()
+		this.inven.giveMoney(Number(MAP.get(this.mapId).goldperturn))
 	}
 	//========================================================================================================
-	coolDownBeforeObs() {
+	onBeforeObs() {
 		if (this.oneMoreDice) {
 			return
 		}
 
 		this.invulnerable = false
-		this.adamage = 0
-
-		// if (this.champ === 2 && this.w_active) {
-		// 	this.invulnerable = true
-		// }
+		this.mapdata.onBeforeObs()
 
 		for (let p of this.projectile) {
 			p.projCoolDown()
 		}
-
-		// for (let i = 0; i < this.effects.length; ++i) {
-		// 	if (this.effects[i] === 1) {
-		// 		server.update(this.game.rname, "removeEffect", this.turn, i)
-		// 	}
+		// if (this.loanTurnLeft === 1) {
+		// 	this.inven.takeMoney(400)
 		// }
+		// this.loanTurnLeft = Math.max(0, this.loanTurnLeft - 1)
 
-		if (this.loanTurnLeft === 1) {
-			this.takeMoney(400)
-		}
-		this.loanTurnLeft = Math.max(0, this.loanTurnLeft - 1)
-
-		// this.effects = this.effects.map(Util.decrement)
 		this.cooltime = this.cooltime.map(Util.decrement)
-		console.log("cooltime " + this.turn)
-		console.log(this.cooltime)
-
-		let died = false
-		//점화
+		this.effects.onBeforeObs()
 		
-		//독
-		if (this.haveEffect(ENUM.EFFECT.POISON)) {
-			died = this.doObstacleDamage(30, "simple")
-		}
-		//연금
-		if (this.haveEffect(ENUM.EFFECT.ANNUITY)) {
-			this.giveMoney(20)
-		}
-		//연금복권
-		if (this.haveEffect(ENUM.EFFECT.ANNUITY_LOTTERY)) {
-			this.giveMoney(50)
-			this.changeToken(1)
-		}
-
-		//노예계약
-		if (this.haveEffect(ENUM.EFFECT.SLAVE)) {
-			died = this.doObstacleDamage(80, "simple")
-		}
-
-		if (died) {
-			this.applyEffectBeforeSkill(ENUM.EFFECT.SILENT, 1)
-		}
 	}
-	applyIgnite() {
-		let died = false
-		for (let p of this.players) {
-			if (p.haveEffect(ENUM.EFFECT.IGNITE)) {
-				if (p.igniteSource === -1) {
-					died = p.doObstacleDamage(Math.floor(0.04 * this.MaxHP), "fire")
-				} else {
-					died = p.doPlayerDamage(Math.floor(0.04 * this.MaxHP), p.igniteSource, "fire", false)
-				}
-			}
-		}
-		return died
-	}
+
 	//========================================================================================================
 
-	coolDownAfterObstacle() {
+	onAfterObstacle() {
 		if (this.oneMoreDice) {
 			return
 		}
-		// if (!this.haveEffect(ENUM.EFFECT.STUN)) {
-		// 	this.stun = false
-		// }
 		this.onSkillDurationCount()
 
 		this.decrementAllSkillDuration()
-		this.decrementShieldEffectDuration()
+		this.effects.onAfterObs()
+		
 		let died = this.constDamage()
-		died = this.applyIgnite()
 		if (died) {
-			this.applyEffectBeforeSkill(ENUM.EFFECT.SILENT, 1)
+			this.effects.apply(ENUM.EFFECT.SILENT, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 		}
 
-		this.cooldownEffectsBeforeSkill()
 	}
 
-	decrementShieldEffectDuration() {
-		for (const [name, s] of this.shieldEffects) {
-			if (!s.cooldown()) {
-				this.updateTotalShield(-s.amount, true)
-				this.shieldEffects.delete(name)
-			}
-		}
-	}
+	
 
 	/**
 	 * 	decrement all skill durations at once
@@ -582,18 +329,16 @@ abstract class Player {
 
 	//========================================================================================================
 
-	coolDownOnTurnEnd() {
+	onTurnEnd() {
 		if (this.oneMoreDice) {
 			return
 		}
 		this.damagedby = this.damagedby.map(Util.decrement)
 
 		this.diceControlCooldown()
-		this.signCoolDown()
-		this.skillEffectCoolDown()
-		this.activeItemCoolDown()
-		this.cooldownEffectsAfterSkill()
-		this.regeneration()
+		
+		this.inven.onTurnEnd()
+		this.effects.onTurnEnd()
 		this.ability.onTurnEnd()
 	}
 	//========================================================================================================
@@ -610,157 +355,21 @@ abstract class Player {
 		}
 		return dice
 	}
-	//========================================================================================================
-
-	getSubwayPrices(): number[] {
-		let prices = MAP.get(this.mapId).subway.prices.map((x) => x)
-		if (this.subwayTicket >= 0) {
-			prices[this.subwayTicket] = 0 //티켓 이미있으면 무료
-		}
-
-		if (this.thisLevelDeathCount >= 3) {
-			return prices.map((p) => Math.max(0, p - 50))
-		} else if (this.thisLevelDeathCount >= 2) {
-			return prices.map((p) => Math.max(0, p - 25))
-		}
-		return prices
-	}
-	selectSubway(type: number, price: number) {
-		this.subwayTicket = type
-		if (price > 0) this.changemoney(-1 * price, ENUM.CHANGE_MONEY_TYPE.SPEND)
-	}
-
-	//죽었을경우
-	removeSubwayTicket() {
-		this.subwayTicket = -1
-		this.isInSubway = false
-		server.update(this.game.rname, "isInSubway", this.turn, false)
-	}
-
-	isInSubwayRange() {
-		return this.pos > MAP.get(this.mapId).subway.start && this.pos < MAP.get(this.mapId).subway.end
-	}
-
-	exitSubway() {
-		console.log("exitsubway" + this.turn)
-		//단순 지하철구간에서 빠져나온 경우
-		this.isInSubway = false
-		server.update(this.game.rname, "subwayTicket", this.turn, -1)
-		server.update(this.game.rname, "isInSubway", this.turn, false)
-	}
-	enterSubwayWithoutSelection() {
-		console.log("enterSubwayWithoutSelection")
-		this.isInSubway = true //지하철 구간에 이동으로 들어온경우
-		if (this.subwayTicket === -1) {
-			//처음 들어왔을 경우에만 기본으로
-			//처음 아니면 기존티켓 사용
-			this.subwayTicket = 0
-		}
-		server.update(this.game.rname, "isInSubway", this.turn, true)
-	}
-	//지하철 선택칸 도착
-	enterSubwayNormal() {
-		console.log("enterSubwayNormal")
-		this.isInSubway = true
-		if (this.subwayTicket === -1) {
-			this.subwayTicket = 0
-		}
-		if (this.AI) {
-			this.aiSubwaySelection()
-		}
-		server.update(this.game.rname, "isInSubway", this.turn, true)
-	}
-	aiSubwaySelection() {
-		let prices = this.getSubwayPrices()
-
-		for (let i = 2; i >= 0; --i) {
-			if (this.money / 1.5 > prices[i] || prices[i] === 0) {
-				//돈 여유 있는 선에서 가장 좋은 티켓구입/가격 0일시 바로구입
-				this.subwayTicket = i
-				break
-			}
-		}
-		let first = this.getFirstPlayer().pos
-		if (this.pos + 12 < first) {
-			//1등과 격차 12~17: 급행
-			this.subwayTicket = 1
-		}
-		if (this.pos + 17 < first) {
-			//격차 17 이상:특급
-			this.subwayTicket = 2
-		}
-		this.changemoney(prices[this.subwayTicket], ENUM.CHANGE_MONEY_TYPE.SPEND)
-	}
-
-	//이동시마다 지하철 안인지 밖인지 체크
-	checkSubway() {
-		if (this.subwayTicket >= 0 && !this.isInSubwayRange()) {
-			this.exitSubway()
-		}
-
-		if (this.isInSubwayRange()) {
-			this.enterSubwayWithoutSelection()
-		}
-	}
-	//========================================================================================================
-
-	checkWay2(dice: number): boolean {
-		//갈림길 시작점 도착시
-		try {
-			if (this.pos + dice === MAP.get(this.mapId).way2_range.start) {
-				return true
-			}
-			//way2 에서 마지막칸 도착시
-			if (this.pos + dice === MAP.get(this.mapId).way2_range.way_end) {
-				this.exitWay2(dice)
-				return false
-			}
-		} catch (e) {
-			return false
-		}
-	}
-
-	goWay2() {
-		this.pos = MAP.get(this.mapId).way2_range.way_start
-		this.onMainWay = false
-		if (this.game.instant) return
-		server.update(this.game.rname, "way", this.turn, false)
-	}
-
-	exitWay2(dice: number) {
-		this.onMainWay = true
-
-		this.pos = MAP.get(this.mapId).way2_range.end - dice
-
-		if (this.game.instant) return
-		server.update(this.game.rname, "way", this.turn, true)
-	}
-
-	checkWay2ForGoto(pos: number) {
-		let w2 = MAP.get(this.mapId).way2_range
-
-		if (!this.onMainWay) {
-			if (pos < w2.way_start) {
-				pos = w2.start - (w2.way_start - pos)
-				this.onMainWay = true
-			} else if (pos > w2.way_end) {
-				pos = w2.end - (w2.way_end - pos)
-				this.onMainWay = true
-			}
-		}
-	}
+	
 
 	//========================================================================================================
 
 	giveDiceControl() {
 		this.diceControlCool = 3
 		this.diceControl = true
-		server.update(this.game.rname, "dc_item", this.turn, 1)
+		this.transfer(PlayerClientInterface.update, "dc_item", this.turn, 1)
+
 	}
 	useDiceControl() {
 		this.diceControlCool = 0
 		this.diceControl = false
-		server.update(this.game.rname, "dc_item", this.turn, -1)
+		this.transfer(PlayerClientInterface.update, "dc_item", this.turn, -1)
+
 	}
 	diceControlCooldown() {
 		this.diceControlCool = Math.max(this.diceControlCool - 1, 0)
@@ -782,12 +391,12 @@ abstract class Player {
 	 * @returns
 	 */
 	changePos(pos: number): boolean {
-		if (this.giveDamageWhenMove()) return true
+		if (this.mapdata.doMineDamage()) return true
 
 		if (pos < 0) {
 			pos = 0
 		}
-		if (pos >= MAP.getFinish(this.mapId) && this.onMainWay) {
+		if (pos >= MAP.getFinish(this.mapId) && this.mapdata.onMainWay) {
 			pos = MAP.getFinish(this.mapId)
 		}
 
@@ -798,19 +407,20 @@ abstract class Player {
 	}
 
 	forceMove(pos: number, ignoreObstacle: boolean, movetype: string) {
-		this.statistics.add(ENUM.STAT.FORCEMOVE,1)
+		this.statistics.add(ENUM.STAT.FORCEMOVE, 1)
 		this.adice = 0
 		this.game.pendingObs = 0 //강제이동시 장애물무시
-		this.checkWay2ForGoto(pos)
+		this.mapdata.checkWay2OnForceMove(pos)
 
 		this.changePos(pos)
 
-		this.resetEffect(ENUM.EFFECT.STUN)
+		this.effects.reset(ENUM.EFFECT.STUN)
 		this.invulnerable = false
 		// this.stun = false
 
 		let t = this.turn
-		server.tp(this.game.rname, t, pos, movetype)
+		this.transfer(PlayerClientInterface.tp,t, pos, movetype)
+
 
 		if (!ignoreObstacle) {
 			if (this.game.instant) {
@@ -824,7 +434,7 @@ abstract class Player {
 				)
 			}
 		} else if (this.game.mapId === 2) {
-			this.checkSubway()
+			this.mapdata.checkSubway()
 		}
 	}
 
@@ -864,54 +474,7 @@ abstract class Player {
 
 	//========================================================================================================
 
-	/**
-	 *
-	 * @param {*} m
-	 * @param {*} type 0: 돈 받음  1:돈 소모 2:돈 뺏김
-	 */
-	changemoney(m: number, type: number) {
-		//사채
-		if (type === ENUM.CHANGE_MONEY_TYPE.EARN && this.haveEffect(ENUM.EFFECT.PRIVATE_LOAN)) {
-			return
-		}
-		if (m === 0) {
-			return
-		}
-		this.money += m
-
-		switch (type) {
-			case ENUM.CHANGE_MONEY_TYPE.EARN: //money earned
-				this.statistics.add(ENUM.STAT.MONEY_EARNED,m)
-				if (this.game.instant) return
-				server.changeMoney(this.game.rname, this.turn, m, this.money)
-				break
-			case ENUM.CHANGE_MONEY_TYPE.SPEND: //money spend
-				this.statistics.add(ENUM.STAT.MONEY_SPENT,-m)
-				if (this.game.instant) return
-				server.changeMoney(this.game.rname, this.turn, 0, this.money) //0일 경우 indicator 는 표시안됨
-
-				break
-			case ENUM.CHANGE_MONEY_TYPE.TAKEN: //money taken
-				this.statistics.add(ENUM.STAT.MONEY_TAKEN,-m)
-
-				if (this.game.instant) return
-				server.changeMoney(this.game.rname, this.turn, m, this.money)
-				break
-		}
-	}
-	//========================================================================================================
-
-	changeToken(token: number) {
-		this.token += token
-		server.update(this.game.rname, "token", this.turn, this.token)
-		console.log("token" + token)
-	}
-	//========================================================================================================
-
-	changeLife(life: number) {
-		this.life = Math.max(this.life + life, 0)
-		server.update(this.game.rname, "life", this.turn, this.life)
-	}
+	
 	//========================================================================================================
 	incrementKda(type: string) {
 		switch (type) {
@@ -930,7 +493,8 @@ abstract class Player {
 		let str = this.kill + "/" + this.death + "/" + this.assist
 
 		if (this.game.instant) return
-		server.update(this.game.rname, "kda", this.turn, str)
+		this.transfer(PlayerClientInterface.update, "kda", this.turn, str)
+
 	}
 
 	/**
@@ -939,7 +503,8 @@ abstract class Player {
 	 * set to default if name===""
 	 */
 	changeApperance(name: string) {
-		server.update(this.game.rname, "appearance", this.turn, name)
+		this.transfer(PlayerClientInterface.update, "apperance", this.turn, name)
+
 	}
 
 	/**
@@ -955,10 +520,10 @@ abstract class Player {
 
 		if (hp > -4000) {
 			if (data.source >= 0) {
-				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_CHAMP,-hp)
+				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_CHAMP, -hp)
 			} //챔피언에게 받은 피해
 			else {
-				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_OBS,-hp)
+				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_OBS, -hp)
 			} //장애물에게 받은 피해
 		}
 		this.MaxHP += data.maxHp
@@ -984,7 +549,8 @@ abstract class Player {
 				isBlocked: isblocked
 			}
 
-			server.changeHP_damage(this.game.rname, hpChangeData)
+			this.transfer(PlayerClientInterface.changeHP_damage,hpChangeData)
+
 		}
 	}
 
@@ -998,8 +564,7 @@ abstract class Player {
 			return
 		}
 		let hp = data.hp
-		this.statistics.add(ENUM.STAT.HEAL_AMT,hp)
-
+		this.statistics.add(ENUM.STAT.HEAL_AMT, hp)
 
 		this.MaxHP += data.maxHp
 		this.HP = Math.min(this.HP + hp, this.MaxHP)
@@ -1015,55 +580,13 @@ abstract class Player {
 				skillfrom: data.source,
 				type: data.type
 			}
-			server.changeHP_heal(this.game.rname, changeData)
+			this.transfer(PlayerClientInterface.changeHP_heal, changeData)
+
 		}
 	}
 
 	//========================================================================================================
 
-	/**
-	 *
-	 * @param {*} shield 변화량 + or -
-	 * @param {*} noindicate 글자 표시할지 여부
-	 */
-	setShield(name: string, shield: Util.ShieldEffect, noindicate: boolean) {
-		let change = 0
-		if (this.shieldEffects.has(name)) {
-			change = this.shieldEffects.get(name).reApply(shield.amount)
-		} else {
-			this.shieldEffects.set(name, shield)
-			change = shield.amount
-		}
-
-		this.updateTotalShield(change, noindicate)
-	}
-	updateTotalShield(change: number, noindicate: boolean) {
-		console.log("updateshield" + change)
-		this.shield += change
-		if (this.game.instant) return
-		server.changeShield(this.game.rname, {
-			turn: this.turn,
-			shield: this.shield,
-			change: change,
-			indicate: !noindicate
-		})
-	}
-
-	//========================================================================================================
-
-	/**
-	 *
-	 * @returns died
-	 */
-	giveDamageWhenMove() {
-		let died = false
-		if (this.nextdmg !== 0) {
-			died = this.doObstacleDamage(this.nextdmg, "explode")
-			this.nextdmg = 0
-		}
-		return died
-	}
-	//========================================================================================================
 
 	killplayer() {
 		this.doObstacleDamage(9999, "stab")
@@ -1075,19 +598,19 @@ abstract class Player {
 		let offset = 1
 		let increase = 1
 
-		if (this.haveEffect(ENUM.EFFECT.DOUBLEDICE)) {
+		if (this.effects.has(ENUM.EFFECT.DOUBLEDICE)) {
 			increase = 2
 			offset = 2
 		}
-		if (this.haveEffect(ENUM.EFFECT.BACKDICE)) {
+		if (this.effects.has(ENUM.EFFECT.BACKDICE)) {
 			increase *= -1
 			offset *= -1
 		}
 
-		if (this.haveEffect(ENUM.EFFECT.SLOW)) {
+		if (this.effects.has(ENUM.EFFECT.SLOW)) {
 			offset -= 2
 		}
-		if (this.haveEffect(ENUM.EFFECT.SPEED)) {
+		if (this.effects.has(ENUM.EFFECT.SPEED)) {
 			offset += 2
 		}
 		offset += this.adice
@@ -1124,16 +647,12 @@ abstract class Player {
 		}
 		if (Math.random() < 0.8 && worst < 0) return dice
 		//가장 나쁜장애물이 -1 이하이면 그대로 반환
-		else if (this.haveEffect(ENUM.EFFECT.BACKDICE)) return 6
+		else if (this.effects.has(ENUM.EFFECT.BACKDICE)) return 6
 		else return 1
 	}
 	//========================================================================================================
 
-	sellToken(info: any) {
-		this.changeToken(-1 * info.token)
-		this.giveMoney(info.money)
-		this.message(this.name + " sold token, obtained " + info.money + "$!")
-	}
+	
 	//========================================================================================================
 
 	arriveAtSquare(isForceMoved: boolean): number {
@@ -1147,11 +666,11 @@ abstract class Player {
 		console.log("arriveAtSquare" + this.turn)
 
 		if (this.game.mapId === 2) {
-			this.checkSubway()
+			this.mapdata.checkSubway()
 		}
 
-		if (this.pos >= MAP.getFinish(this.mapId) && this.onMainWay) {
-			if (this.haveEffect(ENUM.EFFECT.SLAVE)) {
+		if (this.pos >= MAP.getFinish(this.mapId) && this.mapdata.onMainWay) {
+			if (this.effects.has(ENUM.EFFECT.SLAVE)) {
 				this.pos = MAP.getFinish(this.mapId) - 1
 				this.killplayer()
 				this.message(this.name + " has been finally freed from slavery")
@@ -1162,14 +681,13 @@ abstract class Player {
 			}
 		}
 
+		
+
+		if(this.checkProjectile()) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+		
 		let obs = this.game.shuffledObstacles[this.pos].obs
-
-		if (obs !== 0) {
-			this.checkProjectile()
-		}
-
 		//속박일경우
-		if (this.haveEffect(ENUM.EFFECT.STUN)) {
+		if (this.effects.has(ENUM.EFFECT.STUN)) {
 			//특정 장애물은 속박무시
 			if (SETTINGS.ignoreStunObsList.includes(obs)) {
 				this.basicAttack()
@@ -1194,381 +712,35 @@ abstract class Player {
 	 * @returns
 	 */
 	obstacle(obs: number, isForceMoved: boolean): number {
-		let others: Player[] = []
-		const pendingObsList = SETTINGS.pendingObsList
+		
 		//  if(obs===-1){return 'finish'}
 		if (obs === 0) {
 			this.invulnerable = true
-			this.effects.obs[ENUM.EFFECT.SILENT] += 1 //cant use skill in the store
-			// server.update(this.game.rname, "removeEffect", this.turn, 3)
+			this.effects.apply(ENUM.EFFECT.SILENT, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)//cant use skill in the store
+
 			this.goStore(false)
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE
 		}
 		//투명화   해로운 장애물일경우만 무시
-		if (this.haveEffect(ENUM.EFFECT.INVISIBILITY) && obsInfo.obstacles[obs].val < 0) {
+		if (this.effects.has(ENUM.EFFECT.INVISIBILITY) && obsInfo.obstacles[obs].val < 0) {
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		}
 
 		let money = this.game.shuffledObstacles[this.pos].money * 10
 		if (money > 0) {
-			this.giveMoney(money)
+			this.inven.giveMoney(money)
 		}
 
-		try {
-			switch (obs) {
-				case 4:
-					this.doObstacleDamage(10, "trap")
-					break
-				case 5:
-					this.takeMoney(30)
-					break
-				case 6:
-					this.enterSubwayNormal()
-					//subway
-					break
-				case 7:
-					this.nextdmg = 30
-					break
-				case 8:
-					this.doObstacleDamage(20, "knife")
-					break
-				case 9:
-					this.heal(50)
-					break
-				case 10:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SILENT, 1)
-					break
-				case 11:
-					this.resetCooltime([ENUM.SKILL.Q, ENUM.SKILL.W])
-					this.cooltime[ENUM.SKILL.ULT] = Math.floor(this.cooltime[ENUM.SKILL.ULT] / 2)
-					break
-				case 12:
-					this.adamage = 30
-					// this.message(this.name + ": skill range x3, additional damage 30")
-					break
-				case 13:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
-					break
-				case 14:
-					let d = Math.floor(Math.random() * 6) + 1
-					this.giveMoney(d * 10)
-					break
-				case 15:
-					let m3 = Math.floor(this.money / 10)
-					others = this.getPlayersByCondition(-1, false, true, true, false)
-					this.takeMoney(m3 * others.length)
-					for (let o of others) {
-						o.giveMoney(m3)
-					}
-
-					break
-				case 16:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SLOW, 1)
-					this.doObstacleDamage(20, "hit")
-					break
-				case 17:
-					others = this.getPlayersByCondition(-1, false, true, false, false)
-					this.doObstacleDamage(20 * others.length, "hit")
-					for (let o of others) {
-						o.heal(20)
-					}
-					break
-				case 18:
-					others = this.getPlayersByCondition(-1, false, true, true, false)
-					this.takeMoney(30 * others.length)
-					for (let o of others) {
-						o.giveMoney(30)
-					}
-					break
-				case 19:
-					others = this.getPlayersByCondition(20, false, true, false, true)
-					for (let o of others) {
-						o.forceMove(this.pos, true, "simple")
-					}
-					break
-				case 20:
-					// if (isForceMoved) {
-					// 	return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
-					// }
-					let target = this.getNearestPlayer(40, true, false)
-					if (target != null && target.pos != this.pos) {
-						let pos = this.pos
-						this.forceMove(target.pos, false, "simple")
-						target.forceMove(pos, true, "simple")
-						others.push(target)
-					}
-					break
-				case 21:
-					//godhand
-					break
-				case 22:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.ANNUITY, 99999)
-					break
-				case 23:
-					this.takeMoney(30)
-					this.doObstacleDamage(30, "knife")
-					break
-				case 24:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SHIELD, 99999)
-					this.applyEffectBeforeSkill(ENUM.EFFECT.INVISIBILITY, 1)
-					this.heal(70)
-					break
-				case 25:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SHIELD, 99999)
-					break
-				case 26:
-					this.nextdmg = 70
-					break
-				case 27:
-					this.doObstacleDamage(100, "knife")
-					break
-				case 28:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SLOW, 2)
-					break
-				case 29:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.POISON, 99999)
-					break
-				case 30:
-					this.doObstacleDamage(Math.floor(this.HP / 3), "explode")
-					break
-				case 31:
-					this.doObstacleDamage(Math.floor((this.MaxHP - this.HP) / 2), "explode")
-					this.applyEffectBeforeSkill(ENUM.EFFECT.RADI, 1)
-					break
-				case 32:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.RADI, 1)
-					break
-				case 33:
-					// kidnap
-					if (this.AI) {
-						if (this.HP > 300) {
-							this.doObstacleDamage(300, "stab")
-						} else {
-							this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 2)
-						}
-					}
-					break
-				case 34:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SLAVE, 99999)
-					break
-				case 35:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 3)
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SPEED, 4)
-					break
-				case 36:
-					if (!isForceMoved) {
-						this.forceMove(this.lastpos, false, "levitate")
-					}
-					break
-				case 37:
-					//trial
-					if (this.AI) {
-						let d = Math.floor(Math.random() * 6) + 1
-						this.trial(d)
-					}
-					break
-				case 38:
-					//casino
-					if (this.AI) {
-						let d = Math.floor(Math.random() * 6) + 1
-						this.casino(d)
-					}
-					break
-				case 39:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.DOUBLEDICE, 1)
-					break
-				case 40:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.BACKDICE, 1)
-					break
-				case 41:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
-					break
-				case 42:
-					this.heal(50)
-					break
-				case 43:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.POISON, 3)
-					break
-				case 44:
-					this.doObstacleDamage(40, "knife")
-					break
-				case 45:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.BLIND, 3)
-					break
-				case 46:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SLOW, 1)
-					this.doObstacleDamage(30, "hit")
-					break
-				case 48:
-					break
-				case 49:
-					this.takeMoney(20)
-					this.doObstacleDamage(50, "knife")
-					break
-				case 50:
-					this.giveIgniteEffect(3, -1)
-					this.doObstacleDamage(30, "knife")
-					break
-				case 51:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.INVISIBILITY, 1)
-					break
-				case 52:
-					this.doObstacleDamage(75, "lightning")
-					others = this.getPlayersByCondition(3, false, false, false, true)
-					for (let p of others) {
-						p.doObstacleDamage(75, "lightning")
-					}
-					break
-				case 53:
-					let died = this.doObstacleDamage(30, "wave")
-					if (!died) {
-						this.forceMove(this.pos - 3, false, "simple")
-					}
-
-					others = this.getPlayersByCondition(-1, false, false, false, true)
-					for (let p of others) {
-						let died = p.doObstacleDamage(30, "wave")
-						if (!died) {
-							p.forceMove(p.pos - 3, false, "simple")
-						}
-					}
-					break
-				case 54:
-					others = this.getPlayersByCondition(20, false, false, false, true)
-
-					for (let o of others) {
-						o.forceMove(this.pos, true, "simple")
-					}
-					break
-				case 55:
-					let r = Math.floor(Math.random() * 10)
-					this.forceMove(this.pos - 3 + r, false, "levitate")
-					break
-				case 56:
-					let allplayers = this.getPlayersByCondition(30, false, true, false, true)
-					if (allplayers.length !== 0) {
-						let r2 = Math.floor(Math.random() * allplayers.length)
-						this.forceMove(allplayers[r2].pos, true, "levitate")
-					}
-					break
-				case 57:
-					this.nextdmg = 70
-					break
-				case 58:
-					this.doObstacleDamage(120, "explode")
-					break
-				case 59:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.SPEED, 3)
-					break
-				case 60:
-					this.giveIgniteEffect(3, -1)
-					this.doObstacleDamage(Math.floor(this.MaxHP / 4), "explode")
-					break
-				case 61:
-					this.doObstacleDamage(175, "explode")
-					break
-				case 62:
-					this.changeToken(10)
-					this.loanTurnLeft = 5
-					break
-				case 63:
-					//Threaten
-					break
-				case 64:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.PRIVATE_LOAN, 2)
-					break
-				case 65:
-					this.takeMoney(Math.floor(this.money / 2))
-					this.changeToken(-1 * Math.floor(this.token / 2))
-					break
-				case 66:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.ANNUITY_LOTTERY, 9999)
-					break
-				case 67: //coin store
-					if (this.haveEffect(ENUM.EFFECT.PRIVATE_LOAN)) {
-						obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
-					}
-					break
-				case 68:
-					// street_vendor
-					if (this.AI) {
-						this.aiStore()
-					} else {
-						this.goStore(true)
-					}
-
-					break
-				case 69:
-					let m1 = 0
-					for (let p of this.game.players) {
-						m1 += p.statistics.stats[ENUM.STAT.MONEY_EARNED]
-					}
-					if (Math.random() > 0.93) {
-						this.giveMoney(m1)
-						this.message(" won the lottery! earned" + m1 + "$")
-					}
-
-					break
-				case 70:
-					let m2 = 0
-					others = this.getPlayersByCondition(-1, false, true, true, false)
-					for (let p of others) {
-						let m1 = p.token * 2 + Math.floor(p.money * 0.1)
-						p.takeMoney(m1)
-						m2 += m1
-					}
-					this.giveMoney(m2)
-					break
-				case 71:
-					this.thief()
-					break
-				case 72:
-					this.applyEffectBeforeSkill(ENUM.EFFECT.BAD_LUCK, 2)
-					break
-				case 73:
-					this.doObstacleDamage(Math.floor(this.money / 2), "hit")
-					break
-				case 74:
-					if (!this.AI) {
-						if (this.money < 150 && this.token < 10) {
-							this.killplayer()
-							// this.message("can pass only if you have\n more than 150$ or 10 tokens")
-						}
-					} else if (this.money < 100 && this.token < 10) {
-						this.killplayer()
-					}
-			}
-		} catch (e) {
-			console.error(e)
-			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
-		}
-
-		//not ai, not pending obs and forcemoved, not arrive at none
-		if (!this.AI && !(pendingObsList.includes(obs) && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
-			server.indicateObstacle(this.game.rname, this.turn, obs)
-		}
-
-		for (let p of others) {
-			server.indicateObstacle(this.game.rname, p.turn, obs)
-		}
-
+		obs=ObstacleHelper.applyObstacle(this,obs,isForceMoved)
 		return obs
 	}
 
 	goStore(street_vendor: boolean) {
 		if (this.game.instant) return
-		server.goStore(this.game.rname, this.turn, this.getStoreData(street_vendor ? 1.1 : 1))
+		this.transfer(PlayerClientInterface.goStore,  this.turn, this.inven.getStoreData(street_vendor ? 1.1 : 1))
+
 	}
-	/**
-	 * @return 위치가 가장 뒤면 true
-	 */
-	isLast(): boolean {
-		let pos = this.pos
-		return !this.players.some(function (p: Player) {
-			return p.pos < pos
-		})
-	}
+	
 	//========================================================================================================
 	/**
 	 * levels up if avaliable
@@ -1576,12 +748,12 @@ abstract class Player {
 	lvlup() {
 		let respawn = MAP.getRespawn(this.mapId)
 		for (let i = 1; i < respawn.length; ++i) {
-			if (this.pos >= respawn[i] && this.level <= i && this.onMainWay) {
+			if (this.pos >= respawn[i] && this.level <= i && this.mapdata.onMainWay) {
 				this.addMaxHP(this.hpGrowth)
 				this.level += 1
-				this.ability.onLevelUp(this.players.length * 5)
+				this.ability.onLevelUp(this.game.totalnum * 5)
 
-				this.resetEffect(ENUM.EFFECT.ANNUITY_LOTTERY) //연금복권 끝
+				this.effects.reset(ENUM.EFFECT.ANNUITY_LOTTERY) //연금복권 끝
 
 				if (this.level === 3) {
 					this.cooltime[2] = 4
@@ -1595,142 +767,6 @@ abstract class Player {
 
 	//========================================================================================================
 
-	thief() {
-		let itemhave = []
-		for (let i of ItemList) {
-			if (this.haveItem(i.id - 1) && i.itemlevel === 1) {
-				itemhave.push(i.id - 1)
-			}
-		}
-
-		if (itemhave.length === 0) {
-			return
-		}
-		let thiefitem = itemhave[Math.floor(Math.random() * itemhave.length)]
-		this.message(this.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
-		//	this.item[thiefitem] -= 1
-		this.changeOneItem(thiefitem, -1)
-		this.itemSlots = this.convertCountToItemSlots(this.item)
-		server.update(this.game.rname, "item", this.turn, this.itemSlots)
-	}
-	//========================================================================================================
-	/**
-	 * 범위내에서 가장가까운 플레이어 반환
-	 * @param {} range
-	 * @param {*} includeInvulnerable
-	 * @param {*} includeDead
-	 */
-	getNearestPlayer(range: number, includeInvulnerable: boolean, includeDead: boolean) {
-		let dist = 200
-		let target = null
-		for (let p of this.players) {
-			if (p !== this && this.distance(this, p) < dist && this.distance(this, p) < range) {
-				if (includeInvulnerable && !(!includeDead && p.dead)) {
-					target = p
-					dist = this.distance(this, p)
-				} else if (!p.invulnerable && !p.haveEffect(ENUM.EFFECT.INVISIBILITY)) {
-					target = p
-					dist = this.distance(this, p)
-				}
-			}
-		}
-		return target
-	}
-	//========================================================================================================
-	giveIgniteEffect(dur: number, source: number) {
-		this.applyEffectBeforeSkill(ENUM.EFFECT.IGNITE, dur)
-		this.igniteSource = source
-	}
-
-	// haveEffect(effect: number) {
-	// 	return this.effects[effect] > 0
-	// }
-	resetEffect(effect: number) {
-		this.effects.obs[effect] = 0
-		this.effects.skill[effect] = 0
-		server.update(this.game.rname, "removeEffect", this.turn, effect)
-	}
-	/**
-	 *
-	 * @param {*} e 이펙트 ID
-	 * @param {*} dur 지속시간
-	 * @param {*} num 번호
-	 */
-	giveEffect(effect: number, dur: number, type: string) {
-		if (dur === 0) return
-
-		let num = this.game.totalEffectsApplied % 3
-		this.game.totalEffectsApplied += 1
-
-		//장화로 둔화 무시
-		if (effect === ENUM.EFFECT.SLOW && this.haveItem(29)) {
-			return
-		}
-
-		server.giveEffect(this.game.rname, this.turn, effect, num)
-
-		//이펙트 부여하자마자 바로 쿨다운 하기 때문에 지속시간 +1 해줌
-		if (type === "obs") {
-			this.effects.obs[effect] = Math.max(dur, this.effects.obs[effect])
-		} else if (type === "skill") {
-			this.effects.skill[effect] = Math.max(dur, this.effects.skill[effect])
-		}
-
-		// if (effect === ENUM.EFFECT.STUN) {
-		// 	this.stun = true
-		// }
-
-		if (this.game.instant) return
-	}
-
-	applyEffectBeforeSkill(effect: number, dur: number) {
-		this.giveEffect(effect, dur + 1, "obs")
-	}
-	applyEffectAfterSkill(effect: number, dur: number) {
-		this.giveEffect(effect, dur + 1, "skill")
-	}
-	applyEffectBeforeDice(effect: number, dur: number) {
-		this.giveEffect(effect, dur, "obs")
-	}
-
-	cooldownEffectsBeforeSkill() {
-		for (let i = 0; i < this.effects.obs.length; ++i) {
-			if (this.effects.obs[i] === 1 && this.effects.skill[i] === 0) {
-				server.update(this.game.rname, "removeEffect", this.turn, i)
-			}
-		}
-		this.effects.obs = this.effects.obs.map(Util.decrement)
-	}
-
-	cooldownEffectsAfterSkill() {
-		for (let i = 0; i < this.effects.skill.length; ++i) {
-			if (this.effects.skill[i] === 1 && this.effects.obs[i] === 0) {
-				server.update(this.game.rname, "removeEffect", this.turn, i)
-			}
-		}
-		this.effects.skill = this.effects.skill.map(Util.decrement)
-	}
-
-	haveEffect(effect: number) {
-		return this.effects.obs[effect] > 0 || this.effects.skill[effect] > 0
-	}
-
-	resetAllEffects() {
-		for (let i = 0; i < this.effects.obs.length; ++i) {
-			this.effects.obs[i] = 0
-			this.effects.skill[i] = 0
-		}
-	}
-
-	giveMoney(m: number) {
-		this.changemoney(m, ENUM.CHANGE_MONEY_TYPE.EARN)
-	}
-	//========================================================================================================
-
-	takeMoney(m: number) {
-		this.changemoney(-1 * m, ENUM.CHANGE_MONEY_TYPE.TAKEN)
-	}
-	//========================================================================================================
 
 	heal(h: number) {
 		this.changeHP_heal(new Util.HPChangeData().setHpChange(h).setType("heal"))
@@ -1740,33 +776,22 @@ abstract class Player {
 	addMaxHP(m: number) {
 		this.changeHP_heal(new Util.HPChangeData().setMaxHpChange(m))
 	}
-	//========================================================================================================
 
-	regeneration() {
-		//1등급 재생열매 효과
-		if (this.haveItem(9)) {
-			this.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.MaxHP * 0.05)))
-		}
-	}
-	//========================================================================================================
-
-	//========================================================================================================
 
 	//========================================================================================================
 
 	addKill(deadplayer: Player) {
 		this.incrementKda("k")
 		//선취점
-		let totalkill = this.players.reduce(function (t, a) {
+		let totalkill = this.game.playerSelector.getAll().reduce(function (t, a) {
 			return t + a.kill
 		}, 0)
 		if (totalkill === 0) {
-			this.changemoney(100, 0)
+			this.inven.giveMoney(100)
 			this.message(this.name + ", First Blood!")
 		} else {
-			this.changemoney(
-				70 + 10 * this.thisLifeKillCount + 20 * deadplayer.thisLifeKillCount,
-				ENUM.CHANGE_MONEY_TYPE.EARN
+			this.inven.giveMoney(
+				70 + 10 * this.thisLifeKillCount + 20 * deadplayer.thisLifeKillCount
 			)
 		}
 		this.oneMoreDice = true
@@ -1797,18 +822,13 @@ abstract class Player {
 		let changeData = new Util.HPChangeData()
 			.setSource(origin)
 			.setType(type)
-			.setSkillTrajectorySpeed(this.players[origin].getSkillTrajectorySpeed(type))
+			.setSkillTrajectorySpeed(this.game.playerSelector.get(origin).getSkillTrajectorySpeed(type))
 
 		if (needDelay) changeData.setDelay()
 		if (flags != null) {
 			for (let f of flags) {
 				changeData.addFlag(f)
 			}
-		}
-
-		//다이아몬드 기사 아이템
-		if (this.players[origin].haveItem(32)) {
-			this.players[origin].addMaxHP(5)
 		}
 
 		return this.doDamage(damage, changeData)
@@ -1828,26 +848,28 @@ abstract class Player {
 
 		return this.doDamage(damage, changeData)
 	}
+	updateTotalShield(change: number, noindicate: boolean) {
+		console.log("updateshield" + change)
+		this.shield += change
+		if (this.game.instant || change==0) return
+		this.transfer(PlayerClientInterface.changeShield,{
+			turn: this.turn,
+			shield: this.shield,
+			change: change,
+			indicate: !noindicate
+		})
+
+	}
 	/**
 	 * shield absorbs damage
 	 * @param damage
 	 * @returns
 	 */
-	shieldDamage(damage: number): number {
-		let damageLeft = damage
-		for (const [name, s] of this.shieldEffects) {
-			let shieldleft = s.absorbDamage(damageLeft)
+	 shieldDamage(damage: number): number {
+		 let damageLeft=this.effects.applyShield(damage)
 
-			if (shieldleft < 0) {
-				damageLeft = -shieldleft
-				this.shieldEffects.delete(name)
-			} else {
-				damageLeft = 0
-				break
-			}
-		}
 		this.updateTotalShield(-(damage - damageLeft), false)
-		this.statistics.add(ENUM.STAT.DAMAGE_REDUCED,damage - damageLeft)
+		this.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage - damageLeft)
 
 		return damageLeft
 	}
@@ -1879,12 +901,12 @@ abstract class Player {
 				return false
 			}
 
-			if (this.haveEffect(ENUM.EFFECT.RADI)) {
+			if (this.effects.has(ENUM.EFFECT.RADI)) {
 				damage *= 2
 			}
 			if (changeData.source >= 0) {
 				this.damagedby[changeData.source] = 3
-				this.players[changeData.source].ability.absorb_hp(damage) //모든피해흡혈, 어시스트저장
+				this.game.playerSelector.get(changeData.source).ability.absorb_hp(damage) //모든피해흡혈, 어시스트저장
 			} else if (changeData.source === -1) {
 				damage *= 1 - this.ability.obsR / 100 //장애물 저항
 			}
@@ -1892,10 +914,11 @@ abstract class Player {
 
 			//방패검 아이템
 			// console.log("predictedHP"+predictedHP+" "+this.AD*0.4)
-			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.isActiveItemAvaliable(35)) {
-				this.setShield("item_shieldsword", new Util.ShieldEffect(2, Math.floor(0.7 * this.ability.AD)), true)
-				this.useActiveItem(35)
-				server.indicateItem(this.game.rname, this.turn, 35)
+			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.inven.isActiveItemAvaliable(35)) {
+				this.effects.setShield("item_shieldsword", new Util.ShieldEffect(2, Math.floor(0.7 * this.ability.AD)), true)
+				this.inven.useActiveItem(35)
+				this.transfer(PlayerClientInterface.indicateItem,this.turn, 35)
+
 			}
 
 			damage = this.shieldDamage(damage)
@@ -1904,10 +927,11 @@ abstract class Player {
 			predictedHP = this.HP - damage
 
 			//투명망토 아이템
-			if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.isActiveItemAvaliable(33)) {
-				this.applyEffectAfterSkill(ENUM.EFFECT.INVISIBILITY, 1)
-				this.useActiveItem(33)
-				server.indicateItem(this.game.rname, this.turn, 33)
+			if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(33)) {
+				this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1,ENUM.EFFECT_TIMING.TURN_END)
+				this.inven.useActiveItem(33)
+				this.transfer(PlayerClientInterface.indicateItem,this.turn, 33)
+
 			}
 
 			let reviveType = this.canRevive()
@@ -1922,16 +946,15 @@ abstract class Player {
 			this.changeHP_damage(changeData.setHpChange(-1 * Math.floor(damage)))
 
 			if (this.HP <= 0) {
-				this.resetAllEffects()
+				this.effects.resetAllEffects()
 
 				if (reviveType == null) {
 					this.die(changeData.source)
 					if (changeData.source >= 0) {
-						this.players[changeData.source].addKill(this)
+						this.game.playerSelector.get(changeData.source).addKill(this)
 						this.thisLifeKillCount = 0
 					} else {
-						this.statistics.add(ENUM.STAT.EXECUTED,1)
-
+						this.statistics.add(ENUM.STAT.EXECUTED, 1)
 					}
 					return true
 				} else {
@@ -1947,17 +970,17 @@ abstract class Player {
 	}
 
 	canRevive(): string {
-		if (this.isActiveItemAvaliable(15)) return "guardian_angel"
+		if (this.inven.isActiveItemAvaliable(15)) return "guardian_angel"
 
-		if (this.life > 0) return "life"
+		if (this.inven.life > 0) return "life"
 
 		return null
 	}
 
 	prepareRevive(reviveType: string) {
-		if (reviveType === "life") this.changeLife(-1)
+		if (reviveType === "life") this.inven.changeLife(-1)
 
-		if (reviveType === "guardian_angel") this.useActiveItem(15)
+		if (reviveType === "guardian_angel") this.inven.useActiveItem(15)
 
 		this.waitingRevival = true
 		this.HP = 0
@@ -1969,7 +992,7 @@ abstract class Player {
 
 		let storeData = null
 		if (gostore) {
-			storeData = this.getStoreData(1)
+			storeData = this.inven.getStoreData(1)
 		}
 		let killData = {
 			skillfrom: skillfrom,
@@ -1983,13 +1006,13 @@ abstract class Player {
 		//상대에게 죽은경우
 		if (skillfrom >= 0) {
 			console.log("sendkillinfo skillfrom " + skillfrom)
-			let killerMultiKillCount = this.players[skillfrom].thisLifeKillCount + 1
+			let killerMultiKillCount = this.game.playerSelector.get(skillfrom).thisLifeKillCount + 1
 			let isShutDown = this.thisLifeKillCount > 1
 			killData.isShutDown = isShutDown
 			killData.killerMultiKillCount = killerMultiKillCount
 		}
+		this.transfer(PlayerClientInterface.die,killData)
 
-		server.die(this.game.rname, killData)
 	}
 
 	/**
@@ -2001,7 +1024,7 @@ abstract class Player {
 	 */
 	die(skillfrom: number) {
 		if (skillfrom > 0) {
-			this.message(this.players[skillfrom].name + " killed" + this.name)
+			this.message(this.game.playerSelector.get(skillfrom).name + " killed" + this.name)
 		} else {
 			this.message(this.name + " has been executed!")
 		}
@@ -2010,17 +1033,13 @@ abstract class Player {
 		this.Assist(skillfrom)
 		this.HP = 0
 		this.dead = true
-		this.removeSubwayTicket()
+		this.mapdata.onDeath()
 		this.incrementKda("d")
-		this.nextdmg = 0
 		this.damagedby = [0, 0, 0, 0]
 
 		this.setAllSkillDuration([0, 0, 0])
 		this.invulnerable = true
-		this.stun = false
-		this.signs = []
-		this.skilleffects = []
-		this.onMainWay = true
+		this.effects.onDeath()
 		this.oneMoreDice = false
 		for (let p of this.projectile) {
 			p.remove()
@@ -2033,7 +1052,7 @@ abstract class Player {
 		//this.giveEffect('silent',1,-1)
 		let gostore = MAP.getStore(this.mapId).includes(this.pos)
 		if (gostore && this.AI) {
-			this.aiStore()
+			AIHelper.aiStore(this)
 		}
 
 		this.sendKillInfo(skillfrom, gostore)
@@ -2052,15 +1071,15 @@ abstract class Player {
 	respawn() {
 		let health = this.MaxHP
 		if (this.waitingRevival) {
-			health /= 2
-			this.statistics.add(ENUM.STAT.REVIVE,1)
-
+			health =Math.floor(health/2)
+			this.statistics.add(ENUM.STAT.REVIVE, 1)
 		}
 
 		this.changeHP_heal(new Util.HPChangeData().setHpChange(health).setRespawn())
 		this.dead = false
 		console.log("revive" + this.HP)
-		server.respawn(this.game.rname, this.turn, this.pos, this.waitingRevival)
+		this.transfer(PlayerClientInterface.respawn,this.turn, this.pos, this.waitingRevival)
+
 
 		this.waitingRevival = false
 	}
@@ -2072,15 +1091,16 @@ abstract class Player {
 	 */
 	Assist(skillfrom: number) {
 		//let assists=[]
-		for (let i = 0; i < this.players.length; ++i) {
+		for (let i = 0; i < this.game.totalnum; ++i) {
 			if (this.damagedby[i] > 0 && this.turn !== i && skillfrom !== i) {
 				if (skillfrom === i) {
 					continue
 				}
+				let plyr=this.game.playerSelector.get(i)
 
-				this.players[i].incrementKda("a")
-				this.players[i].changemoney(25, ENUM.CHANGE_MONEY_TYPE.EARN)
-				this.message(this.players[i].name + " assist!")
+				plyr.incrementKda("a")
+				plyr.inven.giveMoney(25)
+				this.message(plyr.name + " assist!")
 				//assists.push(this.players[i])
 			}
 		}
@@ -2091,35 +1111,37 @@ abstract class Player {
 		damage.updateMagicDamage(Util.CALC_TYPE.plus, target.HP * this.ability.addMdmg * 0.01)
 		let percentPenetration = 0
 
+		//다이아몬드 기사 아이템
+		if (this.inven.haveItem(32)) {
+			this.addMaxHP(5)
+		}
+
 		//석궁아이템
-		if (this.haveItem(31)) {
+		if (this.inven.haveItem(31)) {
 			percentPenetration = 40
 		}
 
-		if (this.haveSkillEffectAndOwner("timo_u", target.turn)) {
+		if (this.effects.haveSkillEffectAndSource("timo_u", target.turn)) {
 			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
 		}
 
 		let flags = []
-		if(sourceType=="skill"){
-			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1-target.ability.skillDmgReduction * 0.01)
-			damage.updateTrueDamage(Util.CALC_TYPE.plus,this.adamage)
-			
+		if (sourceType == "skill") {
+			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1 - target.ability.skillDmgReduction * 0.01)
+			.updateTrueDamage(Util.CALC_TYPE.plus, this.mapdata.adamage)
+
 			if (damage.getTotalDmg() === 0) {
 				flags.push(Util.HPChangeDataFlag.NODMG_HIT)
 			}
-		}
-		else if(sourceType=="basicattack"){
-			
+		} else if (sourceType == "basicattack") {
 		}
 
 		let calculatedDmg = this.ability.mergeDamageWithResistance(damage, target, percentPenetration)
 
-		target.statistics.add(ENUM.STAT.DAMAGE_REDUCED,damage.getTotalDmg() - calculatedDmg)
-		this.statistics.add(ENUM.STAT.DAMAGE_DEALT,calculatedDmg)
+		target.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage.getTotalDmg() - calculatedDmg)
+		this.statistics.add(ENUM.STAT.DAMAGE_DEALT, calculatedDmg)
 
-
-		return target.doPlayerDamage(calculatedDmg, this.turn, name, true,flags)
+		return target.doPlayerDamage(calculatedDmg, this.turn, name, true, flags)
 	}
 
 	getBaseBasicAttackDamage(): Util.Damage {
@@ -2133,8 +1155,8 @@ abstract class Player {
 		let range = this.ability.attackRange
 
 		let cancounterattack = []
-		for (let p of this.players) {
-			if (Math.abs(this.pos - p.pos) <= range && this.isValidOpponent(p)) {
+		for (let p of this.game.playerSelector.getAll()) {
+			if (Math.abs(this.pos - p.pos) <= range && this.game.playerSelector.isValidOpponent(this,p)) {
 				this.hitBasicAttack(p, false)
 				cancounterattack.push(p)
 			}
@@ -2149,79 +1171,32 @@ abstract class Player {
 	//========================================================================================================
 
 	hitBasicAttack(target: Player, isCounterAttack: boolean): boolean {
-		if (this.haveSkillEffect("timo_q") || this.haveEffect(ENUM.EFFECT.BLIND)) {
+		if (!this.effects.canBasicAttack()) {
 			return false
 		}
 
 		let damage: Util.Damage = this.ability.basicAttackDamage(target)
 
 		//지하철에서는 평타피해 40% 감소
-		if (this.game.mapId === 2 && this.isInSubway) {
+		if (this.game.mapId === 2 && this.mapdata.isInSubway) {
 			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.6)
 		}
 		//맞공격시 피해 절반
 		if (isCounterAttack) {
 			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.5)
 		}
-		this.statistics.add(ENUM.STAT.BASICATTACK,1)
+		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 
 		return this.dealDamageTo(target, damage, "basicattack", this.getBasicAttackName())
 	}
 	//========================================================================================================
-	/**
-	 *
-	 * @param {}} start
-	 * @param {*} end
-	 * @returns turn list of players in range
-	 */
-	getPlayersIn(start: number, end: number): number[] {
-		let targets = []
 
-		for (let p of this.players) {
-			if (this.isValidOpponent(p) && p.pos >= start && p.pos <= end) {
-				targets.push(p.turn)
-			}
-		}
-		return targets
-	}
-	//========================================================================================================
-
-	/**
-	 * 스킬 전용
-	 * 범위내의 공격 가능한 대상들의 턴 반환
-	 * @param {*} range
-	 * @param {*} skill_id start with 0
-	 * @return 'notarget' 타깃이 없으면
-	 * @return array of turns of targets
-	 */
-	getAvailableTarget(range: number, skill_id: number): number[] {
-		let targets = []
-		// console.log(this.distance(this.players[1], this))
-
-		for (let p of this.players) {
-			if (this.isValidOpponent(p)) {
-				if (this.distance(p, this) <= range) {
-					targets.push(p.turn)
-				} else if (
-					p.haveSign("silver_w", this.turn) &&
-					skill_id === ENUM.SKILL.Q &&
-					this.distance(p, this) <= range + 5
-				) {
-					targets.push(p.turn)
-				}
-			}
-		}
-
-		return targets
-		//target choosing
-	}
-	//========================================================================================================
 
 	hitOneTarget(target: number, skilldmgdata: Util.SkillDamage) {
 		//adamage
 		let skill = skilldmgdata.skill
 
-		let died = this.players[target].hitBySkill(
+		let died = this.game.playerSelector.get(target).hitBySkill(
 			skilldmgdata.damage,
 			this.turn,
 			skill,
@@ -2243,495 +1218,53 @@ abstract class Player {
 	hitBySkill(skilldmg: Util.Damage, source: number, skill_id: number, onHit: Function, type?: string): boolean {
 		//스킬별 이펙트표시를 위한 이름
 		if (type == null) {
-			type = this.players[source].getSkillName(skill_id)
+			type = this.game.playerSelector.get(source).getSkillName(skill_id)
 		}
 
 		//방어막 효과
-		if (this.haveEffect(ENUM.EFFECT.SHIELD)) {
+		if (this.effects.has(ENUM.EFFECT.SHIELD)) {
 			console.log("shield")
-			this.resetEffect(ENUM.EFFECT.SHIELD)
+			this.effects.reset(ENUM.EFFECT.SHIELD)
 			this.doPlayerDamage(0, source, type, true, [Util.HPChangeDataFlag.SHIELD])
 			return false
 		}
-		
-		let died=this.players[source].dealDamageTo(this, skilldmg, "skill", type)
-
-		if (onHit != null && !this.dead) {
+		if (onHit != null) {
 			onHit(this)
 		}
+		let died = this.game.playerSelector.get(source).dealDamageTo(this, skilldmg, "skill", type)
+
+		
 
 		return died
 	}
 	//========================================================================================================
 
-	checkProjectile() {
+	checkProjectile():boolean {
 		if (this.invulnerable) {
-			return
+			return false
 		}
-		let other = this.getPlayersByCondition(-1, false, true, false, false)
+		let ignoreObstacle=false
+		let other = this.game.playerSelector.getPlayersByCondition(this,-1, false, true, false, false)
 		for (let o of other) {
 			for (let p of o.projectile) {
 				if (p.activated && p.scope.includes(this.pos)) {
-					this.hitBySkill(p.damage, o.turn, p.skill, p.action, p.type)
+					
+					let died=this.hitBySkill(p.damage, o.turn, p.skill, p.action, p.type)
+					
+					if(p.hasFlag(PROJECTILE_FLAG.IGNORE_OBSTACLE) || died) 
+						ignoreObstacle= true
+
 					if (p.disappearWhenStep) {
 						p.remove()
 					}
 				}
 			}
 		}
-	}
-	//========================================================================================================
-
-	giveSign(sign: any) {
-		this.message(this.name + " got hit by" + sign.name)
-		this.signs.push(sign)
-	}
-	//========================================================================================================
-
-	haveSign(type: string, owner: number) {
-		let o = this.signs.some((sign: any) => sign.type === type && sign.owner_turn === owner)
-		return o
-	}
-	//========================================================================================================
-
-	removeSign(type: string, owner: number) {
-		this.signs = this.signs.filter((sign: any) => !(sign.type === type && sign.owner_turn === owner))
+		return ignoreObstacle
 	}
 
-	giveSkillEffect(effect: Util.SkillEffect) {
-		this.message(this.name + " got " + effect.name + " effect")
-		this.skilleffects.push(effect)
-	}
-	//========================================================================================================
 
-	haveSkillEffectAndOwner(type: string, owner: number) {
-		return this.skilleffects.some((ef: Util.SkillEffect) => ef.type === type && ef.owner_turn === owner)
-	}
-	//========================================================================================================
 
-	haveSkillEffect(type: string) {
-		return this.skilleffects.some((ef) => ef.type === type)
-	}
-	//========================================================================================================
-
-	removeSkillEffect(type: string, owner: number) {
-		this.skilleffects = this.skilleffects.filter((ef) => !(ef.type === type && ef.owner_turn === owner))
-	}
-	//========================================================================================================
-
-	signCoolDown() {
-		this.signs = this.signs.map(function (s: any) {
-			s.dur = Util.decrement(s.dur)
-			return s
-		})
-		this.signs = this.signs.filter((s: any) => s.dur > 0)
-		console.log(this.signs)
-	}
-	//========================================================================================================
-
-	skillEffectCoolDown() {
-		this.skilleffects = this.skilleffects.map(function (s: Util.SkillEffect) {
-			s.dur = Util.decrement(s.dur)
-			return s
-		})
-		this.skilleffects = this.skilleffects.filter((s: Util.SkillEffect) => s.dur > 0)
-		console.log(this.skilleffects)
-	}
-
-	haveItem(item: number): boolean {
-		return this.item[item] > 0
-	}
-
-	addActiveItem(itemdata: Util.ActiveItem) {
-		this.activeItems.push(itemdata)
-		console.log("buy active item" + itemdata)
-	}
-
-	/**
-	 * 한번이라도 산적있으면 true
-	 * @param {}item_id id of item
-	 * @returns
-	 */
-	boughtActiveItem(item_id: number) {
-		return this.activeItems.some((i: Util.ActiveItem) => i.id === item_id)
-	}
-
-	activeItemCoolDown() {
-		this.activeItems.forEach((i) => i.cooldown())
-	}
-
-	/**
-	 * 한번이라도 산적있고 지금 아이템 가지고있고 쿨타임 돌아왔으면 true
-	 * @param {} item_id id of item
-	 * @returns
-	 */
-	isActiveItemAvaliable(item_id: number) {
-		//console.log(this.item + "avaliable" + this.activeItems)
-		if (!this.haveItem(item_id)) return false
-
-		return this.activeItems.some((it) => it.id === item_id && it.cooltime === 0)
-	}
-
-	/**
-	 * 아이템 사용해서 쿨타임 초기화
-	 * @param {} item_id id of item
-	 * @returns
-	 */
-	useActiveItem(item_id: number) {
-		this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
-	}
-
-	kidnap(result: boolean) {
-		if (result) {
-			this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 2)
-		} else {
-			this.doObstacleDamage(300, "stab")
-		}
-	}
-	threaten(result: boolean) {
-		if (result) {
-			this.takeMoney(50)
-		} else {
-			this.changeToken(-3)
-		}
-	}
-	trial(num: number) {
-		console.log("trial" + num)
-		switch (num) {
-			case 0:
-				this.takeMoney(100)
-				this.message(this.name + "fine 100$")
-				break
-			case 1:
-				this.applyEffectBeforeSkill(ENUM.EFFECT.SLAVE, 99999)
-				break
-			case 2:
-				let target = this.getNearestPlayer(40, true, false)
-				if (target !== null && target !== undefined) {
-					this.forceMove(target.pos, true, "levitate")
-				}
-				break
-			case 3:
-				this.killplayer()
-				this.message(this.name + " has been sentenced to death")
-				break
-			case 4:
-				this.doObstacleDamage(Math.floor(this.HP / 2), "stab")
-				this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
-				this.message(this.name + " will get retrial")
-				break
-			case 5:
-				for (let p of this.players) {
-					let m = Math.random()
-					if (m > 0.5) {
-						p.killplayer()
-					}
-				}
-				break
-		}
-	}
-	//========================================================================================================
-
-	casino(num: number) {
-		switch (num) {
-			case 0:
-				this.giveMoney(100)
-				break
-			case 1:
-				this.giveMoney(this.money)
-				break
-			case 2:
-				this.applyEffectBeforeSkill(ENUM.EFFECT.SPEED, 2)
-				break
-			case 3:
-				this.doObstacleDamage(Math.floor(this.HP / 2), "stab")
-				break
-			case 4:
-				this.takeMoney(Math.floor(this.money / 2))
-				break
-			case 5:
-				this.doObstacleDamage(50, "stab")
-				this.applyEffectBeforeSkill(ENUM.EFFECT.STUN, 1)
-				break
-		}
-	}
-	//========================================================================================================
-
-	getStoreData(priceMultiplier: number) {
-		return {
-			item: this.itemSlots,
-			money: this.money,
-			token: this.token,
-			life: this.life,
-			lifeBought: this.lifeBought,
-			recommendeditem: this.itemtree.items,
-			itemLimit: this.game.itemLimit,
-			priceMultiplier: priceMultiplier
-		}
-	}
-
-	convertCountToItemSlots(items: number[]): number[] {
-		let itemslot = Util.makeArrayOf(-1, SETTINGS.itemLimit)
-		let index = 0
-		for (let i = 0; i < items.length; ++i) {
-			for (let j = 0; j < items[i]; ++j) {
-				itemslot[index] = i
-				index += 1
-			}
-		}
-		return itemslot
-	}
-
-	convertItemSlotsToCount(itemslots: number[]): number[] {
-		let items = Util.makeArrayOf(0, ItemList.length)
-		for (let item of itemslots) {
-			items[item] += 1
-		}
-		return items
-	}
-
-	//========================================================================================================
-
-	changeOneItem(item: number, count: number) {
-		this.item[item] += count
-
-		let maxHpChange = 0
-		if (count > 0) {
-			if (ItemList[item].itemlevel >= 3) {
-				this.message(this.name + " bought " + count + " " + ItemList[item].name)
-			}
-
-			this.statistics.addItemRecord({
-				item_id: item,
-				count: count,
-				turn: this.game.totalturn
-			})
-		}
-		for (let j = 0; j < ItemList[item].ability.length; ++j) {
-			let ability = ItemList[item].ability[j]
-			let change_amt = ability.value * count
-			maxHpChange += this.ability.update(ability.type, change_amt)
-		}
-		if (maxHpChange !== 0) {
-			this.addMaxHP(maxHpChange)
-		}
-
-		if (ItemList[item].active_cooltime != null && !this.boughtActiveItem(item)) {
-			this.addActiveItem(new Util.ActiveItem(ItemList[item].name, item, ItemList[item].active_cooltime))
-		}
-	}
-
-	/**
-	 *data: 아이템 슬롯
-	 * @param {*} data {
-	 * storedata:{item:int[]}
-	 * moneyspend:int
-	 * }
-	 */
-	updateItem(data: any) {
-		console.log("updateitem " + data.item)
-		console.log("updatetoken " + data.token)
-		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
-		this.changeToken(data.tokenbought)
-		this.changeLife(data.life)
-		this.lifeBought += data.life
-
-		let newitemlist = this.convertItemSlotsToCount(data.item)
-		this.itemSlots = data.item
-
-		for (let i = 0; i < ItemList.length; ++i) {
-			let diff = newitemlist[i] - this.item[i]
-
-			if (diff === 0) {
-				continue
-			}
-			this.changeOneItem(i, diff)
-		}
-
-		//	this.item = data.storedata.item
-		if (this.game.instant) return
-		server.update(this.game.rname, "item", this.turn, this.itemSlots)
-	}
-
-	/**
-	 *data: 아이템 각각의 갯수
-	 * @param {*} data {
-	 * storedata:{item:int[]}
-	 * moneyspend:int
-	 * }
-	 */
-	aiUpdateItem(data: any) {
-		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
-		this.changeToken(data.tokenbought)
-		this.changeLife(data.life)
-		this.lifeBought += data.life
-
-		for (let i = 0; i < ItemList.length; ++i) {
-			let diff = data.item[i] - this.item[i]
-
-			if (diff === 0) {
-				continue
-			}
-			this.changeOneItem(i, diff)
-		}
-		this.itemSlots = this.convertCountToItemSlots(this.item)
-		//	this.item = data.storedata.item
-		if (this.game.instant) return
-		server.update(this.game.rname, "item", this.turn, this.itemSlots)
-	}
-	//========================================================================================================
-
-	/**
-	 *  컴퓨터 아이템 구입
-	 *
-	 */
-	aiStore() {
-		console.log("aistore" + this.money)
-		let list = this.itemtree
-		let totalMoneySpend = 0
-		let templist = this.item.map((x) => x)
-		if (list.level >= 6) {
-			this.aiBuyLife()
-			return
-		}
-		while (this.money - totalMoneySpend >= 30) {
-			let tobuy = 0
-			if (list.level >= list.items.length) {
-				tobuy = list.final
-			} else {
-				tobuy = list.items[list.level]
-			}
-
-			let moneyspend = this.aiAttemptItemBuy(tobuy - 1, templist, { val: totalMoneySpend }).val - totalMoneySpend
-			if (moneyspend === 0) {
-				break
-			}
-			totalMoneySpend += moneyspend
-			// console.log(templist)
-		}
-
-		this.aiUpdateItem({
-			item: templist,
-			moneyspend: totalMoneySpend,
-			tokenbought: 0,
-			life: 0,
-			lifeBought: 0
-		})
-	}
-
-	aiBuyLife() {
-		let lifeprice = 150 * Math.pow(2, this.lifeBought)
-
-		while (this.money >= lifeprice) {
-			lifeprice = 150 * Math.pow(2, this.lifeBought)
-			this.changeLife(1)
-			this.lifeBought += 1
-			this.changemoney(-lifeprice, ENUM.CHANGE_MONEY_TYPE.SPEND)
-		}
-	}
-	//========================================================================================================
-
-	isItemLimitExceeded(temp_itemlist: number[]) {
-		let count = temp_itemlist.reduce((total, curr) => total + curr, 0)
-
-		return count + 1 > this.game.itemLimit
-	}
-	//========================================================================================================
-
-	/**
-	 *
-	 * @param {*} tobuy index of item 0~
-	 * @param {*} temp_itemlist int[]
-	 * @param {*} moneyspend  {val:totalmoneyspend}
-	 *
-	 * return moneyspend  {val:totalmoneyspend}
-	 */
-	aiAttemptItemBuy(tobuy: number, temp_itemlist: number[], moneyspend: { val: number }): { val: number } {
-		let item = ItemList[tobuy]
-		let temp_itemlist2 = temp_itemlist.map((x) => x) //이 아이템을 샀을 경우의 아이템리스트
-		let price = item.price - this.calcDiscount(tobuy, temp_itemlist2)
-
-		//구매가능
-		if (this.canbuy(price, moneyspend.val) && !this.isItemLimitExceeded(temp_itemlist2) && this.checkStoreLevel(item)) {
-			moneyspend.val += price
-			Util.copyElementsOnly(temp_itemlist, temp_itemlist2)
-			temp_itemlist[tobuy] += 1
-			if (item.itemlevel === 3) {
-				this.itemtree.level += 1
-			}
-
-			//불가
-		} else {
-			if (item.children.length === 0) {
-				return { val: 0 }
-			}
-
-			let temp_itemlist3 = temp_itemlist.map((x) => x)
-
-			for (let i = 0; i < item.children.length; ++i) {
-				let child = item.children[i] - 1
-
-				if (temp_itemlist3[child] > 0) {
-					temp_itemlist3[child] -= 1
-					continue
-				}
-
-				this.aiAttemptItemBuy(child, temp_itemlist, moneyspend)
-			}
-			temp_itemlist3 = null
-		}
-		return moneyspend
-	}
-	/**
-	 * 첫번째 상점에선 2등급이상아이템 구입불가
-	 * @param {} item
-	 */
-	checkStoreLevel(item: any) {
-		if (this.level <= 2 && item.itemlevel >= 2) {
-			console.log("false t")
-			return false
-		}
-		return true
-	}
-	//========================================================================================================
-
-	/**
-	 * 아이템 구매가능여부
-	 * @param {*} price
-	 */
-	canbuy(price: number, moneyspend: number): boolean {
-		return price <= this.money - moneyspend
-	}
-	//========================================================================================================
-
-	/**
-	 * 아이템 구입시 할인될 가격 반환
-	 * @param {*} tobuy int
-	 * @param {*} temp_itemlist copy of player`s item list
-	 */
-	calcDiscount(tobuy: number, temp_itemlist: number[]): number {
-		let thisitem = ItemList[tobuy]
-
-		if (thisitem.children.length === 0) {
-			return 0
-		}
-		let discount = 0
-		//c:number   start with 1
-		for (let c of thisitem.children) {
-			if (temp_itemlist[c - 1] === 0) {
-				discount += this.calcDiscount(c - 1, temp_itemlist)
-			} else {
-				discount += ItemList[c - 1].price
-				temp_itemlist[c - 1] -= 1
-			}
-		}
-		return discount
-	}
-	//========================================================================================================
-
-	getItemNames(): string[] {
-		return ItemList.map((i: any) => i.name)
-	}
 }
 
 export { Player }

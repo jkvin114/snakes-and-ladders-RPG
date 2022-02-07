@@ -8,7 +8,7 @@ import cors = require("cors")
 import os = require("os")
 import { Server, Socket } from "socket.io"
 import cliProgress = require("cli-progress")
-import {GameRecord,Test,SimulationRecord} from "./statistics"
+import {GameRecord,Test,SimulationRecord} from "./statisticsDB"
 const app = express()
 
 console.log("start server")
@@ -442,161 +442,75 @@ export const simulationOver = function (rname: string) {
 }
 
 
+export namespace PlayerClientInterface{
 
-export const changeHP = function (rname: string, hpChangeData: any) {
-	if (isInstant(rname)) {
-		return
+	export const changeHP=(rname:string,hpChangeData: any) =>{
+		io.to(rname).emit("server:hp", hpChangeData)
+	} 
+	export const changeMoney = (rname: string,turn:number,amt:number,result:number) =>{
+		io.to(rname).emit("server:money", { turn: turn, amt: amt, result:result })
 	}
-	console.log("Change hp")
-	io.to(rname).emit("server:hp", hpChangeData)
-}
-export const changeHP_damage = function (rname: string, hpChangeData: any) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("Change hp damage")
+
+	export const changeHP_damage = (rname: string, hpChangeData: any) =>
 	io.to(rname).emit("server:damage", hpChangeData)
-}
-export const changeHP_heal = function (rname: string, hpChangeData: any) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("Change hp heal")
+
+	export const changeHP_heal =  (rname: string, hpChangeData: any)=>
 	io.to(rname).emit("server:heal", hpChangeData)
-}
 
-export const changeShield = function (rname: string, shieldData: any) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("Change shield" + shieldData.shield)
+	export const changeShield = (rname: string, shieldData: any)=>
 	io.to(rname).emit("server:shield", shieldData)
-}
 
-export const changeMoney = function (rname: string, who: number, amt: number, result: any) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("change money")
+	export const giveEffect = (rname: string,turn:number,effect:number,num:number)=>
+	io.to(rname).emit("server:status_effect", { turn: turn, effect: effect, num: num })
 
-	io.to(rname).emit("server:money", { turn: who, amt: amt, result: result })
-}
-export const giveEffect = function (rname: string, who: number, effect: number, num: number) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("change effect" + effect)
-	io.to(rname).emit("server:status_effect", { turn: who, effect: effect, num: num })
-}
-export const tp = function (rname: string, who: number, pos: number, movetype: string) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("change pos")
-	io.to(rname).emit("server:teleport_pos", { turn: who, pos: pos, movetype: movetype })
-}
-export const removeProj = function (rname: string, UPID: string) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("remove projectile")
+	export const tp =  (rname: string,turn:number,pos:number,movetype:string)=>
+	io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype})
+	
+	export const removeProj =  (rname: string, UPID: string)=>
 	io.to(rname).emit("server:delete_projectile", UPID)
-}
-export const die = function (rname: string, killData: any) {
-	if (isInstant(rname)) {
-		return
-	}
-
-	let room = findRoomByName(rname)
-	if (!room) {
-		return
-	}
-	console.log(killData.turn + " died")
-
-	io.to(rname).emit("server:death", killData)
-}
-
-export const respawn = function (rname: string, target: number, respawnPos: number, isRevived: boolean) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log(target + " respawn" + isRevived)
-
-	io.to(rname).emit("server:respawn", target, respawnPos, isRevived)
-}
-
-export const message = function (rname: string, message: string) {
-	console.log(message)
-	if (isInstant(rname)) {
-		return
-	}
+	
+	export const die =  (rname: string, killData: Object)=>io.to(rname).emit("server:death", killData)
+	
+	export const respawn =  (rname: string,turn:number,respawnPos:number,isRevived:boolean) =>
+	io.to(rname).emit("server:respawn", {turn:turn,respawnPos:respawnPos,isRevived:isRevived})
+	
+	export const message = (rname: string, message: string) =>
 	io.to(rname).emit("server:receive_message", message)
-}
-export const playsound = function (rname: string, sound: string) {
-	if (isInstant(rname)) {
-		return
-	}
-	io.to(rname).emit("server:sound", sound)
-}
-export const placePassProj = function (rname: string, type: String, pos: number, UPID: string) {
-	if (isInstant(rname)) {
-		return
-	}
-	io.to(rname).emit("server:create_passprojectile", type, pos, UPID)
-}
-export const placeProj = function (rname: string, proj: any) {
-	if (isInstant(rname)) {
-		return
-	}
+
+	export const playsound =  (rname: string, sound: string) =>
+		io.to(rname).emit("server:sound", sound)
+	
+	export const placePassProj =  (rname: string,type:string,pos:number,UPID:string)=>
+		io.to(rname).emit("server:create_passprojectile",{type:type,pos:pos,UPID:UPID})
+
+	export const placeProj =  (rname: string, proj: any)=>
 	io.to(rname).emit("server:create_projectile", proj)
+
+	export const update =  (rname: string,type:string,turn:number,amt:any) =>
+	io.to(rname).emit("server:update_other_data",{type:type,turn:turn,amt:amt})
+
+	export const updateSkillInfo =  (rname: string, turn:number,info_kor:string[],info_eng:string[])=>
+		io.to(rname).emit("server:update_skill_info", {turn:turn,info_kor:info_kor,info_eng:info_eng})
+
+
+	export const visualEffect = (rname: string,turn:number,type:string,source:number)=>
+		io.to(rname).emit("server:visual_effect",{turn:turn,type:type,source:source})
+	
+	export const indicateObstacle =  (rname: string,turn:number,obs:number )=>
+		io.to(rname).emit("server:indicate_obstacle",{turn:turn,obs:obs})
+
+	export const indicateItem = (rname: string, turn:number,item:number[])=>
+		io.to(rname).emit("server:indicate_item",{turn:turn,item:item})
+	
+	export const goStore = (rname: string,turn:number,storeData:Object)=>
+		io.to(rname).emit("server:store", {
+			turn: turn,
+			storeData: storeData
+		})
 }
 
-export const update = function (rname: string, type: string, turn: number, amt: any) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("update " + type)
-	io.to(rname).emit("server:update_other_data", type, turn, amt)
-}
 
-export const updateSkillInfo = function (rname: string, turn: number, info_kor: string[], info_eng: string[]) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("update_skill_info ")
-	io.to(rname).emit("server:update_skill_info", turn, info_kor, info_eng)
-}
 
-export const effect = function (rname: string, turn: number, type: string, source: number) {
-	if (isInstant(rname)) {
-		return
-	}
-	console.log("effect " + type)
-	io.to(rname).emit("server:visual_effect", turn, type, source)
-}
-export const indicateObstacle = function (rname: string, turn: number, obs: number) {
-	if (isInstant(rname)) {
-		return
-	}
-	io.to(rname).emit("server:indicate_obstacle", turn, obs)
-}
-export const indicateItem = function (rname: string, turn: number, item: number) {
-	if (isInstant(rname)) {
-		return
-	}
-	io.to(rname).emit("server:indicate_item", turn, item)
-}
-export const goStore = function (rname: string, turn: number, storedata: any) {
-	if (isInstant(rname)) {
-		return
-	}
-
-	io.to(rname).emit("server:store", {
-		turn: turn,
-		storeData: storedata
-		//room.game.getStoreData(room.game.thisturn)
-	})
-}
 app.get("/rooms", function (req, res, next) {
 	let list = ""
 
@@ -702,9 +616,9 @@ app.post("/chat", function (req, res) {
 	}
 	io.to(req.body.rname).emit(
 		"server:receive_message",
-		room.game.players[Number(req.body.turn)].name +
+		room.game.playerSelector.get(Number(req.body.turn)).name +
 			"(" +
-			SETTINGS.champnames[room.game.players[Number(req.body.turn)].champ] +
+			SETTINGS.champnames[room.game.playerSelector.get(Number(req.body.turn)).champ] +
 			"): " +
 			req.body.msg
 	)

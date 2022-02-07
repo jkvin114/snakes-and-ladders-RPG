@@ -2,7 +2,7 @@ import { Player} from "../player"
 import * as ENUM from "../enum"
 import { Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
 import { Game } from "../Game"
-import {Projectile,ProjectileBuilder} from "../Projectile"
+import {Projectile,ProjectileBuilder,PROJECTILE_FLAG} from "../Projectile"
 
 class Creed extends Player {
 	onoff: boolean[]
@@ -29,7 +29,7 @@ class Creed extends Player {
 		this.skill_name = ["reaper_q", "hit", "reaper_r"]
 		this.itemtree = {
 			level: 0,
-			items: [36, 1, 18, 24, 32],
+			items: [1, 36, 18, 24, 32],
 			final: 1
 		}
 		this.usedQ = false
@@ -94,8 +94,9 @@ class Creed extends Player {
 		.setAction(function (target: Player) {
 			
 			target.forceMove(target.pos - 4, false, "simple")
-			target.effects.obs[ENUM.EFFECT.STUN]=1
+			//target.effects.obs[ENUM.EFFECT.STUN]=1
 		})
+		.addFlag(PROJECTILE_FLAG.IGNORE_OBSTACLE)
 		.setDuration(2)
 		.build()
 	}
@@ -165,7 +166,7 @@ class Creed extends Player {
 				if (this.usedQ) {
 					this.startCooltime(ENUM.SKILL.Q)
 					this.usedQ = false
-					this.setShield("swordsman_q",new ShieldEffect(1,40), false)
+					this.effects.setShield("swordsman_q",new ShieldEffect(1,40), false)
 
 
 					skillattr = {
@@ -175,7 +176,7 @@ class Creed extends Player {
 				} else {
 					
 					this.usedQ = true
-					this.setShield("swordsman_q",new ShieldEffect(1,30), false)
+					this.effects.setShield("swordsman_q",new ShieldEffect(1,30), false)
 					skillattr = {
 						damage: new Damage(this.getSkillBaseDamage(s), 0, 0),
 						skill: ENUM.SKILL.Q
@@ -184,9 +185,9 @@ class Creed extends Player {
 				break
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
-				this.setShield("swordsman_r",new ShieldEffect(3,70), false)
+				this.effects.setShield("swordsman_r",new ShieldEffect(3,70), false)
 				let originalpos = this.pos
-				this.forceMove(this.players[target].pos, true, "levitate")
+				this.forceMove(this.game.playerSelector.get(target).pos, true, "levitate")
 				skillattr = {
 					damage: new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),
 					skill: ENUM.SKILL.ULT

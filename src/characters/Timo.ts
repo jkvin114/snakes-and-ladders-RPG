@@ -94,7 +94,7 @@ class Timo extends Player {
 		.setGame(this.game)
 		.setSkillRange(30)
 		.setAction(function (target: Player) {
-			target.giveSkillEffect(new SkillEffect("timo_u",_this.turn,4,"Death Poison",dmg))
+			target.effects.giveSkillEffect(new SkillEffect("timo_u",_this.turn,4,"Death Poison",dmg))
 		})
         .setTrajectorySpeed(300)
 		.setDuration(2)
@@ -136,11 +136,11 @@ class Timo extends Player {
         
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 1
-		this.applyEffectAfterSkill(ENUM.EFFECT.INVISIBILITY, 1)
+		this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1,ENUM.EFFECT_TIMING.TURN_END)
 
     }
 	getSkillName(skill: number): string {
-        if(skill===ENUM.SKILL.Q && this.haveEffect(ENUM.EFFECT.INVISIBILITY)){
+        if(skill===ENUM.SKILL.Q && this.effects.has(ENUM.EFFECT.INVISIBILITY)){
             return "ghost_w_q"
         }
 		return this.skill_name[skill]
@@ -179,16 +179,16 @@ class Timo extends Player {
 				this.startCooltime(ENUM.SKILL.Q)
 				
 				let admg = 0
-				if (this.level > 1 && this.haveEffect(ENUM.EFFECT.INVISIBILITY)) {
+				if (this.level > 1 && this.effects.has(ENUM.EFFECT.INVISIBILITY)) {
 					admg = Math.floor(
-						0.3 * (this.players[target].MaxHP - this.players[target].HP)
+						0.3 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP)
 					)
 				}
 				skillattr = {
 					damage: new Damage(0,this.getSkillBaseDamage(s) + admg, 0),
 					skill: ENUM.SKILL.Q,
                     onHit:function(target:Player){
-                       target.applyEffectAfterSkill(ENUM.EFFECT.BLIND, 2)
+                       target.effects.apply(ENUM.EFFECT.BLIND, 2,ENUM.EFFECT_TIMING.TURN_END)
                     }
 				}
 				break

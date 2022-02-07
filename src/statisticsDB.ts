@@ -1,9 +1,8 @@
-import mongoose, { mongo } from "mongoose"
+import mongoose from "mongoose"
 require('dotenv').config({path:__dirname+'/variables.env'})
 
 
-//const MONGODB_URL="mongodb+srv://root:4731@gamestatistics.zs9nv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-console.log("connecting to mongodb at "+process.env.MONGODB_URL)
+console.log("connecting to mongodb ")
 try{
     mongoose.connect(process.env.MONGODB_URL)
 }
