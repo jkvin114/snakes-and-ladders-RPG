@@ -1,29 +1,28 @@
 import { Player} from "../player"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
 class Jellice extends Player {
-	onoff: boolean[]
-	hpGrowth: number
-	projectile: Projectile[]
-	cooltime_list: number[]
+//	onoff: boolean[]
+	readonly hpGrowth: number
+	readonly cooltime_list: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private skill_name: string[]
+	private readonly skill_name: string[]
     private u_used:number
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
-		let basic_stats = [170, 30, 6, 6, 1, 50]
+		const basic_stats = [170, 30, 6, 6, 0, 50]
 		super(turn, team, game, ai, char, name, "Magician", basic_stats)
-		this.onoff = [false, false, false]
+	//	this.onoff = [false, false, false]
 		this.hpGrowth = 80
-		this.projectile = []
 		this.cooltime_list = [3, 5, 7]
 		this.skill_name = ["magician_q", "hit", "magician_r"]
 		this.u_used = 0

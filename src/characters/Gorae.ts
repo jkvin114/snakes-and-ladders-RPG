@@ -1,28 +1,26 @@
 import { Player } from "../player"
 import * as ENUM from "../enum"
-import { Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
+import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
 class Gorae extends Player {
-	onoff: boolean[]
-	hpGrowth: number
-	projectile: Projectile[]
-	cooltime_list: number[]
+	//onoff: boolean[]
+	readonly hpGrowth: number
+	readonly cooltime_list: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private skill_name: string[]
+	private readonly skill_name: string[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
-		let basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
+		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
 		super(turn, team, game, ai, char, name, "Kraken", basic_stats)
-		this.onoff = [false, false, false]
 		this.hpGrowth = 125
-		this.projectile = []
 		this.cooltime_list = [2, 4, 6]
 		this.skill_name = ["kraken_q", "hit", "kraken_r"]
 		this.itemtree = {

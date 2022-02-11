@@ -1,32 +1,29 @@
 import { Player} from "../player"
 import * as ENUM from "../enum"
-import { Damage, SkillDamage, SkillTargetSelector,ShieldEffect } from "../Util"
+import { Damage, SkillDamage, SkillTargetSelector } from "../Util"
+import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
 class Jean extends Player {
-	onoff: boolean[]
-	hpGrowth: number
-	projectile: Projectile[]
-	cooltime_list: number[]
+//	onoff: boolean[]
+	readonly hpGrowth: number
+	readonly cooltime_list: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private skill_name: string[]
-	private playersign: number[]
+	private readonly skill_name: string[]
 	private u_target: number
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
-		let basic_stats: number[] = [200, 40, 7, 7, 0, 0]
+		const basic_stats: number[] = [200, 40, 7, 7, 0, 0]
 		super(turn, team, game, ai, char, name, "Sniper", basic_stats)
-		this.onoff = [false, false, false]
+	//	this.onoff = [false, false, false]
 		this.hpGrowth = 90
-		this.projectile = []
 		this.cooltime_list = [3, 4, 9]
 		this.skill_name = ["gun", "sniper_w", "sniper_r"]
-		this.playersign = [0, 0, 0, 0]
 		this.u_target = -1
 		this.itemtree = {
 			level: 0,
@@ -81,7 +78,6 @@ class Jean extends Player {
 
 	private buildProjectile() {
 		let _this: Player = this.getPlayer()
-		let playersign = this.playersign
 		return new ProjectileBuilder({
 			owner: _this,
 			size: 3,

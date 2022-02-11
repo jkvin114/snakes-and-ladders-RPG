@@ -1,18 +1,8 @@
-import { Game } from "./Game"
-import SETTINGS = require("../res/settings.json")
-import {
-	updateNextTurn,
-	syncVisibility,
-	rollDice,
-	startTimeout,
-	stopTimeout,
-	forceNextturn,
-	sendPendingObs,
-	setSkillReady,
-	sendPendingAction,
-	simulationOver
-} from "./app"
+import { Game, GameSetting } from "./Game"
+import SETTINGS = require("../res/globalsettings.json")
+import { RoomClientInterface } from "./app"
 import cliProgress = require("cli-progress")
+import { Simulation ,SimulationSetting,ISimulationSetting} from "./SimulationRunner"
 
 type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean }
 enum PlayerType {
@@ -33,7 +23,8 @@ class Room {
 	isTeam: boolean
 	playerlist: ProtoPlayer[]
 	teams: boolean[]
-	simulation: boolean
+	simulation: Simulation
+	//simulation: boolean
 	instant: boolean
 	map: number
 	stats: any[]
@@ -50,12 +41,13 @@ class Room {
 		this.guestnum = 0
 		this.isTeam = false
 		this.playerlist = this.makePlayerList()
-		this.simulation = false
+		//	this.simulation = false
 		this.instant = false
 		this.map = 0
 		this.stats = []
 		this.idleTimeout = null
 		this.connectionTimeout = null
+		this.simulation=null
 	}
 
 	makePlayerList(): ProtoPlayer[] {
@@ -84,7 +76,7 @@ class Room {
 
 	setSimulation(isSimulation: boolean) {
 		if (isSimulation) {
-			this.simulation = true
+			//	this.simulation = true
 			this.instant = true
 		}
 
@@ -166,7 +158,7 @@ class Room {
 		for (let i = 0; i < this.playerlist.length; ++i) {
 			let n = this.playerlist[i].name
 			if (this.playerlist[i].type === PlayerType.AI) {
-				n = SETTINGS.champnames[Number(this.playerlist[i].champ)] + "_Bot(" + String(i + 1) + "P)"
+				n = SETTINGS.characterNames[Number(this.playerlist[i].champ)] + "_Bot(" + String(i + 1) + "P)"
 			}
 
 			names.push(n)
@@ -185,17 +177,37 @@ class Room {
 		this.teams = teams
 	}
 	user_gameReady(instant: boolean, simulation_count: number, roomName: string) {
-		if (instant) {
-			this.simulation = true
-			this.simulation_count = simulation_count
-			this.simulation_total_count = simulation_count
-		}
 		this.instant = instant
 
+		if (instant) {
+			//	this.simulation = true
+			// this.simulation_count = simulation_count
+			// this.simulation_total_count = simulation_count
+			let isTeam=true
+			let set:ISimulationSetting={
+				mapPool: [0,1,2],
+				allowMirrorMatch: false,
+				characterPool: [0,1,2,3,4,5,6,7],
+				playerNumber: 4,
+				randomizePlayerNumber: false,
+				randomizeGameSetting: false,
+				randomizePlayerNames: false,
+				divideTeamEqually: true,
+				gameSetting: null,
+				killRecord: true,
+				itemRecord: false,
+				positionRecord: false,
+				moneyRecord: false
+			}
+			let setting=new SimulationSetting(isTeam,set)
+			this.simulation = new Simulation(this.name, simulation_count,setting)
+			return
+		}
+		
 		// room.aichamplist=aichamplist
 		// room.map=map
 		console.log("instant" + this.instant)
-		this.game = new Game(this.isTeam, this.map, roomName, this.simulation, instant)
+		this.game = new Game(this.map, roomName, new GameSetting(null, false, this.isTeam))
 		//console.log("simulation: "+room.simulation)
 		for (let i = 0; i < this.playerlist.length; ++i) {
 			// let champ=room.champ[i]
@@ -210,23 +222,23 @@ class Room {
 				this.game.addAI(
 					team,
 					p.champ,
-					SETTINGS.champnames[Number(p.champ)] + "_Bot(" + String(this.game.totalnum + 1) + "P) "
+					SETTINGS.characterNames[Number(p.champ)] + "_Bot(" + String(this.game.totalnum + 1) + "P) "
 				)
 			}
 		}
 	}
 	user_requestSetting() {
 		let setting = this.game.getInitialSetting()
-		setting.simulation = this.simulation
+		//	setting.simulation = this.simulation
 		return setting
 	}
 
 	user_startGame() {
 		let t = this.game.startTurn()
-		if (this.simulation) {
-			this.goNextTurn()
-			return null
-		}
+		// if (this.simulation) {
+		// 	this.goNextTurn()
+		// 	return null
+		// }
 		return t
 	}
 	goNextTurn() {
@@ -234,10 +246,10 @@ class Room {
 
 		let turnUpdateData = this.game.goNextTurn()
 
-		updateNextTurn(this.name, turnUpdateData)
+		RoomClientInterface.updateNextTurn(this.name, turnUpdateData)
 
 		if (this.game.thisturn === 0) {
-			syncVisibility(this.name, this.game.getPlayerVisibilitySyncData())
+			RoomClientInterface.syncVisibility(this.name, this.game.getPlayerVisibilitySyncData())
 		}
 
 		if (turnUpdateData == null) return
@@ -255,22 +267,18 @@ class Room {
 			let dice = this.game.rollDice(-1)
 			console.log("stun" + dice)
 
-			if (this.simulation) {
-				setTimeout(() => rollDice(this.name, dice), 150)
-			} else {
-				setTimeout(() => rollDice(this.name, dice), 500)
-			}
+			setTimeout(() => RoomClientInterface.rollDice(this.name, dice), 500)
 		}
 		// this.connection.to(this.name).emit('')
 	}
 
 	stopIdleTimeout() {
 		console.log("stoptimeout")
-		stopTimeout(this.name, this.game.thisturn)
+		RoomClientInterface.stopTimeout(this.name, this.game.thisturn)
 		clearTimeout(this.idleTimeout)
 	}
 	startIdleTimeout(endaction: Function) {
-		startTimeout(this.name, this.game.thisturn, SETTINGS.idleTimeout)
+		RoomClientInterface.startTimeout(this.name, this.game.thisturn, SETTINGS.idleTimeout)
 		console.log("start timeout")
 		if (this.game.gameover) {
 			return
@@ -278,7 +286,7 @@ class Room {
 		let _this = this
 
 		this.idleTimeout = setTimeout(function () {
-			forceNextturn(_this.name, _this.game.thisturn)
+			RoomClientInterface.forceNextturn(_this.name, _this.game.thisturn)
 			endaction()
 		}, SETTINGS.idleTimeout)
 	}
@@ -296,7 +304,7 @@ class Room {
 		}
 		let _this = this
 		this.connectionTimeout = setTimeout(function () {
-			forceNextturn(_this.name, _this.game.thisturn)
+			RoomClientInterface.forceNextturn(_this.name, _this.game.thisturn)
 			_this.goNextTurn()
 		}, SETTINGS.connectionTimeout)
 	}
@@ -344,7 +352,7 @@ class Room {
 		} else {
 			console.log("obscomplete, pendingobs:" + info)
 
-			sendPendingObs(this.name, info.name, info.argument)
+			RoomClientInterface.sendPendingObs(this.name, info.name, info.argument)
 
 			let _this = this
 			this.startIdleTimeout(function () {
@@ -357,17 +365,17 @@ class Room {
 	checkPendingAction() {
 		console.log("function checkpendingaction" + this.game.pendingAction)
 		if (!this.game.pendingAction || this.game.p().dead) {
-			setSkillReady(this.name, this.game.getSkillStatus())
+			RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
 			let _this = this
 			this.startIdleTimeout(function () {
 				_this.goNextTurn()
 			})
 		} else {
 			if (this.game.pendingAction === "submarine") {
-				sendPendingAction(this.name, "server:pending_action:submarine", this.game.p().pos)
+				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.p().pos)
 			}
 			if (this.game.pendingAction === "ask_way2") {
-				sendPendingAction(this.name, "server:pending_action:ask_way2", null)
+				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", null)
 			}
 
 			let _this = this
@@ -385,7 +393,7 @@ class Room {
 	user_completePendingAction(info: any) {
 		this.game.processPendingAction(info)
 		this.stopIdleTimeout()
-		setSkillReady(this.name, this.game.getSkillStatus())
+		RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
 	}
 
 	user_clickSkill(s: number) {
@@ -424,75 +432,8 @@ class Room {
 	user_storeComplete(data: any) {
 		this.game.playerSelector.get(data.turn).inven.updateItem(data)
 	}
-
 	doInstantSimulation() {
-		let consolelog = console.log
-		console.log = function () {}
-		let game = this.game
-		let repeat = this.simulation_total_count
-		let playercount = game.totalnum
-		const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
-		bar1.start(repeat - 2, 0)
-		let startTime: any = new Date()
-		let i = 0
-
-		for (i = 0; i < repeat - 1; ++i) {
-			game.startTurn()
-
-			let oneGame = true
-			while (oneGame) {
-				try {
-					let obs = this.simulationNextturn(game)
-
-					if (obs === -7) {
-						oneGame = false
-					} else {
-						game.aiSkill()
-					}
-				} catch (e) {
-					console.error(e)
-					console.error(game.thisturn)
-				}
-			}
-			//io.to(rname).emit("instant_num", repeat, i)
-			bar1.update(i)
-
-			console.log(
-				"-----------------------------------------------------------------------------------------------------"
-			)
-			this.stats.push(this.game.getFinalStatistics())
-			this.game = null
-			this.game = new Game(this.isTeam, this.map, this.name, this.simulation, true)
-
-			for (let i = 0; i < playercount; ++i) {
-				// let champ=room.champ[i]
-				let team = this.playerlist[i].team
-				if (team === null) team = true
-				let p = this.playerlist[i]
-
-				this.game.addAI(
-					team,
-					p.champ,
-					SETTINGS.champnames[Number(p.champ)] + "_Bot(" + String(this.game.totalnum + 1) + "P) "
-				)
-			}
-
-			game = this.game
-		}
-		bar1.stop()
-		let endTime: any = new Date()
-		let timeDiff: any = endTime - startTime
-		console.log = consolelog
-		console.warn("total time:" + timeDiff + "ms, " + timeDiff / repeat + "ms per game")
-		simulationOver(this.name)
-	}
-
-	simulationNextturn(game: Game) {
-		game.goNextTurn()
-
-		game.rollDice(-1)
-
-		return game.checkObstacle()
+		this.simulation.run()
 	}
 	reset() {
 		console.log(this.name + "has been reset")
@@ -502,7 +443,6 @@ class Room {
 		this.guestnum = 0
 		this.isTeam = false
 		this.playerlist = null
-		this.simulation = false
 		this.instant = false
 		this.map = 0
 		this.stats = []

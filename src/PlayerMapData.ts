@@ -2,24 +2,26 @@ import {PlayerClientInterface} from "./app"
 import { Player } from "./player"
 import {  MAP } from "./Game"
 import * as ENUM from "./enum"
+import { singleMap } from "./Util"
 class PlayerMapData{
-    player:Player
     nextdmg: number
 	adamage: number
 	
 	onMainWay: boolean //갈림길 체크시 샤용
 	subwayTicket: number
 	isInSubway: boolean
+	gamemap:singleMap
+	player:Player
     constructor(player:Player){
-        this.player=player
+		this.player=player
         this.nextdmg = 0
 		this.adamage = 0
 		this.onMainWay = true //갈림길 체크시 샤용
 		this.isInSubway = false		
         this.onMainWay = true //갈림길 체크시 샤용
-
+		this.gamemap=MAP.get(this.player.mapId)
     }
-    transfer(func:Function,...args:any[]){
+	transfer(func:Function,...args:any[]){
         this.player.game.sendToClient(func,...args)
     }
     inSameWayWith(other:Player):boolean{
@@ -37,11 +39,34 @@ class PlayerMapData{
     isSubwayDice(){
         return this.subwayTicket >= 0 && this.isInSubway
     }
+	getSubwayDice(){
+		let diceShown=1
+		let moveDistance=0
+		if (this.subwayTicket === 2) {
+			diceShown = 6
+			moveDistance = 6
+		} else if (this.subwayTicket === 1) {
+			if (this.gamemap.subway.rapid.includes(this.player.pos)) {
+				diceShown = 3
+				moveDistance = 2
+			} else {
+				diceShown = 3
+				moveDistance = 1
+			}
+		} else if (this.subwayTicket === 0) {
+			diceShown = 1
+			moveDistance = 1
+		}
 
+		if (this.player.pos + moveDistance > this.gamemap.subway.end) {
+			moveDistance = this.gamemap.subway.end - this.player.pos
+		}
+		return {diceShown:diceShown,moveDistance:moveDistance}
+	}
     //========================================================================================================
 
 	getSubwayPrices(): number[] {
-		let prices = MAP.get(this.player.mapId).subway.prices.map((x) => x)
+		let prices = this.gamemap.subway.prices.map((x) => x)
 		if (this.subwayTicket >= 0) {
 			prices[this.subwayTicket] = 0 //티켓 이미있으면 무료
 		}
@@ -67,7 +92,7 @@ class PlayerMapData{
 	}
 
 	isInSubwayRange() {
-		return this.player.pos > MAP.get(this.player.mapId).subway.start && this.player.pos < MAP.get(this.player.mapId).subway.end
+		return this.player.pos > this.gamemap.subway.start && this.player.pos < this.gamemap.subway.end
 	}
 
 	exitSubway() {
@@ -123,6 +148,9 @@ class PlayerMapData{
 		this.player.inven.changemoney(prices[this.subwayTicket], ENUM.CHANGE_MONEY_TYPE.SPEND)
 	}
 
+	needToAskWay2(moveDistance:number){
+		return this.gamemap.way2_range !== null && this.checkWay2(moveDistance)
+	}
 	//이동시마다 지하철 안인지 밖인지 체크
 	checkSubway() {
 		if (this.subwayTicket >= 0 && !this.isInSubwayRange()) {
@@ -138,11 +166,11 @@ class PlayerMapData{
 	checkWay2(dice: number): boolean {
 		//갈림길 시작점 도착시
 		try {
-			if (this.player.pos + dice === MAP.get(this.player.mapId).way2_range.start) {
+			if (this.player.pos + dice ===this.gamemap.way2_range.start) {
 				return true
 			}
 			//way2 에서 마지막칸 도착시
-			if (this.player.pos + dice === MAP.get(this.player.mapId).way2_range.way_end) {
+			if (this.player.pos + dice === this.gamemap.way2_range.way_end) {
 				this.exitWay2(dice)
 				return false
 			}
@@ -152,7 +180,7 @@ class PlayerMapData{
 	}
 
 	goWay2() {
-		this.player.pos = MAP.get(this.player.mapId).way2_range.way_start
+		this.player.pos = this.gamemap.way2_range.way_start
 		this.onMainWay = false
 		this.transfer(PlayerClientInterface.update, "way", this.player.turn, false)
 
@@ -161,14 +189,14 @@ class PlayerMapData{
 	exitWay2(dice: number) {
 		this.onMainWay = true
 
-		this.player.pos = MAP.get(this.player.mapId).way2_range.end - dice
+		this.player.pos = this.gamemap.way2_range.end - dice
 
 		this.transfer(PlayerClientInterface.update, "way", this.player.turn, true)
 
 	}
 
 	checkWay2OnForceMove(pos: number) {
-		let w2 = MAP.get(this.player.mapId).way2_range
+		let w2 = this.gamemap.way2_range
 
 		if (!this.onMainWay) {
 			if (pos < w2.way_start) {

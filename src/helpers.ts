@@ -1,7 +1,7 @@
 import { Player } from "./player"
 import * as ENUM from "./enum"
 import * as Util from "./Util"
-import SETTINGS = require("../res/settings.json")
+import SETTINGS = require("../res/globalsettings.json")
 import { PlayerClientInterface } from "./app"
 import {  MAP } from "./Game"
 import { items as ItemList } from "../res/item.json"
@@ -361,8 +361,8 @@ class ObstacleHelper{
 	static thief(player:Player) {
 		let itemhave = []
 		for (let i of ItemList) {
-			if (player.inven.haveItem(i.id - 1) && i.itemlevel === 1) {
-				itemhave.push(i.id - 1)
+			if (player.inven.haveItem(i.id) && i.itemlevel === 1) {
+				itemhave.push(i.id)
 			}
 		}
 
@@ -803,7 +803,7 @@ class AIStoreInstance{
 				tobuy = this.build.items[this.build.level]
 			}
 
-			if(this.aiAttemptItemBuy(tobuy - 1)==0) break
+			if(this.aiAttemptItemBuy(tobuy-1)==0) break
 		}
 		
 		this.inven.aiUpdateItem(this.resultItems,this.totalMoneySpend)
@@ -859,7 +859,7 @@ class AIStoreInstance{
 
 			let moneyspent=0
 			for (let i = 0; i < item.children.length; ++i) {
-				let child = item.children[i] - 1
+				let child = item.children[i]
 
 				//이미 보유중인 하위템은 또 안사도록
 				if (temp_itemlist[child] > 0) {
@@ -898,11 +898,11 @@ class AIStoreInstance{
 		let discount = 0
 		//c:number   start with 1
 		for (let c of thisitem.children) {
-			if (temp_itemlist[c - 1] === 0) {
-				discount += this.calcDiscount(c - 1, temp_itemlist)
+			if (temp_itemlist[c] === 0) {
+				discount += this.calcDiscount(c, temp_itemlist)
 			} else {
-				discount += ItemList[c - 1].price
-				temp_itemlist[c - 1] -= 1
+				discount += ItemList[c].price
+				temp_itemlist[c] -= 1
 			}
 		}
 		return discount

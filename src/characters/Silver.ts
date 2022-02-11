@@ -1,14 +1,14 @@
 import { Player } from "../player"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector,ShieldEffect, SkillEffect } from "../Util"
+import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector} from "../Util"
+import { ShieldEffect,SkillEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile} from "../Projectile"
 class Silver extends Player {
-	onoff: boolean[]
-	hpGrowth: number
+//	onoff: boolean[]
+	readonly hpGrowth: number
 	usedQ: boolean
-	projectile: Projectile[]
-	cooltime_list: number[]
+	readonly cooltime_list: number[]
 	
 	itemtree: {
 		level: number
@@ -16,16 +16,15 @@ class Silver extends Player {
 		final: number
 	}
 	
-	private skill_name: string[]
+	private readonly skill_name: string[]
 	private u_active_amt: number
 	private u_passive_amt: number
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
-		let basic_stats = [250, 25, 15, 15, 0, 20]
+		const basic_stats = [250, 25, 15, 15, 0, 20]
 		super(turn, team, game, ai, char, name, "Elephant", basic_stats)
-		this.onoff = [false, false, false]
-		this.projectile = []
+	//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
 		this.hpGrowth = 130
 		this.u_active_amt = 0

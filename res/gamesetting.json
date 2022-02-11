@@ -1,0 +1,85 @@
+{
+	"gameplaySetting": {
+		"itemLimit": {
+			"desc": "Max Item count",
+			"desc_kor": "아이템 최대 갯수",
+			"default": 6,
+			"bound": [3, 10]
+		},
+		"extraResistanceAmount": {
+			"desc": "Additional Resistance on Long Game",
+			"desc_kor": "장기전시 추가 저항력 부여",
+			"default": 2,
+			"options": ["None", "Minimum", "Normal", "Maximum"],
+			"options_kor": ["없음", "최소", "보통", "최대"]
+		},
+		"additionalDiceAmount": {
+			"desc": "Additional Dice When Fell Behind",
+			"desc_kor": "뒤쳐졌을때 추가 주사위",
+			"default": 2,
+			"options": ["None", "Minimum", "Normal", "Maximum"],
+			"options_kor": ["없음", "최소", "보통", "최대"]
+		},
+		"useAdditionalLife": {
+			"desc": "Additional Life on Store",
+			"desc_kor": "추가 목숨 판매",
+			"default": true
+		},
+		"AAOnForceMove": {
+			"desc": "Basic Attack after Force Move",
+			"desc_kor": "강제이동후 기본공격",
+			"default": true
+		},
+		"AAcounterAttackStrength": {
+			"desc": "Basic Attack Counter Attack Strength",
+			"desc_kor": "기본공격 반격 데미지",
+			"default": 1,
+			"options": ["No counter attack", "50%", "100%"],
+			"options_kor": ["반격 없음", "50%", "100%"]
+		},
+		"autoNextTurnOnStore": {
+			"desc": "Go next turn automatically when arriving store",
+			"desc_kor": "상점 도착시 자동으로 다음턴으로",
+			"default": false
+		},
+		"autoNextTurnOnSilent": {
+			"desc": "Go next turn automatically when unable to use skill",
+			"desc_kor": "스킬사용 불가시 자동으로 다음턴으로",
+			"default": false
+		},
+		"diceControlItemFrequency": {
+			"desc": "Dice Control Item appear frequency",
+			"desc_kor": "주사위컨트롤 아이템 등장 빈도",
+			"default": 2,
+			"options": ["No Dice Control", "Minimum", "Normal", "Maximum"],
+			"options_kor": ["주사위컨트롤 없음", "최소", "보통", "최대"]
+		},
+		"shuffleObstacle": {
+			"desc": "Shuffle Obstacle Positions",
+			"desc_kor": "장애물 위치 무작위배치",
+			"default": true
+		}
+	},
+	"statisticSetting": {
+		"killRecord": {
+			"desc": "Kill/Death Detail",
+			"desc_kor": "상세 킬/데스",
+			"default": true
+		},
+		"itemRecord": {
+			"desc": "Item Build",
+			"desc_kor": "아이템 빌드",
+			"default": true
+		},
+		"positionRecord": {
+			"desc": "Positions",
+			"desc_kor": "위치",
+			"default": true
+		},
+		"moneyRecord": {
+			"desc": "Money",
+			"desc_kor": "돈",
+			"default": true
+		}
+	}
+}

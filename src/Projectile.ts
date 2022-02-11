@@ -4,10 +4,9 @@ import { Player } from "./player"
 import * as Util from "./Util"
 import * as server from "./app"
 
-enum PROJECTILE_FLAG{
-	IGNORE_OBSTACLE
-}
+
 class Projectile {
+	static FLAG_IGNORE_OBSTACLE=1
 	// id: number
 	owner: Player
 	size: number
@@ -25,7 +24,7 @@ class Projectile {
 	disappearWhenStep: boolean
 	game: Game
 	trajectorySpeed: number
-	flags:Map<PROJECTILE_FLAG,boolean>
+	flags:Set<number>
 
 	constructor(builder: ProjectileBuilder) {
 		// this.id = data.id
@@ -49,7 +48,7 @@ class Projectile {
 		this.flags=builder.flags
 	}
 
-	hasFlag(flag:PROJECTILE_FLAG){
+	hasFlag(flag:number){
 		return this.flags.has(flag)
 	}
 	/**
@@ -105,6 +104,7 @@ class Projectile {
 		}
 		this.dur = Util.decrement(this.dur)
 	}
+
 }
 
 class ProjectileBuilder {
@@ -120,7 +120,7 @@ class ProjectileBuilder {
 	disappearWhenStep: boolean
 	game: Game
 	trajectorySpeed: number
-	flags:Map<PROJECTILE_FLAG,boolean>
+	flags:Set<number>
 
 	constructor(data: { owner: Player; size: number; type: string; skill: number }) {
 		this.owner = data.owner
@@ -135,7 +135,7 @@ class ProjectileBuilder {
 		this.disappearWhenStep = true
 		this.game
 		this.trajectorySpeed = 0
-		this.flags=new Map<PROJECTILE_FLAG,boolean>()
+		this.flags=new Set<number>()
 
 	}
 	setGame(game: Game) {
@@ -170,12 +170,12 @@ class ProjectileBuilder {
 		this.trajectorySpeed = speed
 		return this
 	}
-	addFlag(flag:PROJECTILE_FLAG){
-		this.flags.set(flag,true)
+	addFlag(flag:number){
+		this.flags.add(flag)
 		return this
 	}
 	build() {
 		return new Projectile(this)
 	}
 }
-export {Projectile,ProjectileBuilder,PROJECTILE_FLAG}
+export {Projectile,ProjectileBuilder}

@@ -1,15 +1,15 @@
 import * as Util from "./Util"
 import * as ENUM from "./enum"
 import { items as ItemList } from "../res/item.json"
-import SETTINGS = require("../res/settings.json")
+import SETTINGS = require("../res/globalsettings.json")
 import { Player } from "./player"
 import {PlayerClientInterface} from "./app"
-const MONEY=50
+const MONEY=0
+
 
 
 class PlayerInventory{
-    player:Player
-
+   // player:Player
     activeItems: Util.ActiveItem[]
     item: number[]
 	itemSlots: number[]
@@ -17,6 +17,7 @@ class PlayerInventory{
 	life: number
 	lifeBought: number
     money: number
+	player:Player
     constructor(player:Player)
     {
         this.player=player
@@ -37,7 +38,7 @@ class PlayerInventory{
     onTurnEnd(){
         this.activeItemCoolDown()
         if (this.haveItem(9)) {
-			this.player.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.player.MaxHP * 0.05)))
+			this.player.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.player.MaxHP * 0.08)))
 		}
     }
 
@@ -182,7 +183,7 @@ class PlayerInventory{
 			if (ItemList[item].itemlevel >= 3) {
 			//	this.message(this.name + " bought " + count + " " + ItemList[item].name)
 			}
-
+			
 			this.player.statistics.addItemRecord({
 				item_id: item,
 				count: count,

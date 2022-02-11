@@ -106,20 +106,16 @@
         "속박, 체력 -50%",
         "모든플레이어 각각 <br>50%로 사망"
     ],
-    "stat_detail":[
-        "Skill damage reduction applies up to 75%",
-        "Attack range applies up to 5",
-        "Regeneration per turn applies up to 60",
-        "ultimate Haste applies up to 3 turns",
-        "movement speed applies up to 2",
-        "Adaptative Stat applies to higher one between attack and magic power "
-    ],
-    "stat_detail_kor":[
-        "스킬데미지감소는 75%까지만 적용",
-        "기본공격 사거리는 5까지만 증가",
-        "턴당 체력재생은 60까지만 적용",
-        "궁극기 가속은 3턴까지만 적용",
-        "이동속도 증가는 2까지만 적용",
-        "적응형 능력치는 공격력과 주문력 중 높은 것에 적용됨"
-    ]
+    "stat_detail":{
+        "attackRange":"Attack range applies up to 5",
+        "ultHaste":"ultimate Haste applies up to 3 turns",
+        "moveSpeed":"movement speed applies up to 2",
+        "adStat":"Adaptative Stat applies to higher one between attack and magic power "
+    },
+    "stat_detail_kor":{
+        "attackRange":"기본공격 사거리는 5까지만 증가",
+        "ultHaste":"궁극기 가속은 3턴까지만 적용",
+        "moveSpeed":"이동속도 증가는 2까지만 적용",
+        "adStat":"적응형 능력치는 공격력과 주문력 중 높은 것에 적용됨"
+    }
 }

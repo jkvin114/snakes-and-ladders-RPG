@@ -1,30 +1,30 @@
 import { Player} from "../player"
 import * as ENUM from "../enum"
-import { Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
+import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
-import {Projectile,ProjectileBuilder,PROJECTILE_FLAG} from "../Projectile"
+import {Projectile,ProjectileBuilder} from "../Projectile"
+import SETTINGS = require("../../res/globalsettings.json")
+const ID=0
 
 class Creed extends Player {
-	onoff: boolean[]
-	hpGrowth: number
-	projectile: Projectile[]
-	cooltime_list: number[]
+	readonly hpGrowth: number	
+	readonly cooltime_list: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private skill_name: string[]
+	private readonly skill_name: string[]
 	private usedQ: boolean
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp:200, ad:40, ar, mr, attackrange,ap
-		let basic_stats: number[] = [200, 20, 7, 7, 0, 0]
-		super(turn, team, game, ai, char, name, "Reaper", basic_stats)
-		this.onoff = [false, false, false]
+		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
+		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
 		this.hpGrowth = 100
-		this.projectile = []
+		
 		this.cooltime_list = [3, 4, 9]
 		this.skill_name = ["reaper_q", "hit", "reaper_r"]
 		this.itemtree = {
@@ -96,7 +96,7 @@ class Creed extends Player {
 			target.forceMove(target.pos - 4, false, "simple")
 			//target.effects.obs[ENUM.EFFECT.STUN]=1
 		})
-		.addFlag(PROJECTILE_FLAG.IGNORE_OBSTACLE)
+		.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
 		.setDuration(2)
 		.build()
 	}

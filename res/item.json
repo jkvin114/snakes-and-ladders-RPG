@@ -1,7 +1,7 @@
 {
 	"items": [
 		{
-			"id": 1,
+			"id": 0,
 			"name": "Epic Sword",
 			"kor_name": "1등급 검",
 			"price": 300,
@@ -10,7 +10,7 @@
 				{ "type": "AD", "value": 80, "type_kor": "공격력" },
 				{ "type": "arP", "value": 10, "type_kor": "방어구 관통" }
 			],
-			"children": [2, 2],
+			"children": [1, 1],
 			"parents": [],
 			"summary":{
 				"kor":"공격력","eng":"Attack Power"
@@ -18,14 +18,14 @@
 			"category":["attack"]
 		},
 		{
-			"id": 2,
+			"id": 1,
 			"name": "Rare Sword",
 			"kor_name": "2등급 검",
 			"price": 80,
 			"itemlevel": 2,
 			"ability": [{ "type": "AD", "value": 30, "type_kor": "공격력" }],
-			"children": [3, 3],
-			"parents": [1, 18,36],
+			"children": [2, 2],
+			"parents": [0, 17,23,35],
 			"summary":{
 				"kor":"공격력","eng":"Attack Power"
 			},
@@ -33,21 +33,21 @@
 			
 		},
 		{
-			"id": 3,
+			"id": 2,
 			"name": "Common Sword",
 			"kor_name": "3등급 검",
 			"price": 30,
 			"itemlevel": 1,
 			"ability": [{ "type": "AD", "value": 10, "type_kor": "공격력" }],
 			"children": [],
-			"parents": [2],
+			"parents": [1],
 			"summary":{
 				"kor":"공격력","eng":"Attack Power"
 			},
 			"category":["attack"]
 		},
 		{
-			"id": 4,
+			"id": 3,
 			"name": "Epic Crystal Ball",
 			"kor_name": "1등급 구슬",
 			"price": 320,
@@ -56,7 +56,7 @@
 				{ "type": "AP", "value": 120, "type_kor": "주문력" },
 				{ "type": "MP", "value": 12, "type_kor": "마법 관통" }
 			],
-			"children": [5, 5],
+			"children": [4,4],
 			"parents": [],
 			"summary":{
 				"kor":"주문력","eng":"Magic Power"
@@ -64,14 +64,28 @@
 			"category":["magic"]
 		},
 		{
-			"id": 5,
+			"id": 4,
 			"name": "Rare Crystal Ball",
 			"kor_name": "2등급 구슬",
 			"price": 120,
 			"itemlevel": 2,
 			"ability": [{ "type": "AP", "value": 50, "type_kor": "주문력" }],
-			"children": [6, 6],
-			"parents": [4,34],
+			"children": [5, 5],
+			"parents": [3,33],
+			"summary":{
+				"kor":"주문력","eng":"Magic Power"
+			},
+			"category":["magic"]
+		},
+		{
+			"id": 5,
+			"name": "Common Crystal Ball",
+			"kor_name": "3등급 구슬",
+			"price": 40,
+			"itemlevel": 1,
+			"ability": [{ "type": "AP", "value": 20, "type_kor": "주문력" }],
+			"children": [],
+			"parents": [4],
 			"summary":{
 				"kor":"주문력","eng":"Magic Power"
 			},
@@ -79,20 +93,6 @@
 		},
 		{
 			"id": 6,
-			"name": "Common Crystal Ball",
-			"kor_name": "3등급 구슬",
-			"price": 40,
-			"itemlevel": 1,
-			"ability": [{ "type": "AP", "value": 20, "type_kor": "주문력" }],
-			"children": [],
-			"parents": [5],
-			"summary":{
-				"kor":"주문력","eng":"Magic Power"
-			},
-			"category":["magic"]
-		},
-		{
-			"id": 7,
 			"name": "Epic Shield",
 			"kor_name": "1등급 방패",
 			"price": 300,
@@ -102,7 +102,7 @@
 				{ "type": "AR", "value": 60, "type_kor": "방어력" },
 				{ "type": "obsR", "value": 10, "type_kor": "장애물 저항" }
 			],
-			"children": [8, 8],
+			"children": [7, 7],
 			"parents": [],
 			"summary":{
 				"kor":"방어력","eng":"Attack Resistance"
@@ -110,7 +110,7 @@
 			"category":["defence"]
 		},
 		{
-			"id": 8,
+			"id": 7,
 			"name": "Rare Shield",
 			"kor_name": "2등급 방패",
 			"price": 80,
@@ -119,15 +119,15 @@
 				{ "type": "HP", "value": 30, "type_kor": "최대체력" },
 				{ "type": "AR", "value": 20, "type_kor": "방어력" }
 			],
-			"children": [9, 9],
-			"parents": [7, 16,34],
+			"children": [8, 8],
+			"parents": [6, 15,33],
 			"summary":{
 				"kor":"방어력","eng":"Attack Resistance"
 			},
 			"category":["defence"]
 		},
 		{
-			"id": 9,
+			"id": 8,
 			"name": "Common Shield",
 			"kor_name": "3등급 방패",
 			"price": 30,
@@ -137,26 +137,43 @@
 				{ "type": "AR", "value": 7, "type_kor": "방어력" }
 			],
 			"children": [],
-			"parents": [8],
+			"parents": [7],
 			"summary":{
 				"kor":"방어력","eng":"Attack Resistance"
 			},
 			"category":["defence"]
 		},
 		{
-			"id": 10,
+			"id": 9,
 			"name": "Epic Fruit",
 			"kor_name": "1등급 재생의열매",
 			"price": 330,
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "HP", "value": 100, "type_kor": "최대체력" },
+				{ "type": "regen", "value": 50, "type_kor": "턴당 체력재생" }
+			],
+			"children": [10, 21],
+			"parents": [],
+			"unique_effect": "regenerate 8% of max HP every turn",
+			"unique_effect_kor": "매턴마다 최대체력의 8% 추가회복",
+			"summary":{
+				"kor":"체력 재생","eng":"HP regen"
+			},
+			"category":["health"]
+		},
+		{
+			"id": 10,
+			"name": "Rare Fruit",
+			"kor_name": "2등급 재생의열매",
+			"price": 120,
+			"itemlevel": 2,
+			"ability": [
+				{ "type": "HP", "value": 40, "type_kor": "최대체력" },
 				{ "type": "regen", "value": 30, "type_kor": "턴당 체력재생" }
 			],
-			"children": [11, 22],
-			"parents": [],
-			"unique_effect": "regenerate 5% of max HP every turn",
-			"unique_effect_kor": "매턴마다 최대체력의 5% 추가회복",
+			"children": [11, 11],
+			"parents": [9],
 			"summary":{
 				"kor":"체력 재생","eng":"HP regen"
 			},
@@ -164,16 +181,13 @@
 		},
 		{
 			"id": 11,
-			"name": "Rare Fruit",
-			"kor_name": "2등급 재생의열매",
-			"price": 120,
-			"itemlevel": 2,
-			"ability": [
-				{ "type": "HP", "value": 40, "type_kor": "최대체력" },
-				{ "type": "regen", "value": 15, "type_kor": "턴당 체력재생" }
-			],
-			"children": [12, 12],
-			"parents": [10],
+			"name": "Common Fruit",
+			"kor_name": "3등급 재생의열매",
+			"price": 25,
+			"itemlevel": 1,
+			"ability": [{ "type": "regen", "value": 10, "type_kor": "턴당 체력재생" }],
+			"children": [],
+			"parents": [10,32],
 			"summary":{
 				"kor":"체력 재생","eng":"HP regen"
 			},
@@ -181,20 +195,6 @@
 		},
 		{
 			"id": 12,
-			"name": "Common Fruit",
-			"kor_name": "3등급 재생의열매",
-			"price": 40,
-			"itemlevel": 1,
-			"ability": [{ "type": "regen", "value": 5, "type_kor": "턴당 체력재생" }],
-			"children": [],
-			"parents": [11,33],
-			"summary":{
-				"kor":"체력 재생","eng":"HP regen"
-			},
-			"category":["health"]
-		},
-		{
-			"id": 13,
 			"name": "Epic Armor",
 			"kor_name": "1등급 갑옷",
 			"price": 300,
@@ -204,7 +204,7 @@
 				{ "type": "MR", "value": 80, "type_kor": "마법 저항력" },
 				{ "type": "obsR", "value": 10, "type_kor": "장애물 저항" }
 			],
-			"children": [14, 14],
+			"children": [13, 13],
 			"parents": [],
 			"summary":{
 				"kor":"마법 저항","eng":"Magic Resistance"
@@ -212,7 +212,7 @@
 			"category":["defence"]
 		},
 		{
-			"id": 14,
+			"id": 13,
 			"name": "Rare Armor",
 			"kor_name": "2등급 갑옷",
 			"price": 100,
@@ -221,15 +221,15 @@
 				{ "type": "HP", "value": 30, "type_kor": "최대체력" },
 				{ "type": "MR", "value": 30, "type_kor": "마법 저항력" }
 			],
-			"children": [15, 15],
-			"parents": [13, 16],
+			"children": [14, 14],
+			"parents": [12, 15],
 			"summary":{
 				"kor":"마법 저항","eng":"Magic Resistance"
 			},
 			"category":["defence"]
 		},
 		{
-			"id": 15,
+			"id": 14,
 			"name": "Common Armor",
 			"kor_name": "3등급 갑옷",
 			"price": 40,
@@ -239,14 +239,14 @@
 				{ "type": "MR", "value": 10, "type_kor": "마법 저항력" }
 			],
 			"children": [],
-			"parents": [14],
+			"parents": [13,19],
 			"summary":{
 				"kor":"마법 저항","eng":"Magic Resistance"
 			},
 			"category":["defence"]
 		},
 		{
-			"id": 16,
+			"id": 15,
 			"name": "Guardian Angel",
 			"kor_name": "수호 천사",
 			"price": 350,
@@ -256,10 +256,10 @@
 				{ "type": "AR", "value": 25, "type_kor": "방어력" },
 				{ "type": "MR", "value": 35, "type_kor": "마법 저항력" }
 			],
-			"children": [8, 14],
+			"children": [7, 13],
 			"parents": [],
-			"unique_effect": "revive when dies (cooldown 8 turns)",
-			"unique_effect_kor": "사망시 부활함 (쿨타임 8턴)",
+			"unique_effect": "revive when dies with 50% HP(cooldown 8 turns)",
+			"unique_effect_kor": "사망시 50% 체력으로 부활함 (쿨타임 8턴)",
 			"active_cooltime": 8,
 			"summary":{
 				"kor":"공격 방어, 사망시 부활","eng":"Defence, Revive on death"
@@ -267,23 +267,25 @@
 			"category":["defence"]
 		},
 		{
-			"id": 17,
+			"id": 16,
 			"name": "Bloodsucker",
 			"kor_name": "흡혈의 검",
 			"price": 140,
 			"itemlevel": 2,
 			"ability": [
-				{ "type": "absorb", "value": 6, "type_kor": "모든 피해 흡혈" }
+				{ "type": "absorb", "value": 6, "type_kor": "모든 피해 흡혈" },
+				{ "type": "AD", "value": 15, "type_kor": "공격력" }
+
 			],
-			"children": [],
-			"parents": [18],
+			"children": [2],
+			"parents": [17],
 			"summary":{
 				"kor":"공격시 체력회복","eng":"Heal on attack"
 			},
 			"category":["health","attack"]
 		},
 		{
-			"id": 18,
+			"id": 17,
 			"name": "Sword of Blood",
 			"kor_name": "피비린검",
 			"price": 280,
@@ -292,7 +294,7 @@
 				{ "type": "AD", "value": 50, "type_kor": "공격력" },
 				{ "type": "absorb", "value": 15, "type_kor": "모든 피해 흡혈" }
 			],
-			"children": [2, 17],
+			"children": [1, 16],
 			"parents": [],
 			"summary":{
 				"kor":"공격력,공격시 체력회복","eng":"Attack Power,Heal on attack"
@@ -300,49 +302,47 @@
 			"category":["health","attack"]
 		},
 		{
-			"id": 19,
+			"id": 18,
 			"name": "Power of Mother Nature",
 			"kor_name": "대자연의 힘",
 			"price": 280,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "HP", "value": 80, "type_kor": "최대체력" },
-				{
-					"type": "skillDmgReduction",
-					"value": 25,
-					"type_kor": "스킬 데미지 감소"
-				},
+				{ "type": "HP", "value": 60, "type_kor": "최대체력" },
+				{ "type": "MR", "value": 30, "type_kor": "마법 저항" },
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
-			"children": [20, 22],
+			"children": [19, 21],
 			"parents": [],
+			"unique_effect_kor": "스킬로 받는 피해 30% 감소, 이후 1턴간 이동속도 1 증가(쿨타임 3턴)",
+			"unique_effect": "30% skill damage reduction, movement speed +1 for 1 turn afterwards.(cooltime 3 turns)",
+			"active_cooltime":3,
 			"summary":{
 				"kor":"스킬 방어","eng":"Skill defence"
 			},
+			"category":["defence"]
+		},
+		{
+			"id": 19,
+			"name": "Power of Nature",
+			"kor_name": "자연의 힘",
+			"price": 110,
+			"itemlevel": 2,
+			"ability": [
+				{ "type": "MR", "value": 20, "type_kor": "마법 저항" },
+				{ "type": "HP", "value": 10, "type_kor": "최대체력" }
+			],
+			"children": [14],
+			"parents": [18],
+			"summary":{
+				"kor":"스킬 방어","eng":"Skill defence"
+			},
+			"unique_effect_kor": "스킬로 받는 피해 10% 감소",
+			"unique_effect": "10% skill damage reduction",
 			"category":["defence"]
 		},
 		{
 			"id": 20,
-			"name": "Power of Nature",
-			"kor_name": "자연의 힘",
-			"price": 100,
-			"itemlevel": 2,
-			"ability": [
-				{
-					"type": "skillDmgReduction",
-					"value": 15,
-					"type_kor": "스킬 데미지 감소"
-				}
-			],
-			"children": [21, 21],
-			"parents": [19],
-			"summary":{
-				"kor":"스킬 방어","eng":"Skill defence"
-			},
-			"category":["defence"]
-		},
-		{
-			"id": 21,
 			"name": "Light of Nature",
 			"kor_name": "자연의 빛",
 			"price": 30,
@@ -355,28 +355,29 @@
 				}
 			],
 			"children": [],
-			"parents": [20],
+			"parents": [],
 			"summary":{
 				"kor":"스킬 방어","eng":"Skill defence"
 			},
+		
 			"category":["defence"]
 		},
 		{
-			"id": 22,
+			"id": 21,
 			"name": "Diamond Crystal",
 			"kor_name": "다이아몬드 수정",
 			"price": 90,
 			"itemlevel": 2,
 			"ability": [{ "type": "HP", "value": 50, "type_kor": "최대체력" }],
-			"children": [35],
-			"parents": [19, 10,33,36],
+			"children": [34],
+			"parents": [18, 9,32,35],
 			"summary":{
 				"kor":"최대체력","eng":"Maximum HP"
 			},
 			"category":["health"]
 		},
 		{
-			"id": 23,
+			"id": 22,
 			"name": "Ancient Spear",
 			"kor_name": "고대의 창",
 			"price": 300,
@@ -390,7 +391,7 @@
 				},
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
-			"children": [26, 28],
+			"children": [25, 27],
 			"parents": [],
 			"summary":{
 				"kor":"공격시 추가피해","eng":"Additional damage on attack"
@@ -398,16 +399,16 @@
 			"category":["attack","magic"]
 		},
 		{
-			"id": 24,
+			"id": 23,
 			"name": "Epic Whip",
 			"kor_name": "살의의 채찍",
 			"price": 340,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "adStat", "value": 60, "type_kor": "적응형 능력치" },
+				{ "type": "AD", "value": 60, "type_kor": "공격력" },
 				{ "type": "attackRange", "value": 2, "type_kor": "기본 공격 사거리" }
 			],
-			"children": [25, 26],
+			"children": [24, 1],
 			"parents": [],
 			"summary":{
 				"kor":"기본공격 강화","eng":"Enhance basic attack"
@@ -415,7 +416,7 @@
 			"category":["attack"]
 		},
 		{
-			"id": 25,
+			"id": 24,
 			"name": "Rare Whip",
 			"kor_name": "교활한 채찍",
 			"price": 145,
@@ -424,14 +425,14 @@
 				{ "type": "attackRange", "value": 1, "type_kor": "기본 공격 사거리" }
 			],
 			"children": [],
-			"parents": [24],
+			"parents": [23],
 			"summary":{
 				"kor":"기본공격 강화","eng":"Enhance basic attack"
 			},
 			"category":["attack"]
 		},
 		{
-			"id": 26,
+			"id": 25,
 			"name": "Rare Magic Axe",
 			"kor_name": "중급 마법의 도끼",
 			"price": 135,
@@ -439,15 +440,15 @@
 			"ability": [
 				{ "type": "adStat", "value": 50, "type_kor": "적응형 능력치" }
 			],
-			"children": [27, 27],
-			"parents": [23, 24],
+			"children": [26, 26],
+			"parents": [22, 23],
 			"summary":{
 				"kor":"적응형 능력치","eng":"Adaptative Stat"
 			},
 			"category":["attack","magic"]
 		},
 		{
-			"id": 27,
+			"id": 26,
 			"name": "Common Magic Axe",
 			"kor_name": "초급 마법의 도끼",
 			"price": 35,
@@ -456,14 +457,14 @@
 				{ "type": "adStat", "value": 10, "type_kor": "적응형 능력치" }
 			],
 			"children": [],
-			"parents": [26, 32],
+			"parents": [25, 31],
 			"summary":{
 				"kor":"적응형 능력치","eng":"Adaptative Stat"
 			},
 			"category":["attack","magic"]
 		},
 		{
-			"id": 28,
+			"id": 27,
 			"name": "Bamboo Spear",
 			"kor_name": "피의 죽창",
 			"price": 60,
@@ -476,21 +477,21 @@
 				}
 			],
 			"children": [],
-			"parents": [23, 32],
+			"parents": [22, 31],
 			"summary":{
 				"kor":"공격시 추가피해","eng":"Additional damage on attack"
 			},
 			"category":["attack","magic"]
 		},
 		{
-			"id": 29,
+			"id": 28,
 			"name": "Boots",
 			"kor_name": "장화",
-			"price": 120,
+			"price": 100,
 			"itemlevel": 2,
 			"ability": [],
 			"children": [],
-			"parents": [30],
+			"parents": [29],
 			"unique_effect": "dice number +1 when left behind",
 			"unique_effect_kor": "뒤쳐져 있으면 추가 주사위 +1",
 			"summary":{
@@ -499,7 +500,7 @@
 			"category":["utility"]
 		},
 		{
-			"id": 30,
+			"id": 29,
 			"name": "Boots of Haste",
 			"kor_name": "성급함의 장화",
 			"price": 300,
@@ -508,7 +509,7 @@
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" },
 				{ "type": "moveSpeed", "value": 1, "type_kor": "이동 속도" }
 			],
-			"children": [29],
+			"children": [28],
 			"parents": [],
 			"unique_effect": "Ignores slow effect",
 			"unique_effect_kor": "둔화 무시",
@@ -518,7 +519,7 @@
 			"category":["utility"]
 		},
 		{
-			"id": 31,
+			"id": 30,
 			"name": "Medieval Bow",
 			"kor_name": "국궁",
 			"price": 120,
@@ -528,14 +529,14 @@
 				{ "type": "MP", "value": 15, "type_kor": "마법 관통" }
 			],
 			"children": [],
-			"parents": [32],
+			"parents": [31],
 			"summary":{
 				"kor":"탱커 대항","eng":"Anti-tank"
 			},
 			"category":["attack","magic"]
 		},
 		{
-			"id": 32,
+			"id": 31,
 			"name": "Crossbow of Piercing",
 			"kor_name": "관통의 석궁",
 			"price": 300,
@@ -548,7 +549,7 @@
 				},
 				{ "type": "adStat", "value": 40, "type_kor": "적응형 능력치" }
 			],
-			"children": [31, 28, 27],
+			"children": [30, 27, 26],
 			"parents": [],
 			"unique_effect": "40% armor and magic penetration",
 			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시",
@@ -558,16 +559,16 @@
 			"category":["attack","magic"]
 		},
 		{
-			"id": 33,
+			"id": 32,
 			"name": "Diamond Knight",
 			"kor_name": "다이아몬드의 기사",
 			"price": 330,
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "HP", "value": 160, "type_kor": "최대체력" },
-				{ "type": "regen", "value": 10, "type_kor": "턴당 체력재생" }
+				{ "type": "regen", "value": 25, "type_kor": "턴당 체력재생" }
 			],
-			"children": [22,22,12],
+			"children": [21,21,11],
 			"parents": [],
 			"unique_effect": "Max Hp increases by 5 permanently on every attack",
 			"unique_effect_kor": "적 공격시 최대체력 5 영구 증가",
@@ -577,7 +578,7 @@
 			"category":["health"]
 		},
 		{
-			"id": 34,
+			"id": 33,
 			"name": "Invisibility Cloak",
 			"kor_name": "방어의 투명망토",
 			"price": 300,
@@ -587,7 +588,7 @@
 				{ "type": "AR", "value": 40, "type_kor": "방어력" },
 				{ "type": "HP", "value": 25, "type_kor": "최대체력" }
 			],
-			"children": [5,8],
+			"children": [4,7],
 			"parents": [],
 			"unique_effect": "Become invisible for 1 turn if HP is below 30%(cooltime 6 turns)",
 			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화 (쿨타임 6턴)",
@@ -598,7 +599,7 @@
 			"category":["defence","magic"]
 		},
 		{
-			"id": 35,
+			"id": 34,
 			"name": "Diamond Shard",
 			"kor_name": "다이아몬드 조각",
 			"price": 40,
@@ -607,14 +608,14 @@
 				{ "type": "HP", "value": 20, "type_kor": "최대체력" }
 			],
 			"children": [],
-			"parents": [22],
+			"parents": [21],
 			"summary":{
 				"kor":"최대체력","eng":"Maximum HP"
 			},
 			"category":["health"]
 		},
 		{
-			"id": 36,
+			"id": 35,
 			"name": "Warrior`s Shieldsword",
 			"kor_name": "전사의 방패검",
 			"price": 300,
@@ -623,7 +624,7 @@
 				{ "type": "HP", "value": 70, "type_kor": "최대체력" },
 				{ "type": "AD", "value": 40, "type_kor": "공격력" }
 			],
-			"children": [2,22],
+			"children": [1,21],
 			"parents": [],
 			"summary":{
 				"kor":"공격력,생존","eng":"Attack Power, Survival from attack"
@@ -631,7 +632,7 @@
 			"unique_effect": "On lethal damage, gain shield based on attack power for 2 turns(cooltime 7 turns)",
 			"unique_effect_kor": "치명적인 피해를 받으면 2턴간 공격력 비례 방어막 획득(쿨타임 7턴)",
 			"active_cooltime": 7,
-			"category":["health","attack"]
+			"category":["health","attack","defence"]
 		}
 	]
 }

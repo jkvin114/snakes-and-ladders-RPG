@@ -1,38 +1,62 @@
-import oceanmap = require("../res/ocean_map.json")
-import casinomap = require("../res/casino_map.json")
-import defaultmap = require("../res/map.json")
+// import oceanmap = require("../res/ocean_map.json")
+// import casinomap = require("../res/casino_map.json")
+// import defaultmap = require("../res/map.json")
 import obsInfo = require("../res/obstacles.json")
-import SETTINGS = require("../res/settings.json")
-
-// import * as server from "./app"
-import { items as ItemList } from "../res/item.json"
-
+import SETTINGS = require("../res/globalsettings.json")
 import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Game, MAP } from "./Game"
-import { Projectile ,PROJECTILE_FLAG} from "./Projectile"
+import { Projectile } from "./Projectile"
 import Ability from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
 import PlayerMapData from "./PlayerMapData"
 import PlayerInventory from "./PlayerInventory"
-import PlayerStatusEffects from "./PlayerStatusEffect"
+import {PlayerStatusEffects,ShieldEffect,SkillEffect} from "./PlayerStatusEffect"
 import {PlayerClientInterface} from "./app"
 import {ObstacleHelper,AIHelper} from "./helpers"
+
 //for test only
 const LVL = 1
-const POS = 13
+const POS = 0
 
-abstract class Player {
+
+
+//anything that has its own HP
+abstract class Entity{
 	game: Game
-//	players: Player[]
 	mapId: number
+	pos: number
+	HP: number
+	MaxHP: number
+	constructor(game:Game,basic_stats:number[]){
+		this.game = game
+		this.mapId = game.mapId
+		this.HP=basic_stats[0]
+		this.MaxHP=basic_stats[0]
+	}
+
+}
+
+// class Minion extends Entity{
+// 	constructor(){
+// 		super(null,null)
+// 	}
+// 	hi(){
+
+// 	}
+// }
+
+abstract class Player extends Entity{
+	//game: Game
+//	players: Player[]
+//	mapId: number
 	AI: boolean
 	turn: number
 	name: string
 	champ: number
 	champ_name: string
 	team: boolean | string
-	pos: number
+//	pos: number
 	lastpos: number
 	dead: boolean
 	level: number
@@ -50,8 +74,8 @@ abstract class Player {
 	thisLifeKillCount: number //죽지않고 킬 횟수
 	waitingRevival: boolean
 
-	HP: number
-	MaxHP: number
+//	HP: number
+//	MaxHP: number
 	ability: Ability
 	statistics: PlayerStatistics
 	inven:PlayerInventory
@@ -60,7 +84,7 @@ abstract class Player {
 	shield: number
 	cooltime: number[]
 	duration: number[]
-	
+	projectile: Projectile[]
 	//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
 	// loanTurnLeft: number
 
@@ -72,10 +96,8 @@ abstract class Player {
 
 	transfer:Function
 
-	abstract onoff: boolean[]
-	abstract hpGrowth: number
-	abstract projectile: Projectile[]
-	abstract cooltime_list: number[]
+	abstract readonly hpGrowth: number	
+	abstract readonly cooltime_list: number[]
 	abstract itemtree: {
 		level: number
 		items: number[]
@@ -104,10 +126,7 @@ abstract class Player {
 		champ_name: string,
 		basic_stats: number[]
 	) {
-		this.game = game
-		// this.players = []
-		this.mapId = game.mapId
-
+		super(game,basic_stats)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
@@ -133,8 +152,8 @@ abstract class Player {
 		this.thisLifeKillCount = 0 //죽지않고 킬 횟수
 		this.waitingRevival = false
 
-		this.HP = basic_stats[0]
-		this.MaxHP = basic_stats[0]
+		// this.HP = basic_stats[0]
+		// this.MaxHP = basic_stats[0]
 		this.ability = new Ability(this, basic_stats)
 		this.statistics = new PlayerStatistics(this)
 		this.inven=new PlayerInventory(this)
@@ -149,7 +168,7 @@ abstract class Player {
 
 		this.damagedby = [0, 0, 0, 0]
 		//for eath player, turns left to be count as assist(maximum 3)
-
+		this.projectile = []
 		this.bestMultiKill = 0
 		this.transfer=function(func:Function,...args:any[]){
 			this.game.sendToClient(func,...args)
@@ -230,7 +249,7 @@ abstract class Player {
 	 * @returns
 	 */
 	isCooltimeAvaliable(s: number): boolean {
-		if (this.cooltime[s] > 0 && !this.onoff[s]) {
+		if (this.cooltime[s] > 0) {
 			return false
 		}
 		return true
@@ -281,7 +300,7 @@ abstract class Player {
 
 	//========================================================================================================
 
-	onAfterObstacle() {
+	onAfterObs() {
 		if (this.oneMoreDice) {
 			return
 		}
@@ -433,7 +452,7 @@ abstract class Player {
 					movetype === "simple" ? 700 : 1100
 				)
 			}
-		} else if (this.game.mapId === 2) {
+		} else if (this.game.mapId === ENUM.MAP_TYPE.CASINO) {
 			this.mapdata.checkSubway()
 		}
 	}
@@ -503,8 +522,8 @@ abstract class Player {
 	 * set to default if name===""
 	 */
 	changeApperance(name: string) {
-		this.transfer(PlayerClientInterface.update, "apperance", this.turn, name)
-
+		this.transfer(PlayerClientInterface.update, "appearance", this.turn, name)
+		console.log("changeApperance"+name)
 	}
 
 	/**
@@ -531,9 +550,9 @@ abstract class Player {
 
 		if (this.game.instant) return
 
-		let isblocked = data.hasFlag(Util.HPChangeDataFlag.SHIELD)
+		let isblocked = data.hasFlag(Util.HPChangeData.FLAG_SHIELD)
 
-		if (hp <= 0 || isblocked || data.hasFlag(Util.HPChangeDataFlag.NODMG_HIT)) {
+		if (hp <= 0 || isblocked || data.hasFlag(Util.HPChangeData.FLAG_NODMG_HIT)) {
 			let hpChangeData = {
 				turn: this.turn,
 				hp: hp,
@@ -665,7 +684,7 @@ abstract class Player {
 		}
 		console.log("arriveAtSquare" + this.turn)
 
-		if (this.game.mapId === 2) {
+		if (this.game.mapId === ENUM.MAP_TYPE.CASINO) {
 			this.mapdata.checkSubway()
 		}
 
@@ -683,7 +702,8 @@ abstract class Player {
 
 		
 
-		if(this.checkProjectile()) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+		if(this.game.applyProjectile(this)) 
+			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		
 		let obs = this.game.shuffledObstacles[this.pos].obs
 		//속박일경우
@@ -817,7 +837,7 @@ abstract class Player {
 		origin: number,
 		type: string,
 		needDelay: boolean,
-		flags?: Util.HPChangeDataFlag[]
+		flags?: number[]
 	): boolean {
 		let changeData = new Util.HPChangeData()
 			.setSource(origin)
@@ -889,10 +909,10 @@ abstract class Player {
 	 */
 	doDamage(damage: number, changeData: Util.HPChangeData) {
 		try {
-			if (damage === 0 && changeData.hasFlag(Util.HPChangeDataFlag.SHIELD)) {
+			if (damage === 0 && changeData.hasFlag(Util.HPChangeData.FLAG_SHIELD)) {
 				this.changeHP_damage(changeData)
 				return false
-			} else if (changeData.hasFlag(Util.HPChangeDataFlag.NODMG_HIT)) {
+			} else if (changeData.hasFlag(Util.HPChangeData.FLAG_NODMG_HIT)) {
 				this.changeHP_damage(changeData)
 				return false
 			}
@@ -915,14 +935,18 @@ abstract class Player {
 			//방패검 아이템
 			// console.log("predictedHP"+predictedHP+" "+this.AD*0.4)
 			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.inven.isActiveItemAvaliable(35)) {
-				this.effects.setShield("item_shieldsword", new Util.ShieldEffect(2, Math.floor(0.7 * this.ability.AD)), true)
+				this.effects.setShield("item_shieldsword", new ShieldEffect(2, Math.floor(0.7 * this.ability.AD)), true)
 				this.inven.useActiveItem(35)
 				this.transfer(PlayerClientInterface.indicateItem,this.turn, 35)
 
 			}
 
 			damage = this.shieldDamage(damage)
-			if (damage === 0) this.showEffect(changeData.type, changeData.source)
+			if (damage === 0) {
+				this.showEffect(changeData.type, changeData.source)
+				return false
+			}
+				
 
 			predictedHP = this.HP - damage
 
@@ -980,8 +1004,11 @@ abstract class Player {
 	prepareRevive(reviveType: string) {
 		if (reviveType === "life") this.inven.changeLife(-1)
 
-		if (reviveType === "guardian_angel") this.inven.useActiveItem(15)
-
+		if (reviveType === "guardian_angel") 
+			{
+				this.transfer(PlayerClientInterface.indicateItem,this.turn,15)
+				this.inven.useActiveItem(15)
+			}
 		this.waitingRevival = true
 		this.HP = 0
 		this.dead = true
@@ -1114,6 +1141,7 @@ abstract class Player {
 		//다이아몬드 기사 아이템
 		if (this.inven.haveItem(32)) {
 			this.addMaxHP(5)
+	//		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
 		}
 
 		//석궁아이템
@@ -1127,16 +1155,17 @@ abstract class Player {
 
 		let flags = []
 		if (sourceType == "skill") {
+
 			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1 - target.ability.skillDmgReduction * 0.01)
 			.updateTrueDamage(Util.CALC_TYPE.plus, this.mapdata.adamage)
 
 			if (damage.getTotalDmg() === 0) {
-				flags.push(Util.HPChangeDataFlag.NODMG_HIT)
+				flags.push(Util.HPChangeData.FLAG_NODMG_HIT)
 			}
 		} else if (sourceType == "basicattack") {
 		}
 
-		let calculatedDmg = this.ability.mergeDamageWithResistance(damage, target, percentPenetration)
+		let calculatedDmg = this.ability.applyResistanceToDamage(damage, target, percentPenetration)
 
 		target.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage.getTotalDmg() - calculatedDmg)
 		this.statistics.add(ENUM.STAT.DAMAGE_DEALT, calculatedDmg)
@@ -1178,7 +1207,7 @@ abstract class Player {
 		let damage: Util.Damage = this.ability.basicAttackDamage(target)
 
 		//지하철에서는 평타피해 40% 감소
-		if (this.game.mapId === 2 && this.mapdata.isInSubway) {
+		if (this.game.mapId === ENUM.MAP_TYPE.CASINO && this.mapdata.isInSubway) {
 			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.6)
 		}
 		//맞공격시 피해 절반
@@ -1225,7 +1254,7 @@ abstract class Player {
 		if (this.effects.has(ENUM.EFFECT.SHIELD)) {
 			console.log("shield")
 			this.effects.reset(ENUM.EFFECT.SHIELD)
-			this.doPlayerDamage(0, source, type, true, [Util.HPChangeDataFlag.SHIELD])
+			this.doPlayerDamage(0, source, type, true, [Util.HPChangeData.FLAG_SHIELD])
 			return false
 		}
 		if (onHit != null) {
@@ -1239,29 +1268,7 @@ abstract class Player {
 	}
 	//========================================================================================================
 
-	checkProjectile():boolean {
-		if (this.invulnerable) {
-			return false
-		}
-		let ignoreObstacle=false
-		let other = this.game.playerSelector.getPlayersByCondition(this,-1, false, true, false, false)
-		for (let o of other) {
-			for (let p of o.projectile) {
-				if (p.activated && p.scope.includes(this.pos)) {
-					
-					let died=this.hitBySkill(p.damage, o.turn, p.skill, p.action, p.type)
-					
-					if(p.hasFlag(PROJECTILE_FLAG.IGNORE_OBSTACLE) || died) 
-						ignoreObstacle= true
-
-					if (p.disappearWhenStep) {
-						p.remove()
-					}
-				}
-			}
-		}
-		return ignoreObstacle
-	}
+	
 
 
 

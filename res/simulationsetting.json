@@ -1,0 +1,52 @@
+{
+	"matchSetting": {
+		"PlayerNumber": {
+			"desc": "Number of players",
+			"desc_kor": "플레이어 숫자",
+			"default": 2,
+			"options": [2, 3, 4]
+		},
+		"randomizePlayerNumber": {
+			"desc": "Randomized Number of players",
+			"desc_kor": "플레이어 숫자 무작위",
+			"default": false
+		},
+		"randomizePlayerNames": {
+			"desc": "Randomize player names",
+			"desc_kor": "플레이어 이름 무작위",
+			"default": false
+		},
+		"allowMirrorMatch": {
+			"desc": "Allow Mirror Match",
+			"desc_kor": "미러전 허용",
+			"default": true
+		},
+		"divideTeamEqually": {
+			"desc": "Divide teams equally",
+			"desc_kor": "공평하게 팀나누기",
+			"default": false
+		}
+	},
+	"statisticsSetting": {
+		"killRecord": {
+			"desc": "Kill/Death",
+			"desc_kor": "킬/데스",
+			"default": true
+		},
+		"itemRecord": {
+			"desc": "Item Build",
+			"desc_kor": "아이템 빌드",
+			"default": true
+		},
+		"positionRecord": {
+			"desc": "Positions",
+			"desc_kor": "위치",
+			"default": true
+		},
+		"moneyRecord": {
+			"desc": "Money",
+			"desc_kor": "돈",
+			"default": true
+		}
+	}
+}

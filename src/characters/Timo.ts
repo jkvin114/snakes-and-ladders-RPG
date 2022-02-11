@@ -1,28 +1,27 @@
 import { Player} from "../player"
 import * as ENUM from "../enum"
-import { Damage, SkillTargetSelector, SkillDamage, SkillEffect } from "../Util"
+import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { SkillEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
 class Timo extends Player {
-	onoff: boolean[]
-	hpGrowth: number
-	projectile: Projectile[]
-	cooltime_list: number[]
+//	onoff: boolean[]
+	readonly hpGrowth: number
+	readonly cooltime_list: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private skill_name: string[]
+	private readonly skill_name: string[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
-		let basic_stats: number[] = [170, 30, 6, 6, 1, 30]
+		const basic_stats: number[] = [170, 30, 6, 6, 0, 30]
 		super(turn, team, game, ai, char, name, "Ghost", basic_stats)
-		this.onoff = [false, false, false]
+	//	this.onoff = [false, false, false]
 		this.hpGrowth = 100
-		this.projectile = []
 		this.cooltime_list = [3, 6, 6]
 		this.skill_name = ["ghost_q", "hit", "ghost_r"]
 		this.itemtree = {

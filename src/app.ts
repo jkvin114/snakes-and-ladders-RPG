@@ -3,10 +3,11 @@ import express from "express"
 import fs = require("fs")
 import { Game } from "./Game"
 import { Room } from "./room"
-import SETTINGS = require("../res/settings.json")
+import { MAP_TYPE } from "./enum"
+import SETTINGS = require("../res/globalsettings.json")
 import cors = require("cors")
 import os = require("os")
-import { Server, Socket } from "socket.io"
+import { Namespace, Server, Socket } from "socket.io"
 import cliProgress = require("cli-progress")
 import {GameRecord,Test,SimulationRecord} from "./statisticsDB"
 const app = express()
@@ -31,23 +32,16 @@ for (var k in interfaces) {
 }
 console.log("IP Address:" + addresses[0])
 
-var ROOMS = new Map()
-
-// var roomList: Room[] = []
-// var roomNames:string[]=[]
-// var roomNum: number = -1
+var ROOMS = new Map<string,Room>()
 
 function findRoomByName(name: string): Room {
 	return ROOMS.get(name)
-	// if (name == null) return null
-	// return roomList.filter((r) => r.name === name)[0]
 }
 
 app.use(express.static(clientPath))
 app.use(errorHandler)
 const httpserver = createServer(app)
 
-//http.createServer(app)
 const io = new Server(httpserver, {
 	cors: {
 		origin: "http://127.0.0.1:4000",
@@ -57,9 +51,6 @@ const io = new Server(httpserver, {
 	allowEIO3: true
 })
 httpserver.listen(4000)
-// app.listen(4000, function () {
-// 	console.log("listening for requests on port 4000,")
-// })
 
 io.on("listen", function () {
 	console.log("listen")
@@ -409,100 +400,102 @@ function isInstant(rname: string) {
 	return ROOMS.get(rname).instant
 }
 
+export namespace RoomClientInterface{
+	export const updateNextTurn = function (rname: string, turnUpdateData: any) {
+		io.to(rname).emit("server:nextturn", turnUpdateData)
+	}
+	export const syncVisibility = function (rname: string, data: any) {
+		io.to(rname).emit("server:sync_player_visibility", data)
+	}
+	export const rollDice = function (rname: string, data: any) {
+		io.to(rname).emit("server:rolldice", data)
+	}
+	export const startTimeout = function (rname: string, data: any, time: number) {
+		io.to(rname).emit("server:start_timeout_countdown", data, time)
+	}
+	export const stopTimeout = function (rname: string, data: any) {
+		io.to(rname).emit("server:stop_timeout_countdown", data)
+	}
+	export const forceNextturn = function (rname: string, data: any) {
+		io.to(rname).emit("server:force_nextturn", data)
+	}
+	export const sendPendingObs = function (rname: string, name: string, data: any) {
+		io.to(rname).emit(name, data)
+	}
+	export const setSkillReady = function (rname: string, skildata: any) {
+		io.to(rname).emit("server:skills", skildata)
+	}
+	export const sendPendingAction = function (rname: string, name: string, data: any) {
+		io.to(rname).emit(name, data)
+	}
+	export const simulationOver = function (rname: string) {
+		io.to(rname).emit("server:gameover", 0)
+	}
+}
 
-export const updateNextTurn = function (rname: string, turnUpdateData: any) {
-	io.to(rname).emit("server:nextturn", turnUpdateData)
-}
-export const syncVisibility = function (rname: string, data: any) {
-	io.to(rname).emit("server:sync_player_visibility", data)
-}
-export const rollDice = function (rname: string, data: any) {
-	io.to(rname).emit("server:rolldice", data)
-}
-export const startTimeout = function (rname: string, data: any, time: number) {
-	io.to(rname).emit("server:start_timeout_countdown", data, time)
-}
-export const stopTimeout = function (rname: string, data: any) {
-	io.to(rname).emit("server:stop_timeout_countdown", data)
-}
-export const forceNextturn = function (rname: string, data: any) {
-	io.to(rname).emit("server:force_nextturn", data)
-}
-export const sendPendingObs = function (rname: string, name: string, data: any) {
-	io.to(rname).emit(name, data)
-}
-export const setSkillReady = function (rname: string, skildata: any) {
-	io.to(rname).emit("server:skills", skildata)
-}
-export const sendPendingAction = function (rname: string, name: string, data: any) {
-	io.to(rname).emit(name, data)
-}
-export const simulationOver = function (rname: string) {
-	io.to(rname).emit("server:gameover", 0)
-}
 
 
-export namespace PlayerClientInterface{
+export class PlayerClientInterface{
 
-	export const changeHP=(rname:string,hpChangeData: any) =>{
+	static changeHP=(rname:string,hpChangeData: any) =>{
 		io.to(rname).emit("server:hp", hpChangeData)
 	} 
-	export const changeMoney = (rname: string,turn:number,amt:number,result:number) =>{
+	static changeMoney = (rname: string,turn:number,amt:number,result:number) =>{
 		io.to(rname).emit("server:money", { turn: turn, amt: amt, result:result })
 	}
 
-	export const changeHP_damage = (rname: string, hpChangeData: any) =>
+	static changeHP_damage = (rname: string, hpChangeData: any) =>
 	io.to(rname).emit("server:damage", hpChangeData)
 
-	export const changeHP_heal =  (rname: string, hpChangeData: any)=>
+	static changeHP_heal =  (rname: string, hpChangeData: any)=>
 	io.to(rname).emit("server:heal", hpChangeData)
 
-	export const changeShield = (rname: string, shieldData: any)=>
+	static changeShield = (rname: string, shieldData: any)=>
 	io.to(rname).emit("server:shield", shieldData)
 
-	export const giveEffect = (rname: string,turn:number,effect:number,num:number)=>
+	static giveEffect = (rname: string,turn:number,effect:number,num:number)=>
 	io.to(rname).emit("server:status_effect", { turn: turn, effect: effect, num: num })
 
-	export const tp =  (rname: string,turn:number,pos:number,movetype:string)=>
+	static tp =  (rname: string,turn:number,pos:number,movetype:string)=>
 	io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype})
 	
-	export const removeProj =  (rname: string, UPID: string)=>
+	static removeProj =  (rname: string, UPID: string)=>
 	io.to(rname).emit("server:delete_projectile", UPID)
 	
-	export const die =  (rname: string, killData: Object)=>io.to(rname).emit("server:death", killData)
+	static die =  (rname: string, killData: Object)=>io.to(rname).emit("server:death", killData)
 	
-	export const respawn =  (rname: string,turn:number,respawnPos:number,isRevived:boolean) =>
+	static respawn =  (rname: string,turn:number,respawnPos:number,isRevived:boolean) =>
 	io.to(rname).emit("server:respawn", {turn:turn,respawnPos:respawnPos,isRevived:isRevived})
 	
-	export const message = (rname: string, message: string) =>
+	static message = (rname: string, message: string) =>
 	io.to(rname).emit("server:receive_message", message)
 
-	export const playsound =  (rname: string, sound: string) =>
+	static playsound =  (rname: string, sound: string) =>
 		io.to(rname).emit("server:sound", sound)
 	
-	export const placePassProj =  (rname: string,type:string,pos:number,UPID:string)=>
+	static placePassProj =  (rname: string,type:string,pos:number,UPID:string)=>
 		io.to(rname).emit("server:create_passprojectile",{type:type,pos:pos,UPID:UPID})
 
-	export const placeProj =  (rname: string, proj: any)=>
+	static placeProj =  (rname: string, proj: any)=>
 	io.to(rname).emit("server:create_projectile", proj)
 
-	export const update =  (rname: string,type:string,turn:number,amt:any) =>
+	static update =  (rname: string,type:string,turn:number,amt:any) =>
 	io.to(rname).emit("server:update_other_data",{type:type,turn:turn,amt:amt})
 
-	export const updateSkillInfo =  (rname: string, turn:number,info_kor:string[],info_eng:string[])=>
+	static updateSkillInfo =  (rname: string, turn:number,info_kor:string[],info_eng:string[])=>
 		io.to(rname).emit("server:update_skill_info", {turn:turn,info_kor:info_kor,info_eng:info_eng})
 
 
-	export const visualEffect = (rname: string,turn:number,type:string,source:number)=>
+	static visualEffect = (rname: string,turn:number,type:string,source:number)=>
 		io.to(rname).emit("server:visual_effect",{turn:turn,type:type,source:source})
 	
-	export const indicateObstacle =  (rname: string,turn:number,obs:number )=>
+	static indicateObstacle =  (rname: string,turn:number,obs:number )=>
 		io.to(rname).emit("server:indicate_obstacle",{turn:turn,obs:obs})
 
-	export const indicateItem = (rname: string, turn:number,item:number[])=>
+	static indicateItem = (rname: string, turn:number,item:number[])=>
 		io.to(rname).emit("server:indicate_item",{turn:turn,item:item})
 	
-	export const goStore = (rname: string,turn:number,storeData:Object)=>
+	static goStore = (rname: string,turn:number,storeData:Object)=>
 		io.to(rname).emit("server:store", {
 			turn: turn,
 			storeData: storeData
@@ -566,11 +559,11 @@ app.get("/map", function (req: any, res) {
 	if (!room) {
 		return
 	}
-	if (room.game.mapId === 1) {
+	if (room.game.mapId === MAP_TYPE.OCEAN) {
 		fs.readFile(__dirname + "/../res/ocean_map.json", "utf8", function (err, data) {
 			res.end(data)
 		})
-	} else if (room.game.mapId === 2) {
+	} else if (room.game.mapId === MAP_TYPE.CASINO) {
 		fs.readFile(__dirname + "/../res/casino_map.json", "utf8", function (err, data) {
 			res.end(data)
 		})
@@ -618,7 +611,7 @@ app.post("/chat", function (req, res) {
 		"server:receive_message",
 		room.game.playerSelector.get(Number(req.body.turn)).name +
 			"(" +
-			SETTINGS.champnames[room.game.playerSelector.get(Number(req.body.turn)).champ] +
+			SETTINGS.characterNames[room.game.playerSelector.get(Number(req.body.turn)).champ] +
 			"): " +
 			req.body.msg
 	)
@@ -638,24 +631,23 @@ app.get("/stat", function (req: any, res) {
 	let stat = {}
 
 	let isSimulation = false
-	if (room.stats.length === 0) {
+	if (room.simulation===null) {
 		stat = room.game.getFinalStatistics()
 
 		GameRecord.create(stat)
-		.then((resolvedData)=>console.log(resolvedData))
+		.then((resolvedData)=>console.log("stat saved successfully"))
 		.catch((e)=>console.error(e))
 
 	} else {
 		stat = {
-			stat: room.stats,
-			count: room.stats.length,
-			multiple: true,
-			map: room.game.mapId
+			stat: room.simulation.getFinalStatistics(),
+			count: room.simulation.getCount(),
+			multiple: true
 		}
 
 		ROOMS.delete(req.query.rname)
 		SimulationRecord.create(stat)
-		.then((resolvedData)=>console.log(resolvedData))
+		.then((resolvedData)=>console.log("stat saved successfully"))
 		.catch((e)=>console.error(e))
 	}
 	let str = JSON.stringify(stat)

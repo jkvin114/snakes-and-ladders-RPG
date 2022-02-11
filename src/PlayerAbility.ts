@@ -1,8 +1,8 @@
 import { Player } from "./player"
 import {PlayerClientInterface} from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
-class Ability {
-	player: Player
+
+class Ability{
 	AD: number
 	AR: number
 	MR: number
@@ -13,15 +13,19 @@ class Ability {
 	MP: number
 	regen: number
 	absorb: number
-	adStat: number
+	adaptativeStat: number
 	skillDmgReduction: number
 	addMdmg: number
 	adStatAD: boolean
 	obsR: number
 	ultHaste: number
 	moveSpeed: number
+	player:Player
+	static MAX_ATTACKRANGE=5
+	static MAX_MOVESPEED=3
+	static MAX_ULTHASTE=3
 	constructor(player: Player, basic_stats: number[]) {
-		this.player = player
+		this.player=player
 		this.AD = basic_stats[1]
 		this.AR = basic_stats[2]
 		this.MR = basic_stats[3]
@@ -33,17 +37,20 @@ class Ability {
 		this.MP = 0
 		this.regen = 0
 		this.absorb = 0
-		this.adStat = 0
+		this.adaptativeStat = 0
 		this.skillDmgReduction = 0
 		this.addMdmg = 0
 		this.adStatAD = true
 		this.obsR = 0
 		this.ultHaste = 0
 		this.moveSpeed = 0
+		
 	}
 	transfer(func:Function,...args:any[]){
         this.player.game.sendToClient(func,...args)
     }
+	
+
 
 	update(ability: string, change_amt: number) {
 		let maxHpChange = 0
@@ -53,17 +60,17 @@ class Ability {
 				break
 			case "AD":
 				this.AD += change_amt
-				if (this.AD > this.AP && this.adStat > 0 && !this.adStatAD) {
-					this.AP -= this.adStat
-					this.AD += this.adStat
+				if (this.AD > this.AP && this.adaptativeStat > 0 && !this.adStatAD) {
+					this.AP -= this.adaptativeStat
+					this.AD += this.adaptativeStat
 					this.adStatAD = true
 				}
 				break
 			case "AP":
 				this.AP += change_amt
-				if (this.AD < this.AP && this.adStat > 0 && this.adStatAD) {
-					this.AD -= this.adStat
-					this.AP += this.adStat
+				if (this.AD < this.AP && this.adaptativeStat > 0 && this.adStatAD) {
+					this.AD -= this.adaptativeStat
+					this.AP += this.adaptativeStat
 					this.adStatAD = false
 				}
 				break
@@ -83,13 +90,13 @@ class Ability {
 				this.absorb += change_amt
 				break
 			case "regen":
-				this.regen += Math.min(60, this.skillDmgReduction + change_amt)
+				this.regen += change_amt
 				break
 			case "skillDmgReduction":
 				this.skillDmgReduction = Math.min(75, this.skillDmgReduction + change_amt)
 				break
 			case "adStat":
-				this.adStat += change_amt
+				this.adaptativeStat += change_amt
 				if (this.AD >= this.AP) {
 					this.AD += change_amt
 					this.adStatAD = true
@@ -102,16 +109,16 @@ class Ability {
 				this.addMdmg += change_amt
 				break
 			case "attackRange":
-				this.attackRange = Math.min(this.attackRange + change_amt, 5)
+				this.attackRange = Math.min(this.attackRange + change_amt, Ability.MAX_ATTACKRANGE)
 				break
 			case "obsR":
 				this.obsR += change_amt
 				break
 			case "ultHaste":
-				this.ultHaste = Math.min(this.ultHaste + change_amt, 3)
+				this.ultHaste = Math.min(this.ultHaste + change_amt, Ability.MAX_ULTHASTE)
 				break
 			case "moveSpeed":
-				this.moveSpeed = Math.min(this.moveSpeed + change_amt, 2)
+				this.moveSpeed = Math.min(this.moveSpeed + change_amt, Ability.MAX_ULTHASTE)
 				break
 		}
 
@@ -170,8 +177,8 @@ class Ability {
 			this.player.changeHP_heal(new HPChangeData().setHpChange(this.regen))
 		}
 	}
-	mergeDamageWithResistance(damage: Damage, target: Player, percentPenetration: number): number {
-		return damage.mergeDamageWithResistance({
+	applyResistanceToDamage(damage: Damage, target: Player, percentPenetration: number): number {
+		return damage.applyResistanceToDamage({
 			AR: target.ability.AR,
 			MR: target.ability.MR,
 			arP: this.arP,

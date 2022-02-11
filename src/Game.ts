@@ -1,7 +1,15 @@
 import oceanmap = require("../res/ocean_map.json")
 import casinomap = require("../res/casino_map.json")
 import defaultmap = require("../res/map.json")
-import SETTINGS = require("../res/settings.json")
+import SETTINGS = require("../res/globalsettings.json")
+import GAMESETTINGS = require("../res/gamesetting.json")
+import { ISimulationSetting } from "./SimulationRunner"
+import * as ENUM from "./enum"
+import * as Util from "./Util"
+import { Player } from "./player"
+import { Projectile } from "./Projectile"
+import { PassProjectile } from "./PassProjectile"
+import { PlayerSelector, ObstacleHelper, AIHelper } from "./helpers"
 
 import { Creed } from "./characters/Creed"
 import { Bird } from "./characters/Bird"
@@ -11,24 +19,161 @@ import { Jellice } from "./characters/Jellice"
 import { Gorae } from "./characters/Gorae"
 import { Timo } from "./characters/Timo"
 import { Yangyi } from "./characters/Yangyi"
+const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
 
-import * as ENUM from "./enum"
-import * as Util from "./Util"
-import {  Player } from "./player"
-import {Projectile} from "./Projectile"
-import {PassProjectile} from "./PassProjectile"
-import { PlayerSelector,ObstacleHelper,AIHelper } from "./helpers"
-const MAP: Util.Map = new Util.Map([defaultmap, oceanmap, casinomap])
+interface IGameSetting {
+	itemLimit: number
+	extraResistanceAmount: number
+	additionalDiceAmount: number
+	useAdditionalLife: boolean
+	AAOnForceMove: boolean
+	AAcounterAttackStrength: number
+	autoNextTurnOnStore: boolean
+	autoNextTurnOnSilent: boolean
+	diceControlItemFrequency: number
+	shuffleObstacle: boolean
 
+	killRecord: boolean
+	itemRecord: boolean
+	positionRecord: boolean
+	moneyRecord: boolean
+}
+class GameSetting {
+	instant: boolean
+	isTeam: boolean
+	GameSpeed: number
+
+	itemLimit: number
+	extraResistanceAmount: number
+	additionalDiceAmount: number
+	useAdditionalLife: boolean
+	AAOnForceMove: boolean
+	AAcounterAttackStrength: number
+	autoNextTurnOnStore: boolean
+	autoNextTurnOnSilent: boolean
+	diceControlItemFrequency: number
+	shuffleObstacle: boolean
+
+	killRecord: boolean
+	itemRecord: boolean
+	positionRecord: boolean
+	moneyRecord: boolean
+	constructor(setting: IGameSetting, instant: boolean, isTeam: boolean) {
+		this.instant = instant
+		this.isTeam = isTeam
+
+		if (setting === null) {
+			this.randomize()
+			this.autoNextTurnOnStore = false
+			this.autoNextTurnOnSilent = false
+			this.killRecord = true
+			this.itemRecord = true
+			this.positionRecord = true
+			this.moneyRecord = true
+			this.itemLimit = 6
+			return
+		}
+
+		this.itemLimit = setting.itemLimit
+		this.extraResistanceAmount = setting.extraResistanceAmount
+		this.additionalDiceAmount = setting.additionalDiceAmount
+		this.useAdditionalLife = setting.useAdditionalLife
+		this.AAOnForceMove = setting.AAOnForceMove
+		this.AAcounterAttackStrength = setting.AAcounterAttackStrength
+		this.autoNextTurnOnStore = setting.autoNextTurnOnStore
+		this.autoNextTurnOnSilent = setting.autoNextTurnOnSilent
+		this.diceControlItemFrequency = setting.diceControlItemFrequency
+		this.shuffleObstacle = setting.shuffleObstacle
+
+		this.killRecord = setting.killRecord
+		this.itemRecord = setting.itemRecord
+		this.positionRecord = setting.positionRecord
+		this.moneyRecord = setting.moneyRecord
+	}
+
+	randomize() {
+		this.extraResistanceAmount = Util.chooseRandom(GAMESETTINGS.gameplaySetting.extraResistanceAmount.options.length)
+		this.additionalDiceAmount = Util.chooseRandom(GAMESETTINGS.gameplaySetting.additionalDiceAmount.options.length)
+		this.useAdditionalLife = Util.randomBoolean()
+		this.AAOnForceMove = Util.randomBoolean()
+		this.AAcounterAttackStrength = Util.chooseRandom(
+			GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length
+		)
+		this.diceControlItemFrequency = Util.chooseRandom(
+			GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length
+		)
+		this.shuffleObstacle = Util.randomBoolean()
+		return this
+	}
+
+	setSimulationSettings(setting: ISimulationSetting) {
+		this.killRecord = setting.killRecord
+		this.itemRecord = setting.itemRecord
+		this.positionRecord = setting.positionRecord
+		this.moneyRecord = setting.moneyRecord
+	}
+
+	getSummary() {
+		return [
+			{ name: "itemLimit", value: this.itemLimit },
+			{
+				name: "extraResistanceAmount",
+				value: GAMESETTINGS.gameplaySetting.extraResistanceAmount.options[this.extraResistanceAmount]
+			},
+			{
+				name: "additionalDiceAmount",
+				value: GAMESETTINGS.gameplaySetting.additionalDiceAmount.options[this.additionalDiceAmount]
+			},
+			{ name: "useAdditionalLife", value: this.useAdditionalLife },
+			{ name: "AAOnForceMove", value: this.AAOnForceMove },
+			{
+				name: "AAcounterAttackStrength",
+				value: GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options[this.AAcounterAttackStrength]
+			},
+			{
+				name: "diceControlItemFrequency",
+				value: GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options[this.diceControlItemFrequency]
+			},
+			{ name: "shuffleObstacle", value: this.shuffleObstacle }
+		]
+	}
+}
+
+class PlayerFactory {
+	static create(character_id: number, name: string, turn: number, team: string | boolean, game: Game, isAI: boolean) {
+		switch (character_id) {
+			case 0:
+				return new Creed(turn, team, game, isAI, character_id, name)
+			case 1:
+				return new Silver(turn, team, game, isAI, character_id, name)
+			case 2:
+				return new Timo(turn, team, game, isAI, character_id, name)
+			case 3:
+				return new Yangyi(turn, team, game, isAI, character_id, name)
+			case 4:
+				return new Jean(turn, team, game, isAI, character_id, name)
+			case 5:
+				return new Jellice(turn, team, game, isAI, character_id, name)
+			case 6:
+				return new Gorae(turn, team, game, isAI, character_id, name)
+			case 7:
+				return new Bird(turn, team, game, isAI, character_id, name)
+			default:
+				return new Creed(turn, team, game, isAI, character_id, name)
+		}
+	}
+}
 
 class Game {
-	instant: boolean
-	rname: string
-	mapId: number
-	simulation: boolean
-//	players: Player[]
-	totalturn: number
-	isTeam: boolean
+	readonly instant: boolean //readonly: can only assign value in constructor
+	readonly rname: string
+	readonly mapId: number
+	readonly simulation: boolean
+	readonly itemLimit: number
+	readonly isTeam: boolean
+	readonly shuffledObstacles: { obs: number; money: number }[]
+	readonly setting: GameSetting
+
 	PNUM: number
 	CNUM: number
 	totalnum: number
@@ -45,28 +190,31 @@ class Game {
 	passProjectileList: Map<string, PassProjectile>
 	passProjectileQueue: PassProjectile[]
 	gameover: boolean
-	itemLimit: number
+
 	submarine_cool: number
 	submarine_id: string
 	dcitem_id: string
 	totalEffectsApplied: number
-	shuffledObstacles: { obs: number; money: number }[]
+	totalturn: number
 	killRecord: {
 		pos: number
 		turn: number
 		killer: Number
 		dead: number
 	}[]
-	playerSelector:PlayerSelector
+	playerSelector: PlayerSelector
 
-	constructor(isteam: boolean, mapid: number, rname: string, simulation: boolean, instant: boolean) {
-		this.instant = instant
-		this.simulation = simulation
+	constructor(mapid: number, rname: string, setting: GameSetting) {
+		this.setting = setting
+		this.instant = setting.instant
+		this.simulation = false
 		this.rname = rname
+
+		if (mapid < 0 || mapid > 2) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
-		//this.players = []
+
 		this.totalturn = 0
-		this.isTeam = isteam
+		this.isTeam = setting.isTeam
 		this.PNUM = 0
 		this.CNUM = 0
 		this.totalnum = 0
@@ -77,7 +225,7 @@ class Game {
 		this.pendingObs = 0
 		this.pendingAction = null
 		this.roullete_result = -1
-		this.itemLimit = SETTINGS.itemLimit
+		this.itemLimit = setting.itemLimit
 		this.nextUPID = 1
 		this.nextPassUPID = 1
 		this.activeProjectileList = new Map()
@@ -90,17 +238,14 @@ class Game {
 		this.dcitem_id = ""
 		this.killRecord = []
 		this.totalEffectsApplied = 0 //total number of effects applied until now
-		this.playerSelector=new PlayerSelector()
+		this.playerSelector = new PlayerSelector()
 	}
-	sendToClient(transfer:Function,...args:any[]){
-		if(!this.instant){
-			transfer(this.rname,...args)
+	sendToClient(transfer: Function, ...args: any[]) {
+		if (!this.instant) {
+			transfer(this.rname, ...args)
 		}
-		console.log("sendtoclient",transfer.name)
+		//console.log("sendtoclient",transfer.name)
 	}
-
-
-
 
 	p(): Player {
 		return this.playerSelector.get(this.thisturn)
@@ -111,38 +256,8 @@ class Game {
 	//client:Socket(),team:number,char:int,name:str
 	addPlayer(team: boolean | string, char: number, name: string) {
 		console.log("add player " + char + "  " + team)
-		let p = null
-		char = Number(char)
-		switch (char) {
-			case 0:
-				p = new Creed(this.totalnum, team, this, false, char, name)
-				break
-			case 1:
-				p = new Silver(this.totalnum, team, this, false, char, name)
-				break
-			case 2:
-				p = new Timo(this.totalnum, team, this, false, char, name)
-				break
-			case 3:
-				p = new Yangyi(this.totalnum, team, this, false, char, name)
-				break
-			case 4:
-				p = new Jean(this.totalnum, team, this, false, char, name)
-				break
-			case 5:
-				p = new Jellice(this.totalnum, team, this, false, char, name)
-				break
-			case 6:
-				p = new Gorae(this.totalnum, team, this, false, char, name)
-				break
-			case 7:
-				p = new Bird(this.totalnum, team, this, false, char, name)
-				break
-			default:
-				p = new Creed(this.totalnum, team, this, false, char, name)
-		}
+		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, false)
 
-		//this.players.push(p)
 		this.playerSelector.addPlayer(p)
 		this.PNUM += 1
 		this.totalnum += 1
@@ -154,40 +269,11 @@ class Game {
 		console.log("add ai " + char + "  " + team)
 
 		char = Number(char)
-		let p = null
-		switch (char) {
-			case 0:
-				p = new Creed(this.totalnum, team, this, true, char, name)
-				break
-			case 1:
-				p = new Silver(this.totalnum, team, this, true, char, name)
-				break
-			case 2:
-				p = new Timo(this.totalnum, team, this, true, char, name)
-				break
-			case 3:
-				p = new Yangyi(this.totalnum, team, this, true, char, name)
-				break
-			case 4:
-				p = new Jean(this.totalnum, team, this, true, char, name)
-				break
-			case 5:
-				p = new Jellice(this.totalnum, team, this, true, char, name)
-				break
-			case 6:
-				p = new Gorae(this.totalnum, team, this, true, char, name)
-				break
-			case 7:
-				p = new Bird(this.totalnum, team, this, true, char, name)
-				break
-			default:
-				p = new Creed(this.totalnum, team, this, true, char, name)
-		}
-	//	this.players.push(p)
+		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, true)
+
 		this.playerSelector.addPlayer(p)
 		this.CNUM += 1
 		this.totalnum += 1
-		// this.clients.push("ai")
 	}
 
 	getInitialSetting() {
@@ -201,7 +287,7 @@ class Game {
 				name: p.name,
 				champ: p.champ,
 				champ_name: p.champ_name,
-				recommendedItem:p.itemtree.items
+				recommendedItem: p.itemtree.items
 			})
 		}
 		return {
@@ -216,7 +302,7 @@ class Game {
 	//()=>{turn:number,stun:boolean}
 	startTurn() {
 		for (let p of this.playerSelector.getAll()) {
-		//	p.players = this.players
+			//	p.players = this.players
 			p.ability.sendToClient()
 		}
 		let p = this.playerSelector.get(0)
@@ -458,7 +544,8 @@ class Game {
 	 * @param {int} pos
 	 */
 	addKillData(killer: number, dead: number, pos: number) {
-		this.killRecord.push({ killer: killer, dead: dead, pos: pos, turn: this.totalturn })
+		if(this.setting.killRecord)
+			this.killRecord.push({ killer: killer, dead: dead, pos: pos, turn: this.totalturn })
 	}
 
 	rollDice(dicenum: number) {
@@ -470,107 +557,89 @@ class Game {
 		}
 
 		//original dice number
-		let d = Math.floor(Math.random() * 6) + 1
+		let diceShown = Math.floor(Math.random() * 6) + 1
 		let dcused = false
 
 		//  d=6  //임시
 
 		//주사위컨트롤
 		if (dicenum !== null && dicenum !== undefined && dicenum > 0 && p.diceControl) {
-			d = dicenum
+			diceShown = dicenum
 			p.useDiceControl()
 			dcused = true
 		}
 
 		//ai 주컨
 		if (p.AI && AIHelper.willDiceControl(p)) {
-			d = AIHelper.getDiceControlDice(p)
+			diceShown = AIHelper.getDiceControlDice(p)
 			dcused = true
 			p.useDiceControl()
 		}
 
 		//badluck effect
 		if (p.effects.has(ENUM.EFFECT.BAD_LUCK)) {
-			d = p.getWorstDice()
+			diceShown = p.getWorstDice()
 		}
 
-		let dice = d
+		let moveDistance = diceShown
 
 		//doubledice,backdice
 		if (p.effects.has(ENUM.EFFECT.BACKDICE)) {
-			dice *= -1
+			moveDistance *= -1
 		}
 		if (p.effects.has(ENUM.EFFECT.DOUBLEDICE)) {
-			dice *= 2
+			moveDistance *= 2
 		}
 
 		//speed,slow
 		if (p.effects.has(ENUM.EFFECT.SLOW)) {
-			dice -= 2
+			moveDistance -= 2
 		}
 		if (p.effects.has(ENUM.EFFECT.SPEED)) {
-			dice += 2
+			moveDistance += 2
 		}
 
-		//additional dice
-		dice += p.adice
+		//additional moveDistance
+		moveDistance += p.adice
 		p.adice = 0
 
 		//상점 체크
-		dice = p.checkMuststop(dice)
+		moveDistance = p.checkMuststop(moveDistance)
 
 		//지나가는 투사체 체크
-		let result = this.checkPassProj(p, p.pos, dice)
-		dice = result.dice
-		//컴퓨터면 무시
+		let result = this.checkPassProj(p, p.pos, moveDistance)
+		moveDistance = result.moveDistance
 
 		this.passProjectileQueue = result.projList
 
 		let currpos = p.pos
 
 		//need to choose between two way
-		if (MAP.get(this.mapId).way2_range !== null && p.mapdata.checkWay2(dice)) {
+		if (p.mapdata.needToAskWay2(moveDistance)) {
 			if (p.AI) {
 			} else {
 				this.pendingAction = "ask_way2"
 			}
 		}
-		console.log("move" + dice)
+		console.log("move" + moveDistance)
 
-		
-		if (this.mapId === 2 && p.mapdata.isSubwayDice()) {
-			if (p.mapdata.subwayTicket === 2) {
-				d = 6
-				dice = 6
-			} else if (p.mapdata.subwayTicket === 1) {
-				if (MAP.get(this.mapId).subway.rapid.includes(p.pos)) {
-					d = 3
-					dice = 2
-				} else {
-					d = 3
-					dice = 1
-				}
-			} else if (p.mapdata.subwayTicket === 0) {
-				d = 1
-				dice = 1
-			}
-
-			if (p.pos + dice > MAP.get(this.mapId).subway.end) {
-				dice = MAP.get(this.mapId).subway.end - p.pos
-			}
+		if (this.mapId === ENUM.MAP_TYPE.CASINO && p.mapdata.isSubwayDice()) {
+			let subwayData = p.mapdata.getSubwayDice()
+			diceShown = subwayData.diceShown
+			moveDistance = subwayData.moveDistance
 		}
 
 		//move player
-		let died = p.moveByDice(dice)
+		let died = p.moveByDice(moveDistance)
 
 		//dont move if player is killed by mine
 		if (died) {
-			dice = 0
+			moveDistance = 0
 		}
 
 		return {
-			dice: d,
-			actualdice: dice,
+			dice: diceShown, //표시된 주사위 숫자
+			actualdice: moveDistance, //플레이어 움직일 거리
 			currpos: currpos,
 			turn: this.thisturn,
 			finish: MAP.getFinish(this.mapId),
@@ -594,7 +663,7 @@ class Game {
 				}
 			}
 		}
-		return { dice: dice, projList: projList }
+		return { moveDistance: dice, projList: projList }
 	}
 	//========================================================================================================
 
@@ -610,7 +679,7 @@ class Game {
 		let result = p.arriveAtSquare(false)
 
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE) {
-			p.effects.apply(ENUM.EFFECT.SILENT, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			p.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			if (p.AI) {
 				AIHelper.aiStore(p)
 				result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
@@ -643,15 +712,14 @@ class Game {
 			}
 		}
 		this.applyIgnite()
-		p.onAfterObstacle()
-		
+		p.onAfterObs()
 
 		return result
 	}
-	applyIgnite(){
+	applyIgnite() {
 		for (let p of this.playerSelector.getAll()) {
-			if(p.effects.applyIgnite()){
-				p.effects.apply(ENUM.EFFECT.SILENT, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			if (p.effects.applyIgnite()) {
+				p.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			}
 		}
 	}
@@ -698,7 +766,28 @@ class Game {
 		AIHelper.aiSkill(this.p())
 	}
 	//========================================================================================================
+	applyProjectile(player: Player): boolean {
+		if (player.invulnerable) {
+			return false
+		}
+		let ignoreObstacle = false
+		let other = this.playerSelector.getPlayersByCondition(player, -1, false, true, false, false)
+		for (let o of other) {
+			for (let p of o.projectile) {
+				if (p.activated && p.scope.includes(player.pos)) {
+					let died = player.hitBySkill(p.damage, o.turn, p.skill, p.action, p.type)
 
+					if (p.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
+
+					if (p.disappearWhenStep) {
+						p.remove()
+					}
+					if (died) return true
+				}
+			}
+		}
+		return ignoreObstacle
+	}
 	/**
 	 *
 	 * @param {*} skill 0~
@@ -756,7 +845,7 @@ class Game {
 			}
 		}
 
-		let targets = this.playerSelector.getAvailableTarget(p,skillTargetSelector.range, skillTargetSelector.skill_id)
+		let targets = this.playerSelector.getAvailableTarget(p, skillTargetSelector.range, skillTargetSelector.skill_id)
 
 		console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
@@ -868,10 +957,9 @@ class Game {
 		return id
 	}
 	getGodHandTarget() {
-		return this.playerSelector.getPlayersByCondition(this.p(),-1, false, false, false, true)
-			.map(function (p: Player) {
-				return p.turn
-			})
+		return this.playerSelector.getPlayersByCondition(this.p(), -1, false, false, false, true).map(function (p: Player) {
+			return p.turn
+		})
 	}
 
 	//========================================================================================================
@@ -1006,12 +1094,11 @@ class Game {
 		let p = this.p()
 		//사형재판
 		if (this.pendingObs === 37) {
-			ObstacleHelper.trial(p,this.roullete_result)
-
+			ObstacleHelper.trial(p, this.roullete_result)
 		}
 		//카지노
 		else if (this.pendingObs === 38) {
-			ObstacleHelper.casino(p,this.roullete_result)
+			ObstacleHelper.casino(p, this.roullete_result)
 		}
 
 		this.pendingObs = 0
@@ -1024,7 +1111,7 @@ class Game {
 	 * @param result 납치범 결과 boolean
 	 */
 	kidnap(result: boolean) {
-		ObstacleHelper.kidnap(this.p(),result)
+		ObstacleHelper.kidnap(this.p(), result)
 		this.pendingObs = 0
 	}
 	//========================================================================================================
@@ -1034,7 +1121,7 @@ class Game {
 	 * @param result  결과 boolean
 	 */
 	threaten(result: boolean) {
-		ObstacleHelper.threaten(this.p(),result)
+		ObstacleHelper.threaten(this.p(), result)
 
 		this.pendingObs = 0
 	}
@@ -1053,6 +1140,7 @@ class Game {
 	}
 	//========================================================================================================
 	getFinalStatistics() {
+		//console.log(setting)
 		let data = {
 			players: new Array<any>(),
 			totalturn: this.totalturn,
@@ -1063,7 +1151,8 @@ class Game {
 				finish: MAP.getFinish(this.mapId)
 			},
 			killRecord: this.killRecord,
-			isTeam: this.isTeam
+			isTeam: this.isTeam,
+			setting: this.setting.getSummary()
 		}
 
 		for (let p of this.playerSelector.getAll()) {
@@ -1087,4 +1176,4 @@ class Game {
 	}
 }
 
-export { Game,MAP}
+export { Game, MAP, GameSetting, IGameSetting }

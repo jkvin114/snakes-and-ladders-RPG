@@ -1,28 +1,27 @@
 import { Player} from "../player"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage,ShieldEffect } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
 class Bird extends Player {
-	onoff: boolean[]
-	hpGrowth: number
-	projectile: Projectile[]
-	cooltime_list: number[]
+//	onoff: boolean[]
+	readonly hpGrowth: number
+	readonly cooltime_list: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private skill_name: string[]
+	private readonly skill_name: string[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
-		let basic_stats: number[] = [200, 30, 7, 7, 0, 30]
+		const basic_stats: number[] = [200, 30, 7, 7, 0, 30]
 		super(turn, team, game, ai, char, name, "Bird", basic_stats)
-		this.onoff = [false, false, false]
+	//	this.onoff = [false, false, false]
 		this.hpGrowth = 100
-		this.projectile = []
 		this.cooltime_list = [3, 5, 10]
 		this.skill_name = ["hit", "hit", "bird_r"]
 		this.itemtree = {

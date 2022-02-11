@@ -11,11 +11,10 @@ class Damage {
 	attack: number
 	magic: number
 	fixed: number
-	TYPE = {
-		ATTACK: 1,
-		MAGIC: 2,
-		TRUE: 3
-	}
+	static ATTACK= 1
+	static MAGIC= 2
+	static TRUE= 3
+	
 
 	constructor(attack: number, magic: number, fixed: number) {
 		this.attack = Math.floor(attack)
@@ -25,6 +24,20 @@ class Damage {
 
 	getTotalDmg(): number {
 		return this.attack + this.magic + this.fixed
+	}
+	updateDamages(calctype:Function,val:number,type:number[]){
+		for(const t of type){
+			if(t==Damage.ATTACK){
+				this.attack = Math.floor(calctype(this.attack, val))
+			}
+			if(t==Damage.MAGIC){
+				this.magic = Math.floor(calctype(this.magic, val))
+			}
+			if(t==Damage.TRUE){
+				this.fixed = Math.floor(calctype(this.fixed, val))
+			}
+		}
+		return this
 	}
 
 	updateMagicDamage(calctype: Function, val: number) {
@@ -51,7 +64,7 @@ class Damage {
 		return this
 	}
 
-	mergeDamageWithResistance(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): number
+	applyResistanceToDamage(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): number
 	{
 		let AR: number = data.AR
 		let MR: number = data.MR
@@ -68,21 +81,12 @@ class Damage {
 		return pdmg + mdmg + this.fixed
 	}
 }
-class SkillEffect {
-	type: string
-	owner_turn: number
-	dur: number
-	name: string
-	skillattr: Damage
 
-	constructor(type: string, owner_turn: number, dur: number, name: string, skillattr: Damage) {
-		this.type = type
-		this.owner_turn = owner_turn
-		this.dur = dur
-		this.name = name
-		this.skillattr = skillattr
-	}
-}
+
+
+
+
+
 
 class ActiveItem {
 	name: string
@@ -102,35 +106,7 @@ class ActiveItem {
 		this.cooltime = this.resetVal
 	}
 }
-class ShieldEffect{
-	// name:string
-	duration:number
-	amount:number
-	constructor(duration:number,amount:number){
-		this.duration=duration
-		this.amount=amount
-	}
-	reApply(amount:number):number{
-		let change=amount-this.amount
-		this.amount=amount
-		return change
-	}
-	absorbDamage(amount:number):number{
-		let reduceamt=this.amount-amount
-		this.amount-=amount
-		return reduceamt 
-		//+ if damage <  shield, - if damage > shield
-	}
-	cooldown():boolean{
-		this.duration-=1
-		return this.duration>0
-	}
-	isActive():boolean{
-		return this.amount>0 && this.duration>0
-	}
 
-
-}
 export type Skillattr =
 	| number
 	| { range: number; skill: number; type: number }
@@ -150,7 +126,12 @@ export const copyElementsOnly = function (arr1: number[], arr2: number[]): numbe
 	}
 	return arr1
 }
-
+export const chooseRandom=function(n: number): number {
+	return Math.floor(Math.random() * n)
+}
+export const randomBoolean=function(): boolean {
+	return Math.random() > 0.5
+}
 export const shuffle=function(array:any[]):any[] {
 	var m = array.length, t, i;
   
@@ -214,7 +195,7 @@ export type singleMap = {
 	}
 }
 
-class Map {
+class MapStorage {
 	map: singleMap[]
 	constructor(m: singleMap[]) {
 		this.map = m
@@ -264,11 +245,11 @@ class Map {
 	}	
 }
 
-enum HPChangeDataFlag{
-	SHIELD,NODMG_HIT
-}
+
 
 class HPChangeData {
+	static FLAG_SHIELD=1
+	static FLAG_NODMG_HIT=2
 	hp: number
 	maxHp: number
 	type: string
@@ -278,7 +259,7 @@ class HPChangeData {
 	killedByDamage: boolean
 	willRevive: boolean
 	skillTrajectorySpeed: number
-	flags:HPChangeDataFlag[]
+	flags:Set<number>
 	constructor() {
 		this.hp = 0
 		this.maxHp = 0
@@ -289,7 +270,7 @@ class HPChangeData {
 		this.killedByDamage = false
 		this.willRevive = false
 		this.skillTrajectorySpeed = 0
-		this.flags=[]
+		this.flags=new Set<number>()
 	}
 	
 
@@ -330,12 +311,12 @@ class HPChangeData {
 		this.skillTrajectorySpeed = speed
 		return this
 	}
-	addFlag(flag:HPChangeDataFlag){
-		this.flags.push(flag)
+	addFlag(flag:number){
+		this.flags.add(flag)
 		return this
 	}
-	hasFlag(flag:HPChangeDataFlag){
-		return this.flags.includes(flag)
+	hasFlag(flag:number){
+		return this.flags.has(flag)
 	}
 }
 
@@ -380,4 +361,4 @@ class SkillTargetSelector {
 
 //added 2021.07.07
 
-export { Damage, SkillEffect, ShieldEffect,ActiveItem, Map, HPChangeData, CALC_TYPE, SkillTargetSelector,HPChangeDataFlag }
+export { Damage,ActiveItem, MapStorage, HPChangeData, CALC_TYPE, SkillTargetSelector }

@@ -4,27 +4,25 @@ import { CALC_TYPE, Damage,SkillTargetSelector, SkillDamage } from "../Util"
 import { Game } from "../Game"
 import {Projectile} from "../Projectile"
 class Yangyi extends Player {	
-    onoff: boolean[]
-	hpGrowth: number
-	projectile: Projectile[]
-	cooltime_list: number[]
+    // onoff: boolean[]
+	readonly hpGrowth: number
+	readonly cooltime_list: number[]
     private w_speed:number
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private skill_name: string[]
+	private readonly skill_name: string[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
 
-        let basic_stats: number[] = [170, 40, 6, 6, 0, 0]
+        const basic_stats: number[] = [170, 40, 6, 6, 0, 0]
 		super(turn, team, game, ai, char, name, "Dinosaur", basic_stats)
-		this.onoff = [false, false, false]
+		// this.onoff = [false, false, false]
 		this.hpGrowth = 110
 		this.cooltime_list = [1, 5, 8]   //1 5 8
 		this.w_speed = 0
-        this.projectile = []
 		this.skill_name = ["dinosaur_q", "hit", "dinosaur_r"]
 		this.itemtree = {
 			level: 0,

@@ -33,6 +33,7 @@ const playerSchema = new mongoose.Schema({
     champ : { type: String, required: true },
     champ_id : { type: Number, required: true },
     turn:{ type: Number, required: true },
+    team:Boolean,
     stats:[Number],
     kda:[Number],
     items:[Number],
@@ -48,6 +49,12 @@ const killRecordSchema=new mongoose.Schema({
     pos:Number,
     turn:Number
 }, { _id : false })
+
+const gameSettingSchema=new mongoose.Schema({
+    name:String,
+    value:mongoose.Schema.Types.Mixed
+}, { _id : false })
+
 const gameRecordSchema=new mongoose.Schema({
     players:{ type: [playerSchema], required: true },
     totalturn: Number,
@@ -58,15 +65,15 @@ const gameRecordSchema=new mongoose.Schema({
         respawn:[Number],
         finish:Number
     },
-    killRecord:[killRecordSchema]
+    killRecord:[killRecordSchema],
+    setting:[gameSettingSchema]
 
 },{timestamps:true})
 
 const simulationRecordSchema=new mongoose.Schema({
     stat:[gameRecordSchema],
     count:Number,
-    multiple:Boolean,
-    map:Number
+    multiple:Boolean
 
 },{timestamps:true})
 

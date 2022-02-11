@@ -6,6 +6,6 @@
     "ignoreStunObsList":[11,13,19,20,21,28,33,35,36,41,53,54,55,56],
     "idleTimeout": 20000,
     "connectionTimeout": 10000,
-    "champnames":["Reaper", "Elephant", "Ghost", "Dinosaur", "Sniper", "Magician", "Kraken","Bird"]
+    "characterNames":["Reaper", "Elephant", "Ghost", "Dinosaur", "Sniper", "Magician", "Kraken","Bird"]
 
 }
