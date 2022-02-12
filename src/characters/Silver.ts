@@ -4,6 +4,8 @@ import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector} from "../Util"
 import { ShieldEffect,SkillEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile} from "../Projectile"
+import SETTINGS = require("../../res/globalsettings.json")
+const ID=1
 class Silver extends Player {
 //	onoff: boolean[]
 	readonly hpGrowth: number
@@ -20,10 +22,10 @@ class Silver extends Player {
 	private u_active_amt: number
 	private u_passive_amt: number
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
+	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,  name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [250, 25, 15, 15, 0, 20]
-		super(turn, team, game, ai, char, name, "Elephant", basic_stats)
+		super(turn, team, game, ai, ID, name,  SETTINGS.characterNames[ID], basic_stats)
 	//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
 		this.hpGrowth = 130

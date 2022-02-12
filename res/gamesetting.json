@@ -37,11 +37,6 @@
 			"options": ["No counter attack", "50%", "100%"],
 			"options_kor": ["반격 없음", "50%", "100%"]
 		},
-		"autoNextTurnOnStore": {
-			"desc": "Go next turn automatically when arriving store",
-			"desc_kor": "상점 도착시 자동으로 다음턴으로",
-			"default": false
-		},
 		"autoNextTurnOnSilent": {
 			"desc": "Go next turn automatically when unable to use skill",
 			"desc_kor": "스킬사용 불가시 자동으로 다음턴으로",

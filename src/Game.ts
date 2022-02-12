@@ -28,7 +28,6 @@ interface IGameSetting {
 	useAdditionalLife: boolean
 	AAOnForceMove: boolean
 	AAcounterAttackStrength: number
-	autoNextTurnOnStore: boolean
 	autoNextTurnOnSilent: boolean
 	diceControlItemFrequency: number
 	shuffleObstacle: boolean
@@ -64,8 +63,8 @@ class GameSetting {
 
 		if (setting === null) {
 			this.randomize()
-			this.autoNextTurnOnStore = false
-			this.autoNextTurnOnSilent = false
+			this.autoNextTurnOnStore = true
+			this.autoNextTurnOnSilent = true
 			this.killRecord = true
 			this.itemRecord = true
 			this.positionRecord = true
@@ -80,7 +79,6 @@ class GameSetting {
 		this.useAdditionalLife = setting.useAdditionalLife
 		this.AAOnForceMove = setting.AAOnForceMove
 		this.AAcounterAttackStrength = setting.AAcounterAttackStrength
-		this.autoNextTurnOnStore = setting.autoNextTurnOnStore
 		this.autoNextTurnOnSilent = setting.autoNextTurnOnSilent
 		this.diceControlItemFrequency = setting.diceControlItemFrequency
 		this.shuffleObstacle = setting.shuffleObstacle
@@ -92,14 +90,14 @@ class GameSetting {
 	}
 
 	randomize() {
-		this.extraResistanceAmount = Util.chooseRandom(GAMESETTINGS.gameplaySetting.extraResistanceAmount.options.length)
-		this.additionalDiceAmount = Util.chooseRandom(GAMESETTINGS.gameplaySetting.additionalDiceAmount.options.length)
+		this.extraResistanceAmount = Util.randInt(GAMESETTINGS.gameplaySetting.extraResistanceAmount.options.length)
+		this.additionalDiceAmount = Util.randInt(GAMESETTINGS.gameplaySetting.additionalDiceAmount.options.length)
 		this.useAdditionalLife = Util.randomBoolean()
 		this.AAOnForceMove = Util.randomBoolean()
-		this.AAcounterAttackStrength = Util.chooseRandom(
+		this.AAcounterAttackStrength = Util.randInt(
 			GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length
 		)
-		this.diceControlItemFrequency = Util.chooseRandom(
+		this.diceControlItemFrequency = Util.randInt(
 			GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length
 		)
 		this.shuffleObstacle = Util.randomBoolean()
@@ -111,6 +109,13 @@ class GameSetting {
 		this.itemRecord = setting.itemRecord
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
+	}
+	getInitialSetting(){
+		return {
+			itemLimit:this.itemLimit,
+			useAdditionalLife:this.useAdditionalLife,
+			autoNextTurnOnSilent:this.autoNextTurnOnSilent
+		}
 	}
 
 	getSummary() {
@@ -143,23 +148,23 @@ class PlayerFactory {
 	static create(character_id: number, name: string, turn: number, team: string | boolean, game: Game, isAI: boolean) {
 		switch (character_id) {
 			case 0:
-				return new Creed(turn, team, game, isAI, character_id, name)
+				return new Creed(turn, team, game, isAI, name)
 			case 1:
-				return new Silver(turn, team, game, isAI, character_id, name)
+				return new Silver(turn, team, game, isAI, name)
 			case 2:
-				return new Timo(turn, team, game, isAI, character_id, name)
+				return new Timo(turn, team, game, isAI, name)
 			case 3:
-				return new Yangyi(turn, team, game, isAI, character_id, name)
+				return new Yangyi(turn, team, game, isAI, name)
 			case 4:
-				return new Jean(turn, team, game, isAI, character_id, name)
+				return new Jean(turn, team, game, isAI, name)
 			case 5:
-				return new Jellice(turn, team, game, isAI, character_id, name)
+				return new Jellice(turn, team, game, isAI, name)
 			case 6:
-				return new Gorae(turn, team, game, isAI, character_id, name)
+				return new Gorae(turn, team, game, isAI, name)
 			case 7:
-				return new Bird(turn, team, game, isAI, character_id, name)
+				return new Bird(turn, team, game, isAI, name)
 			default:
-				return new Creed(turn, team, game, isAI, character_id, name)
+				return new Creed(turn, team, game, isAI, name)
 		}
 	}
 }
@@ -232,7 +237,7 @@ class Game {
 		this.passProjectileList = new Map()
 		this.passProjectileQueue = []
 		this.gameover = false
-		this.shuffledObstacles = MAP.getShuffledObstacles(this.mapId)
+		this.shuffledObstacles = this.setting.shuffleObstacle? MAP.getShuffledObstacles(this.mapId) : MAP.getObstacleList(this.mapId)
 		this.submarine_cool = 0
 		this.submarine_id = "" //잠수함의 upid
 		this.dcitem_id = ""
@@ -291,10 +296,9 @@ class Game {
 			})
 		}
 		return {
-			itemLimit: this.itemLimit,
-			simulation: false,
 			isTeam: this.isTeam,
 			playerSettings: setting,
+			gameSettings:this.setting.getInitialSetting(),
 			shuffledObstacles: this.shuffledObstacles
 		}
 	}
@@ -360,34 +364,50 @@ class Game {
 		}
 	}
 
+	getDiceControlPlayer() {
+		let bias=1.5
+
+		let firstpos = this.playerSelector.getFirstPlayer().pos
+		return Util.chooseWeightedRandom(
+			this.playerSelector.getAll().map((p) => {
+				return firstpos * bias - p.pos
+			})
+		)
+	}//50 30 20   :   25  45  55    : 20%, 36%, 44%
+
 	/**
 	 * called on every player`s turn start
 	 * @returns
 	 */
 	summonDicecontrolItem() {
+		let freq=this.setting.diceControlItemFrequency
+		if (freq === 0) return
+
 		let playercount = this.totalnum
 
-		//4:50% fail
-		if (this.dcitem_id === "" && playercount === 4 && Math.random() > 0.5) {
+		//player number 4:44% ~ 50% / 3: 31~39% / 2: 16~28% don`t create new item
+		if (this.dcitem_id === "" && Util.chooseWeightedRandom([playercount**2+(3-freq)*2,20])===0) {
 			return
 		}
+		//if there is dc item left on the map, don`t change position by 50%
+		if(this.dcitem_id!=="" && Util.randomBoolean()) return 
 
 		this.removePassProjById(this.dcitem_id)
 		this.dcitem_id = ""
 
-		//2명이면 50%, 3명이면 75%확률로 재배치
-		if ((playercount === 2 && Math.random() > 0.5) || (playercount === 3 && Math.random() > 0.75)) {
+		//don`t re-place item by 40~22% based on player count and freq
+		if (Util.chooseWeightedRandom([playercount+freq,2])===1) {
 			return
 		}
 
-		//플레이어 1명 랜덤선택
-		let r = Math.floor(Math.random() * this.totalnum)
+		//플레이어 1명 랜덤선택(뒤쳐져있을수록 확률증가)
+		let r = this.getDiceControlPlayer()
 
 		//플레이어가 일정레벨이상일시 등장안함
 		if (this.playerSelector.get(r).level >= MAP.get(this.mapId).dc_limit_level) return
 
-		//플레이어 앞 1칸~  8칸 사이 배치
-		let range = 7
+		//플레이어 앞 1칸 ~ (4~8)칸 사이 배치
+		let range = 4 + (3 - freq) * 2 //4~8
 		let pos = this.playerSelector.get(r).pos + Math.floor(Math.random() * range) + 1
 		let bound = MAP.get(this.mapId).respawn[MAP.get(this.mapId).dc_limit_level - 1]
 
@@ -402,11 +422,17 @@ class Game {
 	 * @param turn
 	 */
 	summonDicecontrolItemOnkill(turn: number) {
-		if (this.playerSelector.get(turn).level >= MAP.get(this.mapId).dc_limit_level) return
+		if (
+			this.playerSelector.get(turn).level >= MAP.get(this.mapId).dc_limit_level ||
+			this.setting.diceControlItemFrequency === 0
+		)
+			return
 
-		if (Math.random() < 0.8) {
+
+		//0.8~1.0
+		if (Math.random() < 0.7 + 0.1*this.setting.diceControlItemFrequency) {
 			this.removePassProjById(this.dcitem_id)
-			let range = 8
+			let range = 6
 			this.placePassProj("dicecontrol", this.playerSelector.get(turn).pos + Math.floor(Math.random() * range) + 1)
 		}
 	}
@@ -440,7 +466,7 @@ class Game {
 				this.totalturn += 1
 				if (this.totalturn >= 30 && this.totalturn % 10 === 0) {
 					for (let p of this.playerSelector.getAll()) {
-						p.ability.addExtraResistance((this.totalturn / 10) * 3)
+						p.ability.addExtraResistance((this.totalturn / 10) * 2 * this.setting.extraResistanceAmount)
 					}
 				}
 				this.recordStat()
@@ -459,7 +485,7 @@ class Game {
 			p.onTurnStart()
 		}
 
-		let additional_dice = p.calculateAdditionalDice()
+		let additional_dice = p.calculateAdditionalDice(this.setting.additionalDiceAmount)
 
 		let doubledice = false
 		let effects = new Array<string>()
@@ -544,8 +570,7 @@ class Game {
 	 * @param {int} pos
 	 */
 	addKillData(killer: number, dead: number, pos: number) {
-		if(this.setting.killRecord)
-			this.killRecord.push({ killer: killer, dead: dead, pos: pos, turn: this.totalturn })
+		if (this.setting.killRecord) this.killRecord.push({ killer: killer, dead: dead, pos: pos, turn: this.totalturn })
 	}
 
 	rollDice(dicenum: number) {

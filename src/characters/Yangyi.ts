@@ -3,6 +3,8 @@ import * as ENUM from "../enum"
 import { CALC_TYPE, Damage,SkillTargetSelector, SkillDamage } from "../Util"
 import { Game } from "../Game"
 import {Projectile} from "../Projectile"
+import SETTINGS = require("../../res/globalsettings.json")
+const ID=3
 class Yangyi extends Player {	
     // onoff: boolean[]
 	readonly hpGrowth: number
@@ -15,10 +17,10 @@ class Yangyi extends Player {
 	}
 	private readonly skill_name: string[]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
+	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,  name: string) {
 
         const basic_stats: number[] = [170, 40, 6, 6, 0, 0]
-		super(turn, team, game, ai, char, name, "Dinosaur", basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
 		// this.onoff = [false, false, false]
 		this.hpGrowth = 110
 		this.cooltime_list = [1, 5, 8]   //1 5 8

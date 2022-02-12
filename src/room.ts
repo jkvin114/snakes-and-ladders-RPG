@@ -14,7 +14,7 @@ enum PlayerType {
 }
 
 class Room {
-	simulation_total_count: number
+	//simulation_total_count: number
 	simulation_count: number
 	game: Game
 	name: string
@@ -32,7 +32,7 @@ class Room {
 	connectionTimeout: ReturnType<typeof setTimeout>
 
 	constructor(name: string) {
-		this.simulation_total_count = 1
+	//	this.simulation_total_count = 1
 		this.simulation_count = 1
 		this.game = null
 		this.name = name
@@ -72,6 +72,9 @@ class Room {
 		for (let i = 0; i < 4; ++i) {
 			this.playerlist[i].type = types[i]
 		}
+	}
+	setTeamGame(){
+		this.isTeam=true
 	}
 
 	setSimulation(isSimulation: boolean) {
@@ -206,13 +209,13 @@ class Room {
 		
 		// room.aichamplist=aichamplist
 		// room.map=map
-		console.log("instant" + this.instant)
+		console.log("team" + this.isTeam)
 		this.game = new Game(this.map, roomName, new GameSetting(null, false, this.isTeam))
 		//console.log("simulation: "+room.simulation)
 		for (let i = 0; i < this.playerlist.length; ++i) {
 			// let champ=room.champ[i]
 			let team = this.teams[i]
-			if (team === null) team = null
+		//	if (team === null) team = null
 			let p = this.playerlist[i]
 
 			if (p.type === PlayerType.PLAYER_CONNECED) {
@@ -436,6 +439,8 @@ class Room {
 		this.simulation.run()
 	}
 	reset() {
+		clearTimeout(this.idleTimeout)
+		clearTimeout(this.connectionTimeout)
 		console.log(this.name + "has been reset")
 		this.name = null
 		this.game = null
@@ -446,8 +451,7 @@ class Room {
 		this.instant = false
 		this.map = 0
 		this.stats = []
-		clearTimeout(this.idleTimeout)
-		clearTimeout(this.connectionTimeout)
+		
 	}
 }
 

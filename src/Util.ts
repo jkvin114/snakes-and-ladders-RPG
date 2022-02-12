@@ -107,10 +107,10 @@ class ActiveItem {
 	}
 }
 
-export type Skillattr =
-	| number
-	| { range: number; skill: number; type: number }
-	| { range: number; skill: number; type: number; size: number }
+// export type Skillattr =
+// 	| number
+// 	| { range: number; skill: number; type: number }
+// 	| { range: number; skill: number; type: number; size: number }
 
 export type SkillDamage = { damage: Damage; skill: number; onKill?: Function; onHit?: Function }
 
@@ -126,13 +126,39 @@ export const copyElementsOnly = function (arr1: number[], arr2: number[]): numbe
 	}
 	return arr1
 }
-export const chooseRandom=function(n: number): number {
-	return Math.floor(Math.random() * n)
+
+export const pickRandom=function<T>(list: T[]):T {
+	return list[Math.floor(Math.random() * list.length)]
 }
+
+export const randInt=function(upperbound: number): number {
+	return Math.floor(Math.random() * upperbound)
+}
+/**
+ * 
+ * @param weights 
+ * @returns index of weight array
+ */
+export const chooseWeightedRandom=function(weights:number[]):number{
+	for(let i=1;i<weights.length;++i){
+		weights[i]=weights[i]+weights[i-1]
+	}
+	let rand=Math.random()*weights[weights.length-1]
+	for(let i=0;i<weights.length;++i){
+		if(weights[i] > rand) return i
+	}
+	return 0
+	//2 3 5    2 5 10
+}
+/**
+ * true or false by 50%:50%
+ * @param n 
+ * @returns 
+ */
 export const randomBoolean=function(): boolean {
 	return Math.random() > 0.5
 }
-export const shuffle=function(array:any[]):any[] {
+export const shuffle=function<T>(array:T[]):T[] {
 	var m = array.length, t, i;
   
 	// While there remain elements to shuffle…
@@ -218,10 +244,7 @@ class MapStorage {
 
 	getShuffledObstacles(id:number):{obs:number,money:number}[]{
 		let thismap=this.map[id]
-		let obslist=[]
-		for(let c of thismap.coordinates){
-			obslist.push({obs:c.obs,money:c.money})
-		}
+		let obslist=this.getObstacleList(id)
 
 		for(let sfdata of thismap.shuffle){
 			let toshuffle=[]
@@ -242,7 +265,12 @@ class MapStorage {
 		}
 
 		return obslist
-	}	
+	}
+	getObstacleList(id:number){
+		return this.map[id]
+		.coordinates.map((c)=>{return {obs:c.obs,money:c.money}})
+	}
+
 }
 
 

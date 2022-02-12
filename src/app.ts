@@ -165,7 +165,7 @@ io.on("connect", function (socket: Socket) {
 
 	socket.on("user:go_teampage", function (rname: string) {
 		if (!ROOMS.has(rname)) return
-
+		ROOMS.get(rname).setTeamGame()
 		io.to(rname).emit("server:go_teampage")
 	})
 
@@ -358,17 +358,17 @@ io.on("connect", function (socket: Socket) {
 
 	//==========================================================================================
 
-	socket.on("user:reset_game", function (rname: string, n: any) {
+	socket.on("user:reset_game", function (rname: string, quitter: number) {
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
-		io.to(rname).emit("server:quit")
+		io.to(rname).emit("server:quit",quitter)
 		console.log("reset " + findRoomByName(rname))
 
 		try{
 			room.reset()
 		}
 		catch(e){
-			console.error(e)
+			console.error("Error while resetting room "+e)
 		}
 		
 		ROOMS.delete(rname)

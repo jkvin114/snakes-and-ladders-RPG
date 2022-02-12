@@ -4,6 +4,8 @@ import { Damage, SkillDamage, SkillTargetSelector } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
+import SETTINGS = require("../../res/globalsettings.json")
+const ID=4
 class Jean extends Player {
 //	onoff: boolean[]
 	readonly hpGrowth: number
@@ -16,10 +18,10 @@ class Jean extends Player {
 	}
 	private readonly skill_name: string[]
 	private u_target: number
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
+	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 40, 7, 7, 0, 0]
-		super(turn, team, game, ai, char, name, "Sniper", basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
 	//	this.onoff = [false, false, false]
 		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 9]

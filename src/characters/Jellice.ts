@@ -4,6 +4,8 @@ import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
+import SETTINGS = require("../../res/globalsettings.json")
+const ID=5
 class Jellice extends Player {
 //	onoff: boolean[]
 	readonly hpGrowth: number
@@ -17,10 +19,10 @@ class Jellice extends Player {
 	private readonly skill_name: string[]
     private u_used:number
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
+	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [170, 30, 6, 6, 0, 50]
-		super(turn, team, game, ai, char, name, "Magician", basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
 	//	this.onoff = [false, false, false]
 		this.hpGrowth = 80
 		this.cooltime_list = [3, 5, 7]

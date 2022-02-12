@@ -2,7 +2,7 @@ import { GameSetting, Game,IGameSetting } from "./Game"
 import cliProgress = require("cli-progress")
 import { RoomClientInterface } from "./app"
 import SETTINGS = require("../res/globalsettings.json")
-import { shuffle } from "./Util"
+import { shuffle,pickRandom } from "./Util"
 import {ARRIVE_SQUARE_RESULT_TYPE} from "./enum"
 
 
@@ -84,11 +84,9 @@ class SimulationSetting {
         this.randomizePlayerNames=setting.randomizePlayerNames
         this.divideTeamEqually=setting.divideTeamEqually
     }
-	pickRandom(list: any[]) {
-		return list[Math.floor(Math.random() * list.length)]
-	}
+	
 	getMap() {
-		return this.pickRandom(this.mapPool)
+		return pickRandom(this.mapPool)
 	}
 	updateGameSetting() {
 		if (this.randomizeGameSetting) {
@@ -102,15 +100,15 @@ class SimulationSetting {
 		if (!this.randomizePlayerNumber) {
 			return this.playerNumber
 		} else if (this.allowMirrorMatch) {
-			return this.pickRandom(SimulationSetting.PLAYERCOUNT)
+			return pickRandom(SimulationSetting.PLAYERCOUNT)
 		} else {
 			// 미러전 불가면 캐릭터 풀 캐릭터수로 최대플레이어 제한
-			return Math.min(this.pickRandom(SimulationSetting.PLAYERCOUNT), this.characterPool.length)
+			return Math.min(pickRandom(SimulationSetting.PLAYERCOUNT), this.characterPool.length)
 		}
 	}
 	getPlayerName(char: number, turn: number) {
 		if (this.randomizePlayerNames) {
-			return this.pickRandom(SimulationSetting.NAMES)+" "+ this.pickRandom(SimulationSetting.NAMES) + "(" + String(turn + 1) + "P) "
+			return pickRandom(SimulationSetting.NAMES)+" "+ pickRandom(SimulationSetting.NAMES) + "(" + String(turn + 1) + "P) "
 		} else {
 			return SETTINGS.characterNames[Number(char)] + "_Bot(" + String(turn + 1) + "P) "
 		}
@@ -118,7 +116,7 @@ class SimulationSetting {
 	getCharacterList(count: number) {
 		let list = []
 		if (this.allowMirrorMatch) {
-			for (let i = 0; i < count; ++i) list.push(this.pickRandom(this.characterPool))
+			for (let i = 0; i < count; ++i) list.push(pickRandom(this.characterPool))
 		} else {
 			this.characterPool = shuffle(this.characterPool)
 			for (let i = 0; i < count; ++i) {
@@ -133,7 +131,7 @@ class SimulationSetting {
 		} else if (this.divideTeamEqually) {
 			return [true, true, false, false]
 		} else {
-			return this.pickRandom([
+			return pickRandom([
 				[true, true, false, false],
 				[true, true, true, false],
 				[true, false, false, false]

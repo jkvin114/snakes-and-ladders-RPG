@@ -17,7 +17,7 @@ import {ObstacleHelper,AIHelper} from "./helpers"
 
 //for test only
 const LVL = 1
-const POS = 0
+const POS = 13
 
 
 
@@ -188,7 +188,7 @@ abstract class Player extends Entity{
 	}
 
 
-	calculateAdditionalDice(): number {
+	calculateAdditionalDice(amount:number): number {
 		let first: Player = this.game.playerSelector.getFirstPlayer()
 
 		//자신이 1등보다 15칸이상 뒤쳐져있으면 주사위숫자 2 추가,
@@ -196,12 +196,12 @@ abstract class Player extends Entity{
 		//자신이 1등보다 레벨이 2 낮으면 주사위숫자 5 추가
 		//역주사위 효과 있을시 추가안함
 		if (this.pos + 15 < first.pos && !this.effects.has(ENUM.EFFECT.BACKDICE) && first.mapdata.onMainWay) {
-			this.adice += 2
+			this.adice += amount
 			if (this.pos + 30 < first.pos) {
-				this.adice += 2
+				this.adice += amount
 			}
 			if (this.level + 1 < first.level) {
-				this.adice += 3
+				this.adice += Math.floor(amount*1.5)
 			}
 		}
 		this.adice += this.ability.moveSpeed
@@ -710,14 +710,17 @@ abstract class Player extends Entity{
 		if (this.effects.has(ENUM.EFFECT.STUN)) {
 			//특정 장애물은 속박무시
 			if (SETTINGS.ignoreStunObsList.includes(obs)) {
-				this.basicAttack()
+				if(isForceMoved && this.game.setting.AAOnForceMove)
+					this.basicAttack()
+
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
 			}
 		}
 
 		obs = this.obstacle(obs, isForceMoved)
 
-		this.basicAttack()
+		if(isForceMoved && this.game.setting.AAOnForceMove)
+			this.basicAttack()
 
 		return obs
 	}
@@ -1204,6 +1207,7 @@ abstract class Player extends Entity{
 			return false
 		}
 
+
 		let damage: Util.Damage = this.ability.basicAttackDamage(target)
 
 		//지하철에서는 평타피해 40% 감소
@@ -1212,7 +1216,10 @@ abstract class Player extends Entity{
 		}
 		//맞공격시 피해 절반
 		if (isCounterAttack) {
-			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.5)
+			if(this.game.setting.AAcounterAttackStrength==0)
+				return false
+
+			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.5 * this.game.setting.AAcounterAttackStrength)
 		}
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 

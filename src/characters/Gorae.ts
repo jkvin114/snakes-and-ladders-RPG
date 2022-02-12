@@ -4,6 +4,8 @@ import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
+import SETTINGS = require("../../res/globalsettings.json")
+const ID=6
 class Gorae extends Player {
 	//onoff: boolean[]
 	readonly hpGrowth: number
@@ -16,10 +18,10 @@ class Gorae extends Player {
 	}
 	private readonly skill_name: string[]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, char: number, name: string) {
+	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
-		super(turn, team, game, ai, char, name, "Kraken", basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
 		this.hpGrowth = 125
 		this.cooltime_list = [2, 4, 6]
 		this.skill_name = ["kraken_q", "hit", "kraken_r"]
