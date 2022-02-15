@@ -11,6 +11,7 @@ class Ability{
 	basicAttack_multiplier: number
 	arP: number
 	MP: number
+	addHP:number
 	regen: number
 	absorb: number
 	adaptativeStat: number
@@ -32,6 +33,7 @@ class Ability{
 		this.attackRange = basic_stats[4]
 		this.AP = basic_stats[5]
 		this.basicAttack_multiplier = 1 //평타 데미지 계수
+		this.addHP=0   //추가체력
 
 		this.arP = 0
 		this.MP = 0
@@ -171,6 +173,10 @@ class Ability{
 
 	basicAttackDamage(target: Player) {
 		return this.player.getBaseBasicAttackDamage().updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
+	}
+	addMaxHP(maxHpChange:number){
+		this.addHP+=maxHpChange
+		this.player.addMaxHP(maxHpChange)
 	}
 	onTurnEnd() {
 		if (this.regen > 0) {

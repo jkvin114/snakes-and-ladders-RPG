@@ -21,7 +21,7 @@ class Timo extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [170, 30, 6, 6, 0, 30]
-		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characters[ID].name, basic_stats)
 	//	this.onoff = [false, false, false]
 		this.hpGrowth = 100
 		this.cooltime_list = [3, 6, 6]

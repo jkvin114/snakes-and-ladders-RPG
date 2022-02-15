@@ -25,7 +25,7 @@ class Silver extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,  name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [250, 25, 15, 15, 0, 20]
-		super(turn, team, game, ai, ID, name,  SETTINGS.characterNames[ID], basic_stats)
+		super(turn, team, game, ai, ID, name,  SETTINGS.characters[ID].name, basic_stats)
 	//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
 		this.hpGrowth = 130

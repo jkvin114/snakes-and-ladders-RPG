@@ -1,7 +1,6 @@
-import { Game, GameSetting } from "./Game"
+import { Game, GameSetting, IGameSetting } from "./Game"
 import SETTINGS = require("../res/globalsettings.json")
 import { RoomClientInterface } from "./app"
-import cliProgress = require("cli-progress")
 import { Simulation ,SimulationSetting,ISimulationSetting} from "./SimulationRunner"
 
 type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean }
@@ -161,7 +160,7 @@ class Room {
 		for (let i = 0; i < this.playerlist.length; ++i) {
 			let n = this.playerlist[i].name
 			if (this.playerlist[i].type === PlayerType.AI) {
-				n = SETTINGS.characterNames[Number(this.playerlist[i].champ)] + "_Bot(" + String(i + 1) + "P)"
+				n = SETTINGS.characters[Number(this.playerlist[i].champ)].name + "_Bot(" + String(i + 1) + "P)"
 			}
 
 			names.push(n)
@@ -179,38 +178,35 @@ class Room {
 	user_updateTeams(teams: boolean[]) {
 		this.teams = teams
 	}
-	user_gameReady(instant: boolean, simulation_count: number, roomName: string) {
-		this.instant = instant
+	user_simulationReady(simulationsetting:ISimulationSetting,simulation_count:number,isTeam:boolean,roomName:string){
 
-		if (instant) {
-			//	this.simulation = true
-			// this.simulation_count = simulation_count
-			// this.simulation_total_count = simulation_count
-			let isTeam=true
-			let set:ISimulationSetting={
-				mapPool: [0,1,2],
-				allowMirrorMatch: false,
-				characterPool: [0,1,2,3,4,5,6,7],
-				playerNumber: 4,
-				randomizePlayerNumber: false,
-				randomizeGameSetting: false,
-				randomizePlayerNames: false,
-				divideTeamEqually: true,
-				gameSetting: null,
-				killRecord: true,
-				itemRecord: false,
-				positionRecord: false,
-				moneyRecord: false
-			}
-			let setting=new SimulationSetting(isTeam,set)
+			let setting=new SimulationSetting(isTeam,simulationsetting)
 			this.simulation = new Simulation(this.name, simulation_count,setting)
-			return
-		}
-		
+			let rname=this.name
+
+			this.doInstantSimulation().then(function(){
+				RoomClientInterface.simulationOver(rname,"success")
+			}).catch(function(e){
+				RoomClientInterface.simulationOver(rname,e)
+			})
+	}
+	doInstantSimulation():Promise<Function> {
+		let _this=this
+		return new Promise(function(resolve, reject) {
+			_this.simulation.run(function(){
+				resolve(null)
+				reject(new Error("Request is failed"));
+			})
+		});
+	}
+
+	user_gameReady(setting:IGameSetting,roomName: string) {
+		this.instant = false
+
 		// room.aichamplist=aichamplist
 		// room.map=map
 		console.log("team" + this.isTeam)
-		this.game = new Game(this.map, roomName, new GameSetting(null, false, this.isTeam))
+		this.game = new Game(this.map, roomName, new GameSetting(setting, false, this.isTeam))
 		//console.log("simulation: "+room.simulation)
 		for (let i = 0; i < this.playerlist.length; ++i) {
 			// let champ=room.champ[i]
@@ -225,7 +221,7 @@ class Room {
 				this.game.addAI(
 					team,
 					p.champ,
-					SETTINGS.characterNames[Number(p.champ)] + "_Bot(" + String(this.game.totalnum + 1) + "P) "
+					SETTINGS.characters[Number(p.champ)].name + "_Bot(" + String(this.game.totalnum + 1) + "P) "
 				)
 			}
 		}
@@ -435,9 +431,7 @@ class Room {
 	user_storeComplete(data: any) {
 		this.game.playerSelector.get(data.turn).inven.updateItem(data)
 	}
-	doInstantSimulation() {
-		this.simulation.run()
-	}
+
 	reset() {
 		clearTimeout(this.idleTimeout)
 		clearTimeout(this.connectionTimeout)

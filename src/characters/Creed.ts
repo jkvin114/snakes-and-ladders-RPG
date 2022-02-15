@@ -22,7 +22,7 @@ class Creed extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:200, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
-		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characters[ID].name, basic_stats)
 		this.hpGrowth = 100
 		
 		this.cooltime_list = [3, 4, 9]

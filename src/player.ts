@@ -17,7 +17,7 @@ import {ObstacleHelper,AIHelper} from "./helpers"
 
 //for test only
 const LVL = 1
-const POS = 13
+const POS = 0
 
 
 
@@ -710,7 +710,7 @@ abstract class Player extends Entity{
 		if (this.effects.has(ENUM.EFFECT.STUN)) {
 			//특정 장애물은 속박무시
 			if (SETTINGS.ignoreStunObsList.includes(obs)) {
-				if(isForceMoved && this.game.setting.AAOnForceMove)
+				if(!isForceMoved || !this.game.setting.AAOnForceMove)
 					this.basicAttack()
 
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
@@ -719,7 +719,7 @@ abstract class Player extends Entity{
 
 		obs = this.obstacle(obs, isForceMoved)
 
-		if(isForceMoved && this.game.setting.AAOnForceMove)
+		if(!isForceMoved || !this.game.setting.AAOnForceMove)
 			this.basicAttack()
 
 		return obs
@@ -799,6 +799,7 @@ abstract class Player extends Entity{
 	addMaxHP(m: number) {
 		this.changeHP_heal(new Util.HPChangeData().setMaxHpChange(m))
 	}
+
 
 
 	//========================================================================================================
@@ -1143,7 +1144,7 @@ abstract class Player extends Entity{
 
 		//다이아몬드 기사 아이템
 		if (this.inven.haveItem(32)) {
-			this.addMaxHP(5)
+			this.ability.addMaxHP(5)
 	//		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
 		}
 
@@ -1203,6 +1204,8 @@ abstract class Player extends Entity{
 	//========================================================================================================
 
 	hitBasicAttack(target: Player, isCounterAttack: boolean): boolean {
+		console.log("hitBasicAttack"+target.name+"  "+this.name)
+
 		if (!this.effects.canBasicAttack()) {
 			return false
 		}

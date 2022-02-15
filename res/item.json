@@ -40,7 +40,7 @@
 			"itemlevel": 1,
 			"ability": [{ "type": "AD", "value": 10, "type_kor": "공격력" }],
 			"children": [],
-			"parents": [1],
+			"parents": [1,16],
 			"summary":{
 				"kor":"공격력","eng":"Attack Power"
 			},
@@ -155,8 +155,8 @@
 			],
 			"children": [10, 21],
 			"parents": [],
-			"unique_effect": "regenerate 8% of max HP every turn",
-			"unique_effect_kor": "매턴마다 최대체력의 8% 추가회복",
+			"unique_effect": "regenerate 15% of additional HP every turn",
+			"unique_effect_kor": "매턴마다 추가체력의 15% 추가회복",
 			"summary":{
 				"kor":"체력 재생","eng":"HP regen"
 			},

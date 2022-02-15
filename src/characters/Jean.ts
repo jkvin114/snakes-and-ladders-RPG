@@ -21,7 +21,7 @@ class Jean extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 40, 7, 7, 0, 0]
-		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
+		super(turn, team, game, ai, ID, name,SETTINGS.characters[ID].name, basic_stats)
 	//	this.onoff = [false, false, false]
 		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 9]

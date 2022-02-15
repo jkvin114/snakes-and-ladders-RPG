@@ -574,6 +574,7 @@ class Game {
 	}
 
 	rollDice(dicenum: number) {
+
 		let p: Player = this.p()
 
 		//return if stun
@@ -585,7 +586,7 @@ class Game {
 		let diceShown = Math.floor(Math.random() * 6) + 1
 		let dcused = false
 
-		//  d=6  //임시
+		// diceShown=6  //임시
 
 		//주사위컨트롤
 		if (dicenum !== null && dicenum !== undefined && dicenum > 0 && p.diceControl) {

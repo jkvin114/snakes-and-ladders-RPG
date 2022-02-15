@@ -73,8 +73,8 @@ const gameRecordSchema=new mongoose.Schema({
 const simulationRecordSchema=new mongoose.Schema({
     stat:[gameRecordSchema],
     count:Number,
-    multiple:Boolean
-
+    multiple:Boolean,
+    version:String
 },{timestamps:true})
 
 const testSubSchema=new mongoose.Schema({

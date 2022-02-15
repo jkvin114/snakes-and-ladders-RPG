@@ -41,7 +41,7 @@ function findRoomByName(name: string): Room {
 app.use(express.static(clientPath))
 app.use(errorHandler)
 const httpserver = createServer(app)
-
+console.log("version " +SETTINGS.version)
 const io = new Server(httpserver, {
 	cors: {
 		origin: "http://127.0.0.1:4000",
@@ -202,9 +202,23 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:gameready", function (rname, instant, simulation_count) {
+	socket.on("user:simulationready",function(rname,setting,count,isTeam){
 		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_gameReady(instant, simulation_count, rname)
+		
+		console.log(setting)
+		console.log("team:"+isTeam+"   count:"+count)
+
+		ROOMS.get(rname).user_simulationReady(setting, count,isTeam, rname)
+
+		
+	})
+
+	socket.on("user:gameready", function (rname,setting) {
+		if (!ROOMS.has(rname)) return
+
+		ROOMS.get(rname).user_gameReady(setting, rname)
+		
+		
 		//게스트 페이지 바꾸기
 		socket.to(rname).emit("server:to_gamepage")
 	})
@@ -428,8 +442,8 @@ export namespace RoomClientInterface{
 	export const sendPendingAction = function (rname: string, name: string, data: any) {
 		io.to(rname).emit(name, data)
 	}
-	export const simulationOver = function (rname: string) {
-		io.to(rname).emit("server:gameover", 0)
+	export const simulationOver = function (rname: string,msg:string) {
+		io.to(rname).emit("server:simulationover", msg)
 	}
 }
 
@@ -502,8 +516,24 @@ export class PlayerClientInterface{
 		})
 }
 
+app.get("/gamesetting",function(req,res){
 
+	fs.readFile(__dirname + "/../res/gamesetting.json", "utf8", function (err, data) {
+		res.end(data)
+	})
+})
+app.get("/simulationsetting",function(req,res){
 
+	fs.readFile(__dirname + "/../res/simulationsetting.json", "utf8", function (err, data) {
+		res.end(data)
+	})
+})
+app.get("/globalsetting",function(req,res){
+
+	fs.readFile(__dirname + "/../res/globalsettings.json", "utf8", function (err, data) {
+		res.end(data)
+	})
+})
 app.get("/rooms", function (req, res, next) {
 	let list = ""
 
@@ -611,7 +641,7 @@ app.post("/chat", function (req, res) {
 		"server:receive_message",
 		room.game.playerSelector.get(Number(req.body.turn)).name +
 			"(" +
-			SETTINGS.characterNames[room.game.playerSelector.get(Number(req.body.turn)).champ] +
+			SETTINGS.characters[room.game.playerSelector.get(Number(req.body.turn)).champ].name +
 			"): " +
 			req.body.msg
 	)
@@ -642,7 +672,8 @@ app.get("/stat", function (req: any, res) {
 		stat = {
 			stat: room.simulation.getFinalStatistics(),
 			count: room.simulation.getCount(),
-			multiple: true
+			multiple: true,
+			version:SETTINGS.version
 		}
 
 		ROOMS.delete(req.query.rname)
@@ -652,7 +683,7 @@ app.get("/stat", function (req: any, res) {
 	}
 	let str = JSON.stringify(stat)
 
-	writeStat(str, isSimulation)
+	//writeStat(str, isSimulation)
 
 	res.end(str)
 })

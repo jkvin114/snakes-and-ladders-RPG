@@ -38,7 +38,7 @@ class PlayerInventory{
     onTurnEnd(){
         this.activeItemCoolDown()
         if (this.haveItem(9)) {
-			this.player.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.player.MaxHP * 0.08)))
+			this.player.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.player.ability.addHP * 0.15)))
 		}
     }
 
@@ -157,7 +157,7 @@ class PlayerInventory{
 	}
     
     convertCountToItemSlots(items: number[]): number[] {
-		let itemslot = Util.makeArrayOf(-1, SETTINGS.itemLimit)
+		let itemslot = Util.makeArrayOf(-1, this.player.game.itemLimit)
 		let index = 0
 		for (let i = 0; i < items.length; ++i) {
 			for (let j = 0; j < items[i]; ++j) {
@@ -196,7 +196,7 @@ class PlayerInventory{
 			maxHpChange += this.player.ability.update(ability.type, change_amt)
 		}
 		if (maxHpChange !== 0) {
-			this.player.addMaxHP(maxHpChange)
+			this.player.ability.addMaxHP(maxHpChange)
 		}
 
 		if (ItemList[item].active_cooltime != null && !this.boughtActiveItem(item)) {

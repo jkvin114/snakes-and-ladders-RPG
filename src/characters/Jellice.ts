@@ -22,7 +22,7 @@ class Jellice extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [170, 30, 6, 6, 0, 50]
-		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characters[ID].name, basic_stats)
 	//	this.onoff = [false, false, false]
 		this.hpGrowth = 80
 		this.cooltime_list = [3, 5, 7]

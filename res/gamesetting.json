@@ -46,8 +46,8 @@
 			"desc": "Dice Control Item appear frequency",
 			"desc_kor": "주사위컨트롤 아이템 등장 빈도",
 			"default": 2,
-			"options": ["No Dice Control", "Minimum", "Normal", "Maximum"],
-			"options_kor": ["주사위컨트롤 없음", "최소", "보통", "최대"]
+			"options": ["None", "Minimum", "Normal", "Maximum"],
+			"options_kor": ["없음", "최소", "보통", "최대"]
 		},
 		"shuffleObstacle": {
 			"desc": "Shuffle Obstacle Positions",

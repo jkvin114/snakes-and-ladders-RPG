@@ -1,11 +1,42 @@
 {
-    "DC_COOL":5,
-    "itemLimit":6,
+    "version":"2.3.3",
     "submarine_cooltime" :1,
     "pendingObsList":[6,21, 33, 37, 38, 63, 67],
     "ignoreStunObsList":[11,13,19,20,21,28,33,35,36,41,53,54,55,56],
     "idleTimeout": 20000,
     "connectionTimeout": 10000,
-    "characterNames":["Reaper", "Elephant", "Ghost", "Dinosaur", "Sniper", "Magician", "Kraken","Bird"]
+    "characters":[{
+        "name":"Reaper",
+        "imgdir":"reaper.png",
+        "bgcolor":"#7e0000"
+    },{
+        "name":"Elephant",
+        "imgdir":"elephant.png",
+        "bgcolor":"#086300"
 
+    },{
+        "name":"Ghost",
+        "imgdir":"ghost.png",
+        "bgcolor":"#001381"
+    },{
+        "name":"Dinosaur",
+        "imgdir":"dinosaur.png",
+        "bgcolor":"#3d5700"
+    },{
+        "name":"Sniper",
+        "imgdir":"sniper.png",
+        "bgcolor":"#581c00"
+    },{
+        "name":"Magician",
+        "imgdir":"magician.png",
+        "bgcolor":"#680051"
+    },{
+        "name":"Kraken",
+        "imgdir":"kraken.png",
+        "bgcolor":"#006a72"
+    },{
+        "name":"Bird",
+        "imgdir":"bird.png",
+        "bgcolor":"#ff8420"
+    }]
 }

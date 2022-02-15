@@ -110,7 +110,7 @@ class SimulationSetting {
 		if (this.randomizePlayerNames) {
 			return pickRandom(SimulationSetting.NAMES)+" "+ pickRandom(SimulationSetting.NAMES) + "(" + String(turn + 1) + "P) "
 		} else {
-			return SETTINGS.characterNames[Number(char)] + "_Bot(" + String(turn + 1) + "P) "
+			return SETTINGS.characters[Number(char)].name + "_Bot(" + String(turn + 1) + "P) "
 		}
 	}
 	getCharacterList(count: number) {
@@ -162,7 +162,7 @@ class Simulation {
 		return this.stats
 	}
 
-	run() {
+	run(callback:Function) {
 		let consolelog = console.log
 		console.log = function () {}
 		const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
@@ -179,7 +179,9 @@ class Simulation {
 		let timeDiff: any = endTime - startTime
 		console.log = consolelog
 		console.warn("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
-		RoomClientInterface.simulationOver(this.roomName)
+		// RoomClientInterface.simulationOver(this.roomName)
+
+		callback()
 	}
 	playOneGame(i: number) {
 		this.makeGame()

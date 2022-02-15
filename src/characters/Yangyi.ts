@@ -20,7 +20,7 @@ class Yangyi extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,  name: string) {
 
         const basic_stats: number[] = [170, 40, 6, 6, 0, 0]
-		super(turn, team, game, ai, ID, name, SETTINGS.characterNames[ID], basic_stats)
+		super(turn, team, game, ai, ID, name, SETTINGS.characters[ID].name, basic_stats)
 		// this.onoff = [false, false, false]
 		this.hpGrowth = 110
 		this.cooltime_list = [1, 5, 8]   //1 5 8
