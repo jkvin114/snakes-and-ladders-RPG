@@ -27,8 +27,8 @@ class Gorae extends Player {
 		this.skill_name = ["kraken_q", "hit", "kraken_r"]
 		this.itemtree = {
 			level: 0,
-			items: [33,10, 7, 13, 19],
-			final: 16,
+			items: [32, 9, 6, 12, 18],
+			final: 32,
 		}
 	}
 
@@ -219,7 +219,6 @@ class Gorae extends Player {
 		}
         switch (skill) {
 			case ENUM.SKILL.Q:
-				//사거리네에 플레이어 있거나 w 쓰고 사거리안에 1~3명 있을때 사용
 				return {
 					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
 					data: this.getAiProjPos(skilldata, skill),
@@ -227,7 +226,7 @@ class Gorae extends Player {
 			case ENUM.SKILL.W:
 				//사거리내에 1~3 명이상 있으면 사용
 				if (
-					this.game.playerSelector.getPlayersIn(this,this.pos - 3, this.pos + 3).length >=
+					this.game.playerSelector.getPlayersIn(this,this.pos - 5, this.pos + 5).length >=
 					this.game.totalnum- 1 || (this.HP/this.MaxHP < 0.3)
 				) {
 					this.useW()
@@ -243,14 +242,13 @@ class Gorae extends Player {
 				return { type: ENUM.AI_SKILL_RESULT_TYPE.TARGET, data: target }
 		}
 	}
-    getUltTarget(players:number[]) {
+    getUltTarget(validtargets:number[]) {
 		let ps = this.game.playerSelector.getAll()
-		players.sort((b:number, a:number):number => {
+		validtargets.sort((b:number, a:number):number => {
 			return ps[a].pos - ps[b].pos
 		})
 
-		for (let p of players) {
-			console.log(ps[p].HP)
+		for (let p of validtargets) {
 			if (ps[p].HP+ ps[p].shield < this.getSkillBaseDamage(ENUM.SKILL.ULT) 
 			&& !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
 				return p

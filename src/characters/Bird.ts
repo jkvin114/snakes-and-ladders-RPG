@@ -28,8 +28,8 @@ class Bird extends Player {
 		this.skill_name = ["hit", "hit", "bird_r"]
 		this.itemtree = {
 			level: 0,
-			items: [4, 24, 23, 18, 32],
-			final: 16
+			items: [ 23, 22, 3, 17, 31,15],
+			final: 22
 		}
 	}
 

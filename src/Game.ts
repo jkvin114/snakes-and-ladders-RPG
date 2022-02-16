@@ -20,6 +20,8 @@ import { Gorae } from "./characters/Gorae"
 import { Timo } from "./characters/Timo"
 import { Yangyi } from "./characters/Yangyi"
 const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
+const STATISTIC_VERSION=3
+//version 3: added kda to each category
 
 interface IGameSetting {
 	itemLimit: number
@@ -1170,7 +1172,7 @@ class Game {
 		let data = {
 			players: new Array<any>(),
 			totalturn: this.totalturn,
-			version: 2,
+			version: STATISTIC_VERSION,
 			map_data: {
 				name: MAP.get(this.mapId).mapname,
 				respawn: MAP.getRespawn(this.mapId),
@@ -1194,7 +1196,10 @@ class Game {
 				bestMultiKill: p.bestMultiKill,
 				positionRecord: p.statistics.positionRecord,
 				moneyRecord: p.statistics.moneyRecord,
-				itemRecord: p.statistics.itemRecord
+				itemRecord: p.statistics.itemRecord,
+				kill:p.kill,
+				death:p.death,
+				assist:p.assist
 			})
 		}
 

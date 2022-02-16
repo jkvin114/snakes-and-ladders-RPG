@@ -2,8 +2,8 @@ import { Game, GameSetting, IGameSetting } from "./Game"
 import SETTINGS = require("../res/globalsettings.json")
 import { RoomClientInterface } from "./app"
 import { Simulation ,SimulationSetting,ISimulationSetting} from "./SimulationRunner"
+const {GameRecord,SimulationRecord} = require("./statisticsDB")
 
-type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean }
 enum PlayerType {
 	EMPTY = "none",
 	AI = "ai",
@@ -11,6 +11,9 @@ enum PlayerType {
 	PLAYER_CONNECED = "player_connected",
 	SIM_AI = "sim_ai"
 }
+
+type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean }
+
 
 class Room {
 	//simulation_total_count: number
@@ -26,7 +29,6 @@ class Room {
 	//simulation: boolean
 	instant: boolean
 	map: number
-	stats: any[]
 	idleTimeout: ReturnType<typeof setTimeout>
 	connectionTimeout: ReturnType<typeof setTimeout>
 
@@ -43,7 +45,6 @@ class Room {
 		//	this.simulation = false
 		this.instant = false
 		this.map = 0
-		this.stats = []
 		this.idleTimeout = null
 		this.connectionTimeout = null
 		this.simulation=null
@@ -182,12 +183,13 @@ class Room {
 
 			let setting=new SimulationSetting(isTeam,simulationsetting)
 			this.simulation = new Simulation(this.name, simulation_count,setting)
-			let rname=this.name
-
+			let _this=this
 			this.doInstantSimulation().then(function(){
-				RoomClientInterface.simulationOver(rname,"success")
+				_this.onSimulationOver(true)
+				
 			}).catch(function(e){
-				RoomClientInterface.simulationOver(rname,e)
+				console.error(e)
+				_this.onSimulationOver(false)
 			})
 	}
 	doInstantSimulation():Promise<Function> {
@@ -326,13 +328,12 @@ class Room {
 		console.log("checkobs" + obs)
 
 		if (obs === -7) {
-			if (this.simulation_count <= 1) {
-				this.stopConnectionTimeout()
-				return this.game.thisturn
-			}
+			this.stopConnectionTimeout()
+			this.onGameover()
 		}
 		return null
 	}
+
 	user_obstacleComplete() {
 		console.log("obscomplete, pendingobs:" + this.game.pendingObs)
 		this.stopConnectionTimeout()
@@ -431,20 +432,53 @@ class Room {
 	user_storeComplete(data: any) {
 		this.game.playerSelector.get(data.turn).inven.updateItem(data)
 	}
+	onGameover(){
 
+		let stat = this.game.getFinalStatistics()
+		this.reset()
+		let rname=this.name
+		GameRecord.create(stat)
+		.then((resolvedData:any)=>{
+			console.log("stat saved successfully")
+			RoomClientInterface.gameStatReady(rname,resolvedData.id)
+		})
+		.catch((e:any)=>console.error(e))
+
+		RoomClientInterface.gameOver(rname,this.game.thisturn)
+	}
+	onSimulationOver(result:boolean){
+		if(result){
+			let stat = this.simulation.getFinalStatistics()
+			let rname=this.name
+			this.reset()
+			SimulationRecord.create(stat)	
+			.then((resolvedData:any)=>{
+				console.log("stat saved successfully")
+				RoomClientInterface.simulationStatReady(rname,resolvedData.id)
+			})
+			.catch((e:any)=>console.error(e))
+
+
+			RoomClientInterface.simulationOver(this.name,"success")
+		}
+		else{ //error
+			RoomClientInterface.simulationOver(this.name,"error")
+		}
+		
+	}
 	reset() {
 		clearTimeout(this.idleTimeout)
 		clearTimeout(this.connectionTimeout)
 		console.log(this.name + "has been reset")
 		this.name = null
 		this.game = null
+		this.simulation=null
 		this.hosting = 0
 		this.guestnum = 0
 		this.isTeam = false
 		this.playerlist = null
 		this.instant = false
 		this.map = 0
-		this.stats = []
 		
 	}
 }

@@ -34,8 +34,8 @@ class Silver extends Player {
 		this.skill_name = ["elephant_q", "hit", "hit"]
 		this.itemtree = {
 			level: 0,
-			items: [7, 13, 10, 19, 16],
-			final: 7
+			items: [6, 12, 9, 18,32, 15],
+			final: 6
 		}
 	}
 

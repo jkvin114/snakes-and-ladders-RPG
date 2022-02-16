@@ -29,8 +29,8 @@ class Creed extends Player {
 		this.skill_name = ["reaper_q", "hit", "reaper_r"]
 		this.itemtree = {
 			level: 0,
-			items: [1, 36, 18, 24, 32],
-			final: 1
+			items: [0, 35, 17, 23, 31, 15],
+			final: 0
 		}
 		this.usedQ = false
 	}

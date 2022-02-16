@@ -97,7 +97,7 @@ class Projectile {
 		if (!this.activated) {
 			return
 		}
-		console.log("projCoolDown" + this.type + " " + this.dur)
+		//console.log("projCoolDown" + this.type + " " + this.dur)
 
 		if (this.dur === 1) {
 			this.remove()

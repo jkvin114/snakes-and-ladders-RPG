@@ -9,7 +9,6 @@ class Yangyi extends Player {
     // onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
-    private w_speed:number
 	itemtree: {
 		level: number
 		items: number[]
@@ -23,13 +22,12 @@ class Yangyi extends Player {
 		super(turn, team, game, ai, ID, name, SETTINGS.characters[ID].name, basic_stats)
 		// this.onoff = [false, false, false]
 		this.hpGrowth = 110
-		this.cooltime_list = [1, 5, 8]   //1 5 8
-		this.w_speed = 0
+		this.cooltime_list = [1, 7, 8]   //1 7 8
 		this.skill_name = ["dinosaur_q", "hit", "dinosaur_r"]
 		this.itemtree = {
 			level: 0,
-			items: [23, 36, 24, 1, 30],
-			final: 23,
+			items: [22, 17, 35, 23, 0, 9],
+			final: 22,
 		}
 
 	}
@@ -39,15 +37,15 @@ class Yangyi extends Player {
 		info[0] =
 			"[양이의 주먹] 쿨타임:" +
 			this.cooltime_list[0] +
-			"턴<br>활성화시 매 턴마다 4칸내의 모든 플레이어 에게 " +
+			"턴<br>4칸내의 모든 플레이어 에게 " +
 			this.getSkillBaseDamage(0)+
-			"의 물리 피해(매턴마다 5의 체력이 소모됨,대상이 2명 이상이면 피해량 감소)"
+			"의 물리 피해(현재체력의 10% 소모,대상이 2명 이상이면 피해량 감소)"
 		info[1] =
 			"[양이의 고민] 쿨타임:" +
 			this.cooltime_list[1] +
 			"턴<br>[기본지속효과]: 뒤쳐져 있으면 주사위숫자 +1 [사용시]: 3턴에 걸쳐 체력" +
-			3 * Math.floor(30 + this.ability.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
-			"회복 후 신속 효과, 회복 중엔 움직일 수 없음"
+			3 * this.wHealAmount() +
+			" 회복, 회복 중엔 둔화에 걸림"
 		info[2] =
 			"[양이의 뿔] 쿨타임:" +
 			this.cooltime_list[2] +
@@ -61,15 +59,15 @@ class Yangyi extends Player {
 		info[0] =
 			"[Scythe Strike] cooltime:" +
 			this.cooltime_list[0] +
-			" turns<br>When activated, damage all players within 4 sqares with claw,deals " +
+			" turns<br>ㅇamage all players within 4 sqares with claw,deals " +
 			this.getSkillBaseDamage(0) +
-			" attack damage(-5 Health every turn when activated,damage reduced when attack more than 1 player)"
+			" attack damage(cost: -10% of current health,damage reduced when attacking more than 1 player)"
 		info[1] =
 			"[Regeneration] cooltime:" +
 			this.cooltime_list[1] +
 			" turns<br> [Passive effect]: movement speed +1 when fall behind [On use]: Heals total" +
-			3 * Math.floor(30 + this.ability.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)) +
-			" for 3 turns,Gains speed effect after use, Cannot throw dice during the heal"
+			3 * this.wHealAmount() +
+			" for 3 turns, get slowed while healing"
 		info[2] =
 			"[Burning at the stake] cooltime:" +
 			this.cooltime_list[2] +
@@ -77,6 +75,9 @@ class Yangyi extends Player {
 			this.getSkillBaseDamage(2)+
 			"+ 50% of target`s missing health as attack damage, Cooltime resets if the target dies."
 		return info
+	}
+	private wHealAmount(){
+		return Math.floor(30 + this.ability.AD * 0.4 + 0.1 * (this.MaxHP - this.HP))
 	}
 
 	private getSkillBaseDamage(skill:number):number{
@@ -100,11 +101,12 @@ class Yangyi extends Player {
 
 		switch (s) {
 			case ENUM.SKILL.Q:
-				if (!this.AI) {
-					this.useQ()
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)	
+                if (!this.AI) {
+					if(!this.useQ()){
+						skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NO_TARGET)	
+					}
 				}
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
 				break
 			case ENUM.SKILL.W:
 				if (!this.AI) {
@@ -122,20 +124,36 @@ class Yangyi extends Player {
 		return skillTargetSelector
 	}
 	useQ() {
-		if (this.duration[ENUM.SKILL.Q] === 0) {
-			this.duration[ENUM.SKILL.Q] = 9999
-		} else {
-			this.duration[ENUM.SKILL.Q] = 0
-		}
+		
+			let skilldmg:SkillDamage = {
+				damage: new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),
+				skill: ENUM.SKILL.Q,
+			}
+			let targets = this.game.playerSelector.getAvailableTarget(this,4, ENUM.SKILL.Q)
+
+			if (targets.length > 0) {
+				this.doObstacleDamage(Math.floor(this.HP*0.1),"noeffect")
+
+				//플레이어 2명아면 데미지 20%, 3명아면 40% 감소
+				let damagecoeff = 1 - 0.2 * (targets.length - 1)
+
+				skilldmg.damage.updateAttackDamage(CALC_TYPE.multiply,damagecoeff)
+
+				for (let p of targets) {
+					this.hitOneTarget(p, skilldmg)
+				}
+			}
+			else{
+				return false
+			}
 		this.startCooltime(ENUM.SKILL.Q)
+		return true
 	}
 	useW() {
 		if (this.duration[ENUM.SKILL.W] === 0) {
 			this.duration[ENUM.SKILL.W] = 3
-			this.effects.apply(ENUM.EFFECT.STUN, 3,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-		} else {
-			this.duration[ENUM.SKILL.W] = 0
-			this.w_end()
+			this.startCooltime(ENUM.SKILL.W)
+			this.effects.apply(ENUM.EFFECT.SLOW, 3,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 		}
 	}
 
@@ -180,9 +198,9 @@ class Yangyi extends Player {
     }
 
 	onSkillDurationEnd(skill:number){
-		if(skill===ENUM.SKILL.W){
-            this.w_end()
-        }
+		// if(skill===ENUM.SKILL.W){
+        //     this.w_end()
+        // }
 	}
     getSkillProjectile(t:number):Projectile{
         return null
@@ -198,39 +216,18 @@ class Yangyi extends Player {
 	}
 
     onSkillDurationCount() {
-		//Q
-		if (this.duration[ENUM.SKILL.Q] > 0) {
-			this.doObstacleDamage(5,"noeffect")
-			let skillattr:SkillDamage = {
-				damage: new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),
-				skill: ENUM.SKILL.Q,
-			}
-			let targets = this.game.playerSelector.getAvailableTarget(this,4, ENUM.SKILL.Q)
 
-			if (targets.length > 0) {
-				//플레이어 2명아면 데미지 20%, 3명아면 40% 감소
-				let damagecoeff = 1 - 0.2 * (targets.length - 1)
-
-				skillattr.damage.updateAttackDamage(CALC_TYPE.multiply,damagecoeff)
-
-				for (let p of targets) {
-					this.hitOneTarget(p, skillattr)
-				}
-			}
-		}
-		//w
 		if (this.duration[ENUM.SKILL.W] > 0) {
-			this.heal(Math.floor(30 + this.ability.AD * 0.4 + 0.2 * (this.MaxHP - this.HP)))
-			this.w_speed += 1
+			this.heal(this.wHealAmount())
 		}
 	}
 
-	w_end() {
-		this.effects.apply(ENUM.EFFECT.SPEED, this.w_speed,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-		this.w_speed = 0
-		this.effects.reset(ENUM.EFFECT.STUN)
-		this.startCooltime(ENUM.SKILL.W)
-	}
+	// w_end() {
+	// 	this.effects.apply(ENUM.EFFECT.SPEED, this.w_speed,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+	// 	this.w_speed = 0
+	// 	this.effects.reset(ENUM.EFFECT.STUN)
+		
+	// }
 	/**
 	 *
 	 * @param {*} skilldata {targets:int[]}
@@ -246,25 +243,16 @@ class Yangyi extends Player {
 		}
 		switch (skill) {
 			case ENUM.SKILL.Q:
-				//10칸이내에 플레이어가 있고 체력 30 이상시 활셩화
-				//10칸이내에 플레이어가 없거나 체력 30 이하시 비활성화
-				if (
-					(this.duration[ENUM.SKILL.Q] === 0 &&
-						this.game.playerSelector.getPlayersIn(this,this.pos - 10, this.pos + 10).length > 0 &&
-						this.HP >= 30) ||
-					(this.duration[ENUM.SKILL.Q] > 0 &&
-						this.game.playerSelector.getPlayersIn(this,this.pos - 10, this.pos + 10).length === 0) ||
-					(this.duration[ENUM.SKILL.Q] > 0 && this.HP < 30)
-				) {
+				//4칸이내에 플레이어가 있으면 사용
+				if (this.game.playerSelector.getPlayersIn(this,this.pos - 4, this.pos + 4).length > 0) {
 					this.useQ()
                     return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
 				}
 				return null
 			case ENUM.SKILL.W:
-				//체력이 50% 이하면 사용, 체력이 풀이면 중지
+				//체력이 50% 이하면 사용
 				if (
-					(this.HP < this.MaxHP * 0.5 && this.duration[ENUM.SKILL.W] === 0) ||
-					(this.HP === this.MaxHP && this.duration[ENUM.SKILL.W] > 0)
+					(this.HP < this.MaxHP * 0.5 && this.duration[ENUM.SKILL.W] === 0)
 				) {
 					this.useW()
 					
@@ -281,16 +269,17 @@ class Yangyi extends Player {
 	/**
 	 * 체력 30%이하인 플레이어중
 	 *  가장 앞에있는 플레이어반환
-	 * @param {} players int[]
+	 * @param {} validtargets int[]
 	 * return int
 	 */
-	getUltTarget(players:number[]) {
+	getUltTarget(validtargets:number[]) {
 		let ps = this.game.playerSelector.getAll()
-		players.sort((b:number, a:number):number => {
+		
+		validtargets.sort((b:number, a:number):number => {
 			return ps[a].pos - ps[b].pos
 		})
 
-		for (let p of players) {
+		for (let p of validtargets) {
 			if (ps[p].HP / ps[p].MaxHP < 0.3 && !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
 				return p
 			}

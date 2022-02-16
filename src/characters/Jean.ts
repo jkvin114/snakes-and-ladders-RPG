@@ -29,8 +29,8 @@ class Jean extends Player {
 		this.u_target = -1
 		this.itemtree = {
 			level: 0,
-			items: [1, 18, 24, 30, 10],
-			final: 1
+			items: [0, 17, 23, 29, 9,31],
+			final: 0
 		}
 	}
 	getSkillInfoKor() {

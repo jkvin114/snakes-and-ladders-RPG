@@ -1,15 +1,13 @@
 import { createServer } from "http"
-import express from "express"
+import express = require('express');
 import fs = require("fs")
-import { Game } from "./Game"
 import { Room } from "./room"
 import { MAP_TYPE } from "./enum"
 import SETTINGS = require("../res/globalsettings.json")
 import cors = require("cors")
 import os = require("os")
 import { Namespace, Server, Socket } from "socket.io"
-import cliProgress = require("cli-progress")
-import {GameRecord,Test,SimulationRecord} from "./statisticsDB"
+const{GameRecord,SimulationRecord} = require("./statisticsDB")
 const app = express()
 
 console.log("start server")
@@ -288,11 +286,7 @@ io.on("connect", function (socket: Socket) {
 	 */
 	socket.on("user:arrive_square", function (rname: string) {
 		if (!ROOMS.has(rname)) return
-		let winner = ROOMS.get(rname).user_arriveSquare()
-
-		if (winner != null) {
-			io.to(rname).emit("server:gameover", winner)
-		}
+		ROOMS.get(rname).user_arriveSquare()
 	})
 	//==========================================================================================
 
@@ -444,6 +438,15 @@ export namespace RoomClientInterface{
 	}
 	export const simulationOver = function (rname: string,msg:string) {
 		io.to(rname).emit("server:simulationover", msg)
+	}
+	export const gameOver=function(rname:string,winner:number){
+		io.to(rname).emit("server:gameover", winner)
+	}
+	export const gameStatReady=function(rname:string,id:string){
+		io.to(rname).emit("server:game_stat_ready", id)
+	}
+	export const simulationStatReady=function(rname:string,id:string){
+		io.to(rname).emit("server:simulation_stat_ready", id)
 	}
 }
 
@@ -654,39 +657,48 @@ app.post("/reset_game", function (req, res) {
 	res.end()
 })
 
-app.get("/stat", function (req: any, res) {
-	if (req.query.rname == null || !ROOMS.has(req.query.rname)) return
-	let room = ROOMS.get(req.query.rname)
-
-	let stat = {}
-
-	let isSimulation = false
-	if (room.simulation===null) {
-		stat = room.game.getFinalStatistics()
-
-		GameRecord.create(stat)
-		.then((resolvedData)=>console.log("stat saved successfully"))
-		.catch((e)=>console.error(e))
-
-	} else {
-		stat = {
-			stat: room.simulation.getFinalStatistics(),
-			count: room.simulation.getCount(),
-			multiple: true,
-			version:SETTINGS.version
-		}
-
-		ROOMS.delete(req.query.rname)
-		SimulationRecord.create(stat)
-		.then((resolvedData)=>console.log("stat saved successfully"))
-		.catch((e)=>console.error(e))
+app.get("/stat/aftergame", function (req: express.Request, res:express.Response) {
+	if (req.query.rname != null && ROOMS.has(req.query.rname.toString())) {
+		ROOMS.delete(req.query.rname.toString())
 	}
-	let str = JSON.stringify(stat)
+	console.log(ROOMS)
+
+	if(req.query.statid ==null || req.query.type==null){
+		return
+	}
+	if(req.query.type==="game"){
+		GameRecord.findById(req.query.statid)
+		.then((stat:any) => {
+		  	if (!stat) return res.status(404).send({ err: 'Statistic not found' });
+		  	res.end(JSON.stringify(stat));
+		})
+		.catch((err:any)=> res.status(500).send(err));
+	}
+	else if(req.query.type==="simulation"){
+		console.log(req.query)
+		SimulationRecord.findOneById(req.query.statid)
+		.then((stat:any) => {
+		  	if (!stat) return res.status(404).send({ err: 'Statistic not found' });
+		  	res.end(JSON.stringify(stat));
+		})
+		.catch((err:any) => res.status(500).send(err));
+	}
+	else{
+		res.status(404).end("unknown statistic type")
+	}
+	//let str = JSON.stringify(stat)
 
 	//writeStat(str, isSimulation)
 
-	res.end(str)
+	//res.end()
 })
+
+app.use('/stat', require('./statRouter'));
+
+
+
+
+
 function writeStat(stat: any, isSimulation: boolean) {
 	let date_ob = new Date()
 	let date = ("0" + date_ob.getDate()).slice(-2)

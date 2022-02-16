@@ -138,6 +138,18 @@ class SimulationSetting {
 			])
 		}
 	}
+	getSummary(){
+		return [
+			{ name: "allowMirrorMatch", value: this.allowMirrorMatch },
+			{ name: "isTeam", value: this.isTeam },
+			{ name: "divideTeamEqually", value: this.divideTeamEqually },
+			{ name: "characterPool", value: this.characterPool },
+			{ name: "mapPool", value: this.mapPool },
+			{ name: "playerNumber", value: this.playerNumber },
+			{ name: "randomizePlayerNumber", value: this.randomizePlayerNumber },
+			{ name: "randomizeGameSetting", value: this.randomizeGameSetting },
+		]
+	}
 }
 
 class Simulation {
@@ -159,7 +171,13 @@ class Simulation {
 	}
 
 	getFinalStatistics() {
-		return this.stats
+		return {
+			stat: this.stats,
+			count: this.count-1,
+			multiple: true,
+			version:SETTINGS.version,
+			setting:this.setting.getSummary()
+		}
 	}
 
 	run(callback:Function) {

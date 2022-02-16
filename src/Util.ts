@@ -83,11 +83,6 @@ class Damage {
 }
 
 
-
-
-
-
-
 class ActiveItem {
 	name: string
 	id: number
@@ -120,7 +115,7 @@ export const decrement = (val: number): number => Math.max(val - 1, 0)
  * @param {*} arr1
  * @param {*} arr2
  */
-export const copyElementsOnly = function (arr1: number[], arr2: number[]): number[] {
+export const copyElementsOnly = function<T> (arr1: T[], arr2: T[]): T[] {
 	for (let i = 0; i < arr1.length; ++i) {
 		arr1[i] = arr2[i]
 	}
@@ -181,7 +176,7 @@ export const sleep = (m:any) => new Promise((r) => setTimeout(r, m))
  * @param {} count
  * @returns
  */
-export const makeArrayOf = function (element:number,count: number): number[] {
+export const makeArrayOf = function <T>(element:T,count: number): T[] {
 	let arr = []
 	for (let i = 0; i < count; ++i) {
 		arr.push(element)

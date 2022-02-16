@@ -12,8 +12,6 @@ catch(e){
 
 var db=mongoose.connection
 
-
-
 db.on('error', function(){
     console.log('Connection Failed!');
 });
@@ -41,6 +39,9 @@ const playerSchema = new mongoose.Schema({
     positionRecord:[Number],
     moneyRecord:[Number],
     itemRecord:[itemRecordSchema],
+    kill:Number,
+    death:Number,
+    assist:Number
 
 });
 const killRecordSchema=new mongoose.Schema({
@@ -55,6 +56,10 @@ const gameSettingSchema=new mongoose.Schema({
     value:mongoose.Schema.Types.Mixed
 }, { _id : false })
 
+const simulationSettingSchema=new mongoose.Schema({
+    name:String,
+    value:mongoose.Schema.Types.Mixed
+}, { _id : false })
 const gameRecordSchema=new mongoose.Schema({
     players:{ type: [playerSchema], required: true },
     totalturn: Number,
@@ -74,7 +79,8 @@ const simulationRecordSchema=new mongoose.Schema({
     stat:[gameRecordSchema],
     count:Number,
     multiple:Boolean,
-    version:String
+    version:String,
+    setting:[simulationSettingSchema]
 },{timestamps:true})
 
 const testSubSchema=new mongoose.Schema({
@@ -85,9 +91,7 @@ const testschema=new mongoose.Schema({
     turn:Number,
     sub:testSubSchema
 })
-const Test=mongoose.model('Test',testschema)
-const GameRecord=mongoose.model('GameRecord',gameRecordSchema)
-const SimulationRecord=mongoose.model('SimulationRecord',simulationRecordSchema)
+
 gameRecordSchema.statics.create = function (payload) {
     // this === Model
     return (new GameRecord(payload)).save();// return Promise
@@ -98,5 +102,24 @@ testschema.statics.create=function(data){
 simulationRecordSchema.statics.create=function(data){
     return (new SimulationRecord(data)).save()
 }
+
+simulationRecordSchema.statics.findOneById = function(id) {
+    return this.findById(id)
+};
+simulationRecordSchema.statics.findByRange = function(start:number,count:number) {
+    console.log(count)    //asc, desc  or 1, -1
+    return this.find({}).sort({createdAt:"desc"}).skip(start).limit(count)
+};
+gameRecordSchema.statics.findOneById = function(id) {
+
+    return this.findById(id)
+};
+
+
+const Test=mongoose.model('Test',testschema)
+const GameRecord=mongoose.model('GameRecord',gameRecordSchema)
+const SimulationRecord=mongoose.model('SimulationRecord',simulationRecordSchema)
+// module.exports= GameRecord
+// module.exports=SimulationRecord
 export {GameRecord,Test,SimulationRecord}
 

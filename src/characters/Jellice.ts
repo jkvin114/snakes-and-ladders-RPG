@@ -30,8 +30,8 @@ class Jellice extends Player {
 		this.u_used = 0
 		this.itemtree = {
 			level: 0,
-			items: [4, 23, 34, 32, 19],
-			final: 4,
+			items: [3, 22, 33, 31, 18,3],
+			final: 3,
 		}
 	}
 	getSkillInfoKor() {

@@ -8,7 +8,7 @@
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "AD", "value": 80, "type_kor": "공격력" },
-				{ "type": "arP", "value": 10, "type_kor": "방어구 관통" }
+				{ "type": "arP", "value": 10, "type_kor": "물리 관통" }
 			],
 			"children": [1, 1],
 			"parents": [],
@@ -387,7 +387,7 @@
 				{
 					"type": "addMdmg",
 					"value": 7,
-					"type_kor": "스킬/기본공격 사용시 추가 마법피해: 상대의 현제 체력의"
+					"type_kor": "공격시 체력비례 추가마법피해 "
 				},
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
@@ -473,7 +473,7 @@
 				{
 					"type": "addMdmg",
 					"value": 3,
-					"type_kor": "스킬/기본공격 사용시 추가 마법피해: 상대의 현제 체력의 "
+					"type_kor": "공격시 체력비례 추가마법피해 "
 				}
 			],
 			"children": [],
@@ -492,7 +492,7 @@
 			"ability": [],
 			"children": [],
 			"parents": [29],
-			"unique_effect": "dice number +1 when left behind",
+			"unique_effect": "dice number +1 when fell behind",
 			"unique_effect_kor": "뒤쳐져 있으면 추가 주사위 +1",
 			"summary":{
 				"kor":"빠른 이동","eng":"Faster movement"
@@ -545,7 +545,7 @@
 				{
 					"type": "addMdmg",
 					"value": 5,
-					"type_kor": "스킬/기본공격 사용시 추가 마법피해: 상대의 현제 체력의 "
+					"type_kor": "공격시 체력비례 추가마법피해 "
 				},
 				{ "type": "adStat", "value": 40, "type_kor": "적응형 능력치" }
 			],

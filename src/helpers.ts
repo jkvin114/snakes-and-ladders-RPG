@@ -491,6 +491,7 @@ class PlayerSelector{
 			return p.pos < pos
 		})
 	}
+
 	/**
 	 * 조건에 맟는 플레이어 플레이어 반환
      * @param {*} me 호출하는 플레이어
@@ -803,7 +804,7 @@ class AIStoreInstance{
 				tobuy = this.build.items[this.build.level]
 			}
 
-			if(this.aiAttemptItemBuy(tobuy-1)==0) break
+			if(this.aiAttemptItemBuy(tobuy)==0) break
 		}
 		
 		this.inven.aiUpdateItem(this.resultItems,this.totalMoneySpend)

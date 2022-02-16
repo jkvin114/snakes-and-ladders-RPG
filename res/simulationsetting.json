@@ -24,7 +24,7 @@
 		"allowMirrorMatch": {
 			"desc": "Allow Mirror Match",
 			"desc_kor": "미러전 허용",
-			"default": true
+			"default": false
 		},
 		"divideTeamEqually": {
 			"desc": "Divide teams equally",

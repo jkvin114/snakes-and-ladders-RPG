@@ -28,8 +28,8 @@ class Timo extends Player {
 		this.skill_name = ["ghost_q", "hit", "ghost_r"]
 		this.itemtree = {
 			level: 0,
-			items: [4, 23, 34, 19, 16],
-			final: 4,
+			items: [3, 22, 33,29, 18, 15],
+			final: 3,
 		}
 	}
 
