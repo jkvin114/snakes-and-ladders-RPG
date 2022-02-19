@@ -1,7 +1,4 @@
 import { Game,MAP } from "./Game"
-import { Player } from "./player"
-import * as Util from "./Util"
-import * as server from "./app"
 import {PlayerClientInterface} from "./app"
 
 
@@ -33,7 +30,7 @@ class PassProjectile {
 		if (!this.game.isAttackableCoordinate(pos) && pos < MAP.get(this.game.mapId).coordinates.length) {
 			this.pos += 1
 		}
-		console.log("placePassProj"+this.type)
+		//.log("placePassProj"+this.type)
 		this.game.sendToClient(PlayerClientInterface.placePassProj, this.type, this.pos, this.UPID)
 	}
 

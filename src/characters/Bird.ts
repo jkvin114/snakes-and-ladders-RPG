@@ -28,7 +28,7 @@ class Bird extends Player {
 		this.skill_name = ["hit", "hit", "bird_r"]
 		this.itemtree = {
 			level: 0,
-			items: [ 23, 22, 3, 17, 31,15],
+			items: [23, 22, 3, 17, 31,15],
 			final: 22
 		}
 	}
@@ -99,16 +99,16 @@ class Bird extends Player {
 		return new ProjectileBuilder({
 			owner: _this,
 			size: 3,
-			skill: ENUM.SKILL.W,
+			skill: ENUM.SKILL.ULT,
 			type: "bird_r_trace"
 		})
-			.setGame(this.game)
-			.setAction(function (target: Player) {
-				target.effects.giveIgniteEffect(2, _this.turn)
-			})
-			.setNotDisappearWhenStep()
-			.setDuration(2)
-			.build()
+		.setGame(this.game)
+		.setAction(function (target: Player) {
+			target.effects.giveIgniteEffect(2, _this.turn)
+		})
+		.setNotDisappearWhenStep()
+		.setDuration(2)
+		.build()
 	}
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {

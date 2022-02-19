@@ -94,7 +94,6 @@ class Creed extends Player {
 		.setAction(function (target: Player) {
 			
 			target.forceMove(target.pos - 4, false, "simple")
-			//target.effects.obs[ENUM.EFFECT.STUN]=1
 		})
 		.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
 		.setDuration(2)

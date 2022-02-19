@@ -110,7 +110,7 @@ class SimulationSetting {
 		if (this.randomizePlayerNames) {
 			return pickRandom(SimulationSetting.NAMES)+" "+ pickRandom(SimulationSetting.NAMES) + "(" + String(turn + 1) + "P) "
 		} else {
-			return SETTINGS.characters[Number(char)].name + "_Bot(" + String(turn + 1) + "P) "
+			return String(turn + 1) + "P"
 		}
 	}
 	getCharacterList(count: number) {
@@ -196,7 +196,7 @@ class Simulation {
 		let endTime: any = new Date()
 		let timeDiff: any = endTime - startTime
 		console.log = consolelog
-		console.warn("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
+		console.log("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
 		// RoomClientInterface.simulationOver(this.roomName)
 
 		callback()

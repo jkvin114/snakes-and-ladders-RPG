@@ -507,7 +507,7 @@ abstract class Player extends Entity{
 				this.assist += 1
 				break
 		}
-		console.log("incrementKda " + type)
+	//	console.log("incrementKda " + type)
 
 		let str = this.kill + "/" + this.death + "/" + this.assist
 
@@ -523,7 +523,7 @@ abstract class Player extends Entity{
 	 */
 	changeApperance(name: string) {
 		this.transfer(PlayerClientInterface.update, "appearance", this.turn, name)
-		console.log("changeApperance"+name)
+	//	console.log("changeApperance"+name)
 	}
 
 	/**
@@ -682,7 +682,7 @@ abstract class Player extends Entity{
 		if (this.pos < 0) {
 			this.pos = 0
 		}
-		console.log("arriveAtSquare" + this.turn)
+	//	console.log("arriveAtSquare" + this.turn)
 
 		if (this.game.mapId === ENUM.MAP_TYPE.CASINO) {
 			this.mapdata.checkSubway()
@@ -873,7 +873,7 @@ abstract class Player extends Entity{
 		return this.doDamage(damage, changeData)
 	}
 	updateTotalShield(change: number, noindicate: boolean) {
-		console.log("updateshield" + change)
+	//	console.log("updateshield" + change)
 		this.shield += change
 		if (this.game.instant || change==0) return
 		this.transfer(PlayerClientInterface.changeShield,{
@@ -1036,7 +1036,7 @@ abstract class Player extends Entity{
 
 		//상대에게 죽은경우
 		if (skillfrom >= 0) {
-			console.log("sendkillinfo skillfrom " + skillfrom)
+			//console.log("sendkillinfo skillfrom " + skillfrom)
 			let killerMultiKillCount = this.game.playerSelector.get(skillfrom).thisLifeKillCount + 1
 			let isShutDown = this.thisLifeKillCount > 1
 			killData.isShutDown = isShutDown
@@ -1079,7 +1079,7 @@ abstract class Player extends Entity{
 		this.thisLevelDeathCount += 1
 
 		this.pos = this.getRespawnPoint()
-		console.log("respawn pos" + this.pos)
+	//	console.log("respawn pos" + this.pos)
 		//this.giveEffect('silent',1,-1)
 		let gostore = MAP.getStore(this.mapId).includes(this.pos)
 		if (gostore && this.AI) {
@@ -1108,7 +1108,7 @@ abstract class Player extends Entity{
 
 		this.changeHP_heal(new Util.HPChangeData().setHpChange(health).setRespawn())
 		this.dead = false
-		console.log("revive" + this.HP)
+	//	console.log("revive" + this.HP)
 		this.transfer(PlayerClientInterface.respawn,this.turn, this.pos, this.waitingRevival)
 
 
@@ -1139,7 +1139,7 @@ abstract class Player extends Entity{
 	}
 
 	dealDamageTo(target: Player, damage: Util.Damage, sourceType: string, name: string): boolean {
-		damage.updateMagicDamage(Util.CALC_TYPE.plus, target.HP * this.ability.addMdmg * 0.01)
+		damage.updateMagicDamage(Util.CALC_TYPE.plus, target.MaxHP * this.ability.addMdmg * 0.01)
 		let percentPenetration = 0
 
 		//다이아몬드 기사 아이템
@@ -1148,10 +1148,7 @@ abstract class Player extends Entity{
 	//		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
 		}
 
-		//석궁아이템
-		if (this.inven.haveItem(31)) {
-			percentPenetration = 40
-		}
+		
 
 		if (this.effects.haveSkillEffectAndSource("timo_u", target.turn)) {
 			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
@@ -1159,14 +1156,26 @@ abstract class Player extends Entity{
 
 		let flags = []
 		if (sourceType == "skill") {
+			let skillDmgReduction=0
+			if(this.inven.haveItem(18)){
+				skillDmgReduction=30
+			}
+			else if(this.inven.haveItem(19)){
+				skillDmgReduction=10
+			}
 
-			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1 - target.ability.skillDmgReduction * 0.01)
+			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1 - skillDmgReduction * 0.01)
 			.updateTrueDamage(Util.CALC_TYPE.plus, this.mapdata.adamage)
 
 			if (damage.getTotalDmg() === 0) {
 				flags.push(Util.HPChangeData.FLAG_NODMG_HIT)
 			}
 		} else if (sourceType == "basicattack") {
+		}
+
+		//석궁아이템
+		if (this.inven.haveItem(31)) {
+			percentPenetration = 40
 		}
 
 		let calculatedDmg = this.ability.applyResistanceToDamage(damage, target, percentPenetration)
@@ -1204,7 +1213,7 @@ abstract class Player extends Entity{
 	//========================================================================================================
 
 	hitBasicAttack(target: Player, isCounterAttack: boolean): boolean {
-		console.log("hitBasicAttack"+target.name+"  "+this.name)
+		//console.log("hitBasicAttack"+target.name+"  "+this.name)
 
 		if (!this.effects.canBasicAttack()) {
 			return false
@@ -1262,7 +1271,7 @@ abstract class Player extends Entity{
 
 		//방어막 효과
 		if (this.effects.has(ENUM.EFFECT.SHIELD)) {
-			console.log("shield")
+			//console.log("shield")
 			this.effects.reset(ENUM.EFFECT.SHIELD)
 			this.doPlayerDamage(0, source, type, true, [Util.HPChangeData.FLAG_SHIELD])
 			return false

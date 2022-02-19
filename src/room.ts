@@ -29,8 +29,10 @@ class Room {
 	//simulation: boolean
 	instant: boolean
 	map: number
-	idleTimeout: ReturnType<typeof setTimeout>
-	connectionTimeout: ReturnType<typeof setTimeout>
+	idleTimeout: NodeJS.Timeout
+	connectionTimeout: NodeJS.Timeout
+	connectionTimeoutTurn:number
+	idleTimeoutTurn:number
 
 	constructor(name: string) {
 	//	this.simulation_total_count = 1
@@ -46,7 +48,9 @@ class Room {
 		this.instant = false
 		this.map = 0
 		this.idleTimeout = null
+		this.idleTimeoutTurn=-1
 		this.connectionTimeout = null
+		this.connectionTimeoutTurn=-1
 		this.simulation=null
 	}
 
@@ -184,7 +188,8 @@ class Room {
 			let setting=new SimulationSetting(isTeam,simulationsetting)
 			this.simulation = new Simulation(this.name, simulation_count,setting)
 			let _this=this
-			this.doInstantSimulation().then(function(){
+			this.doInstantSimulation()
+			.then(function(){
 				_this.onSimulationOver(true)
 				
 			}).catch(function(e){
@@ -236,10 +241,6 @@ class Room {
 
 	user_startGame() {
 		let t = this.game.startTurn()
-		// if (this.simulation) {
-		// 	this.goNextTurn()
-		// 	return null
-		// }
 		return t
 	}
 	goNextTurn() {
@@ -264,23 +265,37 @@ class Room {
 
 		//컴퓨터일경우만 주사위 던짐
 		if (turnUpdateData.ai && !turnUpdateData.stun) {
-			console.log("ai roll dice")
+	//		console.log("ai roll dice")
 			let dice = this.game.rollDice(-1)
-			console.log("stun" + dice)
+		//	console.log("stun" + dice)
 
 			setTimeout(() => RoomClientInterface.rollDice(this.name, dice), 500)
 		}
 		// this.connection.to(this.name).emit('')
 	}
 
+	user_reconnect(turn:number){
+		console.log("reconnect"+turn)
+		if(turn===this.connectionTimeoutTurn){
+			this.stopConnectionTimeout()
+			console.log("reconnect"+turn)
+
+		}
+		if(turn===this.idleTimeoutTurn){
+			this.stopIdleTimeout()
+			console.log("reconnect"+turn)
+
+		}
+	}
 	stopIdleTimeout() {
-		console.log("stoptimeout")
+		//console.log("stoptimeout")
+		this.idleTimeoutTurn=-1
 		RoomClientInterface.stopTimeout(this.name, this.game.thisturn)
 		clearTimeout(this.idleTimeout)
 	}
-	startIdleTimeout(endaction: Function) {
+	startIdleTimeout(callback: Function) {
 		RoomClientInterface.startTimeout(this.name, this.game.thisturn, SETTINGS.idleTimeout)
-		console.log("start timeout")
+	//	console.log("start timeout")
 		if (this.game.gameover) {
 			return
 		}
@@ -288,13 +303,16 @@ class Room {
 
 		this.idleTimeout = setTimeout(function () {
 			RoomClientInterface.forceNextturn(_this.name, _this.game.thisturn)
-			endaction()
+			callback()
 		}, SETTINGS.idleTimeout)
+		this.idleTimeoutTurn=this.game.thisturn
+
 	}
 
 	stopConnectionTimeout() {
 		console.log("stopConnectionTimeout")
 		// stopTimeout(this.name, this.game.thisturn)
+		this.connectionTimeoutTurn
 		clearTimeout(this.connectionTimeout)
 	}
 	startConnectionTimeout() {
@@ -308,14 +326,16 @@ class Room {
 			RoomClientInterface.forceNextturn(_this.name, _this.game.thisturn)
 			_this.goNextTurn()
 		}, SETTINGS.connectionTimeout)
+		this.connectionTimeoutTurn=this.game.thisturn
 	}
 
 	extendTimeout(turn: number) {
 		if (turn !== this.game.thisturn) return
+		
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
 
-		console.log("timeout extension")
+		console.log("timeout extension"+turn)
 	}
 
 	user_pressDice(dicenum: number) {
@@ -325,7 +345,7 @@ class Room {
 	}
 	user_arriveSquare(): number {
 		let obs = this.game.checkObstacle()
-		console.log("checkobs" + obs)
+	//	console.log("checkobs" + obs)
 
 		if (obs === -7) {
 			this.stopConnectionTimeout()
@@ -335,7 +355,8 @@ class Room {
 	}
 
 	user_obstacleComplete() {
-		console.log("obscomplete, pendingobs:" + this.game.pendingObs)
+		if(this.game==null) return
+	//	console.log("obscomplete, pendingobs:" + this.game.pendingObs)
 		this.stopConnectionTimeout()
 
 		let info = this.game.checkPendingObs()
@@ -345,12 +366,12 @@ class Room {
 				setTimeout(() => this.game.aiSkill(), 300)
 				setTimeout(() => this.goNextTurn(), 800)
 
-				console.log("ai go nextturn")
+			//	console.log("ai go nextturn")
 			} else {
 				this.checkPendingAction()
 			}
 		} else {
-			console.log("obscomplete, pendingobs:" + info)
+		//	console.log("obscomplete, pendingobs:" + info)
 
 			RoomClientInterface.sendPendingObs(this.name, info.name, info.argument)
 
@@ -363,7 +384,9 @@ class Room {
 	}
 
 	checkPendingAction() {
-		console.log("function checkpendingaction" + this.game.pendingAction)
+		if(this.game==null) return
+
+	//	console.log("function checkpendingaction" + this.game.pendingAction)
 		if (!this.game.pendingAction || this.game.p().dead) {
 			RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
 			let _this = this
@@ -386,20 +409,26 @@ class Room {
 		}
 	}
 	user_completePendingObs(info: any) {
+		if(this.game==null) return
+
 		this.stopIdleTimeout()
 		this.game.processPendingObs(info)
 		this.checkPendingAction()
 	}
 	user_completePendingAction(info: any) {
+		if(this.game==null) return
+
 		this.game.processPendingAction(info)
 		this.stopIdleTimeout()
 		RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
 	}
 
 	user_clickSkill(s: number) {
+		if(this.game==null) return
+
 		let result = this.game.initSkill(s - 1)
-		console.log("getskill")
-		console.log(result)
+	//	console.log("getskill")
+	//	console.log(result)
 
 		this.stopIdleTimeout()
 
@@ -430,13 +459,18 @@ class Room {
 	}
 
 	user_storeComplete(data: any) {
+		if(this.game==null) return
+		
 		this.game.playerSelector.get(data.turn).inven.updateItem(data)
 	}
 	onGameover(){
 
 		let stat = this.game.getFinalStatistics()
-		this.reset()
+		let winner=this.game.thisturn
+
 		let rname=this.name
+		this.reset()
+		
 		GameRecord.create(stat)
 		.then((resolvedData:any)=>{
 			console.log("stat saved successfully")
@@ -444,12 +478,13 @@ class Room {
 		})
 		.catch((e:any)=>console.error(e))
 
-		RoomClientInterface.gameOver(rname,this.game.thisturn)
+		RoomClientInterface.gameOver(rname,winner)
 	}
 	onSimulationOver(result:boolean){
+		let rname=this.name
 		if(result){
 			let stat = this.simulation.getFinalStatistics()
-			let rname=this.name
+			
 			this.reset()
 			SimulationRecord.create(stat)	
 			.then((resolvedData:any)=>{
@@ -459,16 +494,16 @@ class Room {
 			.catch((e:any)=>console.error(e))
 
 
-			RoomClientInterface.simulationOver(this.name,"success")
+			RoomClientInterface.simulationOver(rname,"success")
 		}
 		else{ //error
-			RoomClientInterface.simulationOver(this.name,"error")
+			RoomClientInterface.simulationOver(rname,"error")
 		}
 		
 	}
 	reset() {
-		clearTimeout(this.idleTimeout)
-		clearTimeout(this.connectionTimeout)
+		this.stopConnectionTimeout()
+		this.stopIdleTimeout()
 		console.log(this.name + "has been reset")
 		this.name = null
 		this.game = null

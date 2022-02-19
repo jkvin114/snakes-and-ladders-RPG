@@ -272,10 +272,10 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:press_dice", function (rname: string, dicenum: number) {
 		if (!ROOMS.has(rname)) return
 		let dice = ROOMS.get(rname).user_pressDice(dicenum)
-
+		console.log("press_dice"+rname)
 		io.to(rname).emit("server:rolldice", dice)
 
-		console.log("pressdice")
+	//	console.log("pressdice")
 	})
 	//==========================================================================================
 
@@ -304,7 +304,7 @@ io.on("connect", function (socket: Socket) {
 	 * 처리 후 선댁 action(잠수함, 갈림길선택 등) 체크
 	 */
 	socket.on("user:complete_obstacle_selection", function (rname: string, info: any) {
-		console.log("obs selection complete")
+	//	console.log("obs selection complete")
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_completePendingObs(info)
 	})
@@ -315,7 +315,7 @@ io.on("connect", function (socket: Socket) {
 	 * 처리 후 스킬 사용
 	 */
 	socket.on("user:complete_action_selection", function (rname: string, info: any) {
-		console.log("action selection complete")
+	//	console.log("action selection complete")
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_completePendingAction(info)
 	})
@@ -332,7 +332,7 @@ io.on("connect", function (socket: Socket) {
 	//==========================================================================================
 	//execute when player chose a target
 	socket.on("user:chose_target", function (rname: string, target: any) {
-		console.log("sendtarget")
+	//	console.log("sendtarget")
 		if (!ROOMS.has(rname)) return
 		let status = ROOMS.get(rname).user_choseSkillTarget(target)
 
@@ -343,7 +343,7 @@ io.on("connect", function (socket: Socket) {
 	//==========================================================================================
 	//execute when player chose a projectile location
 	socket.on("user:chose_location", function (rname: string, location: any) {
-		console.log("sendprojlocation")
+	//	console.log("sendprojlocation")
 		if (!ROOMS.has(rname)) return
 		let skillstatus = ROOMS.get(rname).user_choseSkillLocation(location)
 		socket.emit("server:used_skill", skillstatus)
@@ -361,7 +361,6 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).goNextTurn()
 
-		console.log("gonextturn")
 	})
 
 	//==========================================================================================
@@ -370,7 +369,7 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
 		io.to(rname).emit("server:quit",quitter)
-		console.log("reset " + findRoomByName(rname))
+		console.log("an user has been disconnected " + findRoomByName(rname))
 
 		try{
 			room.reset()
@@ -399,14 +398,18 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:turn_roullete", function (rname: string) {
 		io.to(rname).emit("server:turn_roullete")
 	})
+
+	socket.on("connection_checker", function (rname: string) {
+
+		socket.emit("connection_checker")
+	})
+	socket.on("user:reconnect", function (rname: string,turn:number) {
+		if (!ROOMS.has(rname)) return
+		ROOMS.get(rname).user_reconnect(turn)
+	})
 })
 
 
-function isInstant(rname: string) {
-	if (!ROOMS.has(rname)) return true
-
-	return ROOMS.get(rname).instant
-}
 
 export namespace RoomClientInterface{
 	export const updateNextTurn = function (rname: string, turnUpdateData: any) {
@@ -440,6 +443,7 @@ export namespace RoomClientInterface{
 		io.to(rname).emit("server:simulationover", msg)
 	}
 	export const gameOver=function(rname:string,winner:number){
+		console.log(rname)
 		io.to(rname).emit("server:gameover", winner)
 	}
 	export const gameStatReady=function(rname:string,id:string){
@@ -518,6 +522,12 @@ export class PlayerClientInterface{
 			storeData: storeData
 		})
 }
+
+
+app.get("/connection_check",function(req,res){
+	res.end()
+})
+
 
 app.get("/gamesetting",function(req,res){
 

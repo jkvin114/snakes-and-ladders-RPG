@@ -40,7 +40,7 @@
 		"autoNextTurnOnSilent": {
 			"desc": "Go next turn automatically when unable to use skill",
 			"desc_kor": "스킬사용 불가시 자동으로 다음턴으로",
-			"default": false
+			"default": true
 		},
 		"diceControlItemFrequency": {
 			"desc": "Dice Control Item appear frequency",

@@ -77,9 +77,6 @@ class Timo extends Player {
 	getSkillTrajectorySpeed(skilltype:string):number{
         if(skilltype==="ghost_q"||skilltype==="ghost_w_q")
             return 500
-
-
-
 		return 0
 	}
 

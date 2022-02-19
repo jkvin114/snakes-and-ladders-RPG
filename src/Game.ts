@@ -352,7 +352,7 @@ class Game {
 
 	removePassProjById(id: string) {
 		if (id === "") return
-		console.log("REmoved PASSPROJECTILE  PASSPROJECTILE" + id)
+		//console.log("REmoved PASSPROJECTILE  PASSPROJECTILE" + id)
 		// let toremove=this.passProjectileList.filter((p: PassProjectile) => p.UPID === id)
 		let toremove = this.passProjectileList.get(id)
 		if (toremove !== null) {
@@ -451,7 +451,7 @@ class Game {
 
 		//다음턴 안넘어감(one more dice)
 		if (p.oneMoreDice) {
-			console.log("ONE MORE DICE")
+		//	console.log("ONE MORE DICE")
 			p.oneMoreDice = false
 			p.effects.cooldownNormal()
 			this.summonDicecontrolItemOnkill(p.turn)
@@ -511,7 +511,7 @@ class Game {
 		if (p.effects.has(ENUM.EFFECT.SPEED)) {
 			additional_dice += 2
 		}
-		console.log("adice" + additional_dice + " " + doubledice + " turn" + p.turn)
+	//	console.log("adice" + additional_dice + " " + doubledice + " turn" + p.turn)
 
 		// //temp
 		// if(p.turn===0){
@@ -522,7 +522,7 @@ class Game {
 		if (p.diceControl) {
 			avaliablepos = p.getPossiblePosList()
 		}
-		console.log("avliablepos" + avaliablepos)
+	//	console.log("avliablepos" + avaliablepos)
 		return {
 			turn: p.turn,
 			stun: p.effects.has(ENUM.EFFECT.STUN),
@@ -649,7 +649,7 @@ class Game {
 				this.pendingAction = "ask_way2"
 			}
 		}
-		console.log("move" + moveDistance)
+	//	console.log("move" + moveDistance)
 
 		if (this.mapId === ENUM.MAP_TYPE.CASINO && p.mapdata.isSubwayDice()) {
 			let subwayData = p.mapdata.getSubwayDice()
@@ -830,7 +830,7 @@ class Game {
 	 */
 	initSkill(skill: number) {
 		let p = this.p()
-		console.log("initSkill pendingskill" + skill)
+		//console.log("initSkill pendingskill" + skill)
 		p.pendingSkill = skill
 
 		if (!p.isSkillLearned(skill)) {
@@ -875,7 +875,7 @@ class Game {
 
 		let targets = this.playerSelector.getAvailableTarget(p, skillTargetSelector.range, skillTargetSelector.skill_id)
 
-		console.log("skillattr" + targets + " " + skillTargetSelector.range)
+	//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
 			//return "notarget"
 			return ENUM.INIT_SKILL_RESULT.NO_TARGET
@@ -913,7 +913,7 @@ class Game {
 	getUPID(): string {
 		let id = "P" + String(this.nextUPID)
 		this.nextUPID += 1
-		console.log("upid" + id)
+//		console.log("upid" + id)
 		return id
 	}
 	//========================================================================================================
@@ -927,7 +927,7 @@ class Game {
 	}
 
 	placeProjNoSelection(proj: Projectile, pos: number) {
-		console.log("placeProjNoSelection" + proj)
+		//console.log("placeProjNoSelection" + proj)
 		let id = this.getUPID()
 		proj.place(pos, id)
 		this.activeProjectileList.set(id, proj)
@@ -960,7 +960,7 @@ class Game {
 			let id = this.getPassUPID()
 			this.passProjectileList.set(id, proj)
 			proj.place(pos, id)
-			console.log("Placed PASSPROJECTILE  PASSPROJECTILE" + id)
+			//.log("Placed PASSPROJECTILE  PASSPROJECTILE" + id)
 			this.submarine_id = id
 		}
 		if (type === "dicecontrol") {
@@ -1085,7 +1085,7 @@ class Game {
 		} else if (info.type === "sell_token") {
 			this.sellToken(info)
 		} else if (info.type === "subway") {
-			console.log("subway")
+			//console.log("subway")
 			console.log(info)
 			this.p().mapdata.selectSubway(info.result, info.price)
 		}
@@ -1094,7 +1094,7 @@ class Game {
 	//========================================================================================================
 
 	processPendingAction(info: any) {
-		console.log(info)
+		//console.log(info)
 
 		//타임아웃될 경우
 		if (!info) {
@@ -1117,7 +1117,7 @@ class Game {
 		this.pendingAction = null
 	}
 	roulleteComplete() {
-		console.log("roullete" + this.pendingObs)
+	//	console.log("roullete" + this.pendingObs)
 
 		let p = this.p()
 		//사형재판

@@ -2,8 +2,6 @@ import {PlayerClientInterface} from "./app"
 import { Game,MAP } from "./Game"
 import { Player } from "./player"
 import * as Util from "./Util"
-import * as server from "./app"
-
 
 class Projectile {
 	static FLAG_IGNORE_OBSTACLE=1

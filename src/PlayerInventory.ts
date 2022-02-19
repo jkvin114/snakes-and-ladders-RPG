@@ -107,7 +107,7 @@ class PlayerInventory{
 
 	addActiveItem(itemdata: Util.ActiveItem) {
 		this.activeItems.push(itemdata)
-		console.log("buy active item" + itemdata)
+		//console.log("buy active item" + itemdata)
 	}
 
 	/**
@@ -211,8 +211,8 @@ class PlayerInventory{
 	 * }
 	 */
 	updateItem(data: any) {
-		console.log("updateitem " + data.item)
-		console.log("updatetoken " + data.token)
+	//	console.log("updateitem " + data.item)
+	//	console.log("updatetoken " + data.token)
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		this.changeToken(data.tokenbought)
 		this.changeLife(data.life)
