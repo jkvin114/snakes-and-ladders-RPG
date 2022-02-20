@@ -1,5 +1,5 @@
 import * as Util from "./Util"
-import {EFFECT,EFFECT_TIMING} from "./enum"
+import {EFFECT,EFFECT_TIMING, SKILL,ITEM} from "./enum"
 import { Player } from "./player"
 import {PlayerClientInterface} from "./app"
 
@@ -190,6 +190,10 @@ class PlayerStatusEffects{
         let died=false
         //독
 		if (this.has(EFFECT.POISON)) {
+			let damage=30
+			if(this.player.inven.haveItem(ITEM.BOOTS_OF_ENDURANCE)){
+				damage=Math.floor(damage*0.75)
+			}
 			died = this.player.doObstacleDamage(30, "simple")
 		}
 		//연금
@@ -204,16 +208,21 @@ class PlayerStatusEffects{
 
 		//노예계약
 		if (this.has(EFFECT.SLAVE)) {
-			died = this.player.doObstacleDamage(80, "simple")
+			let damage=80
+			if(this.player.inven.haveItem(ITEM.BOOTS_OF_ENDURANCE)){
+				damage=Math.floor(damage*0.75)
+			}
+			died = this.player.doObstacleDamage(damage, "simple")
 		}
 
 		if (died) {
 			this.apply(EFFECT.SILENT, 1,EFFECT_TIMING.BEFORE_SKILL)
 		}
     }
-    onAfterObs(){
+    onAfterObs():boolean{
         this.decrementShieldEffectDuration()
         this.cooldownEffectsBeforeSkill()
+		return this.constDamage()
     }
     onTurnEnd(){
     //    this.signCoolDown()
@@ -229,15 +238,34 @@ class PlayerStatusEffects{
     applyIgnite(){
         let died=false
         if (this.has(EFFECT.IGNITE)) {
+			let damage=Math.floor(0.04 * this.player.MaxHP)
+			if(this.player.inven.haveItem(ITEM.BOOTS_OF_ENDURANCE)){
+				damage=Math.floor(damage*0.75)
+			}
             if (this.igniteSource === -1) {
-                died = this.player.doObstacleDamage(Math.floor(0.04 * this.player.MaxHP), "fire")
+                died = this.player.doObstacleDamage(damage, "fire")
             } else {
-                died = this.player.doPlayerDamage(Math.floor(0.04 * this.player.MaxHP), this.igniteSource, "fire", false)
+                died = this.player.doPlayerDamage(damage, this.igniteSource, "fire", false)
             }
         }
         return died
     }
+	
+	constDamage() {
+		if (this.haveSkillEffect("timo_u")) {
+			let skeffect = this.getSkillEffect("timo_u")
 
+			this.apply(EFFECT.SLOW, 1, EFFECT_TIMING.BEFORE_SKILL)
+
+			if(this.player.inven.haveItem(ITEM.BOOTS_OF_ENDURANCE)){
+				skeffect.skillattr.updateNormalDamage(Util.CALC_TYPE.multiply,0.75)
+			}
+
+			let died = this.player.hitBySkill(skeffect.skillattr, skeffect.owner_turn, SKILL.ULT, null)
+			return died
+		}
+		return false
+	}
 	// haveEffect(effect: number) {
 	// 	return this.effects[effect] > 0
 	// }
@@ -254,7 +282,7 @@ class PlayerStatusEffects{
 	 */
 	applyNormal(effect: number, dur: number, type: string) {
 		if (dur === 0) return
-		if (effect === EFFECT.SLOW && this.player.inven.haveItem(29)) {
+		if (effect === EFFECT.SLOW && this.player.inven.haveItem(ITEM.BOOTS_OF_HASTE)) {
 			return
 			//장화로 둔화 무시
 		}

@@ -207,7 +207,9 @@ abstract class Player extends Entity{
 		this.adice += this.ability.moveSpeed
 
 		//장화 아이템
-		if (this.inven.haveItem(28) && this.game.playerSelector.isLast(this)) {
+		if ((this.inven.haveItem(ENUM.ITEM.BOOTS) ||
+		 this.inven.haveItem(ENUM.ITEM.BOOTS_OF_HASTE))
+		 && this.game.playerSelector.isLast(this)) {
 			this.adice += 1
 		}
 
@@ -256,15 +258,7 @@ abstract class Player extends Entity{
 	}
 	//========================================================================================================
 
-	constDamage() {
-		if (this.effects.haveSkillEffect("timo_u")) {
-			let skeffect = this.effects.getSkillEffect("timo_u")
-			this.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-			let died = this.hitBySkill(skeffect.skillattr, skeffect.owner_turn, ENUM.SKILL.ULT, null)
-			return died
-			//giveDamage(skeffect.const_damage,skeffect.owner+1,'hit')
-		}
-	}
+	
 
 	//========================================================================================================
 	showEffect(type: string, source: number) {
@@ -307,9 +301,9 @@ abstract class Player extends Entity{
 		this.onSkillDurationCount()
 
 		this.decrementAllSkillDuration()
-		this.effects.onAfterObs()
 		
-		let died = this.constDamage()
+		
+		let died = this.effects.onAfterObs()
 		if (died) {
 			this.effects.apply(ENUM.EFFECT.SILENT, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 		}
@@ -938,10 +932,10 @@ abstract class Player extends Entity{
 
 			//방패검 아이템
 			// console.log("predictedHP"+predictedHP+" "+this.AD*0.4)
-			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.inven.isActiveItemAvaliable(35)) {
+			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.inven.isActiveItemAvaliable(ENUM.ITEM.WARRIORS_SHIELDSWORD)) {
 				this.effects.setShield("item_shieldsword", new ShieldEffect(2, Math.floor(0.7 * this.ability.AD)), true)
-				this.inven.useActiveItem(35)
-				this.transfer(PlayerClientInterface.indicateItem,this.turn, 35)
+				this.inven.useActiveItem(ENUM.ITEM.WARRIORS_SHIELDSWORD)
+				this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.WARRIORS_SHIELDSWORD)
 
 			}
 
@@ -955,10 +949,10 @@ abstract class Player extends Entity{
 			predictedHP = this.HP - damage
 
 			//투명망토 아이템
-			if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(33)) {
+			if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(ENUM.ITEM.INVISIBILITY_CLOAK)) {
 				this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1,ENUM.EFFECT_TIMING.TURN_END)
-				this.inven.useActiveItem(33)
-				this.transfer(PlayerClientInterface.indicateItem,this.turn, 33)
+				this.inven.useActiveItem(ENUM.ITEM.INVISIBILITY_CLOAK)
+				this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.INVISIBILITY_CLOAK)
 
 			}
 
@@ -998,7 +992,7 @@ abstract class Player extends Entity{
 	}
 
 	canRevive(): string {
-		if (this.inven.isActiveItemAvaliable(15)) return "guardian_angel"
+		if (this.inven.isActiveItemAvaliable(ENUM.ITEM.GUARDIAN_ANGEL)) return "guardian_angel"
 
 		if (this.inven.life > 0) return "life"
 
@@ -1010,8 +1004,8 @@ abstract class Player extends Entity{
 
 		if (reviveType === "guardian_angel") 
 			{
-				this.transfer(PlayerClientInterface.indicateItem,this.turn,15)
-				this.inven.useActiveItem(15)
+				this.transfer(PlayerClientInterface.indicateItem,this.turn,ENUM.ITEM.GUARDIAN_ANGEL)
+				this.inven.useActiveItem(ENUM.ITEM.GUARDIAN_ANGEL)
 			}
 		this.waitingRevival = true
 		this.HP = 0
@@ -1148,33 +1142,43 @@ abstract class Player extends Entity{
 	//		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
 		}
 
-		
-
 		if (this.effects.haveSkillEffectAndSource("timo_u", target.turn)) {
 			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
 		}
 
 		let flags = []
 		if (sourceType == "skill") {
+
+			if(this.inven.isActiveItemAvaliable(ENUM.ITEM.CARD_OF_DECEPTION) && this.pos < target.pos){
+				damage.updateNormalDamage(Util.CALC_TYPE.multiply,1.1)
+				target.effects.apply(ENUM.EFFECT.SLOW,1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				this.effects.apply(ENUM.EFFECT.SLOW,1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				this.inven.useActiveItem(ENUM.ITEM.CARD_OF_DECEPTION)
+			}
+
 			let skillDmgReduction=0
-			if(this.inven.haveItem(18)){
+			if(this.inven.haveItem(ENUM.ITEM.POWER_OF_MOTHER_NATURE)){
 				skillDmgReduction=30
 			}
-			else if(this.inven.haveItem(19)){
+			else if(this.inven.haveItem(ENUM.ITEM.POWER_OF_NATURE)){
 				skillDmgReduction=10
 			}
 
 			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1 - skillDmgReduction * 0.01)
 			.updateTrueDamage(Util.CALC_TYPE.plus, this.mapdata.adamage)
 
+
 			if (damage.getTotalDmg() === 0) {
 				flags.push(Util.HPChangeData.FLAG_NODMG_HIT)
 			}
 		} else if (sourceType == "basicattack") {
+			if(this.inven.haveItem(ENUM.ITEM.BOOTS_OF_PROTECTION)){
+				damage.updateNormalDamage(Util.CALC_TYPE.multiply,0.8)
+			}
 		}
 
 		//석궁아이템
-		if (this.inven.haveItem(31)) {
+		if (this.inven.haveItem(ENUM.ITEM.CROSSBOW_OF_PIERCING)) {
 			percentPenetration = 40
 		}
 

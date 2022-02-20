@@ -1,5 +1,7 @@
 import { Player} from "../player"
 import * as ENUM from "../enum"
+import { ITEM } from "../enum"
+
 import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { SkillEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
@@ -28,8 +30,8 @@ class Timo extends Player {
 		this.skill_name = ["ghost_q", "hit", "ghost_r"]
 		this.itemtree = {
 			level: 0,
-			items: [3, 22, 33,29, 18, 15],
-			final: 3,
+			items: [ITEM.EPIC_CRYSTAL_BALL, ITEM.INVISIBILITY_CLOAK, ITEM.CARD_OF_DECEPTION, ITEM.ANCIENT_SPEAR,ITEM.POWER_OF_MOTHER_NATURE, ITEM.BOOTS_OF_HASTE],
+			final: ITEM.EPIC_CRYSTAL_BALL,
 		}
 	}
 

@@ -1,15 +1,15 @@
-import { Player} from "../player"
+import { Player } from "../player"
 import * as ENUM from "../enum"
+import { ITEM } from "../enum"
 import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
-import {Projectile,ProjectileBuilder} from "../Projectile"
+import { Projectile, ProjectileBuilder } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
-const ID=0
+const ID = 0
 class Creed extends Player {
-	readonly hpGrowth: number	
+	readonly hpGrowth: number
 	readonly cooltime_list: number[]
-	
 
 	itemtree: {
 		level: number
@@ -24,13 +24,20 @@ class Creed extends Player {
 		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
 		super(turn, team, game, ai, ID, name, SETTINGS.characters[ID].name, basic_stats)
 		this.hpGrowth = 100
-		
+
 		this.cooltime_list = [3, 4, 9]
 		this.skill_name = ["reaper_q", "hit", "reaper_r"]
 		this.itemtree = {
 			level: 0,
-			items: [0, 35, 17, 23, 31, 15],
-			final: 0
+			items: [
+				ITEM.EPIC_SWORD,
+				ITEM.WARRIORS_SHIELDSWORD,
+				ITEM.SWORD_OF_BLOOD,
+				ITEM.EPIC_WHIP,
+				ITEM.CROSSBOW_OF_PIERCING,
+				ITEM.GUARDIAN_ANGEL
+			],
+			final: ITEM.EPIC_SWORD
 		}
 		this.usedQ = false
 	}
@@ -72,14 +79,13 @@ class Creed extends Player {
 			"[Grave Delivery] cooltime:" +
 			this.cooltime_list[2] +
 			" turns<br>range: 20, Move to a player and deals  " +
-			this.getSkillBaseDamage(2)+
+			this.getSkillBaseDamage(2) +
 			" attack damage<br>30% less damage to the target to the front"
 		return info
 	}
-	getSkillTrajectorySpeed(skilltype:string):number{
+	getSkillTrajectorySpeed(skilltype: string): number {
 		return 0
 	}
-
 
 	private buildProjectile() {
 		let _this: Player = this
@@ -89,41 +95,33 @@ class Creed extends Player {
 			skill: ENUM.SKILL.W,
 			type: "reaper_w"
 		})
-		.setGame(this.game)
-		.setSkillRange(30)
-		.setAction(function (target: Player) {
-			
-			target.forceMove(target.pos - 4, false, "simple")
-		})
-		.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
-		.setDuration(2)
-		.build()
+			.setGame(this.game)
+			.setSkillRange(30)
+			.setAction(function (target: Player) {
+				target.forceMove(target.pos - 4, false, "simple")
+			})
+			.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
+			.setDuration(2)
+			.build()
 	}
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector 
-		= new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE)
-		.setSkill(skill) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(
+			skill
+		) //-1 when can`t use skill, 0 when it`s not attack skill
 
 		console.log("getSkillAttr" + skill)
 		switch (skill) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-				.setRange(5)
-				
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(5)
+
 				break
 			case ENUM.SKILL.W:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE)
-				.setRange(30)
-				.setProjectileSize(3)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(30).setProjectileSize(3)
 
 				break
 			case ENUM.SKILL.ULT:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-				.setRange(20)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(20)
 				break
 		}
 		return skillTargetSelector
@@ -146,17 +144,17 @@ class Creed extends Player {
 			return proj
 		}
 	}
-	private getSkillBaseDamage(skill:number):number{
-		if(skill===ENUM.SKILL.Q){
+	private getSkillBaseDamage(skill: number): number {
+		if (skill === ENUM.SKILL.Q) {
 			return Math.floor(20 + this.ability.AD)
 		}
-		if(skill===ENUM.SKILL.ULT){
+		if (skill === ENUM.SKILL.ULT) {
 			return Math.floor(70 + 0.8 * this.ability.AD)
 		}
 	}
 
 	getSkillDamage(target: number): SkillDamage {
-		console.log(target+"getSkillDamage"+this.pendingSkill)
+		console.log(target + "getSkillDamage" + this.pendingSkill)
 		let skillattr: SkillDamage = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
@@ -165,17 +163,15 @@ class Creed extends Player {
 				if (this.usedQ) {
 					this.startCooltime(ENUM.SKILL.Q)
 					this.usedQ = false
-					this.effects.setShield("swordsman_q",new ShieldEffect(1,40), false)
-
+					this.effects.setShield("swordsman_q", new ShieldEffect(1, 40), false)
 
 					skillattr = {
 						damage: new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),
 						skill: ENUM.SKILL.Q
 					}
 				} else {
-					
 					this.usedQ = true
-					this.effects.setShield("swordsman_q",new ShieldEffect(1,30), false)
+					this.effects.setShield("swordsman_q", new ShieldEffect(1, 30), false)
 					skillattr = {
 						damage: new Damage(this.getSkillBaseDamage(s), 0, 0),
 						skill: ENUM.SKILL.Q
@@ -184,7 +180,7 @@ class Creed extends Player {
 				break
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
-				this.effects.setShield("swordsman_r",new ShieldEffect(3,70), false)
+				this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
 				this.forceMove(this.game.playerSelector.get(target).pos, true, "levitate")
 				skillattr = {

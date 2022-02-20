@@ -1,5 +1,7 @@
 import { Player} from "../player"
 import * as ENUM from "../enum"
+import { ITEM } from "../enum"
+
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
@@ -28,8 +30,8 @@ class Bird extends Player {
 		this.skill_name = ["hit", "hit", "bird_r"]
 		this.itemtree = {
 			level: 0,
-			items: [23, 22, 3, 17, 31,15],
-			final: 22
+			items: [ITEM.EPIC_WHIP, ITEM.ANCIENT_SPEAR,ENUM.ITEM.EPIC_CRYSTAL_BALL,ITEM.SWORD_OF_BLOOD , ITEM.CARD_OF_DECEPTION,ITEM.GUARDIAN_ANGEL],
+			final: ITEM.ANCIENT_SPEAR
 		}
 	}
 

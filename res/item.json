@@ -71,7 +71,7 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "AP", "value": 50, "type_kor": "주문력" }],
 			"children": [5, 5],
-			"parents": [3,33],
+			"parents": [3,20,33],
 			"summary":{
 				"kor":"주문력","eng":"Magic Power"
 			},
@@ -120,7 +120,7 @@
 				{ "type": "AR", "value": 20, "type_kor": "방어력" }
 			],
 			"children": [8, 8],
-			"parents": [6, 15,33],
+			"parents": [6, 15,33,36],
 			"summary":{
 				"kor":"방어력","eng":"Attack Resistance"
 			},
@@ -222,7 +222,7 @@
 				{ "type": "MR", "value": 30, "type_kor": "마법 저항력" }
 			],
 			"children": [14, 14],
-			"parents": [12, 15],
+			"parents": [12, 15,37],
 			"summary":{
 				"kor":"마법 저항","eng":"Magic Resistance"
 			},
@@ -320,7 +320,7 @@
 			"summary":{
 				"kor":"스킬 방어","eng":"Skill defence"
 			},
-			"category":["defence"]
+			"category":["defence","utility"]
 		},
 		{
 			"id": 19,
@@ -343,24 +343,23 @@
 		},
 		{
 			"id": 20,
-			"name": "Light of Nature",
-			"kor_name": "자연의 빛",
-			"price": 30,
-			"itemlevel": 1,
+			"name": "Card of Deception",
+			"kor_name": "속임수의 마법카드",
+			"price": 350,
+			"itemlevel": 3,
 			"ability": [
-				{
-					"type": "skillDmgReduction",
-					"value": 5,
-					"type_kor": "스킬 데미지 감소"
-				}
+				{ "type": "AP", "value": 100, "type_kor": "주문력" },
+				{ "type": "HP", "value": 50, "type_kor": "최대체력" }
 			],
-			"children": [],
+			"children": [4,21],
 			"parents": [],
+			"unique_effect": "Hitting skill to enemies in front of you slows them, damage 10% increased, then grants you speed(cooltime 4 turns)",
+			"unique_effect_kor": "자신보다 앞에있는 적에게 스킬 사용시 피해량 10% 증가, 둔화 부여 후 자신은 신속 효과를 받음(쿨타임 4턴) ",
+			"active_cooltime":4,
 			"summary":{
-				"kor":"스킬 방어","eng":"Skill defence"
+				"kor":"주문력, 따라잡기","eng":"Magic Power, Catch-up"
 			},
-		
-			"category":["defence"]
+			"category":["magic","utility"]
 		},
 		{
 			"id": 21,
@@ -370,7 +369,7 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "HP", "value": 50, "type_kor": "최대체력" }],
 			"children": [34],
-			"parents": [18, 9,32,35],
+			"parents": [18, 9,20,32,35],
 			"summary":{
 				"kor":"최대체력","eng":"Maximum HP"
 			},
@@ -435,13 +434,13 @@
 			"id": 25,
 			"name": "Rare Magic Axe",
 			"kor_name": "중급 마법의 도끼",
-			"price": 135,
+			"price": 110,
 			"itemlevel": 2,
 			"ability": [
-				{ "type": "adStat", "value": 50, "type_kor": "적응형 능력치" }
+				{ "type": "adStat", "value": 40, "type_kor": "적응형 능력치" }
 			],
 			"children": [26, 26],
-			"parents": [22, 23],
+			"parents": [22, 31],
 			"summary":{
 				"kor":"적응형 능력치","eng":"Adaptative Stat"
 			},
@@ -457,7 +456,7 @@
 				{ "type": "adStat", "value": 10, "type_kor": "적응형 능력치" }
 			],
 			"children": [],
-			"parents": [25, 31],
+			"parents": [25],
 			"summary":{
 				"kor":"적응형 능력치","eng":"Adaptative Stat"
 			},
@@ -491,11 +490,11 @@
 			"itemlevel": 2,
 			"ability": [],
 			"children": [],
-			"parents": [29],
+			"parents": [29,36,37],
 			"unique_effect": "dice number +1 when fell behind",
 			"unique_effect_kor": "뒤쳐져 있으면 추가 주사위 +1",
 			"summary":{
-				"kor":"빠른 이동","eng":"Faster movement"
+				"kor":"따라잡기","eng":"Catch-up"
 			},
 			"category":["utility"]
 		},
@@ -511,10 +510,10 @@
 			],
 			"children": [28],
 			"parents": [],
-			"unique_effect": "Ignores slow effect",
-			"unique_effect_kor": "둔화 무시",
+			"unique_effect": "Ignores slow effect, dice number +1 when fell behind",
+			"unique_effect_kor": "둔화 무시, 뒤쳐져 있으면 추가 주사위 +1",
 			"summary":{
-				"kor":"빠른 이동","eng":"Faster movement"
+				"kor":"더 빠른 이동","eng":"Faster movement"
 			},
 			"category":["utility"]
 		},
@@ -549,7 +548,7 @@
 				},
 				{ "type": "adStat", "value": 40, "type_kor": "적응형 능력치" }
 			],
-			"children": [30, 27, 26],
+			"children": [30, 27, 25],
 			"parents": [],
 			"unique_effect": "40% armor and magic penetration",
 			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시",
@@ -560,8 +559,8 @@
 		},
 		{
 			"id": 32,
-			"name": "Diamond Knight",
-			"kor_name": "다이아몬드의 기사",
+			"name": "Full Diamond Armour",
+			"kor_name": "다이아몬드 전신갑주",
 			"price": 330,
 			"itemlevel": 3,
 			"ability": [
@@ -633,6 +632,46 @@
 			"unique_effect_kor": "치명적인 피해를 받으면 2턴간 공격력 비례 방어막 획득(쿨타임 7턴)",
 			"active_cooltime": 7,
 			"category":["health","attack","defence"]
+		},
+		{
+			"id": 36,
+			"name": "Boots of Protection",
+			"kor_name": "수호의 장화",
+			"price": 270,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "moveSpeed", "value": 1, "type_kor": "이동 속도" },
+				{ "type": "AR", "value": 30, "type_kor": "방어력" },
+				{ "type": "obsR", "value": 10, "type_kor": "장애물 저항" }
+			],
+			"children": [28,7],
+			"parents": [],
+			"unique_effect": "Reduces incoming basic attack damage by 20%",
+			"unique_effect_kor": "기본 공격으로 받는 피해 20% 감소",
+			"summary":{
+				"kor":"빠른 이동, 방어력","eng":"Fast Movement, Attack Defence"
+			},
+			"category":["utility","defence"]
+		},
+		{
+			"id": 37,
+			"name": "Boots of Endurance",
+			"kor_name": "불굴의 장화",
+			"price": 270,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "moveSpeed", "value": 1, "type_kor": "이동 속도" },
+				{ "type": "MR", "value": 40, "type_kor": "마법 저항" },
+				{ "type": "obsR", "value": 10, "type_kor": "장애물 저항" }
+			],
+			"children": [28,13],
+			"parents": [],
+			"unique_effect": "Reduces damage from constant damages(poison,ignite,etc) by 25%",
+			"unique_effect_kor": "지속 피해(독,점화 등)로부터 입는 피해 25% 감소",
+			"summary":{
+				"kor":"빠른 이동, 마법 저항","eng":"Fast Movement, Magic Resistance"
+			},
+			"category":["utility","defence"]
 		}
 	]
 }

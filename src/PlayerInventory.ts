@@ -1,5 +1,7 @@
 import * as Util from "./Util"
 import * as ENUM from "./enum"
+import { ITEM } from "./enum"
+
 import { items as ItemList } from "../res/item.json"
 import SETTINGS = require("../res/globalsettings.json")
 import { Player } from "./player"
@@ -101,7 +103,7 @@ class PlayerInventory{
 		this.changemoney(-1 * m, ENUM.CHANGE_MONEY_TYPE.TAKEN)
 	}
 
-    haveItem(item: number): boolean {
+    haveItem(item: ITEM): boolean {
 		return this.item[item] > 0
 	}
 
@@ -115,7 +117,7 @@ class PlayerInventory{
 	 * @param {}item_id id of item
 	 * @returns
 	 */
-	boughtActiveItem(item_id: number) {
+	boughtActiveItem(item_id: ITEM) {
 		return this.activeItems.some((i: Util.ActiveItem) => i.id === item_id)
 	}
 
@@ -128,7 +130,7 @@ class PlayerInventory{
 	 * @param {} item_id id of item
 	 * @returns
 	 */
-	isActiveItemAvaliable(item_id: number) {
+	isActiveItemAvaliable(item_id: ITEM) {
 		//console.log(this.item + "avaliable" + this.activeItems)
 		if (!this.haveItem(item_id)) return false
 
@@ -140,7 +142,7 @@ class PlayerInventory{
 	 * @param {} item_id id of item
 	 * @returns
 	 */
-	useActiveItem(item_id: number) {
+	useActiveItem(item_id: ITEM) {
 		this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
 	}
     getStoreData(priceMultiplier: number) {

@@ -1,5 +1,7 @@
 import { Player } from "../player"
 import * as ENUM from "../enum"
+import { ITEM } from "../enum"
+
 import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
@@ -27,8 +29,8 @@ class Gorae extends Player {
 		this.skill_name = ["kraken_q", "hit", "kraken_r"]
 		this.itemtree = {
 			level: 0,
-			items: [32, 9, 6, 12, 18],
-			final: 32,
+			items: [ITEM.FULL_DIAMOND_ARMOR, ITEM.EPIC_FRUIT,ITEM.EPIC_SHIELD, ITEM.EPIC_ARMOR, ITEM.POWER_OF_MOTHER_NATURE],
+			final: ITEM.FULL_DIAMOND_ARMOR,
 		}
 	}
 

@@ -2,6 +2,7 @@ import { Game, GameSetting, IGameSetting } from "./Game"
 import SETTINGS = require("../res/globalsettings.json")
 import { RoomClientInterface } from "./app"
 import { Simulation ,SimulationSetting,ISimulationSetting} from "./SimulationRunner"
+import { ITEM } from "./enum"
 const {GameRecord,SimulationRecord} = require("./statisticsDB")
 
 enum PlayerType {
@@ -288,10 +289,12 @@ class Room {
 		}
 	}
 	stopIdleTimeout() {
+		clearTimeout(this.idleTimeout)
+		if(!this.game) return
 		//console.log("stoptimeout")
 		this.idleTimeoutTurn=-1
 		RoomClientInterface.stopTimeout(this.name, this.game.thisturn)
-		clearTimeout(this.idleTimeout)
+		
 	}
 	startIdleTimeout(callback: Function) {
 		RoomClientInterface.startTimeout(this.name, this.game.thisturn, SETTINGS.idleTimeout)

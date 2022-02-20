@@ -1,5 +1,7 @@
 import { Player } from "../player"
 import * as ENUM from "../enum"
+import { ITEM } from "../enum"
+
 import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector} from "../Util"
 import { ShieldEffect,SkillEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
@@ -34,8 +36,8 @@ class Silver extends Player {
 		this.skill_name = ["elephant_q", "hit", "hit"]
 		this.itemtree = {
 			level: 0,
-			items: [6, 12, 9, 18,32, 15],
-			final: 6
+			items: [ITEM.EPIC_SHIELD, ITEM.EPIC_ARMOR, ITEM.POWER_OF_MOTHER_NATURE, ITEM.EPIC_FRUIT,ITEM.FULL_DIAMOND_ARMOR, ITEM.GUARDIAN_ANGEL],
+			final: ITEM.EPIC_SHIELD
 		}
 	}
 
