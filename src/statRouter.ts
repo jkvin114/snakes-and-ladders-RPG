@@ -19,10 +19,12 @@ router.get('/simulation/summary' ,function (req: express.Request, res:express.Re
     let count=req.query.count
     let start=req.query.start?req.query.start:0
     console.log(count)
-
+    if(start<0) return res.end()
+    
     SimulationRecord.findByRange(Number(start),Number(count))
     .then((stat:simulationRecord[]) => {
-        if (!stat || stat.length===0) return res.status(404).send({ err: 'Statistic not found' });
+        if (!stat) return res.status(404).send({ err: 'Statistic not found' });
+        else if(stat.length===0) return res.end()
         let result=[]
         for(let s of stat){
             result.push({
@@ -45,6 +47,7 @@ router.get('/simulation',function(req: express.Request, res:express.Response){
     })
     .catch((err:any) => res.status(500).send(err))
 })
+
 router.get('/simulation/gamelist',function(req: express.Request, res:express.Response){
     let id=req.query.statid
     SimulationRecord.findOneById(id)
@@ -62,6 +65,23 @@ router.get('/simulation/game',function(req: express.Request, res:express.Respons
     .catch((err:any) => res.status(500).send(err))
 })
 
+router.get('/game' ,function (req: express.Request, res:express.Response) {
+    let count=req.query.count
+    let start=req.query.start?req.query.start:0
+    console.log(count)
+    if(start<0) return res.end()
 
+    GameRecord.findByRange(Number(start),Number(count))
+    .then((stat:any[]) => {
+        if (!stat) return res.status(404).send({ err: 'Statistic not found' });
+        else if(stat.length===0) return res.end()
+        res.end(JSON.stringify({
+            stat:stat,
+            multiple:true,
+            isGamelist:true
+        }));
+    })
+    .catch((err:any) => res.status(500).send(err))
+})
 module.exports=router
 

@@ -110,6 +110,11 @@ simulationRecordSchema.statics.findByRange = function(start:number,count:number)
     console.log(count)    //asc, desc  or 1, -1
     return this.find({}).sort({createdAt:"desc"}).skip(start).limit(count)
 };
+
+gameRecordSchema.statics.findByRange = function(start:number,count:number) {
+    console.log(count)    //asc, desc  or 1, -1
+    return this.find({}).sort({createdAt:"desc"}).skip(start).limit(count)
+};
 gameRecordSchema.statics.findOneById = function(id) {
 
     return this.findById(id)
