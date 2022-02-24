@@ -2,33 +2,33 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector} from "../Util"
-import { ShieldEffect,SkillEffect } from "../PlayerStatusEffect"
+import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector } from "../Util"
+import { ShieldEffect, SkillEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
-import {Projectile} from "../Projectile"
+import { Projectile } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
-const ID=1
+const ID = 1
 class Silver extends Player {
-//	onoff: boolean[]
+	//	onoff: boolean[]
 	readonly hpGrowth: number
 	usedQ: boolean
 	readonly cooltime_list: number[]
-	
+
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	
+
 	private readonly skill_name: string[]
 	private u_active_amt: number
 	private u_passive_amt: number
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,  name: string) {
+	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [250, 25, 15, 15, 0, 20]
-		super(turn, team, game, ai, ID, name,  SETTINGS.characters[ID].name, basic_stats)
-	//	this.onoff = [false, false, false]
+		super(turn, team, game, ai, ID, name, basic_stats)
+		//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
 		this.hpGrowth = 130
 		this.u_active_amt = 0
@@ -36,7 +36,14 @@ class Silver extends Player {
 		this.skill_name = ["elephant_q", "hit", "hit"]
 		this.itemtree = {
 			level: 0,
-			items: [ITEM.EPIC_SHIELD, ITEM.EPIC_ARMOR, ITEM.POWER_OF_MOTHER_NATURE, ITEM.EPIC_FRUIT,ITEM.FULL_DIAMOND_ARMOR, ITEM.GUARDIAN_ANGEL],
+			items: [
+				ITEM.EPIC_SHIELD,
+				ITEM.EPIC_ARMOR,
+				ITEM.POWER_OF_MOTHER_NATURE,
+				ITEM.EPIC_FRUIT,
+				ITEM.FULL_DIAMOND_ARMOR,
+				ITEM.GUARDIAN_ANGEL
+			],
 			final: ITEM.EPIC_SHIELD
 		}
 	}
@@ -53,7 +60,8 @@ class Silver extends Player {
 			"턴<br>사정거리:3, 표식을 맞은 상대에게는 7,사용시 대상에게 " +
 			this.getSkillBaseDamage(0) +
 			"의 마법 피해 후 피해량의 30% 회복, 표식이 있는 대상에게는 30의 추가 피해를 입함"
-		info[1] = "[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴, 사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
+		info[1] =
+			"[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴, 사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
 		info[2] =
 			"[실버의 갑옷] 쿨타임:" +
 			this.cooltime_list[2] +
@@ -69,7 +77,7 @@ class Silver extends Player {
 			"[Tusk Attack] cooltime:" +
 			this.cooltime_list[0] +
 			" turns<br>range:3,(7 to players that have mark of ivory),Damage a player by tusk, deals " +
-			this.getSkillBaseDamage(0)+
+			this.getSkillBaseDamage(0) +
 			"magic damageDeals 30 more damage if the target has mark of ivory"
 		info[1] =
 			"[Curse of Ivory]<br> cooltime:" +
@@ -82,7 +90,7 @@ class Silver extends Player {
 			(this.HP < 150 ? 150 : 80)
 		return info
 	}
-	getSkillTrajectorySpeed(skilltype:string):number{
+	getSkillTrajectorySpeed(skilltype: string): number {
 		return 0
 	}
 	/**
@@ -92,27 +100,22 @@ class Silver extends Player {
 	 * @returns
 	 */
 	getSkillTargetSelector(s: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s)  //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
 
 		switch (s) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-				.setRange(3)
-			
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(3)
+
 				break
 			case ENUM.SKILL.W:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-				.setRange(15)
-			
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(15)
+
 				break
 			case ENUM.SKILL.ULT:
 				if (!this.AI) {
 					this.useUlt()
 				}
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
 				break
 		}
 		return skillTargetSelector
@@ -120,7 +123,7 @@ class Silver extends Player {
 
 	useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.setShield("elephant_r",new ShieldEffect(4,100), false)
+		this.effects.setShield("elephant_r", new ShieldEffect(4, 100), false)
 		this.duration[ENUM.SKILL.ULT] = 4
 		if (this.HP < 150) {
 			this.u_active_amt = 150
@@ -131,27 +134,24 @@ class Silver extends Player {
 			this.ability.update("AR", this.u_active_amt)
 			this.ability.update("MR", this.u_active_amt)
 		}
-		this.showEffect("elephant_r",this.turn)
+		this.showEffect("elephant_r", this.turn)
 		this.changeApperance("elephant_r")
-
 	}
 
-	getSkillName(skill:number):string{
-        return this.skill_name[skill]
-    }
+	getSkillName(skill: number): string {
+		return this.skill_name[skill]
+	}
 
+	getBasicAttackName(): string {
+		return super.getBasicAttackName()
+	}
 
-    getBasicAttackName():string{
-        return super.getBasicAttackName()
-    }
+	getSkillProjectile(t: number): Projectile {
+		return null
+	}
 
-
-    getSkillProjectile(t:number):Projectile{
-        return null
-    }
-
-	private getSkillBaseDamage(skill:number):number{
-		if(skill===ENUM.SKILL.Q){
+	private getSkillBaseDamage(skill: number): number {
+		if (skill === ENUM.SKILL.Q) {
 			return Math.floor(10 + this.ability.AP * 0.3 + (this.ability.AR + this.ability.MR) * 0.45)
 		}
 	}
@@ -163,7 +163,7 @@ class Silver extends Player {
 	 * @returns
 	 */
 	getSkillDamage(target: number): SkillDamage {
-		let skillattr: SkillDamage =null //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillattr: SkillDamage = null //-1 when can`t use skill, 0 when it`s not attack skill
 		let s = this.pendingSkill
 		this.pendingSkill = -1
 
@@ -172,33 +172,33 @@ class Silver extends Player {
 				this.startCooltime(ENUM.SKILL.Q)
 
 				//실버 인장
-				let _this=this
-				let dmg=this.getSkillBaseDamage(s)
+				let _this = this
+				let dmg = this.getSkillBaseDamage(s)
 				skillattr = {
 					damage: new Damage(0, dmg, 0),
 					skill: ENUM.SKILL.Q,
-					onHit:function(){
-						_this.heal(Math.floor(dmg*0.3))
+					onHit: function () {
+						_this.heal(Math.floor(dmg * 0.3))
 					}
 				}
 				if (this.game.playerSelector.get(target).effects.haveSkillEffectAndSource("silver_w", this.turn)) {
-					skillattr.damage.updateTrueDamage(CALC_TYPE.plus,30)
+					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, 30)
 					this.game.playerSelector.get(target).effects.removeSkillEffect("silver_w", this.turn)
 				}
 
 				break
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
-				let myturn=this.turn
-				let onhit=function(target:Player){
-					target.effects.giveSkillEffect(new SkillEffect("silver_w",myturn,5,"Mark of Ivory",null))
-					target.effects.apply(ENUM.EFFECT.BAD_LUCK, 1,ENUM.EFFECT_TIMING.TURN_START)
+				let myturn = this.turn
+				let onhit = function (target: Player) {
+					target.effects.giveSkillEffect(new SkillEffect("silver_w", myturn, 5, "Mark of Ivory", null))
+					target.effects.apply(ENUM.EFFECT.BAD_LUCK, 1, ENUM.EFFECT_TIMING.TURN_START)
 				}
 
 				skillattr = {
 					damage: new Damage(0, 0, 0),
 					skill: ENUM.SKILL.W,
-					onHit:onhit
+					onHit: onhit
 				}
 				break
 		}
@@ -231,17 +231,16 @@ class Silver extends Player {
 	 * called every turn after obstacle
 	 */
 	onSkillDurationCount() {}
-	
-	getBaseBasicAttackDamage():Damage{
-        return super.getBaseBasicAttackDamage()
-    }
 
-	onSkillDurationEnd(skill:number){
-		if(skill===ENUM.SKILL.ULT){
+	getBaseBasicAttackDamage(): Damage {
+		return super.getBaseBasicAttackDamage()
+	}
+
+	onSkillDurationEnd(skill: number) {
+		if (skill === ENUM.SKILL.ULT) {
 			this.ability.update("AR", -1 * this.u_active_amt)
 			this.ability.update("MR", -1 * this.u_active_amt)
 			this.changeApperance("")
-
 		}
 	}
 

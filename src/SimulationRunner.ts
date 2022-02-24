@@ -10,6 +10,9 @@ interface ISimulationSetting{
     mapPool: number[]
 	allowMirrorMatch: boolean
 	characterPool: number[]
+	lockedCharacters:number[]
+	teamLock:number[][]
+
 	playerNumber: number
 	randomizePlayerNumber: boolean	
 	randomizeGameSetting: boolean
@@ -28,6 +31,9 @@ class SimulationSetting {
 	mapPool: number[]
 	allowMirrorMatch: boolean
 	characterPool: number[]
+	lockedCharacters:number[]
+	teamLock:number[][]
+
 	playerNumber: number
 	randomizePlayerNumber: boolean	
 	randomizeGameSetting: boolean
@@ -77,12 +83,16 @@ class SimulationSetting {
         this.isTeam=isTeam
         this.mapPool=setting.mapPool
         this.allowMirrorMatch=setting.allowMirrorMatch
-        this.characterPool=setting.characterPool
+
+        this.characterPool=setting.characterPool   //not locked
+		this.lockedCharacters=setting.lockedCharacters   //locked
+
         this.playerNumber=setting.playerNumber
         this.randomizePlayerNumber=setting.randomizePlayerNumber
         this.randomizeGameSetting=setting.randomizeGameSetting
         this.randomizePlayerNames=setting.randomizePlayerNames
         this.divideTeamEqually=setting.divideTeamEqually
+		this.teamLock=setting.teamLock
     }
 	
 	getMap() {
@@ -114,12 +124,18 @@ class SimulationSetting {
 		}
 	}
 	getCharacterList(count: number) {
+		this.characterPool = shuffle(this.characterPool)
+		this.lockedCharacters = shuffle(this.lockedCharacters)
 		let list = []
+		for(let i=0;i < count && i < this.lockedCharacters.length;++i){
+			list.push(this.lockedCharacters[i])
+		}
+
 		if (this.allowMirrorMatch) {
-			for (let i = 0; i < count; ++i) list.push(pickRandom(this.characterPool))
+			for (let i = 0; i < count-this.lockedCharacters.length; ++i) 
+				list.push(pickRandom(this.characterPool.concat(this.lockedCharacters)))
 		} else {
-			this.characterPool = shuffle(this.characterPool)
-			for (let i = 0; i < count; ++i) {
+			for (let i = 0; i < count-this.lockedCharacters.length; ++i) {
 				list.push(this.characterPool[i])
 			}
 		}
@@ -144,6 +160,8 @@ class SimulationSetting {
 			{ name: "isTeam", value: this.isTeam },
 			{ name: "divideTeamEqually", value: this.divideTeamEqually },
 			{ name: "characterPool", value: this.characterPool },
+			{ name: "lockedCharacters", value: this.lockedCharacters },
+			{ name: "teamLock", value: this.teamLock },
 			{ name: "mapPool", value: this.mapPool },
 			{ name: "playerNumber", value: this.playerNumber },
 			{ name: "randomizePlayerNumber", value: this.randomizePlayerNumber },

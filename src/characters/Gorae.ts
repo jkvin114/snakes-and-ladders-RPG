@@ -23,13 +23,19 @@ class Gorae extends Player {
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
-		super(turn, team, game, ai, ID, name, SETTINGS.characters[ID].name, basic_stats)
+		super(turn, team, game, ai, ID, name,  basic_stats)
 		this.hpGrowth = 125
 		this.cooltime_list = [2, 4, 6]
 		this.skill_name = ["kraken_q", "hit", "kraken_r"]
 		this.itemtree = {
 			level: 0,
-			items: [ITEM.FULL_DIAMOND_ARMOR, ITEM.EPIC_FRUIT,ITEM.EPIC_SHIELD, ITEM.EPIC_ARMOR, ITEM.POWER_OF_MOTHER_NATURE],
+			items: [ITEM.FULL_DIAMOND_ARMOR,
+				 	ITEM.EPIC_FRUIT,
+				 	ITEM.EPIC_SHIELD, 
+				 	ITEM.EPIC_ARMOR,
+				  	ITEM.POWER_OF_MOTHER_NATURE,
+					ITEM.WARRIORS_SHIELDSWORD
+				],
 			final: ITEM.FULL_DIAMOND_ARMOR,
 		}
 	}

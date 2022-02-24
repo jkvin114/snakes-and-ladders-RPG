@@ -48,14 +48,7 @@ router.get('/simulation',function(req: express.Request, res:express.Response){
     .catch((err:any) => res.status(500).send(err))
 })
 
-router.get('/simulation/gamelist',function(req: express.Request, res:express.Response){
-    let id=req.query.statid
-    SimulationRecord.findOneById(id)
-    .then((stat:simulationRecord)=>{
-        res.end(JSON.stringify(stat));
-    })
-    .catch((err:any) => res.status(500).send(err))
-})
+
 router.get('/simulation/game',function(req: express.Request, res:express.Response){
     let id=req.query.statid
     SimulationRecord.findOneById(id)

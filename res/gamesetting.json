@@ -34,8 +34,8 @@
 			"desc": "Basic Attack Counter Attack Strength",
 			"desc_kor": "기본공격 반격 데미지",
 			"default": 1,
-			"options": ["No counter attack", "50%", "100%"],
-			"options_kor": ["반격 없음", "50%", "100%"]
+			"options": ["None", "50%", "100%"],
+			"options_kor": [" 없음", "50%", "100%"]
 		},
 		"autoNextTurnOnSilent": {
 			"desc": "Go next turn automatically when unable to use skill",

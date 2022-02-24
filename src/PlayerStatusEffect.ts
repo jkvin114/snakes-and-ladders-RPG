@@ -47,76 +47,82 @@ class ShieldEffect{
 	}
 }
 enum EFFECT_SOURCE{
-	PLAYER,ME,OBSTACLE,ITEM
+	ENEMY,ALLY,OBSTACLE,ITEM
 }
 
-interface StatusEffect{
-	isgood:boolean
+class StatusEffect{
 	duration:number
-	source:EFFECT_SOURCE
+	isgood: boolean
 	owner:Player
-	cooldown():void
-	onLethalDamage():void
-	onDeath():void
+	constructor(dur:number,owner:Player){
+		this.duration=dur
+		this.isgood=false
+		this.owner=owner
+	}
+	
+	cooldown(){
+		this.duration=Util.decrement(this.duration)
+		return this.duration>0
+	}
+	onLethalDamage(){
+		return false
+	}
+	onDeath(){
+		return false
+	}
 }
 
 
-class NormalEffect implements StatusEffect{
-	cooldown(): void {
-		throw new Error("Method not implemented.")
-	}
-	onLethalDamage(): void {
-		throw new Error("Method not implemented.")
-	}
-	onDeath(): void {
-		throw new Error("Method not implemented.")
-	}
-	isgood: boolean
-	duration: number
-	source: EFFECT_SOURCE
-	owner: Player
+class NormalEffect extends StatusEffect{
 
 	timing:number
+	type:EFFECT
+	constructor(type:EFFECT,timing:number,dur:number,owner:Player){
+		super(dur,owner)
+	}
 	static EVERY_TURN=0
 	static EVERY_PLAYER_TURN=1
 }
 
 
-class SpecialEffect implements StatusEffect{
-	cooldown(): void {
-		throw new Error("Method not implemented.")
-	}
-	onLethalDamage(): void {
-		throw new Error("Method not implemented.")
-	}
-	onDeath(): void {
-		throw new Error("Method not implemented.")
-	}
-	isgood: boolean
-	duration: number
-	source: EFFECT_SOURCE
-	owner: Player
-	name:string
+class SpecialEffect extends StatusEffect{
+
+	type:string
 	effectName:string
-
-}
-class SkillEffect2 extends SpecialEffect{
-
-	sourcePlayer:number
-
-}
-
-class ShieldEffect2 extends SpecialEffect{
-
-	shieldAmount:number
-	constructor(){
-		super()
+	shieldEffect:ShieldEffect
+	abilityChangeEffect:AblityChangeEffect
+	onHitEffect:OnHitEffect
+	tickDamageEffect:TickDamageEffect
+	sourceTurn:number
+	constructor(owner:Player,dur:number,type:string,effectName:string){
+		super(dur,owner)
+		this.type=type
+		this.effectName=effectName
+		this.sourceTurn=-1
 	}
-	absorbDamage(){
-
+	setShield(se:ShieldEffect){
+		this.shieldEffect=se
+		return this
 	}
-	
+	setAbilityChange(ae:AblityChangeEffect){
+		this.abilityChangeEffect=ae
+		return this
+	}
+	setOnHit(oh:OnHitEffect){
+		this.onHitEffect=oh
+		return this
+	}
+	setTickDamage(td:TickDamageEffect){
+		this.tickDamageEffect=td
+		return this
+	}
+	setSkillFrom(turn:number){
+		this.sourceTurn=turn
+		return this
+	}
+
 }
+
 class AblityChangeEffect extends SpecialEffect{
 
 	abilityChanges:Map<string,number>
@@ -134,10 +140,10 @@ class OnHitEffect extends SpecialEffect{
 }
 
 
-const Item18Effect=new Set([new ShieldEffect2()])
+
 
 enum EFFECT_TYPE{
-	SIMPLE,SHIELD,ABILITY_CHANGE,TICK_DAMAGE,ONHIT
+	NORMAL,SHIELD,ABILITY_CHANGE,TICK_DAMAGE,ONHIT
 }
 
 class PlayerStatusEffects{
@@ -151,7 +157,7 @@ class PlayerStatusEffects{
 		skill: number[]
 	}
 	ef:Map<EFFECT_TYPE,Set<StatusEffect>>
-	set:Set<Set<StatusEffect>>
+	elist:Map<string,StatusEffect>
 
     constructor(player:Player){
 		this.player=player
@@ -170,14 +176,18 @@ class PlayerStatusEffects{
 		this.shieldEffects = new Map<string, ShieldEffect>()
     }
 	init(){
-		let map=new Map<EFFECT_TYPE,Set<StatusEffect>>()
-		
-		map.set(EFFECT_TYPE.SIMPLE,new Set<StatusEffect>())
-		map.set(EFFECT_TYPE.SIMPLE,new Set<StatusEffect>())
-		map.set(EFFECT_TYPE.SIMPLE,new Set<StatusEffect>())
 
 	}
 
+	applySpecial(effect:SpecialEffect){
+		if(this.elist.has(effect.type))
+		{
+
+		}
+		else{
+
+		}
+	}
 	transfer(func:Function,...args:any[]){
         this.player.game.sendToClient(func,...args)
     }
@@ -261,7 +271,11 @@ class PlayerStatusEffects{
 				skeffect.skillattr.updateNormalDamage(Util.CALC_TYPE.multiply,0.75)
 			}
 
-			let died = this.player.hitBySkill(skeffect.skillattr, skeffect.owner_turn, SKILL.ULT, null)
+			let died = this.player.hitBySkill({
+				damage:skeffect.skillattr,
+				skill:SKILL.ULT
+			}, skeffect.owner_turn)
+
 			return died
 		}
 		return false

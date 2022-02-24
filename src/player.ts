@@ -16,7 +16,7 @@ import {PlayerClientInterface} from "./app"
 import {ObstacleHelper,AIHelper} from "./helpers"
 
 //for test only
-const LVL = 1
+const LVL = 2
 const POS = 0
 
 
@@ -123,7 +123,6 @@ abstract class Player extends Entity{
 		ai: boolean,
 		char: number,
 		name: string,
-		champ_name: string,
 		basic_stats: number[]
 	) {
 		super(game,basic_stats)
@@ -131,7 +130,7 @@ abstract class Player extends Entity{
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
 		this.champ = char //챔피언 코드
-		this.champ_name = champ_name //챔피언 이름
+		this.champ_name = SETTINGS.characters[char].name //챔피언 이름
 		this.team = team //0:readteam  1:blue
 		this.pos = POS //현재위치
 		this.lastpos = 0 //이전위치
@@ -1245,19 +1244,12 @@ abstract class Player extends Entity{
 
 
 	hitOneTarget(target: number, skilldmgdata: Util.SkillDamage) {
-		//adamage
-		let skill = skilldmgdata.skill
 
-		let died = this.game.playerSelector.get(target).hitBySkill(
-			skilldmgdata.damage,
-			this.turn,
-			skill,
-			skilldmgdata.onHit,
-			this.getSkillName(skill)
-		)
+		let died = this.game.playerSelector.get(target).hitBySkill(skilldmgdata,this.turn)
 		if (died && skilldmgdata.onKill) {
 			skilldmgdata.onKill()
 		}
+
 	}
 
 	/**
@@ -1267,11 +1259,13 @@ abstract class Player extends Entity{
 	 * @param {*} skill_id  0~
 	 * @param {*} action 데미지 준 후에 발동
 	 */
-	hitBySkill(skilldmg: Util.Damage, source: number, skill_id: number, onHit: Function, type?: string): boolean {
+	hitBySkill(skilldmg: Util.SkillDamage, source: number): boolean {
+
+		let skill_id=skilldmg.skill
 		//스킬별 이펙트표시를 위한 이름
-		if (type == null) {
-			type = this.game.playerSelector.get(source).getSkillName(skill_id)
-		}
+		
+		let type = this.game.playerSelector.get(source).getSkillName(skill_id)
+		
 
 		//방어막 효과
 		if (this.effects.has(ENUM.EFFECT.SHIELD)) {
@@ -1280,12 +1274,10 @@ abstract class Player extends Entity{
 			this.doPlayerDamage(0, source, type, true, [Util.HPChangeData.FLAG_SHIELD])
 			return false
 		}
-		if (onHit != null) {
-			onHit(this)
+		if (skilldmg.onHit != null) {
+			skilldmg.onHit(this)
 		}
-		let died = this.game.playerSelector.get(source).dealDamageTo(this, skilldmg, "skill", type)
-
-		
+		let died = this.game.playerSelector.get(source).dealDamageTo(this, skilldmg.damage, "skill", type)
 
 		return died
 	}

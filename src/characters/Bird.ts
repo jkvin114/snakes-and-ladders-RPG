@@ -1,15 +1,15 @@
-import { Player} from "../player"
+import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
-import {Projectile,ProjectileBuilder} from "../Projectile"
+import { Projectile, ProjectileBuilder } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
-const ID=7
+const ID = 7
 class Bird extends Player {
-//	onoff: boolean[]
+	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 
@@ -20,17 +20,24 @@ class Bird extends Player {
 	}
 	private readonly skill_name: string[]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean,  name: string) {
+	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 30, 7, 7, 0, 30]
-		super(turn, team, game, ai, ID, name,SETTINGS.characters[ID].name, basic_stats)
-	//	this.onoff = [false, false, false]
+		super(turn, team, game, ai, ID, name, basic_stats)
+		//	this.onoff = [false, false, false]
 		this.hpGrowth = 100
 		this.cooltime_list = [3, 5, 10]
 		this.skill_name = ["hit", "hit", "bird_r"]
 		this.itemtree = {
 			level: 0,
-			items: [ITEM.EPIC_WHIP, ITEM.ANCIENT_SPEAR,ENUM.ITEM.EPIC_CRYSTAL_BALL,ITEM.SWORD_OF_BLOOD , ITEM.CARD_OF_DECEPTION,ITEM.GUARDIAN_ANGEL],
+			items: [
+				ITEM.EPIC_WHIP,
+				ITEM.ANCIENT_SPEAR,
+				ENUM.ITEM.EPIC_CRYSTAL_BALL,
+				ITEM.SWORD_OF_BLOOD,
+				ITEM.CARD_OF_DECEPTION,
+				ITEM.GUARDIAN_ANGEL
+			],
 			final: ITEM.ANCIENT_SPEAR
 		}
 	}
@@ -104,13 +111,13 @@ class Bird extends Player {
 			skill: ENUM.SKILL.ULT,
 			type: "bird_r_trace"
 		})
-		.setGame(this.game)
-		.setAction(function (target: Player) {
-			target.effects.giveIgniteEffect(2, _this.turn)
-		})
-		.setNotDisappearWhenStep()
-		.setDuration(2)
-		.build()
+			.setGame(this.game)
+			.setAction(function (target: Player) {
+				target.effects.giveIgniteEffect(2, _this.turn)
+			})
+			.setNotDisappearWhenStep()
+			.setDuration(2)
+			.build()
 	}
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
@@ -137,16 +144,16 @@ class Bird extends Player {
 
 	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
-		this.effects.apply(ENUM.EFFECT.SPEED, 1,ENUM.EFFECT_TIMING.TURN_END)
+		this.effects.apply(ENUM.EFFECT.SPEED, 1, ENUM.EFFECT_TIMING.TURN_END)
 		this.duration[ENUM.SKILL.W] = 2
 	}
 	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.setShield("bird_r",new ShieldEffect(4,70), false)
+		this.effects.setShield("bird_r", new ShieldEffect(4, 70), false)
 		this.duration[ENUM.SKILL.ULT] = 4
 		this.ability.update("attackRange", 2)
 		this.changeApperance("bird_r")
-		this.showEffect("bird_r",this.turn)
+		this.showEffect("bird_r", this.turn)
 	}
 
 	getSkillName(skill: number): string {
@@ -191,8 +198,8 @@ class Bird extends Player {
 		return null
 	}
 
-	private getSkillBaseDamage(skill:number):number{
-		if(skill===ENUM.SKILL.Q){
+	private getSkillBaseDamage(skill: number): number {
+		if (skill === ENUM.SKILL.Q) {
 			return Math.floor(20 + 0.8 * this.ability.AP)
 		}
 	}
@@ -204,17 +211,17 @@ class Bird extends Player {
 		switch (s) {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
-				let _this=this
+				let _this = this
 
-				let onhit=function(target:Player){
+				let onhit = function (target: Player) {
 					target.inven.takeMoney(20)
 					_this.inven.giveMoney(20)
 				}
-	
-				let damage = new Damage(0,this.getSkillBaseDamage(s) , 0)
+
+				let damage = new Damage(0, this.getSkillBaseDamage(s), 0)
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
-					this.game.playerSelector.get(target).effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.TURN_END)
+					this.game.playerSelector.get(target).effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.TURN_END)
 					damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.ability.AP * 0.5)
 				}
 
@@ -227,7 +234,7 @@ class Bird extends Player {
 				skillattr = {
 					damage: damage,
 					skill: ENUM.SKILL.Q,
-					onHit:onhit
+					onHit: onhit
 				}
 				break
 		}

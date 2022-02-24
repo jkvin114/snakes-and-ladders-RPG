@@ -803,7 +803,11 @@ class Game {
 		for (let o of other) {
 			for (let p of o.projectile) {
 				if (p.activated && p.scope.includes(player.pos)) {
-					let died = player.hitBySkill(p.damage, o.turn, p.skill, p.action, p.type)
+					let died = player.hitBySkill({
+						damage:p.damage,
+						skill:p.skill,
+						onHit:p.action
+					}, o.turn)
 
 					if (p.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
 
@@ -888,7 +892,6 @@ class Game {
 	}
 	useSkillToTarget(target: number) {
 		let p = this.p()
-		//this.skilldmg.onSkillUse(target)
 
 		p.hitOneTarget(target, p.getSkillDamage(target))
 		return this.getSkillStatus()
