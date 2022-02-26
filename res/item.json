@@ -353,7 +353,7 @@
 			],
 			"children": [4,21],
 			"parents": [],
-			"unique_effect": "Hitting skill to enemies in front of you slows them, damage 10% increased, then grants you speed(cooltime 4 turns)",
+			"unique_effect": "Hitting skill to enemies in front of you slows them, deals 10% more damage, then grants you speed(cooltime 4 turns)",
 			"unique_effect_kor": "자신보다 앞에있는 적에게 스킬 사용시 피해량 10% 증가, 둔화 부여 후 자신은 신속 효과를 받음(쿨타임 4턴) ",
 			"active_cooltime":4,
 			"summary":{
@@ -379,19 +379,16 @@
 			"id": 22,
 			"name": "Ancient Spear",
 			"kor_name": "고대의 창",
-			"price": 300,
+			"price": 325,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "adStat", "value": 50, "type_kor": "적응형 능력치" },
-				{
-					"type": "addMdmg",
-					"value": 7,
-					"type_kor": "공격시 체력비례 추가마법피해 "
-				},
+				{ "type": "adStat", "value": 60, "type_kor": "적응형 능력치" },
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
 			"children": [25, 27],
 			"parents": [],
+			"unique_effect": "On attack, additionally deals 10% of target`s maximum HP as magic damage",
+			"unique_effect_kor": "공격시 대상 최대체력의 10%의 추가 마법 피해를 입힘",
 			"summary":{
 				"kor":"공격시 추가피해","eng":"Additional damage on attack"
 			},
@@ -464,19 +461,17 @@
 		},
 		{
 			"id": 27,
-			"name": "Bamboo Spear",
-			"kor_name": "피의 죽창",
-			"price": 60,
+			"name": "Piercing Spear",
+			"kor_name": "꿰뚫는 창",
+			"price": 90,
 			"itemlevel": 2,
 			"ability": [
-				{
-					"type": "addMdmg",
-					"value": 3,
-					"type_kor": "공격시 체력비례 추가마법피해 "
-				}
+				{ "type": "adStat", "value": 20, "type_kor": "적응형 능력치" }
 			],
 			"children": [],
 			"parents": [22, 31],
+			"unique_effect": "On attack, additionally deals 5% of target`s maximum HP as magic damage",
+			"unique_effect_kor": "공격시 대상 최대체력의 5%의 추가 마법 피해를 입힘",
 			"summary":{
 				"kor":"공격시 추가피해","eng":"Additional damage on attack"
 			},
@@ -538,20 +533,15 @@
 			"id": 31,
 			"name": "Crossbow of Piercing",
 			"kor_name": "관통의 석궁",
-			"price": 300,
+			"price": 350,
 			"itemlevel": 3,
 			"ability": [
-				{
-					"type": "addMdmg",
-					"value": 5,
-					"type_kor": "공격시 체력비례 추가마법피해 "
-				},
 				{ "type": "adStat", "value": 40, "type_kor": "적응형 능력치" }
 			],
 			"children": [30, 27, 25],
 			"parents": [],
-			"unique_effect": "40% armor and magic penetration",
-			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시",
+			"unique_effect": "40% armor and magic penetration and additionally deals 7% of target`s maximum HP as fixed damage on attack",
+			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시하고 공격시 대상 최대체력의 7%의 추가 고정 피해를 입힘",
 			"summary":{
 				"kor":"탱커 대항","eng":"Anti-tank"
 			},

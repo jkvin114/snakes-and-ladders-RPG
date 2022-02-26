@@ -1,6 +1,7 @@
 import { Player } from "./player"
 import {PlayerClientInterface} from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
+import { ITEM } from "./enum"
 
 class Ability{
 	AD: number
@@ -168,11 +169,12 @@ class Ability{
 	}
 	//모든피해 흡혈
 	absorb_hp(damage: number) {
-		this.player.changeHP_heal(new HPChangeData().setHpChange(5 + Math.floor((damage * this.absorb) / 100)))
+		this.player.changeHP_heal(new HPChangeData().setHpChange(Math.floor((damage * this.absorb) / 100)))
 	}
 
 	basicAttackDamage(target: Player) {
-		return this.player.getBaseBasicAttackDamage().updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
+		return this.player.getBaseBasicAttackDamage()
+		.updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
 	}
 	addMaxHP(maxHpChange:number){
 		this.addHP+=maxHpChange
@@ -183,15 +185,50 @@ class Ability{
 			this.player.changeHP_heal(new HPChangeData().setHpChange(this.regen))
 		}
 	}
-	applyResistanceToDamage(damage: Damage, target: Player, percentPenetration: number): number {
+	applyResistanceToDamage(damage: Damage, target: Player): number {
+
+		let pp=0
+		if(this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING))
+			pp=40
+			
 		return damage.applyResistanceToDamage({
 			AR: target.ability.AR,
 			MR: target.ability.MR,
 			arP: this.arP,
 			MP: this.MP,
-			percentPenetration
+			percentPenetration:pp
+		
 		})
 	}
+
+	applyAttackAdditionalDamage(damage:Damage,target:Player){
+		let addMdmg=0
+		if(this.player.inven.haveItem(ITEM.ANCIENT_SPEAR)){
+			addMdmg=10
+		}
+		else if(this.player.inven.haveItem(ITEM.BAMBOO_SPEAR)){
+			addMdmg=5
+		}
+		damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * addMdmg * 0.01)
+		if(this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)){
+			damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
+		}
+		damage.updateTrueDamage(CALC_TYPE.plus, this.player.mapdata.adamage)
+	}
+
+
+	applySkillDmgReduction(damage:Damage){
+		let skillDmgReduction=0
+		if(this.player.inven.haveItem(ITEM.POWER_OF_MOTHER_NATURE)){
+			skillDmgReduction=30
+		}
+		else if(this.player.inven.haveItem(ITEM.POWER_OF_NATURE)){
+			skillDmgReduction=10
+		}
+		damage.updateNormalDamage(CALC_TYPE.multiply, 1 - skillDmgReduction * 0.01)
+	}
+
+
 }
 
 export default Ability

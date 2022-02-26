@@ -1132,17 +1132,12 @@ abstract class Player extends Entity{
 	}
 
 	dealDamageTo(target: Player, damage: Util.Damage, sourceType: string, name: string): boolean {
-		damage.updateMagicDamage(Util.CALC_TYPE.plus, target.MaxHP * this.ability.addMdmg * 0.01)
-		let percentPenetration = 0
+		this.ability.applyAttackAdditionalDamage(damage,target)
 
 		//다이아몬드 기사 아이템
 		if (this.inven.haveItem(32)) {
 			this.ability.addMaxHP(5)
 	//		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
-		}
-
-		if (this.effects.haveSkillEffectAndSource("timo_u", target.turn)) {
-			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
 		}
 
 		let flags = []
@@ -1154,34 +1149,23 @@ abstract class Player extends Entity{
 				this.effects.apply(ENUM.EFFECT.SLOW,1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
 				this.inven.useActiveItem(ENUM.ITEM.CARD_OF_DECEPTION)
 			}
-
-			let skillDmgReduction=0
-			if(this.inven.haveItem(ENUM.ITEM.POWER_OF_MOTHER_NATURE)){
-				skillDmgReduction=30
-			}
-			else if(this.inven.haveItem(ENUM.ITEM.POWER_OF_NATURE)){
-				skillDmgReduction=10
-			}
-
-			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 1 - skillDmgReduction * 0.01)
-			.updateTrueDamage(Util.CALC_TYPE.plus, this.mapdata.adamage)
-
+			
+			this.ability.applySkillDmgReduction(damage)
 
 			if (damage.getTotalDmg() === 0) {
 				flags.push(Util.HPChangeData.FLAG_NODMG_HIT)
 			}
 		} else if (sourceType == "basicattack") {
-			if(this.inven.haveItem(ENUM.ITEM.BOOTS_OF_PROTECTION)){
+			if(target.inven.haveItem(ENUM.ITEM.BOOTS_OF_PROTECTION)){
 				damage.updateNormalDamage(Util.CALC_TYPE.multiply,0.8)
 			}
 		}
 
-		//석궁아이템
-		if (this.inven.haveItem(ENUM.ITEM.CROSSBOW_OF_PIERCING)) {
-			percentPenetration = 40
-		}
+		let calculatedDmg = this.ability.applyResistanceToDamage(damage, target)
 
-		let calculatedDmg = this.ability.applyResistanceToDamage(damage, target, percentPenetration)
+		if (this.effects.haveSkillEffectAndSource("timo_u", target.turn)) {
+			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
+		}
 
 		target.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage.getTotalDmg() - calculatedDmg)
 		this.statistics.add(ENUM.STAT.DAMAGE_DEALT, calculatedDmg)

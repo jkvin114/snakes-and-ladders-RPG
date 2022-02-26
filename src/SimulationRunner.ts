@@ -141,18 +141,52 @@ class SimulationSetting {
 		}
 		return list
 	}
-	getTeamList(isTeam: boolean): boolean[] {
+	/**
+	 * 
+	 * @param isTeam 
+	 * @param charlist 
+	 * @returns true:red/false:blue/all true:no team
+	 */
+	getTeamList(isTeam: boolean,charlist:number[]): boolean[] {
 		if (!isTeam) {
 			return [true, true, true, true]
-		} else if (this.divideTeamEqually) {
-			return [true, true, false, false]
-		} else {
-			return pickRandom([
-				[true, true, false, false],
-				[true, true, true, false],
-				[true, false, false, false]
-			])
-		}
+		} else{
+			let maxRed=this.divideTeamEqually? 2: pickRandom([1,2,3])
+			let maxBlue=4-maxRed
+			let red=0
+			let blue=0
+			let redlocked=new Set(this.teamLock[0])
+			let bluelocked=new Set(this.teamLock[1])
+
+			let teamlist=charlist.map((c)=>{
+				if(redlocked.has(c) && red < maxRed){
+					red++
+					redlocked.delete(c)
+					return true
+				}
+				else if(bluelocked.has(c) && blue < maxBlue){
+					blue++
+					bluelocked.delete(c)
+					return false
+				}
+				return null
+			},this)
+
+
+			for(let i in teamlist){
+				if(teamlist[i]===null && red < maxRed){
+					teamlist[i]=true
+					red++
+				}
+				else if(teamlist[i]===null && blue < maxBlue){
+					teamlist[i]=false
+					blue++
+				}
+			}
+			console.error(charlist)
+			console.error(teamlist)
+			return teamlist
+		} 
 	}
 	getSummary(){
 		return [
@@ -254,7 +288,7 @@ class Simulation {
 
 		let playernumber = this.setting.getPlayerCount()
 		let charlist = this.setting.getCharacterList(playernumber)
-		let teamlist = this.setting.getTeamList(this.setting.isTeam)
+		let teamlist = this.setting.getTeamList(this.setting.isTeam,charlist)
 		for (let i = 0; i < playernumber; ++i) {
 			this.game.addAI(teamlist[i], charlist[i], this.setting.getPlayerName(charlist[i], i))
 		}

@@ -64,15 +64,15 @@ class Yangyi extends Player {
 	getSkillInfoEng() {
 		let info = []
 		info[0] =
-			"[Scythe Strike] cooltime:" +
+			"[Claw Strike] cooltime:" +
 			this.cooltime_list[0] +
-			" turns<br>ㅇamage all players within 4 sqares with claw,deals " +
+			" turns<br>damage all players within 4 sqares with claw,deals " +
 			this.getSkillBaseDamage(0) +
 			" attack damage(cost: -10% of current health,damage reduced when attacking more than 1 player)"
 		info[1] =
 			"[Regeneration] cooltime:" +
 			this.cooltime_list[1] +
-			" turns<br> [Passive effect]: movement speed +1 when fall behind [On use]: Heals total" +
+			" turns<br> [Passive effect]: movement speed +1 when fall behind <br>[On use]: Heals total" +
 			3 * this.wHealAmount() +
 			" for 3 turns, get slowed while healing"
 		info[2] =

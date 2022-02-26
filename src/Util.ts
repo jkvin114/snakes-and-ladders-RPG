@@ -126,6 +126,11 @@ export const pickRandom=function<T>(list: T[]):T {
 	return list[Math.floor(Math.random() * list.length)]
 }
 
+/**
+ * 
+ * @param upperbound return one in [0,upperbound-1]
+ * @returns 
+ */
 export const randInt=function(upperbound: number): number {
 	return Math.floor(Math.random() * upperbound)
 }

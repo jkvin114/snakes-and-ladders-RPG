@@ -455,6 +455,24 @@ class ObstacleHelper{
 		}
 	}
 }
+
+class PlayerFilter{
+	private players:Player[]
+	constructor(){
+		this.players=[]
+		//all,enemy,ally
+		//me,dead,invulnerable,team
+		//range-around,absolute
+		//sort -count   by-position,HP,HP+shield,kda
+	}
+	addPlayer(player:Player){
+        this.players.push(player)
+    }
+
+
+}
+
+
 class PlayerSelector{
     private players:Player[]
     constructor(){

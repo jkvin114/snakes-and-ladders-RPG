@@ -148,6 +148,9 @@ class GameSetting {
 
 class PlayerFactory {
 	static create(character_id: number, name: string, turn: number, team: string | boolean, game: Game, isAI: boolean) {
+		if(character_id===-1)
+			character_id=Util.randInt(8)
+			
 		switch (character_id) {
 			case 0:
 				return new Creed(turn, team, game, isAI, name)
