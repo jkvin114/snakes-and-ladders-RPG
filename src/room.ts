@@ -3,6 +3,7 @@ import SETTINGS = require("../res/globalsettings.json")
 import { RoomClientInterface } from "./app"
 import { Simulation ,SimulationSetting,ISimulationSetting} from "./SimulationRunner"
 import { ITEM } from "./enum"
+import { randInt } from "./Util"
 const {GameRecord,SimulationRecord} = require("./statisticsDB")
 
 enum PlayerType {
@@ -62,7 +63,7 @@ class Room {
 				type: PlayerType.EMPTY,
 				name: i + 1 + "P",
 				team: true,
-				champ: 0,
+				champ: -1,
 				ready: false
 			})
 		}
@@ -139,7 +140,7 @@ class Room {
 					type: PlayerType.EMPTY,
 					name: "",
 					team: true,
-					champ: 0,
+					champ: -1,
 					ready: false
 				}
 			}
@@ -165,8 +166,16 @@ class Room {
 		let names = []
 		for (let i = 0; i < this.playerlist.length; ++i) {
 			let n = this.playerlist[i].name
+			
 			if (this.playerlist[i].type === PlayerType.AI) {
-				n = SETTINGS.characters[Number(this.playerlist[i].champ)].name + "_Bot(" + String(i + 1) + "P)"
+				if(this.playerlist[i].champ===-1)
+				{
+					n="?_Bot(" + String(i + 1) + "P)"
+				}
+				else{
+					n = SETTINGS.characters[Number(this.playerlist[i].champ)].name + "_Bot(" + String(i + 1) + "P)"
+				}
+				
 			}
 
 			names.push(n)
@@ -221,6 +230,9 @@ class Room {
 			let team = this.teams[i]
 		//	if (team === null) team = null
 			let p = this.playerlist[i]
+
+			if(p.champ===-1)
+				p.champ=randInt(SETTINGS.characters.length)
 
 			if (p.type === PlayerType.PLAYER_CONNECED) {
 				this.game.addPlayer(team, p.champ, p.name)

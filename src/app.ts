@@ -178,7 +178,7 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:update_champ", function (rname: string, turn: number, champ: number) {
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_updateChamp(turn, champ)
-
+		io.to(rname).emit("server:update_champ", turn,champ)
 		console.log("changechamp" + turn + champ)
 	})
 	//==========================================================================================

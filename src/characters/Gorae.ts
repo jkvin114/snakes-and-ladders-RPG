@@ -173,13 +173,13 @@ class Gorae extends Player {
 	}
 	private getSkillBaseDamage(skill:number):number{
 		if(skill===ENUM.SKILL.Q){
-			return Math.floor(10 + 0.3 * this.HP + this.ability.AP)
+			return Math.floor(10 + 0.2 * this.HP + this.ability.AP)
 		}
         if(skill===ENUM.SKILL.W){
-			return Math.floor(this.ability.AP * 0.8 + 30)
+			return Math.floor(this.ability.AP * 0.5 + 30)
 		}
 		if(skill===ENUM.SKILL.ULT){
-			return Math.floor(40 + 0.2 * this.MaxHP + 0.6 * this.ability.AD)
+			return Math.floor(40 + 0.15 * this.MaxHP + 0.6 * this.ability.AD)
 		}
 	}
 

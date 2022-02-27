@@ -20,7 +20,7 @@ class Creed extends Player {
 	private usedQ: boolean
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
-		//hp:200, ad:40, ar, mr, attackrange,ap
+		//hp:200, ad:20, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
 		super(turn, team, game, ai, ID, name, basic_stats)
 		this.hpGrowth = 100
