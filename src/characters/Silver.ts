@@ -37,11 +37,11 @@ class Silver extends Player {
 		this.itemtree = {
 			level: 0,
 			items: [
-				ITEM.EPIC_SHIELD,
+				ITEM.EPIC_SHIELD,	
 				ITEM.EPIC_ARMOR,
 				ITEM.POWER_OF_MOTHER_NATURE,
 				ITEM.EPIC_FRUIT,
-				ITEM.FULL_DIAMOND_ARMOR,
+				ITEM.BOOTS_OF_ENDURANCE,
 				ITEM.GUARDIAN_ANGEL
 			],
 			final: ITEM.EPIC_SHIELD
@@ -65,9 +65,9 @@ class Silver extends Player {
 		info[2] =
 			"[실버의 갑옷] 쿨타임:" +
 			this.cooltime_list[2] +
-			"턴<br>[기본 지속 효과]: 잃은 체력에 비례해 방어력과 마법저항력 증가  [사용시]: 4턴간 방어력과 마법저항력이 " +
+			"턴<br>[기본 지속 효과]: 잃은 체력에 비례해 방어력과 마법저항력 증가  <br>[사용시]: 4턴간 방어력과 마법저항력이 " +
 			(this.HP < 150 ? 150 : 80) +
-			"증가"
+			"증가하고 '암흑의 표창' 회복량 2배"
 		return info
 	}
 
@@ -86,8 +86,9 @@ class Silver extends Player {
 		info[2] =
 			"[Strengthen] cooltime:" +
 			this.cooltime_list[2] +
-			" turns<br>[Passive effect]: attack and magic resistance increase based on missing health [On use]: Attack and magic resistance increases by" +
-			(this.HP < 150 ? 150 : 80)
+			" turns<br>[Passive effect]: attack and magic resistance increase based on missing health<br>"+
+			" [On use]: Attack and magic resistance increases by" +
+			(this.HP < 150 ? 150 : 80)+" and heal amount of 'tusk attack' doubles"
 		return info
 	}
 	getSkillTrajectorySpeed(skilltype: string): number {
@@ -152,7 +153,7 @@ class Silver extends Player {
 
 	private getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(10 + this.ability.AP * 0.3 + (this.ability.AR + this.ability.MR) * 0.45)
+			return Math.floor(10 + this.ability.AP * 0.3 + (this.ability.AR + this.ability.MR) * 0.6)
 		}
 	}
 	/**
@@ -178,7 +179,7 @@ class Silver extends Player {
 					damage: new Damage(0, dmg, 0),
 					skill: ENUM.SKILL.Q,
 					onHit: function () {
-						_this.heal(Math.floor(dmg * 0.3))
+						_this.heal(Math.floor(dmg * (_this.isSkillActivated(ENUM.SKILL.ULT) ? 0.6 : 0.3)))
 					}
 				}
 				if (this.game.playerSelector.get(target).effects.haveSkillEffectAndSource("silver_w", this.turn)) {

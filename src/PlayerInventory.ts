@@ -5,46 +5,43 @@ import { ITEM } from "./enum"
 import { items as ItemList } from "../res/item.json"
 import SETTINGS = require("../res/globalsettings.json")
 import { Player } from "./player"
-import {PlayerClientInterface} from "./app"
-const MONEY=0
+import { PlayerClientInterface } from "./app"
+const MONEY = 0
 
-
-
-class PlayerInventory{
-   // player:Player
-    activeItems: Util.ActiveItem[]
-    item: number[]
+class PlayerInventory {
+	// player:Player
+	activeItems: Util.ActiveItem[]
+	item: number[]
 	itemSlots: number[]
-    token: number
+	token: number
 	life: number
 	lifeBought: number
-    money: number
-	player:Player
-    constructor(player:Player)
-    {
-        this.player=player
+	money: number
+	player: Player
+	constructor(player: Player) {
+		this.player = player
 
-        this.token = 2
-        this.money = MONEY
+		this.token = 2
+		this.money = MONEY
 		this.life = 0
 		this.lifeBought = 0
-        this.activeItems = []
-        this.item = Util.makeArrayOf(0, ItemList.length)
+		this.activeItems = []
+		this.item = Util.makeArrayOf(0, ItemList.length)
 
 		this.itemSlots = Util.makeArrayOf(-1, player.game.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
-    }
-    transfer(func:Function,...args:any[]){
-        this.player.game.sendToClient(func,...args)
-    }
+	}
+	transfer(func: Function, ...args: any[]) {
+		this.player.game.sendToClient(func, ...args)
+	}
 
-    onTurnEnd(){
-        this.activeItemCoolDown()
-        if (this.haveItem(9)) {
-			this.player.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.player.ability.addHP * 0.15)))
+	onTurnEnd() {
+		this.activeItemCoolDown()
+		if (this.haveItem(9)) {
+			this.player.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.player.ability.extraHP * 0.15)))
 		}
-    }
+	}
 
-    /**
+	/**
 	 *
 	 * @param {*} m
 	 * @param {*} type 0: 돈 받음  1:돈 소모 2:돈 뺏김
@@ -62,17 +59,21 @@ class PlayerInventory{
 		switch (type) {
 			case ENUM.CHANGE_MONEY_TYPE.EARN: //money earned
 				this.player.statistics.add(ENUM.STAT.MONEY_EARNED, m)
-                this.transfer(PlayerClientInterface.changeMoney, this.player.turn, m, this.money)
+				this.transfer(PlayerClientInterface.changeMoney, this.player.turn, m, this.money)
+				break
+			case ENUM.CHANGE_MONEY_TYPE.EVERY_TURN: //money earned
+				this.player.statistics.add(ENUM.STAT.MONEY_EARNED, m)
+				this.transfer(PlayerClientInterface.changeMoney, this.player.turn, 0, this.money)
 				break
 			case ENUM.CHANGE_MONEY_TYPE.SPEND: //money spend
 				this.player.statistics.add(ENUM.STAT.MONEY_SPENT, -m)
-                this.transfer(PlayerClientInterface.changeMoney, this.player.turn, 0, this.money)
-                //0일 경우 indicator 는 표시안됨
+				this.transfer(PlayerClientInterface.changeMoney, this.player.turn, 0, this.money)
+				//0일 경우 indicator 는 표시안됨
 
 				break
 			case ENUM.CHANGE_MONEY_TYPE.TAKEN: //money taken
 				this.player.statistics.add(ENUM.STAT.MONEY_TAKEN, -m)
-                this.transfer(PlayerClientInterface.changeMoney, this.player.turn, m, this.money)
+				this.transfer(PlayerClientInterface.changeMoney, this.player.turn, m, this.money)
 				break
 		}
 	}
@@ -80,9 +81,9 @@ class PlayerInventory{
 
 	changeToken(token: number) {
 		this.token += token
-        this.transfer(PlayerClientInterface.update, "token", this.player.turn, this.token)
+		this.transfer(PlayerClientInterface.update, "token", this.player.turn, this.token)
 	}
-    sellToken(info: any) {
+	sellToken(info: any) {
 		this.changeToken(-1 * info.token)
 		this.giveMoney(info.money)
 		this.player.message(this.player.name + " sold token, obtained " + info.money + "$!")
@@ -91,9 +92,13 @@ class PlayerInventory{
 
 	changeLife(life: number) {
 		this.life = Math.max(this.life + life, 0)
-        this.transfer(PlayerClientInterface.update, "life", this.player.turn, this.life)
+		this.transfer(PlayerClientInterface.update, "life", this.player.turn, this.life)
 	}
-    
+
+	giveTurnMoney(m: number) {
+		this.changemoney(m, ENUM.CHANGE_MONEY_TYPE.EVERY_TURN)
+	}
+
 	giveMoney(m: number) {
 		this.changemoney(m, ENUM.CHANGE_MONEY_TYPE.EARN)
 	}
@@ -103,7 +108,7 @@ class PlayerInventory{
 		this.changemoney(-1 * m, ENUM.CHANGE_MONEY_TYPE.TAKEN)
 	}
 
-    haveItem(item: ITEM): boolean {
+	haveItem(item: ITEM): boolean {
 		return this.item[item] > 0
 	}
 
@@ -145,7 +150,7 @@ class PlayerInventory{
 	useActiveItem(item_id: ITEM) {
 		this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
 	}
-    getStoreData(priceMultiplier: number) {
+	getStoreData(priceMultiplier: number) {
 		return {
 			item: this.itemSlots,
 			money: this.money,
@@ -157,8 +162,8 @@ class PlayerInventory{
 			priceMultiplier: priceMultiplier
 		}
 	}
-    
-    convertCountToItemSlots(items: number[]): number[] {
+
+	convertCountToItemSlots(items: number[]): number[] {
 		let itemslot = Util.makeArrayOf(-1, this.player.game.itemLimit)
 		let index = 0
 		for (let i = 0; i < items.length; ++i) {
@@ -177,15 +182,15 @@ class PlayerInventory{
 		}
 		return items
 	}
-    changeOneItem(item: number, count: number) {
+	changeOneItem(item: number, count: number) {
 		this.item[item] += count
 
 		let maxHpChange = 0
 		if (count > 0) {
 			if (ItemList[item].itemlevel >= 3) {
-			//	this.message(this.name + " bought " + count + " " + ItemList[item].name)
+				//	this.message(this.name + " bought " + count + " " + ItemList[item].name)
 			}
-			
+
 			this.player.statistics.addItemRecord({
 				item_id: item,
 				count: count,
@@ -205,7 +210,7 @@ class PlayerInventory{
 			this.addActiveItem(new Util.ActiveItem(ItemList[item].name, item, ItemList[item].active_cooltime))
 		}
 	}
-    	/**
+	/**
 	 *data: 아이템 슬롯
 	 * @param {*} data {
 	 * storedata:{item:int[]}
@@ -213,8 +218,8 @@ class PlayerInventory{
 	 * }
 	 */
 	updateItem(data: any) {
-	//	console.log("updateitem " + data.item)
-	//	console.log("updatetoken " + data.token)
+		//	console.log("updateitem " + data.item)
+		//	console.log("updatetoken " + data.token)
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		this.changeToken(data.tokenbought)
 		this.changeLife(data.life)
@@ -233,7 +238,7 @@ class PlayerInventory{
 		}
 
 		//	this.item = data.storedata.item
-        this.transfer(PlayerClientInterface.update, "item", this.player.turn, this.itemSlots)
+		this.transfer(PlayerClientInterface.update, "item", this.player.turn, this.itemSlots)
 	}
 	/**
 	 *data: 아이템 각각의 갯수
@@ -242,7 +247,7 @@ class PlayerInventory{
 	 * moneyspend:int
 	 * }
 	 */
-	 aiUpdateItem(item:number[],moneyspend:number) {
+	aiUpdateItem(item: number[], moneyspend: number) {
 		this.changemoney(-1 * moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		// this.inven.changeToken(data.tokenbought)
 		// this.inven.changeLife(data.life)
@@ -257,19 +262,17 @@ class PlayerInventory{
 			this.changeOneItem(i, diff)
 		}
 		this.itemSlots = this.convertCountToItemSlots(this.item)
-		this.transfer(PlayerClientInterface.update,"item", this.player.turn, this.itemSlots)
-
+		this.transfer(PlayerClientInterface.update, "item", this.player.turn, this.itemSlots)
 	}
 	/**
 	 * 첫번째 상점에선 2등급이상아이템 구입불가
 	 * @param {} item
 	 */
-	 checkStoreLevel(item: any) {
+	checkStoreLevel(item: any) {
 		if (this.player.level <= 2 && item.itemlevel >= 2) {
 			return false
 		}
 		return true
 	}
-
 }
 export default PlayerInventory

@@ -536,7 +536,7 @@
 			"price": 350,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "adStat", "value": 40, "type_kor": "적응형 능력치" }
+				{ "type": "adStat", "value": 60, "type_kor": "적응형 능력치" }
 			],
 			"children": [30, 27, 25],
 			"parents": [],

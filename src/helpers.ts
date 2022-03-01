@@ -41,7 +41,7 @@ class ObstacleHelper{
 					player.cooltime[ENUM.SKILL.ULT] = Math.floor(player.cooltime[ENUM.SKILL.ULT] / 2)
 					break
 				case 12:
-					player.mapdata.adamage = 30
+					player.mapdata.adamage = player.ability.getMagicCastleDamage()
 					// player.message(player.name + ": skill range x3, additional damage 30")
 					break
 				case 13:

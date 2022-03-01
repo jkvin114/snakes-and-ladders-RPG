@@ -31,9 +31,9 @@ class Bird extends Player {
 		this.itemtree = {
 			level: 0,
 			items: [
+				ITEM.EPIC_CRYSTAL_BALL,
 				ITEM.EPIC_WHIP,
 				ITEM.ANCIENT_SPEAR,
-				ENUM.ITEM.EPIC_CRYSTAL_BALL,
 				ITEM.SWORD_OF_BLOOD,
 				ITEM.CARD_OF_DECEPTION,
 				ITEM.GUARDIAN_ANGEL
@@ -221,7 +221,7 @@ class Bird extends Player {
 				let damage = new Damage(0, this.getSkillBaseDamage(s), 0)
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
-					this.game.playerSelector.get(target).effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.TURN_END)
+					this.game.playerSelector.get(target).effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.ability.AP * 0.5)
 				}
 

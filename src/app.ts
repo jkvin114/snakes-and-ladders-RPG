@@ -1,5 +1,5 @@
 import { createServer } from "http"
-import express = require('express');
+import express = require("express")
 import fs = require("fs")
 import { Room } from "./room"
 import { MAP_TYPE } from "./enum"
@@ -7,7 +7,7 @@ import SETTINGS = require("../res/globalsettings.json")
 import cors = require("cors")
 import os = require("os")
 import { Namespace, Server, Socket } from "socket.io"
-const{GameRecord,SimulationRecord} = require("./statisticsDB")
+const { GameRecord, SimulationRecord } = require("./statisticsDB")
 const app = express()
 
 console.log("start server")
@@ -30,7 +30,7 @@ for (var k in interfaces) {
 }
 console.log("IP Address:" + addresses[0])
 
-var ROOMS = new Map<string,Room>()
+var ROOMS = new Map<string, Room>()
 
 function findRoomByName(name: string): Room {
 	return ROOMS.get(name)
@@ -39,7 +39,7 @@ function findRoomByName(name: string): Room {
 app.use(express.static(clientPath))
 app.use(errorHandler)
 const httpserver = createServer(app)
-console.log("version " +SETTINGS.version)
+console.log("version " + SETTINGS.version)
 const io = new Server(httpserver, {
 	cors: {
 		origin: "http://127.0.0.1:4000",
@@ -77,7 +77,7 @@ io.on("connect", function (socket: Socket) {
 			socket.emit("server:room_name_exist")
 			return
 		}
-/*
+		/*
 		Test.create({name:"hello",turn:2,sub:{name:"d"}})
 		.then((resolvedData)=>console.log(resolvedData))
 		.catch((e)=>console.error(e))
@@ -86,8 +86,6 @@ io.on("connect", function (socket: Socket) {
 		ROOMS.set(roomName, room)
 
 		socket.join(roomName)
-
-
 	})
 	//==========================================================================================
 	socket.on("user:register", function (rname: string) {
@@ -178,7 +176,7 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:update_champ", function (rname: string, turn: number, champ: number) {
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_updateChamp(turn, champ)
-		io.to(rname).emit("server:update_champ", turn,champ)
+		io.to(rname).emit("server:update_champ", turn, champ)
 		console.log("changechamp" + turn + champ)
 	})
 	//==========================================================================================
@@ -200,23 +198,20 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:simulationready",function(rname,setting,count,isTeam){
+	socket.on("user:simulationready", function (rname, setting, count, isTeam) {
 		if (!ROOMS.has(rname)) return
-		
+
 		console.log(setting)
-		console.log("team:"+isTeam+"   count:"+count)
+		console.log("team:" + isTeam + "   count:" + count)
 
-		ROOMS.get(rname).user_simulationReady(setting, count,isTeam, rname)
-
-		
+		ROOMS.get(rname).user_simulationReady(setting, count, isTeam, rname)
 	})
 
-	socket.on("user:gameready", function (rname,setting) {
+	socket.on("user:gameready", function (rname, setting) {
 		if (!ROOMS.has(rname)) return
 
 		ROOMS.get(rname).user_gameReady(setting, rname)
-		
-		
+
 		//게스트 페이지 바꾸기
 		socket.to(rname).emit("server:to_gamepage")
 	})
@@ -272,10 +267,10 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:press_dice", function (rname: string, dicenum: number) {
 		if (!ROOMS.has(rname)) return
 		let dice = ROOMS.get(rname).user_pressDice(dicenum)
-		console.log("press_dice"+rname)
+		console.log("press_dice" + rname)
 		io.to(rname).emit("server:rolldice", dice)
 
-	//	console.log("pressdice")
+		//	console.log("pressdice")
 	})
 	//==========================================================================================
 
@@ -304,7 +299,7 @@ io.on("connect", function (socket: Socket) {
 	 * 처리 후 선댁 action(잠수함, 갈림길선택 등) 체크
 	 */
 	socket.on("user:complete_obstacle_selection", function (rname: string, info: any) {
-	//	console.log("obs selection complete")
+		//	console.log("obs selection complete")
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_completePendingObs(info)
 	})
@@ -315,7 +310,7 @@ io.on("connect", function (socket: Socket) {
 	 * 처리 후 스킬 사용
 	 */
 	socket.on("user:complete_action_selection", function (rname: string, info: any) {
-	//	console.log("action selection complete")
+		//	console.log("action selection complete")
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_completePendingAction(info)
 	})
@@ -332,7 +327,7 @@ io.on("connect", function (socket: Socket) {
 	//==========================================================================================
 	//execute when player chose a target
 	socket.on("user:chose_target", function (rname: string, target: any) {
-	//	console.log("sendtarget")
+		//	console.log("sendtarget")
 		if (!ROOMS.has(rname)) return
 		let status = ROOMS.get(rname).user_choseSkillTarget(target)
 
@@ -343,7 +338,7 @@ io.on("connect", function (socket: Socket) {
 	//==========================================================================================
 	//execute when player chose a projectile location
 	socket.on("user:chose_location", function (rname: string, location: any) {
-	//	console.log("sendprojlocation")
+		//	console.log("sendprojlocation")
 		if (!ROOMS.has(rname)) return
 		let skillstatus = ROOMS.get(rname).user_choseSkillLocation(location)
 		socket.emit("server:used_skill", skillstatus)
@@ -360,7 +355,6 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:nextturn", function (rname: string, n: any) {
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).goNextTurn()
-
 	})
 
 	//==========================================================================================
@@ -368,16 +362,15 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:reset_game", function (rname: string, quitter: number) {
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
-		io.to(rname).emit("server:quit",quitter)
+		io.to(rname).emit("server:quit", quitter)
 		console.log("an user has been disconnected " + findRoomByName(rname))
 
-		try{
+		try {
 			room.reset()
+		} catch (e) {
+			console.error("Error while resetting room " + e)
 		}
-		catch(e){
-			console.error("Error while resetting room "+e)
-		}
-		
+
 		ROOMS.delete(rname)
 	})
 
@@ -400,18 +393,15 @@ io.on("connect", function (socket: Socket) {
 	})
 
 	socket.on("connection_checker", function (rname: string) {
-
 		socket.emit("connection_checker")
 	})
-	socket.on("user:reconnect", function (rname: string,turn:number) {
+	socket.on("user:reconnect", function (rname: string, turn: number) {
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_reconnect(turn)
 	})
 })
 
-
-
-export namespace RoomClientInterface{
+export namespace RoomClientInterface {
 	export const updateNextTurn = function (rname: string, turnUpdateData: any) {
 		io.to(rname).emit("server:nextturn", turnUpdateData)
 	}
@@ -439,110 +429,94 @@ export namespace RoomClientInterface{
 	export const sendPendingAction = function (rname: string, name: string, data: any) {
 		io.to(rname).emit(name, data)
 	}
-	export const simulationOver = function (rname: string,msg:string) {
+	export const simulationOver = function (rname: string, msg: string) {
 		io.to(rname).emit("server:simulationover", msg)
 	}
-	export const gameOver=function(rname:string,winner:number){
+	export const gameOver = function (rname: string, winner: number) {
 		console.log(rname)
 		io.to(rname).emit("server:gameover", winner)
 	}
-	export const gameStatReady=function(rname:string,id:string){
+	export const gameStatReady = function (rname: string, id: string) {
 		io.to(rname).emit("server:game_stat_ready", id)
 	}
-	export const simulationStatReady=function(rname:string,id:string){
+	export const simulationStatReady = function (rname: string, id: string) {
 		io.to(rname).emit("server:simulation_stat_ready", id)
 	}
 }
 
-
-
-export class PlayerClientInterface{
-
-	static changeHP=(rname:string,hpChangeData: any) =>{
+export class PlayerClientInterface {
+	static changeHP = (rname: string, hpChangeData: any) => {
 		io.to(rname).emit("server:hp", hpChangeData)
-	} 
-	static changeMoney = (rname: string,turn:number,amt:number,result:number) =>{
-		io.to(rname).emit("server:money", { turn: turn, amt: amt, result:result })
+	}
+	static changeMoney = (rname: string, turn: number, indicate_amt: number, result: number) => {
+		io.to(rname).emit("server:money", { turn: turn, amt: indicate_amt, result: result })
 	}
 
-	static changeHP_damage = (rname: string, hpChangeData: any) =>
-	io.to(rname).emit("server:damage", hpChangeData)
+	static changeHP_damage = (rname: string, hpChangeData: any) => io.to(rname).emit("server:damage", hpChangeData)
 
-	static changeHP_heal =  (rname: string, hpChangeData: any)=>
-	io.to(rname).emit("server:heal", hpChangeData)
+	static changeHP_heal = (rname: string, hpChangeData: any) => io.to(rname).emit("server:heal", hpChangeData)
 
-	static changeShield = (rname: string, shieldData: any)=>
-	io.to(rname).emit("server:shield", shieldData)
+	static changeShield = (rname: string, shieldData: any) => io.to(rname).emit("server:shield", shieldData)
 
-	static giveEffect = (rname: string,turn:number,effect:number,num:number)=>
-	io.to(rname).emit("server:status_effect", { turn: turn, effect: effect, num: num })
+	static giveEffect = (rname: string, turn: number, effect: number, num: number) =>
+		io.to(rname).emit("server:status_effect", { turn: turn, effect: effect, num: num })
 
-	static tp =  (rname: string,turn:number,pos:number,movetype:string)=>
-	io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype})
-	
-	static removeProj =  (rname: string, UPID: string)=>
-	io.to(rname).emit("server:delete_projectile", UPID)
-	
-	static die =  (rname: string, killData: Object)=>io.to(rname).emit("server:death", killData)
-	
-	static respawn =  (rname: string,turn:number,respawnPos:number,isRevived:boolean) =>
-	io.to(rname).emit("server:respawn", {turn:turn,respawnPos:respawnPos,isRevived:isRevived})
-	
-	static message = (rname: string, message: string) =>
-	io.to(rname).emit("server:receive_message", message)
+	static tp = (rname: string, turn: number, pos: number, movetype: string) =>
+		io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
 
-	static playsound =  (rname: string, sound: string) =>
-		io.to(rname).emit("server:sound", sound)
-	
-	static placePassProj =  (rname: string,type:string,pos:number,UPID:string)=>
-		io.to(rname).emit("server:create_passprojectile",{type:type,pos:pos,UPID:UPID})
+	static removeProj = (rname: string, UPID: string) => io.to(rname).emit("server:delete_projectile", UPID)
 
-	static placeProj =  (rname: string, proj: any)=>
-	io.to(rname).emit("server:create_projectile", proj)
+	static die = (rname: string, killData: Object) => io.to(rname).emit("server:death", killData)
 
-	static update =  (rname: string,type:string,turn:number,amt:any) =>
-	io.to(rname).emit("server:update_other_data",{type:type,turn:turn,amt:amt})
+	static respawn = (rname: string, turn: number, respawnPos: number, isRevived: boolean) =>
+		io.to(rname).emit("server:respawn", { turn: turn, respawnPos: respawnPos, isRevived: isRevived })
 
-	static updateSkillInfo =  (rname: string, turn:number,info_kor:string[],info_eng:string[])=>
-		io.to(rname).emit("server:update_skill_info", {turn:turn,info_kor:info_kor,info_eng:info_eng})
+	static message = (rname: string, message: string) => io.to(rname).emit("server:receive_message", "[@]", message)
 
+	static playsound = (rname: string, sound: string) => io.to(rname).emit("server:sound", sound)
 
-	static visualEffect = (rname: string,turn:number,type:string,source:number)=>
-		io.to(rname).emit("server:visual_effect",{turn:turn,type:type,source:source})
-	
-	static indicateObstacle =  (rname: string,turn:number,obs:number )=>
-		io.to(rname).emit("server:indicate_obstacle",{turn:turn,obs:obs})
+	static placePassProj = (rname: string, type: string, pos: number, UPID: string) =>
+		io.to(rname).emit("server:create_passprojectile", { type: type, pos: pos, UPID: UPID })
 
-	static indicateItem = (rname: string, turn:number,item:number[])=>
-		io.to(rname).emit("server:indicate_item",{turn:turn,item:item})
-	
-	static goStore = (rname: string,turn:number,storeData:Object)=>
+	static placeProj = (rname: string, proj: any) => io.to(rname).emit("server:create_projectile", proj)
+
+	static update = (rname: string, type: string, turn: number, amt: any) =>
+		io.to(rname).emit("server:update_other_data", { type: type, turn: turn, amt: amt })
+
+	static updateSkillInfo = (rname: string, turn: number, info_kor: string[], info_eng: string[]) =>
+		io.to(rname).emit("server:update_skill_info", { turn: turn, info_kor: info_kor, info_eng: info_eng })
+
+	static visualEffect = (rname: string, turn: number, type: string, source: number) =>
+		io.to(rname).emit("server:visual_effect", { turn: turn, type: type, source: source })
+
+	static indicateObstacle = (rname: string, turn: number, obs: number) =>
+		io.to(rname).emit("server:indicate_obstacle", { turn: turn, obs: obs })
+
+	static indicateItem = (rname: string, turn: number, item: number[]) =>
+		io.to(rname).emit("server:indicate_item", { turn: turn, item: item })
+
+	static goStore = (rname: string, turn: number, storeData: Object) =>
 		io.to(rname).emit("server:store", {
 			turn: turn,
 			storeData: storeData
 		})
 }
 
-
-app.get("/connection_check",function(req,res){
+app.get("/connection_check", function (req, res) {
 	res.end()
 })
 
-
-app.get("/gamesetting",function(req,res){
-
+app.get("/gamesetting", function (req, res) {
 	fs.readFile(__dirname + "/../res/gamesetting.json", "utf8", function (err, data) {
 		res.end(data)
 	})
 })
-app.get("/simulationsetting",function(req,res){
-
+app.get("/simulationsetting", function (req, res) {
 	fs.readFile(__dirname + "/../res/simulationsetting.json", "utf8", function (err, data) {
 		res.end(data)
 	})
 })
-app.get("/globalsetting",function(req,res){
-
+app.get("/globalsetting", function (req, res) {
 	fs.readFile(__dirname + "/../res/globalsettings.json", "utf8", function (err, data) {
 		res.end(data)
 	})
@@ -655,8 +629,8 @@ app.post("/chat", function (req, res) {
 		room.game.playerSelector.get(Number(req.body.turn)).name +
 			"(" +
 			SETTINGS.characters[room.game.playerSelector.get(Number(req.body.turn)).champ].name +
-			"): " +
-			req.body.msg
+			")",
+		req.body.msg
 	)
 	res.end("")
 })
@@ -667,33 +641,31 @@ app.post("/reset_game", function (req, res) {
 	res.end()
 })
 
-app.get("/stat/aftergame", function (req: express.Request, res:express.Response) {
+app.get("/stat/aftergame", function (req: express.Request, res: express.Response) {
 	if (req.query.rname != null && ROOMS.has(req.query.rname.toString())) {
 		ROOMS.delete(req.query.rname.toString())
 	}
 	console.log(ROOMS)
 
-	if(req.query.statid ==null || req.query.type==null){
+	if (req.query.statid == null || req.query.type == null) {
 		return
 	}
-	if(req.query.type==="game"){
+	if (req.query.type === "game") {
 		GameRecord.findById(req.query.statid)
-		.then((stat:any) => {
-		  	if (!stat) return res.status(404).send({ err: 'Statistic not found' });
-		  	res.end(JSON.stringify(stat));
-		})
-		.catch((err:any)=> res.status(500).send(err));
-	}
-	else if(req.query.type==="simulation"){
+			.then((stat: any) => {
+				if (!stat) return res.status(404).send({ err: "Statistic not found" })
+				res.end(JSON.stringify(stat))
+			})
+			.catch((err: any) => res.status(500).send(err))
+	} else if (req.query.type === "simulation") {
 		console.log(req.query)
 		SimulationRecord.findOneById(req.query.statid)
-		.then((stat:any) => {
-		  	if (!stat) return res.status(404).send({ err: 'Statistic not found' });
-		  	res.end(JSON.stringify(stat));
-		})
-		.catch((err:any) => res.status(500).send(err));
-	}
-	else{
+			.then((stat: any) => {
+				if (!stat) return res.status(404).send({ err: "Statistic not found" })
+				res.end(JSON.stringify(stat))
+			})
+			.catch((err: any) => res.status(500).send(err))
+	} else {
 		res.status(404).end("unknown statistic type")
 	}
 	//let str = JSON.stringify(stat)
@@ -703,11 +675,7 @@ app.get("/stat/aftergame", function (req: express.Request, res:express.Response)
 	//res.end()
 })
 
-app.use('/stat', require('./statRouter'));
-
-
-
-
+app.use("/stat", require("./statRouter"))
 
 function writeStat(stat: any, isSimulation: boolean) {
 	let date_ob = new Date()

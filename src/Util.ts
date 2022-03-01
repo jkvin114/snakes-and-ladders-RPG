@@ -196,7 +196,7 @@ export type singleMap = {
 	respawn: number[]
 	store: number[]
 	dc_limit_level: number
-	goldperturn: number
+	goldperturn: number[]
 	shuffle:{start:number,end:number}[]
 	//ocean map only
 	submarine_range?: {
@@ -265,6 +265,12 @@ class MapStorage {
 		}
 
 		return obslist
+	}
+	getTurnGold(id:number,lvl:number){
+		if(lvl-1 >= this.map[id].goldperturn.length){
+			lvl=this.map[id].goldperturn.length
+		}
+		return this.map[id].goldperturn[lvl-1]
 	}
 	getObstacleList(id:number){
 		return this.map[id]

@@ -122,6 +122,6 @@
       "start":37,
       "end":75
     },
-    "goldperturn":3
+    "goldperturn":[10,10,12,25,25]
 
   }

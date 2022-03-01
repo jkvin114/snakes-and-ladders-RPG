@@ -119,8 +119,8 @@
     "muststop":[16,38,56,71,102],
     "respawn":[0,16,38,56,71,86],
     "store":[16,38,71,86],
-	"dc_limit_level":5,
-    "goldperturn":2,
+	  "dc_limit_level":5,
+    "goldperturn":[10,10,10,10,25],
     "shuffle":[
       {"start":32,"end":37},
       {"start":45,"end":51},

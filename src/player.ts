@@ -16,7 +16,7 @@ import {PlayerClientInterface} from "./app"
 import {ObstacleHelper,AIHelper} from "./helpers"
 
 //for test only
-const LVL = 2
+const LVL = 1
 const POS = 0
 
 
@@ -267,7 +267,7 @@ abstract class Player extends Entity{
 	//========================================================================================================
 	onTurnStart() {
 		this.passive()
-		this.inven.giveMoney(Number(MAP.get(this.mapId).goldperturn))
+		this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId,this.level))
 	}
 	//========================================================================================================
 	onBeforeObs() {
@@ -867,7 +867,7 @@ abstract class Player extends Entity{
 	}
 	updateTotalShield(change: number, noindicate: boolean) {
 	//	console.log("updateshield" + change)
-		this.shield += change
+		this.shield += Math.floor(change)
 		if (this.game.instant || change==0) return
 		this.transfer(PlayerClientInterface.changeShield,{
 			turn: this.turn,
@@ -1048,7 +1048,7 @@ abstract class Player extends Entity{
 	 */
 	die(skillfrom: number) {
 		if (skillfrom > 0) {
-			this.message(this.game.playerSelector.get(skillfrom).name + " killed" + this.name)
+			this.message(this.game.playerSelector.get(skillfrom).name + " killed " + this.name)
 		} else {
 			this.message(this.name + " has been executed!")
 		}

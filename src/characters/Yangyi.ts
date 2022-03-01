@@ -50,7 +50,7 @@ class Yangyi extends Player {
 		info[1] =
 			"[양이의 고민] 쿨타임:" +
 			this.cooltime_list[1] +
-			"턴<br>[기본지속효과]: 뒤쳐져 있으면 주사위숫자 +1 [사용시]: 3턴에 걸쳐 체력" +
+			"턴<br>[기본지속효과]: 뒤쳐져 있으면 주사위숫자 +1 <br>[사용시]: 3턴에 걸쳐 체력" +
 			3 * this.wHealAmount() +
 			" 회복, 회복 중엔 둔화에 걸림"
 		info[2] =

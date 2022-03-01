@@ -12,7 +12,7 @@ class Ability{
 	basicAttack_multiplier: number
 	arP: number
 	MP: number
-	addHP:number
+	extraHP:number
 	regen: number
 	absorb: number
 	adaptativeStat: number
@@ -34,7 +34,7 @@ class Ability{
 		this.attackRange = basic_stats[4]
 		this.AP = basic_stats[5]
 		this.basicAttack_multiplier = 1 //평타 데미지 계수
-		this.addHP=0   //추가체력
+		this.extraHP=0   //추가체력
 
 		this.arP = 0
 		this.MP = 0
@@ -177,7 +177,7 @@ class Ability{
 		.updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
 	}
 	addMaxHP(maxHpChange:number){
-		this.addHP+=maxHpChange
+		this.extraHP+=maxHpChange
 		this.player.addMaxHP(maxHpChange)
 	}
 	onTurnEnd() {
@@ -227,7 +227,9 @@ class Ability{
 		}
 		damage.updateNormalDamage(CALC_TYPE.multiply, 1 - skillDmgReduction * 0.01)
 	}
-
+	getMagicCastleDamage(){
+		return this.AD * 0.1 + this.AP * 0.08 + this.extraHP * 0.1
+	}
 
 }
 
