@@ -455,7 +455,7 @@ class Game {
 		if (p.oneMoreDice) {
 		//	console.log("ONE MORE DICE")
 			p.oneMoreDice = false
-			p.effects.cooldownNormal()
+			p.effects.cooldownAllHarmful()
 			this.summonDicecontrolItemOnkill(p.turn)
 			// p.effects[ENUM.EFFECT.STUN] = Math.max(p.effects[ENUM.EFFECT.STUN] - 1, 0)
 			p.adice = 0
@@ -467,6 +467,8 @@ class Game {
 
 			this.summonDicecontrolItem()
 			if (this.thisturn === 0) {
+				console.log(`turn ${this.totalturn}===========================================================================`)
+
 				this.totalturn += 1
 				if (this.totalturn >= 30 && this.totalturn % 10 === 0) {
 					for (let p of this.playerSelector.getAll()) {
@@ -500,7 +502,7 @@ class Game {
 		if (p.effects.has(ENUM.EFFECT.BACKDICE)) {
 			effects.push("backdice")
 		}
-		if (p.effects.has(ENUM.EFFECT.BAD_LUCK)) {
+		if (p.effects.has(ENUM.EFFECT.CURSE)) {
 			effects.push("badluck")
 		}
 		if (this.mapId === 2 && p.mapdata.isSubwayDice()) {
@@ -607,7 +609,7 @@ class Game {
 		}
 
 		//badluck effect
-		if (p.effects.has(ENUM.EFFECT.BAD_LUCK)) {
+		if (p.effects.has(ENUM.EFFECT.CURSE)) {
 			diceShown = p.getWorstDice()
 		}
 
@@ -741,17 +743,23 @@ class Game {
 				this.pendingObs = result
 			}
 		}
-		this.applyIgnite()
+
+		this.applyTickEffect()
 		p.onAfterObs()
 
 		return result
 	}
-	applyIgnite() {
+
+	applyTickEffect() {
+		console.log("apply"+this.thisturn)
 		for (let p of this.playerSelector.getAll()) {
-			if (p.effects.applyIgnite()) {
-				p.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-			}
+			p.effects.tick(this.thisturn)
 		}
+	}
+	onEffectApply(){
+		this.totalEffectsApplied += 1
+		return this.totalEffectsApplied % 3
+
 	}
 	/**
 	 * passprojqueue 에 있는 투사체들을 pendingaction 에 적용
@@ -805,11 +813,7 @@ class Game {
 		for (let o of other) {
 			for (let p of o.projectile) {
 				if (p.activated && p.scope.includes(player.pos)) {
-					let died = player.hitBySkill({
-						damage:p.damage,
-						skill:p.skill,
-						onHit:p.action
-					}, o.turn)
+					let died = player.hitBySkill(p.damage,p.type,o.turn,p.action)
 
 					if (p.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
 
@@ -864,10 +868,9 @@ class Game {
 			return ENUM.INIT_SKILL_RESULT.NO_TARGET
 		}
 
-		//마법의성
-		if (p.mapdata.adamage === 30) {
-			skillTargetSelector.range *= 3
-		}
+		skillTargetSelector.range=p.effects.modifySkillRange(skillTargetSelector.range)
+		//마법의성,실명 적용
+		
 
 		if (skillTargetSelector.isProjectile()) {
 			return {
@@ -879,7 +882,7 @@ class Game {
 			}
 		}
 
-		let targets = this.playerSelector.getAvailableTarget(p, skillTargetSelector.range, skillTargetSelector.skill_id)
+		let targets = this.playerSelector.getAvailableTarget(p, skillTargetSelector)
 
 	//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {

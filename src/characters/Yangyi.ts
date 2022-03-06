@@ -2,7 +2,7 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
 import { Game } from "../Game"
 import { Projectile } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
@@ -16,14 +16,17 @@ class Yangyi extends Player {
 		items: number[]
 		final: number
 	}
+	readonly duration_list: number[]
+
 	private readonly skill_name: string[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		const basic_stats: number[] = [170, 40, 6, 6, 0, 0]
-		super(turn, team, game, ai, ID, name,basic_stats)
+		super(turn, team, game, ai, ID, name, basic_stats)
 		// this.onoff = [false, false, false]
 		this.hpGrowth = 90
 		this.cooltime_list = [1, 7, 8] //1 7
+		this.duration_list = [0, 3, 0]
 		this.skill_name = ["dinosaur_q", "hit", "dinosaur_r"]
 		this.itemtree = {
 			level: 0,
@@ -46,7 +49,7 @@ class Yangyi extends Player {
 			this.cooltime_list[0] +
 			"턴<br>4칸내의 모든 플레이어 에게 " +
 			this.getSkillBaseDamage(0) +
-			"의 물리 피해(현재체력의 10% 소모,대상이 2명 이상이면 피해량 감소)"
+			"의 물리 피해(현재체력의 5% 소모,대상이 2명 이상이면 피해량 감소)"
 		info[1] =
 			"[양이의 고민] 쿨타임:" +
 			this.cooltime_list[1] +
@@ -68,7 +71,7 @@ class Yangyi extends Player {
 			this.cooltime_list[0] +
 			" turns<br>damage all players within 4 sqares with claw,deals " +
 			this.getSkillBaseDamage(0) +
-			" attack damage(cost: -10% of current health,damage reduced when attacking more than 1 player)"
+			" attack damage(cost: -5% of current health,damage reduced when attacking more than 1 player)"
 		info[1] =
 			"[Regeneration] cooltime:" +
 			this.cooltime_list[1] +
@@ -84,7 +87,7 @@ class Yangyi extends Player {
 		return info
 	}
 	private wHealAmount() {
-		return Math.floor(30 + this.ability.AD * 0.4 + 0.1 * (this.MaxHP - this.HP))
+		return Math.floor(30 + this.ability.AD * 0.4 + 0.15 * (this.MaxHP - this.HP))
 	}
 
 	private getSkillBaseDamage(skill: number): number {
@@ -128,14 +131,15 @@ class Yangyi extends Player {
 		return skillTargetSelector
 	}
 	useQ() {
-		let skilldmg: SkillDamage = {
-			damage: new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),
-			skill: ENUM.SKILL.Q
-		}
-		let targets = this.game.playerSelector.getAvailableTarget(this, 4, ENUM.SKILL.Q)
+		let skilldmg = new SkillDamage(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0), ENUM.SKILL.Q)
+
+		let targets = this.game.playerSelector.getAvailableTarget(
+			this,
+			new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.NON_TARGET).setSkill(ENUM.SKILL.Q).setRange(4)
+		)
 
 		if (targets.length > 0) {
-			this.doObstacleDamage(Math.floor(this.HP * 0.1), "noeffect")
+			this.doObstacleDamage(Math.floor(this.HP * 0.05), "noeffect")
 
 			//플레이어 2명아면 데미지 20%, 3명아면 40% 감소
 			let damagecoeff = 1 - 0.2 * (targets.length - 1)
@@ -153,7 +157,7 @@ class Yangyi extends Player {
 	}
 	useW() {
 		if (this.duration[ENUM.SKILL.W] === 0) {
-			this.duration[ENUM.SKILL.W] = 3
+			this.startDuration(ENUM.SKILL.W)
 			this.startCooltime(ENUM.SKILL.W)
 			this.effects.apply(ENUM.EFFECT.SLOW, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 		}
@@ -165,7 +169,7 @@ class Yangyi extends Player {
 		this.pendingSkill = -1
 
 		this.startCooltime(ENUM.SKILL.ULT)
-		let admg = Math.floor(0.5 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP))
+		//Math.floor(0.5 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP))
 
 		let _this: Player = this.getPlayer()
 
@@ -173,11 +177,12 @@ class Yangyi extends Player {
 			_this.resetCooltime([ENUM.SKILL.ULT])
 		}
 
-		skillattr = {
-			damage: new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT) + admg, 0, 0),
-			skill: ENUM.SKILL.ULT,
-			onKill: k
-		}
+		skillattr = new SkillDamage(
+			new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0).mergeWith(
+				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(this.game.playerSelector.get(target))
+			),
+			ENUM.SKILL.ULT
+		).setOnKill(k)
 
 		return skillattr
 	}

@@ -148,7 +148,9 @@ class PlayerInventory {
 	 * @returns
 	 */
 	useActiveItem(item_id: ITEM) {
-		this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
+		if(this.isActiveItemAvaliable(item_id)){
+			this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
+		}
 	}
 	getStoreData(priceMultiplier: number) {
 		return {
@@ -200,14 +202,18 @@ class PlayerInventory {
 		for (let j = 0; j < ItemList[item].ability.length; ++j) {
 			let ability = ItemList[item].ability[j]
 			let change_amt = ability.value * count
-			maxHpChange += this.player.ability.update(ability.type, change_amt)
+			this.player.ability.update(ability.type, change_amt)
 		}
-		if (maxHpChange !== 0) {
-			this.player.ability.addMaxHP(maxHpChange)
-		}
+		this.player.ability.flushChange()
 
 		if (ItemList[item].active_cooltime != null && !this.boughtActiveItem(item)) {
 			this.addActiveItem(new Util.ActiveItem(ItemList[item].name, item, ItemList[item].active_cooltime))
+		}
+
+		if (this.item[item] <= 0 && this.item[item] - count > 0) {
+			this.player.effects.onRemoveItem(item)
+		} else if (this.item[item] > 0 && this.item[item] - count <= 0) {
+			this.player.effects.onAddItem(item)
 		}
 	}
 	/**
@@ -274,5 +280,11 @@ class PlayerInventory {
 		}
 		return true
 	}
+
+	static getItemName(item:ITEM):string{
+		return ItemList[item].name
+
+	}
+	
 }
 export default PlayerInventory

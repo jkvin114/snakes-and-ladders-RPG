@@ -1,5 +1,5 @@
 import * as ENUM from "./enum"
-
+import { Player } from "./player"
 const CALC_TYPE = {
 	set: (o: number, n: number) => n,
 	plus: (o: number, n: number) => o + n,
@@ -7,6 +7,53 @@ const CALC_TYPE = {
 	minus: (o: number, n: number) => o - n,
 	divide: (o: number, n: number) => o / n
 }
+class PercentDamage{
+	percent:number
+	base:number
+	type:number
+
+	static MAX_HP=1
+	static MISSING_HP=2
+	static CURR_HP=3
+	constructor(percent:number,base:number,type?:number){
+		this.percent=percent
+		this.base=base
+		this.type=type
+		if(!type) this.type=Damage.TRUE
+	}
+
+	getTotal(target:Player){
+		if(this.base===PercentDamage.MAX_HP){
+			return Math.floor(target.MaxHP*this.percent/100)
+		}
+		if(this.base===PercentDamage.MISSING_HP){
+			return Math.floor((target.MaxHP-target.HP)*this.percent/100)
+		}
+		if(this.base===PercentDamage.CURR_HP){
+			return Math.floor(target.HP*this.percent/100)
+		}
+		return 0
+	}
+	/**
+	 * converts it to damage object
+	 * @param target 
+	 * @returns Damage
+	 */
+	pack(target:Player){
+		if(this.type===Damage.ATTACK){
+			return new Damage(this.getTotal(target),0,0)
+		}
+		else if(this.type===Damage.MAGIC){
+			return new Damage(0,this.getTotal(target),0)
+		}
+		else{
+			return new Damage(0,0,this.getTotal(target))
+		}
+		
+	}
+}
+
+
 class Damage {
 	attack: number
 	magic: number
@@ -14,7 +61,6 @@ class Damage {
 	static ATTACK= 1
 	static MAGIC= 2
 	static TRUE= 3
-	
 
 	constructor(attack: number, magic: number, fixed: number) {
 		this.attack = Math.floor(attack)
@@ -23,8 +69,16 @@ class Damage {
 	}
 
 	getTotalDmg(): number {
-		return this.attack + this.magic + this.fixed
+		return this.attack + this.magic + this.fixed 
 	}
+	mergeWith(d:Damage){
+		this.attack+=d.attack
+		this.magic+=d.magic
+		this.fixed+=d.fixed
+		return this
+	}
+
+
 	updateDamages(calctype:Function,val:number,type:number[]){
 		for(const t of type){
 			if(t==Damage.ATTACK){
@@ -61,6 +115,14 @@ class Damage {
 	updateNormalDamage(calctype:Function,val:number){
 		this.magic = Math.floor(calctype(this.magic, val))
 		this.attack = Math.floor(calctype(this.attack,val))
+		return this
+	}
+
+	updateAllDamage(calctype:Function,val:number){
+		this.magic = Math.floor(calctype(this.magic, val))
+		this.attack = Math.floor(calctype(this.attack,val))
+		this.fixed = Math.floor(calctype(this.fixed,val))
+
 		return this
 	}
 
@@ -107,7 +169,27 @@ class ActiveItem {
 // 	| { range: number; skill: number; type: number }
 // 	| { range: number; skill: number; type: number; size: number }
 
-export type SkillDamage = { damage: Damage; skill: number; onKill?: Function; onHit?: Function }
+// export type SkillDamage = { damage: Damage; skill: number; onKill?: Function; onHit?: Function }
+
+class SkillDamage{
+	damage: Damage
+	skill: number
+	onKill: Function  	//(player):void
+	onHit: Function		//():void
+	constructor(damage:Damage,skill:ENUM.SKILL){
+		this.damage=damage
+		this.skill=skill
+	}
+	setOnHit(onhit:Function){
+		this.onHit=onhit
+		return this
+	}
+	setOnKill(onkill:Function){
+		this.onKill=onkill
+		return this
+	}
+
+}
 
 export const decrement = (val: number): number => Math.max(val - 1, 0)
 /**
@@ -284,6 +366,8 @@ class MapStorage {
 class HPChangeData {
 	static FLAG_SHIELD=1
 	static FLAG_NODMG_HIT=2
+	static FLAG_TICKDMG=3
+
 	hp: number
 	maxHp: number
 	type: string
@@ -309,11 +393,11 @@ class HPChangeData {
 	
 
 	setHpChange(hp: number) {
-		this.hp = hp
+		this.hp = Math.floor(hp)
 		return this
 	}
 	setMaxHpChange(maxhp: number) {
-		this.maxHp = maxhp
+		this.maxHp = Math.floor(maxhp)
 		this.hp = maxhp
 		return this
 	}
@@ -353,18 +437,26 @@ class HPChangeData {
 		return this.flags.has(flag)
 	}
 }
+interface SkillTargetConditionFunction{
+	(target:Player):boolean
+}
 
 class SkillTargetSelector {
 	resultType: number
 	skill_id: number
 	range: number
 	projSize: number
+	condition:SkillTargetConditionFunction
+	conditionedRange:number
 
 	constructor(type: number) {
 		this.resultType = type
 		this.skill_id
-		this.range
+		this.range=-1
 		this.projSize
+		this.condition
+		this.conditionedRange=0
+
 	}
 	setType(type: number) {
 		this.resultType = type
@@ -378,6 +470,19 @@ class SkillTargetSelector {
 		this.range = r
 		return this
 	}
+
+	setConditionedRange(condition:SkillTargetConditionFunction,range:number){
+		this.condition=condition
+		this.conditionedRange=range
+		return this
+	}
+
+	meetsCondition(target:Player){
+		if(!this.condition) return false
+
+		return this.condition(target)
+	}
+
 	setProjectileSize(s: number) {
 		this.projSize = s
 		return this
@@ -395,4 +500,4 @@ class SkillTargetSelector {
 
 //added 2021.07.07
 
-export { Damage,ActiveItem, MapStorage, HPChangeData, CALC_TYPE, SkillTargetSelector }
+export { Damage,ActiveItem, MapStorage, HPChangeData, CALC_TYPE, SkillTargetSelector ,PercentDamage,SkillDamage}

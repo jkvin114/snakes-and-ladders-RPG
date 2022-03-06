@@ -325,14 +325,14 @@ class Room {
 	}
 
 	stopConnectionTimeout() {
-		console.log("stopConnectionTimeout")
+	//	console.log("stopConnectionTimeout")
 		// stopTimeout(this.name, this.game.thisturn)
 		this.connectionTimeoutTurn
 		clearTimeout(this.connectionTimeout)
 	}
 	startConnectionTimeout() {
 		// startTimeout(this.name, this.game.thisturn,SETTINGS.connectionTimeout)
-		console.log("startConnectionTimeout")
+	//	console.log("startConnectionTimeout")
 		if (this.game.gameover) {
 			return
 		}
@@ -350,7 +350,7 @@ class Room {
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
 
-		console.log("timeout extension"+turn)
+	//	console.log("timeout extension"+turn)
 	}
 
 	user_pressDice(dicenum: number) {

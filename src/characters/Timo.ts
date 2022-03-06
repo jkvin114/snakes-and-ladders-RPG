@@ -1,15 +1,15 @@
-import { Player} from "../player"
+import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
-import { SkillEffect } from "../PlayerStatusEffect"
+import { Damage, SkillTargetSelector, SkillDamage, PercentDamage, CALC_TYPE } from "../Util"
 import { Game } from "../Game"
-import {Projectile,ProjectileBuilder} from "../Projectile"
+import { Projectile, ProjectileBuilder } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
-const ID=2
+import { TickDamageEffect, TickEffect, TickActionFunction, onHitFunction, OnHitEffect } from "../StatusEffect"
+const ID = 2
 class Timo extends Player {
-//	onoff: boolean[]
+	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 
@@ -19,23 +19,32 @@ class Timo extends Player {
 		final: number
 	}
 	private readonly skill_name: string[]
+	readonly duration_list: number[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [170, 30, 6, 6, 0, 30]
 		super(turn, team, game, ai, ID, name, basic_stats)
-	//	this.onoff = [false, false, false]
+		//	this.onoff = [false, false, false]
 		this.hpGrowth = 100
 		this.cooltime_list = [3, 6, 6]
+		this.duration_list = [0, 1, 0]
 		this.skill_name = ["ghost_q", "hit", "ghost_r"]
 		this.itemtree = {
 			level: 0,
-			items: [ITEM.EPIC_CRYSTAL_BALL, ITEM.INVISIBILITY_CLOAK, ITEM.CARD_OF_DECEPTION, ITEM.ANCIENT_SPEAR,ITEM.POWER_OF_MOTHER_NATURE, ITEM.BOOTS_OF_HASTE],
-			final: ITEM.EPIC_CRYSTAL_BALL,
+			items: [
+				ITEM.EPIC_CRYSTAL_BALL,
+				ITEM.INVISIBILITY_CLOAK,
+				ITEM.CARD_OF_DECEPTION,
+				ITEM.ANCIENT_SPEAR,
+				ITEM.POWER_OF_MOTHER_NATURE,
+				ITEM.BOOTS_OF_HASTE
+			],
+			final: ITEM.EPIC_CRYSTAL_BALL
 		}
 	}
 
-    getSkillInfoKor() {
+	getSkillInfoKor() {
 		let info = []
 		info[0] =
 			"[실명] 쿨타임:" +
@@ -51,7 +60,7 @@ class Timo extends Player {
 			"[죽음의 버섯] 쿨타임:" +
 			this.cooltime_list[2] +
 			"턴<br>사정거리:30 , 범위 4칸의 버섯 설치, 맞은 플레이어는 3턴에 걸쳐 둔화에 걸리고 " +
-			this.getSkillBaseDamage(2)*3 +
+			this.getSkillBaseDamage(2) * 3 +
 			"의 마법 피해를 받음"
 		return info
 	}
@@ -71,78 +80,92 @@ class Timo extends Player {
 			"[Poison Bomb] cooltime:" +
 			this.cooltime_list[2] +
 			" turns<br>range:30 ,Places a projectile with size 4, player steps on it slowed and receive total" +
-			this.getSkillBaseDamage(2)*3 +
+			this.getSkillBaseDamage(2) * 3 +
 			"magic damage for 3 turns"
 		return info
 	}
 
-	getSkillTrajectorySpeed(skilltype:string):number{
-        if(skilltype==="ghost_q"||skilltype==="ghost_w_q")
-            return 500
+	getSkillTrajectorySpeed(skilltype: string): number {
+		if (skilltype === "ghost_q" || skilltype === "ghost_w_q") return 500
 		return 0
 	}
 
 	private buildProjectile() {
 		let _this: Player = this.getPlayer()
-        let dmg=new Damage(0,this.getSkillBaseDamage(ENUM.SKILL.ULT),0)
+		let effect = new TickDamageEffect(
+			3,
+			TickEffect.FREQ_EVERY_TURN,
+			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.ULT), 0)
+		)
+			.setAction((target: Player) => {
+				target.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				return false
+			})
+			.setSourceSkill(ENUM.SKILL.ULT)
+			.setId(ENUM.EFFECT.GHOST_ULT_DAMAGE)
+			.setSourcePlayer(this.turn)
+
+		let hiteffect = new OnHitEffect(3, (owner:Player,target: Player, damage: Damage) => {
+			return damage.updateNormalDamage(CALC_TYPE.multiply, 0.5)
+		})
+			.setId(ENUM.EFFECT.GHOST_ULT_WEAKEN)
+			.setSourcePlayer(this.turn)
+			.on(OnHitEffect.EVERYATTACK)
+			.to([this.turn])
+
+
+
 		return new ProjectileBuilder({
 			owner: _this,
 			size: 4,
 			skill: ENUM.SKILL.ULT,
 			type: "ghost_r"
 		})
-		.setGame(this.game)
-		.setSkillRange(30)
-		.setAction(function (target: Player) {
-			target.effects.giveSkillEffect(new SkillEffect("timo_u",_this.turn,4,"Death Poison",dmg))
-		})
-        .setTrajectorySpeed(300)
-		.setDuration(2)
-		.build()
+			.setGame(this.game)
+			.setSkillRange(30)
+			.setAction(function (target: Player) {
+				target.effects.applySpecial(effect, "ghost_r")
+				target.effects.applySpecial(hiteffect, "ghost_r")
+			})
+			.setTrajectorySpeed(300)
+			.setDuration(2)
+			.build()
 	}
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector 
-		= new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE)
-		.setSkill(skill) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(
+			skill
+		) //-1 when can`t use skill, 0 when it`s not attack skill
 
 		console.log("getSkillAttr" + skill)
 		switch (skill) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-				.setRange(18)
-				
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(18)
+
 				break
 			case ENUM.SKILL.W:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
-				if(!this.AI){
-                    this.useW()
-                }
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
+				if (!this.AI) {
+					this.useW()
+				}
 
 				break
 			case ENUM.SKILL.ULT:
-				skillTargetSelector
-				.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE)
-				.setRange(30)
-                .setProjectileSize(4)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(30).setProjectileSize(4)
 				break
 		}
 		return skillTargetSelector
 	}
 
-    useW(){
-        
+	useW() {
 		this.startCooltime(ENUM.SKILL.W)
-		this.duration[ENUM.SKILL.W] = 1
-		this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1,ENUM.EFFECT_TIMING.TURN_END)
-
-    }
+		this.startDuration(ENUM.SKILL.W)
+		this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.TURN_END)
+	}
 	getSkillName(skill: number): string {
-        if(skill===ENUM.SKILL.Q && this.effects.has(ENUM.EFFECT.INVISIBILITY)){
-            return "ghost_w_q"
-        }
+		if (skill === ENUM.SKILL.Q && this.effects.has(ENUM.EFFECT.INVISIBILITY)) {
+			return "ghost_w_q"
+		}
 		return this.skill_name[skill]
 	}
 
@@ -160,37 +183,37 @@ class Timo extends Player {
 			return proj
 		}
 	}
-	private getSkillBaseDamage(skill:number):number{
-		if(skill===ENUM.SKILL.Q){
-			return Math.floor(20 + this.ability.AP*0.8)
+	private getSkillBaseDamage(skill: number): number {
+		if (skill === ENUM.SKILL.Q) {
+			return Math.floor(20 + this.ability.AP * 0.8)
 		}
-		if(skill===ENUM.SKILL.ULT){
+		if (skill === ENUM.SKILL.ULT) {
 			return Math.floor(30 + 0.5 * this.ability.AP)
 		}
 	}
 
 	getSkillDamage(target: number): SkillDamage {
-		console.log(target+"getSkillDamage"+this.pendingSkill)
+		console.log(target + "getSkillDamage" + this.pendingSkill)
 		let skillattr: SkillDamage = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
-				
-				let admg = 0
+
+				let admg = new Damage(0, 0, 0)
 				if (this.level > 1 && this.effects.has(ENUM.EFFECT.INVISIBILITY)) {
-					admg = Math.floor(
-						0.3 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP)
+					admg = new PercentDamage(30, PercentDamage.MISSING_HP, Damage.MAGIC).pack(
+						this.game.playerSelector.get(target)
 					)
 				}
-				skillattr = {
-					damage: new Damage(0,this.getSkillBaseDamage(s) + admg, 0),
-					skill: ENUM.SKILL.Q,
-                    onHit:function(target:Player){
-                       target.effects.apply(ENUM.EFFECT.BLIND, 2,ENUM.EFFECT_TIMING.TURN_END)
-                    }
-				}
+
+				skillattr = new SkillDamage(
+					new Damage(0, this.getSkillBaseDamage(s), 0).mergeWith(admg),
+					ENUM.SKILL.Q
+				).setOnHit(function (target: Player) {
+					target.effects.apply(ENUM.EFFECT.BLIND, 2, ENUM.EFFECT_TIMING.TURN_END)
+				})
 				break
 		}
 
@@ -223,10 +246,10 @@ class Timo extends Player {
 					data: this.getAiTarget(skilldata.targets)
 				}
 			case ENUM.SKILL.W:
-                if(this.cooltime[ENUM.SKILL.Q]<=1){
-                    this.useW()
-                }
-                
+				if (this.cooltime[ENUM.SKILL.Q] <= 1) {
+					this.useW()
+				}
+
 				return {
 					type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,
 					data: null
@@ -238,7 +261,6 @@ class Timo extends Player {
 				}
 		}
 	}
-
 }
 
 export { Timo }

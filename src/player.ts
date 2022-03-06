@@ -11,7 +11,7 @@ import Ability from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
 import PlayerMapData from "./PlayerMapData"
 import PlayerInventory from "./PlayerInventory"
-import {PlayerStatusEffects,ShieldEffect,SkillEffect} from "./PlayerStatusEffect"
+import {PlayerStatusEffects,ShieldEffect} from "./PlayerStatusEffect"
 import {PlayerClientInterface} from "./app"
 import {ObstacleHelper,AIHelper} from "./helpers"
 
@@ -103,6 +103,7 @@ abstract class Player extends Entity{
 		items: number[]
 		final: number
 	}
+	abstract readonly duration_list:number[]
 
 	abstract getSkillInfoKor(): string[]
 	abstract getSkillInfoEng(): string[]
@@ -302,10 +303,8 @@ abstract class Player extends Entity{
 		this.decrementAllSkillDuration()
 		
 		
-		let died = this.effects.onAfterObs()
-		if (died) {
-			this.effects.apply(ENUM.EFFECT.SILENT, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-		}
+		this.effects.onAfterObs()
+		
 
 	}
 
@@ -470,6 +469,9 @@ abstract class Player extends Entity{
 		if (skill === ENUM.SKILL.ULT) {
 			this.cooltime[skill] -= this.ability.ultHaste
 		}
+	}
+	startDuration(skill:ENUM.SKILL){
+		this.duration[skill] = this.duration_list[skill]
 	}
 	/**
 	 *
@@ -657,8 +659,8 @@ abstract class Player extends Entity{
 				}
 			}
 		}
-		if (Math.random() < 0.8 && worst < 0) return dice
-		//가장 나쁜장애물이 -1 이하이면 그대로 반환
+		if (Math.random() < 0.8 || worst < -1) return dice
+		//가장 나쁜장애물이 -2 이하이면 그대로 반환
 		else if (this.effects.has(ENUM.EFFECT.BACKDICE)) return 6
 		else return 1
 	}
@@ -862,10 +864,12 @@ abstract class Player extends Entity{
 		if (type != null) {
 			changeData.setType(type)
 		}
+		damage=this.effects.onObstacleDamage(damage)
 
 		return this.doDamage(damage, changeData)
 	}
 	updateTotalShield(change: number, noindicate: boolean) {
+		
 	//	console.log("updateshield" + change)
 		this.shield += Math.floor(change)
 		if (this.game.instant || change==0) return
@@ -883,8 +887,8 @@ abstract class Player extends Entity{
 	 * @returns
 	 */
 	 shieldDamage(damage: number): number {
-		 let damageLeft=this.effects.applyShield(damage)
-
+		let damageLeft=this.effects.applyShield(damage)
+		
 		this.updateTotalShield(-(damage - damageLeft), false)
 		this.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage - damageLeft)
 
@@ -918,9 +922,9 @@ abstract class Player extends Entity{
 				return false
 			}
 
-			if (this.effects.has(ENUM.EFFECT.RADI)) {
-				damage *= 2
-			}
+			// if (this.effects.has(ENUM.EFFECT.RADI)) {
+			// 	damage *= 2
+			// }
 			if (changeData.source >= 0) {
 				this.damagedby[changeData.source] = 3
 				this.game.playerSelector.get(changeData.source).ability.absorb_hp(damage) //모든피해흡혈, 어시스트저장
@@ -930,9 +934,10 @@ abstract class Player extends Entity{
 			let predictedHP = this.HP + this.shield - damage
 
 			//방패검 아이템
-			// console.log("predictedHP"+predictedHP+" "+this.AD*0.4)
+	//		console.log("predictedHP"+predictedHP)
 			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.inven.isActiveItemAvaliable(ENUM.ITEM.WARRIORS_SHIELDSWORD)) {
-				this.effects.setShield("item_shieldsword", new ShieldEffect(2, Math.floor(0.7 * this.ability.AD)), true)
+				console.log("WARRIORS_SHIELDSWORD")
+				this.effects.applySpecial(new ShieldEffect(2, Math.floor(0.7 * this.ability.AD)).setId(ENUM.EFFECT.ITEM_SHIELDSWORD),"item_shieldsword")
 				this.inven.useActiveItem(ENUM.ITEM.WARRIORS_SHIELDSWORD)
 				this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.WARRIORS_SHIELDSWORD)
 
@@ -967,7 +972,7 @@ abstract class Player extends Entity{
 			this.changeHP_damage(changeData.setHpChange(-1 * Math.floor(damage)))
 
 			if (this.HP <= 0) {
-				this.effects.resetAllEffects()
+				this.effects.onLethalDamage()
 
 				if (reviveType == null) {
 					this.die(changeData.source)
@@ -1131,46 +1136,51 @@ abstract class Player extends Entity{
 		// return assists
 	}
 
-	dealDamageTo(target: Player, damage: Util.Damage, sourceType: string, name: string): boolean {
-		this.ability.applyAttackAdditionalDamage(damage,target)
+	dealDamageTo(target: Player, damage: Util.Damage, damageType: string, name: string): boolean {
+		
 
 		//다이아몬드 기사 아이템
-		if (this.inven.haveItem(32)) {
-			this.ability.addMaxHP(5)
-	//		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
-		}
+	// 	if (this.inven.haveItem(32)) {
+	// 		this.ability.addMaxHP(5)
+	// //		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
+	// 	}
 
 		let flags = []
-		if (sourceType == "skill") {
+		let needDelay=true
+		if (damageType == "skill") {
+			//this.ability.applyAttackAdditionalDamage(damage,target)
 
-			if(this.inven.isActiveItemAvaliable(ENUM.ITEM.CARD_OF_DECEPTION) && this.pos < target.pos){
-				damage.updateNormalDamage(Util.CALC_TYPE.multiply,1.1)
-				target.effects.apply(ENUM.EFFECT.SLOW,1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-				this.effects.apply(ENUM.EFFECT.SLOW,1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-				this.inven.useActiveItem(ENUM.ITEM.CARD_OF_DECEPTION)
-			}
-			
-			this.ability.applySkillDmgReduction(damage)
+			damage=this.effects.onSkillHit(damage,target)
+			damage=target.effects.onSkillDamage(damage,this.turn)
+
+		//	this.ability.applySkillDmgReduction(damage)
 
 			if (damage.getTotalDmg() === 0) {
 				flags.push(Util.HPChangeData.FLAG_NODMG_HIT)
 			}
-		} else if (sourceType == "basicattack") {
-			if(target.inven.haveItem(ENUM.ITEM.BOOTS_OF_PROTECTION)){
-				damage.updateNormalDamage(Util.CALC_TYPE.multiply,0.8)
-			}
+
+
+		} else if (damageType == "basicattack") {
+		//	this.ability.applyAttackAdditionalDamage(damage,target)
+
+			damage=this.effects.onBasicAttackHit(damage,target)
+			damage=target.effects.onBasicAttackDamage(damage,this.turn)
+
+		} else if(damageType==="tick"){
+			needDelay=false
+			flags.push(Util.HPChangeData.FLAG_TICKDMG)
 		}
 
 		let calculatedDmg = this.ability.applyResistanceToDamage(damage, target)
 
-		if (this.effects.haveSkillEffectAndSource("timo_u", target.turn)) {
-			damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
-		}
+		// if (this.effects.hasEffectFrom(ENUM.EFFECT.GHOST_ULT_DAMAGE, target.turn)) {
+		// 	damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
+		// }
 
 		target.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage.getTotalDmg() - calculatedDmg)
 		this.statistics.add(ENUM.STAT.DAMAGE_DEALT, calculatedDmg)
 
-		return target.doPlayerDamage(calculatedDmg, this.turn, name, true, flags)
+		return target.doPlayerDamage(calculatedDmg, this.turn, name, needDelay, flags)
 	}
 
 	getBaseBasicAttackDamage(): Util.Damage {
@@ -1229,7 +1239,9 @@ abstract class Player extends Entity{
 
 	hitOneTarget(target: number, skilldmgdata: Util.SkillDamage) {
 
-		let died = this.game.playerSelector.get(target).hitBySkill(skilldmgdata,this.turn)
+		let effectname = this.getSkillName(skilldmgdata.skill)
+
+		let died = this.game.playerSelector.get(target).hitBySkill(skilldmgdata.damage,effectname,this.turn,skilldmgdata.onHit)
 		if (died && skilldmgdata.onKill) {
 			skilldmgdata.onKill()
 		}
@@ -1237,31 +1249,26 @@ abstract class Player extends Entity{
 	}
 
 	/**
-	 *
-	 * @param {*} skilldmg  Util.Damage
-	 * @param {*} source
-	 * @param {*} skill_id  0~
-	 * @param {*} action 데미지 준 후에 발동
+	 * 
+	 * @param skilldmg Damage
+	 * @param effectname //스킬별 이펙트표시를 위한 이름
+	 * @param source 
+	 * @param onHit 
+	 * @returns isdead
 	 */
-	hitBySkill(skilldmg: Util.SkillDamage, source: number): boolean {
-
-		let skill_id=skilldmg.skill
-		//스킬별 이펙트표시를 위한 이름
-		
-		let type = this.game.playerSelector.get(source).getSkillName(skill_id)
-		
-
+	hitBySkill(skilldmg: Util.Damage,effectname:string, source: number,onHit?:Function): boolean {
 		//방어막 효과
 		if (this.effects.has(ENUM.EFFECT.SHIELD)) {
 			//console.log("shield")
 			this.effects.reset(ENUM.EFFECT.SHIELD)
-			this.doPlayerDamage(0, source, type, true, [Util.HPChangeData.FLAG_SHIELD])
+			this.doPlayerDamage(0, source, effectname, true, [Util.HPChangeData.FLAG_SHIELD])
 			return false
 		}
-		if (skilldmg.onHit != null) {
-			skilldmg.onHit(this)
+
+		if (onHit != null) {
+			onHit(this)
 		}
-		let died = this.game.playerSelector.get(source).dealDamageTo(this, skilldmg.damage, "skill", type)
+		let died = this.game.playerSelector.get(source).dealDamageTo(this, skilldmg, "skill", effectname)
 
 		return died
 	}

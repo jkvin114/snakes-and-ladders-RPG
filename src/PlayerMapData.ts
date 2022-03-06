@@ -5,7 +5,7 @@ import * as ENUM from "./enum"
 import { singleMap } from "./Util"
 class PlayerMapData{
     nextdmg: number
-	adamage: number
+//	adamage: number
 	
 	onMainWay: boolean //갈림길 체크시 샤용
 	subwayTicket: number
@@ -15,7 +15,7 @@ class PlayerMapData{
     constructor(player:Player){
 		this.player=player
         this.nextdmg = 0
-		this.adamage = 0
+	//	this.adamage = 0
 		this.onMainWay = true //갈림길 체크시 샤용
 		this.isInSubway = false		
         this.onMainWay = true //갈림길 체크시 샤용
@@ -28,7 +28,7 @@ class PlayerMapData{
         return this.onMainWay ===  other.mapdata.onMainWay
     }
     onBeforeObs(){
-        this.adamage = 0
+      //  this.adamage = 0
     }
     onDeath(){
         this.removeSubwayTicket()

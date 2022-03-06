@@ -2,11 +2,12 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
+import { AblityChangeEffect, TickEffect, TickPercentDamageEffect } from "../StatusEffect"
 const ID = 7
 class Bird extends Player {
 	//	onoff: boolean[]
@@ -19,6 +20,7 @@ class Bird extends Player {
 		final: number
 	}
 	private readonly skill_name: string[]
+	readonly duration_list:number[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -27,6 +29,7 @@ class Bird extends Player {
 		//	this.onoff = [false, false, false]
 		this.hpGrowth = 100
 		this.cooltime_list = [3, 5, 10]
+		this.duration_list=[0,2,4]
 		this.skill_name = ["hit", "hit", "bird_r"]
 		this.itemtree = {
 			level: 0,
@@ -104,7 +107,8 @@ class Bird extends Player {
 		return 0
 	}
 	private buildProjectile() {
-		let _this: Player = this.getPlayer()
+		let _this: Player = this
+
 		return new ProjectileBuilder({
 			owner: _this,
 			size: 3,
@@ -112,8 +116,8 @@ class Bird extends Player {
 			type: "bird_r_trace"
 		})
 			.setGame(this.game)
-			.setAction(function (target: Player) {
-				target.effects.giveIgniteEffect(2, _this.turn)
+			.setAction((target: Player)=> {
+				target.effects.applySpecial(this.getUltBurn(),"fire")
 			})
 			.setNotDisappearWhenStep()
 			.setDuration(2)
@@ -142,16 +146,33 @@ class Bird extends Player {
 		return skillTargetSelector
 	}
 
+	private getUltShield() {
+		return new ShieldEffect(this.duration_list[ENUM.SKILL.W], 70).setId(ENUM.EFFECT.BIRD_ULT_SHIELD)
+	}
+	private getUltAbility(){
+		return new AblityChangeEffect(this.duration_list[ENUM.SKILL.ULT],new Map().set("attackRange",2))
+	}
+	private getUltBurn(){
+		return new TickPercentDamageEffect(
+			2,
+			TickEffect.FREQ_EVERY_PLAYER_TURN,
+			new PercentDamage(3, PercentDamage.MAX_HP)
+		).setId(ENUM.EFFECT.BIRD_ULT_BURN).setSourcePlayer(this.turn)
+	}
+
 	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
 		this.effects.apply(ENUM.EFFECT.SPEED, 1, ENUM.EFFECT_TIMING.TURN_END)
-		this.duration[ENUM.SKILL.W] = 2
+		this.startDuration(ENUM.SKILL.W)
 	}
 	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.setShield("bird_r", new ShieldEffect(4, 70), false)
-		this.duration[ENUM.SKILL.ULT] = 4
-		this.ability.update("attackRange", 2)
+		this.effects.applySpecial(this.getUltShield(),"bird_r")
+		this.effects.applySpecial(this.getUltAbility(),"bird_r")
+
+		this.startDuration(ENUM.SKILL.ULT)
+
+		// this.ability.update("attackRange", 2)
 		this.changeApperance("bird_r")
 		this.showEffect("bird_r", this.turn)
 	}
@@ -211,11 +232,10 @@ class Bird extends Player {
 		switch (s) {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
-				let _this = this
 
-				let onhit = function (target: Player) {
+				let onhit = (target: Player) =>{
 					target.inven.takeMoney(20)
-					_this.inven.giveMoney(20)
+					this.inven.giveMoney(20)
 				}
 
 				let damage = new Damage(0, this.getSkillBaseDamage(s), 0)
@@ -231,20 +251,16 @@ class Bird extends Player {
 					this.game.placeProjNoSelection(proj, this.game.playerSelector.get(target).pos - 1)
 					damage.updateMagicDamage(CALC_TYPE.plus, this.ability.AP * 0.5)
 				}
-				skillattr = {
-					damage: damage,
-					skill: ENUM.SKILL.Q,
-					onHit: onhit
-				}
+				skillattr =new SkillDamage(damage,ENUM.SKILL.Q).setOnHit(onhit)
 				break
 		}
 
 		return skillattr
 	}
 	onSkillDurationEnd(skill: number) {
-		console.log("birdattackrange:" + this.ability.attackRange)
+		// console.log("birdattackrange:" + this.ability.attackRange)
 		if (skill === ENUM.SKILL.ULT) {
-			this.ability.update("attackRange", -2)
+			// this.ability.update("attackRange", -2)
 			this.changeApperance("")
 		}
 		if (skill === ENUM.SKILL.W) {

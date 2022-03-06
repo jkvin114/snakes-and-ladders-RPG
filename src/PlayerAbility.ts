@@ -23,6 +23,7 @@ class Ability{
 	ultHaste: number
 	moveSpeed: number
 	player:Player
+	private pendingMaxHpChange:number
 	static MAX_ATTACKRANGE=5
 	static MAX_MOVESPEED=3
 	static MAX_ULTHASTE=3
@@ -47,7 +48,7 @@ class Ability{
 		this.obsR = 0
 		this.ultHaste = 0
 		this.moveSpeed = 0
-		
+		this.pendingMaxHpChange=0
 	}
 	transfer(func:Function,...args:any[]){
         this.player.game.sendToClient(func,...args)
@@ -59,7 +60,7 @@ class Ability{
 		let maxHpChange = 0
 		switch (ability) {
 			case "HP":
-				maxHpChange += change_amt
+				this.pendingMaxHpChange += change_amt
 				break
 			case "AD":
 				this.AD += change_amt
@@ -124,11 +125,19 @@ class Ability{
 				this.moveSpeed = Math.min(this.moveSpeed + change_amt, Ability.MAX_ULTHASTE)
 				break
 		}
-
-		this.sendToClient()
-
-		return maxHpChange
+		return this
 	}
+	/**
+	 * should be called after sequence of updating stats
+	 * 
+	 */
+	flushChange(){
+	//	console.log(this.MR)
+		this.addMaxHP(this.pendingMaxHpChange)
+		this.pendingMaxHpChange=0
+		this.sendToClient()
+	}
+
 	getAll() {
 		return {
 			level: this.player.level,
@@ -200,36 +209,38 @@ class Ability{
 		
 		})
 	}
+	
 
 	applyAttackAdditionalDamage(damage:Damage,target:Player){
-		let addMdmg=0
-		if(this.player.inven.haveItem(ITEM.ANCIENT_SPEAR)){
-			addMdmg=10
-		}
-		else if(this.player.inven.haveItem(ITEM.BAMBOO_SPEAR)){
-			addMdmg=5
-		}
-		damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * addMdmg * 0.01)
-		if(this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)){
-			damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
-		}
-		damage.updateTrueDamage(CALC_TYPE.plus, this.player.mapdata.adamage)
-	}
-
-
-	applySkillDmgReduction(damage:Damage){
-		let skillDmgReduction=0
-		if(this.player.inven.haveItem(ITEM.POWER_OF_MOTHER_NATURE)){
-			skillDmgReduction=30
-		}
-		else if(this.player.inven.haveItem(ITEM.POWER_OF_NATURE)){
-			skillDmgReduction=10
-		}
-		damage.updateNormalDamage(CALC_TYPE.multiply, 1 - skillDmgReduction * 0.01)
+		return
+		// let addMdmg=0
+		// if(this.player.inven.haveItem(ITEM.ANCIENT_SPEAR)){
+		// 	addMdmg=10
+		// }
+		// else if(this.player.inven.haveItem(ITEM.BAMBOO_SPEAR)){
+		// 	addMdmg=5
+		// }
+		// damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * addMdmg * 0.01)
+		// if(this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)){
+		// 	damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
+		// }
+		// damage.updateTrueDamage(CALC_TYPE.plus, this.player.mapdata.adamage)
 	}
 	getMagicCastleDamage(){
 		return this.AD * 0.1 + this.AP * 0.08 + this.extraHP * 0.1
 	}
+
+	static applySkillDmgReduction(damage:Damage,reduction:number){
+		let skillDmgReduction=0
+		// if(this.player.inven.haveItem(ITEM.POWER_OF_MOTHER_NATURE)){
+		// 	skillDmgReduction=30
+		// }
+		// else if(this.player.inven.haveItem(ITEM.POWER_OF_NATURE)){
+		// 	skillDmgReduction=10
+		// }
+		return damage.updateNormalDamage(CALC_TYPE.multiply, 1 - reduction * 0.01)
+	}
+	
 
 }
 

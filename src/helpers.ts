@@ -3,15 +3,15 @@ import * as ENUM from "./enum"
 import * as Util from "./Util"
 import SETTINGS = require("../res/globalsettings.json")
 import { PlayerClientInterface } from "./app"
-import {  MAP } from "./Game"
+import { MAP } from "./Game"
 import { items as ItemList } from "../res/item.json"
 import PlayerInventory from "./PlayerInventory"
-class ObstacleHelper{
-
-    static applyObstacle(player:Player,obs:number,isForceMoved:boolean){
-
-        let others: Player[] = []
+import { EffectFactory, StatusEffect } from "./StatusEffect"
+class ObstacleHelper {
+	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
+		let others: Player[] = []
 		const pendingObsList = SETTINGS.pendingObsList
+		const perma=StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE
 		try {
 			switch (obs) {
 				case 4:
@@ -34,18 +34,19 @@ class ObstacleHelper{
 					player.heal(50)
 					break
 				case 10:
-					player.effects.apply(ENUM.EFFECT.SILENT, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 11:
 					player.resetCooltime([ENUM.SKILL.Q, ENUM.SKILL.W])
 					player.cooltime[ENUM.SKILL.ULT] = Math.floor(player.cooltime[ENUM.SKILL.ULT] / 2)
 					break
 				case 12:
-					player.mapdata.adamage = player.ability.getMagicCastleDamage()
+					player.effects.apply(ENUM.EFFECT.FARSIGHT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.applySpecial(EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE), "magic castle")
 					// player.message(player.name + ": skill range x3, additional damage 30")
 					break
 				case 13:
-					player.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 14:
 					let d = Math.floor(Math.random() * 6) + 1
@@ -53,7 +54,7 @@ class ObstacleHelper{
 					break
 				case 15:
 					let m3 = Math.floor(player.inven.money / 10)
-					others = player.game.playerSelector.getPlayersByCondition(player,-1, false, true, true, false)
+					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, true, false)
 					player.inven.takeMoney(m3 * others.length)
 					for (let o of others) {
 						o.inven.giveMoney(m3)
@@ -61,25 +62,25 @@ class ObstacleHelper{
 
 					break
 				case 16:
-					player.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					player.doObstacleDamage(20, "hit")
 					break
 				case 17:
-					others = player.game.playerSelector.getPlayersByCondition(player,-1, false, true, false, false)
+					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, false, false)
 					player.doObstacleDamage(20 * others.length, "hit")
 					for (let o of others) {
 						o.heal(20)
 					}
 					break
 				case 18:
-					others = player.game.playerSelector.getPlayersByCondition(player,-1, false, true, true, false)
+					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, true, false)
 					player.inven.takeMoney(30 * others.length)
 					for (let o of others) {
 						o.inven.giveMoney(30)
 					}
 					break
 				case 19:
-					others = player.game.playerSelector.getPlayersByCondition(player,20, false, true, false, true)
+					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, true, false, true)
 					for (let o of others) {
 						o.forceMove(player.pos, true, "simple")
 					}
@@ -88,7 +89,7 @@ class ObstacleHelper{
 					// if (isForceMoved) {
 					// 	return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 					// }
-					let target = player.game.playerSelector.getNearestPlayer(player,40, true, false)
+					let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
 					if (target != null && target.pos != player.pos) {
 						let pos = player.pos
 						player.forceMove(target.pos, false, "simple")
@@ -100,19 +101,19 @@ class ObstacleHelper{
 					//godhand
 					break
 				case 22:
-					player.effects.apply(ENUM.EFFECT.ANNUITY, 99999,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.ANNUITY, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 23:
 					player.inven.takeMoney(30)
 					player.doObstacleDamage(30, "knifeslash")
 					break
 				case 24:
-					player.effects.apply(ENUM.EFFECT.SHIELD, 99999,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SHIELD, 99999, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					player.heal(70)
 					break
 				case 25:
-					player.effects.apply(ENUM.EFFECT.SHIELD, 99999,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SHIELD, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 26:
 					player.mapdata.nextdmg = 70
@@ -121,21 +122,21 @@ class ObstacleHelper{
 					player.doObstacleDamage(100, "knifeslash")
 					break
 				case 28:
-					player.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.apply(ENUM.EFFECT.SLOW, 2,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SLOW, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 29:
-					player.effects.apply(ENUM.EFFECT.POISON, 99999,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.POISON, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 30:
-					player.doObstacleDamage(Math.floor(player.HP / 3), "explode")
+					player.doObstacleDamage(new Util.PercentDamage(33, Util.PercentDamage.CURR_HP).getTotal(player), "explode")
 					break
 				case 31:
-					player.doObstacleDamage(Math.floor((player.MaxHP - player.HP) / 2), "explode")
-					player.effects.apply(ENUM.EFFECT.RADI, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.doObstacleDamage(new Util.PercentDamage(50, Util.PercentDamage.MISSING_HP).getTotal(player), "explode")
+					player.effects.apply(ENUM.EFFECT.RADI, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 32:
-					player.effects.apply(ENUM.EFFECT.RADI, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.RADI, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 33:
 					// kidnap
@@ -143,16 +144,16 @@ class ObstacleHelper{
 						if (player.HP > 300) {
 							player.doObstacleDamage(300, "stab")
 						} else {
-							player.effects.apply(ENUM.EFFECT.STUN, 2,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+							player.effects.apply(ENUM.EFFECT.STUN, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 						}
 					}
 					break
 				case 34:
-					player.effects.apply(ENUM.EFFECT.SLAVE, 99999,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SLAVE, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 35:
-					player.effects.apply(ENUM.EFFECT.STUN, 3,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.apply(ENUM.EFFECT.SPEED, 4,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SPEED, 4, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 36:
 					if (!isForceMoved) {
@@ -163,40 +164,39 @@ class ObstacleHelper{
 					//trial
 					if (player.AI) {
 						let d = Math.floor(Math.random() * 6) + 1
-						ObstacleHelper.trial(player,d)
+						ObstacleHelper.trial(player, d)
 					}
 					break
 				case 38:
 					//casino
 					if (player.AI) {
 						let d = Math.floor(Math.random() * 6) + 1
-                        ObstacleHelper.casino(player,d)
-
+						ObstacleHelper.casino(player, d)
 					}
 					break
 				case 39:
-					player.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 40:
-					player.effects.apply(ENUM.EFFECT.BACKDICE, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.BACKDICE, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 41:
-					player.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 42:
 					player.heal(50)
 					break
 				case 43:
-					player.effects.apply(ENUM.EFFECT.POISON, 3,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.POISON, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 44:
 					player.doObstacleDamage(40, "knifeslash")
 					break
 				case 45:
-					player.effects.apply(ENUM.EFFECT.BLIND, 3,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.BLIND, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 46:
-					player.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					player.doObstacleDamage(30, "hit")
 					break
 				case 48:
@@ -206,15 +206,15 @@ class ObstacleHelper{
 					player.doObstacleDamage(50, "knifeslash")
 					break
 				case 50:
-					player.effects.giveIgniteEffect(3, -1)
+					player.effects.apply(ENUM.EFFECT.IGNITE, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					player.doObstacleDamage(30, "knifeslash")
 					break
 				case 51:
-					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 52:
 					player.doObstacleDamage(75, "lightning")
-					others = player.game.playerSelector.getPlayersByCondition(player,3, false, false, false, true)
+					others = player.game.playerSelector.getPlayersByCondition(player, 3, false, false, false, true)
 					for (let p of others) {
 						p.doObstacleDamage(75, "lightning")
 					}
@@ -225,7 +225,7 @@ class ObstacleHelper{
 						player.forceMove(player.pos - 3, false, "simple")
 					}
 
-					others = player.game.playerSelector.getPlayersByCondition(player,-1, false, false, false, true)
+					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, false, false, true)
 					for (let p of others) {
 						let died = p.doObstacleDamage(30, "wave")
 						if (!died) {
@@ -234,7 +234,7 @@ class ObstacleHelper{
 					}
 					break
 				case 54:
-					others = player.game.playerSelector.getPlayersByCondition(player,20, false, false, false, true)
+					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, false, false, true)
 
 					for (let o of others) {
 						o.forceMove(player.pos, true, "simple")
@@ -245,7 +245,7 @@ class ObstacleHelper{
 					player.forceMove(player.pos - 3 + r, false, "levitate")
 					break
 				case 56:
-					let allplayers = player.game.playerSelector.getPlayersByCondition(player,30, false, true, false, true)
+					let allplayers = player.game.playerSelector.getPlayersByCondition(player, 30, false, true, false, true)
 					if (allplayers.length !== 0) {
 						let r2 = Math.floor(Math.random() * allplayers.length)
 						player.forceMove(allplayers[r2].pos, true, "levitate")
@@ -258,11 +258,11 @@ class ObstacleHelper{
 					player.doObstacleDamage(120, "explode")
 					break
 				case 59:
-					player.effects.apply(ENUM.EFFECT.SPEED, 3,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SPEED, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 60:
-					player.effects.giveIgniteEffect(3, -1)
-					player.doObstacleDamage(Math.floor(player.MaxHP / 4), "explode")
+					player.effects.apply(ENUM.EFFECT.IGNITE, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.doObstacleDamage(new Util.PercentDamage(25, Util.PercentDamage.MAX_HP).getTotal(player), "explode")
 					break
 				case 61:
 					player.doObstacleDamage(175, "explode")
@@ -275,14 +275,14 @@ class ObstacleHelper{
 					//Threaten
 					break
 				case 64:
-					player.effects.apply(ENUM.EFFECT.PRIVATE_LOAN, 2,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.PRIVATE_LOAN, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 65:
 					player.inven.takeMoney(Math.floor(player.inven.money / 2))
 					player.inven.changeToken(-1 * Math.floor(player.inven.token / 2))
 					break
 				case 66:
-					player.effects.apply(ENUM.EFFECT.ANNUITY_LOTTERY, 9999,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.ANNUITY_LOTTERY, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 67: //coin store
 					if (player.effects.has(ENUM.EFFECT.PRIVATE_LOAN)) {
@@ -311,7 +311,7 @@ class ObstacleHelper{
 					break
 				case 70:
 					let m2 = 0
-					others = player.game.playerSelector.getPlayersByCondition(player,-1, false, true, true, false)
+					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, true, false)
 					for (let p of others) {
 						let m1 = p.inven.token * 2 + Math.floor(p.inven.money * 0.1)
 						p.inven.takeMoney(m1)
@@ -323,7 +323,7 @@ class ObstacleHelper{
 					ObstacleHelper.thief(player)
 					break
 				case 72:
-					player.effects.apply(ENUM.EFFECT.BAD_LUCK, 2,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.CURSE, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 73:
 					player.doObstacleDamage(Math.floor(player.inven.money / 2), "hit")
@@ -343,22 +343,19 @@ class ObstacleHelper{
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		}
 
-        //not ai, not pending obs and forcemoved, not arrive at none
+		//not ai, not pending obs and forcemoved, not arrive at none
 		if (!player.AI && !(pendingObsList.includes(obs) && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
-			player.transfer(PlayerClientInterface.indicateObstacle,  player.turn, obs)
+			player.transfer(PlayerClientInterface.indicateObstacle, player.turn, obs)
 		}
 
 		for (let p of others) {
-			player.transfer(PlayerClientInterface.indicateObstacle,p.turn, obs)
-
+			player.transfer(PlayerClientInterface.indicateObstacle, p.turn, obs)
 		}
 
-        return obs
+		return obs
+	}
 
-    
-    }
-    
-	static thief(player:Player) {
+	static thief(player: Player) {
 		let itemhave = []
 		for (let i of ItemList) {
 			if (player.inven.haveItem(i.id) && i.itemlevel === 1) {
@@ -375,26 +372,23 @@ class ObstacleHelper{
 		player.inven.changeOneItem(thiefitem, -1)
 		player.inven.itemSlots = player.inven.convertCountToItemSlots(player.inven.item)
 		player.transfer(PlayerClientInterface.update, "item", player.turn, player.inven.itemSlots)
-
 	}
 
-	
-
-	static kidnap(player:Player,result: boolean) {
+	static kidnap(player: Player, result: boolean) {
 		if (result) {
-			player.effects.apply(ENUM.EFFECT.STUN, 2,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			player.effects.apply(ENUM.EFFECT.STUN, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 		} else {
 			player.doObstacleDamage(300, "stab")
 		}
 	}
-	static threaten(player:Player,result: boolean) {
+	static threaten(player: Player, result: boolean) {
 		if (result) {
 			player.inven.takeMoney(50)
 		} else {
 			player.inven.changeToken(-3)
 		}
 	}
-	static trial(player:Player,num: number) {
+	static trial(player: Player, num: number) {
 		console.log("trial" + num)
 		switch (num) {
 			case 0:
@@ -402,10 +396,10 @@ class ObstacleHelper{
 				player.message(player.name + "fine 100$")
 				break
 			case 1:
-				player.effects.apply(ENUM.EFFECT.SLAVE, 99999,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.SLAVE, 99999, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 				break
 			case 2:
-				let target = player.game.playerSelector.getNearestPlayer(player,40, true, false)
+				let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
 				if (target !== null && target !== undefined) {
 					player.forceMove(target.pos, true, "levitate")
 				}
@@ -416,7 +410,7 @@ class ObstacleHelper{
 				break
 			case 4:
 				player.doObstacleDamage(Math.floor(player.HP / 2), "stab")
-				player.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 				player.message(player.name + " will get retrial")
 				break
 			case 5:
@@ -431,7 +425,7 @@ class ObstacleHelper{
 	}
 	//========================================================================================================
 
-	static casino(player:Player,num: number) {
+	static casino(player: Player, num: number) {
 		switch (num) {
 			case 0:
 				player.inven.giveMoney(100)
@@ -440,7 +434,7 @@ class ObstacleHelper{
 				player.inven.giveMoney(player.inven.money)
 				break
 			case 2:
-				player.effects.apply(ENUM.EFFECT.SPEED, 2,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.SPEED, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 				break
 			case 3:
 				player.doObstacleDamage(Math.floor(player.HP / 2), "stab")
@@ -450,45 +444,42 @@ class ObstacleHelper{
 				break
 			case 5:
 				player.doObstacleDamage(50, "stab")
-				player.effects.apply(ENUM.EFFECT.STUN, 1,ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 				break
 		}
 	}
 }
 
-class PlayerFilter{
-	private players:Player[]
-	constructor(){
-		this.players=[]
+class PlayerFilter {
+	private players: Player[]
+	constructor() {
+		this.players = []
 		//all,enemy,ally
 		//me,dead,invulnerable,team
 		//range-around,absolute
 		//sort -count   by-position,HP,HP+shield,kda
 	}
-	addPlayer(player:Player){
-        this.players.push(player)
-    }
-
-
+	addPlayer(player: Player) {
+		this.players.push(player)
+	}
 }
 
+class PlayerSelector {
+	private players: Player[]
+	constructor() {
+		this.players = []
+	}
+	addPlayer(player: Player) {
+		this.players.push(player)
+	}
+	get(turn: number) {
+		return this.players[turn]
+	}
+	getAll() {
+		return this.players
+	}
 
-class PlayerSelector{
-    private players:Player[]
-    constructor(){
-        this.players=[]
-    }
-    addPlayer(player:Player){
-        this.players.push(player)
-    }
-    get(turn:number){
-        return this.players[turn]
-    }
-    getAll(){
-        return this.players
-    }
-
-    	/**
+	/**
 	 * 가장 앞에있는 플레이어 반환
 	 */
 	getFirstPlayer(): Player {
@@ -500,10 +491,10 @@ class PlayerSelector{
 		}
 		return first
 	}
-    /**
+	/**
 	 * @return 위치가 가장 뒤면 true
 	 */
-	isLast(me:Player): boolean {
+	isLast(me: Player): boolean {
 		let pos = me.pos
 		return !this.players.some(function (p: Player) {
 			return p.pos < pos
@@ -512,7 +503,7 @@ class PlayerSelector{
 
 	/**
 	 * 조건에 맟는 플레이어 플레이어 반환
-     * @param {*} me 호출하는 플레이어
+	 * @param {*} me 호출하는 플레이어
 	 * @param {*} range 범위, -1이면 전체범위
 	 * @param {*} includeMe 자신 포함 여부
 	 * @param {*} includeInvulnerable 무적플레이어 포함 여부 (Invulnerable,invisible)
@@ -520,7 +511,7 @@ class PlayerSelector{
 	 * @param {*} includeMyTeam 우리팀 포함여부
 	 */
 	getPlayersByCondition(
-        me:Player,
+		me: Player,
 		range: number,
 		includeMe: boolean,
 		includeInvulnerable: boolean,
@@ -537,7 +528,9 @@ class PlayerSelector{
 		}
 
 		if (!includeInvulnerable) {
-			result = result.filter((a) => !a.invulnerable && !a.effects.has(ENUM.EFFECT.INVISIBILITY) && me.mapdata.inSameWayWith(a))
+			result = result.filter(
+				(a) => !a.invulnerable && !a.effects.has(ENUM.EFFECT.INVISIBILITY) && me.mapdata.inSameWayWith(a)
+			)
 		}
 
 		if (!includeMe) {
@@ -554,10 +547,10 @@ class PlayerSelector{
 
 	/**
 	 * 공격가능한 플레이어 반환
-     *@param {*} me 호출하는 플레이어
+	 *@param {*} me 호출하는 플레이어
 	 * @param {*} range
 	 */
-	getAllVaildPlayer(me:Player,range: number): Player[] {
+	getAllVaildPlayer(me: Player, range: number): Player[] {
 		let start = me.pos - range
 		let end = me.pos + range
 		return this.players.filter(
@@ -571,9 +564,8 @@ class PlayerSelector{
 		)
 	}
 
-    
 	//true if it is itself or same team , false if individual game or in different team
-	isValidOpponent(me:Player,other: Player) {
+	isValidOpponent(me: Player, other: Player) {
 		//자기자신
 		if (me === other) {
 			return false
@@ -593,39 +585,39 @@ class PlayerSelector{
 		}
 		return false
 	}
-    /**
-         * 범위내에서 가장가까운 플레이어 반환
-         * @param {} range
-         * @param {*} includeInvulnerable
-         * @param {*} includeDead
-         */
-    getNearestPlayer(me:Player,range: number, includeInvulnerable: boolean, includeDead: boolean) {
-        let dist = 200
-        let target = null
-        for (let p of this.players) {
-            if (p !== me && me.distance(me, p) < dist && me.distance(me, p) < range) {
-                if (includeInvulnerable && !(!includeDead && p.dead)) {
-                    target = p
-                    dist = me.distance(me, p)
-                } else if (!p.invulnerable && !p.effects.has(ENUM.EFFECT.INVISIBILITY)) {
-                    target = p
-                    dist = me.distance(me, p)
-                }
-            }
-        }
-        return target
-    }
-    	/**
+	/**
+	 * 범위내에서 가장가까운 플레이어 반환
+	 * @param {} range
+	 * @param {*} includeInvulnerable
+	 * @param {*} includeDead
+	 */
+	getNearestPlayer(me: Player, range: number, includeInvulnerable: boolean, includeDead: boolean) {
+		let dist = 200
+		let target = null
+		for (let p of this.players) {
+			if (p !== me && me.distance(me, p) < dist && me.distance(me, p) < range) {
+				if (includeInvulnerable && !(!includeDead && p.dead)) {
+					target = p
+					dist = me.distance(me, p)
+				} else if (!p.invulnerable && !p.effects.has(ENUM.EFFECT.INVISIBILITY)) {
+					target = p
+					dist = me.distance(me, p)
+				}
+			}
+		}
+		return target
+	}
+	/**
 	 *
 	 * @param {}} start
 	 * @param {*} end
 	 * @returns turn list of players in range
 	 */
-	getPlayersIn(me:Player,start: number, end: number): number[] {
+	getPlayersIn(me: Player, start: number, end: number): number[] {
 		let targets = []
 
 		for (let p of this.getAll()) {
-			if (this.isValidOpponent(me,p) && p.pos >= start && p.pos <= end) {
+			if (this.isValidOpponent(me, p) && p.pos >= start && p.pos <= end) {
 				targets.push(p.turn)
 			}
 		}
@@ -636,24 +628,19 @@ class PlayerSelector{
 	/**
 	 * 스킬 전용
 	 * 범위내의 공격 가능한 대상들의 턴 반환
-	 * @param {*} range
-	 * @param {*} skill_id start with 0
-	 * @return 'notarget' 타깃이 없으면
-	 * @return array of turns of targets
+	 * @param {*} me
+	 * @param {*} selector SkillTargetSelector
+	 * @return array of turns of targets, empy array if none
 	 */
-	getAvailableTarget(me:Player,range: number, skill_id: number): number[] {
+	getAvailableTarget(me: Player, selector: Util.SkillTargetSelector): number[] {
 		let targets = []
 		// console.log(this.distance(this.players[1], this))
 
 		for (let p of this.getAll()) {
-			if (this.isValidOpponent(me,p)) {
-				if (me.distance(p, me) <= range) {
+			if (this.isValidOpponent(me, p)) {
+				if (me.distance(p, me) <= selector.range) {
 					targets.push(p.turn)
-				} else if (
-					p.effects.haveSkillEffectAndSource("silver_w", me.turn) &&
-					skill_id === ENUM.SKILL.Q &&
-					me.distance(p, me) <= range + 5
-				) {
+				} else if (selector.meetsCondition(p) && me.distance(p, me) <= selector.conditionedRange) {
 					targets.push(p.turn)
 				}
 			}
@@ -662,34 +649,26 @@ class PlayerSelector{
 		return targets
 		//target choosing
 	}
-
 }
 
-class AIHelper{
-
-	static willDiceControl(player:Player){
+class AIHelper {
+	static willDiceControl(player: Player) {
 		return player.diceControl && player.level < MAP.get(player.mapId).dc_limit_level
 	}
 
-	static getDiceControlDice(player:Player){
+	static getDiceControlDice(player: Player) {
 		return 6
 	}
-
 
 	/**
 	 *  컴퓨터 아이템 구입
 	 *
 	 */
-	static aiStore(player:Player) {
-
-		new AIStoreInstance(player.inven,player.itemtree)
-		.setItemLimit(player.game.itemLimit)
-		.run()
-
+	static aiStore(player: Player) {
+		new AIStoreInstance(player.inven, player.itemtree).setItemLimit(player.game.itemLimit).run()
 	}
 
-    static async aiSkill(player:Player) {
-
+	static async aiSkill(player: Player) {
 		if (player.effects.has(ENUM.EFFECT.SILENT) || player.dead || player.game.gameover) {
 			return
 		}
@@ -705,7 +684,7 @@ class AIHelper{
 			}
 
 			if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.LOCATION) {
-				console.log(skillresult)
+				//	console.log(skillresult)
 				if (skillresult.data === -1) {
 					return
 				}
@@ -720,14 +699,13 @@ class AIHelper{
 		}
 	}
 
-	
 	/**
 	 *  가장 앞에있는 플레이어반환
 	 * 거리 5칸 내일시 가장 체력적은 플레이어
 	 * @param {} players int[]
 	 * return int
 	 */
-	 static getAiTarget(me:Player,players: number[]): number {
+	static getAiTarget(me: Player, players: number[]): number {
 		if (players.length === 1) {
 			return players[0]
 		}
@@ -742,13 +720,14 @@ class AIHelper{
 		return players[0]
 	}
 	//========================================================================================================
-	static getAiProjPos(me:Player,skilldata: any, skill: number): number {
+	static getAiProjPos(me: Player, skilldata: any, skill: number): number {
 		let goal = null
-		let targets = me.game.playerSelector.getPlayersIn(me,
+		let targets = me.game.playerSelector.getPlayersIn(
+			me,
 			me.pos - 3 - Math.floor(skilldata.range / 2),
 			me.pos - 3 + Math.floor(skilldata.range / 2)
 		)
-		console.log("getAiProjPos" + targets)
+		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {
 			return -1
 		}
@@ -781,40 +760,38 @@ class AIHelper{
 	}
 }
 
-class AIStoreInstance{
-	build:{
+class AIStoreInstance {
+	build: {
 		level: number
 		items: number[]
 		final: number
 	}
-	resultItems:number[]
-	inven:PlayerInventory
-	totalMoneySpend:number
-	itemLimit:number
-	constructor(inven:PlayerInventory,build:{level: number,items: number[],final: number}){
-		this.inven=inven
-		this.build=build
-		this.totalMoneySpend=0
+	resultItems: number[]
+	inven: PlayerInventory
+	totalMoneySpend: number
+	itemLimit: number
+	constructor(inven: PlayerInventory, build: { level: number; items: number[]; final: number }) {
+		this.inven = inven
+		this.build = build
+		this.totalMoneySpend = 0
 		this.resultItems = inven.item.map((x) => x)
 	}
-	setItemLimit(limit:number){
-		this.itemLimit=limit
+	setItemLimit(limit: number) {
+		this.itemLimit = limit
 		return this
 	}
-	hasEnoughMoney(){
+	hasEnoughMoney() {
 		return this.inven.money - this.totalMoneySpend >= 30
 	}
 
-	run(){
-		
+	run() {
 		while (this.hasEnoughMoney()) {
-
-			if (this.build.level >=this.itemLimit) {
+			if (this.build.level >= this.itemLimit) {
 				this.buyLife()
 				break
 			}
 
-			console.log("aistore",this.inven.money - this.totalMoneySpend)
+			//console.log("aistore",this.inven.money - this.totalMoneySpend)
 			let tobuy = 0
 			if (this.build.level >= this.build.items.length) {
 				tobuy = this.build.final
@@ -822,15 +799,12 @@ class AIStoreInstance{
 				tobuy = this.build.items[this.build.level]
 			}
 
-			if(this.aiAttemptItemBuy(tobuy)==0) break
+			if (this.aiAttemptItemBuy(tobuy) == 0) break
 		}
-		
-		this.inven.aiUpdateItem(this.resultItems,this.totalMoneySpend)
 
-
+		this.inven.aiUpdateItem(this.resultItems, this.totalMoneySpend)
 	}
 	buyLife() {
-		
 		let lifeprice = 150 * Math.pow(2, this.inven.lifeBought)
 
 		while (this.inven.money >= lifeprice) {
@@ -840,7 +814,7 @@ class AIStoreInstance{
 			this.inven.changemoney(-lifeprice, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		}
 	}
-	
+
 	isItemLimitExceeded(temp_itemlist: number[]) {
 		let count = temp_itemlist.reduce((total, curr) => total + curr, 0)
 
@@ -853,7 +827,7 @@ class AIStoreInstance{
 	 * @param {*} tobuy index of item 0~
 	 *@returns money spent by trying to buy this item
 	 */
-	aiAttemptItemBuy(tobuy: number):number {
+	aiAttemptItemBuy(tobuy: number): number {
 		let item = ItemList[tobuy]
 		let temp_itemlist = this.resultItems.map((x) => x) //이 아이템을 샀을 경우의 아이템리스트
 		let price = item.price - this.calcDiscount(tobuy, temp_itemlist)
@@ -876,7 +850,7 @@ class AIStoreInstance{
 
 			temp_itemlist = this.resultItems.map((x) => x)
 
-			let moneyspent=0
+			let moneyspent = 0
 			for (let i = 0; i < item.children.length; ++i) {
 				let child = item.children[i]
 
@@ -886,12 +860,12 @@ class AIStoreInstance{
 					continue
 				}
 
-				moneyspent+= this.aiAttemptItemBuy(child)
+				moneyspent += this.aiAttemptItemBuy(child)
 			}
 			return moneyspent
 		}
 	}
-	
+
 	//========================================================================================================
 
 	/**
@@ -931,9 +905,6 @@ class AIStoreInstance{
 	getItemNames(): string[] {
 		return ItemList.map((i: any) => i.name)
 	}
-
-
-
 }
 
-export {ObstacleHelper,PlayerSelector,AIHelper}
+export { ObstacleHelper, PlayerSelector, AIHelper }

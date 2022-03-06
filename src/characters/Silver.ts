@@ -3,7 +3,8 @@ import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector } from "../Util"
-import { ShieldEffect, SkillEffect } from "../PlayerStatusEffect"
+import { ShieldEffect } from "../PlayerStatusEffect"
+import { AblityChangeEffect, NormalEffect } from "../StatusEffect"
 import { Game } from "../Game"
 import { Projectile } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
@@ -23,6 +24,7 @@ class Silver extends Player {
 	private readonly skill_name: string[]
 	private u_active_amt: number
 	private u_passive_amt: number
+	readonly duration_list: number[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -30,6 +32,7 @@ class Silver extends Player {
 		super(turn, team, game, ai, ID, name, basic_stats)
 		//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
+		this.duration_list=[0,0,4]
 		this.hpGrowth = 130
 		this.u_active_amt = 0
 		this.u_passive_amt = 0
@@ -37,7 +40,7 @@ class Silver extends Player {
 		this.itemtree = {
 			level: 0,
 			items: [
-				ITEM.EPIC_SHIELD,	
+				ITEM.EPIC_SHIELD,
 				ITEM.EPIC_ARMOR,
 				ITEM.POWER_OF_MOTHER_NATURE,
 				ITEM.EPIC_FRUIT,
@@ -66,7 +69,7 @@ class Silver extends Player {
 			"[실버의 갑옷] 쿨타임:" +
 			this.cooltime_list[2] +
 			"턴<br>[기본 지속 효과]: 잃은 체력에 비례해 방어력과 마법저항력 증가  <br>[사용시]: 4턴간 방어력과 마법저항력이 " +
-			(this.HP < 150 ? 150 : 80) +
+			(this.HP < this.MaxHP / 10 ? 150 : 80) +
 			"증가하고 '암흑의 표창' 회복량 2배"
 		return info
 	}
@@ -86,9 +89,10 @@ class Silver extends Player {
 		info[2] =
 			"[Strengthen] cooltime:" +
 			this.cooltime_list[2] +
-			" turns<br>[Passive effect]: attack and magic resistance increase based on missing health<br>"+
+			" turns<br>[Passive effect]: attack and magic resistance increase based on missing health<br>" +
 			" [On use]: Attack and magic resistance increases by" +
-			(this.HP < 150 ? 150 : 80)+" and heal amount of 'tusk attack' doubles"
+			(this.HP < this.MaxHP / 10 ? 150 : 80) +
+			" and heal amount of 'tusk attack' doubles"
 		return info
 	}
 	getSkillTrajectorySpeed(skilltype: string): number {
@@ -105,7 +109,11 @@ class Silver extends Player {
 
 		switch (s) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(3)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
+				.setRange(3)
+				.setConditionedRange((target:Player)=>{
+					return target.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
+				},7)
 
 				break
 			case ENUM.SKILL.W:
@@ -124,17 +132,10 @@ class Silver extends Player {
 
 	useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.setShield("elephant_r", new ShieldEffect(4, 100), false)
-		this.duration[ENUM.SKILL.ULT] = 4
-		if (this.HP < 150) {
-			this.u_active_amt = 150
-			this.ability.update("AR", this.u_active_amt)
-			this.ability.update("MR", this.u_active_amt)
-		} else {
-			this.u_active_amt = 80
-			this.ability.update("AR", this.u_active_amt)
-			this.ability.update("MR", this.u_active_amt)
-		}
+		this.effects.applySpecial(this.getUltShield(), "elephant_r")
+		this.startDuration(ENUM.SKILL.ULT)
+		this.effects.applySpecial(this.getUltResistance(this.HP < this.MaxHP / 10 ? 150 : 80), "elephant_r")
+
 		this.showEffect("elephant_r", this.turn)
 		this.changeApperance("elephant_r")
 	}
@@ -156,6 +157,19 @@ class Silver extends Player {
 			return Math.floor(10 + this.ability.AP * 0.3 + (this.ability.AR + this.ability.MR) * 0.6)
 		}
 	}
+	private getUltResistance(amt: number) {
+		return new AblityChangeEffect(3, new Map().set("AR", amt).set("MR", amt)).setId(ENUM.EFFECT.ELEPHANT_ULT_RESISTANCE)
+	}
+	private getUltShield() {
+		return new ShieldEffect(3, 100).setId(ENUM.EFFECT.ELEPHANT_ULT_SHIELD)
+	}
+
+	private getWEffect() {
+		return new NormalEffect(4, ENUM.EFFECT_TIMING.TURN_END)
+			.setId(ENUM.EFFECT.ELEPHANT_W_SIGN)
+			.setSourcePlayer(this.turn)
+	}
+
 	/**
 	 * actually use the skill
 	 * get specific damage and projectile objects
@@ -172,35 +186,30 @@ class Silver extends Player {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
 
-				//실버 인장
 				let _this = this
 				let dmg = this.getSkillBaseDamage(s)
-				skillattr = {
-					damage: new Damage(0, dmg, 0),
-					skill: ENUM.SKILL.Q,
-					onHit: function () {
-						_this.heal(Math.floor(dmg * (_this.isSkillActivated(ENUM.SKILL.ULT) ? 0.6 : 0.3)))
-					}
-				}
-				if (this.game.playerSelector.get(target).effects.haveSkillEffectAndSource("silver_w", this.turn)) {
+
+				skillattr = new SkillDamage(new Damage(0, dmg, 0), ENUM.SKILL.Q).setOnKill(function (target: Player) {
+					_this.heal(Math.floor(dmg * (_this.isSkillActivated(ENUM.SKILL.ULT) ? 0.6 : 0.3)))
+				})
+
+				if (this.game.playerSelector.get(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.turn)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, 30)
-					this.game.playerSelector.get(target).effects.removeSkillEffect("silver_w", this.turn)
+					this.game.playerSelector.get(target).effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
 				}
 
 				break
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
 				let myturn = this.turn
+				let effect = this.getWEffect()
 				let onhit = function (target: Player) {
-					target.effects.giveSkillEffect(new SkillEffect("silver_w", myturn, 5, "Mark of Ivory", null))
-					target.effects.apply(ENUM.EFFECT.BAD_LUCK, 1, ENUM.EFFECT_TIMING.TURN_START)
+					// target.effects.giveSkillEffect(new SkillEffect(, myturn, 5, "Mark of Ivory", null))
+					target.effects.applySpecial(effect, "silver_w")
+					target.effects.apply(ENUM.EFFECT.CURSE, 1, ENUM.EFFECT_TIMING.TURN_START)
 				}
+				skillattr = new SkillDamage(new Damage(0, 0, 0), ENUM.SKILL.W).setOnHit(onhit)
 
-				skillattr = {
-					damage: new Damage(0, 0, 0),
-					skill: ENUM.SKILL.W,
-					onHit: onhit
-				}
 				break
 		}
 
@@ -226,6 +235,7 @@ class Silver extends Player {
 
 		this.ability.update("AR", this.u_passive_amt)
 		this.ability.update("MR", this.u_passive_amt)
+		this.ability.flushChange()
 	}
 
 	/**
@@ -239,8 +249,8 @@ class Silver extends Player {
 
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
-			this.ability.update("AR", -1 * this.u_active_amt)
-			this.ability.update("MR", -1 * this.u_active_amt)
+			// this.ability.update("AR", -1 * this.u_active_amt)
+			// this.ability.update("MR", -1 * this.u_active_amt)
 			this.changeApperance("")
 		}
 	}

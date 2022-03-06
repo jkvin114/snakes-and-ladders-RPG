@@ -19,6 +19,8 @@ class Jean extends Player {
 	}
 	private readonly skill_name: string[]
 	private u_target: number
+	readonly duration_list: number[]
+
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 40, 7, 7, 0, 0]
@@ -26,6 +28,7 @@ class Jean extends Player {
 		//	this.onoff = [false, false, false]
 		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 9]
+		this.duration_list=[0,0,2]
 		this.skill_name = ["gun", "sniper_w", "sniper_r"]
 		this.u_target = -1
 		this.itemtree = {
@@ -151,6 +154,10 @@ class Jean extends Player {
 		}
 	}
 
+	private getUltShield(){
+		return new ShieldEffect(4,80).setId(ENUM.EFFECT.SNIPER_ULT_SHIELD)
+	}
+
 	getSkillDamage(target: number): SkillDamage {
 		console.log(target + "getSkillDamage" + this.pendingSkill)
 		let skillattr: SkillDamage = null
@@ -166,25 +173,18 @@ class Jean extends Player {
 					}
 				}
 
-				skillattr = {
-					damage: new Damage(this.getSkillBaseDamage(s), 0, 0),
-					skill: ENUM.SKILL.Q,
-					onHit: onhit
-				}
+				skillattr = new SkillDamage(new Damage(this.getSkillBaseDamage(s), 0, 0),ENUM.SKILL.Q).setOnHit(onhit)
+
 				break
 			case ENUM.SKILL.ULT:
-				this.effects.setShield("sniper_r", new ShieldEffect(4, 80), false)
+				this.effects.applySpecial(this.getUltShield(),"sniper_r")
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
 					let onhit = function (target: Player) {
 						target.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_END)
 					}
 
-					skillattr = {
-						damage: new Damage(this.getSkillBaseDamage(s), 0, 0),
-						skill: ENUM.SKILL.ULT,
-						onHit: onhit
-					}
-					this.duration[ENUM.SKILL.ULT] = 2
+					skillattr = new SkillDamage(new Damage(this.getSkillBaseDamage(s), 0, 0),ENUM.SKILL.ULT).setOnHit(onhit)
+					this.startDuration(ENUM.SKILL.ULT)
 
 					this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					this.u_target = target
@@ -207,11 +207,7 @@ class Jean extends Player {
 			let onhit = function (target: Player) {
 				target.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_END)
 			}
-			let skillattr = {
-				damage: new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0),
-				skill: ENUM.SKILL.ULT,
-				onHit: onhit
-			}
+			let skillattr = new SkillDamage(new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0),ENUM.SKILL.ULT).setOnHit(onhit)
 			this.hitOneTarget(this.u_target, skillattr)
 		}
 		//궁 세번째 공격
@@ -219,11 +215,8 @@ class Jean extends Player {
 			let onhit = function (target: Player) {
 				target.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_END)
 			}
-			let skillattr = {
-				damage: new Damage(0, 0, this.getSkillBaseDamage(ENUM.SKILL.ULT)),
-				skill: ENUM.SKILL.ULT,
-				onHit: onhit
-			}
+			let skillattr = new SkillDamage(new Damage(0,0,this.getSkillBaseDamage(ENUM.SKILL.ULT)),ENUM.SKILL.ULT).setOnHit(onhit)
+
 			this.hitOneTarget(this.u_target, skillattr)
 
 			this.u_target = -1

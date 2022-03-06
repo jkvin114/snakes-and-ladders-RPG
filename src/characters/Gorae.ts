@@ -19,6 +19,8 @@ class Gorae extends Player {
 		final: number
 	}
 	private readonly skill_name: string[]
+	readonly duration_list: number[]
+
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
@@ -26,6 +28,7 @@ class Gorae extends Player {
 		super(turn, team, game, ai, ID, name,  basic_stats)
 		this.hpGrowth = 125
 		this.cooltime_list = [2, 4, 6]
+		this.duration_list=[0,2,0]
 		this.skill_name = ["kraken_q", "hit", "kraken_r"]
 		this.itemtree = {
 			level: 0,
@@ -113,7 +116,7 @@ class Gorae extends Player {
 		= new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE)
 		.setSkill(skill) //-1 when can`t use skill, 0 when it`s not attack skill
 
-		console.log("getSkillAttr" + skill)
+		//console.log("getSkillAttr" + skill)
 		switch (skill) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector
@@ -145,16 +148,19 @@ class Gorae extends Player {
 	getBasicAttackName(): string {
 		return super.getBasicAttackName()
 	}
+	getWShield(){
+		return new ShieldEffect(this.duration_list[ENUM.SKILL.W],Math.floor(0.15 * this.MaxHP))
+		.setId(ENUM.EFFECT.KRAKEN_W_SHIELD)
+	}
 
     useW() {
 		let targets = this.game.playerSelector.getPlayersIn(this,this.pos - 3, this.pos + 3)
 
-		console.log(targets)
-		let dmg = {
-			damage: new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),
-			skill: ENUM.SKILL.W,
-		}
-		this.effects.setShield("kraken_w",new ShieldEffect(2,Math.floor(0.15 * this.MaxHP)), false)
+	//	console.log(targets)
+		let dmg = new SkillDamage( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),ENUM.SKILL.W)
+
+		this.effects.applySpecial(this.getWShield(),"kraken_w")
+
 		for (let p of targets) {
 			this.game.playerSelector.get(p).effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
 			this.hitOneTarget(p, dmg)
@@ -184,7 +190,7 @@ class Gorae extends Player {
 	}
 
 	getSkillDamage(target: number): SkillDamage {
-		console.log(target+"getSkillDamage"+this.pendingSkill)
+	//	console.log(target+"getSkillDamage"+this.pendingSkill)
 		let skillattr: SkillDamage = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
@@ -192,14 +198,9 @@ class Gorae extends Player {
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
 
-                let _this=this
-				skillattr = {
-					damage: new Damage(0, 0, this.getSkillBaseDamage(s)),
-					skill: ENUM.SKILL.ULT,
-                    onKill: function () {
-                        _this.ability.addMaxHP(50)
-                    }
-				}
+				skillattr = new SkillDamage(new Damage(0, 0, this.getSkillBaseDamage(s)),ENUM.SKILL.ULT)
+				.setOnKill(() => this.ability.addMaxHP(50))
+
 				break
 		}
 

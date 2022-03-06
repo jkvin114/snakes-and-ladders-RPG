@@ -267,7 +267,7 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:press_dice", function (rname: string, dicenum: number) {
 		if (!ROOMS.has(rname)) return
 		let dice = ROOMS.get(rname).user_pressDice(dicenum)
-		console.log("press_dice" + rname)
+		//console.log("press_dice" + rname)
 		io.to(rname).emit("server:rolldice", dice)
 
 		//	console.log("pressdice")
@@ -433,7 +433,7 @@ export namespace RoomClientInterface {
 		io.to(rname).emit("server:simulationover", msg)
 	}
 	export const gameOver = function (rname: string, winner: number) {
-		console.log(rname)
+	//	console.log(rname)
 		io.to(rname).emit("server:gameover", winner)
 	}
 	export const gameStatReady = function (rname: string, id: string) {
@@ -598,7 +598,7 @@ app.get("/item", function (req, res) {
 })
 
 app.get("/obstacle", function (req, res) {
-	console.log(req.query.lang)
+//	console.log(req.query.lang)
 	if (req.query.lang === "kor") {
 		fs.readFile(__dirname + "/../res/obstacles_kor.json", "utf8", function (err, data) {
 			res.end(data)

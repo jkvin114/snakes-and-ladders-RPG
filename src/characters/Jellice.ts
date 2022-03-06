@@ -2,9 +2,10 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
+import { TickEffect, TickPercentDamageEffect } from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
@@ -20,14 +21,16 @@ class Jellice extends Player {
 	}
 	private readonly skill_name: string[]
 	private u_used: number
+	readonly duration_list: number[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [170, 30, 6, 6, 0, 50]
 		super(turn, team, game, ai, ID, name, basic_stats)
 		//	this.onoff = [false, false, false]
-		this.hpGrowth = 80
-		this.cooltime_list = [3, 5, 7]
+		this.hpGrowth = 90
+		this.cooltime_list = [3, 4, 7] //3 5 7
+		this.duration_list = [0, 1, 0]
 		this.skill_name = ["magician_q", "hit", "magician_r"]
 		this.u_used = 0
 		this.itemtree = {
@@ -134,34 +137,43 @@ class Jellice extends Player {
 		return skillTargetSelector
 	}
 
+	private getWShield() {
+		return new ShieldEffect(2, 50).setId(ENUM.EFFECT.MAGICIAN_W_SHIELD)
+	}
+	private getWBurnEffect() {
+		return new TickPercentDamageEffect(
+			2, //2
+			TickEffect.FREQ_EVERY_PLAYER_TURN,
+			new PercentDamage(this.getSkillBaseDamage(ENUM.SKILL.W), PercentDamage.MAX_HP)
+		)
+			.setId(ENUM.EFFECT.MAGICIAN_W_BURN)
+			.setSourcePlayer(this.turn)
+	}
 	private useW() {
-		this.effects.setShield("magician_w", new ShieldEffect(2, 50), false)
+		this.effects.applySpecial(this.getWShield(), "magician_w")
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
 		this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.TURN_START)
 	}
 	private useQ(): boolean {
-		let end = this.isSkillActivated(ENUM.SKILL.W) ? 30 : 15
-		let start = this.isSkillActivated(ENUM.SKILL.W) ? 3 : 5
+		let end = this.effects.modifySkillRange(this.isSkillActivated(ENUM.SKILL.W) ? 30 : 15)
+		
+		let start = this.isSkillActivated(ENUM.SKILL.W) ? 3 : 5 //3:5
 
-		let targets = this.game.playerSelector.getPlayersIn(this, this.pos + start, this.pos + end)
+		let targets = this.game.playerSelector.getPlayersIn(this, this.pos + start + 1, this.pos + end)
 		targets = targets.concat(this.game.playerSelector.getPlayersIn(this, this.pos - end + 7, this.pos - start))
-		let dmg: SkillDamage = {
-			damage: new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),
-			skill: ENUM.SKILL.Q,
-			onHit: null
-		}
+		let dmg = new SkillDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), ENUM.SKILL.Q)
 
 		if (targets.length === 0) {
 			return false
 		}
+		if (this.isSkillActivated(ENUM.SKILL.W)) {
+			dmg.setOnHit((target: Player) => {
+				target.effects.applySpecial(this.getWBurnEffect(), "magician_w_burn")
+			})
+		}
 		for (let p of targets) {
-			if (this.isSkillActivated(ENUM.SKILL.W)) {
-				dmg.onHit = (target: Player) => {
-					target.effects.giveIgniteEffect(2, this.turn)
-				}
-			}
 			this.hitOneTarget(p, dmg)
 		}
 		this.startCooltime(ENUM.SKILL.Q)
@@ -201,6 +213,9 @@ class Jellice extends Player {
 		if (skill === ENUM.SKILL.Q) {
 			return Math.floor(this.ability.AP * 0.8 + 10)
 		}
+		if (skill === ENUM.SKILL.W) {
+			return Math.floor(this.ability.AP * 0.01 + 4) //percent
+		}
 		if (skill === ENUM.SKILL.ULT) {
 			return 60 + Math.floor(0.4 * this.ability.AP)
 		}
@@ -218,7 +233,7 @@ class Jellice extends Player {
 	 * @param {*} skill 0~
 	 */
 	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		console.log("aiSkillFinalSelection" + skill + "" + skilldata)
+		//	console.log("aiSkillFinalSelection" + skill + "" + skilldata)
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||

@@ -18,6 +18,7 @@ class Creed extends Player {
 	}
 	private readonly skill_name: string[]
 	private usedQ: boolean
+	readonly duration_list: number[]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:200, ad:20, ar, mr, attackrange,ap
@@ -26,6 +27,7 @@ class Creed extends Player {
 		this.hpGrowth = 100
 
 		this.cooltime_list = [3, 4, 9]
+		this.duration_list=[0,0,0]
 		this.skill_name = ["reaper_q", "reaper_w", "reaper_r"]
 		this.itemtree = {
 			level: 0,
@@ -47,7 +49,7 @@ class Creed extends Player {
 		info[0] =
 			"[절단] 쿨타임:" +
 			this.cooltime_list[0] +
-			"턴<br>사정거리:5,최대 두번 칼로 뚫어 " +
+			"턴<br>사정거리:7,최대 두번 칼로 뚫어 " +
 			this.getSkillBaseDamage(0) +
 			"의 물리 피해를 입힘,두번째 사용시 50%의 피해를 입힘"
 		info[1] =
@@ -68,7 +70,7 @@ class Creed extends Player {
 		info[0] =
 			"[Scythe Strike] cooltime:" +
 			this.cooltime_list[0] +
-			" turns<br>range:5,Damage a player by scythe, deals " +
+			" turns<br>range:7,Damage a player by scythe, deals " +
 			this.getSkillBaseDamage(0) +
 			"attack damage,<br>Can use 2 times, second attack deals 50% less damage"
 		info[1] =
@@ -110,10 +112,10 @@ class Creed extends Player {
 			skill
 		) //-1 when can`t use skill, 0 when it`s not attack skill
 
-		console.log("getSkillAttr" + skill)
+	//	console.log("getSkillAttr" + skill)
 		switch (skill) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(5)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(7)
 
 				break
 			case ENUM.SKILL.W:
@@ -152,10 +154,16 @@ class Creed extends Player {
 			return Math.floor(70 + 0.8 * this.ability.AD)
 		}
 	}
+	private getQShield(shieldamt:number){
+		return new ShieldEffect(1, shieldamt).setId(ENUM.EFFECT.REAPER_Q_SHIELD)
+	}
+	private getUltShield(){
+		return new ShieldEffect(3, 70).setId(ENUM.EFFECT.REAPER_ULT_SHIELD)
+	}
 
 	getSkillDamage(target: number): SkillDamage {
-		console.log(target + "getSkillDamage" + this.pendingSkill)
-		let skillattr: SkillDamage = null
+	//	console.log(target + "getSkillDamage" + this.pendingSkill)
+		let damage: SkillDamage = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
@@ -163,34 +171,26 @@ class Creed extends Player {
 				if (this.usedQ) {
 					this.startCooltime(ENUM.SKILL.Q)
 					this.usedQ = false
-					this.effects.setShield("swordsman_q", new ShieldEffect(1, 40), false)
+					this.effects.applySpecial(this.getQShield(40),"swordsman_q")
 
-					skillattr = {
-						damage: new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),
-						skill: ENUM.SKILL.Q
-					}
+					damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),ENUM.SKILL.Q)
 				} else {
 					this.usedQ = true
-					this.effects.setShield("swordsman_q", new ShieldEffect(1, 30), false)
-					skillattr = {
-						damage: new Damage(this.getSkillBaseDamage(s), 0, 0),
-						skill: ENUM.SKILL.Q
-					}
+					this.effects.applySpecial(this.getQShield(30),"swordsman_q")
+					damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s), 0, 0),ENUM.SKILL.Q)
 				}
 				break
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
-				this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
+				this.effects.applySpecial(this.getUltShield(),"swordsman_r")
+				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
 				this.forceMove(this.game.playerSelector.get(target).pos, true, "levitate")
-				skillattr = {
-					damage: new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),
-					skill: ENUM.SKILL.ULT
-				}
+				damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),ENUM.SKILL.ULT)
 				break
 		}
 
-		return skillattr
+		return damage
 	}
 
 	passive() {}
