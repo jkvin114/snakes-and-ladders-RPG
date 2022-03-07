@@ -5,9 +5,10 @@ import { ITEM } from "../enum"
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
-import { TickEffect, TickPercentDamageEffect } from "../StatusEffect"
+import { TickDamageEffect, TickEffect} from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
+import { SpecialEffect } from "../SpecialEffect"
+// import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
 class Jellice extends Player {
 	//	onoff: boolean[]
@@ -22,6 +23,12 @@ class Jellice extends Player {
 	private readonly skill_name: string[]
 	private u_used: number
 	readonly duration_list: number[]
+
+	static PROJ_ULT="magician_r"
+	// static EFFECT_W="magician_w"
+	// static EFFECT_W_BURN="magician_w_burn"
+	static SKILLNAME_W_Q="magician_w_q"
+
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -46,6 +53,7 @@ class Jellice extends Player {
 			final: ITEM.EPIC_CRYSTAL_BALL
 		}
 	}
+
 	getSkillInfoKor() {
 		let info = []
 		info[0] =
@@ -97,7 +105,7 @@ class Jellice extends Player {
 			owner: _this,
 			size: 3,
 			skill: ENUM.SKILL.ULT,
-			type: "magician_r"
+			type: Jellice.PROJ_ULT
 		})
 			.setGame(this.game)
 			.setSkillRange(30)
@@ -138,19 +146,20 @@ class Jellice extends Player {
 	}
 
 	private getWShield() {
-		return new ShieldEffect(2, 50).setId(ENUM.EFFECT.MAGICIAN_W_SHIELD)
+		return new ShieldEffect(ENUM.EFFECT.MAGICIAN_W_SHIELD,1, 50)
 	}
 	private getWBurnEffect() {
-		return new TickPercentDamageEffect(
+		return new TickDamageEffect(
+			ENUM.EFFECT.MAGICIAN_W_BURN,
 			2, //2
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(this.getSkillBaseDamage(ENUM.SKILL.W), PercentDamage.MAX_HP)
 		)
-			.setId(ENUM.EFFECT.MAGICIAN_W_BURN)
 			.setSourcePlayer(this.turn)
 	}
 	private useW() {
-		this.effects.applySpecial(this.getWShield(), "magician_w")
+		this.effects.applySpecial(this.getWShield(), SpecialEffect.SKILL.MAGICIAN_W.name)
+
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
@@ -170,7 +179,7 @@ class Jellice extends Player {
 		}
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
 			dmg.setOnHit((target: Player) => {
-				target.effects.applySpecial(this.getWBurnEffect(), "magician_w_burn")
+				target.effects.applySpecial(this.getWBurnEffect(),SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
 			})
 		}
 		for (let p of targets) {
@@ -181,6 +190,9 @@ class Jellice extends Player {
 	}
 
 	getSkillName(skill: number): string {
+		if (skill === ENUM.SKILL.Q && this.isSkillActivated(ENUM.SKILL.W)) {
+			return Jellice.SKILLNAME_W_Q
+		}
 		return this.skill_name[skill]
 	}
 

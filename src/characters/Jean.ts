@@ -5,7 +5,7 @@ import { Damage, SkillDamage, SkillTargetSelector } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
+// import SETTINGS = require("../../res/globalsettings.json")
 const ID = 4
 class Jean extends Player {
 	//	onoff: boolean[]
@@ -20,7 +20,8 @@ class Jean extends Player {
 	private readonly skill_name: string[]
 	private u_target: number
 	readonly duration_list: number[]
-
+	static PROJ_W="sniper_w"
+	static EFFECT_ULT="sniper_r"
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 40, 7, 7, 0, 0]
@@ -95,7 +96,7 @@ class Jean extends Player {
 			owner: _this,
 			size: 3,
 			skill: ENUM.SKILL.W,
-			type: "sniper_w"
+			type: Jean.PROJ_W
 		})
 			.setGame(this.game)
 			.setSkillRange(30)
@@ -108,7 +109,7 @@ class Jean extends Player {
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
-		console.log("getSkillAttr" + s)
+		//console.log("getSkillAttr" + s)
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(20)
@@ -155,11 +156,11 @@ class Jean extends Player {
 	}
 
 	private getUltShield(){
-		return new ShieldEffect(4,80).setId(ENUM.EFFECT.SNIPER_ULT_SHIELD)
+		return new ShieldEffect(ENUM.EFFECT.SNIPER_ULT_SHIELD,4,80)
 	}
 
 	getSkillDamage(target: number): SkillDamage {
-		console.log(target + "getSkillDamage" + this.pendingSkill)
+	//	console.log(target + "getSkillDamage" + this.pendingSkill)
 		let skillattr: SkillDamage = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
@@ -177,7 +178,7 @@ class Jean extends Player {
 
 				break
 			case ENUM.SKILL.ULT:
-				this.effects.applySpecial(this.getUltShield(),"sniper_r")
+				this.effects.applySpecial(this.getUltShield(),Jean.EFFECT_ULT)
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
 					let onhit = function (target: Player) {
 						target.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_END)

@@ -5,8 +5,9 @@ import { ITEM } from "../enum"
 import { Damage, SkillTargetSelector, SkillDamage, PercentDamage, CALC_TYPE } from "../Util"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
+// import SETTINGS = require("../../res/globalsettings.json")
 import { TickDamageEffect, TickEffect, TickActionFunction, onHitFunction, OnHitEffect } from "../StatusEffect"
+import { SpecialEffect } from "../SpecialEffect"
 const ID = 2
 class Timo extends Player {
 	//	onoff: boolean[]
@@ -20,6 +21,9 @@ class Timo extends Player {
 	}
 	private readonly skill_name: string[]
 	readonly duration_list: number[]
+
+	static PROJ_ULT="ghost_r"
+	static SKILLNAME_STRONG_Q="ghost_w_q"
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -93,6 +97,7 @@ class Timo extends Player {
 	private buildProjectile() {
 		let _this: Player = this.getPlayer()
 		let effect = new TickDamageEffect(
+			ENUM.EFFECT.GHOST_ULT_DAMAGE,
 			3,
 			TickEffect.FREQ_EVERY_TURN,
 			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.ULT), 0)
@@ -102,13 +107,11 @@ class Timo extends Player {
 				return false
 			})
 			.setSourceSkill(ENUM.SKILL.ULT)
-			.setId(ENUM.EFFECT.GHOST_ULT_DAMAGE)
 			.setSourcePlayer(this.turn)
 
-		let hiteffect = new OnHitEffect(3, (owner:Player,target: Player, damage: Damage) => {
+		let hiteffect = new OnHitEffect(ENUM.EFFECT.GHOST_ULT_WEAKEN,3, (owner:Player,target: Player, damage: Damage) => {
 			return damage.updateNormalDamage(CALC_TYPE.multiply, 0.5)
 		})
-			.setId(ENUM.EFFECT.GHOST_ULT_WEAKEN)
 			.setSourcePlayer(this.turn)
 			.on(OnHitEffect.EVERYATTACK)
 			.to([this.turn])
@@ -119,13 +122,13 @@ class Timo extends Player {
 			owner: _this,
 			size: 4,
 			skill: ENUM.SKILL.ULT,
-			type: "ghost_r"
+			type: Timo.PROJ_ULT
 		})
 			.setGame(this.game)
 			.setSkillRange(30)
 			.setAction(function (target: Player) {
-				target.effects.applySpecial(effect, "ghost_r")
-				target.effects.applySpecial(hiteffect, "ghost_r")
+				target.effects.applySpecial(effect, SpecialEffect.SKILL.GHOST_ULT.name)
+				target.effects.applySpecial(hiteffect, SpecialEffect.SKILL.GHOST_ULT.name)
 			})
 			.setTrajectorySpeed(300)
 			.setDuration(2)
@@ -137,7 +140,6 @@ class Timo extends Player {
 			skill
 		) //-1 when can`t use skill, 0 when it`s not attack skill
 
-		console.log("getSkillAttr" + skill)
 		switch (skill) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(18)
@@ -164,7 +166,7 @@ class Timo extends Player {
 	}
 	getSkillName(skill: number): string {
 		if (skill === ENUM.SKILL.Q && this.effects.has(ENUM.EFFECT.INVISIBILITY)) {
-			return "ghost_w_q"
+			return Timo.SKILLNAME_STRONG_Q
 		}
 		return this.skill_name[skill]
 	}
@@ -193,7 +195,6 @@ class Timo extends Player {
 	}
 
 	getSkillDamage(target: number): SkillDamage {
-		console.log(target + "getSkillDamage" + this.pendingSkill)
 		let skillattr: SkillDamage = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1

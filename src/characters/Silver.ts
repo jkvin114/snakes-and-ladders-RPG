@@ -7,7 +7,8 @@ import { ShieldEffect } from "../PlayerStatusEffect"
 import { AblityChangeEffect, NormalEffect } from "../StatusEffect"
 import { Game } from "../Game"
 import { Projectile } from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
+import { SpecialEffect } from "../SpecialEffect"
+// import SETTINGS = require("../../res/globalsettings.json")
 const ID = 1
 class Silver extends Player {
 	//	onoff: boolean[]
@@ -22,9 +23,15 @@ class Silver extends Player {
 	}
 
 	private readonly skill_name: string[]
-	private u_active_amt: number
-	private u_passive_amt: number
+	// private u_active_amt: number
+	// private u_passive_amt: number
 	readonly duration_list: number[]
+
+
+	static VISUALEFFECT_ULT="elephant_r"
+	static APPERANCE_ULT="elephant_r"
+	static EFFECT_ULT_SHIELD="elephant_r_shield"
+
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -32,10 +39,10 @@ class Silver extends Player {
 		super(turn, team, game, ai, ID, name, basic_stats)
 		//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
-		this.duration_list=[0,0,4]
+		this.duration_list = [0, 0, 4]
 		this.hpGrowth = 130
-		this.u_active_amt = 0
-		this.u_passive_amt = 0
+		// this.u_active_amt = 0
+		// this.u_passive_amt = 0
 		this.skill_name = ["elephant_q", "hit", "hit"]
 		this.itemtree = {
 			level: 0,
@@ -50,7 +57,6 @@ class Silver extends Player {
 			final: ITEM.EPIC_SHIELD
 		}
 	}
-
 	/**
 	 * skill infos that displays on the game screen
 	 * @returns
@@ -109,11 +115,12 @@ class Silver extends Player {
 
 		switch (s) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-				.setRange(3)
-				.setConditionedRange((target:Player)=>{
-					return target.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
-				},7)
+				skillTargetSelector
+					.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
+					.setRange(3)
+					.setConditionedRange((target: Player) => {
+						return target.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
+					}, 7)
 
 				break
 			case ENUM.SKILL.W:
@@ -132,12 +139,14 @@ class Silver extends Player {
 
 	useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.applySpecial(this.getUltShield(), "elephant_r")
 		this.startDuration(ENUM.SKILL.ULT)
-		this.effects.applySpecial(this.getUltResistance(this.HP < this.MaxHP / 10 ? 150 : 80), "elephant_r")
 
-		this.showEffect("elephant_r", this.turn)
-		this.changeApperance("elephant_r")
+		this.effects.applySpecial(this.getUltShield(),Silver.EFFECT_ULT_SHIELD)
+
+		this.effects.applySpecial(this.getUltResistance(this.HP < this.MaxHP / 10 ? 150 : 80),SpecialEffect.SKILL.ELEPHANT_ULT.name)
+
+		this.showEffect(Silver.VISUALEFFECT_ULT, this.turn)
+		this.changeApperance(Silver.APPERANCE_ULT)
 	}
 
 	getSkillName(skill: number): string {
@@ -158,16 +167,14 @@ class Silver extends Player {
 		}
 	}
 	private getUltResistance(amt: number) {
-		return new AblityChangeEffect(3, new Map().set("AR", amt).set("MR", amt)).setId(ENUM.EFFECT.ELEPHANT_ULT_RESISTANCE)
+		return new AblityChangeEffect(ENUM.EFFECT.ELEPHANT_ULT_RESISTANCE, 3, new Map().set("AR", amt).set("MR", amt))
 	}
 	private getUltShield() {
-		return new ShieldEffect(3, 100).setId(ENUM.EFFECT.ELEPHANT_ULT_SHIELD)
+		return new ShieldEffect(ENUM.EFFECT.ELEPHANT_ULT_SHIELD, 3, 100)
 	}
 
 	private getWEffect() {
-		return new NormalEffect(4, ENUM.EFFECT_TIMING.TURN_END)
-			.setId(ENUM.EFFECT.ELEPHANT_W_SIGN)
-			.setSourcePlayer(this.turn)
+		return new NormalEffect(ENUM.EFFECT.ELEPHANT_W_SIGN, 2, ENUM.EFFECT_TIMING.TURN_END).setSourcePlayer(this.turn)
 	}
 
 	/**
@@ -201,11 +208,9 @@ class Silver extends Player {
 				break
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
-				let myturn = this.turn
 				let effect = this.getWEffect()
 				let onhit = function (target: Player) {
-					// target.effects.giveSkillEffect(new SkillEffect(, myturn, 5, "Mark of Ivory", null))
-					target.effects.applySpecial(effect, "silver_w")
+					target.effects.applySpecial(effect,SpecialEffect.SKILL.ELEPHANT_W.name)
 					target.effects.apply(ENUM.EFFECT.CURSE, 1, ENUM.EFFECT_TIMING.TURN_START)
 				}
 				skillattr = new SkillDamage(new Damage(0, 0, 0), ENUM.SKILL.W).setOnHit(onhit)
@@ -222,20 +227,26 @@ class Silver extends Player {
 		if (this.level < 3 || this.HP > 250) {
 			return
 		}
-		this.ability.update("AR", -1 * this.u_passive_amt)
-		this.ability.update("MR", -1 * this.u_passive_amt)
+		// this.ability.update("AR", -1 * this.u_passive_amt)
+		// this.ability.update("MR", -1 * this.u_passive_amt)
 
-		if (this.HP > 150) {
-			this.u_passive_amt = 30
-		} else if (this.HP > 50) {
-			this.u_passive_amt = 45
+		let passive = 0
+		if (this.HP > this.MaxHP * 0.3) {
+			passive = 30
+		} else if (this.HP > this.MaxHP * 0.1) {
+			passive = 45
 		} else {
-			this.u_passive_amt = 60
+			passive = 60
 		}
 
-		this.ability.update("AR", this.u_passive_amt)
-		this.ability.update("MR", this.u_passive_amt)
-		this.ability.flushChange()
+		this.effects.applySpecial(
+			new AblityChangeEffect(ENUM.EFFECT.ELEPHANT_PASSIVE_RESISTANCE, 2, new Map().set("AR", passive).set("MR", passive)),
+			SpecialEffect.SKILL.ELEPHANT_PASSIVE.name
+		)
+
+		// this.ability.update("AR", this.u_passive_amt)
+		// this.ability.update("MR", this.u_passive_amt)
+		// this.ability.flushChange()
 	}
 
 	/**

@@ -6,9 +6,12 @@ import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } fr
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
-import { AblityChangeEffect, TickEffect, TickPercentDamageEffect } from "../StatusEffect"
+// import SETTINGS = require("../../res/globalsettings.json")
+import { AblityChangeEffect, TickDamageEffect, TickEffect } from "../StatusEffect"
+import { SpecialEffect } from "../SpecialEffect"
 const ID = 7
+export let name="dd"
+
 class Bird extends Player {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
@@ -21,6 +24,22 @@ class Bird extends Player {
 	}
 	private readonly skill_name: string[]
 	readonly duration_list:number[]
+
+	static PROJ_ULT_TRACE="bird_r_trace"
+	// static EFFECT_ULT="bird_r"
+	static VISUALEFFECT_ULT="bird_r"
+	static APPERANCE_ULT="bird_r"
+	// static EFFECT_ULT_BURN="bird_r_burn"
+
+	static SKILLNAME_ULT_WQ="bird_r_w_hit"
+	static SKILLNAME_WQ="bird_w_hit"
+	static SKILLNAME_ULT_Q="bird_r_hit"
+
+	static AANAME_ULT_W="bird_r_w_hit"
+	static AANAME_W="bird_w_hit"
+	static AANAME_ULT="bird_r_hit"
+
+
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -113,11 +132,11 @@ class Bird extends Player {
 			owner: _this,
 			size: 3,
 			skill: ENUM.SKILL.ULT,
-			type: "bird_r_trace"
+			type: Bird.PROJ_ULT_TRACE
 		})
 			.setGame(this.game)
 			.setAction((target: Player)=> {
-				target.effects.applySpecial(this.getUltBurn(),"fire")
+				target.effects.applySpecial(this.getUltBurn(),SpecialEffect.SKILL.BIRD_ULT_BURN.name)
 			})
 			.setNotDisappearWhenStep()
 			.setDuration(2)
@@ -147,17 +166,18 @@ class Bird extends Player {
 	}
 
 	private getUltShield() {
-		return new ShieldEffect(this.duration_list[ENUM.SKILL.W], 70).setId(ENUM.EFFECT.BIRD_ULT_SHIELD)
+		return new ShieldEffect(ENUM.EFFECT.BIRD_ULT_SHIELD,this.duration_list[ENUM.SKILL.W], 70)
 	}
 	private getUltAbility(){
-		return new AblityChangeEffect(this.duration_list[ENUM.SKILL.ULT],new Map().set("attackRange",2))
+		return new AblityChangeEffect(ENUM.EFFECT.BIRD_ULT_ABILITY,this.duration_list[ENUM.SKILL.ULT],new Map().set("attackRange",2))
 	}
 	private getUltBurn(){
-		return new TickPercentDamageEffect(
+		return new TickDamageEffect(
+			ENUM.EFFECT.BIRD_ULT_BURN,
 			2,
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(3, PercentDamage.MAX_HP)
-		).setId(ENUM.EFFECT.BIRD_ULT_BURN).setSourcePlayer(this.turn)
+		).setSourcePlayer(this.turn)
 	}
 
 	private useW() {
@@ -167,25 +187,25 @@ class Bird extends Player {
 	}
 	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.applySpecial(this.getUltShield(),"bird_r")
-		this.effects.applySpecial(this.getUltAbility(),"bird_r")
+		this.effects.applySpecial(this.getUltShield(),SpecialEffect.SKILL.BIRD_ULT.name)
+		this.effects.applySpecial(this.getUltAbility(),SpecialEffect.SKILL.BIRD_ULT.name)
 
 		this.startDuration(ENUM.SKILL.ULT)
 
 		// this.ability.update("attackRange", 2)
-		this.changeApperance("bird_r")
-		this.showEffect("bird_r", this.turn)
+		this.changeApperance(Bird.APPERANCE_ULT)
+		this.showEffect(Bird.VISUALEFFECT_ULT, this.turn)
 	}
 
 	getSkillName(skill: number): string {
 		if (this.duration[ENUM.SKILL.W] > 0 && skill === ENUM.SKILL.Q) {
 			if (this.duration[ENUM.SKILL.ULT] > 0) {
-				return "bird_r_w_hit"
+				return Bird.SKILLNAME_ULT_WQ
 			} else {
-				return "bird_w_hit"
+				return Bird.SKILLNAME_WQ
 			}
-		} else if (this.duration[ENUM.SKILL.ULT] > 0) {
-			return "bird_r_hit"
+		} else if (this.duration[ENUM.SKILL.ULT] > 0 && skill === ENUM.SKILL.Q) {
+			return Bird.SKILLNAME_ULT_Q
 		}
 		return this.skill_name[skill]
 	}
@@ -193,12 +213,12 @@ class Bird extends Player {
 	getBasicAttackName(): string {
 		if (this.duration[ENUM.SKILL.W] > 0) {
 			if (this.duration[ENUM.SKILL.ULT] > 0) {
-				return "bird_r_w_hit"
+				return Bird.AANAME_ULT_W
 			} else {
-				return "bird_w_hit"
+				return Bird.AANAME_W
 			}
 		} else if (this.duration[ENUM.SKILL.ULT] > 0) {
-			return "bird_r_hit"
+			return Bird.AANAME_ULT
 		}
 		return super.getBasicAttackName()
 	}
@@ -274,7 +294,7 @@ class Bird extends Player {
 	 * @param {*} skill 0~
 	 */
 	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		console.log("aiSkillFinalSelection" + skill + "" + skilldata)
+	//	console.log("aiSkillFinalSelection" + skill + "" + skilldata)
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||

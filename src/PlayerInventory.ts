@@ -18,6 +18,7 @@ class PlayerInventory {
 	lifeBought: number
 	money: number
 	player: Player
+	
 	constructor(player: Player) {
 		this.player = player
 

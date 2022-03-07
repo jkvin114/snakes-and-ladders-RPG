@@ -7,6 +7,7 @@ import SETTINGS = require("../res/globalsettings.json")
 import cors = require("cors")
 import os = require("os")
 import { Namespace, Server, Socket } from "socket.io"
+import { SpecialEffect } from "./SpecialEffect"
 const { GameRecord, SimulationRecord } = require("./statisticsDB")
 const app = express()
 
@@ -433,7 +434,7 @@ export namespace RoomClientInterface {
 		io.to(rname).emit("server:simulationover", msg)
 	}
 	export const gameOver = function (rname: string, winner: number) {
-	//	console.log(rname)
+		//	console.log(rname)
 		io.to(rname).emit("server:gameover", winner)
 	}
 	export const gameStatReady = function (rname: string, id: string) {
@@ -460,6 +461,14 @@ export class PlayerClientInterface {
 
 	static giveEffect = (rname: string, turn: number, effect: number, num: number) =>
 		io.to(rname).emit("server:status_effect", { turn: turn, effect: effect, num: num })
+
+	static giveSpecialEffect = (
+		rname: string,
+		turn: number,
+		name: string,
+		data: SpecialEffect.DescriptionData,
+		sourcePlayer: string
+	) => io.to(rname).emit("server:special_effect", { turn: turn, name: name, data: data, sourcePlayer: sourcePlayer })
 
 	static tp = (rname: string, turn: number, pos: number, movetype: string) =>
 		io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
@@ -598,7 +607,7 @@ app.get("/item", function (req, res) {
 })
 
 app.get("/obstacle", function (req, res) {
-//	console.log(req.query.lang)
+	//	console.log(req.query.lang)
 	if (req.query.lang === "kor") {
 		fs.readFile(__dirname + "/../res/obstacles_kor.json", "utf8", function (err, data) {
 			res.end(data)

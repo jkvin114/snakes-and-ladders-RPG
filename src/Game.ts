@@ -826,6 +826,10 @@ class Game {
 		}
 		return ignoreObstacle
 	}
+	getNameByTurn(turn:number){
+		if(turn < 0) return ""
+		return this.playerSelector.get(turn).name
+	}
 	/**
 	 *
 	 * @param {*} skill 0~

@@ -6,7 +6,7 @@ import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
+// import SETTINGS = require("../../res/globalsettings.json")
 const ID=6
 class Gorae extends Player {
 	//onoff: boolean[]
@@ -20,7 +20,8 @@ class Gorae extends Player {
 	}
 	private readonly skill_name: string[]
 	readonly duration_list: number[]
-
+	static PROJ_Q="kraken_q"
+	static EFFECT_W="kraken_w"
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
@@ -102,7 +103,7 @@ class Gorae extends Player {
 			owner: _this,
 			size: 2,
 			skill: ENUM.SKILL.Q,
-			type: "kraken_q"
+			type: Gorae.PROJ_Q
 		})
 		.setGame(this.game)
 		.setSkillRange(15)
@@ -149,8 +150,7 @@ class Gorae extends Player {
 		return super.getBasicAttackName()
 	}
 	getWShield(){
-		return new ShieldEffect(this.duration_list[ENUM.SKILL.W],Math.floor(0.15 * this.MaxHP))
-		.setId(ENUM.EFFECT.KRAKEN_W_SHIELD)
+		return new ShieldEffect(ENUM.EFFECT.KRAKEN_W_SHIELD,this.duration_list[ENUM.SKILL.W],Math.floor(0.15 * this.MaxHP))
 	}
 
     useW() {
@@ -159,7 +159,7 @@ class Gorae extends Player {
 	//	console.log(targets)
 		let dmg = new SkillDamage( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),ENUM.SKILL.W)
 
-		this.effects.applySpecial(this.getWShield(),"kraken_w")
+		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 
 		for (let p of targets) {
 			this.game.playerSelector.get(p).effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)

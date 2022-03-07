@@ -16,7 +16,7 @@ import {PlayerClientInterface} from "./app"
 import {ObstacleHelper,AIHelper} from "./helpers"
 
 //for test only
-const LVL = 1
+const LVL = 3
 const POS = 0
 
 
@@ -526,7 +526,7 @@ abstract class Player extends Entity{
    * @param {*}data Util.HPChangeData
 
    */
-	changeHP_damage(data: Util.HPChangeData) {
+	private changeHP_damage(data: Util.HPChangeData) {
 		if (this.dead) {
 			return
 		}
@@ -849,6 +849,9 @@ abstract class Player extends Entity{
 				changeData.addFlag(f)
 			}
 		}
+		this.damagedby[origin] = 3
+		this.game.playerSelector.get(origin).ability.absorb_hp(damage) //모든피해흡혈, 어시스트저장
+	
 
 		return this.doDamage(damage, changeData)
 	}
@@ -865,6 +868,8 @@ abstract class Player extends Entity{
 			changeData.setType(type)
 		}
 		damage=this.effects.onObstacleDamage(damage)
+		damage *= 1 - this.ability.obsR / 100 //장애물 저항
+
 
 		return this.doDamage(damage, changeData)
 	}
@@ -921,26 +926,15 @@ abstract class Player extends Entity{
 			if (this.invulnerable || damage === 0) {
 				return false
 			}
-
-			// if (this.effects.has(ENUM.EFFECT.RADI)) {
-			// 	damage *= 2
-			// }
-			if (changeData.source >= 0) {
-				this.damagedby[changeData.source] = 3
-				this.game.playerSelector.get(changeData.source).ability.absorb_hp(damage) //모든피해흡혈, 어시스트저장
-			} else if (changeData.source === -1) {
-				damage *= 1 - this.ability.obsR / 100 //장애물 저항
-			}
 			let predictedHP = this.HP + this.shield - damage
 
 			//방패검 아이템
 	//		console.log("predictedHP"+predictedHP)
 			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.inven.isActiveItemAvaliable(ENUM.ITEM.WARRIORS_SHIELDSWORD)) {
 				console.log("WARRIORS_SHIELDSWORD")
-				this.effects.applySpecial(new ShieldEffect(2, Math.floor(0.7 * this.ability.AD)).setId(ENUM.EFFECT.ITEM_SHIELDSWORD),"item_shieldsword")
+				this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.ITEM_SHIELDSWORD,2, Math.floor(0.7 * this.ability.AD)),"item_shieldsword")
 				this.inven.useActiveItem(ENUM.ITEM.WARRIORS_SHIELDSWORD)
 				this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.WARRIORS_SHIELDSWORD)
-
 			}
 
 			damage = this.shieldDamage(damage)
@@ -1138,20 +1132,12 @@ abstract class Player extends Entity{
 
 	dealDamageTo(target: Player, damage: Util.Damage, damageType: string, name: string): boolean {
 		
-
-		//다이아몬드 기사 아이템
-	// 	if (this.inven.haveItem(32)) {
-	// 		this.ability.addMaxHP(5)
-	// //		this.transfer(PlayerClientInterface.indicateItem,this.turn,32)
-	// 	}
-
 		let flags = []
 		let needDelay=true
 		if (damageType == "skill") {
 			//this.ability.applyAttackAdditionalDamage(damage,target)
 
-			damage=this.effects.onSkillHit(damage,target)
-			damage=target.effects.onSkillDamage(damage,this.turn)
+			
 
 		//	this.ability.applySkillDmgReduction(damage)
 
@@ -1163,8 +1149,7 @@ abstract class Player extends Entity{
 		} else if (damageType == "basicattack") {
 		//	this.ability.applyAttackAdditionalDamage(damage,target)
 
-			damage=this.effects.onBasicAttackHit(damage,target)
-			damage=target.effects.onBasicAttackDamage(damage,this.turn)
+			
 
 		} else if(damageType==="tick"){
 			needDelay=false
@@ -1232,6 +1217,9 @@ abstract class Player extends Entity{
 		}
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 
+		damage=this.effects.onBasicAttackHit(damage,target)
+		damage=target.effects.onBasicAttackDamage(damage,this.turn)
+
 		return this.dealDamageTo(target, damage, "basicattack", this.getBasicAttackName())
 	}
 	//========================================================================================================
@@ -1268,7 +1256,12 @@ abstract class Player extends Entity{
 		if (onHit != null) {
 			onHit(this)
 		}
-		let died = this.game.playerSelector.get(source).dealDamageTo(this, skilldmg, "skill", effectname)
+		let sourcePlayer=this.game.playerSelector.get(source)
+
+		skilldmg=sourcePlayer.effects.onSkillHit(skilldmg,this)
+		skilldmg=this.effects.onSkillDamage(skilldmg,source)
+
+		let died = sourcePlayer.dealDamageTo(this, skilldmg, "skill", effectname)
 
 		return died
 	}

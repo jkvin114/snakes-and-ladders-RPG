@@ -5,7 +5,8 @@ import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
+import { SpecialEffect } from "../SpecialEffect"
+// import SETTINGS = require("../../res/globalsettings.json")
 const ID = 0
 class Creed extends Player {
 	readonly hpGrowth: number
@@ -19,6 +20,9 @@ class Creed extends Player {
 	private readonly skill_name: string[]
 	private usedQ: boolean
 	readonly duration_list: number[]
+
+	static PROJ_W='reaper_W'
+	
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:200, ad:20, ar, mr, attackrange,ap
@@ -95,7 +99,7 @@ class Creed extends Player {
 			owner: _this,
 			size: 3,
 			skill: ENUM.SKILL.W,
-			type: "reaper_w"
+			type: Creed.PROJ_W
 		})
 			.setGame(this.game)
 			.setSkillRange(30)
@@ -155,10 +159,10 @@ class Creed extends Player {
 		}
 	}
 	private getQShield(shieldamt:number){
-		return new ShieldEffect(1, shieldamt).setId(ENUM.EFFECT.REAPER_Q_SHIELD)
+		return new ShieldEffect(ENUM.EFFECT.REAPER_Q_SHIELD,1, shieldamt)
 	}
 	private getUltShield(){
-		return new ShieldEffect(3, 70).setId(ENUM.EFFECT.REAPER_ULT_SHIELD)
+		return new ShieldEffect(ENUM.EFFECT.REAPER_ULT_SHIELD,3, 70)
 	}
 
 	getSkillDamage(target: number): SkillDamage {
@@ -171,18 +175,18 @@ class Creed extends Player {
 				if (this.usedQ) {
 					this.startCooltime(ENUM.SKILL.Q)
 					this.usedQ = false
-					this.effects.applySpecial(this.getQShield(40),"swordsman_q")
+					this.effects.applySpecial(this.getQShield(40),SpecialEffect.SKILL.REAPER_Q.name)
 
 					damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),ENUM.SKILL.Q)
 				} else {
 					this.usedQ = true
-					this.effects.applySpecial(this.getQShield(30),"swordsman_q")
+					this.effects.applySpecial(this.getQShield(30),SpecialEffect.SKILL.REAPER_Q.name)
 					damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s), 0, 0),ENUM.SKILL.Q)
 				}
 				break
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
-				this.effects.applySpecial(this.getUltShield(),"swordsman_r")
+				this.effects.applySpecial(this.getUltShield(),SpecialEffect.SKILL.REAPER_ULT.name)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
 				this.forceMove(this.game.playerSelector.get(target).pos, true, "levitate")

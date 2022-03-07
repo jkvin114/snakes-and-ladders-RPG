@@ -42,7 +42,7 @@ class ObstacleHelper {
 					break
 				case 12:
 					player.effects.apply(ENUM.EFFECT.FARSIGHT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.applySpecial(EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE), "magic castle")
+					player.effects.applySpecial(EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE))
 					// player.message(player.name + ": skill range x3, additional damage 30")
 					break
 				case 13:

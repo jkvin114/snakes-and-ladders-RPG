@@ -5,7 +5,9 @@ import { ITEM } from "../enum"
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
 import { Game } from "../Game"
 import { Projectile } from "../Projectile"
-import SETTINGS = require("../../res/globalsettings.json")
+// import SETTINGS = require("../../res/globalsettings.json")
+import { NormalEffect } from "../StatusEffect"
+import { SpecialEffect } from "../SpecialEffect"
 const ID = 3
 class Yangyi extends Player {
 	// onoff: boolean[]
@@ -160,6 +162,10 @@ class Yangyi extends Player {
 			this.startDuration(ENUM.SKILL.W)
 			this.startCooltime(ENUM.SKILL.W)
 			this.effects.apply(ENUM.EFFECT.SLOW, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			this.effects.applySpecial(
+				new NormalEffect(ENUM.EFFECT.DINOSAUR_W, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL),
+				SpecialEffect.SKILL.DINOSAUR_W_HEAL.name
+			)
 		}
 	}
 
