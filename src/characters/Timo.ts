@@ -103,7 +103,7 @@ class Timo extends Player {
 			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.ULT), 0)
 		)
 			.setAction((target: Player) => {
-				target.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				target.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_START)
 				return false
 			})
 			.setSourceSkill(ENUM.SKILL.ULT)
@@ -213,7 +213,7 @@ class Timo extends Player {
 					new Damage(0, this.getSkillBaseDamage(s), 0).mergeWith(admg),
 					ENUM.SKILL.Q
 				).setOnHit(function (target: Player) {
-					target.effects.apply(ENUM.EFFECT.BLIND, 2, ENUM.EFFECT_TIMING.TURN_END)
+					target.effects.apply(ENUM.EFFECT.BLIND, 1, ENUM.EFFECT_TIMING.TURN_END)
 				})
 				break
 		}

@@ -21,7 +21,9 @@ class Creed extends Player {
 	private usedQ: boolean
 	readonly duration_list: number[]
 
-	static PROJ_W='reaper_W'
+	static PROJ_W='reaper_w'
+	static Q_SHIELD="reaper_q"
+	static ULT_SHIELD="reaper_ult"
 	
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
@@ -175,18 +177,18 @@ class Creed extends Player {
 				if (this.usedQ) {
 					this.startCooltime(ENUM.SKILL.Q)
 					this.usedQ = false
-					this.effects.applySpecial(this.getQShield(40),SpecialEffect.SKILL.REAPER_Q.name)
+					this.effects.applySpecial(this.getQShield(40),Creed.Q_SHIELD)
 
 					damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),ENUM.SKILL.Q)
 				} else {
 					this.usedQ = true
-					this.effects.applySpecial(this.getQShield(30),SpecialEffect.SKILL.REAPER_Q.name)
+					this.effects.applySpecial(this.getQShield(30),Creed.Q_SHIELD)
 					damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s), 0, 0),ENUM.SKILL.Q)
 				}
 				break
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
-				this.effects.applySpecial(this.getUltShield(),SpecialEffect.SKILL.REAPER_ULT.name)
+				this.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
 				this.forceMove(this.game.playerSelector.get(target).pos, true, "levitate")

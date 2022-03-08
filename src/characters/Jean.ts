@@ -24,7 +24,7 @@ class Jean extends Player {
 	static EFFECT_ULT="sniper_r"
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
-		const basic_stats: number[] = [200, 40, 7, 7, 0, 0]
+		const basic_stats: number[] = [190, 40, 7, 7, 0, 0]
 		super(turn, team, game, ai, ID, name, basic_stats)
 		//	this.onoff = [false, false, false]
 		this.hpGrowth = 90
@@ -148,7 +148,7 @@ class Jean extends Player {
 	}
 	private getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(10 + this.ability.AD * 0.8)
+			return Math.floor(10 + this.ability.AD * 0.7)
 		}
 		if (skill === ENUM.SKILL.ULT) {
 			return Math.floor(60 + 0.7 * this.ability.AD)

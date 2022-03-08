@@ -2,6 +2,7 @@ import { Player } from "./player"
 import { CALC_TYPE, Damage, decrement, HPChangeData, PercentDamage } from "./Util"
 import { EFFECT, ITEM, SKILL } from "./enum"
 import Ability from "./PlayerAbility"
+import { SpecialEffect } from "./SpecialEffect"
 
 enum EFFECT_SOURCE {
 	ENEMY,
@@ -15,7 +16,8 @@ enum EFFECT_TYPE {
 	ABILITY_CHANGE = 2,
 	ONHIT = 3,
 	ONDAMAGE = 4,
-	TICK = 5
+	TICK = 5,
+	ON_FINAL_DAMAGE=6
 }
 enum EFFECT_TIMING {
 	TURN_START,
@@ -23,12 +25,8 @@ enum EFFECT_TIMING {
 	BEFORE_SKILL
 }
 
-
-
-
-
 class EffectFactory {
-	static MAGIC_CASTLE_ADAMAGE="magic_castle"
+	
 
 	static create(effect: EFFECT) {
 		switch (effect) {
@@ -37,20 +35,24 @@ class EffectFactory {
 					return damage.updateTrueDamage(CALC_TYPE.plus, owner.ability.getMagicCastleDamage())
 				})
 					.setGood()
-					.setName(EffectFactory.MAGIC_CASTLE_ADAMAGE)
-					.setId(EFFECT.MAGIC_CASTLE_ADAMAGE)
 					.on(OnHitEffect.SKILLATTACK)
+			case EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY:
+					return new AblityChangeEffect(
+						effect,
+						1,
+						new Map().set("moveSpeed", 1)
+					).setGood()
+			case EFFECT.ITEM_SHIELDSWORD_ABSORB:
+				return new AblityChangeEffect(EFFECT.ITEM_SHIELDSWORD_ABSORB, 2, new Map().set("absorb", 30)).setGood()
 		}
 	}
 }
 
 /**
  * construct effects from items
- *
+ *invoked when buying item
  */
 class ItemEffectFactory {
-	static POWER_OF_MOTHER_NATURE_ABILITY = "power_of_mother_nature_speed"
-
 	static create(item: ITEM) {
 		switch (item) {
 			case ITEM.EPIC_FRUIT:
@@ -69,12 +71,8 @@ class ItemEffectFactory {
 					if (owner.inven.isActiveItemAvaliable(ITEM.POWER_OF_MOTHER_NATURE)) {
 						owner.inven.useActiveItem(ITEM.POWER_OF_MOTHER_NATURE)
 						owner.effects.applySpecial(
-							new AblityChangeEffect(
-								EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY,
-								1,
-								new Map().set("moveSpeed", 1)
-							).setGood(),
-							ItemEffectFactory.POWER_OF_MOTHER_NATURE_ABILITY
+							EffectFactory.create(EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY),
+							SpecialEffect.ITEM.POWER_OF_MOTHER_NATURE_ABILITY.name
 						)
 					}
 
@@ -168,6 +166,47 @@ class ItemEffectFactory {
 				)
 					.on([OnDamageEffect.BASICATTACK_DAMAGE])
 					.setGood()
+			case ITEM.WARRIORS_SHIELDSWORD:
+				return new OnFinalDamageEffect(
+					EFFECT.ITEM_SHIELDSWORD,
+					StatusEffect.FOREVER,
+					(damage: number, owner: Player) => {
+						if (owner.inven.isActiveItemAvaliable(ITEM.WARRIORS_SHIELDSWORD)) {
+							console.log("WARRIORS_SHIELDSWORD")
+
+							owner.effects.applySpecial(
+								new ShieldEffect(EFFECT.ITEM_SHIELDSWORD_SHIELD, 2, Math.floor(0.7 * owner.ability.AD)).setGood(),
+								SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_SHIELD.name
+							)
+
+							owner.effects.applySpecial(
+								EffectFactory.create(EFFECT.ITEM_SHIELDSWORD_ABSORB),
+								SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_ABSORB.name
+							)
+
+							owner.inven.useActiveItem(ITEM.WARRIORS_SHIELDSWORD)
+						}
+						return damage
+					}
+				)
+					.setInvokeConditionHpPercent(30)
+					.setGood()
+			case ITEM.INVISIBILITY_CLOAK:
+				return new OnFinalDamageEffect(
+					EFFECT.ITEM_INVISIBILITY_CLOAK,
+					StatusEffect.FOREVER,
+					(damage: number, owner: Player) => {
+						if (owner.inven.isActiveItemAvaliable(ITEM.INVISIBILITY_CLOAK)) {
+							console.log("invisibility cloak")
+							owner.effects.apply(EFFECT.INVISIBILITY, 1, EFFECT_TIMING.TURN_END)
+
+							owner.inven.useActiveItem(ITEM.INVISIBILITY_CLOAK)
+						}
+						return damage
+					}
+				)
+					.setInvokeConditionHpPercent(30)
+					.setGood()
 
 			default:
 				return null
@@ -218,7 +257,7 @@ class GeneralEffectFactory {
 					TickEffect.FREQ_EVERY_PLAYER_TURN,
 					new PercentDamage(4, PercentDamage.MAX_HP)
 				)
-			case EFFECT.ANNUITY: //annuity lottery
+			case EFFECT.ANNUITY_LOTTERY: //annuity lottery
 				return new TickEffect(id, dur, TickEffect.FREQ_EVERY_TURN)
 					.setAction(function (target: Player) {
 						target.inven.giveMoney(50)
@@ -333,7 +372,7 @@ class ShieldEffect extends StatusEffect {
 	}
 
 	absorbDamage(amount: number): number {
-		if(this.amount>0) return -amount
+		if (this.amount <= 0) return -amount
 
 		let reduceamt = this.amount - amount
 		this.amount -= amount
@@ -465,8 +504,8 @@ class TickEffect extends StatusEffect {
 	}
 }
 class TickDamageEffect extends TickEffect {
-	protected tickDamage: Damage|PercentDamage
-	constructor(id: EFFECT, dur: number, frequency: number, damage: Damage|PercentDamage) {
+	protected tickDamage: Damage | PercentDamage
+	constructor(id: EFFECT, dur: number, frequency: number, damage: Damage | PercentDamage) {
 		super(id, dur, frequency)
 		this.tickDamage = damage
 	}
@@ -478,13 +517,11 @@ class TickDamageEffect extends TickEffect {
 			super.tick(currentTurn)
 		}
 
-		if(this.tickDamage instanceof Damage){
+		if (this.tickDamage instanceof Damage) {
 			return this.doDamage(this.tickDamage)
-		}
-		else if(this.tickDamage instanceof PercentDamage){
+		} else if (this.tickDamage instanceof PercentDamage) {
 			return this.doDamage(this.tickDamage.pack(this.owner))
 		}
-
 
 		return false
 	}
@@ -548,9 +585,47 @@ class OnHitEffect extends StatusEffect {
 	}
 }
 
+interface OnFinalDamageFunction {
+	(damage: number, owner: Player): number
+}
+
+class OnFinalDamageEffect extends StatusEffect {
+	protected onDamage: OnFinalDamageFunction
+	private conditionHpPercent: number
+
+	constructor(id: EFFECT, dur: number, f: OnFinalDamageFunction) {
+		super(id, dur, EFFECT_TIMING.BEFORE_SKILL)
+		this.onDamage = f
+		this.conditionHpPercent = 100
+		this.effectType=EFFECT_TYPE.ON_FINAL_DAMAGE
+	}
+
+	/**
+	 * set effect to invoke when hp is lower than ?% of max hp
+	 * @param percent
+	 */
+	setInvokeConditionHpPercent(percent: number) {
+		this.conditionHpPercent = percent
+		return this
+	}
+
+	/**
+	 * called right before taking damage after applying resistance and other effects
+	 * @param damage
+	 */
+	onFinalDamage(damage: number) {
+		let predictedHP = this.owner.HP - damage
+		if (predictedHP > 0 && predictedHP < (this.conditionHpPercent / 100) * this.owner.MaxHP) {
+			return this.onDamage(damage, this.owner)
+		}
+		return damage
+	}
+}
+
 interface OnDamageFunction {
 	(damage: Damage, owner: Player): Damage
 }
+
 /**
  * called on taking damage
  */
@@ -632,5 +707,6 @@ export {
 	ShieldEffect,
 	onHitFunction,
 	ItemEffectFactory,
-	EffectFactory
+	EffectFactory,
+	OnFinalDamageEffect
 }

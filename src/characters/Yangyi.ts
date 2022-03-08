@@ -33,9 +33,9 @@ class Yangyi extends Player {
 		this.itemtree = {
 			level: 0,
 			items: [
-				ITEM.ANCIENT_SPEAR,
-				ITEM.SWORD_OF_BLOOD,
 				ITEM.EPIC_SWORD,
+				ITEM.SWORD_OF_BLOOD,
+				ITEM.ANCIENT_SPEAR,
 				ITEM.EPIC_WHIP,
 				ITEM.WARRIORS_SHIELDSWORD,
 				ITEM.EPIC_FRUIT

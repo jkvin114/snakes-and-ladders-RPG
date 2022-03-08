@@ -16,7 +16,7 @@ import {PlayerClientInterface} from "./app"
 import {ObstacleHelper,AIHelper} from "./helpers"
 
 //for test only
-const LVL = 3
+const LVL = 1
 const POS = 0
 
 
@@ -893,6 +893,7 @@ abstract class Player extends Entity{
 	 */
 	 shieldDamage(damage: number): number {
 		let damageLeft=this.effects.applyShield(damage)
+		if(damageLeft>damage) return
 		
 		this.updateTotalShield(-(damage - damageLeft), false)
 		this.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage - damageLeft)
@@ -928,14 +929,7 @@ abstract class Player extends Entity{
 			}
 			let predictedHP = this.HP + this.shield - damage
 
-			//방패검 아이템
-	//		console.log("predictedHP"+predictedHP)
-			if (predictedHP < this.MaxHP * 0.05 && this.ability.AD * -0.7 < predictedHP && this.inven.isActiveItemAvaliable(ENUM.ITEM.WARRIORS_SHIELDSWORD)) {
-				console.log("WARRIORS_SHIELDSWORD")
-				this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.ITEM_SHIELDSWORD,2, Math.floor(0.7 * this.ability.AD)),"item_shieldsword")
-				this.inven.useActiveItem(ENUM.ITEM.WARRIORS_SHIELDSWORD)
-				this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.WARRIORS_SHIELDSWORD)
-			}
+			
 
 			damage = this.shieldDamage(damage)
 			if (damage === 0) {
@@ -943,16 +937,26 @@ abstract class Player extends Entity{
 				return false
 			}
 				
-
-			predictedHP = this.HP - damage
+			damage=this.effects.onFinalDamage(damage)
+			// predictedHP = this.HP - damage
 
 			//투명망토 아이템
-			if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(ENUM.ITEM.INVISIBILITY_CLOAK)) {
-				this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1,ENUM.EFFECT_TIMING.TURN_END)
-				this.inven.useActiveItem(ENUM.ITEM.INVISIBILITY_CLOAK)
-				this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.INVISIBILITY_CLOAK)
+			// if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(ENUM.ITEM.INVISIBILITY_CLOAK)) {
+			// 	this.inven.useActiveItem(ENUM.ITEM.INVISIBILITY_CLOAK)
+			// 	this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.INVISIBILITY_CLOAK)
+			// }
 
-			}
+			//방패검 아이템
+			// console.log(this.shield)
+			// console.log("predictedHP"+predictedHP)
+			// if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(ENUM.ITEM.WARRIORS_SHIELDSWORD)) {
+			// 	console.log("WARRIORS_SHIELDSWORD")
+			// 	this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.ITEM_SHIELDSWORD,2, Math.floor(0.7 * this.ability.AD)),"item_shieldsword")
+			// 	this.inven.useActiveItem(ENUM.ITEM.WARRIORS_SHIELDSWORD)
+			// 	this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.WARRIORS_SHIELDSWORD)
+			// }
+
+
 
 			let reviveType = this.canRevive()
 			if (predictedHP <= 0) {

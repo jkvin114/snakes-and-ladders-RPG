@@ -618,8 +618,8 @@
 			"summary":{
 				"kor":"공격력,생존","eng":"Attack Power, Survival from attack"
 			},
-			"unique_effect": "On lethal damage, gain shield based on attack power for 2 turns(cooltime 7 turns)",
-			"unique_effect_kor": "치명적인 피해를 받으면 2턴간 공격력 비례 방어막 획득(쿨타임 7턴)",
+			"unique_effect": "If HP goes below 30%, gain shield based on attack power for 2 turns and absorb increases 30%(cooltime 7 turns)",
+			"unique_effect_kor": "체력이 30% 이하로 내려가면 2턴간 공격력 비례 방어막 획득, 모든피해 흡혈 30% 증가(쿨타임 7턴)",
 			"active_cooltime": 7,
 			"category":["health","attack","defence"]
 		},

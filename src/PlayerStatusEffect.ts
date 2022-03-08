@@ -12,7 +12,8 @@ import {
 	AblityChangeEffect,
 	OnHitEffect,
 	OnDamageEffect,
-	ItemEffectFactory
+	ItemEffectFactory,
+	OnFinalDamageEffect
 } from "./StatusEffect"
 import PlayerInventory from "./PlayerInventory"
 
@@ -35,6 +36,7 @@ class PlayerStatusEffects {
 		this.category.push(new Map<number, OnHitEffect>())
 		this.category.push(new Map<number, OnDamageEffect>())
 		this.category.push(new Map<number, TickEffect>())
+		this.category.push(new Map<number, OnFinalDamageEffect>())
 	}
 
 	transfer(func: Function, ...args: any[]) {
@@ -261,29 +263,30 @@ class PlayerStatusEffects {
 	 * @param {*} shield 변화량 + or -
 	 * @param {*} noindicate 글자 표시할지 여부
 	 */
-	setShield(name: EFFECT, effect: ShieldEffect, noindicate: boolean) {
+	setShield(key: EFFECT, effect: ShieldEffect, noindicate: boolean) {
 		let change = effect.amount
-		if (this.storage.has(name)) {
-			change = effect.amount - this.storage.get(name).onBeforeReapply()
+		if (this.storage.has(key)) {
+			change = effect.amount - this.storage.get(key).onBeforeReapply()
 		}
 
-		this.storage.set(name, effect)
-		this.category[EFFECT_TYPE.SHIELD].set(name, effect)
+		this.storage.set(key, effect)
+		this.category[EFFECT_TYPE.SHIELD].set(key, effect)
 		this.player.updateTotalShield(change, noindicate)
 	}
 
 	applyShield(damage: number) {
 		let damageLeft = damage
 
-		//	console.log(this.category[EFFECT_TYPE.SHIELD].keys())
-		for (const [name, s] of this.category[EFFECT_TYPE.SHIELD].entries()) {
+			
+		for (const [key, s] of this.category[EFFECT_TYPE.SHIELD].entries()) {
 			if (!(s instanceof ShieldEffect)) continue
 
+			console.log("shield amount"+s.amount)
 			let shieldleft = (s as ShieldEffect).absorbDamage(damageLeft)
 			//	console.log(shieldleft + "shieldapply" + name)
 			if (shieldleft < 0) {
 				damageLeft = -shieldleft
-				this.removeByKey(name)
+				this.removeByKey(key)
 			} else {
 				damageLeft = 0
 				break
@@ -330,6 +333,14 @@ class PlayerStatusEffects {
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONHIT].entries()) {
 			if (!(effect instanceof OnHitEffect)) continue
 			damage = (effect as OnHitEffect).onHitWithBasicAttack(target, damage)
+		}
+		return damage
+	}
+
+	onFinalDamage(damage: number) {
+		for (const [name, effect] of this.category[EFFECT_TYPE.ON_FINAL_DAMAGE].entries()) {
+			if (!(effect instanceof OnFinalDamageEffect)) continue
+			damage=(effect as OnFinalDamageEffect).onFinalDamage(damage)
 		}
 		return damage
 	}

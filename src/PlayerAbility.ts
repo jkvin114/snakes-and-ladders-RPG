@@ -211,33 +211,11 @@ class Ability{
 	}
 	
 
-	applyAttackAdditionalDamage(damage:Damage,target:Player){
-		return
-		// let addMdmg=0
-		// if(this.player.inven.haveItem(ITEM.ANCIENT_SPEAR)){
-		// 	addMdmg=10
-		// }
-		// else if(this.player.inven.haveItem(ITEM.BAMBOO_SPEAR)){
-		// 	addMdmg=5
-		// }
-		// damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * addMdmg * 0.01)
-		// if(this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)){
-		// 	damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
-		// }
-		// damage.updateTrueDamage(CALC_TYPE.plus, this.player.mapdata.adamage)
-	}
 	getMagicCastleDamage(){
 		return this.AD * 0.1 + this.AP * 0.08 + this.extraHP * 0.1
 	}
 
 	static applySkillDmgReduction(damage:Damage,reduction:number){
-		let skillDmgReduction=0
-		// if(this.player.inven.haveItem(ITEM.POWER_OF_MOTHER_NATURE)){
-		// 	skillDmgReduction=30
-		// }
-		// else if(this.player.inven.haveItem(ITEM.POWER_OF_NATURE)){
-		// 	skillDmgReduction=10
-		// }
 		return damage.updateNormalDamage(CALC_TYPE.multiply, 1 - reduction * 0.01)
 	}
 	

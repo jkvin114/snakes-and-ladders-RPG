@@ -18,6 +18,8 @@ class PlayerInventory {
 	lifeBought: number
 	money: number
 	player: Player
+
+	static indicateList=[ITEM.WARRIORS_SHIELDSWORD,ITEM.INVISIBILITY_CLOAK,ITEM.CARD_OF_DECEPTION,ITEM.GUARDIAN_ANGEL,ITEM.POWER_OF_MOTHER_NATURE]
 	
 	constructor(player: Player) {
 		this.player = player
@@ -151,6 +153,10 @@ class PlayerInventory {
 	useActiveItem(item_id: ITEM) {
 		if(this.isActiveItemAvaliable(item_id)){
 			this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
+
+			if(PlayerInventory.indicateList.includes(item_id)){
+				this.transfer(PlayerClientInterface.indicateItem,this.player.turn, item_id)
+			}
 		}
 	}
 	getStoreData(priceMultiplier: number) {

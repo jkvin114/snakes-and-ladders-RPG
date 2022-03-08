@@ -7,11 +7,12 @@ import { MAP } from "./Game"
 import { items as ItemList } from "../res/item.json"
 import PlayerInventory from "./PlayerInventory"
 import { EffectFactory, StatusEffect } from "./StatusEffect"
+import { SpecialEffect } from "./SpecialEffect"
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
 		let others: Player[] = []
 		const pendingObsList = SETTINGS.pendingObsList
-		const perma=StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE
+		const perma = StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE
 		try {
 			switch (obs) {
 				case 4:
@@ -42,7 +43,10 @@ class ObstacleHelper {
 					break
 				case 12:
 					player.effects.apply(ENUM.EFFECT.FARSIGHT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.applySpecial(EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE))
+					player.effects.applySpecial(
+						EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE),
+						SpecialEffect.OBSTACLE.MAGIC_CASTLE_ADAMAGE.name
+					)
 					// player.message(player.name + ": skill range x3, additional damage 30")
 					break
 				case 13:
@@ -108,8 +112,9 @@ class ObstacleHelper {
 					player.doObstacleDamage(30, "knifeslash")
 					break
 				case 24:
+					player.effects.resetAllHarmful()
 					player.effects.apply(ENUM.EFFECT.SHIELD, 99999, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.TURN_START)
 					player.heal(70)
 					break
 				case 25:

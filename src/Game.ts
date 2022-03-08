@@ -448,7 +448,7 @@ class Game {
 		this.pendingObs = 0
 		this.pendingAction = null
 		let p = this.p()
-
+		this.applyTickEffect()
 		p.onTurnEnd()
 
 		//다음턴 안넘어감(one more dice)
@@ -744,7 +744,7 @@ class Game {
 			}
 		}
 
-		this.applyTickEffect()
+		
 		p.onAfterObs()
 
 		return result
