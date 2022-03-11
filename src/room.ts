@@ -4,7 +4,7 @@ import { RoomClientInterface } from "./app"
 import { Simulation ,SimulationSetting,ISimulationSetting} from "./SimulationRunner"
 import { ITEM } from "./enum"
 import { randInt } from "./Util"
-const {GameRecord,SimulationRecord} = require("./statisticsDB")
+const {GameRecord,SimulationRecord,SimpleSimulationRecord} = require("./DBHandler")
 
 enum PlayerType {
 	EMPTY = "none",
@@ -208,9 +208,8 @@ class Room {
 			})
 	}
 	doInstantSimulation():Promise<Function> {
-		let _this=this
-		return new Promise(function(resolve, reject) {
-			_this.simulation.run(function(){
+		return new Promise((resolve, reject)=> {
+			this.simulation.run(function(){
 				resolve(null)
 				reject(new Error("Request is failed"));
 			})
@@ -499,14 +498,28 @@ class Room {
 		let rname=this.name
 		if(result){
 			let stat = this.simulation.getFinalStatistics()
-			
+			let simple_stat = this.simulation.getSimpleResults()
 			this.reset()
 			SimulationRecord.create(stat)	
 			.then((resolvedData:any)=>{
 				console.log("stat saved successfully")
+
+				simple_stat.simulation=resolvedData.id
+				simple_stat.runner=""
+
+				SimpleSimulationRecord.create(simple_stat)	
+				.then((resolvedData:any)=>{
+					console.log("simple stat saved successfully")
+				})
+				.catch((e:any)=>console.error(e))
+
+
 				RoomClientInterface.simulationStatReady(rname,resolvedData.id)
+
 			})
 			.catch((e:any)=>console.error(e))
+
+			
 
 
 			RoomClientInterface.simulationOver(rname,"success")
@@ -516,6 +529,8 @@ class Room {
 		}
 		
 	}
+	
+
 	reset() {
 		this.stopConnectionTimeout()
 		this.stopIdleTimeout()

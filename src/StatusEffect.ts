@@ -219,7 +219,7 @@ class ItemEffectFactory {
  *
  */
 class GeneralEffectFactory {
-	static create(id: EFFECT, dur: number, timing: EFFECT_TIMING) {
+	static create(id: EFFECT, dur: number, timing: EFFECT_TIMING):StatusEffect {
 		switch (id) {
 			case EFFECT.SLOW:
 			case EFFECT.STUN:
@@ -265,6 +265,7 @@ class GeneralEffectFactory {
 						return false
 					})
 					.setGood()
+			default:return null
 		}
 	}
 }
@@ -332,7 +333,6 @@ abstract class StatusEffect {
 		return this.duration > 0
 	}
 	onLethalDamage() {
-		console.log(this.duration)
 		if (this.duration >= StatusEffect.DURATION_UNTIL_DEATH) {
 			return false
 		}
@@ -476,7 +476,11 @@ class TickEffect extends StatusEffect {
 		this.sourceSkill = skill
 		return this
 	}
-
+/**
+ * 
+ * @param currentTurn current turn of player at the point tick is called
+ * @returns true if the owner died
+ */
 	tick(currentTurn: number): boolean {
 		if (currentTurn !== this.owner.turn && this.frequency === TickEffect.FREQ_EVERY_TURN) {
 			return false
@@ -486,7 +490,7 @@ class TickEffect extends StatusEffect {
 		return false
 	}
 
-	doDamage(damage: Damage): boolean {
+	protected doDamage(damage: Damage): boolean {
 		if (this.owner.dead) return false
 
 		if (this.owner.inven.haveItem(ITEM.BOOTS_OF_ENDURANCE)) {
@@ -514,7 +518,7 @@ class TickDamageEffect extends TickEffect {
 			return false
 		}
 		if (this.tickAction != null) {
-			super.tick(currentTurn)
+			if(super.tick(currentTurn)) return true
 		}
 
 		if (this.tickDamage instanceof Damage) {

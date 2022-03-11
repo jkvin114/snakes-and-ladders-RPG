@@ -1,24 +1,43 @@
-import { createServer } from "http"
-import express = require("express")
-import fs = require("fs")
 import { Room } from "./room"
 import { MAP_TYPE } from "./enum"
 import SETTINGS = require("../res/globalsettings.json")
+import { SpecialEffect } from "./SpecialEffect"
+const { GameRecord, SimulationRecord } = require("./DBHandler")
+
+
+import { createServer } from "http"
+import { Namespace, Server, Socket } from "socket.io"
+import express = require("express")
+import fs = require("fs")
 import cors = require("cors")
 import os = require("os")
-import { Namespace, Server, Socket } from "socket.io"
-import { SpecialEffect } from "./SpecialEffect"
-const { GameRecord, SimulationRecord } = require("./statisticsDB")
+
+const session = require('express-session');
 const app = express()
 
 console.log("start server")
 
+
+
 const clientPath = `${__dirname}/../../SALR-android-webview-master`
 const firstpage = fs.readFileSync(__dirname + "/../../SALR-android-webview-master/index.html", "utf8")
+app.use(session({
+	key: 'sid',   //세션의 키 값
+	secret: 'secret', //세션의 비밀 키, 쿠키값의 변조를 막기 위해서 이 값을 통해 세션을 암호화 하여 저장
+	resave: false,   //세션을 항상 저장할 지 여부 (false를 권장)
+	saveUninitialized: true,   //세션이 저장되기전에 uninitialize 상태로 만들어 저장
+	cookie: {
+	  maxAge: 24000 * 60 * 60 // 쿠키 유효기간 24시간
+	}
+  }));
+  
+
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 var interfaces = os.networkInterfaces()
+
 
 var addresses = []
 for (var k in interfaces) {
@@ -517,16 +536,25 @@ app.get("/connection_check", function (req, res) {
 
 app.get("/gamesetting", function (req, res) {
 	fs.readFile(__dirname + "/../res/gamesetting.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting game setting file"})
+		}
 		res.end(data)
 	})
 })
 app.get("/simulationsetting", function (req, res) {
 	fs.readFile(__dirname + "/../res/simulationsetting.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting simulation setting file"})
+		}
 		res.end(data)
 	})
 })
 app.get("/globalsetting", function (req, res) {
 	fs.readFile(__dirname + "/../res/globalsettings.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting global setting file"})
+		}
 		res.end(data)
 	})
 })
@@ -587,14 +615,24 @@ app.get("/map", function (req: any, res) {
 	}
 	if (room.game.mapId === MAP_TYPE.OCEAN) {
 		fs.readFile(__dirname + "/../res/ocean_map.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting map file"})
+			}
 			res.end(data)
 		})
 	} else if (room.game.mapId === MAP_TYPE.CASINO) {
 		fs.readFile(__dirname + "/../res/casino_map.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting map file"})
+			}
 			res.end(data)
 		})
 	} else {
+		
 		fs.readFile(__dirname + "/../res/map.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting map file"})
+			}
 			res.end(data)
 		})
 	}
@@ -602,6 +640,9 @@ app.get("/map", function (req: any, res) {
 
 app.get("/item", function (req, res) {
 	fs.readFile(__dirname + "/../res/item.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting item file"})
+		}
 		res.end(data)
 	})
 })
@@ -610,10 +651,16 @@ app.get("/obstacle", function (req, res) {
 	//	console.log(req.query.lang)
 	if (req.query.lang === "kor") {
 		fs.readFile(__dirname + "/../res/obstacles_kor.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting obstacle file"})
+			}
 			res.end(data)
 		})
 	} else {
 		fs.readFile(__dirname + "/../res/obstacles.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting obstacle file"})
+			}
 			res.end(data)
 		})
 	}
@@ -621,6 +668,9 @@ app.get("/obstacle", function (req, res) {
 
 app.get("/string_resource", function (req, res) {
 	fs.readFile(__dirname + "/../res/string_resource.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting resource file"})
+		}
 		res.end(data)
 	})
 })
@@ -650,11 +700,10 @@ app.post("/reset_game", function (req, res) {
 	res.end()
 })
 
-app.get("/stat/aftergame", function (req: express.Request, res: express.Response) {
+app.get("/stat/result", function (req: express.Request, res: express.Response) {
 	if (req.query.rname != null && ROOMS.has(req.query.rname.toString())) {
 		ROOMS.delete(req.query.rname.toString())
 	}
-	console.log(ROOMS)
 
 	if (req.query.statid == null || req.query.type == null) {
 		return
@@ -685,6 +734,8 @@ app.get("/stat/aftergame", function (req: express.Request, res: express.Response
 })
 
 app.use("/stat", require("./statRouter"))
+app.use("/user", require("./userRouter"))
+
 
 function writeStat(stat: any, isSimulation: boolean) {
 	let date_ob = new Date()

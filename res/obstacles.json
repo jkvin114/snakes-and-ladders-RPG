@@ -62,7 +62,7 @@
     },
     {
       "name": "Shelter",
-      "desc": "HP +70, Invisibility 1turn, get shield",
+      "desc": "HP +70, Invisibility 1 turn, get shield, remove all harmful effects",
       "val": 4,"idx":24
     },
     { "name": "Shield", "desc": "Ignore one skill", "val": 2 ,"idx":25},
@@ -73,7 +73,7 @@
     { "name": "Bomb", "desc": " HP -1/3 of current HP", "val": -5,"idx":30 },
     {
       "name": "Nuclear bomb",
-      "desc": " HP -1/2 of lost HP,radiation effect",
+      "desc": " HP -1/2 of missing HP,radiation effect",
       "val": -5,"idx":31
     },
     { "name": "Radiation", "desc": "damage x2 for 1 turn", "val": -6 ,"idx":32},

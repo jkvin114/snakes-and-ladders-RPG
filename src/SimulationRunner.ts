@@ -183,8 +183,6 @@ class SimulationSetting {
 					blue++
 				}
 			}
-			console.error(charlist)
-			console.error(teamlist)
 			return teamlist
 		} 
 	}
@@ -230,6 +228,41 @@ class Simulation {
 			version:SETTINGS.version,
 			setting:this.setting.getSummary()
 		}
+	}
+
+	getSimpleResults(){
+		return{
+			stat: this.getGameSimpleResult(),
+			count: this.count-1,
+			serverVersion:SETTINGS.version,
+			setting:this.setting.getSummary(),
+			simulation:"",
+			runner:""
+		}
+	}
+	getGameSimpleResult(){
+		let res=[]
+		for(const game of this.stats){
+			let gameresult={
+				totalturn:game.totalturn,
+				isTeam:game.isTeam,
+				map:game.map_data.name,
+				players:new Array<any>()
+			}
+			for(const [i,p] of game.players.entries()){
+				gameresult.players.push({
+					rank:i,
+					turn:p.turn,
+					champ_id:p.champ_id,
+					kill:p.kill,
+					death:p.death,
+					assist:p.assist,
+					team:p.team
+				})
+			}
+			res.push(gameresult)
+		}
+		return res
 	}
 
 	run(callback:Function) {

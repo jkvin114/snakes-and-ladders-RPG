@@ -1,6 +1,6 @@
 import express = require('express');
 const router = express.Router()
-const{GameRecord,SimulationRecord} = require("./statisticsDB")
+const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("./statisticsDB")
 
 
 
@@ -75,6 +75,36 @@ router.get('/game' ,function (req: express.Request, res:express.Response) {
         }));
     })
     .catch((err:any) => res.status(500).send(err))
+})
+
+
+router.get('/simulation/simple' ,function (req: express.Request, res:express.Response) {
+    let count=req.query.count
+    let start=req.query.start?req.query.start:0
+    let serverVersion=req.query.version
+    if(start<0) return res.end()
+
+    //version don`t matter
+    if(!serverVersion){
+        SimpleSimulationRecord.findByRange(Number(start),Number(count))
+        .then((stat:Object[]) => {
+            if (!stat) return res.status(404).send({ err: 'Statistic not found' });
+            else if(stat.length===0) return res.end()
+            res.end(JSON.stringify(stat));
+        })
+        .catch((err:any) => res.status(500).send(err))
+    }
+    else{
+        SimpleSimulationRecord.findByRangeAndVersion(Number(start),Number(count),serverVersion)
+        .then((stat:Object[]) => {
+            if (!stat) return res.status(404).send({ err: 'Statistic not found' });
+            else if(stat.length===0) return res.end()
+            res.end(JSON.stringify(stat));
+        })
+        .catch((err:any) => res.status(500).send(err))
+    }
+    
+    
 })
 module.exports=router
 

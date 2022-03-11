@@ -20,7 +20,7 @@ import { Gorae } from "./characters/Gorae"
 import { Timo } from "./characters/Timo"
 import { Yangyi } from "./characters/Yangyi"
 const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
-const STATISTIC_VERSION=3
+const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 
 interface IGameSetting {
@@ -96,12 +96,8 @@ class GameSetting {
 		this.additionalDiceAmount = Util.randInt(GAMESETTINGS.gameplaySetting.additionalDiceAmount.options.length)
 		this.useAdditionalLife = Util.randomBoolean()
 		this.AAOnForceMove = Util.randomBoolean()
-		this.AAcounterAttackStrength = Util.randInt(
-			GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length
-		)
-		this.diceControlItemFrequency = Util.randInt(
-			GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length
-		)
+		this.AAcounterAttackStrength = Util.randInt(GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length)
+		this.diceControlItemFrequency = Util.randInt(GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length)
 		this.shuffleObstacle = Util.randomBoolean()
 		return this
 	}
@@ -112,11 +108,11 @@ class GameSetting {
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
 	}
-	getInitialSetting(){
+	getInitialSetting() {
 		return {
-			itemLimit:this.itemLimit,
-			useAdditionalLife:this.useAdditionalLife,
-			autoNextTurnOnSilent:this.autoNextTurnOnSilent
+			itemLimit: this.itemLimit,
+			useAdditionalLife: this.useAdditionalLife,
+			autoNextTurnOnSilent: this.autoNextTurnOnSilent
 		}
 	}
 
@@ -148,8 +144,6 @@ class GameSetting {
 
 class PlayerFactory {
 	static create(character_id: number, name: string, turn: number, team: string | boolean, game: Game, isAI: boolean) {
-		
-			
 		switch (character_id) {
 			case 0:
 				return new Creed(turn, team, game, isAI, name)
@@ -241,7 +235,9 @@ class Game {
 		this.passProjectileList = new Map()
 		this.passProjectileQueue = []
 		this.gameover = false
-		this.shuffledObstacles = this.setting.shuffleObstacle? MAP.getShuffledObstacles(this.mapId) : MAP.getObstacleList(this.mapId)
+		this.shuffledObstacles = this.setting.shuffleObstacle
+			? MAP.getShuffledObstacles(this.mapId)
+			: MAP.getObstacleList(this.mapId)
 		this.submarine_cool = 0
 		this.submarine_id = "" //잠수함의 upid
 		this.dcitem_id = ""
@@ -302,7 +298,7 @@ class Game {
 		return {
 			isTeam: this.isTeam,
 			playerSettings: setting,
-			gameSettings:this.setting.getInitialSetting(),
+			gameSettings: this.setting.getInitialSetting(),
 			shuffledObstacles: this.shuffledObstacles
 		}
 	}
@@ -369,7 +365,7 @@ class Game {
 	}
 
 	getDiceControlPlayer() {
-		let bias=1.5
+		const bias = 1.5
 
 		let firstpos = this.playerSelector.getFirstPlayer().pos
 		return Util.chooseWeightedRandom(
@@ -377,30 +373,30 @@ class Game {
 				return firstpos * bias - p.pos
 			})
 		)
-	}//50 30 20   :   25  45  55    : 20%, 36%, 44%
+	} //50 30 20   :   25  45  55    : 20%, 36%, 44%
 
 	/**
 	 * called on every player`s turn start
 	 * @returns
 	 */
 	summonDicecontrolItem() {
-		let freq=this.setting.diceControlItemFrequency
+		let freq = this.setting.diceControlItemFrequency
 		if (freq === 0) return
 
 		let playercount = this.totalnum
 
 		//player number 4:44% ~ 50% / 3: 31~39% / 2: 16~28% don`t create new item
-		if (this.dcitem_id === "" && Util.chooseWeightedRandom([playercount**2+(3-freq)*2,20])===0) {
+		if (this.dcitem_id === "" && Util.chooseWeightedRandom([playercount ** 2 + (3 - freq) * 2, 20]) === 0) {
 			return
 		}
 		//if there is dc item left on the map, don`t change position by 50%
-		if(this.dcitem_id!=="" && Util.randomBoolean()) return 
+		if (this.dcitem_id !== "" && Util.randomBoolean()) return
 
 		this.removePassProjById(this.dcitem_id)
 		this.dcitem_id = ""
 
 		//don`t re-place item by 40~22% based on player count and freq
-		if (Util.chooseWeightedRandom([playercount+freq,2])===1) {
+		if (Util.chooseWeightedRandom([playercount + freq, 2]) === 1) {
 			return
 		}
 
@@ -432,9 +428,8 @@ class Game {
 		)
 			return
 
-
 		//0.8~1.0
-		if (Math.random() < 0.7 + 0.1*this.setting.diceControlItemFrequency) {
+		if (Math.random() < 0.7 + 0.1 * this.setting.diceControlItemFrequency) {
 			this.removePassProjById(this.dcitem_id)
 			let range = 6
 			this.placePassProj("dicecontrol", this.playerSelector.get(turn).pos + Math.floor(Math.random() * range) + 1)
@@ -453,7 +448,7 @@ class Game {
 
 		//다음턴 안넘어감(one more dice)
 		if (p.oneMoreDice) {
-		//	console.log("ONE MORE DICE")
+			//	console.log("ONE MORE DICE")
 			p.oneMoreDice = false
 			p.effects.cooldownAllHarmful()
 			this.summonDicecontrolItemOnkill(p.turn)
@@ -515,7 +510,7 @@ class Game {
 		if (p.effects.has(ENUM.EFFECT.SPEED)) {
 			additional_dice += 2
 		}
-	//	console.log("adice" + additional_dice + " " + doubledice + " turn" + p.turn)
+		//	console.log("adice" + additional_dice + " " + doubledice + " turn" + p.turn)
 
 		// //temp
 		// if(p.turn===0){
@@ -526,7 +521,7 @@ class Game {
 		if (p.diceControl) {
 			avaliablepos = p.getPossiblePosList()
 		}
-	//	console.log("avliablepos" + avaliablepos)
+		//	console.log("avliablepos" + avaliablepos)
 		return {
 			turn: p.turn,
 			stun: p.effects.has(ENUM.EFFECT.STUN),
@@ -580,7 +575,6 @@ class Game {
 	}
 
 	rollDice(dicenum: number) {
-
 		let p: Player = this.p()
 
 		//return if stun
@@ -653,7 +647,7 @@ class Game {
 				this.pendingAction = "ask_way2"
 			}
 		}
-	//	console.log("move" + moveDistance)
+		//	console.log("move" + moveDistance)
 
 		if (this.mapId === ENUM.MAP_TYPE.CASINO && p.mapdata.isSubwayDice()) {
 			let subwayData = p.mapdata.getSubwayDice()
@@ -744,22 +738,20 @@ class Game {
 			}
 		}
 
-		
 		p.onAfterObs()
 
 		return result
 	}
 
 	applyTickEffect() {
-		console.log("apply"+this.thisturn)
+		console.log("apply" + this.thisturn)
 		for (let p of this.playerSelector.getAll()) {
 			p.effects.tick(this.thisturn)
 		}
 	}
-	onEffectApply(){
+	onEffectApply() {
 		this.totalEffectsApplied += 1
 		return this.totalEffectsApplied % 3
-
 	}
 	/**
 	 * passprojqueue 에 있는 투사체들을 pendingaction 에 적용
@@ -813,7 +805,7 @@ class Game {
 		for (let o of other) {
 			for (let p of o.projectile) {
 				if (p.activated && p.scope.includes(player.pos)) {
-					let died = player.hitBySkill(p.damage,p.type,o.turn,p.action)
+					let died = player.hitBySkill(p.damage, p.type, o.turn, p.action)
 
 					if (p.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
 
@@ -826,8 +818,8 @@ class Game {
 		}
 		return ignoreObstacle
 	}
-	getNameByTurn(turn:number){
-		if(turn < 0) return ""
+	getNameByTurn(turn: number) {
+		if (turn < 0) return ""
 		return this.playerSelector.get(turn).name
 	}
 	/**
@@ -872,9 +864,8 @@ class Game {
 			return ENUM.INIT_SKILL_RESULT.NO_TARGET
 		}
 
-		skillTargetSelector.range=p.effects.modifySkillRange(skillTargetSelector.range)
+		skillTargetSelector.range = p.effects.modifySkillRange(skillTargetSelector.range)
 		//마법의성,실명 적용
-		
 
 		if (skillTargetSelector.isProjectile()) {
 			return {
@@ -888,7 +879,7 @@ class Game {
 
 		let targets = this.playerSelector.getAvailableTarget(p, skillTargetSelector)
 
-	//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
+		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
 			//return "notarget"
 			return ENUM.INIT_SKILL_RESULT.NO_TARGET
@@ -925,7 +916,7 @@ class Game {
 	getUPID(): string {
 		let id = "P" + String(this.nextUPID)
 		this.nextUPID += 1
-//		console.log("upid" + id)
+		//		console.log("upid" + id)
 		return id
 	}
 	//========================================================================================================
@@ -1129,7 +1120,7 @@ class Game {
 		this.pendingAction = null
 	}
 	roulleteComplete() {
-	//	console.log("roullete" + this.pendingObs)
+		//	console.log("roullete" + this.pendingObs)
 
 		let p = this.p()
 		//사형재판
@@ -1209,9 +1200,9 @@ class Game {
 				positionRecord: p.statistics.positionRecord,
 				moneyRecord: p.statistics.moneyRecord,
 				itemRecord: p.statistics.itemRecord,
-				kill:p.kill,
-				death:p.death,
-				assist:p.assist
+				kill: p.kill,
+				death: p.death,
+				assist: p.assist
 			})
 		}
 
