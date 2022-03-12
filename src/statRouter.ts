@@ -1,6 +1,6 @@
 import express = require('express');
 const router = express.Router()
-const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("./statisticsDB")
+const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("./DBHandler")
 
 
 

@@ -314,9 +314,10 @@ class Game {
 		//if this is first turn ever
 		this.clientsReady += 1
 		if (this.clientsReady !== this.PNUM) {
-			return false
+			return null
 		}
 		return {
+			crypt_turn:"",
 			turn: p.turn,
 			stun: p.effects.has(ENUM.EFFECT.STUN),
 			ai: p.AI,
@@ -523,6 +524,7 @@ class Game {
 		}
 		//	console.log("avliablepos" + avaliablepos)
 		return {
+			crypt_turn:"",
 			turn: p.turn,
 			stun: p.effects.has(ENUM.EFFECT.STUN),
 			ai: p.AI,
@@ -577,10 +579,10 @@ class Game {
 	rollDice(dicenum: number) {
 		let p: Player = this.p()
 
-		//return if stun
-		if (p.effects.has(ENUM.EFFECT.STUN)) {
-			return "stun"
-		}
+		// //return if stun
+		// if (p.effects.has(ENUM.EFFECT.STUN)) {
+		// 	return null
+		// }
 
 		//original dice number
 		let diceShown = Math.floor(Math.random() * 6) + 1

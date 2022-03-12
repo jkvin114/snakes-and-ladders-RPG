@@ -4,7 +4,6 @@ import SETTINGS = require("../res/globalsettings.json")
 import { SpecialEffect } from "./SpecialEffect"
 const { GameRecord, SimulationRecord } = require("./DBHandler")
 
-
 import { createServer } from "http"
 import { Namespace, Server, Socket } from "socket.io"
 import express = require("express")
@@ -12,33 +11,46 @@ import fs = require("fs")
 import cors = require("cors")
 import os = require("os")
 
-const session = require('express-session');
-const app = express()
-
-console.log("start server")
 
 
-
-const clientPath = `${__dirname}/../../SALR-android-webview-master`
-const firstpage = fs.readFileSync(__dirname + "/../../SALR-android-webview-master/index.html", "utf8")
-app.use(session({
+const session = require('express-session')({
 	key: 'sid',   //세션의 키 값
-	secret: 'secret', //세션의 비밀 키, 쿠키값의 변조를 막기 위해서 이 값을 통해 세션을 암호화 하여 저장
+	secret: 'salr', //세션의 비밀 키, 쿠키값의 변조를 막기 위해서 이 값을 통해 세션을 암호화 하여 저장
 	resave: false,   //세션을 항상 저장할 지 여부 (false를 권장)
 	saveUninitialized: true,   //세션이 저장되기전에 uninitialize 상태로 만들어 저장
 	cookie: {
 	  maxAge: 24000 * 60 * 60 // 쿠키 유효기간 24시간
 	}
-  }));
-  
+  });
+
+export var ROOMS = new Map<string, Room>()
+const clientPath = `${__dirname}/../../SALR-android-webview-master`
+const firstpage = fs.readFileSync(__dirname + "/../../SALR-android-webview-master/index.html", "utf8")
+const PORT=4000
+const app = express()
 
 
+
+
+app.use(session);
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use("/stat", require("./statRouter"))
+app.use("/user", require("./RegisteredUserRouter"))
+app.use("/room", require("./RoomRouter"))
+
+app.use(express.static(clientPath))
+app.use(errorHandler)
+const httpserver = createServer(app)
+httpserver.listen(PORT)
+app.on("error", (err: any) => {
+	console.error("Server error:", err)
+})
+
+
+
 var interfaces = os.networkInterfaces()
-
-
 var addresses = []
 for (var k in interfaces) {
 	for (var k2 in interfaces[k]) {
@@ -48,27 +60,71 @@ for (var k in interfaces) {
 		}
 	}
 }
+console.log("start server")
 console.log("IP Address:" + addresses[0])
+console.log("version " + SETTINGS.version)
 
-var ROOMS = new Map<string, Room>()
 
-function findRoomByName(name: string): Room {
-	return ROOMS.get(name)
+
+// function ROOMS.get(name: string): Room {
+// 	return ROOMS.get(name)
+// }
+function errorHandler(err: any, req: any, res: any, next: any) {
+	res.send("error!!" + err)
 }
 
-app.use(express.static(clientPath))
-app.use(errorHandler)
-const httpserver = createServer(app)
-console.log("version " + SETTINGS.version)
-const io = new Server(httpserver, {
+namespace SocketSession{
+	export function getUsername(socket:Socket):string{
+	const req = socket.request as express.Request;
+	return req.session.username	
+	}
+	export function setTurn(socket:Socket,turn:number){
+		const req = socket.request as express.Request;
+		req.session.turn=turn
+		req.session.save();
+		console.log(req.session)
+	}
+	export function getTurn(socket:Socket):number{
+		const req = socket.request as express.Request;
+		return req.session.turn	
+	}
+
+	export function setRoomName(socket:Socket,roomname:string){
+		const req = socket.request as express.Request;
+		req.session.roomname=roomname
+		req.session.save();
+		console.log(req.session)
+	}
+	export function getRoomName(socket:Socket):string{
+		const req = socket.request as express.Request;
+		return req.session.roomname	
+	}
+
+}
+
+
+
+
+
+var io = new Server(httpserver, {
 	cors: {
-		origin: "http://127.0.0.1:4000",
-		methods: ["GET", "POST"],
+		origin: "http://127.0.0.1:"+PORT,
+		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		credentials: true
 	},
 	allowEIO3: true
 })
-httpserver.listen(4000)
+
+
+//for using sessing in socket.io
+io.use((socket,next)=>{
+    let req = socket.request as express.Request
+    let res = req.res as express.Response
+    session(req, res, next as express.NextFunction)
+});
+
+
+
 
 io.on("listen", function () {
 	console.log("listen")
@@ -76,46 +132,50 @@ io.on("listen", function () {
 io.on("error", function (e: any) {
 	console.log(e)
 })
-function errorHandler(err: any, req: any, res: any, next: any) {
-	res.send("error!!" + err)
-}
+
 
 io.on("disconnect", function (socket: Socket) {
 	console.log("disconnected")
 })
 
-app.on("error", (err: any) => {
-	console.error("Server error:", err)
-})
+
+
 
 io.on("connect", function (socket: Socket) {
 	console.log(`${socket.id} is connected`)
 
-	socket.on("user:create_room", function (roomName: string, nickName: string, isSimulation: boolean) {
-		//방이름 중복체크
-		if (findRoomByName(roomName) != null) {
-			socket.emit("server:room_name_exist")
-			return
-		}
+	socket.on("user:host_connect", function () {
+		let roomName=SocketSession.getRoomName(socket)
+		if (!ROOMS.has(roomName)) return
+
+		// if (ROOMS.get(roomName) != null) {
+		// 	socket.emit("server:room_name_exist")
+		// 	return
+		// }
 		/*
 		Test.create({name:"hello",turn:2,sub:{name:"d"}})
 		.then((resolvedData)=>console.log(resolvedData))
 		.catch((e)=>console.error(e))
 */
-		let room = new Room(roomName).setSimulation(isSimulation).setNickname(nickName, 0)
-		ROOMS.set(roomName, room)
-
+		ROOMS.get(roomName).setSimulation(false).setNickname(SocketSession.getUsername(socket), 0)
+		// ROOMS.set(roomName, room)
+		//console.log("join"+roomName)
 		socket.join(roomName)
+	//	socket.emit("server:create_room",roomName)
 	})
 	//==========================================================================================
 	socket.on("user:register", function (rname: string) {
-		if (!ROOMS.has(rname)) return
+		if (!ROOMS.has(rname)) {
+			socket.emit("server:room_full")
+			return
+		}
 		let room = ROOMS.get(rname)
 
 		if (room.hosting <= 0) {
 			socket.emit("server:room_full")
 		}
 		try {
+			SocketSession.setRoomName(socket,rname)
 			socket.join(rname)
 			room.guestnum += 1
 			socket.emit("server:join_room", rname)
@@ -129,46 +189,58 @@ io.on("connect", function (socket: Socket) {
 	 * 버그존재
 	 * 2턴 컴, 3턴 플레이어 상태에서 3턴 챔 선택 후 컴퓨터 킥 하면(킥 후에 챔 선택 x) 3턴이었던 플레이어 챔피언 초기화됨
 	 */
-	socket.on("user:update_playerlist", function (rname: string, playerlist: any) {
+	socket.on("user:update_playerlist", function (playerlist: any) {
+		
 		try {
-			console.log(ROOMS)
+			let rname=SocketSession.getRoomName(socket)
+			console.log(rname)
 			if (!ROOMS.has(rname)) return
 			let room = ROOMS.get(rname)
 			let turnchange = room.user_updatePlayerList(playerlist)
-
-			console.log(room.playerlist)
-			console.log(turnchange)
 			io.to(rname).emit("server:update_playerlist", room.playerlist, turnchange)
 		} catch (e) {
 			console.error(e)
 		}
 	})
 	//==========================================================================================
-	socket.on("user:update_ready", function (rname: string, turn: number, ready: boolean) {
+	socket.on("user:update_ready", function (turn: number, ready: boolean) {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_updateReady(turn, ready)
 
 		io.to(rname).emit("server:update_ready", turn, ready)
 	})
-	socket.on("user:request_players", function (rname: string, nickname: string) {
+	socket.on("user:request_players", function () {
 		try {
+			let rname=SocketSession.getRoomName(socket)
+			let nickname=SocketSession.getUsername(socket)
 			if (!ROOMS.has(rname)) return
+
+
 			let room = ROOMS.get(rname)
 			let turn = room.user_requestPlayers(nickname)
+			SocketSession.setTurn(socket,turn)
 
-			socket.emit("server:registered", turn, room.playerlist)
+			socket.emit("server:guest_register", turn, room.playerlist)
 			socket.broadcast.to(rname).emit("server:update_playerlist", room.playerlist)
 		} catch (e) {
 			console.error(e)
 		}
 	})
+	socket.on("user:guest_quit", function () {
+		const req = socket.request as express.Request;
+		req.session.destroy((e)=>{console.log("destroy guest session")})
+	})
 	//==========================================================================================
 
-	socket.on("user:kick_player", function (rname: string, turn: number) {
+	socket.on("user:kick_player", function (turn: number) {
 		try {
+			let rname=SocketSession.getRoomName(socket)
 			if (!ROOMS.has(rname)) return
 			let room = ROOMS.get(rname)
 			room.guestnum -= 1
+
 			io.to(rname).emit("server:kick_player", turn)
 
 			console.log("kick" + turn)
@@ -177,15 +249,20 @@ io.on("connect", function (socket: Socket) {
 			console.log(e)
 		}
 	})
+
 	//==========================================================================================
 
-	socket.on("user:go_teampage", function (rname: string) {
+	socket.on("user:go_teampage", function () {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).setTeamGame()
 		io.to(rname).emit("server:go_teampage")
 	})
 
-	socket.on("user:request_names", function (rname: string) {
+	socket.on("user:request_names", function () {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 		let names = ROOMS.get(rname).user_requestNames()
 
@@ -193,7 +270,8 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:update_champ", function (rname: string, turn: number, champ: number) {
+	socket.on("user:update_champ", function ( turn: number, champ: number) {
+		let rname=SocketSession.getRoomName(socket)
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_updateChamp(turn, champ)
 		io.to(rname).emit("server:update_champ", turn, champ)
@@ -201,7 +279,9 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:update_map", function (rname: string, map: number) {
+	socket.on("user:update_map", function ( map: number) {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_updateMap(map)
 
@@ -210,7 +290,9 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:update_team", function (rname: string, check_status) {
+	socket.on("user:update_team", function (check_status) {
+		let rname=SocketSession.getRoomName(socket)
+
 		console.log("set team" + check_status)
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_updateTeams(check_status)
@@ -218,7 +300,9 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:simulationready", function (rname, setting, count, isTeam) {
+	socket.on("user:simulationready", function (setting, count, isTeam) {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 
 		console.log(setting)
@@ -227,7 +311,9 @@ io.on("connect", function (socket: Socket) {
 		ROOMS.get(rname).user_simulationReady(setting, count, isTeam, rname)
 	})
 
-	socket.on("user:gameready", function (rname, setting) {
+	socket.on("user:gameready", function ( setting) {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 
 		ROOMS.get(rname).user_gameReady(setting, rname)
@@ -238,8 +324,10 @@ io.on("connect", function (socket: Socket) {
 	//==========================================================================================
 
 	//즉시 시뮬레이션 전용
-	socket.on("server:join_room", function (rname: string) {
-		let room = findRoomByName(rname)
+	socket.on("server:join_room", function () {
+		let rname=SocketSession.getRoomName(socket)
+
+		let room = ROOMS.get(rname)
 		if (!room) {
 			return
 		}
@@ -247,7 +335,9 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:requestsetting", function (rname: string) {
+	socket.on("user:requestsetting", function () {
+		let rname=SocketSession.getRoomName(socket)
+		let turn=SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
 		if (!room.game) {
@@ -257,11 +347,13 @@ io.on("connect", function (socket: Socket) {
 		socket.join(rname)
 		let setting = room.user_requestSetting()
 
-		socket.emit("server:initialsetting", setting)
+		socket.emit("server:initialsetting", setting,turn,room.cryptTurn(turn))
 	})
 	//==========================================================================================
 
-	socket.on("user:start_game", function (rname: string) {
+	socket.on("user:start_game", function () {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
 		if (!room.game) return
@@ -275,7 +367,9 @@ io.on("connect", function (socket: Socket) {
 		}
 	})
 	//==========================================================================================
-	socket.on("start_instant_simulation", function (rname: string) {
+	socket.on("start_instant_simulation", function () {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 
 		socket.join(rname)
@@ -284,10 +378,15 @@ io.on("connect", function (socket: Socket) {
 
 	//==========================================================================================
 
-	socket.on("user:press_dice", function (rname: string, dicenum: number) {
+	socket.on("user:press_dice", function (crypt_turn:string,dicenum: number) {
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+
 		let dice = ROOMS.get(rname).user_pressDice(dicenum)
-		//console.log("press_dice" + rname)
+		console.log("press_dice" + rname)
 		io.to(rname).emit("server:rolldice", dice)
 
 		//	console.log("pressdice")
@@ -299,7 +398,8 @@ io.on("connect", function (socket: Socket) {
 	 * -장애물 효과 받음
 	 * -게임오버 체크
 	 */
-	socket.on("user:arrive_square", function (rname: string) {
+	socket.on("user:arrive_square", function () {
+		let rname=SocketSession.getRoomName(socket)
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_arriveSquare()
 	})
@@ -308,7 +408,10 @@ io.on("connect", function (socket: Socket) {
 	/**
 	 * 클라이언트에서 장애물에 도착 후 0.5초 후에 실행
 	 */
-	socket.on("user:obstacle_complete", function (rname: string) {
+	socket.on("user:obstacle_complete", function () {
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_obstacleComplete()
 	})
@@ -318,9 +421,15 @@ io.on("connect", function (socket: Socket) {
 	 * 선택 장애물(신의손,납치범 등) 선택 완료후 정보 전송 받음
 	 * 처리 후 선댁 action(잠수함, 갈림길선택 등) 체크
 	 */
-	socket.on("user:complete_obstacle_selection", function (rname: string, info: any) {
+	socket.on("user:complete_obstacle_selection", function (crypt_turn: string, info: any) {
 		//	console.log("obs selection complete")
+
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+
 		ROOMS.get(rname).user_completePendingObs(info)
 	})
 	//==========================================================================================
@@ -329,26 +438,39 @@ io.on("connect", function (socket: Socket) {
 	 * 선택 action 선택 완료후 처리
 	 * 처리 후 스킬 사용
 	 */
-	socket.on("user:complete_action_selection", function (rname: string, info: any) {
+	socket.on("user:complete_action_selection", function (crypt_turn: string, info: any) {
 		//	console.log("action selection complete")
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		
 		ROOMS.get(rname).user_completePendingAction(info)
 	})
 
 	//==========================================================================================
 
 	//execute when player clicks skill button, use skill or return targets or return proj positions
-	socket.on("user:get_skill_data", function (rname: string, s: number) {
+	socket.on("user:get_skill_data", function (crypt_turn: string, s: number) {
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let room = ROOMS.get(rname)
 		let result = room.user_clickSkill(s)
 		socket.emit("server:skill_data", result)
 	})
 	//==========================================================================================
 	//execute when player chose a target
-	socket.on("user:chose_target", function (rname: string, target: any) {
+	socket.on("user:chose_target", function (crypt_turn: string, target: any) {
 		//	console.log("sendtarget")
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let status = ROOMS.get(rname).user_choseSkillTarget(target)
 
 		if (status != null) {
@@ -357,33 +479,47 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 	//execute when player chose a projectile location
-	socket.on("user:chose_location", function (rname: string, location: any) {
+	socket.on("user:chose_location", function (crypt_turn: string, location: any) {
 		//	console.log("sendprojlocation")
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let skillstatus = ROOMS.get(rname).user_choseSkillLocation(location)
 		socket.emit("server:used_skill", skillstatus)
 	})
 	//==========================================================================================
 
-	socket.on("user:store_data", function (rname: string, data: any) {
+	socket.on("user:store_data", function (data: any) {
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
+
 		ROOMS.get(rname).user_storeComplete(data)
 	})
 
 	//==========================================================================================
 
-	socket.on("user:nextturn", function (rname: string, n: any) {
+	socket.on("user:nextturn", function (crypt_turn: string, n: any) {
+		let rname=SocketSession.getRoomName(socket)
+
+
 		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		ROOMS.get(rname).goNextTurn()
 	})
 
 	//==========================================================================================
 
-	socket.on("user:reset_game", function (rname: string, quitter: number) {
+	socket.on("user:reset_game", function () {
+		let rname=SocketSession.getRoomName(socket)
+		let quitter=SocketSession.getTurn(socket)
+		console.log(rname,quitter)
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
 		io.to(rname).emit("server:quit", quitter)
-		console.log("an user has been disconnected " + findRoomByName(rname))
+		console.log("an user has been disconnected " + ROOMS.get(rname))
 
 		try {
 			room.reset()
@@ -396,26 +532,35 @@ io.on("connect", function (socket: Socket) {
 
 	//==========================================================================================
 
-	socket.on("user:reload_game", function (rname: string, turn: number) {
+	socket.on("user:reload_game", function () {
 		console.log("reloadgame")
+		let rname=SocketSession.getRoomName(socket)
+
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).goNextTurn()
 	})
 	//==========================================================================================
-	socket.on("user:extend_timeout", function (rname: string, turn: number) {
+	socket.on("user:extend_timeout", function () {
+		let rname=SocketSession.getRoomName(socket)
+		let turn=SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).extendTimeout(turn)
 	})
 	//==========================================================================================
 
-	socket.on("user:turn_roullete", function (rname: string) {
+	socket.on("user:turn_roullete", function () {
+		let rname=SocketSession.getRoomName(socket)
+
 		io.to(rname).emit("server:turn_roullete")
 	})
 
-	socket.on("connection_checker", function (rname: string) {
+	socket.on("connection_checker", function () {
+
 		socket.emit("connection_checker")
 	})
-	socket.on("user:reconnect", function (rname: string, turn: number) {
+	socket.on("user:reconnect", function () {
+		let rname=SocketSession.getRoomName(socket)
+		let turn=SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).user_reconnect(turn)
 	})
@@ -558,17 +703,7 @@ app.get("/globalsetting", function (req, res) {
 		res.end(data)
 	})
 })
-app.get("/rooms", function (req, res, next) {
-	let list = ""
 
-	for (let r of ROOMS.values()) {
-		if (r.hosting > 0) {
-			list += r.name + "||"
-		}
-	}
-	console.log("getrooms" + list)
-	res.send(list)
-})
 
 app.get("/mode_selection", function (req, res, next) {})
 
@@ -579,37 +714,8 @@ app.get("/", function (req, res) {
 	return
 })
 
-app.post("/signup", function (req, res) {
-	res.writeHead(302, { Location: "/" }) //mysql 사용안함
-	res.end()
-	return
-
-	var html = fs.readFileSync(__dirname + "/../newclient/signup.html", "utf8")
-	if (!req.body) {
-		res.end(html)
-	}
-	var id = req.body.id.toString()
-	var pw = req.body.pw
-	var pw2 = req.body.pw2
-})
-
-app.post("/signin", function (req, res) {
-	if (req.body === null) {
-		res.end()
-	}
-})
-
-app.post("/logout", function (req, res) {
-	req.session.destroy(function (e) {
-		if (e) {
-			throw e
-		}
-		res.redirect("/")
-	})
-})
-
 app.get("/map", function (req: any, res) {
-	let room = findRoomByName(req.query.rname)
+	let room = ROOMS.get(req.session.roomname)
 	if (!room) {
 		return
 	}
@@ -679,11 +785,11 @@ app.get("/string_resource", function (req, res) {
 // })
 app.post("/chat", function (req, res) {
 	console.log("chat " + req.body.msg + " " + req.body.turn)
-	let room = findRoomByName(req.body.rname)
+	let room = ROOMS.get(req.session.roomname)
 	if (!room || !room.game) {
 		return
 	}
-	io.to(req.body.rname).emit(
+	io.to(req.session.roomname).emit(
 		"server:receive_message",
 		room.game.playerSelector.get(Number(req.body.turn)).name +
 			"(" +
@@ -693,16 +799,27 @@ app.post("/chat", function (req, res) {
 	)
 	res.end("")
 })
-app.post("/reset_game", function (req, res) {
-	ROOMS.delete(req.body.rname)
-	io.to(req.body.rname).emit("server:quit")
 
-	res.end()
+
+app.post("/reset_game", function (req, res) {
+	//console.log(req.session)
+	let rname=req.session.roomname
+	//console.log("reset"+rname)
+	if(!ROOMS.has(rname)) return
+	ROOMS.get(rname).reset()
+	console.log(ROOMS.keys())
+
+	ROOMS.delete(rname)
+	io.to(rname).emit("server:quit")
+	req.session.destroy((e)=>{console.error("session destroyed")})
+	res.redirect("/")
 })
 
 app.get("/stat/result", function (req: express.Request, res: express.Response) {
-	if (req.query.rname != null && ROOMS.has(req.query.rname.toString())) {
-		ROOMS.delete(req.query.rname.toString())
+	let rname=req.session.roomname
+
+	if (rname != null && ROOMS.has(rname.toString())) {
+		ROOMS.delete(rname.toString())
 	}
 
 	if (req.query.statid == null || req.query.type == null) {
@@ -732,9 +849,6 @@ app.get("/stat/result", function (req: express.Request, res: express.Response) {
 
 	//res.end()
 })
-
-app.use("/stat", require("./statRouter"))
-app.use("/user", require("./userRouter"))
 
 
 function writeStat(stat: any, isSimulation: boolean) {
