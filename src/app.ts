@@ -2,7 +2,7 @@ import { Room } from "./room"
 import { MAP_TYPE } from "./enum"
 import SETTINGS = require("../res/globalsettings.json")
 import { SpecialEffect } from "./SpecialEffect"
-const { GameRecord, SimulationRecord } = require("./DBHandler")
+const { GameRecord, SimulationRecord,User } = require("./DBHandler")
 
 import { createServer } from "http"
 import { Namespace, Server, Socket } from "socket.io"
@@ -36,9 +36,10 @@ app.use(session);
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use("/stat", require("./statRouter"))
-app.use("/user", require("./RegisteredUserRouter"))
-app.use("/room", require("./RoomRouter"))
+app.use("/stat", require("./router/statRouter"))
+app.use("/user", require("./router/RegisteredUserRouter"))
+app.use("/room", require("./router/RoomRouter"))
+app.use("/resource", require("./router/resourceRouter"))
 
 app.use(express.static(clientPath))
 app.use(errorHandler)
@@ -75,8 +76,8 @@ function errorHandler(err: any, req: any, res: any, next: any) {
 
 namespace SocketSession{
 	export function getUsername(socket:Socket):string{
-	const req = socket.request as express.Request;
-	return req.session.username	
+		const req = socket.request as express.Request;
+		return req.session.username	
 	}
 	export function setTurn(socket:Socket,turn:number){
 		const req = socket.request as express.Request;
@@ -230,7 +231,8 @@ io.on("connect", function (socket: Socket) {
 	})
 	socket.on("user:guest_quit", function () {
 		const req = socket.request as express.Request;
-		req.session.destroy((e)=>{console.log("destroy guest session")})
+		delete req.session.turn;
+		//req.session.destroy((e)=>{console.log("destroy guest session")})
 	})
 	//==========================================================================================
 
@@ -300,15 +302,33 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 
-	socket.on("user:simulationready", function (setting, count, isTeam) {
-		let rname=SocketSession.getRoomName(socket)
+	socket.on("user:simulationready", async function (setting, count, isTeam) {
 
-		if (!ROOMS.has(rname)) return
+		if(!SocketSession.getUsername(socket)){
+			console.error("user not logined for simulation")
+			return
+		}
 
-		console.log(setting)
-		console.log("team:" + isTeam + "   count:" + count)
+		let rname="simulation_"+String(Math.floor(Math.random()*1000000))
+		SocketSession.setRoomName(socket,rname)
+		socket.join(rname)
+		let room=new Room(rname).setSimulation(true)
+		ROOMS.set(rname,room) 
 
-		ROOMS.get(rname).user_simulationReady(setting, count, isTeam, rname)
+		let u=SocketSession.getUsername(socket)
+		User.findOneByUsername(u)
+		.then((user:any)=>{
+			console.log(setting)
+			console.log("team:" + isTeam + "   count:" + count+"runner:"+user._id)
+	
+			room.user_simulationReady(setting, count, isTeam, user._id)
+		})
+		.catch((e:Error)=>{
+			console.error(e)
+		})
+
+
+		
 	})
 
 	socket.on("user:gameready", function ( setting) {
@@ -679,30 +699,6 @@ app.get("/connection_check", function (req, res) {
 	res.end()
 })
 
-app.get("/gamesetting", function (req, res) {
-	fs.readFile(__dirname + "/../res/gamesetting.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting game setting file"})
-		}
-		res.end(data)
-	})
-})
-app.get("/simulationsetting", function (req, res) {
-	fs.readFile(__dirname + "/../res/simulationsetting.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting simulation setting file"})
-		}
-		res.end(data)
-	})
-})
-app.get("/globalsetting", function (req, res) {
-	fs.readFile(__dirname + "/../res/globalsettings.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting global setting file"})
-		}
-		res.end(data)
-	})
-})
 
 
 app.get("/mode_selection", function (req, res, next) {})
@@ -714,72 +710,7 @@ app.get("/", function (req, res) {
 	return
 })
 
-app.get("/map", function (req: any, res) {
-	let room = ROOMS.get(req.session.roomname)
-	if (!room) {
-		return
-	}
-	if (room.game.mapId === MAP_TYPE.OCEAN) {
-		fs.readFile(__dirname + "/../res/ocean_map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting map file"})
-			}
-			res.end(data)
-		})
-	} else if (room.game.mapId === MAP_TYPE.CASINO) {
-		fs.readFile(__dirname + "/../res/casino_map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting map file"})
-			}
-			res.end(data)
-		})
-	} else {
-		
-		fs.readFile(__dirname + "/../res/map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting map file"})
-			}
-			res.end(data)
-		})
-	}
-})
 
-app.get("/item", function (req, res) {
-	fs.readFile(__dirname + "/../res/item.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting item file"})
-		}
-		res.end(data)
-	})
-})
-
-app.get("/obstacle", function (req, res) {
-	//	console.log(req.query.lang)
-	if (req.query.lang === "kor") {
-		fs.readFile(__dirname + "/../res/obstacles_kor.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting obstacle file"})
-			}
-			res.end(data)
-		})
-	} else {
-		fs.readFile(__dirname + "/../res/obstacles.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting obstacle file"})
-			}
-			res.end(data)
-		})
-	}
-})
-
-app.get("/string_resource", function (req, res) {
-	fs.readFile(__dirname + "/../res/string_resource.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting resource file"})
-		}
-		res.end(data)
-	})
-})
 // app.get("/getobs_kor", function (req, res) {
 
 // })
@@ -811,7 +742,8 @@ app.post("/reset_game", function (req, res) {
 
 	ROOMS.delete(rname)
 	io.to(rname).emit("server:quit")
-	req.session.destroy((e)=>{console.error("session destroyed")})
+	delete req.session.turn;
+	// req.session.destroy((e)=>{console.error("session destroyed")})
 	res.redirect("/")
 })
 

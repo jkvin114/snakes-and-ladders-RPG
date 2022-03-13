@@ -209,12 +209,13 @@ class Simulation {
 	private stats: any[]
 	private roomName: string
 	private setting: SimulationSetting
+	private runnerId:string
 
-	constructor(roomname: string, count: number, setting: SimulationSetting) {
+	constructor(roomname: string, count: number, setting: SimulationSetting,runner:string) {
 		this.setting = setting
 		this.count = count
 		this.roomName = roomname
-
+		this.runnerId=runner
 		this.game = null
 		this.stats = []
 		this.progressCount = 0
@@ -237,7 +238,7 @@ class Simulation {
 			serverVersion:SETTINGS.version,
 			setting:this.setting.getSummary(),
 			simulation:"",
-			runner:""
+			runner:this.runnerId
 		}
 	}
 	getGameSimpleResult(){

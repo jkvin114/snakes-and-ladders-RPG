@@ -25,7 +25,7 @@ import express = require('express');
 
 const router = express.Router()
 const crypto = require('crypto')
-const {User} = require("./DBHandler")
+const {User} = require("../DBHandler")
 
 
 function createSalt(){
@@ -56,12 +56,18 @@ function checkPasswordValidity(pw:string){
 router.post('/register',async function(req:express.Request,res:express.Response){
     let body = req.body;
 
-    if(body.username.length < 5){
-        res.status(400).end("username too short");
+
+    if(body.username.length < 5 || body.username.length > 50){
+        res.status(400).end("username");
         return
     }
     if(!checkPasswordValidity(body.password)){
-        res.status(400).end("pw error");
+        res.status(400).end("password");
+        return
+    }
+    let user=await User.findOneByUsername(body.username)
+    if(user){
+        res.status(400).end("duplicate username")
         return
     }
 
@@ -78,7 +84,7 @@ router.post('/register',async function(req:express.Request,res:express.Response)
     })  
     .then((data:any) => {
         console.log(data)
-      res.status(201).end();
+        res.status(200).end(body.username)
     })
     .catch( (err:Error) => {
       console.log(err)
@@ -94,12 +100,12 @@ router.post('/login',async function(req:express.Request,res:express.Response){
 
     let user=await User.findOneByUsername(body.username)
     if(!user){
-        res.status(204).end("user does not exist")
+        res.end("username")
         return
     }
 
     if(user.password !== encrypt(body.password,user.salt)){
-        res.status(401).end("password not match")
+        res.end("password")
         return
     }
     if(req.session){
@@ -109,7 +115,7 @@ router.post('/login',async function(req:express.Request,res:express.Response){
     }
     console.log(req.session)
     console.log(body.username+" has logged in")
-    res.status(200).end()
+    res.status(200).end(body.username)
 })
 
 /**

@@ -79,7 +79,7 @@ class Room {
 		return this.turnEncryption.get(this.game.thisturn)
 	}
 	isThisTurn(cryptTurn: string) {
-	//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
+		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
 		return this.turnEncryption.get(this.game.thisturn) === cryptTurn
 	}
 
@@ -222,10 +222,10 @@ class Room {
 		simulationsetting: ISimulationSetting,
 		simulation_count: number,
 		isTeam: boolean,
-		roomName: string
+		runnerId: string
 	) {
 		let setting = new SimulationSetting(isTeam, simulationsetting)
-		this.simulation = new Simulation(this.name, simulation_count, setting)
+		this.simulation = new Simulation(this.name, simulation_count, setting, runnerId)
 		let _this = this
 		this.doInstantSimulation()
 			.then(function () {
@@ -281,10 +281,9 @@ class Room {
 
 	user_startGame() {
 		let t = this.game.startTurn()
-		if(t){
+		if (t) {
 			t.crypt_turn = this.thisCryptTurn()
 		}
-		
 
 		return t
 	}
@@ -315,10 +314,11 @@ class Room {
 			let dice = this.game.rollDice(-1)
 			//	console.log("stun" + dice)
 
-			setTimeout(() =>{
-				 RoomClientInterface.rollDice(this.name, dice)
-				 this.afterDice(dice.actualdice)
-				}, 500)
+			setTimeout(() => {
+				if (!this.game) return
+				RoomClientInterface.rollDice(this.name, dice)
+				this.afterDice(dice.actualdice)
+			}, 500)
 		} else if (turnUpdateData.stun) {
 			this.manageStun()
 		}
@@ -327,9 +327,11 @@ class Room {
 
 	manageStun() {
 		setTimeout(() => {
+			if (!this.game) return
 			this.user_arriveSquare()
 
 			setTimeout(() => {
+				if (!this.game) return
 				this.user_obstacleComplete()
 			}, 1000)
 		}, 1000)
@@ -360,8 +362,9 @@ class Room {
 		}
 		let _this = this
 
-		this.idleTimeout = setTimeout(function () {
-			RoomClientInterface.forceNextturn(_this.name, _this.thisCryptTurn())
+		this.idleTimeout = setTimeout(() => {
+			if (!this.game) return
+			RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
 			callback()
 		}, SETTINGS.idleTimeout)
 		this.idleTimeoutTurn = this.game.thisturn
@@ -378,9 +381,10 @@ class Room {
 			return
 		}
 		let _this = this
-		this.connectionTimeout = setTimeout(function () {
-			RoomClientInterface.forceNextturn(_this.name, _this.thisCryptTurn())
-			_this.goNextTurn()
+		this.connectionTimeout = setTimeout(() => {
+			if (!this.game) return
+			RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
+			this.goNextTurn()
 		}, SETTINGS.connectionTimeout)
 		this.connectionTimeoutTurn = this.game.thisturn
 	}
@@ -397,23 +401,26 @@ class Room {
 	user_pressDice(dicenum: number) {
 		this.stopIdleTimeout()
 		this.startConnectionTimeout()
-		let data=this.game.rollDice(dicenum)
-		
+		let data = this.game.rollDice(dicenum)
+
 		this.afterDice(data.actualdice)
 
 		return data
 	}
 
-	afterDice(movedistance:number){
+	afterDice(movedistance: number) {
 		setTimeout(() => {
+			if (!this.game) return
 			this.user_arriveSquare()
+			console.log("arrivesquare")
 
 			setTimeout(() => {
+				if (!this.game) return
+				console.log("obscomplete")
 				this.user_obstacleComplete()
 			}, 700)
-		}, 1300+movedistance * 100)
+		}, 1300 + movedistance * 100)
 	}
-
 
 	user_arriveSquare(): number {
 		let obs = this.game.checkObstacle()
@@ -435,8 +442,14 @@ class Room {
 
 		if (!info) {
 			if (this.game.p().AI) {
-				setTimeout(() => this.game.aiSkill(), 300)
-				setTimeout(() => this.goNextTurn(), 800)
+				setTimeout(() => {
+					if (!this.game) return
+					this.game.aiSkill()
+				}, 300)
+				setTimeout(() => {
+					if (!this.game) return
+					this.goNextTurn()
+				}, 800)
 
 				//	console.log("ai go nextturn")
 			} else {
@@ -562,7 +575,6 @@ class Room {
 					console.log("stat saved successfully")
 
 					simple_stat.simulation = resolvedData.id
-					simple_stat.runner = ""
 
 					SimpleSimulationRecord.create(simple_stat)
 						.then((resolvedData: any) => {

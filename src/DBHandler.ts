@@ -93,14 +93,14 @@ const simplePlayerSchema=new mongoose.Schema({
     death:Number,
     Assist:Number,
     team:Boolean
-})
+}, { _id : false })
 
 const simpleGameRecordSchema=new mongoose.Schema({
     players:{ type: [simplePlayerSchema], required: true },
     totalturn: Number,
     isTeam: Boolean,
     map:String
-})
+}, { _id : false })
 
 const simpleSimulationRecordSchema=new mongoose.Schema({
     stat:[simpleGameRecordSchema],
@@ -108,7 +108,7 @@ const simpleSimulationRecordSchema=new mongoose.Schema({
     serverVersion:String,
     setting:[simulationSettingSchema],
     simulation:mongoose.Types.ObjectId,
-    runner:mongoose.Types.ObjectId
+    runner:String
 },{timestamps:true})
 
 //=============================================================================================

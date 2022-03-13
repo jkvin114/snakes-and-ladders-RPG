@@ -1,8 +1,7 @@
 import express = require('express');
-import { ROOMS } from './app';
+import { ROOMS } from '../app';
 const router = express.Router()
-const clientPath = `${__dirname}/../../SALR-android-webview-master`
-import { Room } from "./room"
+import { Room } from "../room"
 
 
 /**
@@ -106,6 +105,27 @@ router.post('/game',async function(req:express.Request,res:express.Response){
     }
     else{
         console.error("unauthorized access to the game page")
+        return res.status(401).end()
+    }
+
+    
+})
+
+router.post('/simulation',async function(req:express.Request,res:express.Response){
+
+    
+    if(req.session){
+        console.log("simulation")
+       // console.log(req.session)
+        if(!req.session.isLogined){
+            console.error("unauthorized access to the simulation page")
+            return res.status(401).end()
+        }
+
+        return res.status(200).end()
+    }
+    else{
+        console.error("unauthorized access to the simulation page")
         return res.status(401).end()
     }
 
