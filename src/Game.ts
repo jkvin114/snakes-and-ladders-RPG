@@ -7,8 +7,8 @@ import { ISimulationSetting } from "./SimulationRunner"
 import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Player } from "./player"
-import { Projectile } from "./Projectile"
-import { PassProjectile } from "./PassProjectile"
+import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
+// import { PassProjectile } from "./PassProjectile"
 import { PlayerSelector, ObstacleHelper, AIHelper } from "./helpers"
 
 import { Creed } from "./characters/Creed"
@@ -19,6 +19,10 @@ import { Jellice } from "./characters/Jellice"
 import { Gorae } from "./characters/Gorae"
 import { Timo } from "./characters/Timo"
 import { Yangyi } from "./characters/Yangyi"
+import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
+import { PlayerClientInterface } from "./app"
+import { Tree } from "./characters/Tree"
+import TreePlant from "./characters/SummonedEntity/TreePlant"
 const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
@@ -161,6 +165,8 @@ class PlayerFactory {
 				return new Gorae(turn, team, game, isAI, name)
 			case 7:
 				return new Bird(turn, team, game, isAI, name)
+			case 8:
+				return new Tree(turn, team, game, isAI, name)
 			default:
 				return new Creed(turn, team, game, isAI, name)
 		}
@@ -188,12 +194,16 @@ class Game {
 	pendingAction: string
 	roullete_result: number
 	nextUPID: number
-	nextPassUPID: number
-	activeProjectileList: Map<string, Projectile>
+	UPIDGen: Util.UniqueIdGenerator
+	UEIDGen: Util.UniqueIdGenerator
+
+	// nextPassUPID: number
+	rangeProjectileList: Map<string, RangeProjectile>
 	passProjectileList: Map<string, PassProjectile>
 	passProjectileQueue: PassProjectile[]
 	gameover: boolean
 
+	summonedEntityList: Map<string, SummonedEntity>
 	submarine_cool: number
 	submarine_id: string
 	dcitem_id: string
@@ -230,20 +240,24 @@ class Game {
 		this.roullete_result = -1
 		this.itemLimit = setting.itemLimit
 		this.nextUPID = 1
-		this.nextPassUPID = 1
-		this.activeProjectileList = new Map()
+		// this.nextPassUPID = 1
+		this.summonedEntityList = new Map()
+		this.rangeProjectileList = new Map()
 		this.passProjectileList = new Map()
 		this.passProjectileQueue = []
 		this.gameover = false
 		this.shuffledObstacles = this.setting.shuffleObstacle
 			? MAP.getShuffledObstacles(this.mapId)
 			: MAP.getObstacleList(this.mapId)
+
 		this.submarine_cool = 0
 		this.submarine_id = "" //잠수함의 upid
 		this.dcitem_id = ""
 		this.killRecord = []
 		this.totalEffectsApplied = 0 //total number of effects applied until now
-		this.playerSelector = new PlayerSelector()
+		this.playerSelector = new PlayerSelector(this.isTeam)
+		this.UPIDGen = new Util.UniqueIdGenerator(this.rname + "_P")
+		this.UEIDGen = new Util.UniqueIdGenerator(this.rname + "_ET")
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -317,7 +331,7 @@ class Game {
 			return null
 		}
 		return {
-			crypt_turn:"",
+			crypt_turn: "",
 			turn: p.turn,
 			stun: p.effects.has(ENUM.EFFECT.STUN),
 			ai: p.AI,
@@ -332,7 +346,7 @@ class Game {
 	summonSubmarine() {
 		if (this.submarine_cool === 0) {
 			console.log("submarine" + this.submarine_id)
-			this.removePassProjById(this.submarine_id)
+			this.removePassProjectileById(this.submarine_id)
 			this.submarine_id = ""
 			let pos = 0
 			let submarine_range = MAP.get(this.mapId).submarine_range
@@ -342,28 +356,28 @@ class Game {
 				pos = submarine_range.start + Math.floor(Math.random() * diff)
 			}
 
-			this.placePassProj("submarine", pos)
+			this.placeSubmarine(pos)
 			this.submarine_cool = SETTINGS.submarine_cooltime
 		} else {
 			this.submarine_cool = Math.max(0, this.submarine_cool - 1)
 		}
 	}
 
-	removePassProjById(id: string) {
-		if (id === "") return
-		//console.log("REmoved PASSPROJECTILE  PASSPROJECTILE" + id)
-		// let toremove=this.passProjectileList.filter((p: PassProjectile) => p.UPID === id)
-		let toremove = this.passProjectileList.get(id)
-		if (toremove !== null) {
-			// this.passProjectileList = this.passProjectileList.filter((proj: PassProjectile) => {
-			// 	proj.UPID!==id
-			// })
-			this.passProjectileList.delete(id)
+	// removePassProjById(id: string) {
+	// 	if (id === "") return
+	// 	//console.log("REmoved PASSPROJECTILE  PASSPROJECTILE" + id)
+	// 	// let toremove=this.passProjectileList.filter((p: PassProjectile) => p.UPID === id)
+	// 	let toremove = this.passProjectileList.get(id)
+	// 	if (toremove !== null) {
+	// 		// this.passProjectileList = this.passProjectileList.filter((proj: PassProjectile) => {
+	// 		// 	proj.UPID!==id
+	// 		// })
+	// 		this.passProjectileList.delete(id)
 
-			toremove.removeProj()
-			toremove = null
-		}
-	}
+	// 		toremove.removeProj()
+	// 		toremove = null
+	// 	}
+	// }
 
 	getDiceControlPlayer() {
 		const bias = 1.5
@@ -381,6 +395,9 @@ class Game {
 	 * @returns
 	 */
 	summonDicecontrolItem() {
+		// this.sendToClient(PlayerClientInterface.summonEntity,TreePlant.create(this,null).summon(this.p(),1,this.p().pos+5).getTransferData())
+		// this.sendToClient(PlayerClientInterface.summonEntity,TreePlant.create(this,null).summon(this.p(),1,this.p().pos+6).getTransferData())
+
 		let freq = this.setting.diceControlItemFrequency
 		if (freq === 0) return
 
@@ -393,7 +410,7 @@ class Game {
 		//if there is dc item left on the map, don`t change position by 50%
 		if (this.dcitem_id !== "" && Util.randomBoolean()) return
 
-		this.removePassProjById(this.dcitem_id)
+		this.removePassProjectileById(this.dcitem_id)
 		this.dcitem_id = ""
 
 		//don`t re-place item by 40~22% based on player count and freq
@@ -415,7 +432,7 @@ class Game {
 		//일정범위 벗어나면 등장안함
 		if (pos <= 0 || pos >= bound) return
 
-		this.placePassProj("dicecontrol", pos)
+		this.placeDiceControlItem(pos)
 	}
 
 	/**
@@ -429,12 +446,63 @@ class Game {
 		)
 			return
 
-		//0.8~1.0
+		// P = 0.8~1.0
 		if (Math.random() < 0.7 + 0.1 * this.setting.diceControlItemFrequency) {
-			this.removePassProjById(this.dcitem_id)
+			this.removePassProjectileById(this.dcitem_id)
 			let range = 6
-			this.placePassProj("dicecontrol", this.playerSelector.get(turn).pos + Math.floor(Math.random() * range) + 1)
+			this.placeDiceControlItem(this.playerSelector.get(turn).pos + Math.floor(Math.random() * range) + 1)
 		}
+	}
+
+	updateEntityPos(entity: SummonedEntity,pos:number) {
+		pos=Util.clamp(pos,0,MAP.getFinish(this.mapId))
+		entity.move(pos)
+
+		this.sendToClient(PlayerClientInterface.update, "move_entity", entity.summoner.turn, {
+			UEID: entity.UEID,
+			pos: entity.pos
+		})
+	}
+
+	summonEntity(entity: SummonedEntity, summoner: Player, lifespan: number, pos: number) {
+		let id = this.UEIDGen.generate()
+
+		pos=Util.clamp(pos,0,MAP.getFinish(this.mapId))
+		console.log(id)
+
+		entity=entity.summon(summoner,lifespan,pos,id)
+		this.summonedEntityList.set(id, entity)
+
+		this.sendToClient(PlayerClientInterface.summonEntity,entity.getTransferData())
+		return entity
+	}
+
+
+	removeEntity(entityId: string, iskilled: boolean) {
+		if (!this.summonedEntityList.has(entityId)) return
+		console.log("removeEntity")
+
+		this.summonedEntityList.delete(entityId)
+		this.sendToClient(PlayerClientInterface.deleteEntity, entityId, iskilled)
+	}
+	entityOnTurnStart() {
+		for (let e of this.summonedEntityList.values()) {
+			e.onTurnStart(this.thisturn)
+		}
+	}
+	getEnemyEntityInRange(attacker: Player, rad: number): SummonedEntity[] {
+		let entities = []
+
+		for (let e of this.summonedEntityList.values()) {
+			if (
+				e.pos <= attacker.pos + rad &&
+				e.pos >= attacker.pos - rad &&
+				this.playerSelector.isOpponent(e.summoner.turn, attacker.turn)
+			) {
+				entities.push(e)
+			}
+		}
+		return entities
 	}
 
 	goNextTurn() {
@@ -445,6 +513,7 @@ class Game {
 		this.pendingAction = null
 		let p = this.p()
 		this.applyTickEffect()
+		this.projectileCooldown()
 		p.onTurnEnd()
 
 		//다음턴 안넘어감(one more dice)
@@ -485,6 +554,7 @@ class Game {
 				p.respawn()
 			}
 			p.onTurnStart()
+			this.entityOnTurnStart()
 		}
 
 		let additional_dice = p.calculateAdditionalDice(this.setting.additionalDiceAmount)
@@ -524,7 +594,7 @@ class Game {
 		}
 		//	console.log("avliablepos" + avaliablepos)
 		return {
-			crypt_turn:"",
+			crypt_turn: "",
 			turn: p.turn,
 			stun: p.effects.has(ENUM.EFFECT.STUN),
 			ai: p.AI,
@@ -675,22 +745,50 @@ class Game {
 			died: died
 		}
 	}
+	playerForceMove(player: Player, pos: number, ignoreObstacle: boolean, movetype: string) {
+		this.pendingObs = 0 //강제이동시 장애물무시
+
+		this.sendToClient(PlayerClientInterface.tp, player.turn, pos, movetype)
+
+		player.forceMove(pos)
+
+		if (!ignoreObstacle) {
+			if (this.instant) {
+				player.arriveAtSquare(true)
+			} else {
+				setTimeout(
+					() => {
+						player.arriveAtSquare(true)
+					},
+					movetype === "simple" ? 1000 : 1500
+				)
+			}
+		} else if (this.mapId === ENUM.MAP_TYPE.CASINO) {
+			player.mapdata.checkSubway()
+		}
+	}
 	//========================================================================================================
 
 	checkPassProj(player: Player, currpos: number, dice: number) {
 		let projList = []
-		for (let pp of this.passProjectileList.values()) {
+
+		let sortedlist = Array.from(this.passProjectileList.values()).sort((a, b) => a.pos - b.pos)
+
+		for (let pp of sortedlist) {
 			if ((pp.pos > currpos && pp.pos <= currpos + dice) || (pp.pos < currpos && pp.pos >= currpos + dice)) {
-				if (player.AI && pp.type === "submarine") {
+				if (player.AI && pp.name === "submarine") {
 					continue
 				}
+				if (!pp.canApplyTo(player)) continue
+
 				projList.push(pp)
-				if (pp.stopPlayer) {
+				if (pp.hasFlag(Projectile.FLAG_STOP_PLAYER)) {
 					dice = pp.pos - currpos
 					break
 				}
 			}
 		}
+
 		return { moveDistance: dice, projList: projList }
 	}
 	//========================================================================================================
@@ -701,7 +799,9 @@ class Game {
 		p.onBeforeObs()
 
 		//passprojqueue 에 있는 투사체들을 pendingaction 에 적용
-		this.applyPassProj()
+		let died = this.applyPassProj()
+
+		if (died) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 
 		//장애물 효과 적용
 		let result = p.arriveAtSquare(false)
@@ -713,15 +813,15 @@ class Game {
 				result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 			}
 		}
-		let t = this.thisturn
+		let winner = this.thisturn
 
 		//게임 오버시 player 배열 순위순으로 정렬후 게임 끝냄
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
 			this.playerSelector.getAll().sort(function (a, b) {
-				if (a.turn === t) {
+				if (a.turn === winner) {
 					return -1000
 				}
-				if (b.turn === t) {
+				if (b.turn === winner) {
 					return 1000
 				} else {
 					if (b.kill === a.kill) {
@@ -733,6 +833,7 @@ class Game {
 			})
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
+
 		//godhand, 사형재판, 납치범 대기중으로 표시
 		if (SETTINGS.pendingObsList.some((a) => result === a)) {
 			if (!this.p().AI) {
@@ -755,25 +856,49 @@ class Game {
 		this.totalEffectsApplied += 1
 		return this.totalEffectsApplied % 3
 	}
+
+	projectileCooldown() {
+		for (let [id, proj] of this.rangeProjectileList.entries()) {
+			if (proj.cooldown(this.thisturn)) {
+				this.removeRangeProjectileById(id)
+			}
+		}
+		for (let [id, proj] of this.passProjectileList.entries()) {
+			if (proj.cooldown(this.thisturn)) {
+				this.removePassProjectileById(id)
+			}
+		}
+	}
 	/**
 	 * passprojqueue 에 있는 투사체들을 pendingaction 에 적용
 	 */
 	applyPassProj() {
+		let died = false
 		for (let pp of this.passProjectileQueue) {
-			if (pp.type === "submarine") {
-				this.removePassProjById(this.submarine_id)
-				pp.removeProj()
+			let upid = ""
+			if (pp.name === "submarine") {
+				upid = this.submarine_id
+				// pp.removeProj()
 				this.pendingAction = "submarine"
 				this.submarine_id = ""
 			}
-			if (pp.type === "dicecontrol") {
-				this.removePassProjById(this.dcitem_id)
-				pp.removeProj()
+			else if (pp.name === "dicecontrol") {
+				upid = this.dcitem_id
+				// pp.removeProj()
 				this.dcitem_id = ""
 				this.p().giveDiceControl()
+			} else {
+				died = this.p().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
+
+				upid = pp.UPID
 			}
+
+			if (!pp.hasFlag(Projectile.FLAG_NOT_DISAPPER_ON_STEP)) this.removePassProjectileById(upid)
+
+			if (died) break
 		}
 		this.passProjectileQueue = []
+		return died
 	}
 	//========================================================================================================
 
@@ -784,7 +909,7 @@ class Game {
 	processGodhand(godhand_info: { target: number; location: number }) {
 		let p = this.playerSelector.get(godhand_info.target)
 		p.damagedby[this.thisturn] = 3
-		p.forceMove(godhand_info.location, false, "levitate")
+		this.playerForceMove(p, godhand_info.location, false, "levitate")
 	}
 	//========================================================================================================
 
@@ -798,26 +923,31 @@ class Game {
 		AIHelper.aiSkill(this.p())
 	}
 	//========================================================================================================
-	applyProjectile(player: Player): boolean {
+	applyRangeProjectile(player: Player): boolean {
 		if (player.invulnerable) {
 			return false
 		}
 		let ignoreObstacle = false
-		let other = this.playerSelector.getPlayersByCondition(player, -1, false, true, false, false)
-		for (let o of other) {
-			for (let p of o.projectile) {
-				if (p.activated && p.scope.includes(player.pos)) {
-					let died = player.hitBySkill(p.damage, p.type, o.turn, p.action)
 
-					if (p.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
+		for (let proj of this.rangeProjectileList.values()) {
+			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
+				console.log("proj hit" + proj.UPID)
+				let died = player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
 
-					if (p.disappearWhenStep) {
-						p.remove()
-					}
-					if (died) return true
+				if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
+
+				if (!proj.hasFlag(Projectile.FLAG_NOT_DISAPPER_ON_STEP)) {
+					this.removeRangeProjectileById(proj.UPID)
 				}
+				if (died) return true
 			}
 		}
+		// let other = this.playerSelector.getPlayersByCondition(player, -1, false, true, false, false)
+		// for (let o of other) {
+		// 	for (let p of o.projectile) {
+
+		// 	}
+		// }
 		return ignoreObstacle
 	}
 	getNameByTurn(turn: number) {
@@ -879,6 +1009,16 @@ class Game {
 			}
 		}
 
+		if(skillTargetSelector.isAreaTarget()){
+			return {
+				type: ENUM.INIT_SKILL_RESULT.AREA_TARGET,
+				pos: p.pos,
+				range: skillTargetSelector.range,
+				onMainWay: p.mapdata.onMainWay,
+				size: skillTargetSelector.areaSize
+			}
+		}
+
 		let targets = this.playerSelector.getAvailableTarget(p, skillTargetSelector)
 
 		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
@@ -915,32 +1055,37 @@ class Game {
 			dead: p.dead
 		}
 	}
-	getUPID(): string {
+	getNextUPID(): string {
 		let id = "P" + String(this.nextUPID)
 		this.nextUPID += 1
 		//		console.log("upid" + id)
 		return id
 	}
 	//========================================================================================================
-
-	placeProj(pos: number) {
+	usePendingAreaSkill(pos:number){
+		this.p().usePendingAreaSkill(pos)
+	}
+	placePendingSkillProj(pos: number) {
 		let p = this.p()
-		let proj = p.getSkillProjectile(-1)
-		let id = this.getUPID()
-		proj.place(pos, id)
-		this.activeProjectileList.set(id, proj)
+		let proj = p.getSkillProjectile(pos)
+		this.placeProjectile(proj, pos)
+		// let id = this.getNextUPID()
+		// proj.place(pos, id)
+		// this.activeProjectileList.set(id, proj)
 	}
 
 	placeProjNoSelection(proj: Projectile, pos: number) {
 		//console.log("placeProjNoSelection" + proj)
-		let id = this.getUPID()
-		proj.place(pos, id)
-		this.activeProjectileList.set(id, proj)
+		this.placeProjectile(proj, pos)
+
+		// let id = this.getNextUPID()
+		// proj.place(pos, id)
+		// this.activeProjectileList.set(id, proj)
 	}
 
-	removeProjectile(UPID: string) {
-		this.activeProjectileList.delete(UPID)
-	}
+	// removeProjectile(UPID: string) {
+	// 	this.rangeProjectileList.delete(UPID)
+	// }
 
 	//========================================================================================================
 
@@ -952,43 +1097,97 @@ class Game {
 		return true
 	}
 	//========================================================================================================
-
-	/**
-	 *
-	 * @param {*} type str
-	 * @param {*} pos
-	 */
-	placePassProj(type: string, pos: number) {
-		if (type === "submarine") {
-			let proj = new PassProjectile(this, type, () => {}, false)
-
-			let id = this.getPassUPID()
-			this.passProjectileList.set(id, proj)
-			proj.place(pos, id)
-			//.log("Placed PASSPROJECTILE  PASSPROJECTILE" + id)
-			this.submarine_id = id
+	getPlaceableCoordinates(start: number, size: number) {
+		let offset = 0
+		let usedSize = 0
+		let scope = []
+		while (usedSize < size && offset < MAP.get(this.mapId).coordinates.length) {
+			if (this.isAttackableCoordinate(start + offset)) {
+				scope.push(start + offset)
+				usedSize += 1
+			}
+			offset += 1
 		}
-		if (type === "dicecontrol") {
-			let proj = new PassProjectile(this, type, () => {}, false)
-			// this.passProjectileList.push(proj)
-			let id = this.getPassUPID()
-			this.passProjectileList.set(id, proj)
-			proj.place(pos, id)
-
-			this.dcitem_id = id
-		}
-
-		// this.passProjectileList.sort(function (a, b) {
-		// 	return a.pos - b.pos
-		// })
+		return scope
 	}
+
 	//========================================================================================================
 
-	getPassUPID(): string {
-		let id = "PP" + String(this.nextPassUPID)
-		this.nextPassUPID += 1
+	placeDiceControlItem(pos: number) {
+		let upid = this.placeProjectile(new ProjectileBuilder(this, "dicecontrol", Projectile.TYPE_PASS).build(), pos)
+		this.dcitem_id = upid
+	}
+	placeSubmarine(pos: number) {
+		let upid = this.placeProjectile(new ProjectileBuilder(this, "submarine", Projectile.TYPE_PASS).build(), pos)
+		this.submarine_id = upid
+	}
+
+	placeProjectile(proj: Projectile, pos: number): string {
+		let id = this.UPIDGen.generate()
+		proj.place(pos, id)
+
+		if (proj instanceof PassProjectile) {
+			this.passProjectileList.set(id, proj)
+			this.sendToClient(PlayerClientInterface.placePassProj, proj.getTransferData())
+		} else if (proj instanceof RangeProjectile) {
+			this.rangeProjectileList.set(id, proj)
+			this.sendToClient(PlayerClientInterface.placeProj, proj.getTransferData())
+		}
 		return id
 	}
+
+	removeRangeProjectileById(UPID: string) {
+		if (!this.rangeProjectileList.has(UPID)) return
+
+		this.rangeProjectileList.get(UPID).remove()
+		this.rangeProjectileList.delete(UPID)
+		this.sendToClient(PlayerClientInterface.removeProj, UPID)
+	}
+
+	removePassProjectileById(UPID: string) {
+		if (!this.passProjectileList.has(UPID)) return
+
+		this.passProjectileList.get(UPID).remove()
+		this.passProjectileList.delete(UPID)
+		this.sendToClient(PlayerClientInterface.removeProj, UPID)
+	}
+	/**
+	 *
+	//  * @param {*} type str
+	//  * @param {*} pos
+	//  */
+	// placePassProj2(type: string, pos: number) {
+	// 	return
+	// 	if (type === "submarine") {
+	// 		// let proj = new PassProjectile(this, type, () => {}, false)
+
+	// 		let id
+	// 		this.passProjectileList.set(id, proj)
+	// 		proj.place(pos, id)
+	// 		//.log("Placed PASSPROJECTILE  PASSPROJECTILE" + id)
+	// 		this.submarine_id = id
+	// 	}
+	// 	if (type === "dicecontrol") {
+	// 		// let proj = new PassProjectile(this, type, () => {}, false)
+	// 		// this.passProjectileList.push(proj)
+	// 		let id = this.getNextPassUPID()
+	// 		this.passProjectileList.set(id, proj)
+	// 		proj.place(pos, id)
+
+	// 		this.dcitem_id = id
+	// 	}
+
+	// 	// this.passProjectileList.sort(function (a, b) {
+	// 	// 	return a.pos - b.pos
+	// 	// })
+	// }
+	// //========================================================================================================
+
+	// getNextPassUPID(): string {
+	// 	let id = "PP" + String(this.nextPassUPID)
+	// 	this.nextPassUPID += 1
+	// 	return id
+	// }
 	getGodHandTarget() {
 		return this.playerSelector.getPlayersByCondition(this.p(), -1, false, false, false, true).map(function (p: Player) {
 			return p.turn
@@ -1112,7 +1311,7 @@ class Game {
 		}
 
 		if (info.type === "submarine" && info.complete) {
-			this.p().forceMove(info.pos, false, "levitate")
+			this.playerForceMove(this.p(), info.pos, false, "levitate")
 		}
 		if (info.type === "ask_way2" && !info.result) {
 			console.log("goWay2")

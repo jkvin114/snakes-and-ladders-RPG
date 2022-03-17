@@ -8,6 +8,7 @@ import { items as ItemList } from "../res/item.json"
 import PlayerInventory from "./PlayerInventory"
 import { EffectFactory, StatusEffect } from "./StatusEffect"
 import { SpecialEffect } from "./SpecialEffect"
+import { Entity } from "./Entity"
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
 		let others: Player[] = []
@@ -86,7 +87,7 @@ class ObstacleHelper {
 				case 19:
 					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, true, false, true)
 					for (let o of others) {
-						o.forceMove(player.pos, true, "simple")
+						player.game.playerForceMove(o,player.pos, true, "simple")
 					}
 					break
 				case 20:
@@ -96,8 +97,8 @@ class ObstacleHelper {
 					let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
 					if (target != null && target.pos != player.pos) {
 						let pos = player.pos
-						player.forceMove(target.pos, false, "simple")
-						target.forceMove(pos, true, "simple")
+						player.game.playerForceMove(player,target.pos, false, "simple")
+						player.game.playerForceMove(target,pos, true, "simple")
 						others.push(target)
 					}
 					break
@@ -162,7 +163,7 @@ class ObstacleHelper {
 					break
 				case 36:
 					if (!isForceMoved) {
-						player.forceMove(player.lastpos, false, "levitate")
+						player.game.playerForceMove(player,player.lastpos, false, "levitate")
 					}
 					break
 				case 37:
@@ -227,14 +228,14 @@ class ObstacleHelper {
 				case 53:
 					let died = player.doObstacleDamage(30, "wave")
 					if (!died) {
-						player.forceMove(player.pos - 3, false, "simple")
+						player.game.playerForceMove(player,player.pos - 3, false, "simple")
 					}
 
 					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, false, false, true)
 					for (let p of others) {
 						let died = p.doObstacleDamage(30, "wave")
 						if (!died) {
-							p.forceMove(p.pos - 3, false, "simple")
+							player.game.playerForceMove(p,p.pos - 3, false, "simple")
 						}
 					}
 					break
@@ -242,18 +243,18 @@ class ObstacleHelper {
 					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, false, false, true)
 
 					for (let o of others) {
-						o.forceMove(player.pos, true, "simple")
+						player.game.playerForceMove(o,player.pos, true, "simple")
 					}
 					break
 				case 55:
 					let r = Math.floor(Math.random() * 10)
-					player.forceMove(player.pos - 3 + r, false, "levitate")
+					player.game.playerForceMove(player,player.pos - 3 + r, false, "levitate")
 					break
 				case 56:
 					let allplayers = player.game.playerSelector.getPlayersByCondition(player, 30, false, true, false, true)
 					if (allplayers.length !== 0) {
 						let r2 = Math.floor(Math.random() * allplayers.length)
-						player.forceMove(allplayers[r2].pos, true, "levitate")
+						player.game.playerForceMove(player,allplayers[r2].pos, true, "levitate")
 					}
 					break
 				case 57:
@@ -406,7 +407,7 @@ class ObstacleHelper {
 			case 2:
 				let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
 				if (target !== null && target !== undefined) {
-					player.forceMove(target.pos, true, "levitate")
+					player.game.playerForceMove(player,target.pos, true, "levitate")
 				}
 				break
 			case 3:
@@ -470,8 +471,12 @@ class PlayerFilter {
 }
 
 class PlayerSelector {
+	private isTeam:boolean
+
 	private players: Player[]
-	constructor() {
+	constructor(isTeam:boolean) {
+		this.isTeam=isTeam
+
 		this.players = []
 	}
 	addPlayer(player: Player) {
@@ -550,6 +555,27 @@ class PlayerSelector {
 		return result
 	}
 
+	getAlliesOf(turn:number){
+		if(!this.isTeam){
+			return [turn]
+		}
+		else
+		{
+			return this.players.filter((p)=>p.team===this.players[turn].team).map((p)=>p.turn)
+		}
+	}
+
+
+	getAlliesOfAsPlayer(me:Player){
+		if(!this.isTeam){
+			return [me]
+		}
+		else
+		{
+			return this.players.filter((p)=>p.team===me.team)
+		}
+		return []
+	}
 	/**
 	 * 공격가능한 플레이어 반환
 	 *@param {*} me 호출하는 플레이어
@@ -567,6 +593,16 @@ class PlayerSelector {
 				a.pos <= end &&
 				a.turn !== me.turn
 		)
+	}
+	isOpponent(turn1:number,turn2:number){
+		if (turn1 === turn2) {
+			return false
+		}
+		//팀 없거나 다를시
+		if (this.players[turn1].team !== this.players[turn2].team || !this.isTeam) {
+			return true
+		}
+		return false
 	}
 
 	//true if it is itself or same team , false if individual game or in different team
@@ -589,6 +625,24 @@ class PlayerSelector {
 			return true
 		}
 		return false
+	}
+
+	isValidOpponentInRadius(me:Player,other:Player,rad:number):boolean{
+		if (Math.abs(me.pos - other.pos) <= rad && this.isValidOpponent(me,other)) 
+		{
+			return true
+		}
+		return false
+	}
+	getAllValidOpponentInRadius(me:Player,pos:number,rad:number):Player[]{
+		let t=[]
+		for(let p of this.players){
+			if (Math.abs(pos - p.pos) <= rad && this.isValidOpponent(me,p)) 
+			{
+				t.push(p)
+			}
+		}
+		return t
 	}
 	/**
 	 * 범위내에서 가장가까운 플레이어 반환
@@ -623,6 +677,16 @@ class PlayerSelector {
 
 		for (let p of this.getAll()) {
 			if (this.isValidOpponent(me, p) && p.pos >= start && p.pos <= end) {
+				targets.push(p.turn)
+			}
+		}
+		return targets
+	}
+	getAlliesIn(me:Player,start:number,end:number){
+		let targets = []
+
+		for (let p of this.getAlliesOfAsPlayer(me)) {
+			if (p.pos >= start && p.pos <= end) {
 				targets.push(p.turn)
 			}
 		}
@@ -684,16 +748,18 @@ class AIHelper {
 		for (let i = 2; i >= 0; --i) {
 			//let slist = ["Q", "W", "ult"]
 			let skillresult = player.aiSkillFinalSelection(player.game.initSkill(i), i)
-			if (!skillresult) {
+			if (!skillresult || skillresult.data === -1) {
 				continue
 			}
-
+			// if (skillresult.data === -1) {
+			// 	return
+			// }
 			if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.LOCATION) {
 				//	console.log(skillresult)
-				if (skillresult.data === -1) {
-					return
-				}
-				player.game.placeProj(skillresult.data)
+				
+				player.game.placePendingSkillProj(skillresult.data)
+			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET) {
+				player.game.usePendingAreaSkill(skillresult.data)
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.TARGET) {
 				player.game.useSkillToTarget(skillresult.data)
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {
@@ -762,6 +828,35 @@ class AIHelper {
 			goal = targets[0]
 		}
 		return Math.floor(Math.min(me.game.playerSelector.get(goal).pos + 7 - skilldata.size, me.pos + skilldata.range / 2))
+	}
+
+	static getAiAreaPos(me: Player, skilldata: any, skill: number): number {
+		let goal = null
+		let targets = me.game.playerSelector.getPlayersIn(
+			me,
+			me.pos - 3 - Math.floor(skilldata.range / 2),
+			me.pos - 3 + Math.floor(skilldata.range / 2)
+		)
+		//	console.log("getAiProjPos" + targets)
+		if (targets.length === 0) {
+			return -1
+		}
+		if (targets.length === 1) {
+			//타겟이 1명일경우
+			goal = targets[0]
+			return Math.floor(me.game.playerSelector.get(goal).pos - skilldata.size + 1)
+			
+		} else {
+			//타겟이 여러명일경우
+			let ps = me.game.playerSelector.getAll()
+
+			//앞에있는플레이어 우선
+			targets.sort(function (b: number, a: number): number {
+				return ps[a].pos - ps[b].pos
+			})
+
+			return Math.floor(ps[0].pos - skilldata.size + 1)
+		}
 	}
 }
 
@@ -911,5 +1006,96 @@ class AIStoreInstance {
 		return ItemList.map((i: any) => i.name)
 	}
 }
+
+class EntityMediator{
+
+}
+
+
+interface PriorityWeightFunction{
+	(p:Entity):number
+}
+interface FilterConditionFunction{
+	(p:Entity):boolean
+}
+
+class WeightedOnePlayerFilter{
+
+
+	constructor(strategy:PriorityWeightFunction){
+
+	}
+
+}
+
+
+
+class EntityFilter{
+	public playerOnly:boolean
+	public enemyOnly:boolean
+	public dead:boolean
+	public invulnerable:boolean
+	public excludes:Set<Entity>
+	public ranges:{start:number,end:number}[]
+	public condition:FilterConditionFunction
+	public maxcount:number
+	public returnByTurn:boolean
+
+	static ALL=new EntityFilter(false)
+	static ALLPLAYER=new EntityFilter(true)
+	static ALLENEMY=new EntityFilter(true).excludeAlly()
+
+	constructor(playeronly:boolean){
+		this.maxcount=Infinity
+		this.playerOnly=playeronly
+		this.ranges=[]
+		this.enemyOnly=false
+		this.dead=false
+		this.invulnerable=false
+		this.excludes=new Set<Entity>()
+		this.condition=()=>true
+		this.returnByTurn=false
+	}
+
+
+	count(c:number){
+		this.maxcount=c
+		return this
+	}
+	byTurn(){
+		this.returnByTurn=true
+		return this
+	}
+	onlyIf(cond:FilterConditionFunction){
+		this.condition=cond
+		return this
+	}
+	exclude(ex:Entity){
+		this.excludes.add(ex)
+		return this
+	}
+	within(start:number,end:number){
+		this.ranges.push({start:start,end:end})
+		return this
+	}
+	withinRadius(center:number,range:number){
+		this.ranges.push({start:center-range,end:center+range})
+		return this
+	}
+	excludeAlly(){
+		this.enemyOnly=true
+		return this
+	}
+	includeDead(){
+		this.dead=true
+		return this
+	}
+	includeInvulnerable(){
+		this.invulnerable=true
+		return this
+	}
+
+}
+
 
 export { ObstacleHelper, PlayerSelector, AIHelper }

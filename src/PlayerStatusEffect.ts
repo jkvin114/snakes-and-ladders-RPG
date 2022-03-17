@@ -110,9 +110,6 @@ class PlayerStatusEffects {
 			)
 		}
 
-		
-
-
 		effect.applyTo(this.player)
 
 		console.log("applySpecial  " + effect.name + " " + this.player.turn)

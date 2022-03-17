@@ -1,5 +1,5 @@
 {
-    "version":"2.6.0",
+    "version":"2.7.0",
     "submarine_cooltime" :1,
     "pendingObsList":[6,21, 33, 37, 38, 63, 67],
     "ignoreStunObsList":[11,13,19,20,21,28,33,35,36,41,53,54,55,56],
@@ -38,5 +38,9 @@
         "name":"Bird",
         "imgdir":"bird.png",
         "bgcolor":"#ff8420"
+    },{
+        "name":"Tree",
+        "imgdir":"tree.png",
+        "bgcolor":"#d1a400"
     }]
 }

@@ -88,21 +88,18 @@ class Jean extends Player {
 	}
 	getSkillTrajectorySpeed(skilltype: string): number {
 		if (skilltype === "sniper_r") return 170
+
+		return 0
 	}
 
 	private buildProjectile() {
-		let _this: Player = this.getPlayer()
-		return new ProjectileBuilder({
-			owner: _this,
-			size: 3,
-			skill: ENUM.SKILL.W,
-			type: Jean.PROJ_W
-		})
-			.setGame(this.game)
+		return new ProjectileBuilder(this.game,Jean.PROJ_W,Projectile.TYPE_RANGE)
 			.setSkillRange(30)
 			.setAction(function (target: Player) {
 				target.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			})
+			.setSize(3)
+			.setSource(this.turn)
 			.setDuration(2)
 			.build()
 	}
@@ -135,12 +132,11 @@ class Jean extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(target: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.W) {
 			let proj = this.buildProjectile()
-			this.projectile.push(proj)
 			this.startCooltime(ENUM.SKILL.W)
 
 			return proj

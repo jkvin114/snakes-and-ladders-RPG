@@ -97,16 +97,12 @@ class Creed extends Player {
 
 	private buildProjectile() {
 		let _this: Player = this
-		return new ProjectileBuilder({
-			owner: _this,
-			size: 3,
-			skill: ENUM.SKILL.W,
-			type: Creed.PROJ_W
-		})
-			.setGame(this.game)
+		return new ProjectileBuilder(this.game,Creed.PROJ_W,Projectile.TYPE_RANGE)
+			.setSize(3)
+			.setSource(this.turn)
 			.setSkillRange(30)
 			.setAction(function (target: Player) {
-				target.forceMove(target.pos - 4, false, "simple")
+				target.game.playerForceMove(target,target.pos - 4, false, "simple")
 			})
 			.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
 			.setDuration(2)
@@ -142,12 +138,11 @@ class Creed extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(target: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.W) {
 			let proj = this.buildProjectile()
-			this.projectile.push(proj)
 			this.startCooltime(ENUM.SKILL.W)
 			return proj
 		}
@@ -191,7 +186,7 @@ class Creed extends Player {
 				this.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
-				this.forceMove(this.game.playerSelector.get(target).pos, true, "levitate")
+				this.game.playerForceMove(this,this.game.playerSelector.get(target).pos, true, "levitate")
 				damage = new SkillDamage(new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),ENUM.SKILL.ULT)
 				break
 		}

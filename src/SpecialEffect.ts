@@ -77,6 +77,20 @@ export namespace SpecialEffect {
 			name: "ghost_r",
 			desc: "Receives magic damage for 3 turns",
 			desc_kor: "3턴에걸쳐 마법 피해를 받음"
+		},
+        TREE_WITHER: {
+			isgood:true,
+            src:"character/tree_low_hp.png",
+			name: "tree_wither",
+			desc: "Unable to heal ally with Lv1 skill, Damage absorbtion 15% increased, LV3 skill root duration increased.",
+			desc_kor: "Q 스킬로 아군 화복 불가, 모든 피해 흡혈 15% 증가, 궁극기 속박 지속시간 증가"
+		},
+        TREE_ULT: {
+			isgood:false,
+            src:"character/9-3.png",
+			name: "tree_ult",
+			desc: "Incoming damage from enemies increases by 20%",
+			desc_kor: "적에게 받는 피해 20% 증가"
 		}
 	}
 	export const ITEM={

@@ -128,17 +128,13 @@ class Bird extends Player {
 	private buildProjectile() {
 		let _this: Player = this
 
-		return new ProjectileBuilder({
-			owner: _this,
-			size: 3,
-			skill: ENUM.SKILL.ULT,
-			type: Bird.PROJ_ULT_TRACE
-		})
-			.setGame(this.game)
+		return new ProjectileBuilder(this.game,Bird.PROJ_ULT_TRACE,Projectile.TYPE_RANGE)
+			.setSize(3)
+			.setSource(this.turn)
 			.setAction((target: Player)=> {
 				target.effects.applySpecial(this.getUltBurn(),SpecialEffect.SKILL.BIRD_ULT_BURN.name)
 			})
-			.setNotDisappearWhenStep()
+			.addFlag(Projectile.FLAG_NOT_DISAPPER_ON_STEP)
 			.setDuration(2)
 			.build()
 	}
@@ -194,6 +190,8 @@ class Bird extends Player {
 
 		// this.ability.update("attackRange", 2)
 		this.changeApperance(Bird.APPERANCE_ULT)
+		this.changeSkillImage("bird_r_q",ENUM.SKILL.Q)
+
 		this.showEffect(Bird.VISUALEFFECT_ULT, this.turn)
 	}
 
@@ -235,7 +233,7 @@ class Bird extends Player {
 		return damage
 	}
 
-	getSkillProjectile(t: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		return null
 	}
 
@@ -267,7 +265,6 @@ class Bird extends Player {
 
 				if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 					let proj = this.buildProjectile()
-					this.projectile.push(proj)
 					this.game.placeProjNoSelection(proj, this.game.playerSelector.get(target).pos - 1)
 					damage.updateMagicDamage(CALC_TYPE.plus, this.ability.AP * 0.5)
 				}
@@ -282,6 +279,8 @@ class Bird extends Player {
 		if (skill === ENUM.SKILL.ULT) {
 			// this.ability.update("attackRange", -2)
 			this.changeApperance("")
+			this.changeSkillImage("",ENUM.SKILL.Q)
+
 		}
 		if (skill === ENUM.SKILL.W) {
 		}

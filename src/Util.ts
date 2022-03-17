@@ -190,7 +190,7 @@ class SkillDamage{
 	}
 
 }
-
+export const clamp=(num:number,start:number,end:number)=>Math.max(Math.min(num,end),start)
 export const decrement = (val: number): number => Math.max(val - 1, 0)
 /**
  * copy elements in arr2 to arr1 without creating new array
@@ -446,6 +446,7 @@ class SkillTargetSelector {
 	skill_id: number
 	range: number
 	projSize: number
+	areaSize:number
 	condition:SkillTargetConditionFunction
 	conditionedRange:number
 
@@ -454,6 +455,7 @@ class SkillTargetSelector {
 		this.skill_id
 		this.range=-1
 		this.projSize
+		this.areaSize
 		this.condition
 		this.conditionedRange=0
 
@@ -468,6 +470,10 @@ class SkillTargetSelector {
 	}
 	setRange(r: number) {
 		this.range = r
+		return this
+	}
+	setAreaSize(size:number){
+		this.areaSize=size
 		return this
 	}
 
@@ -487,6 +493,9 @@ class SkillTargetSelector {
 		this.projSize = s
 		return this
 	}
+	isAreaTarget(): boolean {
+		return this.resultType === ENUM.SKILL_INIT_TYPE.AREA_TARGETING
+	}
 	isNonTarget(): boolean {
 		return this.resultType === ENUM.SKILL_INIT_TYPE.NON_TARGET
 	}
@@ -498,6 +507,20 @@ class SkillTargetSelector {
 	}
 }
 
+
+class UniqueIdGenerator{
+	count:number
+	prefix:string
+	constructor(prefix:string){
+		this.count=1
+		this.prefix=prefix
+	}
+	generate(){
+		this.count+=1
+		return this.prefix + String(this.count)
+	}
+	
+}
 //added 2021.07.07
 
-export { Damage,ActiveItem, MapStorage, HPChangeData, CALC_TYPE, SkillTargetSelector ,PercentDamage,SkillDamage}
+export { Damage,ActiveItem, MapStorage, HPChangeData, CALC_TYPE, SkillTargetSelector ,PercentDamage,SkillDamage,UniqueIdGenerator}

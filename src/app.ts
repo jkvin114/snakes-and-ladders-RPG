@@ -509,6 +509,16 @@ io.on("connect", function (socket: Socket) {
 		let skillstatus = ROOMS.get(rname).user_choseSkillLocation(location)
 		socket.emit("server:used_skill", skillstatus)
 	})
+	socket.on("user:chose_area_skill_location", function (crypt_turn: string, location: any) {
+		//	console.log("sendprojlocation")
+		let rname=SocketSession.getRoomName(socket)
+
+
+		if (!ROOMS.has(rname)) return
+		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		let skillstatus = ROOMS.get(rname).user_choseAreaSkillLocation(location)
+		socket.emit("server:used_skill", skillstatus)
+	})
 	//==========================================================================================
 
 	socket.on("user:store_data", function (data: any) {
@@ -668,10 +678,14 @@ export class PlayerClientInterface {
 
 	static playsound = (rname: string, sound: string) => io.to(rname).emit("server:sound", sound)
 
-	static placePassProj = (rname: string, type: string, pos: number, UPID: string) =>
-		io.to(rname).emit("server:create_passprojectile", { type: type, pos: pos, UPID: UPID })
+	static placePassProj = (rname: string, data:any) =>
+		io.to(rname).emit("server:create_passprojectile", data)
 
 	static placeProj = (rname: string, proj: any) => io.to(rname).emit("server:create_projectile", proj)
+	
+	static summonEntity = (rname: string, entity: any) => io.to(rname).emit("server:create_entity", entity)
+
+	static deleteEntity = (rname: string, UEID:string,iskilled:boolean) => io.to(rname).emit("server:delete_entity", UEID,iskilled)
 
 	static update = (rname: string, type: string, turn: number, amt: any) =>
 		io.to(rname).emit("server:update_other_data", { type: type, turn: turn, amt: amt })
@@ -751,6 +765,7 @@ app.get("/stat/result", function (req: express.Request, res: express.Response) {
 	let rname=req.session.roomname
 
 	if (rname != null && ROOMS.has(rname.toString())) {
+		ROOMS.get(rname).reset()
 		ROOMS.delete(rname.toString())
 	}
 

@@ -163,7 +163,7 @@ class Yangyi extends Player {
 			this.startCooltime(ENUM.SKILL.W)
 			this.effects.apply(ENUM.EFFECT.SLOW, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			this.effects.applySpecial(
-				new NormalEffect(ENUM.EFFECT.DINOSAUR_W, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL),
+				new NormalEffect(ENUM.EFFECT.DINOSAUR_W, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL).setGood(),
 				SpecialEffect.SKILL.DINOSAUR_W_HEAL.name
 			)
 		}
@@ -209,7 +209,7 @@ class Yangyi extends Player {
 		//     this.w_end()
 		// }
 	}
-	getSkillProjectile(t: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		return null
 	}
 	/**

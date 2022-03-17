@@ -419,7 +419,7 @@ class Room {
 				console.log("obscomplete")
 				this.user_obstacleComplete()
 			}, 700)
-		}, 1300 + movedistance * 100)
+		}, 1300 + Math.abs(movedistance) * 100)
 	}
 
 	user_arriveSquare(): number {
@@ -449,7 +449,7 @@ class Room {
 				setTimeout(() => {
 					if (!this.game) return
 					this.goNextTurn()
-				}, 800)
+				}, 1000)
 
 				//	console.log("ai go nextturn")
 			} else {
@@ -539,7 +539,17 @@ class Room {
 			return
 		}
 
-		this.game.placeProj(location)
+		this.game.placePendingSkillProj(location)
+		return this.game.getSkillStatus()
+	}
+	user_choseAreaSkillLocation(location:any){
+		this.stopIdleTimeout()
+		this.startIdleTimeout(() => this.goNextTurn())
+		if (location === "canceled") {
+			return
+		}
+
+		this.game.usePendingAreaSkill(location)
 		return this.game.getSkillStatus()
 	}
 

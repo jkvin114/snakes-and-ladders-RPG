@@ -39,4 +39,3 @@ class PassProjectile {
 	}
 }
 
-export {PassProjectile}

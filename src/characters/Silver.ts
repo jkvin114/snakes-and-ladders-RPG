@@ -157,7 +157,7 @@ class Silver extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(t: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		return null
 	}
 

@@ -99,13 +99,9 @@ class Gorae extends Player {
 
 	private buildProjectile() {
 		let _this: Player = this.getPlayer()
-		return new ProjectileBuilder({
-			owner: _this,
-			size: 2,
-			skill: ENUM.SKILL.Q,
-			type: Gorae.PROJ_Q
-		})
-		.setGame(this.game)
+		return new ProjectileBuilder(this.game,Gorae.PROJ_Q,Projectile.TYPE_RANGE)
+		.setSize(2)
+		.setSource(this.turn)
 		.setSkillRange(15)
 		.setDuration(2)
         .setDamage(new Damage( 0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0))
@@ -167,12 +163,11 @@ class Gorae extends Player {
 		}
 		this.startCooltime(ENUM.SKILL.W)
 	}
-	getSkillProjectile(target: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.Q) {
 			let proj = this.buildProjectile()
-			this.projectile.push(proj)
 			this.startCooltime(ENUM.SKILL.Q)
 			return proj
 		}

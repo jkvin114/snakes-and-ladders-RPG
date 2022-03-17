@@ -101,13 +101,9 @@ class Jellice extends Player {
 	}
 	private buildProjectile() {
 		let _this: Player = this.getPlayer()
-		return new ProjectileBuilder({
-			owner: _this,
-			size: 3,
-			skill: ENUM.SKILL.ULT,
-			type: Jellice.PROJ_ULT
-		})
-			.setGame(this.game)
+		return new ProjectileBuilder(this.game,Jellice.PROJ_ULT,Projectile.TYPE_RANGE)
+			.setSize(3)
+			.setSource(this.turn)
 			.setSkillRange(30)
 			.setAction(function (target: Player) {
 				target.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
@@ -204,13 +200,12 @@ class Jellice extends Player {
 		return super.getBaseBasicAttackDamage()
 	}
 
-	getSkillProjectile(t: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 
 		if (s === ENUM.SKILL.ULT) {
 			let proj = this.buildProjectile()
-			this.projectile.push(proj)
 			this.u_used += 1
 			if (this.u_used === 3) {
 				this.startCooltime(ENUM.SKILL.ULT)

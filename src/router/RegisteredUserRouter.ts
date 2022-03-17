@@ -41,10 +41,10 @@ function checkPasswordValidity(pw:string){
     if(pw.length<=3){
         return false
     }
-    if(pw.match(/[0-9]/)==null){
+    if(pw.match(/[0-9]/)===null){
         return false
     }
-    if(pw.match(/[a-z,A-Z]/)==null){
+    if(pw.match(/[a-z,A-Z]/)===null){
         return false
     }
     return true

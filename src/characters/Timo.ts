@@ -118,13 +118,9 @@ class Timo extends Player {
 
 
 
-		return new ProjectileBuilder({
-			owner: _this,
-			size: 4,
-			skill: ENUM.SKILL.ULT,
-			type: Timo.PROJ_ULT
-		})
-			.setGame(this.game)
+		return new ProjectileBuilder(this.game,Timo.PROJ_ULT,Projectile.TYPE_RANGE)
+			.setSize(4)
+			.setSource(this.turn)
 			.setSkillRange(30)
 			.setAction(function (target: Player) {
 				target.effects.applySpecial(effect, SpecialEffect.SKILL.GHOST_ULT.name)
@@ -175,12 +171,11 @@ class Timo extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(target: number): Projectile {
+	getSkillProjectile(pos:number): Projectile {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.ULT) {
 			let proj = this.buildProjectile()
-			this.projectile.push(proj)
 			this.startCooltime(ENUM.SKILL.ULT)
 			return proj
 		}

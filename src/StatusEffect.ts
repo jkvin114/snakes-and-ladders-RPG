@@ -28,22 +28,22 @@ enum EFFECT_TIMING {
 class EffectFactory {
 	
 
-	static create(effect: EFFECT) {
-		switch (effect) {
+	static create(effect_id: EFFECT) {
+		switch (effect_id) {
 			case EFFECT.MAGIC_CASTLE_ADAMAGE:
-				return new OnHitEffect(effect, 1, (owner: Player, t: Player, damage: Damage) => {
+				return new OnHitEffect(effect_id, 1, (owner: Player, t: Player, damage: Damage) => {
 					return damage.updateTrueDamage(CALC_TYPE.plus, owner.ability.getMagicCastleDamage())
 				})
 					.setGood()
 					.on(OnHitEffect.SKILLATTACK)
 			case EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY:
 					return new AblityChangeEffect(
-						effect,
+						effect_id,
 						1,
 						new Map().set("moveSpeed", 1)
 					).setGood()
 			case EFFECT.ITEM_SHIELDSWORD_ABSORB:
-				return new AblityChangeEffect(EFFECT.ITEM_SHIELDSWORD_ABSORB, 2, new Map().set("absorb", 30)).setGood()
+				return new AblityChangeEffect(effect_id, 2, new Map().set("absorb", 30)).setGood()
 		}
 	}
 }
@@ -275,7 +275,7 @@ abstract class StatusEffect {
 	public isgood: boolean
 	public owner: Player
 	public readonly timing: EFFECT_TIMING
-	public id: EFFECT
+	public readonly id: EFFECT
 	public name: string
 	public sourceTurn: number
 	public effectType: EFFECT_TYPE
@@ -304,15 +304,10 @@ abstract class StatusEffect {
 		this.name = name
 		return this
 	}
-	setId(id: number) {
-		this.id = id
-		return this
-	}
 	setGood() {
 		this.isgood = true
 		return this
 	}
-
 	setSourcePlayer(sourceturn: number) {
 		this.sourceTurn = sourceturn
 		return this
