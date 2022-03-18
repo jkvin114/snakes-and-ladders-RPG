@@ -5,12 +5,14 @@ import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import { SpecialEffect } from "../SpecialEffect"
-// import SETTINGS = require("../../res/globalsettings.json")
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
+
 const ID = 0
 class Creed extends Player {
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
+	readonly skill_ranges: number[]
 
 	itemtree: {
 		level: number
@@ -21,20 +23,24 @@ class Creed extends Player {
 	private usedQ: boolean
 	readonly duration_list: number[]
 
+	skillInfo:SkillInfoFactory
+	skillInfoKor:SkillInfoFactory
 	static PROJ_W='reaper_w'
 	static Q_SHIELD="reaper_q"
 	static ULT_SHIELD="reaper_ult"
-	
+	static SKILL_EFFECT_NAME=["reaper_q", "reaper_w", "reaper_r"]
+
+	static SKILL_SCALES=SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:200, ad:20, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
 		super(turn, team, game, ai, ID, name, basic_stats)
 		this.hpGrowth = 100
+		this.skill_ranges=[7,30,20]
 
 		this.cooltime_list = [3, 4, 9]
 		this.duration_list=[0,0,0]
-		this.skill_name = ["reaper_q", "reaper_w", "reaper_r"]
 		this.itemtree = {
 			level: 0,
 			items: [
@@ -48,28 +54,10 @@ class Creed extends Player {
 			final: ITEM.EPIC_SWORD
 		}
 		this.usedQ = false
+		
+
 	}
 
-	getSkillInfoKor() {
-		let info: string[] = []
-		info[0] =
-			"[절단] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴<br>사정거리:7,최대 두번 칼로 뚫어 " +
-			this.getSkillBaseDamage(0) +
-			"의 물리 피해를 입힘,두번째 사용시 50%의 피해를 입힘"
-		info[1] =
-			"[바람 가르기] 쿨타임:" +
-			this.cooltime_list[1] +
-			"턴<br>사정거리:30 ,맞은 플레이어를 4칸 뒤로 이동시키는 <br> 범위 3칸의 토네이도 발사"
-		info[2] =
-			"[태풍] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴<br>사정거리: 20, 사용시 대상에게 순간이동해 " +
-			this.getSkillBaseDamage(2) +
-			"의 물리 피해를 입힘<br>자신보다 앞에 있는 상대에게는 70%의 피해를 입힘"
-		return info
-	}
 
 	getSkillInfoEng() {
 		let info: string[] = []
@@ -91,6 +79,10 @@ class Creed extends Player {
 			" attack damage<br>30% less damage to the target to the front"
 		return info
 	}
+	getSkillScale(){
+		return Creed.SKILL_SCALES
+	}
+
 	getSkillTrajectorySpeed(skilltype: string): number {
 		return 0
 	}
@@ -131,7 +123,7 @@ class Creed extends Player {
 		return skillTargetSelector
 	}
 	getSkillName(skill: number): string {
-		return this.skill_name[skill]
+		return Creed.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
@@ -147,12 +139,12 @@ class Creed extends Player {
 			return proj
 		}
 	}
-	private getSkillBaseDamage(skill: number): number {
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(20 + this.ability.AD)
+			return this.calculateScale(Creed.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return Math.floor(70 + 0.8 * this.ability.AD)
+			return this.calculateScale(Creed.SKILL_SCALES.Q)
 		}
 	}
 	private getQShield(shieldamt:number){

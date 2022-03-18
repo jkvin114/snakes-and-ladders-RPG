@@ -9,6 +9,9 @@ import PlayerInventory from "./PlayerInventory"
 import { EffectFactory, StatusEffect } from "./StatusEffect"
 import { SpecialEffect } from "./SpecialEffect"
 import { Entity } from "./Entity"
+import { statuseffect_kor,statuseffect} from "../res/string_resource.json"
+
+
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
 		let others: Player[] = []
@@ -87,7 +90,7 @@ class ObstacleHelper {
 				case 19:
 					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, true, false, true)
 					for (let o of others) {
-						player.game.playerForceMove(o,player.pos, true, "simple")
+						player.game.playerForceMove(o, player.pos, true, "simple")
 					}
 					break
 				case 20:
@@ -97,8 +100,8 @@ class ObstacleHelper {
 					let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
 					if (target != null && target.pos != player.pos) {
 						let pos = player.pos
-						player.game.playerForceMove(player,target.pos, false, "simple")
-						player.game.playerForceMove(target,pos, true, "simple")
+						player.game.playerForceMove(player, target.pos, false, "simple")
+						player.game.playerForceMove(target, pos, true, "simple")
 						others.push(target)
 					}
 					break
@@ -163,7 +166,7 @@ class ObstacleHelper {
 					break
 				case 36:
 					if (!isForceMoved) {
-						player.game.playerForceMove(player,player.lastpos, false, "levitate")
+						player.game.playerForceMove(player, player.lastpos, false, "levitate")
 					}
 					break
 				case 37:
@@ -228,14 +231,14 @@ class ObstacleHelper {
 				case 53:
 					let died = player.doObstacleDamage(30, "wave")
 					if (!died) {
-						player.game.playerForceMove(player,player.pos - 3, false, "simple")
+						player.game.playerForceMove(player, player.pos - 3, false, "simple")
 					}
 
 					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, false, false, true)
 					for (let p of others) {
 						let died = p.doObstacleDamage(30, "wave")
 						if (!died) {
-							player.game.playerForceMove(p,p.pos - 3, false, "simple")
+							player.game.playerForceMove(p, p.pos - 3, false, "simple")
 						}
 					}
 					break
@@ -243,18 +246,18 @@ class ObstacleHelper {
 					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, false, false, true)
 
 					for (let o of others) {
-						player.game.playerForceMove(o,player.pos, true, "simple")
+						player.game.playerForceMove(o, player.pos, true, "simple")
 					}
 					break
 				case 55:
 					let r = Math.floor(Math.random() * 10)
-					player.game.playerForceMove(player,player.pos - 3 + r, false, "levitate")
+					player.game.playerForceMove(player, player.pos - 3 + r, false, "levitate")
 					break
 				case 56:
 					let allplayers = player.game.playerSelector.getPlayersByCondition(player, 30, false, true, false, true)
 					if (allplayers.length !== 0) {
 						let r2 = Math.floor(Math.random() * allplayers.length)
-						player.game.playerForceMove(player,allplayers[r2].pos, true, "levitate")
+						player.game.playerForceMove(player, allplayers[r2].pos, true, "levitate")
 					}
 					break
 				case 57:
@@ -407,7 +410,7 @@ class ObstacleHelper {
 			case 2:
 				let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
 				if (target !== null && target !== undefined) {
-					player.game.playerForceMove(player,target.pos, true, "levitate")
+					player.game.playerForceMove(player, target.pos, true, "levitate")
 				}
 				break
 			case 3:
@@ -471,11 +474,11 @@ class PlayerFilter {
 }
 
 class PlayerSelector {
-	private isTeam:boolean
+	private isTeam: boolean
 
 	private players: Player[]
-	constructor(isTeam:boolean) {
-		this.isTeam=isTeam
+	constructor(isTeam: boolean) {
+		this.isTeam = isTeam
 
 		this.players = []
 	}
@@ -555,24 +558,19 @@ class PlayerSelector {
 		return result
 	}
 
-	getAlliesOf(turn:number){
-		if(!this.isTeam){
+	getAlliesOf(turn: number) {
+		if (!this.isTeam) {
 			return [turn]
-		}
-		else
-		{
-			return this.players.filter((p)=>p.team===this.players[turn].team).map((p)=>p.turn)
+		} else {
+			return this.players.filter((p) => p.team === this.players[turn].team).map((p) => p.turn)
 		}
 	}
 
-
-	getAlliesOfAsPlayer(me:Player){
-		if(!this.isTeam){
+	getAlliesOfAsPlayer(me: Player) {
+		if (!this.isTeam) {
 			return [me]
-		}
-		else
-		{
-			return this.players.filter((p)=>p.team===me.team)
+		} else {
+			return this.players.filter((p) => p.team === me.team)
 		}
 		return []
 	}
@@ -594,7 +592,7 @@ class PlayerSelector {
 				a.turn !== me.turn
 		)
 	}
-	isOpponent(turn1:number,turn2:number){
+	isOpponent(turn1: number, turn2: number) {
 		if (turn1 === turn2) {
 			return false
 		}
@@ -627,18 +625,16 @@ class PlayerSelector {
 		return false
 	}
 
-	isValidOpponentInRadius(me:Player,other:Player,rad:number):boolean{
-		if (Math.abs(me.pos - other.pos) <= rad && this.isValidOpponent(me,other)) 
-		{
+	isValidOpponentInRadius(me: Player, other: Player, rad: number): boolean {
+		if (Math.abs(me.pos - other.pos) <= rad && this.isValidOpponent(me, other)) {
 			return true
 		}
 		return false
 	}
-	getAllValidOpponentInRadius(me:Player,pos:number,rad:number):Player[]{
-		let t=[]
-		for(let p of this.players){
-			if (Math.abs(pos - p.pos) <= rad && this.isValidOpponent(me,p)) 
-			{
+	getAllValidOpponentInRadius(me: Player, pos: number, rad: number): Player[] {
+		let t = []
+		for (let p of this.players) {
+			if (Math.abs(pos - p.pos) <= rad && this.isValidOpponent(me, p)) {
 				t.push(p)
 			}
 		}
@@ -682,7 +678,7 @@ class PlayerSelector {
 		}
 		return targets
 	}
-	getAlliesIn(me:Player,start:number,end:number){
+	getAlliesIn(me: Player, start: number, end: number) {
 		let targets = []
 
 		for (let p of this.getAlliesOfAsPlayer(me)) {
@@ -756,7 +752,7 @@ class AIHelper {
 			// }
 			if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.LOCATION) {
 				//	console.log(skillresult)
-				
+
 				player.game.placePendingSkillProj(skillresult.data)
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET) {
 				player.game.usePendingAreaSkill(skillresult.data)
@@ -845,7 +841,6 @@ class AIHelper {
 			//타겟이 1명일경우
 			goal = targets[0]
 			return Math.floor(me.game.playerSelector.get(goal).pos - skilldata.size + 1)
-			
 		} else {
 			//타겟이 여러명일경우
 			let ps = me.game.playerSelector.getAll()
@@ -1007,95 +1002,502 @@ class AIStoreInstance {
 	}
 }
 
-class EntityMediator{
+class EntityMediator {}
 
+interface PriorityWeightFunction {
+	(p: Entity): number
+}
+interface FilterConditionFunction {
+	(p: Entity): boolean
 }
 
-
-interface PriorityWeightFunction{
-	(p:Entity):number
-}
-interface FilterConditionFunction{
-	(p:Entity):boolean
+class WeightedOnePlayerFilter {
+	constructor(strategy: PriorityWeightFunction) {}
 }
 
-class WeightedOnePlayerFilter{
+class EntityFilter {
+	public playerOnly: boolean
+	public enemyOnly: boolean
+	public dead: boolean
+	public invulnerable: boolean
+	public excludes: Set<Entity>
+	public ranges: { start: number; end: number }[]
+	public condition: FilterConditionFunction
+	public maxcount: number
+	public returnByTurn: boolean
 
+	static ALL = new EntityFilter(false)
+	static ALLPLAYER = new EntityFilter(true)
+	static ALLENEMY = new EntityFilter(true).excludeAlly()
 
-	constructor(strategy:PriorityWeightFunction){
-
+	constructor(playeronly: boolean) {
+		this.maxcount = Infinity
+		this.playerOnly = playeronly
+		this.ranges = []
+		this.enemyOnly = false
+		this.dead = false
+		this.invulnerable = false
+		this.excludes = new Set<Entity>()
+		this.condition = () => true
+		this.returnByTurn = false
 	}
 
-}
-
-
-
-class EntityFilter{
-	public playerOnly:boolean
-	public enemyOnly:boolean
-	public dead:boolean
-	public invulnerable:boolean
-	public excludes:Set<Entity>
-	public ranges:{start:number,end:number}[]
-	public condition:FilterConditionFunction
-	public maxcount:number
-	public returnByTurn:boolean
-
-	static ALL=new EntityFilter(false)
-	static ALLPLAYER=new EntityFilter(true)
-	static ALLENEMY=new EntityFilter(true).excludeAlly()
-
-	constructor(playeronly:boolean){
-		this.maxcount=Infinity
-		this.playerOnly=playeronly
-		this.ranges=[]
-		this.enemyOnly=false
-		this.dead=false
-		this.invulnerable=false
-		this.excludes=new Set<Entity>()
-		this.condition=()=>true
-		this.returnByTurn=false
-	}
-
-
-	count(c:number){
-		this.maxcount=c
+	count(c: number) {
+		this.maxcount = c
 		return this
 	}
-	byTurn(){
-		this.returnByTurn=true
+	byTurn() {
+		this.returnByTurn = true
 		return this
 	}
-	onlyIf(cond:FilterConditionFunction){
-		this.condition=cond
+	onlyIf(cond: FilterConditionFunction) {
+		this.condition = cond
 		return this
 	}
-	exclude(ex:Entity){
+	exclude(ex: Entity) {
 		this.excludes.add(ex)
 		return this
 	}
-	within(start:number,end:number){
-		this.ranges.push({start:start,end:end})
+	within(start: number, end: number) {
+		this.ranges.push({ start: start, end: end })
 		return this
 	}
-	withinRadius(center:number,range:number){
-		this.ranges.push({start:center-range,end:center+range})
+	withinRadius(center: number, range: number) {
+		this.ranges.push({ start: center - range, end: center + range })
 		return this
 	}
-	excludeAlly(){
-		this.enemyOnly=true
+	excludeAlly() {
+		this.enemyOnly = true
 		return this
 	}
-	includeDead(){
-		this.dead=true
+	includeDead() {
+		this.dead = true
 		return this
 	}
-	includeInvulnerable(){
-		this.invulnerable=true
+	includeInvulnerable() {
+		this.invulnerable = true
 		return this
 	}
-
 }
 
+class SkillInfoFactory {
+	static LANG_KOR = 1
+	static LANG_ENG = 0
+	char: number
+	plyr: Player
+	names: string[]
+	lang: number
+	static SKILL_NAME = [
+		["Scythe Strike", "Reaping Wind", "Grave Delivery"],
+		["Tusk Attack", "Curse of Ivory", "Strengthen"],
+		["Blind Curse", "Phantom Menace", "Poison Bomb"],
+		["Claw Strike", "Regeneration", "Burning at the Stake"],
+		["Gunfire", "Net Trap", "Target Locked"],
+		["Chain Lightning", "Burning Spellbook", "Dark Magic Circle"],
+		["Tenacle Strike", "Protective Water", "Predation"],
+		["Beak Attack", "Baby Birds", "Phenix Transform"],
+		["Sweet Fruit", "Vine Trap", "Root Prison"]
+	]
+	static SKILL_NAME_KOR = [
+		["절단", "바람 가르기", "태풍"],
+		["암흑의 표창", "도발", "실버의 갑옷"],
+		["실명", "재빠른 이동", "죽음의 독버섯"],
+		["양이의 손톱", "양이의 고민", "양이의 불"],
+		["원거리 소총", "덫 함정", "저격수의 극장"],
+		["직선 번개", "몸체 고정", "마법진 파티"],
+		["촉수 채찍", "보호의 물", "블랙홀"],
+		["날렵한 부리", "아기새 소환", "불사조 소환"],
+		["달콤한 열매", "덩굴 함정", "뿌리 감옥"]
+	]
+	constructor(char: number, plyr: Player, lang: number) {
+		this.plyr = plyr
+		this.char = char
+		this.names = SkillInfoFactory.SKILL_NAME[char]
+		this.lang = lang
+		if (lang === SkillInfoFactory.LANG_KOR) {
+			this.names = SkillInfoFactory.SKILL_NAME_KOR[char]
+		}
+	}
+	hotkey(s: number) {
+		return ["Q", "W", "R"][s]
+	}
+	active(){
+		return "<br>"+this.chooseLang("[Active]","[사용시]")+": "
+	}
+	passive(){
+		return this.chooseLang("[Passive]","[기본 지속 효과]")+": "
+	}
+	chooseLang<T>(eng:T,kor:T):T{
+		return this.lang===SkillInfoFactory.LANG_KOR?kor:eng
+	}
 
-export { ObstacleHelper, PlayerSelector, AIHelper }
+	nameTitle(s: number) {
+		return `[${this.hotkey(s)}] {${this.names[s]}}  <cool>
+		${this.plyr.cooltime_list[s]}${this.chooseLang("turns","턴")}</><br>`
+	}
+	cooltime(){
+		return `<cool>${this.chooseLang("cooltime","쿨타임")}</>`
+	}
+	nameDesc(s: number) {
+		return `<skill><skillimg${this.char + 1}-${s+1}>${this.names[s]}</>`
+	}
+	lowerbound(str:string){
+		return `<lowerbound>${str}</>`
+	}
+	upperbound(str:string){
+		return `<upperbound>${str}</>`
+	}
+	up(str:string){
+		return `<up>${str}</>`
+	}
+	down(str:string){
+		return `<down>${str}</>`
+	}
+	stat(str:string){
+		return `<stat>${str}</>`
+	}
+	range(s:number){
+		return this.rangeNum(this.plyr.skill_ranges[s])
+	}
+	currHp(){
+		return `<currHP>${this.chooseLang(" current HP"," 현재체력")}</>`
+	}
+	maxHP(){
+		return `<maxHP>${this.chooseLang(" maximum HP"," 최대체력")}</>`
+	}
+	missingHp(){
+		return `<missingHP>${this.chooseLang(" missing HP"," 잃은체력")}</>`
+	}
+	rangeNum(r:number){
+		return `<range>${this.chooseLang("Range: ","사정거리: ")}${r}, </>`
+	}
+	rangeStr(){
+		return `<range>${this.chooseLang("Range","사정거리")}</>`
+	}
+	area(s:number){
+		return `<area>${this.chooseLang(`Select ${s} Squares`,s+"칸 범위를 선택")}</>`
+	}
+	mDmg(d:number|string,scale?:string){
+		if(scale==null){
+			return `<mdmg>${d}${this.chooseLang(" magic damage","의 마법 피해")}</>`
+		}
+		return `<mdmg><scale${scale}>${d}</>${this.chooseLang(" magic damage","의 마법 피해")}</>`
+	}
+	pDmg(d:number|string,scale?:string){
+		if(scale==null){
+			return `<pdmg>${d}${this.chooseLang(" attack damage","의 물리 피해")}</>`
+		}
+		return `<pdmg><scale${scale}>${d}</>${this.chooseLang(" attack damage","의 물리 피해")}</>`
+	}
+	tDmg(d:number|string,scale?:string){
+		if(scale==null){
+			return `<tdmg>${d}${this.chooseLang(" fixed damage","의 고정 피해")}</>`
+		}
+		return `<tdmg><scale${scale}>${d}</>${this.chooseLang(" fixed damage","의 고정 피해")}</>`
+	}
+
+	baseDmg(s:number){
+		return this.plyr.getSkillBaseDamage(s)
+	}
+	heal(amt:number,scaleCode?:string){
+		if(scaleCode==null){
+			let txt=`<heal>${amt}</>`
+			return this.chooseLang("heals "+txt+" HP",txt+"의 체력을 회복")
+		}
+
+		let txt=`<heal><scale${scaleCode}>${amt}</></>`
+		return this.chooseLang(`heals ${txt} HP`,`${txt}의 체력을 회복`)
+	}
+	money(amt:number){
+		return `<money>${amt+this.chooseLang("$","원")}</>`
+	}
+	shield(amt:number,scale?:string){
+		if(scale==null){
+			let txt=`<shield>${amt}</>`
+			return this.chooseLang("gains "+txt+" shield",txt+"의 보호막 획득")
+		}
+		let txt=`<shield><scale${scale}>${amt}</></>`
+
+		return this.chooseLang(`gains ${txt} shield`,`${txt}의 보호막 획득`)
+	}
+	skillAmt(key:string):number{
+		return this.plyr.getSkillAmount(key)
+	}
+	proj(name:string){
+		return `<proj>${this.chooseLang(`place a ${name}`,`${name} 설치`)}</>`
+	}
+	projsize(size:number){
+		return `<projsize>${this.chooseLang("Size:","크기:")}${size} </>,`
+	}
+	projsizeStr(size:number){
+		return `<projsize>${this.chooseLang("Size of","")}${size}${this.chooseLang("","칸 크기")} </>`
+	}
+	getEffectHeader(e:number){
+		let str=this.chooseLang(statuseffect[e],statuseffect_kor[e])
+		try{
+			if(str[0]==="{")
+			{
+				let name=str.match(/\{(.+)\}/)
+				return `<badeffect${e}>`+name[1]
+			}
+			else{
+				let name=str.match(/\[(.+)\]/)
+
+				return `<goodeffect${e}>`+name[1]
+			}
+		}
+		catch(e){
+			console.error(e)
+			return ""
+		}
+	}
+	effectNoDur(e:number){
+		return this.getEffectHeader(e)+ '</>'
+	}
+	effect(e:number,dur:number){
+		return this.chooseLang(this.effectEng(e,dur),this.effectKor(e,dur))
+	}
+	effectEng(e:number,dur:number){
+		return `${this.getEffectHeader(e)} ${dur} ${dur>1?"turns":"turn"} </>`
+	}
+	effectKor(e:number,dur:number){
+		return `${this.getEffectHeader(e)} ${dur} 턴</>`
+	}
+	duration(d:number){
+		return `<duration>${d}${this.chooseLang(d>1?"turns":"turn","턴")}</>`
+	}
+	radius(r:number){
+		return `<radius>${this.chooseLang(`within ${r} squares`,`반경 ${r}칸 이내`)}</>`
+	}
+	radiusStr(r:string){
+		return `<radius>${this.chooseLang(`within ${r} squares`,`반경 ${r}칸 이내`)}</>`
+	}
+	basicattack(){
+		return `<basicattack>${this.chooseLang(`basic attack`,`기본 공격`)}</>`
+	}
+	target(){
+		return `<target>${this.chooseLang(`targer`,`대상`)}</>`
+	}
+	getQ() {
+		if(this.lang===SkillInfoFactory.LANG_KOR)
+			return this.getQKor()
+
+		let str
+		const s = 0
+		const hotkey=this.hotkey(s)
+		switch (this.char) {
+			case 0:
+				str=this.nameTitle(s)+this.range(s)+`${this.target()}에게 ${this.pDmg(this.baseDmg(s),hotkey)}를 입힘
+				.두번 시전 가능, 두번째 사용시 50%의 피해를 입힘`
+				break
+			case 8:
+				str = this.nameTitle(s)+this.passive()+`체력이 ${this.lowerbound("40% 미만")}이면 '시든 나무' 상태 돌입, 
+				'시든 나무' 상태에선 ${this.nameDesc(s)} 으로 아군 회복이 불가하지만
+				 ${this.stat("모든 피해 흡혈")}이 ${this.up("15% 증가")}함`+
+				this.active()+this.range(s)+this.area(s)+`해 그 안에 있는 적들에게 
+				${this.mDmg(this.baseDmg(s))}를 입히고
+				 아군은 ${this.heal(this.skillAmt("qheal"))}시키고 ${this.heal(this.skillAmt("qshield"))}`
+				break
+			
+			default:
+				str = ""
+		}
+		return str
+	}
+	getQKor() {
+		let str
+		const s = 0
+		const hotkey=this.hotkey(s)
+		switch (this.char) {
+			case 1:
+				str=this.nameTitle(s)+this.range(s)+`
+				사용시 ${this.target()}에게 ${this.mDmg(this.baseDmg(s),hotkey)}를 입힌 후 ${this.heal(this.skillAmt("qheal"))}
+				, <br>${this.nameDesc(1)}표식이 있는 상대에게는 ${this.rangeNum(7)}
+				${this.tDmg(this.skillAmt('w_qdamage'),"w_qdamage")}를 추가로 입힘`
+				break
+			case 0:
+				str=this.nameTitle(s)+this.range(s)+`${this.target()}에게 ${this.pDmg(this.baseDmg(s),hotkey)}를 입힘
+				.두번 시전 가능, 두번째 사용시 ${this.down("50%의 피해")}를 입힘`
+				break
+			case 2:
+				str=this.nameTitle(s)+this.range(s)+this.target()+`에게 ${this.mDmg(this.baseDmg(s),hotkey)}를 입히고 ${this.effect(ENUM.EFFECT.BLIND,2)} 부여`
+				break
+			case 3:
+				str=this.nameTitle(s)+this.radius(4)+`의 적에게 ${this.pDmg(this.baseDmg(s),hotkey)}를 입힘
+				(${this.currHp()}의 ${this.down("5% 소모")},
+				대상이 ${this.upperbound("2명 이상")}이면 ${this.down("피해량 감소")})"`
+				break
+			case 4:
+				str=this.nameTitle(s)+this.range(s)+this.target()+`에게 총을 발사해 
+				${this.pDmg(this.baseDmg(s),hotkey)}를 입힘, ${this.effectNoDur(ENUM.EFFECT.STUN)}
+				상태인 대상 적중 시 ${this.nameDesc(s)+ ""+this.cooltime()} 2턴을 돌려받음`
+				break
+			case 5:
+				str=this.nameTitle(s)+`사용시 ${this.radiusStr(`앞 ${this.skillAmt("qrange_start")}~${this.skillAmt("qrange_end_front")},
+				뒤 ${this.skillAmt("qrange_start")}~${this.skillAmt("qrange_end_back")}`)} 
+				대상들에게 ${this.mDmg(this.baseDmg(s),hotkey)}를 입힘"`
+				break
+			case 6:
+				str=this.nameTitle(s)+this.range(s)+this.projsize(2)+`${this.proj("촉수")}해
+				 밟은 적에게 ${this.mDmg(this.baseDmg(s),hotkey)}를 입힘`
+				break
+			case 7:
+				str=this.nameTitle(s)+this.range(s)+this.target()+`을 공격해
+				${this.mDmg(this.baseDmg(s),hotkey)}를 입히고 ${this.money(20)}을 빼앗음.`
+				break
+			case 8:
+				str = this.nameTitle(s)+this.passive()+`체력이 ${this.lowerbound("40% 미만")}이면 '시든 나무' 상태 돌입, 
+				'시든 나무' 상태에선 ${this.nameDesc(s)} 로 아군 회복이 불가하지만
+				 ${this.stat("모든 피해 흡혈")}이 ${this.up("15% 증가")}함`+
+				this.active()+this.range(s)+this.area(3)+`해 그 안에 있는 적들에게 
+				${this.mDmg(this.baseDmg(s),hotkey)}를 입히고
+				 아군은 ${this.heal(this.skillAmt("qheal"),"qheal")}시키고 ${this.shield(this.skillAmt("qshield"),"qshield")}`
+				break
+			default:
+				str = ""
+		}
+		return str
+	}
+	getW() {
+		if(this.lang===SkillInfoFactory.LANG_KOR)
+			return this.getWKor()
+		let str
+		const s = 1
+		const hotkey=this.hotkey(s)
+
+		switch (this.char) {
+			case 0:
+				str=this.nameTitle(s)+this.range(s)+this.projsize(3)+`,맞은 적을 ${this.down("4칸 뒤로")} 이동시키는 ${this.proj("뿌리")}`
+				break
+			case 8:
+				str = this.nameTitle(s)+this.range(s)+this.projsize(1)+`지나가는 플레이어를 멈추는 ${this.proj("뿌리")},
+				 뿌리에 걸린 플레이어는 해당 칸의 효과를 받음, 아군은 ${this.effect(ENUM.EFFECT.SPEED,1)} 부여`
+				break
+			default:
+				str = ""
+		}
+		return str
+	}
+	getWKor() {
+		let str
+		const s = 1
+		const hotkey=this.hotkey(s)
+		switch (this.char) {
+			case 0:
+				str=this.nameTitle(s)+this.range(s)+this.projsize(3)+`,맞은 적을 ${this.down("4칸 뒤로")} 이동시키는 ${this.proj("토네이도")}`
+				break
+			case 1:
+				str=this.nameTitle(s)+this.range(s)+`사용시 ${this.target()}에게 표식을 남기고 ${this.effect(ENUM.EFFECT.CURSE,1)} 부여`
+				break
+			case 2:
+				str=this.nameTitle(s)+this.passive()+this.effectNoDur(ENUM.EFFECT.INVISIBILITY)+` 상태에서 ${this.nameDesc(ENUM.SKILL.Q)}사용시 
+				대상의 ${this.missingHp()}의 ${this.mDmg("30%")}를 입힘 ${this.active()}${this.effect(ENUM.EFFECT.INVISIBILITY,1)}.`
+				break
+			case 3:
+				str=this.nameTitle(s)+this.passive()+`모든 상대보다 뒤쳐져 있으면 ${this.up("이동 속도 +1")}
+				${this.active()}${this.duration(3)}에 걸쳐 체력 ${this.heal(this.skillAmt("wheal"),"wheal")},
+				 회복 중엔 ${this.effectNoDur(ENUM.EFFECT.SLOW)}에 걸림.`
+				break
+			case 4:
+				str=this.nameTitle(s)+this.range(s)+this.projsize(3)+`${this.proj("덫")}해
+				 밟은 적에게 ${this.effect(ENUM.EFFECT.STUN,1)} 부여`
+				break
+			case 5:
+				str=this.nameTitle(s)+`사용시 ${this.effect(ENUM.EFFECT.STUN,1)} 후 ${this.nameDesc(0)+" 와 "+this.nameDesc(2)}의 ${this.rangeStr()}  ${this.up("2배 증가")},
+				${this.nameDesc(0)} 사용시 적중한 적에게 ${this.effect(ENUM.EFFECT.IGNITE,2)}을 부여해 매 플레이 턴마다 ${this.maxHP()}의 ${this.tDmg("3%")} 를 입힘`
+				break
+			case 6:
+				str=this.nameTitle(s)+this.radius(3)+`의 적에게 ${this.mDmg(this.baseDmg(s),hotkey)}를
+				 입히고 자신은 ${this.shield(this.skillAmt("wshield"),"wshield")}`
+				break
+			case 7:
+				str=this.nameTitle(s)+`지속시간: ${this.duration(2)}, 사용시 ${this.effect(ENUM.EFFECT.SPEED,1)}을 받고, 지속시간 중에 
+				${this.basicattack()}시 ${this.mDmg(this.skillAmt("w_aa_adamage"),"w_aa_adamage")},
+				 ${this.nameDesc(0)} 사용시 ${this.mDmg(this.skillAmt("w_aa_adamage"),"w_aa_adamage")}
+				 를 추가로 입히고 ${this.effect(ENUM.EFFECT.STUN,1)} `
+				break
+			case 8:
+				str = this.nameTitle(s)+this.range(s)+this.projsize(1)+`지나가는 플레이어를 멈추는 ${this.proj("뿌리")},
+				 뿌리에 걸린 플레이어는 해당 칸의 효과를 받음, 아군은 ${this.effect(ENUM.EFFECT.SPEED,1)} 부여`
+				 break
+			default:
+				return ""
+		}
+		return str
+	}
+	getUlt() {
+		if(this.lang===SkillInfoFactory.LANG_KOR)
+			return this.getUltKor()
+		let str
+		const s = 2
+		const hotkey=this.hotkey(s)
+
+		switch (this.char) {
+			case 8:
+				break
+			default:
+				str = ""
+		}
+		return str
+	}
+	getUltKor() {
+		let str
+		const s = 2
+		const hotkey=this.hotkey(s)
+		switch (this.char) {
+			case 0:
+				str=this.nameTitle(s)+this.range(s)+`사용시 ${this.target()}에게 순간이동해 ${this.pDmg(this.baseDmg(s),hotkey)}를 입힘.
+				자신보다 ${this.up("앞에 있는 상대")}에게는 ${this.down("70%의 피해")}를 입힘`
+				break
+			case 1:
+				str=this.nameTitle(s)+this.passive()+this.missingHp()+`에 비례해 ${this.stat("방어력과 마법저항력")} ${this.up("0~60 증가")} 
+				${this.active()} ${this.duration(4)}간  ${this.stat("방어력과 마법저항력")}이 ${this.up("+"+this.skillAmt("r_resistance"))},
+				${this.shield(this.skillAmt("rshield"))}, ${this.nameDesc(ENUM.SKILL.Q)} ${this.up("회복량 2배")}`
+				break
+			case 2:
+				str=this.nameTitle(s)+this.range(s)+this.projsize(4)+`의 ${this.proj("독버섯")}. 밟은 적은 ${this.duration(3)}에 걸쳐 
+				${this.effectNoDur(ENUM.EFFECT.SLOW)}에 걸리고 ${this.mDmg(this.baseDmg(s)*3)}를 받음`
+				break
+			case 3:
+				str=this.nameTitle(s)+this.range(s)+this.target()+`에게 ${this.pDmg(this.baseDmg(s)+`+ 대상 ${this.missingHp()}의 50%`,hotkey)}를 입힘,
+				대상 처치시${this.nameDesc(s)} ${this.cooltime()} 초기화`
+				break
+			case 4:
+				str=this.nameTitle(s)+this.range(s)+this.target()+` 고정 후 ${this.duration(3)} 동안 최대 3번
+				 발사해 각각${this.pDmg(this.baseDmg(s),hotkey)}를 입힘
+				(3번째에는 ${this.tDmg(this.baseDmg(s))}를 입힘, 사용중에는 움직일 수 없음)<br>
+				발사 후에는 ${this.effect(ENUM.EFFECT.DOUBLEDICE,1)}을 받음`
+				break
+			case 5:
+				str=this.nameTitle(s)+this.range(s)+this.projsize(3)+` ${this.proj("번개")}, 밟은 적은 ${this.mDmg(this.baseDmg(s),hotkey)}를 받고
+				${this.effect(ENUM.EFFECT.SILENT,1)} 부여. 총 3번 시전할 수 있음`
+				break
+			case 6:
+				str=this.nameTitle(s)+this.range(s)+this.target()+`에게 ${this.tDmg(this.baseDmg(s),hotkey)}를 입힘,
+				대상 처치시 ${this.maxHP()+this.up("50 증가")}`
+				break
+			case 7:
+				str=this.nameTitle(s)+`지속시간: ${this.duration(4)}, 지속시간 중에 
+				${this.basicattack()}시 ${this.stat("기본공격 사거리")}가 ${this.up("2 증가")}하고 
+				${this.pDmg(this.skillAmt("r_aa_adamage"),"r_aa_adamage")}를 추가로 입힘.
+				 또한 ${this.nameDesc(1)}의 추가 피해가 ${this.up("2 배 증가")}하고
+				 ${this.nameDesc(0)} 적중 시 밟은 적에게 ${this.effect(ENUM.EFFECT.IGNITE,2)}
+				 을 주는 ${this.projsizeStr(3)}의 영역을 그 자리에 생성함`
+				break
+			case 8:
+				str =this.nameTitle(s)+this.passive()+`스킬 사용시 사용한 자리에 식충식물 소환, <br>
+				식충식물은 ${this.duration(this.skillAmt("plant_lifespan"))}간 유지되며 매 턴마다 ${this.radius(1)}의 적에게
+				 ${this.mDmg(this.skillAmt("plantdamage"),"plantdamage")}를 입히고 적이 ${this.basicattack()}시 사라짐`+
+				this.active()+this.range(s)+`${this.target()}에게 ${this.mDmg(this.baseDmg(s),hotkey)}를 입히고
+				 ${this.effect(ENUM.EFFECT.STUN,1)}.('시든 나무' 상태이면 2턴)
+				,또한 이 상태에서 아군이 가하는 피해 ${this.up("20% 증가")},
+				 이때 맵에 있는 모든 식충 식물이 대상 주변으로 이동됨`
+				 break
+			default:
+				return ""
+		}
+		return str
+	}
+}
+
+export { ObstacleHelper, PlayerSelector, AIHelper ,SkillInfoFactory}

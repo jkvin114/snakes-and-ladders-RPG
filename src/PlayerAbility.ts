@@ -1,9 +1,9 @@
 import { Player } from "./player"
-import {PlayerClientInterface} from "./app"
+import { PlayerClientInterface } from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
 import { ITEM } from "./enum"
 
-class Ability{
+class Ability {
 	AD: number
 	AR: number
 	MR: number
@@ -12,7 +12,7 @@ class Ability{
 	basicAttack_multiplier: number
 	arP: number
 	MP: number
-	extraHP:number
+	extraHP: number
 	regen: number
 	absorb: number
 	adaptativeStat: number
@@ -22,20 +22,20 @@ class Ability{
 	obsR: number
 	ultHaste: number
 	moveSpeed: number
-	player:Player
-	private pendingMaxHpChange:number
-	static MAX_ATTACKRANGE=5
-	static MAX_MOVESPEED=3
-	static MAX_ULTHASTE=3
+	player: Player
+	private pendingMaxHpChange: number
+	static MAX_ATTACKRANGE = 5
+	static MAX_MOVESPEED = 3
+	static MAX_ULTHASTE = 3
 	constructor(player: Player, basic_stats: number[]) {
-		this.player=player
+		this.player = player
 		this.AD = basic_stats[1]
 		this.AR = basic_stats[2]
 		this.MR = basic_stats[3]
 		this.attackRange = basic_stats[4]
 		this.AP = basic_stats[5]
 		this.basicAttack_multiplier = 1 //평타 데미지 계수
-		this.extraHP=0   //추가체력
+		this.extraHP = 0 //추가체력
 
 		this.arP = 0
 		this.MP = 0
@@ -48,13 +48,36 @@ class Ability{
 		this.obsR = 0
 		this.ultHaste = 0
 		this.moveSpeed = 0
-		this.pendingMaxHpChange=0
+		this.pendingMaxHpChange = 0
 	}
-	transfer(func:Function,...args:any[]){
-        this.player.game.sendToClient(func,...args)
-    }
-	
-
+	transfer(func: Function, ...args: any[]) {
+		this.player.game.sendToClient(func, ...args)
+	}
+	get(ability: string): number {
+		switch (ability) {
+			case "AD":
+				return this.AD
+			case "AP":
+				return this.AP
+			case "AR":
+				return this.AR
+			case "MR":
+				return this.MR
+			case "arP":
+				return this.arP
+			case "MP":
+				return this.MP
+			case "extraHP":
+				return this.extraHP
+			case "HP":
+				return this.player.HP
+			case "MaxHP":
+				return this.player.MaxHP
+			case "missingHP":
+				return this.player.MaxHP-this.player.HP
+		}
+		return 0
+	}
 
 	update(ability: string, change_amt: number) {
 		let maxHpChange = 0
@@ -129,12 +152,12 @@ class Ability{
 	}
 	/**
 	 * should be called after sequence of updating stats
-	 * 
+	 *
 	 */
-	flushChange(){
-	//	console.log(this.MR)
+	flushChange() {
+		//	console.log(this.MR)
 		this.addMaxHP(this.pendingMaxHpChange)
-		this.pendingMaxHpChange=0
+		this.pendingMaxHpChange = 0
 		this.sendToClient()
 	}
 
@@ -160,7 +183,7 @@ class Ability{
 		let info_eng = this.player.getSkillInfoEng()
 
 		if (this.player.game.instant) return
-		this.transfer(PlayerClientInterface.update,"stat", this.player.turn, this.getAll())
+		this.transfer(PlayerClientInterface.update, "stat", this.player.turn, this.getAll())
 		this.transfer(PlayerClientInterface.updateSkillInfo, this.player.turn, info_kor, info_eng)
 	}
 
@@ -182,11 +205,10 @@ class Ability{
 	}
 
 	basicAttackDamage(target: Player) {
-		return this.player.getBaseBasicAttackDamage()
-		.updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
+		return this.player.getBaseBasicAttackDamage().updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
 	}
-	addMaxHP(maxHpChange:number){
-		this.extraHP+=maxHpChange
+	addMaxHP(maxHpChange: number) {
+		this.extraHP += maxHpChange
 		this.player.addMaxHP(maxHpChange)
 	}
 	onTurnEnd() {
@@ -195,31 +217,25 @@ class Ability{
 		}
 	}
 	applyResistanceToDamage(damage: Damage, target: Player): number {
+		let pp = 0
+		if (this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)) pp = 40
 
-		let pp=0
-		if(this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING))
-			pp=40
-			
 		return damage.applyResistanceToDamage({
 			AR: target.ability.AR,
 			MR: target.ability.MR,
 			arP: this.arP,
 			MP: this.MP,
-			percentPenetration:pp
-		
+			percentPenetration: pp
 		})
 	}
-	
 
-	getMagicCastleDamage(){
+	getMagicCastleDamage() {
 		return this.AD * 0.1 + this.AP * 0.08 + this.extraHP * 0.1
 	}
 
-	static applySkillDmgReduction(damage:Damage,reduction:number){
+	static applySkillDmgReduction(damage: Damage, reduction: number) {
 		return damage.updateNormalDamage(CALC_TYPE.multiply, 1 - reduction * 0.01)
 	}
-	
-
 }
 
 export default Ability

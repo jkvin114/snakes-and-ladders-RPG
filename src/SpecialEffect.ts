@@ -76,7 +76,7 @@ export namespace SpecialEffect {
             src:"skill/3-3.jpg",
 			name: "ghost_r",
 			desc: "Receives magic damage for 3 turns",
-			desc_kor: "3턴에걸쳐 마법 피해를 받음"
+			desc_kor: "3턴에걸쳐 마법 피해를 받고 시전자에 가하는 피해가 50% 감소"
 		},
         TREE_WITHER: {
 			isgood:true,
@@ -87,7 +87,7 @@ export namespace SpecialEffect {
 		},
         TREE_ULT: {
 			isgood:false,
-            src:"character/9-3.png",
+            src:"skill/9-3.png",
 			name: "tree_ult",
 			desc: "Incoming damage from enemies increases by 20%",
 			desc_kor: "적에게 받는 피해 20% 증가"

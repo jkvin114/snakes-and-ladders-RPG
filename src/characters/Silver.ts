@@ -8,6 +8,10 @@ import { AblityChangeEffect, NormalEffect } from "../StatusEffect"
 import { Game } from "../Game"
 import { Projectile } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
+import { Creed } from "./Creed"
+import { SkillInfoFactory } from "../helpers"
+
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 1
 class Silver extends Player {
@@ -15,6 +19,7 @@ class Silver extends Player {
 	readonly hpGrowth: number
 	usedQ: boolean
 	readonly cooltime_list: number[]
+	readonly skill_ranges: number[]
 
 	itemtree: {
 		level: number
@@ -26,11 +31,15 @@ class Silver extends Player {
 	// private u_active_amt: number
 	// private u_passive_amt: number
 	readonly duration_list: number[]
+	skillInfo:SkillInfoFactory
+	skillInfoKor:SkillInfoFactory
 
 
 	static VISUALEFFECT_ULT="elephant_r"
 	static APPERANCE_ULT="elephant_r"
 	static EFFECT_ULT_SHIELD="elephant_r_shield"
+	static SKILL_EFFECT_NAME=["elephant_q", "hit", "hit"]
+	static SKILL_SCALES=SKILL_SCALES[ID]
 
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
@@ -39,11 +48,10 @@ class Silver extends Player {
 		super(turn, team, game, ai, ID, name, basic_stats)
 		//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
-		this.duration_list = [0, 0, 4]
+		this.duration_list = [0, 2, 3]
 		this.hpGrowth = 130
-		// this.u_active_amt = 0
-		// this.u_passive_amt = 0
-		this.skill_name = ["elephant_q", "hit", "hit"]
+		this.skill_ranges=[3,15,0]
+		this.skill_name = Silver.SKILL_EFFECT_NAME
 		this.itemtree = {
 			level: 0,
 			items: [
@@ -56,28 +64,7 @@ class Silver extends Player {
 			],
 			final: ITEM.EPIC_SHIELD
 		}
-	}
-	/**
-	 * skill infos that displays on the game screen
-	 * @returns
-	 */
-	getSkillInfoKor() {
-		let info = []
-		info[0] =
-			"[암흑의 표창] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴<br>사정거리:3, 표식을 맞은 상대에게는 7,사용시 대상에게 " +
-			this.getSkillBaseDamage(0) +
-			"의 마법 피해 후 피해량의 30% 회복, 표식이 있는 대상에게는 30의 추가 피해를 입함"
-		info[1] =
-			"[도발]<br> 쿨타임:" + this.cooltime_list[1] + "턴, 사정거리:15,사용시 대상에게 표식을 남기고 주작 1턴을 줌"
-		info[2] =
-			"[실버의 갑옷] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴<br>[기본 지속 효과]: 잃은 체력에 비례해 방어력과 마법저항력 증가  <br>[사용시]: 4턴간 방어력과 마법저항력이 " +
-			(this.HP < this.MaxHP / 10 ? 150 : 80) +
-			"증가하고 '암흑의 표창' 회복량 2배"
-		return info
+
 	}
 
 	getSkillInfoEng() {
@@ -101,6 +88,11 @@ class Silver extends Player {
 			" and heal amount of 'tusk attack' doubles"
 		return info
 	}
+
+		
+	getSkillScale(){
+		return Silver.SKILL_SCALES
+	}
 	getSkillTrajectorySpeed(skilltype: string): number {
 		return 0
 	}
@@ -117,14 +109,14 @@ class Silver extends Player {
 			case ENUM.SKILL.Q:
 				skillTargetSelector
 					.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-					.setRange(3)
+					.setRange(this.skill_ranges[s])
 					.setConditionedRange((target: Player) => {
 						return target.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
 					}, 7)
 
 				break
 			case ENUM.SKILL.W:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(15)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
 
 				break
 			case ENUM.SKILL.ULT:
@@ -143,7 +135,7 @@ class Silver extends Player {
 
 		this.effects.applySpecial(this.getUltShield(),Silver.EFFECT_ULT_SHIELD)
 
-		this.effects.applySpecial(this.getUltResistance(this.HP < this.MaxHP / 10 ? 150 : 80),SpecialEffect.SKILL.ELEPHANT_ULT.name)
+		this.effects.applySpecial(this.getUltResistance(),SpecialEffect.SKILL.ELEPHANT_ULT.name)
 
 		this.showEffect(Silver.VISUALEFFECT_ULT, this.turn)
 		this.changeApperance(Silver.APPERANCE_ULT)
@@ -161,20 +153,33 @@ class Silver extends Player {
 		return null
 	}
 
-	private getSkillBaseDamage(skill: number): number {
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(10 + this.ability.AP * 0.3 + (this.ability.AR + this.ability.MR) * 0.6)
+			return this.calculateScale(Silver.SKILL_SCALES.Q)
 		}
+		return 0
 	}
-	private getUltResistance(amt: number) {
-		return new AblityChangeEffect(ENUM.EFFECT.ELEPHANT_ULT_RESISTANCE, 3, new Map().set("AR", amt).set("MR", amt))
+	getSkillAmount(key: string): number {
+		if(key==="r_resistance") return this.HP < this.MaxHP / 10 ? 150 : 80
+		if(key==="rshield") return this.calculateScale(Silver.SKILL_SCALES.rshield)
+		if(key==="qheal") return Math.floor(this.getSkillBaseDamage(ENUM.SKILL.Q) * 0.3)
+		if(key==="r_qheal") return Math.floor(this.getSkillBaseDamage(ENUM.SKILL.Q) * 0.6)
+		if(key==="w_qdamage") return this.calculateScale(Silver.SKILL_SCALES.w_qdamage)
+		if(key==="w_qrange") return 7
+
+		return 0
+	}
+
+	private getUltResistance() {
+		let amt=this.getSkillAmount("r_resistance")
+		return new AblityChangeEffect(ENUM.EFFECT.ELEPHANT_ULT_RESISTANCE, this.duration_list[2], new Map().set("AR", amt).set("MR", amt))
 	}
 	private getUltShield() {
-		return new ShieldEffect(ENUM.EFFECT.ELEPHANT_ULT_SHIELD, 3, 100)
+		return new ShieldEffect(ENUM.EFFECT.ELEPHANT_ULT_SHIELD, this.duration_list[2], this.getSkillAmount("rshield"))
 	}
 
 	private getWEffect() {
-		return new NormalEffect(ENUM.EFFECT.ELEPHANT_W_SIGN, 2, ENUM.EFFECT_TIMING.TURN_END).setSourcePlayer(this.turn)
+		return new NormalEffect(ENUM.EFFECT.ELEPHANT_W_SIGN, this.duration_list[1], ENUM.EFFECT_TIMING.TURN_END).setSourcePlayer(this.turn)
 	}
 
 	/**
@@ -195,16 +200,16 @@ class Silver extends Player {
 
 				let _this = this
 				let dmg = this.getSkillBaseDamage(s)
-
-				skillattr = new SkillDamage(new Damage(0, dmg, 0), ENUM.SKILL.Q).setOnKill(function (target: Player) {
-					_this.heal(Math.floor(dmg * (_this.isSkillActivated(ENUM.SKILL.ULT) ? 0.6 : 0.3)))
+				let heal=_this.isSkillActivated(ENUM.SKILL.ULT) ? this.getSkillAmount("r_qheal") : this.getSkillAmount("qheal")
+				
+				skillattr = new SkillDamage(new Damage(0, dmg, 0), ENUM.SKILL.Q).setOnKill((target: Player)=> {
+					this.heal(heal)
 				})
 
 				if (this.game.playerSelector.get(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.turn)) {
-					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, 30)
+					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, this.getSkillAmount("w_qdamage"))
 					this.game.playerSelector.get(target).effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
 				}
-
 				break
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
@@ -227,9 +232,6 @@ class Silver extends Player {
 		if (this.level < 3 || this.HP > 250) {
 			return
 		}
-		// this.ability.update("AR", -1 * this.u_passive_amt)
-		// this.ability.update("MR", -1 * this.u_passive_amt)
-
 		let passive = 0
 		if (this.HP > this.MaxHP * 0.3) {
 			passive = 30
@@ -244,9 +246,6 @@ class Silver extends Player {
 			SpecialEffect.SKILL.ELEPHANT_PASSIVE.name
 		)
 
-		// this.ability.update("AR", this.u_passive_amt)
-		// this.ability.update("MR", this.u_passive_amt)
-		// this.ability.flushChange()
 	}
 
 	/**
@@ -260,8 +259,6 @@ class Silver extends Player {
 
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
-			// this.ability.update("AR", -1 * this.u_active_amt)
-			// this.ability.update("MR", -1 * this.u_active_amt)
 			this.changeApperance("")
 		}
 	}

@@ -6,11 +6,17 @@ import { Damage, SkillTargetSelector, SkillDamage, PercentDamage, CALC_TYPE } fr
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
-import { TickDamageEffect, TickEffect, TickActionFunction, onHitFunction, OnHitEffect } from "../StatusEffect"
+import { TickDamageEffect, TickEffect, OnHitEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
 const ID = 2
 class Timo extends Player {
+	skillInfoKor: SkillInfoFactory
+	skillInfo: SkillInfoFactory
 	//	onoff: boolean[]
+	skill_ranges: number[]
+
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 
@@ -19,21 +25,22 @@ class Timo extends Player {
 		items: number[]
 		final: number
 	}
-	private readonly skill_name: string[]
 	readonly duration_list: number[]
 
 	static PROJ_ULT="ghost_r"
 	static SKILLNAME_STRONG_Q="ghost_w_q"
+	static SKILL_SCALES=SKILL_SCALES[ID]
+	static SKILL_EFFECT_NAME=["ghost_q", "hit", "ghost_r"]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [170, 30, 6, 6, 0, 30]
 		super(turn, team, game, ai, ID, name, basic_stats)
 		//	this.onoff = [false, false, false]
+		this.skill_ranges=[18,0,30]
 		this.hpGrowth = 100
 		this.cooltime_list = [3, 6, 6]
 		this.duration_list = [0, 1, 0]
-		this.skill_name = ["ghost_q", "hit", "ghost_r"]
 		this.itemtree = {
 			level: 0,
 			items: [
@@ -46,28 +53,13 @@ class Timo extends Player {
 			],
 			final: ITEM.EPIC_CRYSTAL_BALL
 		}
+		
+		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
+
 	}
 
-	getSkillInfoKor() {
-		let info = []
-		info[0] =
-			"[실명] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴<br>범위:18,사용시 맞은 대상을 2턴 실명시키고 " +
-			this.getSkillBaseDamage(0) +
-			"의 마법 피해를 입힘"
-		info[1] =
-			"[재빠른 이동] 쿨타임:" +
-			this.cooltime_list[1] +
-			"턴<br>[기본 지속 효과]:투명화 상태에서 실명 사용시 대상의 잃은 체력의 30%의 추가 마법피해를 입힘<br>[사용시]: 1턴간 투명화(모든 스킬과 장애물/강제이동 무시) , "
-		info[2] =
-			"[죽음의 버섯] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴<br>사정거리:30 , 범위 4칸의 버섯 설치, 맞은 플레이어는 3턴에 걸쳐 둔화에 걸리고 " +
-			this.getSkillBaseDamage(2) * 3 +
-			"의 마법 피해를 받음"
-		return info
-	}
+
 	getSkillInfoEng() {
 		let info = []
 		info[0] =
@@ -87,6 +79,10 @@ class Timo extends Player {
 			this.getSkillBaseDamage(2) * 3 +
 			"magic damage for 3 turns"
 		return info
+	}
+
+	getSkillScale(){
+		return Timo.SKILL_SCALES
 	}
 
 	getSkillTrajectorySpeed(skilltype: string): number {
@@ -138,7 +134,7 @@ class Timo extends Player {
 
 		switch (skill) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(18)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[skill])
 
 				break
 			case ENUM.SKILL.W:
@@ -149,7 +145,7 @@ class Timo extends Player {
 
 				break
 			case ENUM.SKILL.ULT:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(30).setProjectileSize(4)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(this.skill_ranges[skill]).setProjectileSize(4)
 				break
 		}
 		return skillTargetSelector
@@ -164,7 +160,7 @@ class Timo extends Player {
 		if (skill === ENUM.SKILL.Q && this.effects.has(ENUM.EFFECT.INVISIBILITY)) {
 			return Timo.SKILLNAME_STRONG_Q
 		}
-		return this.skill_name[skill]
+		return Timo.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
@@ -180,12 +176,12 @@ class Timo extends Player {
 			return proj
 		}
 	}
-	private getSkillBaseDamage(skill: number): number {
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(20 + this.ability.AP * 0.8)
+			return this.calculateScale(Timo.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return Math.floor(30 + 0.5 * this.ability.AP)
+			return this.calculateScale(Timo.SKILL_SCALES.R)
 		}
 	}
 

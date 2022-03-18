@@ -8,19 +8,24 @@ import { Game } from "../Game"
 import { TickDamageEffect, TickEffect} from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
+
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
 class Jellice extends Player {
+	skillInfoKor: SkillInfoFactory
+	skillInfo: SkillInfoFactory
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
+	skill_ranges: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private readonly skill_name: string[]
 	private u_used: number
 	readonly duration_list: number[]
 
@@ -28,6 +33,8 @@ class Jellice extends Player {
 	// static EFFECT_W="magician_w"
 	// static EFFECT_W_BURN="magician_w_burn"
 	static SKILLNAME_W_Q="magician_w_q"
+	static SKILL_SCALES=SKILL_SCALES[ID]
+	static SKILL_EFFECT_NAME=["magician_q", "hit", "magician_r"]
 
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
@@ -38,7 +45,7 @@ class Jellice extends Player {
 		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 7] //3 5 7
 		this.duration_list = [0, 1, 0]
-		this.skill_name = ["magician_q", "hit", "magician_r"]
+		this.skill_ranges=[0,0,30]
 		this.u_used = 0
 		this.itemtree = {
 			level: 0,
@@ -52,28 +59,11 @@ class Jellice extends Player {
 			],
 			final: ITEM.EPIC_CRYSTAL_BALL
 		}
+		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
+
 	}
 
-	getSkillInfoKor() {
-		let info = []
-		info[0] =
-			"[직선 번개] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴 <br>사용시 앞 5~15칸,뒤 3~8칸 이내 대상들에게 " +
-			this.getSkillBaseDamage(0) +
-			"의 마법 피해를 입힘"
-		info[1] =
-			"[몸체 고정] 쿨타임:" +
-			this.cooltime_list[1] +
-			"턴<br>사용시 한턴 속박 후 모든 스킬 사거리 2배 증가, 다음턴에 신속 효과를 받음,이 상태에서 직선번개 사용시 적중한 적에게 점화 2턴"
-		info[2] =
-			"[번개파티] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴<br>사정거리:30 , 범위 3칸의 번개 발사,  맞은 플레이어는 침묵에 걸리고 " +
-			this.getSkillBaseDamage(2) +
-			"의 마법 피해를 받음, 총 3번 시전할 수 있음"
-		return info
-	}
 
 	getSkillInfoEng() {
 		let info = []
@@ -96,6 +86,10 @@ class Jellice extends Player {
 		return info
 	}
 
+	getSkillScale(){
+		return Jellice.SKILL_SCALES
+	}
+
 	getSkillTrajectorySpeed(skilltype: string): number {
 		return 0
 	}
@@ -104,7 +98,6 @@ class Jellice extends Player {
 		return new ProjectileBuilder(this.game,Jellice.PROJ_ULT,Projectile.TYPE_RANGE)
 			.setSize(3)
 			.setSource(this.turn)
-			.setSkillRange(30)
 			.setAction(function (target: Player) {
 				target.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			})
@@ -133,7 +126,7 @@ class Jellice extends Player {
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
 				break
 			case ENUM.SKILL.ULT:
-				let range = this.isSkillActivated(ENUM.SKILL.W) ? 60 : 30
+				let range = this.isSkillActivated(ENUM.SKILL.W) ? 2 : 1 * this.skill_ranges[s]
 
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(range).setProjectileSize(3)
 				break
@@ -162,12 +155,13 @@ class Jellice extends Player {
 		this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.TURN_START)
 	}
 	private useQ(): boolean {
-		let end = this.effects.modifySkillRange(this.isSkillActivated(ENUM.SKILL.W) ? 30 : 15)
-		
-		let start = this.isSkillActivated(ENUM.SKILL.W) ? 3 : 5 //3:5
+		let w_on=this.isSkillActivated(ENUM.SKILL.W) 
+		let end_front = this.effects.modifySkillRange(w_on?2:1 * this.getSkillAmount("qrange_end_front"))
+		let end_back=this.effects.modifySkillRange(w_on?2:1 * this.getSkillAmount("qrange_end_back"))
+		let start = this.getSkillAmount("qrange_start")
 
-		let targets = this.game.playerSelector.getPlayersIn(this, this.pos + start + 1, this.pos + end)
-		targets = targets.concat(this.game.playerSelector.getPlayersIn(this, this.pos - end + 7, this.pos - start))
+		let targets = this.game.playerSelector.getPlayersIn(this, this.pos + start + 1, this.pos + end_front)
+		targets = targets.concat(this.game.playerSelector.getPlayersIn(this, this.pos - end_back, this.pos - start))
 		let dmg = new SkillDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), ENUM.SKILL.Q)
 
 		if (targets.length === 0) {
@@ -189,7 +183,7 @@ class Jellice extends Player {
 		if (skill === ENUM.SKILL.Q && this.isSkillActivated(ENUM.SKILL.W)) {
 			return Jellice.SKILLNAME_W_Q
 		}
-		return this.skill_name[skill]
+		return Jellice.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
@@ -216,18 +210,24 @@ class Jellice extends Player {
 		}
 	}
 
-	private getSkillBaseDamage(skill: number): number {
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(this.ability.AP * 0.8 + 10)
+			return this.calculateScale(Jellice.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.W) {
-			return Math.floor(this.ability.AP * 0.01 + 4) //percent
+			return this.calculateScale(Jellice.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return 60 + Math.floor(0.4 * this.ability.AP)
+			return this.calculateScale(Jellice.SKILL_SCALES.R)
 		}
 	}
-
+	getSkillAmount(key: string): number {
+		if(key==="qrange_start") return 3
+		if(key==="qrange_end_front") return 15
+		if(key==="qrange_end_back") return 8
+		//앞 3~15, 뒤 3~8
+		return 0
+	}
 	getSkillDamage(target: number): SkillDamage {
 		return null
 	}

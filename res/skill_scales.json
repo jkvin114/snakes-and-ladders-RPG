@@ -1,0 +1,151 @@
+[
+	{
+		"Q": {
+			"base": 20,
+			"scales": [{ "ability": "AD", "val": 1 }]
+		},
+		"R": {
+			"base": 70,
+			"scales": [{ "ability": "AD", "val": 0.9 }]
+		}
+	},
+	{
+		"Q": {
+			"base": 10,
+			"scales": [
+				{ "ability": "AP", "val": 0.3 },
+				{ "ability": "AR", "val": 0.6 },
+				{ "ability": "MR", "val": 0.6 }
+			]
+		},
+		"rshield": {
+			"base": 50,
+			"scales": [
+				{ "ability": "AR", "val": 0.4 },
+				{ "ability": "MR", "val": 0.4 }
+			]
+		},
+		"w_qdamage": {
+			"base": 30,
+			"scales": [{ "ability": "extraHp", "val": 0.2 }]
+		}
+	},
+	{
+		"Q": {
+			"base": 20,
+			"scales": [{ "ability": "AP", "val": 0.8 }]
+		},
+		"R": {
+			"base": 30,
+			"scales": [{ "ability": "AP", "val": 0.5 }]
+		}
+	},
+	{
+		"Q": {
+			"base": 15,
+			"scales": [{ "ability": "AD", "val": 0.6 }]
+		},
+		"R": {
+			"base": 40,
+			"scales": [{ "ability": "AD", "val": 0.7 }]
+		},
+		"wheal": {
+			"base": 30,
+			"scales": [
+				{ "ability": "AD", "val": 0.4 },
+				{ "ability": "missingHP", "val": 0.15 }
+			]
+		}
+	},
+	{
+		"Q": {
+			"base": 10,
+			"scales": [{ "ability": "AD", "val": 0.7 }]
+		},
+		"R": {
+			"base": 60,
+			"scales": [{ "ability": "AD", "val": 0.5 }]
+		}
+	},
+	{
+		"Q": {
+			"base": 10,
+			"scales": [{ "ability": "AP", "val": 0.8 }]
+		},
+		"W": {
+			"base": 4,
+			"scales": [{ "ability": "AD", "val": 0.01 }]
+		},
+		"R": {
+			"base": 60,
+			"scales": [{ "ability": "AD", "val": 0.4 }]
+		}
+	},
+	{
+		"Q": {
+			"base": 10,
+			"scales": [
+				{ "ability": "HP", "val": 0.2 },
+				{ "ability": "AP", "val": 1 }
+			]
+		},
+		"W": {
+			"base": 30,
+			"scales": [{ "ability": "AP", "val": 0.5 }]
+		},
+		"R": {
+			"base": 40,
+			"scales": [
+				{ "ability": "AD", "val": 0.6 },
+				{ "ability": "MaxHP", "val": 0.15 }
+			]
+		},
+		"wshield": {
+			"base": 0,
+			"scales": [{ "ability": "MaxHP", "val": 0.15 }]
+		}
+	},
+	{
+		"Q": {
+			"base": 10,
+			"scales": [
+				{ "ability": "HP", "val": 0.2 },
+				{ "ability": "AP", "val": 1 }
+			]
+		},
+		"w_q_adamage": {
+			"base": 10,
+			"scales": [{ "ability": "AP", "val": 0.3 }]
+		},
+        "w_aa_adamage": {
+			"base": 10,
+			"scales": [{ "ability": "AP", "val": 0.5 }]
+		},
+        "r_aa_adamage": {
+			"base": 10,
+			"scales": [{ "ability": "AD", "val": 0.3 }]
+		}
+	},
+	{
+		"Q": {
+			"base": 20,
+			"scales": [{ "ability": "AP", "val": 0.8 }]
+		},
+		"R": {
+			"base": 60,
+			"scales": [{ "ability": "AP", "val": 0.3 }]
+		},
+		"qshield": {
+			"base": 30,
+			"scales": [{ "ability": "AP", "val": 0.08 }]
+		},
+		"qheal": {
+			"base": 20,
+			"scales": [{ "ability": "AP", "val": 0.15 }]
+		},
+		"plantdamage": {
+			"base": 10,
+			"scales": [{ "ability": "AP", "val": 0.2 }]
+		}
+	}
+]

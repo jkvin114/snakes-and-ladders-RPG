@@ -9,21 +9,26 @@ import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { AblityChangeEffect, TickDamageEffect, TickEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
+
 const ID = 7
-export let name="dd"
 
 class Bird extends Player {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
+	skill_ranges: number[]
 
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private readonly skill_name: string[]
 	readonly duration_list:number[]
+
+	skillInfo:SkillInfoFactory
+	skillInfoKor:SkillInfoFactory
 
 	static PROJ_ULT_TRACE="bird_r_trace"
 	// static EFFECT_ULT="bird_r"
@@ -39,7 +44,9 @@ class Bird extends Player {
 	static AANAME_W="bird_w_hit"
 	static AANAME_ULT="bird_r_hit"
 
+	static SKILL_SCALES=SKILL_SCALES[ID]
 
+	static SKILL_EFFECT_NAME=["hit", "hit", "bird_r"]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -49,7 +56,7 @@ class Bird extends Player {
 		this.hpGrowth = 100
 		this.cooltime_list = [3, 5, 10]
 		this.duration_list=[0,2,4]
-		this.skill_name = ["hit", "hit", "bird_r"]
+		this.skill_ranges=[20,0,0]
 		this.itemtree = {
 			level: 0,
 			items: [
@@ -62,34 +69,9 @@ class Bird extends Player {
 			],
 			final: ITEM.ANCIENT_SPEAR
 		}
-	}
+		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
 
-	getSkillInfoKor() {
-		let info: string[] = []
-		info[0] =
-			"[날렵한 침] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴<br>사정거리:20,적을 공격해 <b>" +
-			Math.floor(10 + this.ability.AP) +
-			"</b>의 마법 피해를 입히고 20골드를 빼앗음"
-		info[1] =
-			"[아기새 소환] 쿨타임:" +
-			this.cooltime_list[1] +
-			"턴, 지속시간: 2턴<br>사용시 즉시 신속 효과를 받고 지속중에 기본 공격시  <b>" +
-			Math.floor(10 + this.ability.AP * 0.3) +
-			"</b>, " +
-			" '날렵한 침' 사용시 " +
-			Math.floor(10 + this.ability.AP * 0.5) +
-			"의 추가 마법 피해를 입히고 속박시킴"
-		info[2] =
-			"[불사조 소환] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴, 지속시간: 4턴<br> 지속 중에 기본공격 사거리가 2 증가하고 <b>" +
-			Math.floor(this.ability.AD * 0.3) +
-			"</b>의 추가 물리 피해를 입힘." +
-			"또한 '아기새 소환'의 추가 피해가 2배 증가하고 '날렵한 침' 적중시 " +
-			"밟은 적에게 점화 2턴을 주는 영역을 생성함"
-		return info
 	}
 
 	getSkillInfoEng() {
@@ -125,6 +107,9 @@ class Bird extends Player {
 		}
 		return 0
 	}
+	getSkillScale(){
+		return Bird.SKILL_SCALES
+	}
 	private buildProjectile() {
 		let _this: Player = this
 
@@ -143,7 +128,7 @@ class Bird extends Player {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
 		switch (s) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(20)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
 				break
 			case ENUM.SKILL.W:
 				if (!this.AI) {
@@ -205,7 +190,7 @@ class Bird extends Player {
 		} else if (this.duration[ENUM.SKILL.ULT] > 0 && skill === ENUM.SKILL.Q) {
 			return Bird.SKILLNAME_ULT_Q
 		}
-		return this.skill_name[skill]
+		return Bird.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
@@ -224,11 +209,14 @@ class Bird extends Player {
 	getBaseBasicAttackDamage(): Damage {
 		let damage = super.getBaseBasicAttackDamage()
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
-			damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.ability.AP * 0.3)
+			damage.updateMagicDamage(CALC_TYPE.plus,this.getSkillAmount("w_aa_adamage"))
+			if (this.isSkillActivated(ENUM.SKILL.ULT)) {
+				damage.updateMagicDamage(CALC_TYPE.multiply, 2)
+			}
 		}
+
 		if (this.isSkillActivated(ENUM.SKILL.ULT)) {
-			damage.updateMagicDamage(CALC_TYPE.multiply, 2)
-			damage.updateAttackDamage(CALC_TYPE.multiply, 1.3)
+			damage.updateAttackDamage(CALC_TYPE.plus,this.getSkillAmount("r_aa_adamage"))
 		}
 		return damage
 	}
@@ -237,10 +225,17 @@ class Bird extends Player {
 		return null
 	}
 
-	private getSkillBaseDamage(skill: number): number {
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(20 + 0.8 * this.ability.AP)
+			return this.calculateScale(Bird.SKILL_SCALES.Q)
 		}
+	}
+	getSkillAmount(key: string): number {
+		if(key==="w_q_adamage") return this.calculateScale(Bird.SKILL_SCALES.w_q_adamage)
+		if(key==="w_aa_adamage") return this.calculateScale(Bird.SKILL_SCALES.w_aa_adamage)
+		if(key==="r_aa_adamage") return this.calculateScale(Bird.SKILL_SCALES.r_aa_adamage)
+
+		return 0
 	}
 
 	getSkillDamage(target: number): SkillDamage {
@@ -260,13 +255,16 @@ class Bird extends Player {
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
 					this.game.playerSelector.get(target).effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					damage.updateMagicDamage(CALC_TYPE.plus, 10 + this.ability.AP * 0.5)
+					damage.updateMagicDamage(CALC_TYPE.plus, this.getSkillAmount("w_q_adamage"))
+					if (this.isSkillActivated(ENUM.SKILL.ULT)) 
+					{
+						damage.updateMagicDamage(CALC_TYPE.plus,  this.getSkillAmount("w_q_adamage"))
+					}
 				}
 
 				if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 					let proj = this.buildProjectile()
 					this.game.placeProjNoSelection(proj, this.game.playerSelector.get(target).pos - 1)
-					damage.updateMagicDamage(CALC_TYPE.plus, this.ability.AP * 0.5)
 				}
 				skillattr =new SkillDamage(damage,ENUM.SKILL.Q).setOnHit(onhit)
 				break

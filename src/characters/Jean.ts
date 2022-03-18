@@ -6,11 +6,15 @@ import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
+
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
 const ID = 4
 class Jean extends Player {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
+	skill_ranges: number[]
 
 	itemtree: {
 		level: number
@@ -20,8 +24,15 @@ class Jean extends Player {
 	private readonly skill_name: string[]
 	private u_target: number
 	readonly duration_list: number[]
+	
+	skillInfo:SkillInfoFactory
+	skillInfoKor:SkillInfoFactory
+
 	static PROJ_W="sniper_w"
 	static EFFECT_ULT="sniper_r"
+	static SKILL_SCALES=SKILL_SCALES[ID]
+	static SKILL_EFFECT_NAME=["gun", "sniper_w", "sniper_r"]
+
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [190, 40, 7, 7, 0, 0]
@@ -30,7 +41,7 @@ class Jean extends Player {
 		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 9]
 		this.duration_list=[0,0,2]
-		this.skill_name = ["gun", "sniper_w", "sniper_r"]
+		this.skill_ranges=[20,40,40]
 		this.u_target = -1
 		this.itemtree = {
 			level: 0,
@@ -44,27 +55,12 @@ class Jean extends Player {
 			],
 			final: ITEM.EPIC_SWORD
 		}
+		
+		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
+
 	}
-	getSkillInfoKor() {
-		let info = []
-		info[0] =
-			"[원거리 소총] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴<br>사정거리:20, 사용시 대상에게 " +
-			this.getSkillBaseDamage(0) +
-			"의 물리 피해를 입힘. 속박된 대상 적중시 Q 쿨타임 2턴을 돌려받음."
-		info[1] =
-			"[둔화의 덫] 쿨타임:" +
-			this.cooltime_list[1] +
-			"턴<br>사정거리:40, 시용시 3칸범위의 덫을 발사, 덫에 맞은 적은 속박"
-		info[2] =
-			"[저격수의 극장] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴<br> 사용시 대상 고정 후 3턴동안 최대 3번 발사해 각각" +
-			this.getSkillBaseDamage(2) +
-			"의 물리 피해를 입힘(3번째에는 고정 피해를 입힘, 사용중에는 움직일 수 없음)다시한번 사용시 중지하고 주사위2배 효과를 받음"
-		return info
-	}
+
 
 	getSkillInfoEng() {
 		let info = []
@@ -86,8 +82,12 @@ class Jean extends Player {
 			" for 3 turns. 3rd attack deals fixed damage.(Cannot throw dice in use. Can stop by pressing skill button again.)Gains doubledice effect after use"
 		return info
 	}
+	getSkillScale(){
+		return Jean.SKILL_SCALES
+	}
+
 	getSkillTrajectorySpeed(skilltype: string): number {
-		if (skilltype === "sniper_r") return 170
+		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.ULT]) return 170
 
 		return 0
 	}
@@ -109,23 +109,23 @@ class Jean extends Player {
 		//console.log("getSkillAttr" + s)
 		switch (s) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(20)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
 
 				break
 			case ENUM.SKILL.W:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(20).setProjectileSize(3)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(this.skill_ranges[s]).setProjectileSize(3)
 
 				break
 			case ENUM.SKILL.ULT:
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
-					skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(40)
+					skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
 				}
 				break
 		}
 		return skillTargetSelector
 	}
 	getSkillName(skill: number): string {
-		return this.skill_name[skill]
+		return Jean.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
@@ -142,17 +142,22 @@ class Jean extends Player {
 			return proj
 		}
 	}
-	private getSkillBaseDamage(skill: number): number {
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(10 + this.ability.AD * 0.7)
+			return this.calculateScale(Jean.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return Math.floor(60 + 0.7 * this.ability.AD)
+			return this.calculateScale(Jean.SKILL_SCALES.R)
 		}
+	}
+	getSkillAmount(key: string): number {
+		if(key==="rshield") return 80
+
+		return 0
 	}
 
 	private getUltShield(){
-		return new ShieldEffect(ENUM.EFFECT.SNIPER_ULT_SHIELD,4,80)
+		return new ShieldEffect(ENUM.EFFECT.SNIPER_ULT_SHIELD,4,this.getSkillAmount("rshield"))
 	}
 
 	getSkillDamage(target: number): SkillDamage {

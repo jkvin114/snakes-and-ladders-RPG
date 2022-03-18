@@ -8,9 +8,15 @@ import { Projectile } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { NormalEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
 const ID = 3
 class Yangyi extends Player {
-	// onoff: boolean[]
+	skillInfoKor: SkillInfoFactory
+	skillInfo: SkillInfoFactory
+	// onoff: boolean[]	
+	skill_ranges: number[]
+
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 	itemtree: {
@@ -19,8 +25,8 @@ class Yangyi extends Player {
 		final: number
 	}
 	readonly duration_list: number[]
-
-	private readonly skill_name: string[]
+	static SKILL_EFFECT_NAME= ["dinosaur_q", "hit", "dinosaur_r"]
+	static SKILL_SCALES=SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		const basic_stats: number[] = [170, 40, 6, 6, 0, 0]
@@ -29,7 +35,7 @@ class Yangyi extends Player {
 		this.hpGrowth = 90
 		this.cooltime_list = [1, 7, 8] //1 7
 		this.duration_list = [0, 3, 0]
-		this.skill_name = ["dinosaur_q", "hit", "dinosaur_r"]
+		this.skill_ranges=[0,0,20]
 		this.itemtree = {
 			level: 0,
 			items: [
@@ -44,28 +50,6 @@ class Yangyi extends Player {
 		}
 	}
 
-	getSkillInfoKor() {
-		let info = []
-		info[0] =
-			"[양이의 주먹] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴<br>4칸내의 모든 플레이어 에게 " +
-			this.getSkillBaseDamage(0) +
-			"의 물리 피해(현재체력의 5% 소모,대상이 2명 이상이면 피해량 감소)"
-		info[1] =
-			"[양이의 고민] 쿨타임:" +
-			this.cooltime_list[1] +
-			"턴<br>[기본지속효과]: 뒤쳐져 있으면 주사위숫자 +1 <br>[사용시]: 3턴에 걸쳐 체력" +
-			3 * this.wHealAmount() +
-			" 회복, 회복 중엔 둔화에 걸림"
-		info[2] =
-			"[양이의 뿔] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴<br>사정거리:20 ,대상 플레이어에게 " +
-			this.getSkillBaseDamage(2) +
-			"+잃은 체력의 50%의 물리 피해를 입힘,대상 처치시 쿨타임 초기화"
-		return info
-	}
 	getSkillInfoEng() {
 		let info = []
 		info[0] =
@@ -78,7 +62,7 @@ class Yangyi extends Player {
 			"[Regeneration] cooltime:" +
 			this.cooltime_list[1] +
 			" turns<br> [Passive effect]: movement speed +1 when fall behind <br>[On use]: Heals total" +
-			3 * this.wHealAmount() +
+			 +
 			" for 3 turns, get slowed while healing"
 		info[2] =
 			"[Burning at the stake] cooltime:" +
@@ -88,19 +72,22 @@ class Yangyi extends Player {
 			"+ 50% of target`s missing health as attack damage, Cooltime resets if the target dies."
 		return info
 	}
-	private wHealAmount() {
-		return Math.floor(30 + this.ability.AD * 0.4 + 0.15 * (this.MaxHP - this.HP))
+	getSkillScale(){
+		return Yangyi.SKILL_SCALES
 	}
 
-	private getSkillBaseDamage(skill: number): number {
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(5 + 0.6 * this.ability.AD)
+			return this.calculateScale(Yangyi.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return Math.floor(40 + 0.7 * this.ability.AD)
+			return this.calculateScale(Yangyi.SKILL_SCALES.R)
 		}
 	}
-
+	getSkillAmount(key: string): number {
+		if(key==="wheal") return this.calculateScale(Yangyi.SKILL_SCALES.wheal)
+		return 0
+	}
 	getSkillTrajectorySpeed(skilltype: string): number {
 		if (skilltype === "dinosaur_r") {
 			return 500
@@ -127,7 +114,7 @@ class Yangyi extends Player {
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
 				break
 			case ENUM.SKILL.ULT:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(20)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
 				break
 		}
 		return skillTargetSelector
@@ -194,7 +181,7 @@ class Yangyi extends Player {
 	}
 
 	getSkillName(skill: number): string {
-		return this.skill_name[skill]
+		return Yangyi.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
@@ -224,7 +211,7 @@ class Yangyi extends Player {
 
 	onSkillDurationCount() {
 		if (this.duration[ENUM.SKILL.W] > 0) {
-			this.heal(this.wHealAmount())
+			this.heal(this.getSkillAmount("wheal"))
 		}
 	}
 

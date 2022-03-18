@@ -7,8 +7,12 @@ import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
+
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
 const ID=6
 class Gorae extends Player {
+	skill_ranges: number[]
 	//onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
@@ -18,10 +22,15 @@ class Gorae extends Player {
 		items: number[]
 		final: number
 	}
-	private readonly skill_name: string[]
 	readonly duration_list: number[]
+	
+	skillInfo:SkillInfoFactory
+	skillInfoKor:SkillInfoFactory
+
 	static PROJ_Q="kraken_q"
 	static EFFECT_W="kraken_w"
+	static SKILL_EFFECT_NAME=["kraken_q", "hit", "kraken_r"]
+	static SKILL_SCALES=SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
@@ -30,7 +39,7 @@ class Gorae extends Player {
 		this.hpGrowth = 125
 		this.cooltime_list = [2, 4, 6]
 		this.duration_list=[0,2,0]
-		this.skill_name = ["kraken_q", "hit", "kraken_r"]
+		this.skill_ranges=[15,3,20]
 		this.itemtree = {
 			level: 0,
 			items: [ITEM.FULL_DIAMOND_ARMOR,
@@ -42,6 +51,9 @@ class Gorae extends Player {
 				],
 			final: ITEM.FULL_DIAMOND_ARMOR,
 		}
+		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
+
 	}
 
 	getSkillInfoEng() {
@@ -68,41 +80,20 @@ class Gorae extends Player {
 		return info
 	}
 
-	getSkillInfoKor() {
-		let info = []
-		info[0] =
-			"[촉수 채찍] 쿨타임:" +
-			this.cooltime_list[0] +
-			"턴 <br>사정거리:15 , 범위 2칸의 촉수 설치,  맞은 플레이어에게  " +
-			this.getSkillBaseDamage(0) +
-			"의 마법 피해를 입힘"
-		info[1] =
-			"[보호의 물] 쿨타임:" +
-			this.cooltime_list[1] +
-			"턴<br>7칸 이내의 플레이어에게 " +
-			this.getSkillBaseDamage(1) +
-			" 의 마법 피해를 입히고 둔화시키고 자신은 " +
-			Math.floor(0.15 * this.MaxHP) +
-			"의 보호막을 얻음"
-		info[2] =
-			"[블랙홀] 쿨타임:" +
-			this.cooltime_list[2] +
-			"턴<br>사정거리:20 ,대상에게  " +
-			this.getSkillBaseDamage(2) +
-			"의 고정 피해를 입히고 대상 처치시 최대체력 50 증가"
-		return info
-	}
+
 	getSkillTrajectorySpeed(skilltype:string):number{
 		return 0
 	}
 
+	getSkillScale(){
+		return Gorae.SKILL_SCALES
+	}
 
 	private buildProjectile() {
 		let _this: Player = this.getPlayer()
 		return new ProjectileBuilder(this.game,Gorae.PROJ_Q,Projectile.TYPE_RANGE)
 		.setSize(2)
 		.setSource(this.turn)
-		.setSkillRange(15)
 		.setDuration(2)
         .setDamage(new Damage( 0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0))
 		.build()
@@ -118,7 +109,7 @@ class Gorae extends Player {
 			case ENUM.SKILL.Q:
 				skillTargetSelector
 				.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE)
-				.setRange(15)
+				.setRange(this.skill_ranges[0])
                 .setProjectileSize(2)
 				
 				break
@@ -133,20 +124,20 @@ class Gorae extends Player {
 			case ENUM.SKILL.ULT:
 				skillTargetSelector
 				.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-				.setRange(20)
+				.setRange(this.skill_ranges[0])
 				break
 		}
 		return skillTargetSelector
 	}
 	getSkillName(skill: number): string {
-		return this.skill_name[skill]
+		return Gorae.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
 		return super.getBasicAttackName()
 	}
 	getWShield(){
-		return new ShieldEffect(ENUM.EFFECT.KRAKEN_W_SHIELD,this.duration_list[ENUM.SKILL.W],Math.floor(0.15 * this.MaxHP))
+		return new ShieldEffect(ENUM.EFFECT.KRAKEN_W_SHIELD,this.duration_list[ENUM.SKILL.W],this.getSkillAmount("wshield"))
 	}
 
     useW() {
@@ -172,18 +163,21 @@ class Gorae extends Player {
 			return proj
 		}
 	}
-	private getSkillBaseDamage(skill:number):number{
-		if(skill===ENUM.SKILL.Q){
-			return Math.floor(10 + 0.2 * this.HP + this.ability.AP)
+	getSkillBaseDamage(skill:number):number{
+		if (skill === ENUM.SKILL.Q) {
+			return this.calculateScale(Gorae.SKILL_SCALES.Q)
 		}
-        if(skill===ENUM.SKILL.W){
-			return Math.floor(this.ability.AP * 0.5 + 30)
+		if (skill === ENUM.SKILL.W) {
+			return this.calculateScale(Gorae.SKILL_SCALES.W)
 		}
-		if(skill===ENUM.SKILL.ULT){
-			return Math.floor(40 + 0.15 * this.MaxHP + 0.6 * this.ability.AD)
+		if (skill === ENUM.SKILL.ULT) {
+			return this.calculateScale(Gorae.SKILL_SCALES.R)
 		}
 	}
-
+	getSkillAmount(key: string): number {
+		if(key==="wshield") return this.calculateScale(Gorae.SKILL_SCALES.wshield)
+		return 0
+	}
 	getSkillDamage(target: number): SkillDamage {
 	//	console.log(target+"getSkillDamage"+this.pendingSkill)
 		let skillattr: SkillDamage = null

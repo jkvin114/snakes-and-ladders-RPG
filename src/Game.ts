@@ -22,7 +22,6 @@ import { Yangyi } from "./characters/Yangyi"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { PlayerClientInterface } from "./app"
 import { Tree } from "./characters/Tree"
-import TreePlant from "./characters/SummonedEntity/TreePlant"
 const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category

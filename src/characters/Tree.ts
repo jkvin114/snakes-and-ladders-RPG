@@ -2,54 +2,58 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { Damage, SkillTargetSelector, SkillDamage, PercentDamage, CALC_TYPE, randInt } from "../Util"
+import { Damage, SkillTargetSelector, SkillDamage, CALC_TYPE, randInt } from "../Util"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-// import SETTINGS = require("../../res/globalsettings.json")
 import {
-	TickDamageEffect,
-	TickEffect,
-	TickActionFunction,
-	onHitFunction,
-	OnHitEffect,
 	AblityChangeEffect,
 	OnDamageEffect,
 	ShieldEffect
 } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
-import { PlayerClientInterface } from "../app"
-import TreePlant from "./SummonedEntity/TreePlant"
+import TreePlant from "./SummonedEntity/TreePlantEntity"
 import { SummonedEntity } from "./SummonedEntity/SummonedEntity"
+import { SkillInfoFactory } from "../helpers"
+import * as SKILL_SCALES from "../../res/skill_scales.json"
+
 const ID = 8
 class Tree extends Player {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
-
+	readonly duration_list: number[]
+	readonly skill_ranges:number[]
 	itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-	private readonly skill_name: string[]
-	readonly duration_list: number[]
 
 	private isWithered: boolean
 	private plantEntities:Set<SummonedEntity>
+	skillInfo:SkillInfoFactory
+	skillInfoKor:SkillInfoFactory
+
+
 	static PROJ_W = "tree_w"
 	static SKILLNAME_STRONG_R = "tree_wither_r"
+	static APPERANCE_WITHERED="tree_low_hp"
 	static Q_AREA_SIZE=3
 	static PLANT_LIFE_SPAN=2
+	static RANGES=[25,30,25]
+	static BASIC_STATS=[160, 20, 6, 6, 0, 30] //hp, ad, ar, mr, attackrange,ap
+	static SKILL_EFFECT_NAME=["tree_q", "tree_w", "tree_r"]
+	static COOLTIME = [2, 5, 9]
+
+	static SKILL_SCALES=SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
-		//hp, ad:40, ar, mr, attackrange,ap
-		const basic_stats: number[] = [160, 30, 6, 6, 0, 30]
-		super(turn, team, game, ai, ID, name, basic_stats)
-		//	this.onoff = [false, false, false]
+		
+		super(turn, team, game, ai, ID, name, Tree.BASIC_STATS)
 		this.hpGrowth = 90
-		this.cooltime_list = [2, 5, 9]
-		this.duration_list = [0, 1, 0]
-		this.skill_name = ["tree_q", "tree_w", "tree_r"]
+		this.cooltime_list = Tree.COOLTIME
+		this.duration_list = [0, 0, 0]
+		this.skill_ranges=Tree.RANGES
 		this.itemtree = {
 			level: 0,
 			items: [
@@ -64,26 +68,19 @@ class Tree extends Player {
 		}
 		this.isWithered = false
 		this.plantEntities=new Set<TreePlant>()
+
+	}
+	
+	// getSkillInfoKor() {
+	// 	return [this.skillInfoKor.getQ(),this.skillInfoKor.getW(),this.skillInfoKor.getUlt()]
+	// }
+	// getSkillInfoEng() {		
+	// 	return [this.skillInfo.getQ(),this.skillInfo.getW(),this.skillInfo.getUlt()]
+	// }
+	getSkillScale(){
+		return Tree.SKILL_SCALES
 	}
 
-	getSkillInfoKor() {
-		let info = []
-		info[0] = `"[달콤한 열매] <br>
-			[기본 지속 효과]:체력이 40% 미만이면 '시든 나무' 상태 돌입, '시든 나무' 상태에선 '열매 투척' 으로 아군 회복이 불가하지만 모든 피해 흡혈이 15% 증가함<br>
-			[사용시]:쿨타임:${this.cooltime_list[0]}턴,범위:20, 3칸 범위를 선택해 그 안에 있는 적들에게 ${this.getSkillBaseDamage(ENUM.SKILL.Q)}의 마법 피해를 입히고 아군은 ${this.getQHeal()}의 체력을 회복시키고 ${this.getQShield()}의 보호막 부여`
-		info[1] = `[덩굴 함정] 쿨타임:${this.cooltime_list[1]}턴<br>범위:30, 지나가는 플레이어를 멈추는 뿌리를 설치, 뿌리에 걸린 플레이어는 해당 칸의 효과를 받음, 아군은 추가로 신속 효과를 받음`
-		info[2] = `[뿌리 감옥] <br>[기본 지속 효과]:스킬 사용시 사용한 자리에 식충식물 소환, <br>
-		식충식물은 5턴간 유지되며 매 턴마다 주변 2칸이내의 적에게 의 ${this.getSkillBaseDamage(5)}마법 피해를 입히고 적이 기본 공격시 사라짐.<br>
-		[사용시]:쿨타임:${this.cooltime_list[2]}턴, 범위 25, 사용시 대상에게 ${this.getSkillBaseDamage(ENUM.SKILL.ULT)}의 마법 피해를 입히고 1턴간 속박시킴('시든 나무' 상태이면 2턴),또한 이 상태에서 아군에게 받는 피해 20% 증가, 이때 맵에 있는 모든 식충 식물이 대상 주변으로 이동됨`
-		return info
-	}
-	getSkillInfoEng() {
-		let info = []
-		info[0] = ``
-		info[1] = ``
-		info[2] = ``
-		return info
-	}
 
 	getSkillTrajectorySpeed(skilltype: string): number {
 		if(skilltype==="tree_q"){
@@ -117,13 +114,13 @@ class Tree extends Player {
 
 		switch (skill) {
 			case ENUM.SKILL.Q:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.AREA_TARGETING).setRange(25).setAreaSize(Tree.Q_AREA_SIZE)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.AREA_TARGETING).setRange(Tree.RANGES[skill]).setAreaSize(Tree.Q_AREA_SIZE)
 				break
 			case ENUM.SKILL.W:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(30).setProjectileSize(1)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(Tree.RANGES[skill]).setProjectileSize(1)
 				break
 			case ENUM.SKILL.ULT:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(25)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(Tree.RANGES[skill])
 				break
 		}
 		return skillTargetSelector
@@ -132,7 +129,7 @@ class Tree extends Player {
 		if (this.isWithered && skill === ENUM.SKILL.ULT) {
 			return Tree.SKILLNAME_STRONG_R
 		}
-		return this.skill_name[skill]
+		return Tree.SKILL_EFFECT_NAME[skill]
 	}
 
 	getBasicAttackName(): string {
@@ -149,26 +146,28 @@ class Tree extends Player {
 			return proj
 		}
 	}
-	private getQShield(){
-		return Math.floor(30+this.ability.AP * 0.08)
+	getSkillAmount(key: string): number {
+		if(key==="qshield") return this.calculateScale(Tree.SKILL_SCALES.qshield)
+		if(key==="qheal") return this.calculateScale(Tree.SKILL_SCALES.qheal)
+		if(key==="plantdamage") return this.calculateScale(Tree.SKILL_SCALES.plantdamage)
+		if(key==="plant_lifespan") return 3
+
+		return 0
 	}
-	private getQHeal(){
-		return Math.floor(20+this.ability.AP * 0.15)
-	}
-	private getSkillBaseDamage(skill: number): number {
+
+
+	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return Math.floor(30 + this.ability.AP * 0.5)
+			return this.calculateScale(Tree.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return Math.floor(50 + 0.6 * this.ability.AP)
-		}//plant attack damage
-		if(skill===5){
-			return Math.floor(10 + 0.2 * this.ability.AP)
+			return this.calculateScale(Tree.SKILL_SCALES.R)
 		}
 	}
 
+
 	private createPlantEntity(){
-		return TreePlant.create(this.game,new Damage(0,this.getSkillBaseDamage(5),0))
+		return TreePlant.create(this.game,new Damage(0,this.getSkillAmount("plantdamage"),0))
 	}
 	private summonPlantAt(pos:number){
 		if(!this.isSkillLearned(ENUM.SKILL.ULT)) return
@@ -235,8 +234,6 @@ class Tree extends Player {
 			this.startCooltime(ENUM.SKILL.Q)
 			this.summonPlantAt(pos)
 
-			console.log("area"+pos)
-
 			let opponents = this.game.playerSelector.getPlayersIn(this,pos, pos + Tree.Q_AREA_SIZE-1)
 			let dmg = new SkillDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), ENUM.SKILL.Q)
 
@@ -247,8 +244,8 @@ class Tree extends Player {
 			let allies = this.game.playerSelector.getAlliesIn(this,pos, pos + Tree.Q_AREA_SIZE-1)
 
 			for(let p of allies){
-				this.game.playerSelector.get(p).heal(this.getQHeal())
-				this.game.playerSelector.get(p).effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD,2, this.getQShield()))
+				this.game.playerSelector.get(p).heal(this.getSkillAmount("qheal"))
+				this.game.playerSelector.get(p).effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD,2, this.getSkillAmount("qshield")))
 			}
 		}
 	}
@@ -261,13 +258,13 @@ class Tree extends Player {
 				new AblityChangeEffect(ENUM.EFFECT.TREE_WITHER, 2, new Map().set("absorb", 15)),
 				SpecialEffect.SKILL.TREE_WITHER.name
 			)
-			this.changeSkillImage("tree_wither_r",ENUM.SKILL.ULT)
-			this.changeApperance("tree_low_hp")
+			this.changeSkillImage(Tree.SKILLNAME_STRONG_R,ENUM.SKILL.ULT)
+			this.changeApperance(Tree.APPERANCE_WITHERED)
 		} else {
 			this.effects.removeByKey(ENUM.EFFECT.TREE_WITHER)
 			this.isWithered = false
-			this.changeApperance("")
-			this.changeSkillImage("",ENUM.SKILL.ULT)
+			this.resetApperance()
+			this.resetSkillImage(ENUM.SKILL.ULT)
 
 		}
 	}

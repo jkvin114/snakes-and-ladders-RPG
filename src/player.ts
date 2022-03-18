@@ -13,7 +13,7 @@ import PlayerMapData from "./PlayerMapData"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects, ShieldEffect } from "./PlayerStatusEffect"
 import { PlayerClientInterface } from "./app"
-import { ObstacleHelper, AIHelper } from "./helpers"
+import { ObstacleHelper, AIHelper, SkillInfoFactory } from "./helpers"
 import { Entity } from "./Entity"
 import { Attackable, Damageable } from "./characters/SummonedEntity/SummonedEntity"
 
@@ -29,6 +29,10 @@ const POS = 0
 
 // 	}
 // }
+export interface ValueScale{
+	base:number
+	scales:{ability:string,val:number}[]
+}
 
 abstract class Player extends Entity {
 	//game: Game
@@ -84,9 +88,10 @@ abstract class Player extends Entity {
 		final: number
 	}
 	abstract readonly duration_list: number[]
+	abstract readonly skill_ranges:number[]
+	skillInfoKor: SkillInfoFactory
+	skillInfo: SkillInfoFactory
 
-	abstract getSkillInfoKor(): string[]
-	abstract getSkillInfoEng(): string[]
 	abstract getSkillTrajectorySpeed(s: string): number
 	abstract getSkillTargetSelector(skill: number): Util.SkillTargetSelector
 	abstract getSkillProjectile(projpos:number): Projectile
@@ -96,7 +101,7 @@ abstract class Player extends Entity {
 	abstract onSkillDurationCount(): void
 	abstract onSkillDurationEnd(skill: number): void
 	abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
-
+	abstract getSkillBaseDamage(skill:number):number
 	constructor(
 		turn: number,
 		team: boolean | string,
@@ -148,6 +153,21 @@ abstract class Player extends Entity {
 		this.damagedby = [0, 0, 0, 0]
 		//for eath player, turns left to be count as assist(maximum 3)
 		this.bestMultiKill = 0
+		this.skillInfo=new SkillInfoFactory(this.champ,this,SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor=new SkillInfoFactory(this.champ,this,SkillInfoFactory.LANG_KOR)
+	}
+	calculateScale(data:ValueScale){
+		let v= data.base + data.scales.reduce((prev,curr)=>{
+			return prev + (this.ability.get(curr.ability) * curr.val)
+		},0)
+		return Math.floor(v)
+	}
+
+	getSkillInfoKor() {
+		return [this.skillInfoKor.getQ(),this.skillInfoKor.getW(),this.skillInfoKor.getUlt()]
+	}
+	getSkillInfoEng() {		
+		return [this.skillInfo.getQ(),this.skillInfo.getW(),this.skillInfo.getUlt()]
 	}
 
 	transfer(func: Function, ...args: any[]) {
@@ -165,6 +185,9 @@ abstract class Player extends Entity {
 		this.transfer(PlayerClientInterface.message, text)
 	}
 
+	getSkillAmount(key:string):number{
+		return 0
+	}
 	calculateAdditionalDice(amount: number): number {
 		let first: Player = this.game.playerSelector.getFirstPlayer()
 
@@ -466,6 +489,9 @@ abstract class Player extends Entity {
 		this.transfer(PlayerClientInterface.update, "appearance", this.turn, name)
 		//	console.log("changeApperance"+name)
 	}
+	resetApperance(){
+		this.changeApperance("")
+	}
 	/**
 		 * 캐릭터 스킬 아이콘 변경
 		 * @param name name of that skill
@@ -474,6 +500,9 @@ abstract class Player extends Entity {
 	changeSkillImage(name: string,skill:number) {
 		this.transfer(PlayerClientInterface.update, "skillImg", this.turn, {champ:this.champ,skill:skill,skill_name:name})
 		//	console.log("changeApperance"+name)
+	}
+	resetSkillImage(skill:number){
+		this.changeSkillImage("",skill)
 	}
 
 	/**
@@ -1074,6 +1103,7 @@ abstract class Player extends Entity {
 			flags.push(Util.HPChangeData.FLAG_TICKDMG)
 		}
 		else if(damageType==="entity"){
+			needDelay = false
 
 		}
 
