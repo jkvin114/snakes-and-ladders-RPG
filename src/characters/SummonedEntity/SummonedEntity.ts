@@ -20,7 +20,7 @@ abstract class SummonedEntity extends Entity {
 		this.UEID
 	}
 	summon(summoner: Player, life: number, pos: number,id:string) {
-		console.log("summon"+id)
+	//	console.log("summon"+id)
 
 		this.summoner = summoner
 		this.lifeSpan = life
@@ -44,12 +44,12 @@ abstract class SummonedEntity extends Entity {
 		this.pos=pos
 	}
 	naturalDeath() {
-		console.log("naturaldeath")
+		console.log("expired plant "+this.UEID)
 		this.alive = false
 		this.game.removeEntity(this.UEID, false)
 	}
 	killed() {
-		console.log("killed"+this.UEID)
+		console.log("died plant "+this.UEID)
 		this.alive = false
 		this.game.removeEntity(this.UEID, true)
 	}
@@ -59,7 +59,6 @@ abstract class SummonedEntity extends Entity {
 		if (!this.alive) return
 
 		if (this.summoner.turn === thisturn) {
-			console.log("entity cooldown")
 			this.lifeTime += 1
 			if (this.lifeTime > this.lifeSpan) this.naturalDeath()
 		}
@@ -79,9 +78,9 @@ abstract class EntityDecorator extends SummonedEntity {
 	}
 	killed(): void {
 		this.entity.killed()
+		super.killed()
 	}
 	doDamage(source: Entity, damage: Damage): boolean {
-		console.log("dodamage decorator")
 		return this.entity.doDamage(source,damage)
 	}
 	attack(): void {

@@ -67,27 +67,6 @@ class Silver extends Player {
 
 	}
 
-	getSkillInfoEng() {
-		let info = []
-		info[0] =
-			"[Tusk Attack] cooltime:" +
-			this.cooltime_list[0] +
-			" turns<br>range:3,(7 to players that have mark of ivory),Damage a player by tusk, deals " +
-			this.getSkillBaseDamage(0) +
-			"magic damageDeals 30 more damage if the target has mark of ivory"
-		info[1] =
-			"[Curse of Ivory]<br> cooltime:" +
-			this.cooltime_list[1] +
-			" turns<br>range:15, Leaves mark of ivory to a player and applies curse effect"
-		info[2] =
-			"[Strengthen] cooltime:" +
-			this.cooltime_list[2] +
-			" turns<br>[Passive effect]: attack and magic resistance increase based on missing health<br>" +
-			" [On use]: Attack and magic resistance increases by" +
-			(this.HP < this.MaxHP / 10 ? 150 : 80) +
-			" and heal amount of 'tusk attack' doubles"
-		return info
-	}
 
 		
 	getSkillScale(){

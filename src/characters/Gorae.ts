@@ -39,7 +39,7 @@ class Gorae extends Player {
 		this.hpGrowth = 125
 		this.cooltime_list = [2, 4, 6]
 		this.duration_list=[0,2,0]
-		this.skill_ranges=[15,3,20]
+		this.skill_ranges=[15,0,20]
 		this.itemtree = {
 			level: 0,
 			items: [ITEM.FULL_DIAMOND_ARMOR,
@@ -55,31 +55,6 @@ class Gorae extends Player {
 		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
 
 	}
-
-	getSkillInfoEng() {
-		let info = []
-		info[0] =
-			"[Tenacle Strike] cooltime:" +
-			this.cooltime_list[0] +
-			" turn <br>range:15 , Places a projectile with size 2.Players steps on it receives  " +
-			this.getSkillBaseDamage(0) +
-			"magic damage"
-		info[1] =
-			"[Mucus Shower] cooltime:" +
-			this.cooltime_list[1] +
-			" turn<br>Damage all players within 7 squares, deals " +
-			this.getSkillBaseDamage(1) +
-			" magic damage and slow them. Gains shield of" +
-			Math.floor(0.1 * this.MaxHP)
-		info[2] =
-			"[Predation] cooltime:" +
-			this.cooltime_list[2] +
-			" turn<br>range:20 ,Devour a target, dealing  " +
-			this.getSkillBaseDamage(2)+
-			"fixed damage If the target dies, maximum HP increases permanently by 50."
-		return info
-	}
-
 
 	getSkillTrajectorySpeed(skilltype:string):number{
 		return 0

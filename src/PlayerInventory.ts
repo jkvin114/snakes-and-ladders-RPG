@@ -5,8 +5,7 @@ import { ITEM } from "./enum"
 import { items as ItemList } from "../res/item.json"
 import SETTINGS = require("../res/globalsettings.json")
 import { Player } from "./player"
-import { PlayerClientInterface } from "./app"
-const MONEY = 0
+import { PlayerClientInterface, testSetting } from "./app"
 
 class PlayerInventory {
 	// player:Player
@@ -25,7 +24,7 @@ class PlayerInventory {
 		this.player = player
 
 		this.token = 2
-		this.money = MONEY
+		this.money = testSetting.money
 		this.life = 0
 		this.lifeBought = 0
 		this.activeItems = []

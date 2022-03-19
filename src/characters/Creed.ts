@@ -59,26 +59,7 @@ class Creed extends Player {
 	}
 
 
-	getSkillInfoEng() {
-		let info: string[] = []
-		info[0] =
-			"[Scythe Strike] cooltime:" +
-			this.cooltime_list[0] +
-			" turns<br>range:7,Damage a player by scythe, deals " +
-			this.getSkillBaseDamage(0) +
-			"attack damage,<br>Can use 2 times, second attack deals 50% less damage"
-		info[1] =
-			"[Reaping Wind] cooltime:" +
-			this.cooltime_list[1] +
-			" turns<br>range:30 ,Places a projectile of size 3 <br> that sends a player who steps on it to 4 squares back"
-		info[2] =
-			"[Grave Delivery] cooltime:" +
-			this.cooltime_list[2] +
-			" turns<br>range: 20, Move to a player and deals  " +
-			this.getSkillBaseDamage(2) +
-			" attack damage<br>30% less damage to the target to the front"
-		return info
-	}
+
 	getSkillScale(){
 		return Creed.SKILL_SCALES
 	}

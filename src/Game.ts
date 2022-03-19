@@ -479,7 +479,6 @@ class Game {
 
 	removeEntity(entityId: string, iskilled: boolean) {
 		if (!this.summonedEntityList.has(entityId)) return
-		console.log("removeEntity")
 
 		this.summonedEntityList.delete(entityId)
 		this.sendToClient(PlayerClientInterface.deleteEntity, entityId, iskilled)
@@ -846,7 +845,6 @@ class Game {
 	}
 
 	applyTickEffect() {
-		console.log("apply" + this.thisturn)
 		for (let p of this.playerSelector.getAll()) {
 			p.effects.tick(this.thisturn)
 		}

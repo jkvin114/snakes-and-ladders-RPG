@@ -60,26 +60,7 @@ class Timo extends Player {
 	}
 
 
-	getSkillInfoEng() {
-		let info = []
-		info[0] =
-			"[Blind Curse] cooltime:" +
-			this.cooltime_list[0] +
-			" turns<br>range:18,deals  " +
-			this.getSkillBaseDamage(0) +
-			"magic damage, and blinds the target for 2 turns"
-		info[1] =
-			"[Phantom Menace] cooltime:" +
-			this.cooltime_list[1] +
-			" turns<br>[Passive]:When invisible, deals additional (30% of target`s missing health) magic damage on use of 'Blind curse'[On use]: Gains invisibility effect for 1 turn., "
-		info[2] =
-			"[Poison Bomb] cooltime:" +
-			this.cooltime_list[2] +
-			" turns<br>range:30 ,Places a projectile with size 4, player steps on it slowed and receive total" +
-			this.getSkillBaseDamage(2) * 3 +
-			"magic damage for 3 turns"
-		return info
-	}
+
 
 	getSkillScale(){
 		return Timo.SKILL_SCALES

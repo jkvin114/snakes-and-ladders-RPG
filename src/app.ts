@@ -12,6 +12,16 @@ import cors = require("cors")
 import os = require("os")
 
 
+const args = require('minimist')(process.argv.slice(2))
+console.log(args)
+export let testSetting={
+	lvl:1,pos:0,money:0
+}
+if(args['l']) testSetting.lvl=args['l']
+if(args['p']) testSetting.pos=args['p']
+if(args['m']) testSetting.money=args['m']
+
+console.log(testSetting)
 
 const session = require('express-session')({
 	key: 'sid',   //세션의 키 값

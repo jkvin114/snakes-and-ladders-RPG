@@ -62,26 +62,6 @@ class Jean extends Player {
 	}
 
 
-	getSkillInfoEng() {
-		let info = []
-		info[0] =
-			"[Gunfire] cooltime:" +
-			this.cooltime_list[0] +
-			" turns<br>range:20, deals  " +
-			this.getSkillBaseDamage(0) +
-			" attack damage.if the target is rooted, gets back 2 turns of cooltime "
-		info[1] =
-			"[Net Trap] cooltime:" +
-			this.cooltime_list[1] +
-			" turns<br>range:20, Places a projectile with size 3, player steps on it get rooted"
-		info[2] =
-			"[Target Locked] cooltime:" +
-			this.cooltime_list[2] +
-			" turns<br>range:40 Lock up a target and deals " +
-			this.getSkillBaseDamage(2) +
-			" for 3 turns. 3rd attack deals fixed damage.(Cannot throw dice in use. Can stop by pressing skill button again.)Gains doubledice effect after use"
-		return info
-	}
 	getSkillScale(){
 		return Jean.SKILL_SCALES
 	}

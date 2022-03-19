@@ -2,7 +2,7 @@
     "statuseffect":[
         "{Slowness} next dice -2",
         "[Speed] next dice +2",
-        "{Rooted} can`t throw dice",
+        "{Root} can`t throw dice",
         "{Silent} Can`t use skill",
         "[Shield] ignore one skill",
         "{Poison} -30 HP for every turn",

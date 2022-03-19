@@ -87,7 +87,7 @@ export namespace SpecialEffect {
 		},
         TREE_ULT: {
 			isgood:false,
-            src:"skill/9-3.png",
+            src:"skill/9-3.jpg",
 			name: "tree_ult",
 			desc: "Incoming damage from enemies increases by 20%",
 			desc_kor: "적에게 받는 피해 20% 증가"

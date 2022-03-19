@@ -50,28 +50,7 @@ class Yangyi extends Player {
 		}
 	}
 
-	getSkillInfoEng() {
-		let info = []
-		info[0] =
-			"[Claw Strike] cooltime:" +
-			this.cooltime_list[0] +
-			" turns<br>damage all players within 4 sqares with claw,deals " +
-			this.getSkillBaseDamage(0) +
-			" attack damage(cost: -5% of current health,damage reduced when attacking more than 1 player)"
-		info[1] =
-			"[Regeneration] cooltime:" +
-			this.cooltime_list[1] +
-			" turns<br> [Passive effect]: movement speed +1 when fall behind <br>[On use]: Heals total" +
-			 +
-			" for 3 turns, get slowed while healing"
-		info[2] =
-			"[Burning at the stake] cooltime:" +
-			this.cooltime_list[2] +
-			" turns<br>Range:20 ,Damage a player with fire, deals " +
-			this.getSkillBaseDamage(2) +
-			"+ 50% of target`s missing health as attack damage, Cooltime resets if the target dies."
-		return info
-	}
+
 	getSkillScale(){
 		return Yangyi.SKILL_SCALES
 	}

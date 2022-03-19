@@ -12,14 +12,11 @@ import PlayerStatistics from "./PlayerStatistics"
 import PlayerMapData from "./PlayerMapData"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects, ShieldEffect } from "./PlayerStatusEffect"
-import { PlayerClientInterface } from "./app"
+import { PlayerClientInterface ,testSetting} from "./app"
 import { ObstacleHelper, AIHelper, SkillInfoFactory } from "./helpers"
 import { Entity } from "./Entity"
 import { Attackable, Damageable } from "./characters/SummonedEntity/SummonedEntity"
 
-//for test only
-const LVL = 1
-const POS = 0
 
 // class Minion extends Entity{
 // 	constructor(){
@@ -111,7 +108,7 @@ abstract class Player extends Entity {
 		name: string,
 		basic_stats: number[]
 	) {
-		super(game, basic_stats[0], POS)
+		super(game, basic_stats[0], testSetting.pos)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
@@ -120,7 +117,7 @@ abstract class Player extends Entity {
 		this.team = team //0:readteam  1:blue
 		this.lastpos = 0 //이전위치
 		this.dead = false
-		this.level = LVL //레벨, 1에서시작
+		this.level = testSetting.lvl //레벨, 1에서시작
 
 		this.kill = 0
 		this.death = 0

@@ -74,33 +74,7 @@ class Bird extends Player {
 
 	}
 
-	getSkillInfoEng() {
-		let info: string[] = []
-		info[0] =
-			"[Beak attack] cooltime:" +
-			this.cooltime_list[0] +
-			" turn<br>range:20,Attack a target, deals " +
-			this.getSkillBaseDamage(ENUM.SKILL.Q) +
-			" magic damage and take away 20$"
-		info[1] =
-			"[Baby Birds] cooltime:" +
-			this.cooltime_list[1] +
-			" turn, duration: 2 turn<br>Receive speed effect on use. Basic attack deals additional " +
-			Math.floor(10 + this.ability.AP * 0.3) +
-			" magic damage, " +
-			" 'Beak attack' deals additional " +
-			Math.floor(10 + this.ability.AP * 0.5) +
-			" magic damage and stuns target"
-		info[2] =
-			"[Summon phenix] cooltime:" +
-			this.cooltime_list[2] +
-			" turn, duration: 4 turn<br> Basic attack range increase by 2, deals additional " +
-			Math.floor(this.ability.AD * 0.3) +
-			" attack damage." +
-			"Also, 'Baby Bird'`s additional damage doubles, and 'beak attack' creates an area" +
-			" that applies ignite effect to players who step on it"
-		return info
-	}
+
 	getSkillTrajectorySpeed(skilltype: string): number {
 		if (skilltype === "hit" && !this.isSkillActivated(ENUM.SKILL.W) && !this.isSkillActivated(ENUM.SKILL.ULT)) {
 			return 0

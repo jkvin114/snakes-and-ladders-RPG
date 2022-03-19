@@ -5,7 +5,7 @@ import { ITEM } from "../enum"
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
-import { TickDamageEffect, TickEffect} from "../StatusEffect"
+import { TickDamageEffect, TickEffect } from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
@@ -29,13 +29,12 @@ class Jellice extends Player {
 	private u_used: number
 	readonly duration_list: number[]
 
-	static PROJ_ULT="magician_r"
+	static PROJ_ULT = "magician_r"
 	// static EFFECT_W="magician_w"
 	// static EFFECT_W_BURN="magician_w_burn"
-	static SKILLNAME_W_Q="magician_w_q"
-	static SKILL_SCALES=SKILL_SCALES[ID]
-	static SKILL_EFFECT_NAME=["magician_q", "hit", "magician_r"]
-
+	static SKILLNAME_W_Q = "magician_w_q"
+	static SKILL_SCALES = SKILL_SCALES[ID]
+	static SKILL_EFFECT_NAME = ["magician_q", "hit", "magician_r"]
 
 	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -45,7 +44,7 @@ class Jellice extends Player {
 		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 7] //3 5 7
 		this.duration_list = [0, 1, 0]
-		this.skill_ranges=[0,0,30]
+		this.skill_ranges = [0, 0, 30]
 		this.u_used = 0
 		this.itemtree = {
 			level: 0,
@@ -59,34 +58,12 @@ class Jellice extends Player {
 			],
 			final: ITEM.EPIC_CRYSTAL_BALL
 		}
-		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
-
+		this.skillInfo = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_KOR)
 	}
 
 
-	getSkillInfoEng() {
-		let info = []
-		info[0] =
-			"[Spell Attack] cooltime:" +
-			this.cooltime_list[0] +
-			" turns <br>Damage all players within 5~15 squares front, 3~8 squares back, deals " +
-			this.getSkillBaseDamage(0) +
-			"magic damage"
-		info[1] =
-			"[Burning Spellbook] cooltime:" +
-			this.cooltime_list[1] +
-			" turns<br>Doubles range for all skills for 1 turn, Applies ignite effect on lv1 skill use.Can`t throw dice this turn, gains speed effect after use"
-		info[2] =
-			"[Dark Sorcery] cooltime:" +
-			this.cooltime_list[2] +
-			" turns<br>range:30 , Places a projectile with size 3, players steps on it receives " +
-			this.getSkillBaseDamage(2) +
-			"magic damage and silenced, Can use skill 3 times"
-		return info
-	}
-
-	getSkillScale(){
+	getSkillScale() {
 		return Jellice.SKILL_SCALES
 	}
 
@@ -95,7 +72,7 @@ class Jellice extends Player {
 	}
 	private buildProjectile() {
 		let _this: Player = this.getPlayer()
-		return new ProjectileBuilder(this.game,Jellice.PROJ_ULT,Projectile.TYPE_RANGE)
+		return new ProjectileBuilder(this.game, Jellice.PROJ_ULT, Projectile.TYPE_RANGE)
 			.setSize(3)
 			.setSource(this.turn)
 			.setAction(function (target: Player) {
@@ -135,7 +112,7 @@ class Jellice extends Player {
 	}
 
 	private getWShield() {
-		return new ShieldEffect(ENUM.EFFECT.MAGICIAN_W_SHIELD,1, 50)
+		return new ShieldEffect(ENUM.EFFECT.MAGICIAN_W_SHIELD, 1, 50)
 	}
 	private getWBurnEffect() {
 		return new TickDamageEffect(
@@ -143,21 +120,19 @@ class Jellice extends Player {
 			2, //2
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(this.getSkillBaseDamage(ENUM.SKILL.W), PercentDamage.MAX_HP)
-		)
-			.setSourcePlayer(this.turn)
+		).setSourcePlayer(this.turn)
 	}
 	private useW() {
 		this.effects.applySpecial(this.getWShield(), SpecialEffect.SKILL.MAGICIAN_W.name)
-
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
 		this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.TURN_START)
 	}
 	private useQ(): boolean {
-		let w_on=this.isSkillActivated(ENUM.SKILL.W) 
-		let end_front = this.effects.modifySkillRange(w_on?2:1 * this.getSkillAmount("qrange_end_front"))
-		let end_back=this.effects.modifySkillRange(w_on?2:1 * this.getSkillAmount("qrange_end_back"))
+		let w_on = this.isSkillActivated(ENUM.SKILL.W)
+		let end_front = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_front"))
+		let end_back = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_back"))
 		let start = this.getSkillAmount("qrange_start")
 
 		let targets = this.game.playerSelector.getPlayersIn(this, this.pos + start + 1, this.pos + end_front)
@@ -169,7 +144,7 @@ class Jellice extends Player {
 		}
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
 			dmg.setOnHit((target: Player) => {
-				target.effects.applySpecial(this.getWBurnEffect(),SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
+				target.effects.applySpecial(this.getWBurnEffect(), SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
 			})
 		}
 		for (let p of targets) {
@@ -194,7 +169,7 @@ class Jellice extends Player {
 		return super.getBaseBasicAttackDamage()
 	}
 
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos: number): Projectile {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 
@@ -222,9 +197,9 @@ class Jellice extends Player {
 		}
 	}
 	getSkillAmount(key: string): number {
-		if(key==="qrange_start") return 3
-		if(key==="qrange_end_front") return 15
-		if(key==="qrange_end_back") return 8
+		if (key === "qrange_start") return 3
+		if (key === "qrange_end_front") return 15
+		if (key === "qrange_end_back") return 8
 		//앞 3~15, 뒤 3~8
 		return 0
 	}
