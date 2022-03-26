@@ -2,7 +2,7 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
 import { Game } from "../Game"
 import { Projectile } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
@@ -10,6 +10,7 @@ import { NormalEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
+import { EntityFilter } from "../EntityFilter"
 const ID = 3
 class Yangyi extends Player {
 	skillInfoKor: SkillInfoFactory
@@ -25,10 +26,10 @@ class Yangyi extends Player {
 		final: number
 	}
 	readonly duration_list: number[]
-	static SKILL_EFFECT_NAME= ["dinosaur_q", "hit", "dinosaur_r"]
-	static SKILL_SCALES=SKILL_SCALES[ID]
+	static readonly SKILL_EFFECT_NAME= ["dinosaur_q", "hit", "dinosaur_r"]
+	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		const basic_stats: number[] = [170, 40, 6, 6, 0, 0]
 		super(turn, team, game, ai, ID, name, basic_stats)
 		// this.onoff = [false, false, false]
@@ -99,12 +100,10 @@ class Yangyi extends Player {
 		return skillTargetSelector
 	}
 	useQ() {
-		let skilldmg = new SkillDamage(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0), ENUM.SKILL.Q)
+		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q)).ofSkill(ENUM.SKILL.Q)
 
-		let targets = this.game.playerSelector.getAvailableTarget(
-			this,
-			new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.NON_TARGET).setSkill(ENUM.SKILL.Q).setRange(4)
-		)
+
+		let targets=this.mediator.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(this).inRadius(4))
 
 		if (targets.length > 0) {
 			this.doObstacleDamage(Math.floor(this.HP * 0.05), "noeffect")
@@ -115,8 +114,9 @@ class Yangyi extends Player {
 			skilldmg.damage.updateAttackDamage(CALC_TYPE.multiply, damagecoeff)
 
 			for (let p of targets) {
-				this.hitOneTarget(p, skilldmg)
+				this.mediator.skillAttackSingle(this,p.turn)(skilldmg)
 			}
+
 		} else {
 			return false
 		}
@@ -135,7 +135,7 @@ class Yangyi extends Player {
 		}
 	}
 
-	getSkillDamage(target: number): SkillDamage {
+	getSkillDamage(target: number): SkillAttack {
 		//무조건 궁
 		let skillattr = null //-1 when can`t use skill, 0 when it`s not attack skill
 		this.pendingSkill = -1
@@ -143,18 +143,16 @@ class Yangyi extends Player {
 		this.startCooltime(ENUM.SKILL.ULT)
 		//Math.floor(0.5 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP))
 
-		let _this: Player = this.getPlayer()
-
-		let k = function () {
-			_this.resetCooltime([ENUM.SKILL.ULT])
+		let k = function (this:Player) {
+			this.resetCooltime([ENUM.SKILL.ULT])
 		}
 
-		skillattr = new SkillDamage(
+		skillattr = new SkillAttack(
 			new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0).mergeWith(
-				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(this.game.playerSelector.get(target))
+				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(this.game.pOfTurn(target))
 			),
-			ENUM.SKILL.ULT
-		).setOnKill(k)
+			this.getSkillName(ENUM.SKILL.ULT)
+		).ofSkill(ENUM.SKILL.ULT).setOnKill(k)
 
 		return skillattr
 	}
@@ -183,7 +181,7 @@ class Yangyi extends Player {
 	 */
 	passive() {
 		//w passive
-		if (this.level > 1 && this.game.playerSelector.isLast(this)) {
+		if (this.level > 1 && this.mediator.isFellBehind(this)) {
 			this.adice += 1
 		}
 	}
@@ -216,10 +214,10 @@ class Yangyi extends Player {
 		switch (skill) {
 			case ENUM.SKILL.Q:
 				//4칸이내에 플레이어가 있으면 사용
-				if (this.game.playerSelector.getPlayersIn(this, this.pos - 4, this.pos + 4).length > 0) {
-					this.useQ()
-					return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-				}
+				this.useQ()
+					
+				return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
+				
 				return null
 			case ENUM.SKILL.W:
 				//체력이 50% 이하면 사용
@@ -242,7 +240,7 @@ class Yangyi extends Player {
 	 * return int
 	 */
 	getUltTarget(validtargets: number[]) {
-		let ps = this.game.playerSelector.getAll()
+		let ps = this.mediator.allPlayer()
 
 		validtargets.sort((b: number, a: number): number => {
 			return ps[a].pos - ps[b].pos

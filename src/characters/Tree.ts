@@ -2,7 +2,7 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { Damage, SkillTargetSelector, SkillDamage, CALC_TYPE, randInt } from "../Util"
+import { Damage, SkillTargetSelector, SkillAttack, CALC_TYPE, randInt } from "../Util"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { AblityChangeEffect, OnDamageEffect, ShieldEffect } from "../StatusEffect"
@@ -11,6 +11,7 @@ import TreePlant from "./SummonedEntity/TreePlantEntity"
 import { SummonedEntity } from "./SummonedEntity/SummonedEntity"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
+import { EntityFilter } from "../EntityFilter"
 
 const ID = 8
 class Tree extends Player {
@@ -26,23 +27,23 @@ class Tree extends Player {
 	}
 
 	private isWithered: boolean
-	private plantEntities: Set<SummonedEntity>
+	private plantEntities: Set<string>
 	skillInfo: SkillInfoFactory
 	skillInfoKor: SkillInfoFactory
 
-	static PROJ_W = "tree_w"
-	static SKILLNAME_STRONG_R = "tree_wither_r"
-	static APPERANCE_WITHERED = "tree_low_hp"
-	static Q_AREA_SIZE = 3
-	static PLANT_LIFE_SPAN = 2
-	static RANGES = [25, 30, 25]
-	static BASIC_STATS = [160, 20, 6, 6, 0, 30] //hp, ad, ar, mr, attackrange,ap
-	static SKILL_EFFECT_NAME = ["tree_q", "tree_w", "tree_r"]
-	static COOLTIME = [2, 5, 9]
+	static readonly PROJ_W = "tree_w"
+	static readonly SKILLNAME_STRONG_R = "tree_wither_r"
+	static readonly APPERANCE_WITHERED = "tree_low_hp"
+	static readonly Q_AREA_SIZE = 3
+	static readonly PLANT_LIFE_SPAN = 2
+	static readonly RANGES = [25, 30, 25]
+	static readonly BASIC_STATS = [160, 20, 6, 6, 0, 30] //hp, ad, ar, mr, attackrange,ap
+	static readonly SKILL_EFFECT_NAME = ["tree_q", "tree_w", "tree_r"]
+	static readonly COOLTIME = [2, 5, 9]
 
-	static SKILL_SCALES = SKILL_SCALES[ID]
+	static readonly SKILL_SCALES = SKILL_SCALES[ID]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
 		super(turn, team, game, ai, ID, name, Tree.BASIC_STATS)
 		this.hpGrowth = 90
 		this.cooltime_list = Tree.COOLTIME
@@ -61,7 +62,7 @@ class Tree extends Player {
 			final: ITEM.EPIC_CRYSTAL_BALL
 		}
 		this.isWithered = false
-		this.plantEntities = new Set<TreePlant>()
+		this.plantEntities = new Set<string>()
 	}
 
 	// getSkillInfoKor() {
@@ -88,9 +89,9 @@ class Tree extends Player {
 		const _this = this.getPlayer()
 		return new ProjectileBuilder(this.game, Tree.PROJ_W, Projectile.TYPE_PASS)
 			.setSource(this.turn)
-			.setAction(function (target: Player) {
-				if (!_this.game.playerSelector.isOpponent(target.turn, _this.turn)) {
-					target.effects.apply(ENUM.EFFECT.SPEED, 1, ENUM.EFFECT_TIMING.TURN_END)
+			.setAction(function(this: Player){
+				if (!this.isEnemyOf(_this)) {
+					this.effects.apply(ENUM.EFFECT.SPEED, 1, ENUM.EFFECT_TIMING.TURN_END)
 				}
 			})
 			.setDuration(3)
@@ -166,53 +167,48 @@ class Tree extends Player {
 		if (!this.isSkillLearned(ENUM.SKILL.ULT)) return
 		let entity = this.game.summonEntity(this.createPlantEntity(), this, Tree.PLANT_LIFE_SPAN, pos)
 
-		this.plantEntities.add(entity)
+		this.plantEntities.add(entity.UEID)
 	}
 	private moveAllPlantTo(pos: number) {
-		this.cleanupDeadPlants()
-		for (let plant of this.plantEntities) {
-			this.game.updateEntityPos(plant, pos + randInt(3) - 1)
+		this.mediator.withdrawDeadEntities()
+		for (let plantId of this.plantEntities) {
+			this.mediator.moveSummonedEntityTo(plantId,pos + randInt(3) - 1)
+			// this.game.updateSummonedEntityPos(plantId, pos + randInt(3) - 1)
 		}
 	}
 	private plantAttack() {
-		this.cleanupDeadPlants()
-		for (let plant of this.plantEntities) {
-			plant.attack()
-		}
+		this.mediator.withdrawDeadEntities()
+		this.plantEntities.forEach((plantId)=>{
+			let plant=this.game.getEntityById(plantId)
+			if(plant!=null) plant.basicAttack()
+		})
 	}
-	private cleanupDeadPlants() {
-		for (let plant of this.plantEntities) {
-			if (!plant.alive) {
-				console.log("deleted plant " + plant.UEID)
-				this.plantEntities.delete(plant)
-			}
-		}
-	}
+	
 
 	getUltEffect() {
 		return new OnDamageEffect(ENUM.EFFECT.TREE_ULT, this.isWithered ? 2 : 1, (damage: Damage, source: Player) => {
 			return damage.updateAllDamage(CALC_TYPE.multiply, 1.2)
 		})
 			.on([OnDamageEffect.BASICATTACK_DAMAGE, OnDamageEffect.SKILL_DAMAGE])
-			.from(this.game.playerSelector.getAlliesOf(this.turn))
+			.from(this.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(this).excludeEnemy()).map((p)=>p.turn))
 	}
 
-	getSkillDamage(targetTurn: number): SkillDamage {
-		let skillattr: SkillDamage = null
+	getSkillDamage(targetTurn: number): SkillAttack {
+		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.ULT:
-				this.summonPlantAt(this.game.playerSelector.get(targetTurn).pos)
+				this.summonPlantAt(this.game.pOfTurn(targetTurn).pos)
 				this.startCooltime(ENUM.SKILL.ULT)
-
-				skillattr = new SkillDamage(new Damage(0, this.getSkillBaseDamage(s), 0), ENUM.SKILL.ULT).setOnHit(
-					(target: Player) => {
-						target.effects.applySpecial(this.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
-						target.effects.apply(ENUM.EFFECT.STUN, this.isWithered ? 2 : 1, ENUM.EFFECT_TIMING.TURN_END)
+				const _this=this
+				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0),this.getSkillName(s)).ofSkill(s).setOnHit(
+					function(this: Player){
+						this.effects.applySpecial(_this.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
+						this.effects.apply(ENUM.EFFECT.STUN, _this.isWithered ? 2 : 1, ENUM.EFFECT_TIMING.TURN_END)
 					}
 				)
-				this.moveAllPlantTo(this.game.playerSelector.get(targetTurn).pos)
+				this.moveAllPlantTo(this.game.pOfTurn(targetTurn).pos)
 				// setTimeout(()=>this.plantAttack(),200)
 
 				break
@@ -221,28 +217,34 @@ class Tree extends Player {
 		return skillattr
 	}
 	usePendingAreaSkill(pos: number): void {
-		let skillattr: SkillDamage = null
+		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.Q) {
 			this.startCooltime(ENUM.SKILL.Q)
 			this.summonPlantAt(pos)
 
-			let opponents = this.game.playerSelector.getPlayersIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
-			let dmg = new SkillDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), ENUM.SKILL.Q)
+			// let opponents = this.game.playerSelector.getPlayersIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
+			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),this.getSkillName(s)).ofSkill(s)
 
-			for (let p of opponents) {
-				this.hitOneTarget(p, dmg)
-			}
+			this.mediator.skillAttack(this,EntityFilter.VALID_ATTACK_TARGET(this).in(pos, pos + Tree.Q_AREA_SIZE - 1))(dmg)
+
 			if (this.isWithered) return
-			let allies = this.game.playerSelector.getAlliesIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
+			let healamt=this.getSkillAmount("qheal")
+			let shieldamt=this.getSkillAmount("qshield")
+			this.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(this).excludeEnemy().in(pos, pos + Tree.Q_AREA_SIZE - 1))(function(source){
+					this.heal(healamt)
+					this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD, 2, shieldamt))
+			})
 
-			for (let p of allies) {
-				this.game.playerSelector.get(p).heal(this.getSkillAmount("qheal"))
-				this.game.playerSelector
-					.get(p)
-					.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD, 2, this.getSkillAmount("qshield")))
-			}
+			// let allies = this.game.playerSelector.getAlliesIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
+
+			// for (let p of allies) {
+			// 	this.game.playerSelector.get(p).heal(this.getSkillAmount("qheal"))
+			// 	this.game.playerSelector
+			// 		.get(p)
+			// 		.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD, 2, this.getSkillAmount("qshield")))
+			// }
 		}
 	}
 
@@ -265,9 +267,9 @@ class Tree extends Player {
 	}
 
 	//override
-	onTurnEnd(): void {
+	onMyTurnEnd(): void {
 		this.plantAttack()
-		super.onTurnEnd()
+		super.onMyTurnEnd()
 	}
 
 	getBaseBasicAttackDamage(): Damage {
@@ -309,3 +311,5 @@ class Tree extends Player {
 }
 
 export { Tree }
+
+

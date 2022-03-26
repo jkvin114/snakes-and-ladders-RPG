@@ -3,6 +3,7 @@ import { Player } from "./player"
 import {  MAP } from "./Game"
 import * as ENUM from "./enum"
 import { singleMap } from "./Util"
+import { EntityFilter } from "./EntityFilter"
 class PlayerMapData{
     nextdmg: number
 //	adamage: number
@@ -22,7 +23,7 @@ class PlayerMapData{
 		this.gamemap=MAP.get(this.player.mapId)
     }
 	transfer(func:Function,...args:any[]){
-        this.player.game.sendToClient(func,...args)
+        this.player.mediator.sendToClient(func,...args)
     }
     inSameWayWith(other:Player):boolean{
         return this.onMainWay ===  other.mapdata.onMainWay
@@ -136,7 +137,7 @@ class PlayerMapData{
 				break
 			}
 		}
-		let first = this.player.game.playerSelector.getFirstPlayer().pos
+		let first = this.player.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.player))(function(){return this.pos}).pos
 		if (this.player.pos + 12 < first) {
 			//1등과 격차 12~17: 급행
 			this.subwayTicket = 1

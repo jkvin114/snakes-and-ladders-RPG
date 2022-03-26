@@ -3,15 +3,15 @@ import { Player } from "./player"
 import { Damage, decrement } from "./Util"
 
 class Projectile {
-	static TYPE_RANGE = 1
-	static TYPE_PASS = 2
+	static readonly TYPE_RANGE = 1
+	static readonly TYPE_PASS = 2
 
-	static FLAG_IGNORE_OBSTACLE = 3
-	static FLAG_NOT_DISAPPER_ON_STEP = 4
-	static FLAG_STOP_PLAYER = 5
+	static readonly FLAG_IGNORE_OBSTACLE = 3
+	static readonly FLAG_NOT_DISAPPER_ON_STEP = 4
+	static readonly FLAG_STOP_PLAYER = 5
 	
-	static TARGET_ENEMY = 6
-	static TARGET_ALL = 7
+	static readonly TARGET_ENEMY = 6
+	static readonly TARGET_ALL = 7
 
 	sourceTurn: number
 	size: number
@@ -21,7 +21,7 @@ class Projectile {
 	activated: boolean
 	trajectorySpeed: number
 	UPID: string
-	action: Function
+	action: (this:Player)=>void
 	game: Game
 	duration: number
 	flags: Set<number>
@@ -64,7 +64,7 @@ class Projectile {
 	}
 	canApplyTo(target: Player) {
 		if (this.sourceTurn === -1 || this.target === Projectile.TARGET_ALL) return true
-		if (this.target === Projectile.TARGET_ENEMY && this.game.playerSelector.isOpponent(this.sourceTurn, target.turn))
+		if (this.target === Projectile.TARGET_ENEMY && target.isAttackableFrom(this.game.pOfTurn(this.sourceTurn)))
 			return true
 
 		return false
@@ -242,7 +242,7 @@ class ProjectileBuilder {
 	name: string
 	skillrange: number
 	skill: number
-	action: Function
+	action: (this:Player)=>void
 	owneraction: Function
 	damage: Damage
 	dur: number
@@ -285,7 +285,7 @@ class ProjectileBuilder {
 	// 	this.game = game
 	// 	return this
 	// }
-	setAction(action: Function) {
+	setAction(action: (this:Player)=>void) {
 		this.action = action
 		return this
 	}

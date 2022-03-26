@@ -2,7 +2,7 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillDamage, SkillTargetSelector } from "../Util"
+import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { AblityChangeEffect, NormalEffect } from "../StatusEffect"
 import { Game } from "../Game"
@@ -35,14 +35,14 @@ class Silver extends Player {
 	skillInfoKor:SkillInfoFactory
 
 
-	static VISUALEFFECT_ULT="elephant_r"
-	static APPERANCE_ULT="elephant_r"
-	static EFFECT_ULT_SHIELD="elephant_r_shield"
-	static SKILL_EFFECT_NAME=["elephant_q", "hit", "hit"]
-	static SKILL_SCALES=SKILL_SCALES[ID]
+	static readonly VISUALEFFECT_ULT="elephant_r"
+	static readonly APPERANCE_ULT="elephant_r"
+	static readonly EFFECT_ULT_SHIELD="elephant_r_shield"
+	static readonly SKILL_EFFECT_NAME=["elephant_q", "hit", "hit"]
+	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [250, 25, 15, 15, 0, 20]
 		super(turn, team, game, ai, ID, name, basic_stats)
@@ -168,8 +168,8 @@ class Silver extends Player {
 	 * @param {*} target
 	 * @returns
 	 */
-	getSkillDamage(target: number): SkillDamage {
-		let skillattr: SkillDamage = null //-1 when can`t use skill, 0 when it`s not attack skill
+	getSkillDamage(target: number): SkillAttack {
+		let skillattr: SkillAttack = null //-1 when can`t use skill, 0 when it`s not attack skill
 		let s = this.pendingSkill
 		this.pendingSkill = -1
 
@@ -181,23 +181,23 @@ class Silver extends Player {
 				let dmg = this.getSkillBaseDamage(s)
 				let heal=_this.isSkillActivated(ENUM.SKILL.ULT) ? this.getSkillAmount("r_qheal") : this.getSkillAmount("qheal")
 				
-				skillattr = new SkillDamage(new Damage(0, dmg, 0), ENUM.SKILL.Q).setOnKill((target: Player)=> {
+				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s)).ofSkill(s).setOnKill(function(this: Player){
 					this.heal(heal)
 				})
 
-				if (this.game.playerSelector.get(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.turn)) {
+				if (this.game.pOfTurn(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.turn)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, this.getSkillAmount("w_qdamage"))
-					this.game.playerSelector.get(target).effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
+					this.game.pOfTurn(target).effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
 				}
 				break
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
 				let effect = this.getWEffect()
-				let onhit = function (target: Player) {
-					target.effects.applySpecial(effect,SpecialEffect.SKILL.ELEPHANT_W.name)
-					target.effects.apply(ENUM.EFFECT.CURSE, 1, ENUM.EFFECT_TIMING.TURN_START)
+				let onhit = function (this: Player) {
+					this.effects.applySpecial(effect,SpecialEffect.SKILL.ELEPHANT_W.name)
+					this.effects.apply(ENUM.EFFECT.CURSE, 1, ENUM.EFFECT_TIMING.TURN_START)
 				}
-				skillattr = new SkillDamage(new Damage(0, 0, 0), ENUM.SKILL.W).setOnHit(onhit)
+				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
 
 				break
 		}

@@ -22,6 +22,9 @@ import { Yangyi } from "./characters/Yangyi"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { PlayerClientInterface } from "./app"
 import { Tree } from "./characters/Tree"
+import { EntityMediator } from "./EntityMediator"
+import { EntityFilter } from "./EntityFilter"
+import { Entity } from "./Entity"
 const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
@@ -41,6 +44,7 @@ interface IGameSetting {
 	itemRecord: boolean
 	positionRecord: boolean
 	moneyRecord: boolean
+	summaryOnly: boolean
 }
 class GameSetting {
 	instant: boolean
@@ -146,7 +150,7 @@ class GameSetting {
 }
 
 class PlayerFactory {
-	static create(character_id: number, name: string, turn: number, team: string | boolean, game: Game, isAI: boolean) {
+	static create(character_id: number, name: string, turn: number, team: boolean, game: Game, isAI: boolean) {
 		switch (character_id) {
 			case 0:
 				return new Creed(turn, team, game, isAI, name)
@@ -186,21 +190,22 @@ class Game {
 	CNUM: number
 	totalnum: number
 	thisturn: number
-	skilldmg: any
-	skillcount: number
+	// skilldmg: any
+	// skillcount: number
 	clientsReady: number
 	pendingObs: number
 	pendingAction: string
 	roullete_result: number
 	nextUPID: number
-	UPIDGen: Util.UniqueIdGenerator
-	UEIDGen: Util.UniqueIdGenerator
+	readonly UPIDGen: Util.UniqueIdGenerator
+	readonly UEIDGen: Util.UniqueIdGenerator
 
 	// nextPassUPID: number
 	rangeProjectileList: Map<string, RangeProjectile>
 	passProjectileList: Map<string, PassProjectile>
 	passProjectileQueue: PassProjectile[]
 	gameover: boolean
+	winner: number
 
 	summonedEntityList: Map<string, SummonedEntity>
 	submarine_cool: number
@@ -214,7 +219,8 @@ class Game {
 		killer: Number
 		dead: number
 	}[]
-	playerSelector: PlayerSelector
+	// playerSelector: PlayerSelector
+	entityMediator: EntityMediator
 
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
@@ -231,14 +237,15 @@ class Game {
 		this.CNUM = 0
 		this.totalnum = 0
 		this.thisturn = 0
-		this.skilldmg = -1
-		this.skillcount = 0
+		// this.skilldmg = -1
+		// this.skillcount = 0
 		this.clientsReady = 0
 		this.pendingObs = 0
 		this.pendingAction = null
 		this.roullete_result = -1
+		this.winner = -1
 		this.itemLimit = setting.itemLimit
-		this.nextUPID = 1
+		// this.nextUPID = 1
 		// this.nextPassUPID = 1
 		this.summonedEntityList = new Map()
 		this.rangeProjectileList = new Map()
@@ -254,9 +261,10 @@ class Game {
 		this.dcitem_id = ""
 		this.killRecord = []
 		this.totalEffectsApplied = 0 //total number of effects applied until now
-		this.playerSelector = new PlayerSelector(this.isTeam)
+		// this.playerSelector = new PlayerSelector(this.isTeam)
 		this.UPIDGen = new Util.UniqueIdGenerator(this.rname + "_P")
 		this.UEIDGen = new Util.UniqueIdGenerator(this.rname + "_ET")
+		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -265,38 +273,47 @@ class Game {
 		//console.log("sendtoclient",transfer.name)
 	}
 
-	p(): Player {
-		return this.playerSelector.get(this.thisturn)
+	thisp(): Player {
+		return this.entityMediator.getPlayer(this.thisturn)
+	}
+
+	pOfTurn(turn: number): Player {
+		return this.entityMediator.getPlayer(turn)
 	}
 
 	//========================================================================================================
 
 	//client:Socket(),team:number,char:int,name:str
-	addPlayer(team: boolean | string, char: number, name: string) {
-		console.log("add player " + char + "  " + team)
+	addPlayer(team: boolean, char: number, name: string) {
+		// console.log("add player " + char + "  " + team)
 		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, false)
+		p.setMediator(this.entityMediator)
+		this.entityMediator.register(p)
 
-		this.playerSelector.addPlayer(p)
+		// this.playerSelector.addPlayer(p)
 		this.PNUM += 1
 		this.totalnum += 1
 	}
 	//========================================================================================================
 
 	//team:number,char:str,name:str
-	addAI(team: boolean | string, char: number, name: string) {
+	addAI(team: boolean, char: number, name: string) {
 		console.log("add ai " + char + "  " + team)
 
 		char = Number(char)
 		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, true)
+		p.setMediator(this.entityMediator)
+		this.entityMediator.register(p)
 
-		this.playerSelector.addPlayer(p)
+		// this.playerSelector.addPlayer(p)
 		this.CNUM += 1
 		this.totalnum += 1
 	}
 
 	getInitialSetting() {
 		let setting = []
-		for (let p of this.playerSelector.getAll()) {
+		console.log(this.entityMediator.allPlayer())
+		for (let p of this.entityMediator.allPlayer()) {
 			setting.push({
 				turn: p.turn,
 				team: p.team,
@@ -318,11 +335,15 @@ class Game {
 
 	//()=>{turn:number,stun:boolean}
 	startTurn() {
-		for (let p of this.playerSelector.getAll()) {
-			//	p.players = this.players
-			p.ability.sendToClient()
-		}
-		let p = this.playerSelector.get(0)
+		this.entityMediator.forAllPlayer()(function () {
+			this.ability.sendToClient()
+		})
+
+		// for (let p of this.playerSelector.getAll()) {
+		// 	//	p.players = this.players
+		// 	p.ability.sendToClient()
+		// }
+		let p = this.pOfTurn(0)
 
 		//if this is first turn ever
 		this.clientsReady += 1
@@ -381,9 +402,12 @@ class Game {
 	getDiceControlPlayer() {
 		const bias = 1.5
 
-		let firstpos = this.playerSelector.getFirstPlayer().pos
+		let firstpos = this.entityMediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.thisp()))(function () {
+			return this.pos
+		}).pos
+
 		return Util.chooseWeightedRandom(
-			this.playerSelector.getAll().map((p) => {
+			this.entityMediator.allPlayer().map((p) => {
 				return firstpos * bias - p.pos
 			})
 		)
@@ -421,11 +445,11 @@ class Game {
 		let r = this.getDiceControlPlayer()
 
 		//플레이어가 일정레벨이상일시 등장안함
-		if (this.playerSelector.get(r).level >= MAP.get(this.mapId).dc_limit_level) return
+		if (this.pOfTurn(r).level >= MAP.get(this.mapId).dc_limit_level) return
 
 		//플레이어 앞 1칸 ~ (4~8)칸 사이 배치
 		let range = 4 + (3 - freq) * 2 //4~8
-		let pos = this.playerSelector.get(r).pos + Math.floor(Math.random() * range) + 1
+		let pos = this.pOfTurn(r).pos + Math.floor(Math.random() * range) + 1
 		let bound = MAP.get(this.mapId).respawn[MAP.get(this.mapId).dc_limit_level - 1]
 
 		//일정범위 벗어나면 등장안함
@@ -439,68 +463,71 @@ class Game {
 	 * @param turn
 	 */
 	summonDicecontrolItemOnkill(turn: number) {
-		if (
-			this.playerSelector.get(turn).level >= MAP.get(this.mapId).dc_limit_level ||
-			this.setting.diceControlItemFrequency === 0
-		)
+		if (this.pOfTurn(turn).level >= MAP.get(this.mapId).dc_limit_level || this.setting.diceControlItemFrequency === 0)
 			return
 
 		// P = 0.8~1.0
 		if (Math.random() < 0.7 + 0.1 * this.setting.diceControlItemFrequency) {
 			this.removePassProjectileById(this.dcitem_id)
 			let range = 6
-			this.placeDiceControlItem(this.playerSelector.get(turn).pos + Math.floor(Math.random() * range) + 1)
+			this.placeDiceControlItem(this.pOfTurn(turn).pos + Math.floor(Math.random() * range) + 1)
 		}
 	}
 
-	updateEntityPos(entity: SummonedEntity,pos:number) {
-		pos=Util.clamp(pos,0,MAP.getFinish(this.mapId))
-		entity.move(pos)
+	// cleanupDeadEntities(){
+	// 	for (let [id,entity] of this.summonedEntityList.entries()) {
+	// 		if (!entity.alive) {
+	// 			console.log("deleted entity " + entity.UEID)
+	// 			this.summonedEntityList.delete(id)
+	// 		}
+	// 	}
+	// }
 
-		this.sendToClient(PlayerClientInterface.update, "move_entity", entity.summoner.turn, {
-			UEID: entity.UEID,
-			pos: entity.pos
-		})
+	// updateSummonedEntityPos(entityId: string,pos:number) {
+
+	// 	pos=Util.clamp(pos,0,MAP.getFinish(this.mapId))
+	// 	let entity=this.entityMediator.moveSummonedEntityTo(entityId,pos)
+
+	// 	if(entity instanceof SummonedEntity){
+	// 		this.sendToClient(PlayerClientInterface.update, "move_entity", entity.summoner.turn, {
+	// 			UEID: entity.UEID,
+	// 			pos: entity.pos
+	// 		})
+	// 	}
+	// }
+	getEntityById(id: string) {
+		return this.entityMediator.getEntity(id)
 	}
 
 	summonEntity(entity: SummonedEntity, summoner: Player, lifespan: number, pos: number) {
 		let id = this.UEIDGen.generate()
 
-		pos=Util.clamp(pos,0,MAP.getFinish(this.mapId))
+		pos = Util.clamp(pos, 0, MAP.getLimit(this.mapId))
 		console.log(id)
 
-		entity=entity.summon(summoner,lifespan,pos,id)
-		this.summonedEntityList.set(id, entity)
+		entity.setMediator(this.entityMediator)
+		this.entityMediator.register(entity, id)
 
-		this.sendToClient(PlayerClientInterface.summonEntity,entity.getTransferData())
+		entity = entity.summon(summoner, lifespan, pos, id)
+		// this.summonedEntityList.set(id, entity)
+
+		this.entityMediator.sendToClient(PlayerClientInterface.summonEntity, entity.getTransferData())
 		return entity
 	}
 
-
 	removeEntity(entityId: string, iskilled: boolean) {
-		if (!this.summonedEntityList.has(entityId)) return
-
-		this.summonedEntityList.delete(entityId)
-		this.sendToClient(PlayerClientInterface.deleteEntity, entityId, iskilled)
+		// if (!this.summonedEntityList.has(entityId)) return
+		this.entityMediator.withdraw(entityId)
+		// this.summonedEntityList.delete(entityId)
+		this.entityMediator.sendToClient(PlayerClientInterface.deleteEntity, entityId, iskilled)
 	}
-	entityOnTurnStart() {
-		for (let e of this.summonedEntityList.values()) {
-			e.onTurnStart(this.thisturn)
-		}
-	}
-	getEnemyEntityInRange(attacker: Player, rad: number): SummonedEntity[] {
-		let entities = []
-
-		for (let e of this.summonedEntityList.values()) {
-			if (
-				e.pos <= attacker.pos + rad &&
-				e.pos >= attacker.pos - rad &&
-				this.playerSelector.isOpponent(e.summoner.turn, attacker.turn)
-			) {
-				entities.push(e)
-			}
-		}
-		return entities
+	// entityOnTurnStart() {
+	// 	for (let e of this.summonedEntityList.values()) {
+	// 		e.onTurnStart(this.thisturn)
+	// 	}
+	// }
+	getEnemyEntityInRange(attacker: Player, rad: number): Entity[] {
+		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
 	}
 
 	goNextTurn() {
@@ -509,14 +536,14 @@ class Game {
 		}
 		this.pendingObs = 0
 		this.pendingAction = null
-		let p = this.p()
-		this.applyTickEffect()
-		this.projectileCooldown()
-		p.onTurnEnd()
+		let p = this.thisp()
+		// this.applyTickEffect()
+		p.onMyTurnEnd()
+		this.entityMediator.onTurnEnd(this.thisturn)
 
 		//다음턴 안넘어감(one more dice)
 		if (p.oneMoreDice) {
-			//	console.log("ONE MORE DICE")
+			console.log("ONE MORE DICE")
 			p.oneMoreDice = false
 			p.effects.cooldownAllHarmful()
 			this.summonDicecontrolItemOnkill(p.turn)
@@ -527,16 +554,19 @@ class Game {
 		else {
 			this.thisturn += 1
 			this.thisturn %= this.totalnum
+			console.log("thisturn" + this.thisturn)
 
 			this.summonDicecontrolItem()
+			this.projectileCooldown()
+
 			if (this.thisturn === 0) {
 				console.log(`turn ${this.totalturn}===========================================================================`)
 
 				this.totalturn += 1
 				if (this.totalturn >= 30 && this.totalturn % 10 === 0) {
-					for (let p of this.playerSelector.getAll()) {
-						p.ability.addExtraResistance((this.totalturn / 10) * 2 * this.setting.extraResistanceAmount)
-					}
+					this.entityMediator.forAllPlayer()(function () {
+						this.ability.addExtraResistance((this.game.totalturn / 10) * 2 * this.game.setting.extraResistanceAmount)
+					})
 				}
 				this.recordStat()
 
@@ -545,14 +575,15 @@ class Game {
 					this.summonSubmarine()
 				}
 			}
-			p = this.p()
+
+			p = this.thisp()
 
 			p.invulnerable = false
 			if (p.dead || p.waitingRevival) {
 				p.respawn()
 			}
-			p.onTurnStart()
-			this.entityOnTurnStart()
+			p.onMyTurnStart()
+			this.entityMediator.onTurnStart(this.thisturn)
 		}
 
 		let additional_dice = p.calculateAdditionalDice(this.setting.additionalDiceAmount)
@@ -606,14 +637,16 @@ class Game {
 
 	//called when start of every 1p`s turn
 	getPlayerVisibilitySyncData() {
-		let data = []
-		for (let plyr of this.playerSelector.getAll()) {
+		let data: { alive: boolean; pos: number; turn: number }[] = []
+
+		this.entityMediator.forAllPlayer()(function () {
 			data.push({
-				alive: !plyr.dead,
-				pos: plyr.pos,
-				turn: plyr.turn
+				alive: !this.dead,
+				pos: this.pos,
+				turn: this.turn
 			})
-		}
+		})
+
 		return data
 	}
 
@@ -622,16 +655,16 @@ class Game {
 	 * record all player`s current position of this turn
 	 */
 	recordStat() {
-		for (let plyr of this.playerSelector.getAll()) {
-			if (plyr.mapdata.onMainWay) {
-				plyr.statistics.addPositionRecord(plyr.pos)
+		this.entityMediator.forAllPlayer()(function () {
+			if (this.mapdata.onMainWay) {
+				this.statistics.addPositionRecord(this.pos)
 			} else if (MAP.get(this.mapId).way2_range != undefined) {
-				plyr.statistics.addPositionRecord(
-					MAP.get(this.mapId).way2_range.start + (plyr.pos - MAP.get(this.mapId).way2_range.way_start)
+				this.statistics.addPositionRecord(
+					MAP.get(this.mapId).way2_range.start + (this.pos - MAP.get(this.mapId).way2_range.way_start)
 				)
 			}
-			plyr.statistics.addMoneyRecord()
-		}
+			this.statistics.addMoneyRecord()
+		})
 	}
 
 	/**
@@ -645,7 +678,7 @@ class Game {
 	}
 
 	rollDice(dicenum: number) {
-		let p: Player = this.p()
+		let p: Player = this.thisp()
 
 		// //return if stun
 		// if (p.effects.has(ENUM.EFFECT.STUN)) {
@@ -743,27 +776,14 @@ class Game {
 			died: died
 		}
 	}
+
 	playerForceMove(player: Player, pos: number, ignoreObstacle: boolean, movetype: string) {
-		this.pendingObs = 0 //강제이동시 장애물무시
-
-		this.sendToClient(PlayerClientInterface.tp, player.turn, pos, movetype)
-
-		player.forceMove(pos)
-
 		if (!ignoreObstacle) {
-			if (this.instant) {
-				player.arriveAtSquare(true)
-			} else {
-				setTimeout(
-					() => {
-						player.arriveAtSquare(true)
-					},
-					movetype === "simple" ? 1000 : 1500
-				)
-			}
-		} else if (this.mapId === ENUM.MAP_TYPE.CASINO) {
-			player.mapdata.checkSubway()
+			this.entityMediator.movePlayer(player.turn, pos, movetype)
+		} else {
+			this.entityMediator.movePlayerIgnoreObstacle(player.turn, pos, movetype)
 		}
+		this.pendingObs = 0 //강제이동시 장애물무시
 	}
 	//========================================================================================================
 
@@ -792,7 +812,7 @@ class Game {
 	//========================================================================================================
 
 	checkObstacle(): number {
-		let p = this.p()
+		let p = this.thisp()
 
 		p.onBeforeObs()
 
@@ -811,30 +831,16 @@ class Game {
 				result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 			}
 		}
-		let winner = this.thisturn
+		this.winner = this.thisturn
 
 		//게임 오버시 player 배열 순위순으로 정렬후 게임 끝냄
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
-			this.playerSelector.getAll().sort(function (a, b) {
-				if (a.turn === winner) {
-					return -1000
-				}
-				if (b.turn === winner) {
-					return 1000
-				} else {
-					if (b.kill === a.kill) {
-						return a.death - b.death
-					} else {
-						return b.kill - a.kill
-					}
-				}
-			})
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
 
 		//godhand, 사형재판, 납치범 대기중으로 표시
 		if (SETTINGS.pendingObsList.some((a) => result === a)) {
-			if (!this.p().AI) {
+			if (!this.thisp().AI) {
 				this.pendingObs = result
 			}
 		}
@@ -844,11 +850,6 @@ class Game {
 		return result
 	}
 
-	applyTickEffect() {
-		for (let p of this.playerSelector.getAll()) {
-			p.effects.tick(this.thisturn)
-		}
-	}
 	onEffectApply() {
 		this.totalEffectsApplied += 1
 		return this.totalEffectsApplied % 3
@@ -878,14 +879,13 @@ class Game {
 				// pp.removeProj()
 				this.pendingAction = "submarine"
 				this.submarine_id = ""
-			}
-			else if (pp.name === "dicecontrol") {
+			} else if (pp.name === "dicecontrol") {
 				upid = this.dcitem_id
 				// pp.removeProj()
 				this.dcitem_id = ""
-				this.p().giveDiceControl()
+				this.thisp().giveDiceControl()
 			} else {
-				died = this.p().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
+				died = this.thisp().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
 
 				upid = pp.UPID
 			}
@@ -904,7 +904,7 @@ class Game {
 	 * @param {} godhand_info target,location
 	 */
 	processGodhand(godhand_info: { target: number; location: number }) {
-		let p = this.playerSelector.get(godhand_info.target)
+		let p = this.pOfTurn(godhand_info.target)
 		p.damagedby[this.thisturn] = 3
 		this.playerForceMove(p, godhand_info.location, false, "levitate")
 	}
@@ -917,7 +917,7 @@ class Game {
 	//========================================================================================================
 
 	aiSkill() {
-		AIHelper.aiSkill(this.p())
+		AIHelper.aiSkill(this.thisp())
 	}
 	//========================================================================================================
 	applyRangeProjectile(player: Player): boolean {
@@ -929,7 +929,14 @@ class Game {
 		for (let proj of this.rangeProjectileList.values()) {
 			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
 				console.log("proj hit" + proj.UPID)
-				let died = player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
+
+				let skillattack = new Util.SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
+
+				let died = this.entityMediator.skillAttackSingle(
+					this.entityMediator.getPlayer(proj.sourceTurn),
+					player.turn
+				)(skillattack)
+				//player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
 
 				if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
 
@@ -949,7 +956,7 @@ class Game {
 	}
 	getNameByTurn(turn: number) {
 		if (turn < 0) return ""
-		return this.playerSelector.get(turn).name
+		return this.pOfTurn(turn).name
 	}
 	/**
 	 *
@@ -964,7 +971,7 @@ class Game {
 	 *  targeting(targets)
 	 */
 	initSkill(skill: number) {
-		let p = this.p()
+		let p = this.thisp()
 		//console.log("initSkill pendingskill" + skill)
 		p.pendingSkill = skill
 
@@ -1006,7 +1013,7 @@ class Game {
 			}
 		}
 
-		if(skillTargetSelector.isAreaTarget()){
+		if (skillTargetSelector.isAreaTarget()) {
 			return {
 				type: ENUM.INIT_SKILL_RESULT.AREA_TARGET,
 				pos: p.pos,
@@ -1015,9 +1022,12 @@ class Game {
 				size: skillTargetSelector.areaSize
 			}
 		}
+		console.log(p.invulnerable)
 
-		let targets = this.playerSelector.getAvailableTarget(p, skillTargetSelector)
-
+		let targets = this.entityMediator
+			.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(p).inRadius(skillTargetSelector.range))
+			.map((p) => p.turn)
+		console.log(targets)
 		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
 			//return "notarget"
@@ -1030,9 +1040,9 @@ class Game {
 		}
 	}
 	useSkillToTarget(target: number) {
-		let p = this.p()
+		let p = this.thisp()
+		this.entityMediator.skillAttackSingle(p, target)(p.getSkillDamage(target))
 
-		p.hitOneTarget(target, p.getSkillDamage(target))
 		return this.getSkillStatus()
 	}
 	//========================================================================================================
@@ -1042,7 +1052,7 @@ class Game {
 	 * @returns turn,issilent,cooltile,duration,level,isdead
 	 */
 	getSkillStatus() {
-		let p = this.p()
+		let p = this.thisp()
 		return {
 			turn: this.thisturn,
 			silent: p.effects.has(ENUM.EFFECT.SILENT),
@@ -1059,11 +1069,11 @@ class Game {
 		return id
 	}
 	//========================================================================================================
-	usePendingAreaSkill(pos:number){
-		this.p().usePendingAreaSkill(pos)
+	usePendingAreaSkill(pos: number) {
+		this.thisp().usePendingAreaSkill(pos)
 	}
 	placePendingSkillProj(pos: number) {
-		let p = this.p()
+		let p = this.thisp()
 		let proj = p.getSkillProjectile(pos)
 		this.placeProjectile(proj, pos)
 		// let id = this.getNextUPID()
@@ -1125,10 +1135,10 @@ class Game {
 
 		if (proj instanceof PassProjectile) {
 			this.passProjectileList.set(id, proj)
-			this.sendToClient(PlayerClientInterface.placePassProj, proj.getTransferData())
+			this.entityMediator.sendToClient(PlayerClientInterface.placePassProj, proj.getTransferData())
 		} else if (proj instanceof RangeProjectile) {
 			this.rangeProjectileList.set(id, proj)
-			this.sendToClient(PlayerClientInterface.placeProj, proj.getTransferData())
+			this.entityMediator.sendToClient(PlayerClientInterface.placeProj, proj.getTransferData())
 		}
 		return id
 	}
@@ -1186,9 +1196,11 @@ class Game {
 	// 	return id
 	// }
 	getGodHandTarget() {
-		return this.playerSelector.getPlayersByCondition(this.p(), -1, false, false, false, true).map(function (p: Player) {
-			return p.turn
-		})
+		return this.entityMediator
+			.selectAllFrom(EntityFilter.ALL_ALIVE_PLAYER(this.thisp()).excludeUntargetable().notMe())
+			.map(function (p: Player) {
+				return p.turn
+			})
 	}
 
 	//========================================================================================================
@@ -1198,7 +1210,7 @@ class Game {
 	 * @returns false if no pending obs,  of return {name of obs,argument(false on default)}
 	 */
 	checkPendingObs(): { name: string; argument: number | number[] } {
-		if (this.pendingObs === 0 || this.p().dead) return null
+		if (this.pendingObs === 0 || this.thisp().dead) return null
 
 		let name = ""
 		let argument: number | number[] = -1
@@ -1239,11 +1251,11 @@ class Game {
 		//떡상
 		else if (this.pendingObs === 67) {
 			name = "server:pending_obs:sell_token"
-			argument = this.p().inven.token
+			argument = this.thisp().inven.token
 		} //지하철
 		else if (this.pendingObs === 6) {
 			name = "server:pending_obs:subway"
-			argument = this.p().mapdata.getSubwayPrices()
+			argument = this.thisp().mapdata.getSubwayPrices()
 		}
 
 		return { name: name, argument: argument }
@@ -1253,16 +1265,16 @@ class Game {
 		//타임아웃될 경우
 		if (!info) {
 			if (this.pendingObs === 33) {
-				this.kidnap(true)
+				this.kidnap(Util.randomBoolean())
 			} //타임아웃 악용방지 자동실행
 			if (this.pendingObs === 37 || this.pendingObs === 38) {
 				this.roulleteComplete()
 			}
 			if (this.pendingObs === 63) {
-				this.threaten(true)
+				this.threaten(Util.randomBoolean())
 			}
 			if (this.pendingObs === 6) {
-				this.p().mapdata.selectSubway(0, 0)
+				this.thisp().mapdata.selectSubway(0, 0)
 			}
 
 			this.pendingObs = 0
@@ -1288,7 +1300,7 @@ class Game {
 		} else if (info.type === "subway") {
 			//console.log("subway")
 			console.log(info)
-			this.p().mapdata.selectSubway(info.result, info.price)
+			this.thisp().mapdata.selectSubway(info.result, info.price)
 		}
 		this.pendingObs = 0
 	}
@@ -1308,11 +1320,11 @@ class Game {
 		}
 
 		if (info.type === "submarine" && info.complete) {
-			this.playerForceMove(this.p(), info.pos, false, "levitate")
+			this.playerForceMove(this.thisp(), info.pos, false, "levitate")
 		}
 		if (info.type === "ask_way2" && !info.result) {
 			console.log("goWay2")
-			this.p().mapdata.goWay2()
+			this.thisp().mapdata.goWay2()
 		}
 
 		this.pendingAction = null
@@ -1320,7 +1332,7 @@ class Game {
 	roulleteComplete() {
 		//	console.log("roullete" + this.pendingObs)
 
-		let p = this.p()
+		let p = this.thisp()
 		//사형재판
 		if (this.pendingObs === 37) {
 			ObstacleHelper.trial(p, this.roullete_result)
@@ -1340,7 +1352,7 @@ class Game {
 	 * @param result 납치범 결과 boolean
 	 */
 	kidnap(result: boolean) {
-		ObstacleHelper.kidnap(this.p(), result)
+		ObstacleHelper.kidnap(this.thisp(), result)
 		this.pendingObs = 0
 	}
 	//========================================================================================================
@@ -1350,7 +1362,7 @@ class Game {
 	 * @param result  결과 boolean
 	 */
 	threaten(result: boolean) {
-		ObstacleHelper.threaten(this.p(), result)
+		ObstacleHelper.threaten(this.thisp(), result)
 
 		this.pendingObs = 0
 	}
@@ -1358,13 +1370,13 @@ class Game {
 
 	sellToken(info: any) {
 		if (info.token > 0) {
-			this.p().inven.sellToken(info)
+			this.thisp().inven.sellToken(info)
 		}
 	}
 	//========================================================================================================
 
 	getStoreData(turn: number) {
-		let p = this.playerSelector.get(turn)
+		let p = this.pOfTurn(turn)
 		return p.inven.getStoreData(1)
 	}
 	//========================================================================================================
@@ -1384,7 +1396,24 @@ class Game {
 			setting: this.setting.getSummary()
 		}
 
-		for (let p of this.playerSelector.getAll()) {
+		
+		let sortedplayers=this.entityMediator.allPlayer().sort((a, b) => {
+			if (a.turn === this.winner) {
+				return -1000
+			}
+			if (b.turn === this.winner) {
+				return 1000
+			} else {
+				if (b.kill === a.kill) {
+					return a.death - b.death
+				} else {
+					return b.kill - a.kill
+				}
+			}
+		})
+
+
+		for (let p of sortedplayers) {
 			data.players.push({
 				team: p.team,
 				name: p.name,
@@ -1405,6 +1434,42 @@ class Game {
 		}
 
 		return data
+	}
+	getSummaryStatistics() {
+		let gameresult = {
+			totalturn: this.totalturn,
+			isTeam: this.isTeam,
+			map: MAP.get(this.mapId).mapname,
+			players: new Array<any>()
+		}
+
+		let sortedplayers=this.entityMediator.allPlayer().sort((a, b) => {
+			if (a.turn === this.winner) {
+				return -1000
+			}
+			if (b.turn === this.winner) {
+				return 1000
+			} else {
+				if (b.kill === a.kill) {
+					return a.death - b.death
+				} else {
+					return b.kill - a.kill
+				}
+			}
+		})
+
+		for (const [i, p] of sortedplayers.entries()) {
+			gameresult.players.push({
+				rank: i,
+				turn: p.turn,
+				champ_id: p.champ,
+				kill: p.kill,
+				death: p.death,
+				assist: p.assist,
+				team: p.team
+			})
+		}
+		return gameresult
 	}
 }
 

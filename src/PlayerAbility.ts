@@ -2,71 +2,142 @@ import { Player } from "./player"
 import { PlayerClientInterface } from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
 import { ITEM } from "./enum"
+import { isJSDocThisTag } from "typescript"
 
 class Ability {
-	AD: number
-	AR: number
-	MR: number
-	attackRange: number
-	AP: number
-	basicAttack_multiplier: number
-	arP: number
-	MP: number
+	protected amount: number
+	protected isPercent: boolean
+	protected readonly name: string
+	constructor(name: string) {
+		this.name = name
+		this.amount = 0
+		this.isPercent = false
+	}
+	setPercent() {
+		this.isPercent = true
+		return this
+	}
+	update(amt: number) {
+		if (amt > 0) {
+			this.add(amt)
+		} else {
+			this.subtract(-1 * amt)
+		}
+	}
+
+	add(amt: number) {
+		amt=Math.max(0, amt)
+		this.amount += amt
+		return this
+	}
+	set(amt: number) {
+		this.amount = Math.max(0, amt)
+		return this
+	}
+	subtract(amt: number) {
+		amt=Math.max(0, amt)
+		this.amount = Math.max(0, this.amount - amt)
+		return this
+	}
+	get() {
+		return this.amount
+	}
+	is_percent() {
+		return this.isPercent
+	}
+}
+
+class ConstrainedAbility extends Ability {
+	protected constrain: number
+	protected actual: number //actual amount exceeding the constrain
+	constructor(name: string, constrain: number) {
+		super(name)
+		this.constrain = constrain
+		this.actual = 0
+	}
+
+	add(amt: number) {
+		this.actual += amt
+		if (this.actual > this.constrain) {
+			amt = this.constrain
+		}
+		return super.set(amt)
+	}
+	subtract(amt: number) {
+		let amtExceeded = Math.max(0, this.actual - this.constrain)
+		this.actual = Math.max(0, this.actual - amt)
+		return super.subtract(Math.max(amt - amtExceeded,0))
+	}
+}
+
+class PlayerAbility {
+	AD: Ability
+	AR: Ability
+	MR: Ability
+	attackRange: ConstrainedAbility
+	AP: Ability
+	// basicAttack_multiplier: number
+	arP: Ability
+	MP: Ability
 	extraHP: number
-	regen: number
-	absorb: number
-	adaptativeStat: number
-	skillDmgReduction: number
-	addMdmg: number
-	adStatAD: boolean
-	obsR: number
-	ultHaste: number
-	moveSpeed: number
+	regen: Ability
+	absorb: Ability
+	adaptativeStat: Ability
+	// skillDmgReduction: number
+	// addMdmg: number
+	private adStatAD: boolean
+	obsR: Ability
+	ultHaste: ConstrainedAbility
+	moveSpeed: ConstrainedAbility
+
 	player: Player
 	private pendingMaxHpChange: number
-	static MAX_ATTACKRANGE = 5
-	static MAX_MOVESPEED = 3
-	static MAX_ULTHASTE = 3
+
+	static readonly MAX_ATTACKRANGE = 4
+	static readonly MAX_MOVESPEED = 3
+	static readonly MAX_ULTHASTE = 3
 	constructor(player: Player, basic_stats: number[]) {
 		this.player = player
-		this.AD = basic_stats[1]
-		this.AR = basic_stats[2]
-		this.MR = basic_stats[3]
-		this.attackRange = basic_stats[4]
-		this.AP = basic_stats[5]
-		this.basicAttack_multiplier = 1 //평타 데미지 계수
+		this.AD = new Ability("AD").add(basic_stats[1])
+		this.AR = new Ability("AR").add(basic_stats[2])
+		this.MR = new Ability("MR").add(basic_stats[3])
+		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE).add(basic_stats[4])
+		this.AP = new Ability("AP").add(basic_stats[5])
+		// this.basicAttack_multiplier = 1 //평타 데미지 계수
 		this.extraHP = 0 //추가체력
 
-		this.arP = 0
-		this.MP = 0
-		this.regen = 0
-		this.absorb = 0
-		this.adaptativeStat = 0
-		this.skillDmgReduction = 0
-		this.addMdmg = 0
+		this.arP = new Ability("arP")
+		this.MP = new Ability("MP")
+		this.regen = new Ability("regen")
+		this.absorb = new Ability("absorb").setPercent()
+		this.adaptativeStat = new Ability("adStat")
+		// this.skillDmgReduction = 0
+		// this.addMdmg = 0
 		this.adStatAD = true
-		this.obsR = 0
-		this.ultHaste = 0
-		this.moveSpeed = 0
+		this.obsR = new Ability("obsR").setPercent()
+		this.ultHaste = new ConstrainedAbility("ultHaste", PlayerAbility.MAX_ULTHASTE)
+		this.moveSpeed = new ConstrainedAbility("moveSpeed", PlayerAbility.MAX_MOVESPEED)
 		this.pendingMaxHpChange = 0
 	}
 	transfer(func: Function, ...args: any[]) {
-		this.player.game.sendToClient(func, ...args)
+		this.player.mediator.sendToClient(func, ...args)
 	}
 	get(ability: string): number {
 		switch (ability) {
 			case "AD":
-				return this.AD
+				return this.AD.get()
 			case "AP":
-				return this.AP
+				return this.AP.get()
 			case "AR":
-				return this.AR
+				return this.AR.get()
 			case "MR":
-				return this.MR
+				return this.MR.get()
 			case "arP":
-				return this.arP
+				return this.arP.get()
 			case "MP":
-				return this.MP
+				return this.MP.get()
+			case "MP":
+				return this.MP.get()
 			case "extraHP":
 				return this.extraHP
 			case "HP":
@@ -74,78 +145,77 @@ class Ability {
 			case "MaxHP":
 				return this.player.MaxHP
 			case "missingHP":
-				return this.player.MaxHP-this.player.HP
+				return this.player.MaxHP - this.player.HP
 		}
 		return 0
 	}
 
 	update(ability: string, change_amt: number) {
-		let maxHpChange = 0
 		switch (ability) {
 			case "HP":
 				this.pendingMaxHpChange += change_amt
 				break
 			case "AD":
-				this.AD += change_amt
-				if (this.AD > this.AP && this.adaptativeStat > 0 && !this.adStatAD) {
-					this.AP -= this.adaptativeStat
-					this.AD += this.adaptativeStat
+				this.AD.update(change_amt)
+				if (this.AD.get() > this.AP.get() && this.adaptativeStat.get() > 0 && !this.adStatAD) {
+					this.AP.update(-this.adaptativeStat.get())
+					this.AD.update(this.adaptativeStat.get())
 					this.adStatAD = true
 				}
 				break
 			case "AP":
-				this.AP += change_amt
-				if (this.AD < this.AP && this.adaptativeStat > 0 && this.adStatAD) {
-					this.AD -= this.adaptativeStat
-					this.AP += this.adaptativeStat
+				this.AP.update(change_amt)
+				if (this.AD.get() < this.AP.get() && this.adaptativeStat.get() > 0 && this.adStatAD) {
+					this.AD.update(-this.adaptativeStat.get())
+					this.AP.update(this.adaptativeStat.get())
 					this.adStatAD = false
 				}
 				break
 			case "AR":
-				this.AR += change_amt
+				this.AR.update(change_amt)
 				break
 			case "MR":
-				this.MR += change_amt
+				this.MR.update(change_amt)
 				break
 			case "arP":
-				this.arP += change_amt
+				this.arP.update(change_amt)
 				break
 			case "MP":
-				this.MP += change_amt
+				this.MP.update(change_amt)
 				break
 			case "absorb":
-				this.absorb += change_amt
+				this.absorb.update(change_amt)
 				break
 			case "regen":
-				this.regen += change_amt
+				this.regen.update(change_amt)
 				break
-			case "skillDmgReduction":
-				this.skillDmgReduction = Math.min(75, this.skillDmgReduction + change_amt)
-				break
+			// case "skillDmgReduction":
+			// 	this.skillDmgReduction = Math.min(75, this.skillDmgReduction + change_amt)
+			// 	break
 			case "adStat":
-				this.adaptativeStat += change_amt
-				if (this.AD >= this.AP) {
-					this.AD += change_amt
+				this.adaptativeStat.update(change_amt)
+				if (this.AD.get() >= this.AP.get()) {
+					this.AD.update(change_amt)
 					this.adStatAD = true
 				} else {
-					this.AP += change_amt
+					this.AP.update(change_amt)
 					this.adStatAD = false
 				}
 				break
-			case "addMdmg":
-				this.addMdmg += change_amt
-				break
+			// case "addMdmg":
+			// 	this.addMdmg += change_amt
+			// 	break
 			case "attackRange":
-				this.attackRange = Math.min(this.attackRange + change_amt, Ability.MAX_ATTACKRANGE)
+				this.attackRange.update(change_amt)
 				break
 			case "obsR":
-				this.obsR += change_amt
+				this.obsR.update(change_amt)
 				break
 			case "ultHaste":
-				this.ultHaste = Math.min(this.ultHaste + change_amt, Ability.MAX_ULTHASTE)
+				this.ultHaste.update(change_amt)
 				break
 			case "moveSpeed":
-				this.moveSpeed = Math.min(this.moveSpeed + change_amt, Ability.MAX_ULTHASTE)
+				this.moveSpeed.update(change_amt)
 				break
 		}
 		return this
@@ -164,18 +234,18 @@ class Ability {
 	getAll() {
 		return {
 			level: this.player.level,
-			AD: this.AD,
-			AP: this.AP,
-			AR: this.AR,
-			MR: this.MR,
-			regen: this.regen,
-			absorb: this.absorb,
-			arP: this.arP,
-			MP: this.MP,
-			attackRange: this.attackRange,
-			obsR: this.obsR,
-			ultHaste: this.ultHaste,
-			moveSpeed: this.moveSpeed
+			AD: this.AD.get(),
+			AP: this.AP.get(),
+			AR: this.AR.get(),
+			MR: this.MR.get(),
+			regen: this.regen.get(),
+			absorb: this.absorb.get(),
+			arP: this.arP.get(),
+			MP: this.MP.get(),
+			attackRange: this.attackRange.get(),
+			obsR: this.obsR.get(),
+			ultHaste: this.ultHaste.get(),
+			moveSpeed: this.moveSpeed.get()
 		}
 	}
 	sendToClient() {
@@ -188,54 +258,52 @@ class Ability {
 	}
 
 	onLevelUp(resistanceChange: number) {
-		this.MR += resistanceChange
-		this.AR += resistanceChange
-		this.AD += 10
-		this.sendToClient()
+		this.MR.update(resistanceChange)
+		this.AD.add(10)
+		this.flushChange()
 	}
 	//게임 길어지는거 방지용 저항 추가부여
 	addExtraResistance(amt: number) {
-		this.MR += amt
-		this.AR += amt
-		this.sendToClient()
+		this.MR.add(amt)
+		this.AR.add(amt)
+		this.flushChange()
 	}
 	//모든피해 흡혈
 	absorb_hp(damage: number) {
-		this.player.changeHP_heal(new HPChangeData().setHpChange(Math.floor((damage * this.absorb) / 100)))
+		this.player.changeHP_heal(new HPChangeData().setHpChange(Math.floor((damage * this.absorb.get()) / 100)))
 	}
 
-	basicAttackDamage(target: Player) {
-		return this.player.getBaseBasicAttackDamage().updateAttackDamage(CALC_TYPE.multiply, this.basicAttack_multiplier)
+	basicAttackDamage() {
+		return this.player.getBaseBasicAttackDamage()
 	}
 	addMaxHP(maxHpChange: number) {
 		this.extraHP += maxHpChange
 		this.player.addMaxHP(maxHpChange)
 	}
 	onTurnEnd() {
-		if (this.regen > 0) {
-			this.player.changeHP_heal(new HPChangeData().setHpChange(this.regen))
+		if (this.regen.get() > 0) {
+			this.player.changeHP_heal(new HPChangeData().setHpChange(this.regen.get()))
 		}
 	}
-	applyResistanceToDamage(damage: Damage, target: Player): number {
+	applyResistanceToDamage(damage: Damage, target: PlayerAbility): number {
 		let pp = 0
 		if (this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)) pp = 40
 
-		return damage.applyResistanceToDamage({
-			AR: target.ability.AR,
-			MR: target.ability.MR,
-			arP: this.arP,
-			MP: this.MP,
+		return damage.applyResistance({
+			AR: target.AR.get(),
+			MR: target.MR.get(),
+			arP: this.arP.get(),
+			MP: this.MP.get(),
 			percentPenetration: pp
-		})
+		}).getTotalDmg()
 	}
 
 	getMagicCastleDamage() {
-		return this.AD * 0.1 + this.AP * 0.08 + this.extraHP * 0.1
+		return this.AD.get() * 0.1 + this.AP.get() * 0.08 + this.extraHP * 0.1
 	}
 
 	static applySkillDmgReduction(damage: Damage, reduction: number) {
 		return damage.updateNormalDamage(CALC_TYPE.multiply, 1 - reduction * 0.01)
 	}
 }
-
-export default Ability
+export { PlayerAbility }

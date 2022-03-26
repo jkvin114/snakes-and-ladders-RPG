@@ -13,7 +13,6 @@ import os = require("os")
 
 
 const args = require('minimist')(process.argv.slice(2))
-console.log(args)
 export let testSetting={
 	lvl:1,pos:0,money:0
 }
@@ -270,6 +269,13 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		ROOMS.get(rname).setTeamGame()
 		io.to(rname).emit("server:go_teampage")
+	})
+	socket.on("user:exit_teampage", function () {
+		let rname=SocketSession.getRoomName(socket)
+
+		if (!ROOMS.has(rname)) return
+		ROOMS.get(rname).unsetTeamGame()
+		io.to(rname).emit("server:exit_teampage")
 	})
 
 	socket.on("user:request_names", function () {
@@ -746,9 +752,9 @@ app.post("/chat", function (req, res) {
 	}
 	io.to(req.session.roomname).emit(
 		"server:receive_message",
-		room.game.playerSelector.get(Number(req.body.turn)).name +
+		room.game.pOfTurn(Number(req.body.turn)).name +
 			"(" +
-			SETTINGS.characters[room.game.playerSelector.get(Number(req.body.turn)).champ].name +
+			SETTINGS.characters[room.game.pOfTurn(Number(req.body.turn)).champ].name +
 			")",
 		req.body.msg
 	)

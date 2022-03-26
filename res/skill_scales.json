@@ -27,7 +27,7 @@
 		},
 		"w_qdamage": {
 			"base": 30,
-			"scales": [{ "ability": "extraHp", "val": 0.2 }]
+			"scales": [{ "ability": "extraHP", "val": 0.2 }]
 		}
 	},
 	{
@@ -64,7 +64,7 @@
 		},
 		"R": {
 			"base": 60,
-			"scales": [{ "ability": "AD", "val": 0.5 }]
+			"scales": [{ "ability": "AD", "val": 0.65 }]
 		}
 	},
 	{
@@ -74,7 +74,7 @@
 		},
 		"W": {
 			"base": 4,
-			"scales": [{ "ability": "AD", "val": 0.01 }]
+			"scales": [{ "ability": "AP", "val": 0.01 }]
 		},
 		"R": {
 			"base": 60,

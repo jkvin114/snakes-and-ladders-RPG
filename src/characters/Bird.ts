@@ -2,12 +2,12 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
-import { AblityChangeEffect, TickDamageEffect, TickEffect } from "../StatusEffect"
+import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
@@ -48,7 +48,7 @@ class Bird extends Player {
 
 	static SKILL_EFFECT_NAME=["hit", "hit", "bird_r"]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 30, 7, 7, 0, 30]
 		super(turn, team, game, ai, ID, name, basic_stats)
@@ -76,9 +76,7 @@ class Bird extends Player {
 
 
 	getSkillTrajectorySpeed(skilltype: string): number {
-		if (skilltype === "hit" && !this.isSkillActivated(ENUM.SKILL.W) && !this.isSkillActivated(ENUM.SKILL.ULT)) {
-			return 0
-		}
+		
 		return 0
 	}
 	getSkillScale(){
@@ -86,12 +84,12 @@ class Bird extends Player {
 	}
 	private buildProjectile() {
 		let _this: Player = this
-
+		let ultburn=this.getUltBurn()
 		return new ProjectileBuilder(this.game,Bird.PROJ_ULT_TRACE,Projectile.TYPE_RANGE)
 			.setSize(3)
 			.setSource(this.turn)
-			.setAction((target: Player)=> {
-				target.effects.applySpecial(this.getUltBurn(),SpecialEffect.SKILL.BIRD_ULT_BURN.name)
+			.setAction(function(this: Player){
+				this.effects.applySpecial(ultburn,SpecialEffect.SKILL.BIRD_ULT_BURN.name)
 			})
 			.addFlag(Projectile.FLAG_NOT_DISAPPER_ON_STEP)
 			.setDuration(2)
@@ -121,7 +119,7 @@ class Bird extends Player {
 	}
 
 	private getUltShield() {
-		return new ShieldEffect(ENUM.EFFECT.BIRD_ULT_SHIELD,this.duration_list[ENUM.SKILL.W], 70)
+		return new ShieldEffect(ENUM.EFFECT.BIRD_ULT_SHIELD,this.duration_list[ENUM.SKILL.ULT], 70)
 	}
 	private getUltAbility(){
 		return new AblityChangeEffect(ENUM.EFFECT.BIRD_ULT_ABILITY,this.duration_list[ENUM.SKILL.ULT],new Map().set("attackRange",2))
@@ -138,6 +136,7 @@ class Bird extends Player {
 	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
 		this.effects.apply(ENUM.EFFECT.SPEED, 1, ENUM.EFFECT_TIMING.TURN_END)
+		this.effects.applySpecial(new NormalEffect(ENUM.EFFECT.BIRD_W,2,ENUM.EFFECT_TIMING.TURN_END),SpecialEffect.SKILL.BIRD_W.name)
 		this.startDuration(ENUM.SKILL.W)
 	}
 	private useUlt() {
@@ -212,23 +211,23 @@ class Bird extends Player {
 		return 0
 	}
 
-	getSkillDamage(target: number): SkillDamage {
-		let skillattr: SkillDamage = null
+	getSkillDamage(target: number): SkillAttack {
+		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
-
-				let onhit = (target: Player) =>{
-					target.inven.takeMoney(20)
-					this.inven.giveMoney(20)
+				let _this=this
+				let onhit = function(this: Player){
+					this.inven.takeMoney(20)
+					_this.inven.giveMoney(20)
 				}
 
 				let damage = new Damage(0, this.getSkillBaseDamage(s), 0)
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
-					this.game.playerSelector.get(target).effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					this.game.pOfTurn(target).effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					damage.updateMagicDamage(CALC_TYPE.plus, this.getSkillAmount("w_q_adamage"))
 					if (this.isSkillActivated(ENUM.SKILL.ULT)) 
 					{
@@ -238,9 +237,9 @@ class Bird extends Player {
 
 				if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 					let proj = this.buildProjectile()
-					this.game.placeProjNoSelection(proj, this.game.playerSelector.get(target).pos - 1)
+					this.game.placeProjNoSelection(proj, this.game.pOfTurn(target).pos - 1)
 				}
-				skillattr =new SkillDamage(damage,ENUM.SKILL.Q).setOnHit(onhit)
+				skillattr =new SkillAttack(damage,this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
 				break
 		}
 

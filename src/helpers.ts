@@ -10,10 +10,12 @@ import { EffectFactory, StatusEffect } from "./StatusEffect"
 import { SpecialEffect } from "./SpecialEffect"
 import { Entity } from "./Entity"
 import { statuseffect_kor, statuseffect } from "../res/string_resource.json"
+import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
+import { EntityFilter } from "./EntityFilter"
 
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
-		let others: Player[] = []
+		let others: number[] = []
 		const pendingObsList = SETTINGS.pendingObsList
 		const perma = StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE
 		try {
@@ -61,11 +63,11 @@ class ObstacleHelper {
 					break
 				case 15:
 					let m3 = Math.floor(player.inven.money / 10)
-					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, true, false)
+
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(player){
+						this.inven.giveMoney(m3)
+					})
 					player.inven.takeMoney(m3 * others.length)
-					for (let o of others) {
-						o.inven.giveMoney(m3)
-					}
 
 					break
 				case 16:
@@ -73,35 +75,40 @@ class ObstacleHelper {
 					player.doObstacleDamage(20, "hit")
 					break
 				case 17:
-					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, false, false)
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player).excludeDead())(function(player){
+						this.heal(20)
+					})
 					player.doObstacleDamage(20 * others.length, "hit")
-					for (let o of others) {
-						o.heal(20)
-					}
+					
 					break
 				case 18:
-					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, true, false)
-					player.inven.takeMoney(30 * others.length)
-					for (let o of others) {
-						o.inven.giveMoney(30)
-					}
+
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(player){
+						this.inven.giveMoney(30)
+					})
+					player.inven.takeMoney(others.length * 30)
+
 					break
 				case 19:
-					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, true, false, true)
-					for (let o of others) {
-						player.game.playerForceMove(o, player.pos, true, "simple")
-					}
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(20))(function(player){
+						this.game.playerForceMove(this, player.pos, true, "simple")
+					})
+
+					// others = player.game.playerSelector.getPlayersByCondition(player, 20, false, true, false, true)
+					// for (let o of others) {
+					// 	player.game.playerForceMove(o, player.pos, true, "simple")
+					// }
 					break
 				case 20:
-					// if (isForceMoved) {
-					// 	return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
-					// }
-					let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
-					if (target != null && target.pos != player.pos) {
-						let pos = player.pos
+					let mypos=player.pos
+					let target=player.mediator.selectBestOneFrom(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(40),true)(function(){
+						return Math.abs(this.pos-mypos)
+					})
+
+					if (target != null && target instanceof Player &&  target.pos != player.pos) {
 						player.game.playerForceMove(player, target.pos, false, "simple")
-						player.game.playerForceMove(target, pos, true, "simple")
-						others.push(target)
+						player.game.playerForceMove(target, mypos, true, "simple")
+						others.push(target.turn)
 					}
 					break
 				case 21:
@@ -221,39 +228,34 @@ class ObstacleHelper {
 					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 52:
-					player.doObstacleDamage(75, "lightning")
-					others = player.game.playerSelector.getPlayersByCondition(player, 3, false, false, false, true)
-					for (let p of others) {
-						p.doObstacleDamage(75, "lightning")
-					}
+					// player.doObstacleDamage(75, "lightning")
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).excludeUntargetable().inRadius(3))(function(){
+						this.doObstacleDamage(75, "lightning")
+					})
+					
 					break
 				case 53:
-					let died = player.doObstacleDamage(30, "wave")
-					if (!died) {
-						player.game.playerForceMove(player, player.pos - 3, false, "simple")
-					}
-
-					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, false, false, true)
-					for (let p of others) {
-						let died = p.doObstacleDamage(30, "wave")
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player))(function(){
+						let died = this.doObstacleDamage(30, "wave")
 						if (!died) {
-							player.game.playerForceMove(p, p.pos - 3, false, "simple")
+							player.game.playerForceMove(this, this.pos - 3, false, "simple")
 						}
-					}
+					})
+
 					break
 				case 54:
-					others = player.game.playerSelector.getPlayersByCondition(player, 20, false, false, false, true)
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(30))(function(player){
+						this.game.playerForceMove(this, player.pos, true, "simple")
+					})
 
-					for (let o of others) {
-						player.game.playerForceMove(o, player.pos, true, "simple")
-					}
 					break
 				case 55:
 					let r = Math.floor(Math.random() * 10)
 					player.game.playerForceMove(player, player.pos - 3 + r, false, "levitate")
 					break
 				case 56:
-					let allplayers = player.game.playerSelector.getPlayersByCondition(player, 30, false, true, false, true)
+
+					let allplayers = player.mediator.selectAllFrom(EntityFilter.ALL_ALIVE_PLAYER(player).notMe())
 					if (allplayers.length !== 0) {
 						let r2 = Math.floor(Math.random() * allplayers.length)
 						player.game.playerForceMove(player, allplayers[r2].pos, true, "levitate")
@@ -308,9 +310,9 @@ class ObstacleHelper {
 					break
 				case 69:
 					let m1 = 0
-					for (let p of player.game.playerSelector.getAll()) {
-						m1 += p.statistics.stats[ENUM.STAT.MONEY_EARNED]
-					}
+					player.mediator.forAllPlayer()(function(){
+						m1+=this.statistics.stats[ENUM.STAT.MONEY_EARNED]
+					})
 					if (Math.random() > 0.93) {
 						player.inven.giveMoney(m1)
 						player.message(" won the lottery! earned" + m1 + "$")
@@ -319,12 +321,12 @@ class ObstacleHelper {
 					break
 				case 70:
 					let m2 = 0
-					others = player.game.playerSelector.getPlayersByCondition(player, -1, false, true, true, false)
-					for (let p of others) {
-						let m1 = p.inven.token * 2 + Math.floor(p.inven.money * 0.1)
-						p.inven.takeMoney(m1)
+					others = player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(){
+						let m1 = this.inven.token * 2 + Math.floor(this.inven.money * 0.1)
+						this.inven.takeMoney(m1)
 						m2 += m1
-					}
+					})
+
 					player.inven.giveMoney(m2)
 					break
 				case 71:
@@ -357,7 +359,7 @@ class ObstacleHelper {
 		}
 
 		for (let p of others) {
-			player.transfer(PlayerClientInterface.indicateObstacle, p.turn, obs)
+			player.transfer(PlayerClientInterface.indicateObstacle, p, obs)
 		}
 
 		return obs
@@ -407,7 +409,11 @@ class ObstacleHelper {
 				player.effects.apply(ENUM.EFFECT.SLAVE, 99999, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 				break
 			case 2:
-				let target = player.game.playerSelector.getNearestPlayer(player, 40, true, false)
+
+				let target=player.mediator.selectBestOneFrom(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(40),true)(function(){
+					return Math.abs(this.pos-player.pos)
+				})
+
 				if (target !== null && target !== undefined) {
 					player.game.playerForceMove(player, target.pos, true, "levitate")
 				}
@@ -422,7 +428,7 @@ class ObstacleHelper {
 				player.message(player.name + " will get retrial")
 				break
 			case 5:
-				for (let p of player.game.playerSelector.getAll()) {
+				for (let p of player.mediator.allPlayer()) {
 					let m = Math.random()
 					if (m > 0.5) {
 						p.killplayer()
@@ -458,19 +464,6 @@ class ObstacleHelper {
 	}
 }
 
-class PlayerFilter {
-	private players: Player[]
-	constructor() {
-		this.players = []
-		//all,enemy,ally
-		//me,dead,invulnerable,team
-		//range-around,absolute
-		//sort -count   by-position,HP,HP+shield,kda
-	}
-	addPlayer(player: Player) {
-		this.players.push(player)
-	}
-}
 
 class PlayerSelector {
 	private isTeam: boolean
@@ -775,7 +768,7 @@ class AIHelper {
 		if (players.length === 1) {
 			return players[0]
 		}
-		let ps = me.game.playerSelector.getAll()
+		let ps = me.mediator.allPlayer()
 		players.sort(function (b, a) {
 			if (Math.abs(ps[a].pos - ps[b].pos) < 8) {
 				return ps[b].HP - ps[a].HP
@@ -784,15 +777,16 @@ class AIHelper {
 			}
 		})
 		return players[0]
+
+
 	}
 	//========================================================================================================
 	static getAiProjPos(me: Player, skilldata: any, skill: number): number {
 		let goal = null
-		let targets = me.game.playerSelector.getPlayersIn(
-			me,
-			me.pos - 3 - Math.floor(skilldata.range / 2),
-			me.pos - 3 + Math.floor(skilldata.range / 2)
-		)
+		let targets=me.mediator.selectAllFrom(EntityFilter.ALL_ENEMY_PLAYER(me).in(me.pos - 3 - Math.floor(skilldata.range / 2),
+		me.pos - 3 + Math.floor(skilldata.range / 2))).map((p)=>p.turn)
+
+
 		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {
 			return -1
@@ -801,12 +795,12 @@ class AIHelper {
 			//타겟이 1명일경우
 			goal = targets[0]
 			//속박걸렸으면 플레이어 위치 그대로
-			if (me.game.playerSelector.get(goal).effects.has(ENUM.EFFECT.STUN)) {
-				return Math.floor(me.game.playerSelector.get(goal).pos)
+			if (me.game.pOfTurn(goal).effects.has(ENUM.EFFECT.STUN)) {
+				return Math.floor(me.game.pOfTurn(goal).pos)
 			}
 		} else {
 			//타겟이 여러명일경우
-			let ps = me.game.playerSelector.getAll()
+			let ps = me.mediator.allPlayer()
 
 			//앞에있는플레이어 우선
 			targets.sort(function (b: number, a: number): number {
@@ -822,16 +816,14 @@ class AIHelper {
 
 			goal = targets[0]
 		}
-		return Math.floor(Math.min(me.game.playerSelector.get(goal).pos + 7 - skilldata.size, me.pos + skilldata.range / 2))
+		return Math.floor(Math.min(me.game.pOfTurn(goal).pos + 7 - skilldata.size, me.pos + skilldata.range / 2))
 	}
 
 	static getAiAreaPos(me: Player, skilldata: any, skill: number): number {
 		let goal = null
-		let targets = me.game.playerSelector.getPlayersIn(
-			me,
-			me.pos - 3 - Math.floor(skilldata.range / 2),
-			me.pos - 3 + Math.floor(skilldata.range / 2)
-		)
+		let targets=me.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(me).excludeUntargetable().in(me.pos - 3 - Math.floor(skilldata.range / 2),
+		me.pos - 3 + Math.floor(skilldata.range / 2))).map((p)=>p.turn)
+
 		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {
 			return -1
@@ -839,10 +831,10 @@ class AIHelper {
 		if (targets.length === 1) {
 			//타겟이 1명일경우
 			goal = targets[0]
-			return Math.floor(me.game.playerSelector.get(goal).pos - skilldata.size + 1)
+			return Math.floor(me.game.pOfTurn(goal).pos - skilldata.size + 1)
 		} else {
 			//타겟이 여러명일경우
-			let ps = me.game.playerSelector.getAll()
+			let ps = me.mediator.allPlayer()
 
 			//앞에있는플레이어 우선
 			targets.sort(function (b: number, a: number): number {
@@ -1001,102 +993,16 @@ class AIStoreInstance {
 	}
 }
 
-class EntityMediator {}
 
-interface PriorityWeightFunction {
-	(p: Entity): number
-}
-interface FilterConditionFunction {
-	(p: Entity): boolean
-}
-
-class WeightedOnePlayerFilter {
-	constructor(strategy: PriorityWeightFunction) {}
-}
-
-class EntityFilter {
-	public playerOnly: boolean
-	public enemyOnly: boolean
-	public dead: boolean
-	public invulnerable: boolean
-	public excludes: Set<Entity>
-	public ranges: { start: number; end: number }[]
-	public condition: FilterConditionFunction
-	public maxcount: number
-	public returnByTurn: boolean
-	public me: boolean
-
-	static ALL = new EntityFilter(false)
-	static ALL_PLAYER = new EntityFilter(true)
-	static ALL_ENEMY = new EntityFilter(false).excludeAlly()
-	static ALL_ENEMY_PLAYER = new EntityFilter(true).excludeAlly()
-	static ALL_OTHER_PLAYER = new EntityFilter(true).notMe()
-	static VALID_ATTACK_TARGET = new EntityFilter(true).excludeDead().excludeAlly().excludeInvulnerable()
-	static VALID_MOVE_OBSTACLE_TARGET = new EntityFilter(true).excludeDead().notMe()
-
-	constructor(playeronly: boolean) {
-		this.maxcount = Infinity
-		this.playerOnly = playeronly
-		this.ranges = []
-		this.enemyOnly = false
-		this.dead = true
-		this.invulnerable = true
-		this.excludes = new Set<Entity>()
-		this.condition = () => true
-		this.returnByTurn = false
-		this.me = true
-	}
-	notMe() {
-		this.me = false
-		return this
-	}
-
-	count(c: number) {
-		this.maxcount = c
-		return this
-	}
-	byTurn() {
-		this.returnByTurn = true
-		return this
-	}
-	onlyIf(cond: FilterConditionFunction) {
-		this.condition = cond
-		return this
-	}
-	exclude(ex: Entity) {
-		this.excludes.add(ex)
-		return this
-	}
-	within(start: number, end: number) {
-		this.ranges.push({ start: start, end: end })
-		return this
-	}
-	withinRadius(center: number, range: number) {
-		this.ranges.push({ start: center - range, end: center + range })
-		return this
-	}
-	excludeAlly() {
-		this.enemyOnly = true
-		return this
-	}
-	excludeDead() {
-		this.dead = true
-		return this
-	}
-	excludeInvulnerable() {
-		this.invulnerable = true
-		return this
-	}
-}
 
 class SkillInfoFactory {
-	static LANG_ENG = 0
-	static LANG_KOR = 1
+	static readonly LANG_ENG = 0
+	static readonly LANG_KOR = 1
 	char: number
 	plyr: Player
 	names: string[]
 	lang: number
-	static SKILL_NAME = [
+	static readonly SKILL_NAME = [
 		["Scythe Strike", "Reaping Wind", "Grave Delivery"],
 		["Tusk Attack", "Curse of Ivory", "Strengthen"],
 		["Blind Curse", "Phantom Menace", "Poison Bomb"],
@@ -1107,7 +1013,7 @@ class SkillInfoFactory {
 		["Beak Attack", "Baby Birds", "Phenix Transform"],
 		["Sweet Fruit", "Vine Trap", "Root Prison"]
 	]
-	static SKILL_NAME_KOR = [
+	static readonly SKILL_NAME_KOR = [
 		["절단", "바람 가르기", "태풍"],
 		["암흑의 표창", "도발", "실버의 갑옷"],
 		["실명", "재빠른 이동", "죽음의 독버섯"],
@@ -1118,7 +1024,7 @@ class SkillInfoFactory {
 		["날렵한 부리", "아기새 소환", "불사조 소환"],
 		["달콤한 열매", "덩굴 함정", "뿌리 감옥"]
 	]
-	static HOTKEY = ["Q", "W", "R"]
+	static readonly HOTKEY = ["Q", "W", "R"]
 
 	constructor(char: number, plyr: Player, lang: number) {
 		this.plyr = plyr
@@ -1302,7 +1208,7 @@ class SkillInfoFactory {
 					this.nameTitle(s) +
 					`
 				Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} and ${this.heal(this.skillAmt("qheal"))}
-				, If the target has ${this.emp("mark")} of ${this.nameDesc(1)}, ${this.rangeNum(7)}
+				, If the target has ${this.emp("mark")} of ${this.nameDesc(ENUM.SKILL.W)}, ${this.rangeNum(7)}
 				and deals additional ${this.tDmg(this.skillAmt("w_qdamage"), "w_qdamage")}`
 				break
 			case 0:
@@ -1314,7 +1220,7 @@ class SkillInfoFactory {
 			case 2:
 				str =
 					this.nameTitle(s) +
-					`Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} , applies ${this.effect(ENUM.EFFECT.BLIND, 2)}`
+					`Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} , applies ${this.effect(ENUM.EFFECT.BLIND, 1)}`
 				break
 			case 3:
 				str =
@@ -1386,7 +1292,7 @@ class SkillInfoFactory {
 				str =
 					this.nameTitle(s) +
 					this.target() +
-					`에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.effect(ENUM.EFFECT.BLIND, 2)} 부여`
+					`에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.effect(ENUM.EFFECT.BLIND, 1)} 부여`
 				break
 			case 3:
 				str =
@@ -1494,7 +1400,7 @@ class SkillInfoFactory {
 				 Applies ${this.effect(
 						ENUM.EFFECT.IGNITE,
 						2
-					)} if you use ${this.nameDesc(0)}. It damages targets by ${this.emp("3%")} of ${this.maxHP()} as ${this.tDmg("")} for every player turn,`
+					)} if you use ${this.nameDesc(0)}. It damages targets by ${this.emp(this.baseDmg(1)+"%")} of ${this.maxHP()} as ${this.tDmg("")} for every player turn,`
 				break
 			case 6:
 				str =
@@ -1574,7 +1480,7 @@ class SkillInfoFactory {
 				${this.nameDesc(0)} 사용시 적중한 적에게 ${this.effect(
 						ENUM.EFFECT.IGNITE,
 						2
-					)}을 부여해 매 플레이어 턴마다 ${this.maxHP()}의 ${this.tDmg("3%")} 를 입힘`
+					)}을 부여해 매 플레이어 턴마다 ${this.maxHP()}의 ${this.tDmg(this.baseDmg(1)+"%")} 를 입힘`
 				break
 			case 6:
 				str =

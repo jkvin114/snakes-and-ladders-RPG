@@ -109,7 +109,9 @@ class Room {
 	setTeamGame() {
 		this.isTeam = true
 	}
-
+	unsetTeamGame() {
+		this.isTeam = false
+	}
 	setSimulation(isSimulation: boolean) {
 		if (isSimulation) {
 			//	this.simulation = true
@@ -441,7 +443,7 @@ class Room {
 		let info = this.game.checkPendingObs()
 
 		if (!info) {
-			if (this.game.p().AI) {
+			if (this.game.thisp().AI) {
 				setTimeout(() => {
 					if (!this.game) return
 					this.game.aiSkill()
@@ -472,7 +474,7 @@ class Room {
 		if (this.game == null) return
 
 		//	console.log("function checkpendingaction" + this.game.pendingAction)
-		if (!this.game.pendingAction || this.game.p().dead) {
+		if (!this.game.pendingAction || this.game.thisp().dead) {
 			RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
 			let _this = this
 			this.startIdleTimeout(function () {
@@ -480,7 +482,7 @@ class Room {
 			})
 		} else {
 			if (this.game.pendingAction === "submarine") {
-				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.p().pos)
+				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.thisp().pos)
 			}
 			if (this.game.pendingAction === "ask_way2") {
 				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", null)
@@ -556,7 +558,7 @@ class Room {
 	user_storeComplete(data: any) {
 		if (this.game == null) return
 
-		this.game.playerSelector.get(data.turn).inven.updateItem(data)
+		this.game.pOfTurn(data.turn).inven.updateItem(data)
 	}
 	onGameover() {
 		let stat = this.game.getFinalStatistics()

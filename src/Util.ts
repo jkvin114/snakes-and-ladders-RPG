@@ -1,3 +1,4 @@
+import { Entity } from "./Entity"
 import * as ENUM from "./enum"
 import { Player } from "./player"
 const CALC_TYPE = {
@@ -12,9 +13,9 @@ class PercentDamage{
 	base:number
 	type:number
 
-	static MAX_HP=1
-	static MISSING_HP=2
-	static CURR_HP=3
+	static readonly MAX_HP=1
+	static readonly MISSING_HP=2
+	static readonly CURR_HP=3
 	constructor(percent:number,base:number,type?:number){
 		this.percent=percent
 		this.base=base
@@ -58,9 +59,9 @@ class Damage {
 	attack: number
 	magic: number
 	fixed: number
-	static ATTACK= 1
-	static MAGIC= 2
-	static TRUE= 3
+	static readonly ATTACK= 1
+	static readonly MAGIC= 2
+	static readonly TRUE= 3
 
 	constructor(attack: number, magic: number, fixed: number) {
 		this.attack = Math.floor(attack)
@@ -126,7 +127,7 @@ class Damage {
 		return this
 	}
 
-	applyResistanceToDamage(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): number
+	applyResistance(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): Damage
 	{
 		let AR: number = data.AR
 		let MR: number = data.MR
@@ -137,10 +138,10 @@ class Damage {
 		AR = AR * (1 - percentPenetration / 100)
 		MR = MR * (1 - percentPenetration / 100)
 
-		let pdmg = Math.floor(this.attack * (100 / (100 + Math.max(AR - arP, 0))))
-		let mdmg = Math.floor(this.magic * (100 / (100 + Math.max(MR - MP, 0))))
+		this.attack = Math.floor(this.attack * (100 / (100 + Math.max(AR - arP, 0))))
+		this.magic= Math.floor(this.magic * (100 / (100 + Math.max(MR - MP, 0))))
 
-		return pdmg + mdmg + this.fixed
+		return this
 	}
 }
 
@@ -171,20 +172,31 @@ class ActiveItem {
 
 // export type SkillDamage = { damage: Damage; skill: number; onKill?: Function; onHit?: Function }
 
-class SkillDamage{
+interface OnSkillHitFunction{
+	(e:Player):void
+}
+interface OnKillFunction{
+	(source:Player):void
+}
+class SkillAttack{
 	damage: Damage
 	skill: number
-	onKill: Function  	//(player):void
-	onHit: Function		//():void
-	constructor(damage:Damage,skill:ENUM.SKILL){
+	onKill: (this:Player)=>void  	//(player):void
+	onHit: (this:Player)=>void 		//():void
+	name:string
+	constructor(damage:Damage,name:string){
 		this.damage=damage
-		this.skill=skill
+		this.name=name
 	}
-	setOnHit(onhit:Function){
+	ofSkill(skill:ENUM.SKILL){
+		this.skill=skill
+		return this
+	}
+	setOnHit(onhit:(this:Player)=>void ){
 		this.onHit=onhit
 		return this
 	}
-	setOnKill(onkill:Function){
+	setOnKill(onkill:(this:Player)=>void ){
 		this.onKill=onkill
 		return this
 	}
@@ -210,7 +222,7 @@ export const pickRandom=function<T>(list: T[]):T {
 
 /**
  * 
- * @param upperbound return one in [0,upperbound-1]
+ * @param upperbound return a integer in range of [0,upperbound-1]
  * @returns 
  */
 export const randInt=function(upperbound: number): number {
@@ -232,6 +244,7 @@ export const chooseWeightedRandom=function(weights:number[]):number{
 	return 0
 	//2 3 5    2 5 10
 }
+
 /**
  * true or false by 50%:50%
  * @param n 
@@ -259,7 +272,7 @@ export const shuffle=function<T>(array:T[]):T[] {
   }
 export const sleep = (m:any) => new Promise((r) => setTimeout(r, m))
 /**
- * array of zeros
+ * array of element
  * @param {} count
  * @returns
  */
@@ -269,6 +282,66 @@ export const makeArrayOf = function <T>(element:T,count: number): T[] {
 		arr.push(element)
 	}
 	return arr
+}
+export const Normalize =function(list:number[]):number[]{
+	let max=list.reduce((prev,curr)=>curr>prev?curr:prev)
+	let min=list.reduce((prev,curr)=>curr<prev?curr:prev)
+	return list.map((v)=>(v-min)/(max-min))
+}
+
+class PriorityArray<T> extends Array {
+	constructor() {
+		super()
+	}
+	getMax(priority: (this: T)=> number):T {
+		let max = -Infinity
+		let maxObject:T = null
+		for (let e of this) {
+			let val = priority.call(e)
+			if (val > max) {
+				max = val
+				maxObject = e
+			}
+		}
+		return maxObject
+	}
+	getMin(priority: (this: T)=> number):T {
+		let min = Infinity
+		let maxObject:T  = null
+		for (let e of this) {
+			let val = priority.call(e)
+
+			if (val < min) {
+				min = val
+				maxObject = e
+			}
+		}
+		return maxObject
+	}
+	getMaxIndex(priority: (this: T)=> number):number {
+		let max = -Infinity
+		let maxidx =0
+		for (let i=0;i < this.length;++i) {
+			let val = priority.call(this[i])
+			if (val > max) {
+				max = val
+				maxidx = i
+			}
+		}
+		return maxidx
+	}
+	getMinIndex(priority: (this: T)=> number):number {
+		let min = Infinity
+		let minidx=0
+		for (let i=0;i < this.length;++i) {
+			let val = priority.call(this[i])
+			if (val < min) {
+				min = val
+				minidx = i
+			}
+		}
+		return minidx
+	}
 }
 export type singleMap = {
 	mapname: string
@@ -323,7 +396,12 @@ class MapStorage {
 	getFinish(id: number): number {
 		return this.map[id].finish
 	}
-
+	getLimit(id: number): number {
+		if(this.map[id].way2_range!=null){
+			return this.map[id].way2_range.way_end
+		}
+		return this.map[id].finish
+	}
 	getShuffledObstacles(id:number):{obs:number,money:number}[]{
 		let thismap=this.map[id]
 		let obslist=this.getObstacleList(id)
@@ -364,9 +442,10 @@ class MapStorage {
 
 
 class HPChangeData {
-	static FLAG_SHIELD=1
-	static FLAG_NODMG_HIT=2
-	static FLAG_TICKDMG=3
+	static readonly FLAG_SHIELD=1
+	static readonly FLAG_NODMG_HIT=2
+	static readonly FLAG_TICKDMG=3
+	static readonly FLAG_PLAINDMG=4
 
 	hp: number
 	maxHp: number
@@ -457,7 +536,7 @@ class SkillTargetSelector {
 		this.projSize
 		this.areaSize
 		this.condition
-		this.conditionedRange=0
+		this.conditionedRange=-1
 
 	}
 	setType(type: number) {
@@ -523,4 +602,4 @@ class UniqueIdGenerator{
 }
 //added 2021.07.07
 
-export { Damage,ActiveItem, MapStorage, HPChangeData, CALC_TYPE, SkillTargetSelector ,PercentDamage,SkillDamage,UniqueIdGenerator}
+export { Damage,ActiveItem, MapStorage, HPChangeData, CALC_TYPE, SkillTargetSelector ,PercentDamage,SkillAttack,UniqueIdGenerator,PriorityArray}

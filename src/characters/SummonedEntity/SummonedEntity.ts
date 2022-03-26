@@ -1,26 +1,27 @@
 import { Entity } from "../../Entity"
+import { EntityFilter } from "../../EntityFilter"
 import { SKILL } from "../../enum"
 import { Game } from "../../Game"
 import { Player } from "../../player"
-import { Damage } from "../../Util"
+import { Damage, SkillAttack } from "../../Util"
 
 abstract class SummonedEntity extends Entity {
 	summoner: Player
 	lifeTime: number
 	lifeSpan: number
 	entityName: string
-	alive: boolean
 	UEID: string
+	skillTargetable: boolean
 	abstract doDamage(source: Entity, damage: Damage): boolean
 	constructor(game: Game, health: number, name: string) {
 		super(game, health, 0)
 		this.entityName = name
-		this.alive = true
 		this.pos = 0
 		this.UEID
+		this.skillTargetable = false
 	}
-	summon(summoner: Player, life: number, pos: number,id:string) {
-	//	console.log("summon"+id)
+	summon(summoner: Player, life: number, pos: number, id: string) {
+		//	console.log("summon"+id)
 
 		this.summoner = summoner
 		this.lifeSpan = life
@@ -37,26 +38,42 @@ abstract class SummonedEntity extends Entity {
 			UEID: this.UEID,
 			name: this.entityName
 		}
-	} 
-	
-
-	move(pos: number) {
-		this.pos=pos
 	}
+	isTargetableFrom(e: Entity) {
+		return this.skillTargetable
+	}
+
+	isAttackableFrom(e: Entity) {
+		return this.isEnemyOf(e)
+	}
+
+	isEnemyOf(e: Entity) {
+		if (!e) return true
+
+		if (e instanceof Player) {
+			if (this.summoner === e) return false
+			if (this.game.isTeam && this.summoner.team === e.team) return false
+		} else if (e instanceof SummonedEntity) {
+			if (this.summoner === e.summoner) return false
+			if (this.game.isTeam && this.summoner.team === e.summoner.team) return false
+		}
+		return true
+	}
+
 	naturalDeath() {
-		console.log("expired plant "+this.UEID)
-		this.alive = false
+		console.log("expired plant " + this.UEID)
+		this.dead = true
 		this.game.removeEntity(this.UEID, false)
 	}
 	killed() {
-		console.log("died plant "+this.UEID)
-		this.alive = false
+		console.log("died plant " + this.UEID)
+		this.dead = true
 		this.game.removeEntity(this.UEID, true)
 	}
 
-	attack(): void {}
+	basicAttack(): void {}
 	onTurnStart(thisturn: number) {
-		if (!this.alive) return
+		if (this.dead) return
 
 		if (this.summoner.turn === thisturn) {
 			this.lifeTime += 1
@@ -66,14 +83,15 @@ abstract class SummonedEntity extends Entity {
 }
 
 abstract class EntityDecorator extends SummonedEntity {
-	entity:SummonedEntity
+	entity: SummonedEntity
 	constructor(entity: SummonedEntity) {
 		super(entity.game, entity.HP, entity.entityName)
-		this.entity=entity
+		this.entity = entity
 	}
-	summon(summoner: Player, life: number, pos: number, id: string){
-		this.entity.summon(summoner,life,pos,id)
-		super.summon(summoner,life,pos,id)
+	summon(summoner: Player, life: number, pos: number, id: string) {
+		this.entity.summon(summoner, life, pos, id)
+		super.summon(summoner, life, pos, id)
+
 		return this
 	}
 	killed(): void {
@@ -81,16 +99,14 @@ abstract class EntityDecorator extends SummonedEntity {
 		super.killed()
 	}
 	doDamage(source: Entity, damage: Damage): boolean {
-		return this.entity.doDamage(source,damage)
+		return this.entity.doDamage(source, damage)
 	}
-	attack(): void {
-		this.entity.attack()
+	basicAttack(): void {
+		this.entity.basicAttack()
 	}
 }
 
 class Attackable extends EntityDecorator {
-	
-
 	damage: Damage
 	attackRange: number
 	skill: number
@@ -98,15 +114,16 @@ class Attackable extends EntityDecorator {
 	entity: SummonedEntity
 	constructor(entity: SummonedEntity, damage: Damage, attackRange: number) {
 		super(entity)
-		this.entity=entity
+		this.entity = entity
 		this.damage = damage
 		this.attackRange = attackRange
 		this.skill = -1
 		this.attackName = ""
 	}
-	doDamage(source: Entity, damage: Damage): boolean{
+	doDamage(source: Entity, damage: Damage): boolean {
 		console.log("dodamage attackable")
-		return this.entity.doDamage(source,damage)}
+		return this.entity.doDamage(source, damage)
+	}
 	setAttackName(name: string) {
 		this.attackName = name
 		return this
@@ -116,15 +133,19 @@ class Attackable extends EntityDecorator {
 		return this
 	}
 
-	attack() {
-		for (let target of this.game.playerSelector.getAllValidOpponentInRadius(this.summoner,this.pos, this.attackRange)) {
-			console.log("entityattack")
-
-			if (this.skill >=0) {//attack as skill damage
-				target.hitBySkill(this.damage, this.attackName, this.summoner.turn)
-			} else { //attack as entity damage
-				this.summoner.dealDamageTo(target, this.damage, "entity", this.attackName)
-			}
+	basicAttack() {
+		if (this.skill >= 0) {
+			//attack as skill damage
+			this.mediator.skillAttack(
+				this.summoner,
+				EntityFilter.VALID_ATTACK_TARGET(this).inRadius(this.attackRange)
+			)(new SkillAttack(this.damage, this.attackName))
+		} else {
+			//attack as entity damage
+			this.mediator.attack(this.summoner, EntityFilter.ALL_ENEMY(this).inRadius(this.attackRange))(
+				this.damage,
+				this.attackName
+			)
 		}
 	}
 }
@@ -133,26 +154,24 @@ class Damageable extends EntityDecorator {
 	entity: SummonedEntity
 	constructor(entity: SummonedEntity) {
 		super(entity)
-		this.entity=entity
+		this.entity = entity
 		this.rewardMoney = 0
-
 	}
 	setReward(money: number) {
 		this.rewardMoney = money
 		return this
 	}
-	attack(): void {
-		this.entity.attack()
+	basicAttack(): void {
+		this.entity.basicAttack()
 	}
-	doDamage(source: Player, damage: Damage) {
-		console.log("entitydamage"+damage.getTotalDmg())
+	doDamage(source: Entity, damage: Damage) {
+		console.log("entitydamage" + damage.getTotalDmg())
 
 		let dmg = damage.getTotalDmg()
 		this.HP -= dmg
 		if (this.HP <= 0) {
-			
 			super.killed()
-			source.inven.giveMoney(this.rewardMoney)
+			if (source instanceof Player) source.inven.giveMoney(this.rewardMoney)
 			return true
 		}
 		return false

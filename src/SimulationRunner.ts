@@ -24,6 +24,8 @@ interface ISimulationSetting{
 	itemRecord: boolean
 	positionRecord: boolean
 	moneyRecord: boolean
+	summaryOnly: boolean
+
 }
 
 
@@ -39,6 +41,7 @@ class SimulationSetting {
 	randomizeGameSetting: boolean
 	randomizePlayerNames: boolean
 	divideTeamEqually: boolean
+	summaryOnly:boolean
     isTeam:boolean
     
     simulationCount: number
@@ -80,6 +83,7 @@ class SimulationSetting {
 	constructor(isTeam:boolean,setting:ISimulationSetting) {
         this.gameSetting=new GameSetting(setting.gameSetting,true,isTeam)
         this.gameSetting.setSimulationSettings(setting)
+		this.summaryOnly=setting.summaryOnly
         this.isTeam=isTeam
         this.mapPool=setting.mapPool
         this.allowMirrorMatch=setting.allowMirrorMatch
@@ -206,7 +210,8 @@ class Simulation {
 	private count: number
 	private progressCount: number
 	private game: Game
-	private stats: any[]
+	private stats: Set<any>
+	private summaryStats:Set<any>
 	private roomName: string
 	private setting: SimulationSetting
 	private runnerId:string
@@ -217,13 +222,14 @@ class Simulation {
 		this.roomName = roomname
 		this.runnerId=runner
 		this.game = null
-		this.stats = []
+		this.stats = new Set<any>()
+		this.summaryStats=new Set<any>()
 		this.progressCount = 0
 	}
 
 	getFinalStatistics() {
 		return {
-			stat: this.stats,
+			stat: Array.from(this.stats),
 			count: this.count-1,
 			multiple: true,
 			version:SETTINGS.version,
@@ -233,37 +239,13 @@ class Simulation {
 
 	getSimpleResults(){
 		return{
-			stat: this.getGameSimpleResult(),
+			stat: Array.from(this.summaryStats),
 			count: this.count-1,
 			serverVersion:SETTINGS.version,
 			setting:this.setting.getSummary(),
 			simulation:"",
 			runner:this.runnerId
 		}
-	}
-	getGameSimpleResult(){
-		let res=[]
-		for(const game of this.stats){
-			let gameresult={
-				totalturn:game.totalturn,
-				isTeam:game.isTeam,
-				map:game.map_data.name,
-				players:new Array<any>()
-			}
-			for(const [i,p] of game.players.entries()){
-				gameresult.players.push({
-					rank:i,
-					turn:p.turn,
-					champ_id:p.champ_id,
-					kill:p.kill,
-					death:p.death,
-					assist:p.assist,
-					team:p.team
-				})
-			}
-			res.push(gameresult)
-		}
-		return res
 	}
 
 	run(callback:Function) {
@@ -307,7 +289,11 @@ class Simulation {
 				console.error(e)
 			}
 		}
-		this.stats.push(this.game.getFinalStatistics())
+		if(!this.setting.summaryOnly){
+			this.stats.add(this.game.getFinalStatistics())
+		}
+		this.summaryStats.add(this.game.getSummaryStatistics())
+		
 	}
     nextturn() {
 		this.game.goNextTurn()

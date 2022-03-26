@@ -1,5 +1,3 @@
-import { EffectFactory, ItemEffectFactory } from "./StatusEffect"
-
 import * as ENUM from "./enum"
 
 export namespace SpecialEffect {
@@ -10,7 +8,7 @@ export namespace SpecialEffect {
 			src: "status_effect/magic_castle.png",
 			desc: "Additional Damage on skill(0.1AD+0.08AP+0.1extraHP)",
 			desc_kor: "스킬 사용시 추가 피해(0.1AD+0.08AP+0.1추가체력)",
-		} 
+		}
 	}
 	export const SKILL = {
 		ELEPHANT_PASSIVE: {
@@ -48,13 +46,19 @@ export namespace SpecialEffect {
 			desc: "For every player turn, receives 4(+0.01AP)% of Max HP as fixed damage",
 			desc_kor: "매 플레이어 턴마다 최대체력의 4(+0.01AP)% 의 고정 피해"
 		},
-        BIRD_ULT: {
+        BIRD_W: {
 			isgood:true,
-            src:"character/bird_r.png",
+            src:"skill/8-2.jpg",
+			name: "bird_w",
+			desc: "Additional damage on basic attack and [Beak attack]",
+			desc_kor: "기본 공격과 [날렵한 부리] 사용시 추가 피해"
+		},BIRD_ULT: {
+			isgood:true,
+            src:"character/8-3.png",
 			name: "bird_r",
 			desc: "Basic attack damage and range increased,  'Baby Bird'`s additional damage doubles,'beak attack' creates an area" +
 			" that applies ignite effect to players who step on it",
-			desc_kor: "기본공격 피해량 30%증가, 사거리 2 증가, '아기새 소환'의 추가 피해 2배 증가,'날렵한 침' 적중시 " +
+			desc_kor: "기본공격 피해량 30%증가, 사거리 2 증가, '아기새 소환'의 추가 피해 2배 증가,'날렵한 부리' 적중시 " +
 			"밟은 적에게 점화 2턴을 주는 영역을 생성"
 		},
         BIRD_ULT_BURN: {

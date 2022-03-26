@@ -40,7 +40,7 @@ class PlayerStatusEffects {
 	}
 
 	transfer(func: Function, ...args: any[]) {
-		this.player.game.sendToClient(func, ...args)
+		this.player.mediator.sendToClient(func, ...args)
 	}
 	onLethalDamage() {
 		for (const [key, effect] of this.storage.entries()) {
@@ -92,7 +92,6 @@ class PlayerStatusEffects {
 
 	applySpecial(effect: StatusEffect, name?: string) {
 		
-
 		if(name!=null)
 			effect.setName(name)
 
@@ -296,7 +295,7 @@ class PlayerStatusEffects {
 		let dmg = new Util.Damage(0, 0, damage)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
-			;(effect as OnDamageEffect).onObstacleDamage(dmg)
+			(effect as OnDamageEffect).onObstacleDamage(dmg)
 		}
 		return dmg.getTotalDmg()
 	}
@@ -304,7 +303,7 @@ class PlayerStatusEffects {
 		//console.log("onskilldamage"+this.player.turn)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
-			;(effect as OnDamageEffect).onSkillDamage(damage, sourceTurn)
+			(effect as OnDamageEffect).onSkillDamage(damage, sourceTurn)
 		}
 		return damage
 	}
@@ -312,7 +311,7 @@ class PlayerStatusEffects {
 		//console.log("onBasicAttackDamage"+this.player.turn)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
-			;(effect as OnDamageEffect).onBasicAttackDamage(damage, sourceTurn)
+			(effect as OnDamageEffect).onBasicAttackDamage(damage, sourceTurn)
 		}
 		return damage
 	}

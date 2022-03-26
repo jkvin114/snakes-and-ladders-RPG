@@ -2,7 +2,7 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillDamage, PercentDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { TickDamageEffect, TickEffect } from "../StatusEffect"
@@ -10,6 +10,7 @@ import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
+import { EntityFilter } from "../EntityFilter"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
@@ -29,14 +30,14 @@ class Jellice extends Player {
 	private u_used: number
 	readonly duration_list: number[]
 
-	static PROJ_ULT = "magician_r"
-	// static EFFECT_W="magician_w"
-	// static EFFECT_W_BURN="magician_w_burn"
-	static SKILLNAME_W_Q = "magician_w_q"
-	static SKILL_SCALES = SKILL_SCALES[ID]
-	static SKILL_EFFECT_NAME = ["magician_q", "hit", "magician_r"]
+	static readonly PROJ_ULT = "magician_r"
+	// static readonly EFFECT_W="magician_w"
+	// static readonly EFFECT_W_BURN="magician_w_burn"
+	static readonly SKILLNAME_W_Q = "magician_w_q"
+	static readonly SKILL_SCALES = SKILL_SCALES[ID]
+	static readonly SKILL_EFFECT_NAME = ["magician_q", "hit", "magician_r"]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [170, 30, 6, 6, 0, 50]
 		super(turn, team, game, ai, ID, name, basic_stats)
@@ -62,7 +63,6 @@ class Jellice extends Player {
 		this.skillInfoKor = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_KOR)
 	}
 
-
 	getSkillScale() {
 		return Jellice.SKILL_SCALES
 	}
@@ -75,8 +75,8 @@ class Jellice extends Player {
 		return new ProjectileBuilder(this.game, Jellice.PROJ_ULT, Projectile.TYPE_RANGE)
 			.setSize(3)
 			.setSource(this.turn)
-			.setAction(function (target: Player) {
-				target.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			.setAction(function (this: Player) {
+				this.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			})
 			.setDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.ULT), 0))
 			.setDuration(2)
@@ -103,9 +103,9 @@ class Jellice extends Player {
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
 				break
 			case ENUM.SKILL.ULT:
-				let range = this.isSkillActivated(ENUM.SKILL.W) ? 2 : 1 * this.skill_ranges[s]
-
+				let range = (this.isSkillActivated(ENUM.SKILL.W) ? 2 : 1) * this.skill_ranges[s]
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(range).setProjectileSize(3)
+
 				break
 		}
 		return skillTargetSelector
@@ -129,27 +129,39 @@ class Jellice extends Player {
 		this.duration[ENUM.SKILL.W] = 2
 		this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.TURN_START)
 	}
-	private useQ(): boolean {
+
+	private qRange(){
 		let w_on = this.isSkillActivated(ENUM.SKILL.W)
 		let end_front = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_front"))
 		let end_back = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_back"))
 		let start = this.getSkillAmount("qrange_start")
+		return {end_front:end_front,end_back:end_back,start:start}
+	}
+	private useQ(): boolean {
+		
+		
+		let dmg = new SkillAttack(
+			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),
+			this.getSkillName(ENUM.SKILL.Q)
+		).ofSkill(ENUM.SKILL.Q)
 
-		let targets = this.game.playerSelector.getPlayersIn(this, this.pos + start + 1, this.pos + end_front)
-		targets = targets.concat(this.game.playerSelector.getPlayersIn(this, this.pos - end_back, this.pos - start))
-		let dmg = new SkillDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), ENUM.SKILL.Q)
-
-		if (targets.length === 0) {
-			return false
-		}
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
-			dmg.setOnHit((target: Player) => {
-				target.effects.applySpecial(this.getWBurnEffect(), SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
+			let burn = this.getWBurnEffect()
+			dmg.setOnHit(function (this: Player) {
+				this.effects.applySpecial(burn, SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
 			})
 		}
-		for (let p of targets) {
-			this.hitOneTarget(p, dmg)
-		}
+		let attacked=this.mediator.skillAttack(
+			this,
+			EntityFilter.VALID_ATTACK_TARGET(this)
+				.in(this.pos + this.qRange().start + 1, this.pos + this.qRange().end_front)
+				.in(this.pos - this.qRange().end_back, this.pos - this.qRange().start)
+		)(dmg)
+
+		
+		if(!attacked) return false
+
+
 		this.startCooltime(ENUM.SKILL.Q)
 		return true
 	}
@@ -190,7 +202,7 @@ class Jellice extends Player {
 			return this.calculateScale(Jellice.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.W) {
-			return this.calculateScale(Jellice.SKILL_SCALES.Q)
+			return this.calculateScale(Jellice.SKILL_SCALES.W)
 		}
 		if (skill === ENUM.SKILL.ULT) {
 			return this.calculateScale(Jellice.SKILL_SCALES.R)
@@ -203,7 +215,7 @@ class Jellice extends Player {
 		//앞 3~15, 뒤 3~8
 		return 0
 	}
-	getSkillDamage(target: number): SkillDamage {
+	getSkillDamage(target: number): SkillAttack {
 		return null
 	}
 	onSkillDurationEnd(skill: number) {}
@@ -227,9 +239,9 @@ class Jellice extends Player {
 			case ENUM.SKILL.Q:
 				//사거리네에 플레이어 있거나 w 쓰고 사거리안에 1~3명 있을때 사용
 				if (
-					this.game.playerSelector.getPlayersIn(this, this.pos - 7, this.pos + 15).length > 0 ||
-					(this.duration[ENUM.SKILL.W] > 0 &&
-						this.game.playerSelector.getPlayersIn(this, this.pos - 23, this.pos + 30).length >= this.game.totalnum - 1)
+					this.mediator.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(this)
+					.in(this.pos + this.qRange().start + 1, this.pos + this.qRange().end_front)
+					.in(this.pos - this.qRange().end_back, this.pos - this.qRange().start)).length>0
 				) {
 					this.useQ()
 					return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
@@ -238,7 +250,7 @@ class Jellice extends Player {
 				//q 쿨 있고 사거리내에 1~3 명이상 있으면 사용
 				if (
 					this.cooltime[0] === 0 &&
-					this.game.playerSelector.getPlayersIn(this, this.pos - 23, this.pos + 30).length >= this.game.totalnum - 1
+					this.mediator.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(this).in(this.pos-23,this.pos+30)).length >= this.game.totalnum - 1
 				) {
 					this.useW()
 					return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }

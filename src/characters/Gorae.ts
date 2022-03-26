@@ -2,7 +2,7 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
-import { Damage, SkillTargetSelector, SkillDamage } from "../Util"
+import { Damage, SkillTargetSelector, SkillAttack } from "../Util"
 import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import {Projectile,ProjectileBuilder} from "../Projectile"
@@ -10,6 +10,7 @@ import {Projectile,ProjectileBuilder} from "../Projectile"
 
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
+import { EntityFilter } from "../EntityFilter"
 const ID=6
 class Gorae extends Player {
 	skill_ranges: number[]
@@ -27,12 +28,12 @@ class Gorae extends Player {
 	skillInfo:SkillInfoFactory
 	skillInfoKor:SkillInfoFactory
 
-	static PROJ_Q="kraken_q"
-	static EFFECT_W="kraken_w"
-	static SKILL_EFFECT_NAME=["kraken_q", "hit", "kraken_r"]
-	static SKILL_SCALES=SKILL_SCALES[ID]
+	static readonly PROJ_Q="kraken_q"
+	static readonly EFFECT_W="kraken_w"
+	static readonly SKILL_EFFECT_NAME=["kraken_q", "hit", "kraken_r"]
+	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
-	constructor(turn: number, team: boolean | string, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
 		super(turn, team, game, ai, ID, name,  basic_stats)
@@ -116,17 +117,17 @@ class Gorae extends Player {
 	}
 
     useW() {
-		let targets = this.game.playerSelector.getPlayersIn(this,this.pos - 3, this.pos + 3)
+		// let targets = this.game.playerSelector.getPlayersIn(this,this.pos - 3, this.pos + 3)
 
 	//	console.log(targets)
-		let dmg = new SkillDamage( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),ENUM.SKILL.W)
-
+		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W)).ofSkill(ENUM.SKILL.W)
+		.setOnHit(function(this:Player){
+			this.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
+		})
 		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 
-		for (let p of targets) {
-			this.game.playerSelector.get(p).effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
-			this.hitOneTarget(p, dmg)
-		}
+		this.mediator.skillAttack(this,EntityFilter.VALID_ATTACK_TARGET(this).inRadius(3))(dmg)
+
 		this.startCooltime(ENUM.SKILL.W)
 	}
 	getSkillProjectile(pos:number): Projectile {
@@ -153,17 +154,17 @@ class Gorae extends Player {
 		if(key==="wshield") return this.calculateScale(Gorae.SKILL_SCALES.wshield)
 		return 0
 	}
-	getSkillDamage(target: number): SkillDamage {
+	getSkillDamage(target: number): SkillAttack {
 	//	console.log(target+"getSkillDamage"+this.pendingSkill)
-		let skillattr: SkillDamage = null
+		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
 
-				skillattr = new SkillDamage(new Damage(0, 0, this.getSkillBaseDamage(s)),ENUM.SKILL.ULT)
-				.setOnKill(() => this.ability.addMaxHP(50))
+				skillattr = new SkillAttack(new Damage(0, 0, this.getSkillBaseDamage(s)),this.getSkillName(s)).ofSkill(s)
+				.setOnKill(function(this:Player){this.ability.addMaxHP(50)})
 
 				break
 		}
@@ -199,7 +200,7 @@ class Gorae extends Player {
 			case ENUM.SKILL.W:
 				//사거리내에 1~3 명이상 있으면 사용
 				if (
-					this.game.playerSelector.getPlayersIn(this,this.pos - 5, this.pos + 5).length >=
+					this.mediator.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(this).inRadius(5)).length >=
 					this.game.totalnum- 1 || (this.HP/this.MaxHP < 0.3)
 				) {
 					this.useW()
@@ -216,7 +217,7 @@ class Gorae extends Player {
 		}
 	}
     getUltTarget(validtargets:number[]) {
-		let ps = this.game.playerSelector.getAll()
+		let ps = this.mediator.allPlayer()
 		validtargets.sort((b:number, a:number):number => {
 			return ps[a].pos - ps[b].pos
 		})

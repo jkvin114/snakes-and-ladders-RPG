@@ -75,6 +75,10 @@
 			"desc": "Money",
 			"desc_kor": "돈",
 			"default": true
+		},"summaryOnly": {
+			"desc": "Summary only",
+			"desc_kor": "요약본만 저장",
+			"default": false
 		}
 	}
 }

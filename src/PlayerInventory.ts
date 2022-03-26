@@ -18,7 +18,7 @@ class PlayerInventory {
 	money: number
 	player: Player
 
-	static indicateList=[ITEM.WARRIORS_SHIELDSWORD,ITEM.INVISIBILITY_CLOAK,ITEM.CARD_OF_DECEPTION,ITEM.GUARDIAN_ANGEL,ITEM.POWER_OF_MOTHER_NATURE]
+	static readonly indicateList=[ITEM.WARRIORS_SHIELDSWORD,ITEM.INVISIBILITY_CLOAK,ITEM.CARD_OF_DECEPTION,ITEM.GUARDIAN_ANGEL,ITEM.POWER_OF_MOTHER_NATURE]
 	
 	constructor(player: Player) {
 		this.player = player
@@ -33,7 +33,7 @@ class PlayerInventory {
 		this.itemSlots = Util.makeArrayOf(-1, player.game.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
 	}
 	transfer(func: Function, ...args: any[]) {
-		this.player.game.sendToClient(func, ...args)
+		this.player.mediator.sendToClient(func, ...args)
 	}
 
 	onTurnEnd() {

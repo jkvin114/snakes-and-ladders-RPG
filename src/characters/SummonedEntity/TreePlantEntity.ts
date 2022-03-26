@@ -8,14 +8,14 @@ import { Attackable, Damageable, SummonedEntity } from "./SummonedEntity"
 class TreePlant extends SummonedEntity{
     
     
-    static ATTACKRANGE=1
-    static NAME="tree_plant"
+    static readonly ATTACKRANGE=1
+    static readonly NAME="tree_plant"
     constructor(game:Game,health:number,name:string){
         super(game,health,name)
     }
 
-    attack(): void {
-        super.attack()
+    basicAttack(): void {
+        super.basicAttack()
     }
     doDamage(source: Entity, damage: Damage): boolean {
         console.log("dodamage treeplant")
