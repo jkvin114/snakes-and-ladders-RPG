@@ -2,13 +2,13 @@ import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 import { Damage, SkillAttack, SkillTargetSelector } from "../Util"
-import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
+import { ShieldEffect } from "../StatusEffect"
 const ID = 4
 class Jean extends Player {
 	//	onoff: boolean[]
@@ -22,7 +22,7 @@ class Jean extends Player {
 		final: number
 	}
 	private readonly skill_name: string[]
-	private u_target: number
+	private u_target: string
 	readonly duration_list: number[]
 	
 	skillInfo:SkillInfoFactory
@@ -42,7 +42,7 @@ class Jean extends Player {
 		this.cooltime_list = [3, 4, 9]
 		this.duration_list=[0,0,2]
 		this.skill_ranges=[20,40,40]
-		this.u_target = -1
+		this.u_target = null
 		this.itemtree = {
 			level: 0,
 			items: [
@@ -74,7 +74,6 @@ class Jean extends Player {
 
 	private buildProjectile() {
 		return new ProjectileBuilder(this.game,Jean.PROJ_W,Projectile.TYPE_RANGE)
-			.setSkillRange(30)
 			.setAction(function (this: Player) {
 				this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			})
@@ -85,7 +84,7 @@ class Jean extends Player {
 	}
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s) //-1 when can`t use skill, 0 when it`s not attack skill
 		//console.log("getSkillAttr" + s)
 		switch (s) {
 			case ENUM.SKILL.Q:
@@ -169,7 +168,7 @@ class Jean extends Player {
 					this.startDuration(ENUM.SKILL.ULT)
 
 					this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					this.u_target = target
+					this.u_target = this.game.turn2Id(target)
 					this.startCooltime(ENUM.SKILL.ULT)
 				}
 				break
@@ -202,12 +201,12 @@ class Jean extends Player {
 
 			this.mediator.skillAttackSingle(this,this.u_target)(skillattr)
 
-			this.u_target = -1
+			this.u_target = null
 		}
 	}
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
-			this.u_target = -1
+			this.u_target = null
 			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1, ENUM.EFFECT_TIMING.TURN_END)
 			this.effects.reset(ENUM.EFFECT.STUN)
 		}

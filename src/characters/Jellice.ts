@@ -3,9 +3,8 @@ import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
-import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
-import { TickDamageEffect, TickEffect } from "../StatusEffect"
+import { TickDamageEffect, TickEffect,ShieldEffect } from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
@@ -85,7 +84,7 @@ class Jellice extends Player {
 	}
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s) //-1 when can`t use skill, 0 when it`s not attack skill
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
@@ -120,9 +119,10 @@ class Jellice extends Player {
 			2, //2
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(this.getSkillBaseDamage(ENUM.SKILL.W), PercentDamage.MAX_HP)
-		).setSourcePlayer(this.turn)
+		).setSourceId(this.UEID)
 	}
 	private useW() {
+		console.log("usew")
 		this.effects.applySpecial(this.getWShield(), SpecialEffect.SKILL.MAGICIAN_W.name)
 
 		this.startCooltime(ENUM.SKILL.W)
@@ -227,7 +227,7 @@ class Jellice extends Player {
 	 * @param {*} skill 0~
 	 */
 	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		//	console.log("aiSkillFinalSelection" + skill + "" + skilldata)
+			
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
@@ -235,6 +235,8 @@ class Jellice extends Player {
 		) {
 			return null
 		}
+
+		console.log("aiSkillFinalSelection" + skill + "" + skilldata)
 		switch (skill) {
 			case ENUM.SKILL.Q:
 				//사거리네에 플레이어 있거나 w 쓰고 사거리안에 1~3명 있을때 사용
@@ -246,6 +248,7 @@ class Jellice extends Player {
 					this.useQ()
 					return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
 				}
+				break
 			case ENUM.SKILL.W:
 				//q 쿨 있고 사거리내에 1~3 명이상 있으면 사용
 				if (
@@ -255,7 +258,7 @@ class Jellice extends Player {
 					this.useW()
 					return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
 				}
-
+				break
 			case ENUM.SKILL.ULT:
 				return {
 					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,

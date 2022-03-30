@@ -172,12 +172,12 @@ class ActiveItem {
 
 // export type SkillDamage = { damage: Damage; skill: number; onKill?: Function; onHit?: Function }
 
-interface OnSkillHitFunction{
-	(e:Player):void
-}
-interface OnKillFunction{
-	(source:Player):void
-}
+// interface OnSkillHitFunction{
+// 	(e:Player):void
+// }
+// interface OnKillFunction{
+// 	(source:Player):void
+// }
 class SkillAttack{
 	damage: Damage
 	skill: number
@@ -517,11 +517,11 @@ class HPChangeData {
 	}
 }
 interface SkillTargetConditionFunction{
-	(target:Player):boolean
+	(this:Entity):boolean
 }
 
 class SkillTargetSelector {
-	resultType: number
+	resultType: ENUM.SKILL_INIT_TYPE
 	skill_id: number
 	range: number
 	projSize: number
@@ -529,13 +529,13 @@ class SkillTargetSelector {
 	condition:SkillTargetConditionFunction
 	conditionedRange:number
 
-	constructor(type: number) {
-		this.resultType = type
-		this.skill_id
+	constructor(skill: number) {
+		this.resultType = ENUM.SKILL_INIT_TYPE.CANNOT_USE
+		this.skill_id=skill
 		this.range=-1
 		this.projSize
 		this.areaSize
-		this.condition
+		this.condition=()=>true
 		this.conditionedRange=-1
 
 	}
@@ -565,7 +565,7 @@ class SkillTargetSelector {
 	meetsCondition(target:Player){
 		if(!this.condition) return false
 
-		return this.condition(target)
+		return this.condition.call(target)
 	}
 
 	setProjectileSize(s: number) {

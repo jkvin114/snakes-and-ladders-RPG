@@ -16,17 +16,60 @@ import {
 	OnFinalDamageEffect
 } from "./StatusEffect"
 import PlayerInventory from "./PlayerInventory"
+import { Entity } from "./Entity"
 
-class PlayerStatusEffects {
-	player: Player
-
-	category: Map<number, StatusEffect>[]
+interface StatusEffectManager {
+	owner: Entity
 	storage: Map<number, StatusEffect>
+	onLethalDamage(): void
+	onDeath(): void
+	onBeforeObs(): void
+	onAfterObs(): void
+	onTurnEnd(): void
+	reset(effect: number): void
+	tick(currentTurn: number): void
+	applySpecial(effect: StatusEffect, name?: string): void
+	apply(effect: number, dur: number, timing: EFFECT_TIMING): void
+	has(effect: number): boolean
+	hasEffectFrom(effect: number, source: string): boolean
+	resetAll(): void
+	resetAllHarmful(): void
+}
+
+class EntityStatusEffect implements StatusEffectManager {
+	owner: Entity
+	storage: Map<number, StatusEffect>
+	constructor(owner: Entity) {
+		this.owner = owner
+		this.storage = new Map<number, StatusEffect>()
+	}
+	resetAll(): void {}
+	resetAllHarmful(): void {}
+	tick(currentTurn: number): void {}
+	applySpecial(effect: StatusEffect, name?: string): void {}
+	apply(effect: number, dur: number, timing: EFFECT_TIMING): void {}
+	has(effect: number): boolean {
+		return false
+	}
+	hasEffectFrom(effect: number, source: string): boolean {
+		return false
+	}
+	onLethalDamage() {}
+	onDeath() {}
+	onBeforeObs() {}
+	onAfterObs() {}
+	onTurnEnd() {}
+	reset(effect: number) {}
+}
+
+class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager {
+	player: Player
+	category: Map<number, StatusEffect>[]
 
 	constructor(player: Player) {
+		super(player)
 		this.player = player
 		this.initCategory()
-		this.storage = new Map<number, StatusEffect>()
 	}
 	initCategory() {
 		this.category = []
@@ -86,32 +129,30 @@ class PlayerStatusEffects {
 	getSpecialEffectDesc(name: string): SpecialEffect.DescriptionData {
 		return SpecialEffect.Setting.get(name)
 	}
-	getEffectSourcePlayerName(turn: number): string {
-		return this.player.game.getNameByTurn(turn)
+	getEffectSourcePlayerName(source: string): string {
+		return this.player.game.getNameById(source)
 	}
 
 	applySpecial(effect: StatusEffect, name?: string) {
-		
-		if(name!=null)
-			effect.setName(name)
+		if (name != null) effect.setName(name)
 
-		let data:SpecialEffect.DescriptionData = this.getSpecialEffectDesc(effect.name)
+		let data: SpecialEffect.DescriptionData = this.getSpecialEffectDesc(effect.name)
 
-		if (data!=null) {
-			console.log(this.getEffectSourcePlayerName(effect.sourceTurn))
+		if (data != null) {
+		//	console.log(this.getEffectSourcePlayerName(effect.source))
 
 			this.transfer(
 				PlayerClientInterface.giveSpecialEffect,
 				this.player.turn,
 				effect.name,
 				data,
-				this.getEffectSourcePlayerName(effect.sourceTurn)
+				this.getEffectSourcePlayerName(effect.source)
 			)
 		}
 
 		effect.applyTo(this.player)
 
-		console.log("applySpecial  " + effect.name + " " + this.player.turn)
+	//	console.log("applySpecial  " + effect.name + " " + this.player.turn)
 
 		if (effect instanceof ShieldEffect) {
 			this.setShield(effect.id, effect, false)
@@ -175,7 +216,7 @@ class PlayerStatusEffects {
 
 		let effect = this.storage.get(key)
 		if (!effect) return
-		console.log("removeeffect" + effect.name + " " + key + " " + this.player.turn)
+	//	console.log("removeeffect" + effect.name + " " + key + " " + this.player.turn)
 		let effectType = effect.effectType
 		effect.onBeforeRemove()
 
@@ -222,10 +263,10 @@ class PlayerStatusEffects {
 	has(effect: number) {
 		return this.storage.has(effect)
 	}
-	hasEffectFrom(effect: number, source: number) {
+	hasEffectFrom(effect: number, source: string) {
 		let ef = this.storage.get(effect)
 
-		if (ef && ef.sourceTurn === source) return true
+		if (ef && ef.source === source) return true
 
 		return false
 	}
@@ -273,11 +314,10 @@ class PlayerStatusEffects {
 	applyShield(damage: number) {
 		let damageLeft = damage
 
-			
 		for (const [key, s] of this.category[EFFECT_TYPE.SHIELD].entries()) {
 			if (!(s instanceof ShieldEffect)) continue
 
-			console.log("shield amount"+s.amount)
+	//		console.log("shield amount" + s.amount)
 			let shieldleft = (s as ShieldEffect).absorbDamage(damageLeft)
 			//	console.log(shieldleft + "shieldapply" + name)
 			if (shieldleft < 0) {
@@ -295,23 +335,23 @@ class PlayerStatusEffects {
 		let dmg = new Util.Damage(0, 0, damage)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
-			(effect as OnDamageEffect).onObstacleDamage(dmg)
+			;(effect as OnDamageEffect).onObstacleDamage(dmg)
 		}
 		return dmg.getTotalDmg()
 	}
-	onSkillDamage(damage: Util.Damage, sourceTurn: number) {
+	onSkillDamage(damage: Util.Damage, source: string) {
 		//console.log("onskilldamage"+this.player.turn)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
-			(effect as OnDamageEffect).onSkillDamage(damage, sourceTurn)
+			;(effect as OnDamageEffect).onSkillDamage(damage, source)
 		}
 		return damage
 	}
-	onBasicAttackDamage(damage: Util.Damage, sourceTurn: number) {
+	onBasicAttackDamage(damage: Util.Damage, source: string) {
 		//console.log("onBasicAttackDamage"+this.player.turn)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
-			(effect as OnDamageEffect).onBasicAttackDamage(damage, sourceTurn)
+			;(effect as OnDamageEffect).onBasicAttackDamage(damage, source)
 		}
 		return damage
 	}
@@ -336,9 +376,8 @@ class PlayerStatusEffects {
 	onFinalDamage(damage: number) {
 		for (const [name, effect] of this.category[EFFECT_TYPE.ON_FINAL_DAMAGE].entries()) {
 			if (!(effect instanceof OnFinalDamageEffect)) continue
-			damage=(effect as OnFinalDamageEffect).onFinalDamage(damage)
+			;(effect as OnFinalDamageEffect).onFinalDamage(damage)
 		}
-		return damage
 	}
 	onAddItem(item: ITEM) {
 		let effect = ItemEffectFactory.create(item)
@@ -350,4 +389,4 @@ class PlayerStatusEffects {
 		this.removeByKey(this.getKeyByName(PlayerInventory.getItemName(item)))
 	}
 }
-export { PlayerStatusEffects, ShieldEffect }
+export { PlayerStatusEffects,EntityStatusEffect }

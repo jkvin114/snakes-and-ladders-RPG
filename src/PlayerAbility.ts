@@ -61,7 +61,7 @@ class ConstrainedAbility extends Ability {
 		if (this.actual > this.constrain) {
 			amt = this.constrain
 		}
-		return super.set(amt)
+		return super.set(Math.min(this.actual,this.constrain))
 	}
 	subtract(amt: number) {
 		let amtExceeded = Math.max(0, this.actual - this.constrain)
@@ -153,6 +153,8 @@ class PlayerAbility {
 	update(ability: string, change_amt: number) {
 		switch (ability) {
 			case "HP":
+		//		console.log("hp"+change_amt)
+
 				this.pendingMaxHpChange += change_amt
 				break
 			case "AD":
@@ -225,7 +227,7 @@ class PlayerAbility {
 	 *
 	 */
 	flushChange() {
-		//	console.log(this.MR)
+	//	console.log("flushChange"+this.pendingMaxHpChange)
 		this.addMaxHP(this.pendingMaxHpChange)
 		this.pendingMaxHpChange = 0
 		this.sendToClient()

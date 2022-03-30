@@ -451,7 +451,7 @@ class Room {
 				setTimeout(() => {
 					if (!this.game) return
 					this.goNextTurn()
-				}, 1000)
+				}, 1500)
 
 				//	console.log("ai go nextturn")
 			} else {
@@ -490,7 +490,7 @@ class Room {
 
 			let _this = this
 			this.startIdleTimeout(function () {
-				_this.game.processPendingAction(false)
+				_this.game.processPendingAction(null)
 				_this.goNextTurn()
 			})
 		}

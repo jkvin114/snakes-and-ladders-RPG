@@ -1,6 +1,6 @@
 import { Entity } from "./Entity"
 import { EntityStorage } from "./EntityMediator"
-import { Player } from "./player"
+import { ENTITY_TYPE } from "./enum"
 import { PriorityArray } from "./Util"
 
 class EntityFilter {
@@ -13,7 +13,7 @@ class EntityFilter {
 	private unattackable: boolean
 	private excludes: Set<Entity>
 	private ranges: { start: number; end: number }[]
-	private condition: (p: Entity)=> boolean
+	private condition: (this:Entity)=> boolean
 	private returnByTurn: boolean
 	private me: boolean
 	public source: Entity
@@ -51,7 +51,7 @@ class EntityFilter {
 		this.returnByTurn = true
 		return this
 	}
-	onlyIf(cond: (p: Entity)=> boolean) {
+	onlyIf(cond: (this: Entity)=> boolean) {
 		this.condition = cond
 		return this
 	}
@@ -104,13 +104,13 @@ class EntityFilter {
 	}
     
     getFrom(entities: EntityStorage){
+		let list: PriorityArray<Entity> = new PriorityArray<Entity>()
         if(this.playerOnly){
-            let list: PriorityArray<Player> = new PriorityArray<Player>()
-
+            // let list: PriorityArray<Player> = new PriorityArray<Player>()
             for (let entity of entities.all()) {
-				if(!(entity instanceof Player)) continue
+				if (entity.type!==ENTITY_TYPE.PLAYER) continue
                 if (!this.me && this.source === entity) continue
-                if (!this.condition(entity)) continue
+                if (!this.condition.call(entity)) continue
                 if (this.excludes.has(entity)) continue
                 if (!this.isInRange(entity)) continue
                 if (!this.dead && entity.dead) continue
@@ -123,12 +123,9 @@ class EntityFilter {
             return list
         }
         else{
-            let list: PriorityArray<Entity> = new PriorityArray<Entity>()
-
             for (let entity of entities.all()) {
-				if(entity instanceof Player) continue
                 if (!this.me && this.source === entity) continue
-                if (!this.condition(entity)) continue
+                if (!this.condition.call(entity)) continue
                 if (this.excludes.has(entity)) continue
                 if (!this.isInRange(entity)) continue
                 if (!this.dead && entity.dead) continue

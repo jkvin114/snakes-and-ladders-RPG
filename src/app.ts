@@ -462,6 +462,7 @@ io.on("connect", function (socket: Socket) {
 
 		let rname=SocketSession.getRoomName(socket)
 
+		console.log("complete_obstacle_selection")
 
 		if (!ROOMS.has(rname)) return
 		if(!ROOMS.get(rname).isThisTurn(crypt_turn)) return
@@ -682,6 +683,9 @@ export class PlayerClientInterface {
 
 	static tp = (rname: string, turn: number, pos: number, movetype: string) =>
 		io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
+	
+	static smoothTeleport = (rname: string, turn: number, pos: number, distance: number) =>
+	io.to(rname).emit("server:smooth_teleport", { turn: turn, pos: pos, distance: distance })
 
 	static removeProj = (rname: string, UPID: string) => io.to(rname).emit("server:delete_projectile", UPID)
 
@@ -717,7 +721,7 @@ export class PlayerClientInterface {
 
 	static indicateItem = (rname: string, turn: number, item: number[]) =>
 		io.to(rname).emit("server:indicate_item", { turn: turn, item: item })
-
+	
 	static goStore = (rname: string, turn: number, storeData: Object) =>
 		io.to(rname).emit("server:store", {
 			turn: turn,

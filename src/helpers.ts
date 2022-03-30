@@ -8,16 +8,17 @@ import { items as ItemList } from "../res/item.json"
 import PlayerInventory from "./PlayerInventory"
 import { EffectFactory, StatusEffect } from "./StatusEffect"
 import { SpecialEffect } from "./SpecialEffect"
-import { Entity } from "./Entity"
 import { statuseffect_kor, statuseffect } from "../res/string_resource.json"
-import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { EntityFilter } from "./EntityFilter"
 
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
-		let others: number[] = []
+		let others: string[] = []
 		const pendingObsList = SETTINGS.pendingObsList
 		const perma = StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE
+
+		player.mapHandler.applyObstacle(obs)
+
 		try {
 			switch (obs) {
 				case 4:
@@ -27,11 +28,11 @@ class ObstacleHelper {
 					player.inven.takeMoney(30)
 					break
 				case 6:
-					player.mapdata.enterSubwayNormal()
+					
 					//subway
 					break
 				case 7:
-					player.mapdata.nextdmg = 30
+					player.mapHandler.nextdmg = 30
 					break
 				case 8:
 					player.doObstacleDamage(20, "knifeslash")
@@ -90,7 +91,7 @@ class ObstacleHelper {
 
 					break
 				case 19:
-					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(20))(function(player){
+					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(20))(function(player){
 						this.game.playerForceMove(this, player.pos, true, "simple")
 					})
 
@@ -101,14 +102,14 @@ class ObstacleHelper {
 					break
 				case 20:
 					let mypos=player.pos
-					let target=player.mediator.selectBestOneFrom(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(40),true)(function(){
+					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(){
 						return Math.abs(this.pos-mypos)
 					})
 
 					if (target != null && target instanceof Player &&  target.pos != player.pos) {
 						player.game.playerForceMove(player, target.pos, false, "simple")
 						player.game.playerForceMove(target, mypos, true, "simple")
-						others.push(target.turn)
+						others.push(target.UEID)
 					}
 					break
 				case 21:
@@ -131,7 +132,7 @@ class ObstacleHelper {
 					player.effects.apply(ENUM.EFFECT.SHIELD, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 					break
 				case 26:
-					player.mapdata.nextdmg = 70
+					player.mapHandler.nextdmg = 70
 					break
 				case 27:
 					player.doObstacleDamage(100, "knifeslash")
@@ -244,7 +245,7 @@ class ObstacleHelper {
 
 					break
 				case 54:
-					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(30))(function(player){
+					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(30))(function(player){
 						this.game.playerForceMove(this, player.pos, true, "simple")
 					})
 
@@ -255,14 +256,14 @@ class ObstacleHelper {
 					break
 				case 56:
 
-					let allplayers = player.mediator.selectAllFrom(EntityFilter.ALL_ALIVE_PLAYER(player).notMe())
+					let allplayers = player.mediator.selectAllFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player))
 					if (allplayers.length !== 0) {
 						let r2 = Math.floor(Math.random() * allplayers.length)
 						player.game.playerForceMove(player, allplayers[r2].pos, true, "levitate")
 					}
 					break
 				case 57:
-					player.mapdata.nextdmg = 70
+					player.mapHandler.nextdmg = 70
 					break
 				case 58:
 					player.doObstacleDamage(120, "explode")
@@ -358,8 +359,9 @@ class ObstacleHelper {
 			player.transfer(PlayerClientInterface.indicateObstacle, player.turn, obs)
 		}
 
-		for (let p of others) {
-			player.transfer(PlayerClientInterface.indicateObstacle, p, obs)
+		console.log(others)
+		for (let pid of others) {
+			player.transfer(PlayerClientInterface.indicateObstacle, player.game.id2Turn(pid), obs)
 		}
 
 		return obs
@@ -372,16 +374,12 @@ class ObstacleHelper {
 				itemhave.push(i.id)
 			}
 		}
-
 		if (itemhave.length === 0) {
 			return
 		}
-		let thiefitem = itemhave[Math.floor(Math.random() * itemhave.length)]
-		player.message(player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
-		//	this.item[thiefitem] -= 1
-		player.inven.changeOneItem(thiefitem, -1)
-		player.inven.itemSlots = player.inven.convertCountToItemSlots(player.inven.item)
-		player.transfer(PlayerClientInterface.update, "item", player.turn, player.inven.itemSlots)
+		let thiefitem = Util.pickRandom(itemhave) 
+		player.inven.thief(thiefitem)
+
 	}
 
 	static kidnap(player: Player, result: boolean) {
@@ -410,7 +408,7 @@ class ObstacleHelper {
 				break
 			case 2:
 
-				let target=player.mediator.selectBestOneFrom(EntityFilter.ALL_ALIVE_PLAYER(player).notMe().inRadius(40),true)(function(){
+				let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(){
 					return Math.abs(this.pos-player.pos)
 				})
 
@@ -464,7 +462,7 @@ class ObstacleHelper {
 	}
 }
 
-
+//depreciated
 class PlayerSelector {
 	private isTeam: boolean
 
@@ -534,7 +532,7 @@ class PlayerSelector {
 
 		if (!includeInvulnerable) {
 			result = result.filter(
-				(a) => !a.invulnerable && !a.effects.has(ENUM.EFFECT.INVISIBILITY) && me.mapdata.inSameWayWith(a)
+				(a) => !a.invulnerable && !a.effects.has(ENUM.EFFECT.INVISIBILITY) && me.mapHandler.isTargetableFrom(a)
 			)
 		}
 
@@ -606,7 +604,7 @@ class PlayerSelector {
 			return false
 		}
 		//갈림길에서 다른길
-		if (!me.mapdata.inSameWayWith(other)) {
+		if (!me.mapHandler.isTargetableFrom(other)) {
 			return false
 		}
 
@@ -753,7 +751,7 @@ class AIHelper {
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {
 			}
 			if (!player.game.instant) {
-				await Util.sleep(150)
+				await Util.sleep(300)
 			}
 		}
 	}
@@ -821,7 +819,7 @@ class AIHelper {
 
 	static getAiAreaPos(me: Player, skilldata: any, skill: number): number {
 		let goal = null
-		let targets=me.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(me).excludeUntargetable().in(me.pos - 3 - Math.floor(skilldata.range / 2),
+		let targets=me.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(me).excludeUntargetable().excludeDead().in(me.pos - 3 - Math.floor(skilldata.range / 2),
 		me.pos - 3 + Math.floor(skilldata.range / 2))).map((p)=>p.turn)
 
 		//	console.log("getAiProjPos" + targets)
@@ -838,7 +836,7 @@ class AIHelper {
 
 			//앞에있는플레이어 우선
 			targets.sort(function (b: number, a: number): number {
-				return ps[a].pos - ps[b].pos
+				return ps[b].pos - ps[a].pos
 			})
 
 			return Math.floor(ps[0].pos - skilldata.size + 1)
@@ -1208,7 +1206,7 @@ class SkillInfoFactory {
 					this.nameTitle(s) +
 					`
 				Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} and ${this.heal(this.skillAmt("qheal"))}
-				, If the target has ${this.emp("mark")} of ${this.nameDesc(ENUM.SKILL.W)}, ${this.rangeNum(7)}
+				, If the target has ${this.emp("mark")} of ${this.nameDesc(ENUM.SKILL.W)}, ${this.rangeNum(this.skillAmt("w_qrange"))}
 				and deals additional ${this.tDmg(this.skillAmt("w_qdamage"), "w_qdamage")}`
 				break
 			case 0:
@@ -1279,7 +1277,7 @@ class SkillInfoFactory {
 					this.nameTitle(s) +
 					`
 				사용시 ${this.target()}에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입힌 후 ${this.heal(this.skillAmt("qheal"))}
-				, <br>${this.nameDesc(1)} ${this.emp("표식")}이 있는 상대에게는 ${this.rangeNum(7)}
+				, <br>${this.nameDesc(1)} ${this.emp("표식")}이 있는 상대에게는 ${this.rangeNum(this.skillAmt("w_qrange"))}
 				${this.tDmg(this.skillAmt("w_qdamage"), "w_qdamage")}를 추가로 입힘`
 				break
 			case 0:
@@ -1537,7 +1535,7 @@ class SkillInfoFactory {
 				str =
 					this.nameTitle(s) +
 					`${this.proj("Poison bomb")} of ${this.projsize(4)}. Enemy who step on it gets
-				${this.effectNoDur(ENUM.EFFECT.SLOW)} and receives ${this.mDmg(this.baseDmg(s) * 3)} for ${this.duration(3)}. `
+				${this.effectNoDur(ENUM.EFFECT.SLOW)} and receives ${this.mDmg(this.baseDmg(s) * 3,hotkey)} for ${this.duration(3)}. `
 				break
 			case 3:
 				str =
@@ -1622,7 +1620,7 @@ class SkillInfoFactory {
 					this.nameTitle(s) +
 					this.projsize(4) +
 					`의 ${this.proj("독버섯")}. 밟은 적은 ${this.duration(3)}에 걸쳐 
-				${this.effectNoDur(ENUM.EFFECT.SLOW)}에 걸리고 ${this.mDmg(this.baseDmg(s) * 3)}를 받음`
+				${this.effectNoDur(ENUM.EFFECT.SLOW)}에 걸리고 ${this.mDmg(this.baseDmg(s) * 3, hotkey)}를 받음`
 				break
 			case 3:
 				str =

@@ -2,7 +2,7 @@ import { PlayerClientInterface } from "./app"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./Entity"
 import { EntityFilter } from "./EntityFilter"
-import { EFFECT, MAP_TYPE, STAT } from "./enum"
+import { EFFECT, ENTITY_TYPE, MAP_TYPE, STAT } from "./enum"
 import { Player } from "./player"
 import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize } from "./Util"
 
@@ -12,7 +12,7 @@ class AttackHandler{
 	static basicAttack(from:Player,target:Entity,damage:Damage):boolean{
 		if(target instanceof Player){
 			damage = from.effects.onBasicAttackHit(damage, target)
-			damage = target.effects.onBasicAttackDamage(damage, from.turn)
+			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}
 		
 		return AttackHandler.doDamage(from,target,damage,from.getBasicAttackName(),true)
@@ -34,13 +34,13 @@ class AttackHandler{
 			if (skillattack.onHit != null) {
 				skillattack.onHit.call(target)
 			}
-			damage = target.effects.onSkillDamage(damage, from.turn)
+			damage = target.effects.onSkillDamage(damage, from.UEID)
 			damage = from.effects.onSkillHit(damage, target)
 
 			if (damage.getTotalDmg() === 0) {
 				flags.push(HPChangeData.FLAG_NODMG_HIT)
 			}
-			console.log('skill  '+effectname)
+		//	console.log('skill  '+effectname)
 			let died=AttackHandler.doDamage(from, target,damage, effectname, true, flags)
 			if(died) AttackHandler.onDeath(from,target,skillattack.onKill)
 			return died
@@ -119,10 +119,10 @@ class EntityMediator {
 		}
 	}
 
-	register(e: Entity, id?: string) {
+	register(e: Entity, id: string) {
 		if (e instanceof Player) {
-			console.log(e.turn)
-			this.storage.addPlayer(e)
+			// console.log(e.turn)
+			this.storage.addPlayer(id,e)
 		} else if (id != null) {
 			this.storage.addEntity(id, e)
 		}
@@ -133,8 +133,11 @@ class EntityMediator {
 	withdrawDeadEntities() {
 		this.storage.cleanUpDeadEntity()
 	}
-	getPlayer(turn: number) {
-		return this.storage.getPlayer(turn)
+	// getPlayer(turn: number) {
+	// 	return this.storage.getPlayer(turn)
+	// }
+	getPlayer(id:string){
+		return this.storage.getPlayer(id)
 	}
 	getEntity(id: string) {
 		return this.storage.getEntity(id)
@@ -151,9 +154,8 @@ class EntityMediator {
 
 		for (let e of this.storage.all()) {
 			e.onTurnEnd(thisturn)
-			if (e instanceof Player) {
-				e.effects.tick(thisturn)
-			}
+			e.effects.tick(thisturn)
+			
 		}
 	}
 	moveSummonedEntityTo(entityId: string, pos: number): Entity {
@@ -169,22 +171,20 @@ class EntityMediator {
 		}
 		return entity
 	}
-	movePlayerIgnoreObstacle(turn: number, pos: number, movetype: string) {
-		let player = this.getPlayer(turn)
+	movePlayerIgnoreObstacle(id:string, pos: number, movetype: string) {
+		let player = this.getPlayer(id)
 		if (!(player instanceof Player)) return
 
 		this.sendToClient(PlayerClientInterface.tp, player.turn, pos, movetype)
 
 		player.forceMove(pos)
-		if (player.mapId === MAP_TYPE.CASINO) {
-			player.mapdata.checkSubway()
-		}
+
 	}
 
-	movePlayer(turn: number, pos: number, movetype: string) {
+	movePlayer(id:string, pos: number, movetype: string) {
 
-		this.movePlayerIgnoreObstacle(turn,pos,movetype)
-		let player = this.getPlayer(turn)
+		this.movePlayerIgnoreObstacle(id,pos,movetype)
+		let player = this.getPlayer(id)
 
 		if (this.instant) {
 			player.arriveAtSquare(true)
@@ -199,47 +199,11 @@ class EntityMediator {
 	}
 
 
-
-	// dealDamage(from: Entity, target: Entity, damage: Damage, damageType: string, name: string): boolean {
-	// 	let flags: number[] = []
-	// 	let needDelay = true
-
-	// 	if (from instanceof Player) {
-	// 		if (damageType == "skill") {
-	// 			if (damage.getTotalDmg() === 0) {
-	// 				flags.push(HPChangeData.FLAG_NODMG_HIT)
-	// 			}
-	// 		} else if (damageType == "basicattack") {
-	// 			if (target instanceof Player) {
-	// 				damage = target.effects.onBasicAttackDamage(damage, from.turn)
-	// 			}
-	// 		} else if (damageType === "tick") {
-	// 			needDelay = false
-	// 			flags.push(HPChangeData.FLAG_TICKDMG)
-	// 		}
-
-	// 		if (target instanceof Player) {
-	// 			return target.doPlayerDamage(damage, from, name, needDelay, flags)
-	// 		} else if (target instanceof SummonedEntity) {
-	// 			return target.doDamage(from, damage)
-	// 		}
-	// 	} else {
-	// 		if (target instanceof Player) {
-	// 			return target.doObstacleDamage(damage.getTotalDmg(), name)
-	// 		} else if (target instanceof SummonedEntity) {
-	// 			return target.doDamage(from, damage)
-	// 		}
-	// 	}
-	// }
 	getPlayerRankOf(target:Player,rankingFunction:(p:Player)=>number):number{
-		let rankings= this.allPlayer().sort((a,b)=>{
+		return this.allPlayer().sort((a,b)=>{
 			return rankingFunction(b)-rankingFunction(a)
-		})
-		for(let i in rankings){
-			if(target.turn === rankings[i].turn)
-			return Number(i)
-		}
-		return rankings.length-1
+		}).indexOf(target)
+
 	}
 	isFellBehind(target:Player){
 		if(this.getPlayerRankOf(target,(p)=>p.pos) === target.game.totalnum-1)
@@ -258,9 +222,9 @@ class EntityMediator {
 		}
 	}
 
-	basicAttackSingle(from:Player,turn:number){
+	basicAttackSingle(from:Player,to:string){
 		return (damage:Damage) => {
-			return AttackHandler.basicAttack(from,this.getPlayer(turn),damage)
+			return AttackHandler.basicAttack(from,this.getPlayer(to),damage)
 		}
 	}
 
@@ -276,7 +240,7 @@ class EntityMediator {
 		}
 	}
 	
-	skillAttackSingle(from:Player,to:number){
+	skillAttackSingle(from:Player,to:string){
 
 		return (skillAttack:SkillAttack) => {
 			return AttackHandler.skillAttack(from,this.getPlayer(to),skillAttack)
@@ -310,23 +274,21 @@ class EntityMediator {
 		}
 	}
 
-	forEachPlayer(filter: EntityFilter):(action: EntityActionFunction<Player>)=>number[] {
+	forEachPlayer(filter: EntityFilter):(action: EntityActionFunction<Player>)=>string[] {
 		return (action: EntityActionFunction<Player>) => {
 			let affected=[]
 			for (let e of this.selectAllFrom(filter)) {
-				if(e instanceof Player){
-					affected.push(e.turn)
-					action.call(e, filter.source)
-				}
+				affected.push(e.UEID)
+				action.call(e, filter.source)
 			}
 			return affected
 		}
 	}
-	forAllPlayer():(action: SimplePlayerActionFunction)=>number[]{
+	forAllPlayer():(action: SimplePlayerActionFunction)=>string[]{
 		return (action: SimplePlayerActionFunction) => {
 			let affected=[]
 			for (let e of this.allPlayer()) {
-				affected.push(e.turn)
+				affected.push(e.UEID)
 				action.call(e)
 			}
 			return affected
@@ -334,9 +296,9 @@ class EntityMediator {
 	}
 
 
-	forPlayer(turn: number, source: Player):(action: EntityActionFunction<Player>)=>void {
+	forPlayer(id: string, source: Player):(action: EntityActionFunction<Player>)=>void {
 		return (action: EntityActionFunction<Player>) => {
-			action.call(this.storage.getPlayer(turn), source)
+			action.call(this.storage.getPlayer(id), source)
 		}
 	}
 
@@ -359,7 +321,6 @@ class EntityMediator {
 				return this.selectAllFrom(filter).getMin(priority)
 			else
 				return this.selectAllFrom(filter).getMax(priority)
-			
 		}
 	}
 
@@ -390,24 +351,24 @@ class EntityStorage {
 	private playerId(turn: number) {
 		return String(turn + 1) + EntityStorage.PLAYER_ID_SUFFIX
 	}
-	addPlayer(player: Player) {
-		let pid = this.playerId(this.playerIds.length)
-		this.playerIds.push(pid)
-		this.entities.set(pid, player)
+	addPlayer(id: string, player: Player) {
+		// let pid = this.playerId(this.playerIds.length)
+		this.playerIds.push(id)
+		this.entities.set(id, player)
 	}
 	addEntity(id: string, entity: Entity) {
 		this.entities.set(id, entity)
 	}
 	/**
 	 * get player
-	 * @param turn
+	 * @param id
 	 * @returns Player
 	 */
-	getPlayer(turn: number): Player {
-		if (turn >= this.playerIds.length) return null
-		if (!this.entities.has(this.playerId(turn))) return null
+	getPlayer(id:string): Player {
+		// if (turn >= this.playerIds.length) return null
+		if (!this.entities.has(id)) return null
 
-		return this.entities.get(this.playerId(turn)) as Player
+		return this.entities.get(id) as Player
 	}
 	allPlayer():Player[]{
 		let list=new Array<Player>()
@@ -427,7 +388,7 @@ class EntityStorage {
 
 	cleanUpDeadEntity() {
 		for (let [id, entity] of this.entities.entries()) {
-			if (!(entity instanceof Player) && entity.dead) {
+			if (entity.type!==ENTITY_TYPE.PLAYER && entity.dead) {
 				console.log("deleted entity " + id)
 				this.entities.delete(id)
 			}

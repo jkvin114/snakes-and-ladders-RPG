@@ -18,8 +18,14 @@ class PlayerInventory {
 	money: number
 	player: Player
 
-	static readonly indicateList=[ITEM.WARRIORS_SHIELDSWORD,ITEM.INVISIBILITY_CLOAK,ITEM.CARD_OF_DECEPTION,ITEM.GUARDIAN_ANGEL,ITEM.POWER_OF_MOTHER_NATURE]
-	
+	static readonly indicateList = [
+		ITEM.WARRIORS_SHIELDSWORD,
+		ITEM.INVISIBILITY_CLOAK,
+		ITEM.CARD_OF_DECEPTION,
+		ITEM.GUARDIAN_ANGEL,
+		ITEM.POWER_OF_MOTHER_NATURE
+	]
+
 	constructor(player: Player) {
 		this.player = player
 
@@ -114,8 +120,9 @@ class PlayerInventory {
 		return this.item[item] > 0
 	}
 
-	addActiveItem(itemdata: Util.ActiveItem) {
-		this.activeItems.push(itemdata)
+	addActiveItem(itemData: Util.ActiveItem) {
+		this.activeItems.push(itemData)
+		this.sendActiveItemStatus()
 		//console.log("buy active item" + itemdata)
 	}
 
@@ -130,6 +137,7 @@ class PlayerInventory {
 
 	activeItemCoolDown() {
 		this.activeItems.forEach((i) => i.cooldown())
+		this.sendActiveItemStatus()
 	}
 
 	/**
@@ -137,7 +145,7 @@ class PlayerInventory {
 	 * @param {} item_id id of item
 	 * @returns
 	 */
-	isActiveItemAvaliable(item_id: ITEM) {
+	isActiveItemAvailable(item_id: ITEM) {
 		//console.log(this.item + "avaliable" + this.activeItems)
 		if (!this.haveItem(item_id)) return false
 
@@ -145,18 +153,28 @@ class PlayerInventory {
 	}
 
 	/**
-	 * 아이템 사용해서 쿨타임 초기화
+	 * 아이템 사용
 	 * @param {} item_id id of item
 	 * @returns
 	 */
 	useActiveItem(item_id: ITEM) {
-		if(this.isActiveItemAvaliable(item_id)){
+		if (this.isActiveItemAvailable(item_id)) {
 			this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
 
-			if(PlayerInventory.indicateList.includes(item_id)){
-				this.transfer(PlayerClientInterface.indicateItem,this.player.turn, item_id)
+			if (PlayerInventory.indicateList.includes(item_id)) {
+				this.transfer(PlayerClientInterface.indicateItem, this.player.turn, item_id)
+				this.sendActiveItemStatus()
 			}
 		}
+	}
+
+	sendActiveItemStatus() {
+		let data: { id: number; cool: number; coolRatio: number }[] = this.activeItems
+			.filter((ef: Util.ActiveItem) => PlayerInventory.indicateList.includes(ef.id) && this.haveItem(ef.id))
+			.map((item) => {
+				return { id: item.id, cool: item.cooltime, coolRatio: 1 - item.cooltime / item.resetVal }
+			})
+		this.transfer(PlayerClientInterface.update, "activeItem", this.player.turn, data)
 	}
 	getStoreData(priceMultiplier: number) {
 		return {
@@ -210,7 +228,7 @@ class PlayerInventory {
 			let change_amt = ability.value * count
 			this.player.ability.update(ability.type, change_amt)
 		}
-		this.player.ability.flushChange()
+		
 
 		if (ItemList[item].active_cooltime != null && !this.boughtActiveItem(item)) {
 			this.addActiveItem(new Util.ActiveItem(ItemList[item].name, item, ItemList[item].active_cooltime))
@@ -218,6 +236,9 @@ class PlayerInventory {
 
 		if (this.item[item] <= 0 && this.item[item] - count > 0) {
 			this.player.effects.onRemoveItem(item)
+			if(PlayerInventory.indicateList.includes(item))
+				this.sendActiveItemStatus()
+
 		} else if (this.item[item] > 0 && this.item[item] - count <= 0) {
 			this.player.effects.onAddItem(item)
 		}
@@ -248,9 +269,16 @@ class PlayerInventory {
 			}
 			this.changeOneItem(i, diff)
 		}
-
+		this.player.ability.flushChange()
 		//	this.item = data.storedata.item
 		this.transfer(PlayerClientInterface.update, "item", this.player.turn, this.itemSlots)
+	}
+	thief(thiefitem:number){
+		this.player.message(this.player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
+		this.player.inven.changeOneItem(thiefitem, -1)
+		this.player.inven.itemSlots = this.player.inven.convertCountToItemSlots(this.player.inven.item)
+		this.player.transfer(PlayerClientInterface.update, "item", this.player.turn, this.player.inven.itemSlots)
+		this.player.ability.flushChange()
 	}
 	/**
 	 *data: 아이템 각각의 갯수
@@ -274,6 +302,7 @@ class PlayerInventory {
 			this.changeOneItem(i, diff)
 		}
 		this.itemSlots = this.convertCountToItemSlots(this.item)
+		this.player.ability.flushChange()
 		this.transfer(PlayerClientInterface.update, "item", this.player.turn, this.itemSlots)
 	}
 	/**
@@ -287,10 +316,8 @@ class PlayerInventory {
 		return true
 	}
 
-	static getItemName(item:ITEM):string{
+	static getItemName(item: ITEM): string {
 		return ItemList[item].name
-
 	}
-	
 }
 export default PlayerInventory

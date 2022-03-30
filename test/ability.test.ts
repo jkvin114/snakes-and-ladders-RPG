@@ -22,8 +22,13 @@ test('adstat ', () => {
 
 
 test('add-subtract ', () => {
-  ability.update("attackRange",3)
+  ability.update("attackRange",1)
+  ability.update("attackRange",2)
   expect(ability.attackRange.get()).toBe(3);
+  ability.update("attackRange",-1)
+  expect(ability.attackRange.get()).toBe(2);
+  ability.update("attackRange",1)
+
   // expect(ability.attackRange.actual).toBe(3);
 
   ability.update("attackRange",3)

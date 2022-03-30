@@ -3,14 +3,13 @@ import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../Util"
-import { ShieldEffect } from "../PlayerStatusEffect"
-import { AblityChangeEffect, NormalEffect } from "../StatusEffect"
+import { AblityChangeEffect, NormalEffect ,ShieldEffect} from "../StatusEffect"
 import { Game } from "../Game"
 import { Projectile } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { Creed } from "./Creed"
 import { SkillInfoFactory } from "../helpers"
+import { Entity } from "../Entity"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 1
@@ -82,16 +81,16 @@ class Silver extends Player {
 	 * @returns
 	 */
 	getSkillTargetSelector(s: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s) //-1 when can`t use skill, 0 when it`s not attack skill
 
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector
 					.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
 					.setRange(this.skill_ranges[s])
-					.setConditionedRange((target: Player) => {
-						return target.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
-					}, 7)
+					.setConditionedRange(function(this: Entity){
+						return (this instanceof Player) && this.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
+					}, this.getSkillAmount("w_qrange"))
 
 				break
 			case ENUM.SKILL.W:
@@ -158,7 +157,7 @@ class Silver extends Player {
 	}
 
 	private getWEffect() {
-		return new NormalEffect(ENUM.EFFECT.ELEPHANT_W_SIGN, this.duration_list[1], ENUM.EFFECT_TIMING.TURN_END).setSourcePlayer(this.turn)
+		return new NormalEffect(ENUM.EFFECT.ELEPHANT_W_SIGN, this.duration_list[1], ENUM.EFFECT_TIMING.TURN_END).setSourceId(this.UEID)
 	}
 
 	/**
@@ -185,7 +184,7 @@ class Silver extends Player {
 					this.heal(heal)
 				})
 
-				if (this.game.pOfTurn(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.turn)) {
+				if (this.game.pOfTurn(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.UEID)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, this.getSkillAmount("w_qdamage"))
 					this.game.pOfTurn(target).effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
 				}

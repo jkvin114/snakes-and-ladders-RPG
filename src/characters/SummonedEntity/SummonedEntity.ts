@@ -1,6 +1,6 @@
 import { Entity } from "../../Entity"
 import { EntityFilter } from "../../EntityFilter"
-import { SKILL } from "../../enum"
+import { ENTITY_TYPE, SKILL } from "../../enum"
 import { Game } from "../../Game"
 import { Player } from "../../player"
 import { Damage, SkillAttack } from "../../Util"
@@ -14,7 +14,7 @@ abstract class SummonedEntity extends Entity {
 	skillTargetable: boolean
 	abstract doDamage(source: Entity, damage: Damage): boolean
 	constructor(game: Game, health: number, name: string) {
-		super(game, health, 0)
+		super(game, health, 0,ENTITY_TYPE.SUMMONED_ENTITY)
 		this.entityName = name
 		this.pos = 0
 		this.UEID
@@ -142,7 +142,7 @@ class Attackable extends EntityDecorator {
 			)(new SkillAttack(this.damage, this.attackName))
 		} else {
 			//attack as entity damage
-			this.mediator.attack(this.summoner, EntityFilter.ALL_ENEMY(this).inRadius(this.attackRange))(
+			this.mediator.attack(this.summoner, EntityFilter.VALID_ATTACK_TARGET(this).inRadius(this.attackRange))(
 				this.damage,
 				this.attackName
 			)

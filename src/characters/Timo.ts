@@ -84,14 +84,14 @@ class Timo extends Player {
 				return false
 			})
 			.setSourceSkill(ENUM.SKILL.ULT)
-			.setSourcePlayer(this.turn)
+			.setSourceId(this.UEID)
 
 		let hiteffect = new OnHitEffect(ENUM.EFFECT.GHOST_ULT_WEAKEN,3, function(this:Player,target: Player, damage: Damage){
 			return damage.updateNormalDamage(CALC_TYPE.multiply, 0.5)
 		})
-			.setSourcePlayer(this.turn)
+			.setSourceId(this.UEID)
 			.on(OnHitEffect.EVERYATTACK)
-			.to([this.turn])
+			.to([this.UEID])
 
 
 
@@ -109,9 +109,7 @@ class Timo extends Player {
 	}
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(
-			skill
-		) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(skill)//-1 when can`t use skill, 0 when it`s not attack skill
 
 		switch (skill) {
 			case ENUM.SKILL.Q:

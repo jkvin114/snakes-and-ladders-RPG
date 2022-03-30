@@ -76,7 +76,7 @@ class Yangyi extends Player {
 	}
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s)//-1 when can`t use skill, 0 when it`s not attack skill
 
 		switch (s) {
 			case ENUM.SKILL.Q:
@@ -112,10 +112,12 @@ class Yangyi extends Player {
 			let damagecoeff = 1 - 0.2 * (targets.length - 1)
 
 			skilldmg.damage.updateAttackDamage(CALC_TYPE.multiply, damagecoeff)
+			
+			this.mediator.skillAttack(this,EntityFilter.VALID_ATTACK_TARGET(this).inRadius(4))(skilldmg)
 
-			for (let p of targets) {
-				this.mediator.skillAttackSingle(this,p.turn)(skilldmg)
-			}
+			// for (let p of targets) {
+			// 	this.mediator.skillAttackSingle(this,p.turn)(skilldmg)
+			// }
 
 		} else {
 			return false

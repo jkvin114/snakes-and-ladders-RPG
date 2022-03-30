@@ -3,6 +3,7 @@ import { CALC_TYPE, Damage, decrement, HPChangeData, PercentDamage, SkillAttack 
 import { EFFECT, ITEM, SKILL } from "./enum"
 import {PlayerAbility} from "./PlayerAbility"
 import { SpecialEffect } from "./SpecialEffect"
+import { Entity } from "./Entity"
 
 enum EFFECT_SOURCE {
 	ENEMY,
@@ -68,7 +69,7 @@ class ItemEffectFactory {
 					Damage: Damage,
 					owner: Player
 				) {
-					if (owner.inven.isActiveItemAvaliable(ITEM.POWER_OF_MOTHER_NATURE)) {
+					if (owner.inven.isActiveItemAvailable(ITEM.POWER_OF_MOTHER_NATURE)) {
 						owner.inven.useActiveItem(ITEM.POWER_OF_MOTHER_NATURE)
 						owner.effects.applySpecial(
 							EffectFactory.create(EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY),
@@ -97,7 +98,7 @@ class ItemEffectFactory {
 					EFFECT.ITEM_CARD_OF_DECEPTION,
 					StatusEffect.FOREVER,
 					function(this: Player, target: Player, damage: Damage){
-						if (this.inven.isActiveItemAvaliable(ITEM.CARD_OF_DECEPTION)) {
+						if (this.inven.isActiveItemAvailable(ITEM.CARD_OF_DECEPTION)) {
 							//	console.log("CARD_OF_DECEPTION")
 							damage.updateNormalDamage(CALC_TYPE.multiply, 1.1)
 							target.effects.apply(EFFECT.SLOW, 1, EFFECT_TIMING.BEFORE_SKILL)
@@ -171,7 +172,7 @@ class ItemEffectFactory {
 					EFFECT.ITEM_SHIELDSWORD,
 					StatusEffect.FOREVER,
 					(damage: number, owner: Player) => {
-						if (owner.inven.isActiveItemAvaliable(ITEM.WARRIORS_SHIELDSWORD)) {
+						if (owner.inven.isActiveItemAvailable(ITEM.WARRIORS_SHIELDSWORD)) {
 							console.log("WARRIORS_SHIELDSWORD")
 
 							owner.effects.applySpecial(
@@ -186,7 +187,6 @@ class ItemEffectFactory {
 
 							owner.inven.useActiveItem(ITEM.WARRIORS_SHIELDSWORD)
 						}
-						return damage
 					}
 				)
 					.setInvokeConditionHpPercent(30)
@@ -196,13 +196,12 @@ class ItemEffectFactory {
 					EFFECT.ITEM_INVISIBILITY_CLOAK,
 					StatusEffect.FOREVER,
 					(damage: number, owner: Player) => {
-						if (owner.inven.isActiveItemAvaliable(ITEM.INVISIBILITY_CLOAK)) {
+						if (owner.inven.isActiveItemAvailable(ITEM.INVISIBILITY_CLOAK)) {
 							console.log("invisibility cloak")
 							owner.effects.apply(EFFECT.INVISIBILITY, 1, EFFECT_TIMING.TURN_END)
 
 							owner.inven.useActiveItem(ITEM.INVISIBILITY_CLOAK)
 						}
-						return damage
 					}
 				)
 					.setInvokeConditionHpPercent(30)
@@ -277,7 +276,7 @@ abstract class StatusEffect {
 	public readonly timing: EFFECT_TIMING
 	public readonly id: EFFECT
 	public name: string
-	public sourceTurn: number
+	public source: string
 	public effectType: EFFECT_TYPE
 	static readonly DURATION_UNTIL_LETHAL_DAMAGE = 1000
 	static readonly DURATION_UNTIL_DEATH = 2000
@@ -290,7 +289,7 @@ abstract class StatusEffect {
 		this.owner = null
 		this.timing = timing
 		this.name = ""
-		this.sourceTurn = -1
+		this.source =null
 
 		if (timing === EFFECT_TIMING.BEFORE_SKILL || timing === EFFECT_TIMING.TURN_END) {
 			this.duration += 1
@@ -308,8 +307,8 @@ abstract class StatusEffect {
 		this.isgood = true
 		return this
 	}
-	setSourcePlayer(sourceturn: number) {
-		this.sourceTurn = sourceturn
+	setSourceId(source: string) {
+		this.source = source
 		return this
 	}
 	onBeforeReapply() {
@@ -492,14 +491,14 @@ class TickEffect extends StatusEffect {
 			damage.updateAllDamage(CALC_TYPE.multiply, 0.75)
 		}
 
-		if (this.sourceTurn === -1) {
+		if (!this.source) {
 			return this.owner.doObstacleDamage(damage.getTotalDmg(), this.name)
 		} else if (this.sourceSkill != null) {
-			return this.owner.mediator.skillAttackSingle(this.owner.mediator.getPlayer(this.sourceTurn),this.owner.turn)
+			return this.owner.mediator.skillAttackSingle(this.owner.mediator.getPlayer(this.source),this.owner.UEID)
 			(new SkillAttack(damage,this.name))
 			// return this.owner.hitBySkill(damage, this.name, this.sourceTurn)
 		} else {
-			return this.owner.mediator.attackSingle(this.owner.mediator.getPlayer(this.sourceTurn),this.owner)
+			return this.owner.mediator.attackSingle(this.owner.mediator.getPlayer(this.source),this.owner)
 			(damage,this.name)
 			// return this.owner.game.playerSelector.get(this.sourceTurn).dealDamageTo(this.owner, damage, "tick", this.name)
 			// return this.owner.dealDamageTo(damage.getTotalDmg(), this.sourceTurn, this.name, false)
@@ -550,7 +549,7 @@ interface onHitFunction {
 class OnHitEffect extends StatusEffect {
 	protected onHit: onHitFunction
 	protected attack: number
-	protected validTargets: number[] //only activate when attacking players in the array
+	protected validTargets: string[] //only activate when attacking players in the array
 	protected targetCondition: ConditionFunction
 	static readonly SKILLATTACK = 0
 	static readonly BASICATTACK = 1
@@ -560,7 +559,7 @@ class OnHitEffect extends StatusEffect {
 		super(id, dur, EFFECT_TIMING.BEFORE_SKILL)
 		this.onHit = onHit
 		this.attack = OnHitEffect.EVERYATTACK
-		this.validTargets = [0, 1, 2, 3]
+		this.validTargets = []
 		this.effectType = EFFECT_TYPE.ONHIT
 		this.targetCondition = (target: Player, owner: Player) => true
 	}
@@ -570,7 +569,7 @@ class OnHitEffect extends StatusEffect {
 		return this
 	}
 
-	to(targets: number[]) {
+	to(targets: string[]) {
 		this.validTargets = targets
 		return this
 	}
@@ -578,9 +577,9 @@ class OnHitEffect extends StatusEffect {
 		this.targetCondition = targetCondition
 		return this
 	}
-	isValidTarget(target:Player){
-		if(!target) return true
-		return this.validTargets.includes(target.turn)
+	isValidTarget(target:Entity){
+		if(this.validTargets.length===0) return true
+		return this.validTargets.includes(target.UEID)
 	}
 
 	onHitWithSkill(target: Player, damage: Damage) {
@@ -604,7 +603,7 @@ class OnHitEffect extends StatusEffect {
 }
 
 interface OnFinalDamageFunction {
-	(damage: number, owner: Player): number
+	(damage: number, owner: Player): void
 }
 
 class OnFinalDamageEffect extends StatusEffect {
@@ -634,9 +633,8 @@ class OnFinalDamageEffect extends StatusEffect {
 	onFinalDamage(damage: number) {
 		let predictedHP = this.owner.HP - damage
 		if (predictedHP > 0 && predictedHP < (this.conditionHpPercent / 100) * this.owner.MaxHP) {
-			return this.onDamage(damage, this.owner)
+			this.onDamage(damage, this.owner)
 		}
-		return damage
 	}
 }
 
@@ -648,7 +646,7 @@ interface OnDamageFunction {
  * called on taking damage
  */
 class OnDamageEffect extends StatusEffect {
-	protected sourcePlayerTurns: number[] //only active when receiving damage from these players
+	protected sourceIds: string[] //only active when receiving damage from these players
 	protected onDamage: OnDamageFunction
 	protected damages: number[]
 
@@ -660,7 +658,7 @@ class OnDamageEffect extends StatusEffect {
 		super(id, dur, EFFECT_TIMING.BEFORE_SKILL)
 		this.onDamage = f
 		this.effectType = EFFECT_TYPE.ONDAMAGE
-		this.sourcePlayerTurns = [0, 1, 2, 3]
+		this.sourceIds = []
 		this.damages = [OnDamageEffect.SKILL_DAMAGE, OnDamageEffect.BASICATTACK_DAMAGE, OnDamageEffect.OBSTACLE_DAMAGE]
 	}
 
@@ -669,17 +667,21 @@ class OnDamageEffect extends StatusEffect {
 		return this
 	}
 
-	from(turns: number[]) {
-		this.sourcePlayerTurns = turns
+	from(ids: string[]) {
+		this.sourceIds = ids
 		return this
+	}
+	private isValidSource(source:string){
+		if(this.sourceIds.length===0) return true
+		return this.sourceIds.includes(source)
 	}
 	/**
 	 * called when receiving skill damage
 	 * @param damage
 	 * @returns modified damage
 	 */
-	onSkillDamage(damage: Damage, sourceTurn: number) {
-		if (this.damages.includes(OnDamageEffect.SKILL_DAMAGE) && this.sourcePlayerTurns.includes(sourceTurn)) {
+	onSkillDamage(damage: Damage, source: string) {
+		if (this.damages.includes(OnDamageEffect.SKILL_DAMAGE) && this.isValidSource(source)) {
 			return this.onDamage(damage, this.owner)
 		}
 		return damage
@@ -689,8 +691,8 @@ class OnDamageEffect extends StatusEffect {
 	 * @param damage
 	 * @returns modified damage
 	 */
-	onBasicAttackDamage(damage: Damage, sourceTurn: number) {
-		if (this.damages.includes(OnDamageEffect.BASICATTACK_DAMAGE) && this.sourcePlayerTurns.includes(sourceTurn)) {
+	onBasicAttackDamage(damage: Damage, source: string) {
+		if (this.damages.includes(OnDamageEffect.BASICATTACK_DAMAGE) && this.isValidSource(this.source)) {
 			return this.onDamage(damage, this.owner)
 		}
 		return damage

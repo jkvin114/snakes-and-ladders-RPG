@@ -1,9 +1,10 @@
 import { Game } from "./Game"
 import { EntityMediator } from "./EntityMediator"
-import { Player } from "./player"
 import { Damage, decrement } from "./Util"
+import { EntityStatusEffect } from "./PlayerStatusEffect"
 import { clamp } from "./Util"
 import { MAP } from "./Game"
+import { ENTITY_TYPE } from "./enum"
 //anything that has its own HP
 class Entity {
 	game: Game
@@ -13,13 +14,21 @@ class Entity {
 	MaxHP: number
 	mediator:EntityMediator
 	dead:boolean
-	constructor(game: Game, health: number, pos: number) {
+	type:ENTITY_TYPE
+	UEID:string	
+	effects: EntityStatusEffect
+	level:number
+
+	constructor(game: Game, health: number, pos: number,type:ENTITY_TYPE) {
 		this.game = game
+		this.level=1
 		this.mapId = game.mapId
 		this.HP = health
 		this.MaxHP = health
 		this.pos = pos //현재위치
 		this.dead=false
+		this.type=type
+		this.effects=new EntityStatusEffect(this)
 	}
 
 	hitBySkill(skilldmg: Damage, effectname: string, source: number, onHit?: Function): boolean {

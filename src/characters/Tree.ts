@@ -101,9 +101,7 @@ class Tree extends Player {
 	}
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(
-			skill
-		) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(skill) //-1 when can`t use skill, 0 when it`s not attack skill
 
 		switch (skill) {
 			case ENUM.SKILL.Q:
@@ -191,6 +189,7 @@ class Tree extends Player {
 		})
 			.on([OnDamageEffect.BASICATTACK_DAMAGE, OnDamageEffect.SKILL_DAMAGE])
 			.from(this.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(this).excludeEnemy()).map((p)=>p.turn))
+			.setSourceId(this.UEID)
 	}
 
 	getSkillDamage(targetTurn: number): SkillAttack {
@@ -233,6 +232,7 @@ class Tree extends Player {
 			let healamt=this.getSkillAmount("qheal")
 			let shieldamt=this.getSkillAmount("qshield")
 			this.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(this).excludeEnemy().in(pos, pos + Tree.Q_AREA_SIZE - 1))(function(source){
+					console.log("tree Q "+this.turn)	
 					this.heal(healamt)
 					this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD, 2, shieldamt))
 			})

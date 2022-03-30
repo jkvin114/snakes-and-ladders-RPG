@@ -1,6 +1,3 @@
-// import oceanmap = require("../res/ocean_map.json")
-// import casinomap = require("../res/casino_map.json")
-// import defaultmap = require("../res/map.json")
 import obsInfo = require("../res/obstacles.json")
 import SETTINGS = require("../res/globalsettings.json")
 import * as ENUM from "./enum"
@@ -9,13 +6,13 @@ import { Game, MAP } from "./Game"
 import { Projectile } from "./Projectile"
 import {PlayerAbility} from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
-import PlayerMapData from "./PlayerMapData"
+import {PlayerMapHandler} from "./MapHandlers/PlayerMapData"
 import PlayerInventory from "./PlayerInventory"
-import { PlayerStatusEffects, ShieldEffect } from "./PlayerStatusEffect"
+import { PlayerStatusEffects } from "./PlayerStatusEffect"
 import { PlayerClientInterface ,testSetting} from "./app"
 import { ObstacleHelper, AIHelper, SkillInfoFactory } from "./helpers"
 import { Entity } from "./Entity"
-import { Attackable, Damageable, SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
+import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { EntityFilter } from "./EntityFilter"
 
 
@@ -45,7 +42,6 @@ abstract class Player extends Entity {
 	//	pos: number
 	lastpos: number
 	dead: boolean
-	level: number
 
 	kill: number
 	death: number
@@ -66,7 +62,7 @@ abstract class Player extends Entity {
 	statistics: PlayerStatistics
 	inven: PlayerInventory
 	effects: PlayerStatusEffects
-	mapdata: PlayerMapData
+	mapHandler: PlayerMapHandler
 	shield: number
 	cooltime: number[]
 	duration: number[]
@@ -109,7 +105,7 @@ abstract class Player extends Entity {
 		name: string,
 		basic_stats: number[]
 	) {
-		super(game, basic_stats[0], testSetting.pos)
+		super(game, basic_stats[0], testSetting.pos,ENUM.ENTITY_TYPE.PLAYER)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
@@ -119,6 +115,8 @@ abstract class Player extends Entity {
 		this.lastpos = 0 //이전위치
 		this.dead = false
 		this.level = testSetting.lvl //레벨, 1에서시작
+
+		this.UEID=this.game.turn2Id(this.turn)
 
 		this.kill = 0
 		this.death = 0
@@ -140,7 +138,7 @@ abstract class Player extends Entity {
 		this.statistics = new PlayerStatistics(this)
 		this.inven = new PlayerInventory(this)
 		this.effects = new PlayerStatusEffects(this)
-		this.mapdata = new PlayerMapData(this)
+		this.mapHandler = PlayerMapHandler.create(this,this.mapId)
 
 		this.shield = 0
 
@@ -185,15 +183,17 @@ abstract class Player extends Entity {
 	}
 
 	calculateAdditionalDice(amount: number): number {
-		let first: Player = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this))(function(){
+		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this))(function(){
 			return this.pos
-		}) as Player
+		})
+		
+		if(!(first instanceof Player)) return
 
 		//자신이 1등보다 15칸이상 뒤쳐져있으면 주사위숫자 2 추가,
 		//자신이 1등보다 30칸이상 뒤쳐져있으면 주사위숫자 4 추가
 		//자신이 1등보다 레벨이 2 낮으면 주사위숫자 5 추가
 		//역주사위 효과 있을시 추가안함
-		if (this.pos + 15 < first.pos && !this.effects.has(ENUM.EFFECT.BACKDICE) && first.mapdata.onMainWay) {
+		if (this.pos + 15 < first.pos && !this.effects.has(ENUM.EFFECT.BACKDICE) && first.mapHandler.isOnMainWay()) {
 			this.adice += amount
 			if (this.pos + 30 < first.pos) {
 				this.adice += amount
@@ -248,7 +248,7 @@ abstract class Player extends Entity {
 	isTargetableFrom(e: Entity): boolean {
 		if(!e) return true
 		if(this.invulnerable || this.effects.has(ENUM.EFFECT.INVISIBILITY)) return false
-		if(e instanceof Player && !this.mapdata.inSameWayWith(e)) return false
+		if(e instanceof Player && !this.mapHandler.isTargetableFrom(e)) return false
 		return true
 	}
 	isAttackableFrom(e: Entity): boolean {
@@ -300,7 +300,7 @@ abstract class Player extends Entity {
 		}
 
 		this.invulnerable = false
-		this.mapdata.onBeforeObs()
+		this.mapHandler.onBeforeObs()
 
 		// for (let p of this.projectile) {
 		// 	p.projCoolDown()
@@ -416,7 +416,7 @@ abstract class Player extends Entity {
 	 * @returns
 	 */
 	changePos(pos: number): boolean {
-		if (this.mapdata.doMineDamage()) return true
+		if (this.mapHandler.doMineDamage()) return true
 
 		this.pos = Util.clamp(pos,0,MAP.getLimit(this.mapId))
 		this.lvlup()
@@ -427,8 +427,7 @@ abstract class Player extends Entity {
 	forceMove(pos: number):void {
 		this.statistics.add(ENUM.STAT.FORCEMOVE, 1)
 		this.adice = 0
-		this.mapdata.checkWay2OnForceMove(pos)
-
+		this.mapHandler.onForceMove(pos)
 		this.changePos(pos)
 
 		this.effects.reset(ENUM.EFFECT.STUN)
@@ -441,7 +440,7 @@ abstract class Player extends Entity {
 	}
 	//========================================================================================================
 
-	resetCooltime(list: number[]) {
+	resetCooltime(list: ENUM.SKILL[]) {
 		this.message(this.name + "`s cooltime has been reset")
 		for (let i of list) {
 			this.cooltime[i] = 0
@@ -451,7 +450,7 @@ abstract class Player extends Entity {
 	 * 스킬사용후 쿨타임 시작
 	 * @param {} skill 스킬종류,0에서시작
 	 */
-	startCooltime(skill: number) {
+	startCooltime(skill: ENUM.SKILL) {
 		this.cooltime[skill] = this.cooltime_list[skill]
 		if (skill === ENUM.SKILL.ULT) {
 			this.cooltime[skill] -= this.ability.ultHaste.get()
@@ -465,11 +464,11 @@ abstract class Player extends Entity {
 	 * @param skill skill
 	 * @param amt has to be positive
 	 */
-	setCooltime(skill: number, amt: number) {
+	setCooltime(skill: ENUM.SKILL, amt: number) {
 		this.cooltime[skill] = amt
 	}
 
-	isSkillActivated(skill: number) {
+	isSkillActivated(skill: ENUM.SKILL) {
 		return this.duration[skill] > 0
 	}
 
@@ -513,11 +512,11 @@ abstract class Player extends Entity {
 		 * @param name name of that skill
 		 * set to default if name===""
 		 */
-	changeSkillImage(name: string,skill:number) {
+	changeSkillImage(name: string,skill:ENUM.SKILL) {
 		this.transfer(PlayerClientInterface.update, "skillImg", this.turn, {champ:this.champ,skill:skill,skill_name:name})
 		//	console.log("changeApperance"+name)
 	}
-	resetSkillImage(skill:number){
+	resetSkillImage(skill:ENUM.SKILL){
 		this.changeSkillImage("",skill)
 	}
 
@@ -576,12 +575,21 @@ abstract class Player extends Entity {
 		if (!data.isRespawn && this.dead) {
 			return
 		}
+		if(this.HP === this.MaxHP && data.maxHp===0 && data.type!=="heal"){
+			return
+		}
 		let hp = data.hp
 		this.statistics.add(ENUM.STAT.HEAL_AMT, hp)
 
 		this.MaxHP += data.maxHp
 		this.HP = Math.min(this.HP + hp, this.MaxHP)
 
+		let type=data.type
+		if(!data.isRespawn && data.type==='noeffect'){
+			type='heal_simple'
+		}
+		
+	//	console.log("changehp"+data.maxHp)
 		// if (this.game.instant) return
 		if (hp > 0) {
 			let changeData = {
@@ -591,7 +599,7 @@ abstract class Player extends Entity {
 				currhp: this.HP,
 				currmaxhp: this.MaxHP,
 				skillfrom: data.source,
-				type: data.type
+				type: type
 			}
 			this.transfer(PlayerClientInterface.changeHP_heal, changeData)
 		}
@@ -674,12 +682,10 @@ abstract class Player extends Entity {
 			this.pos = 0
 		}
 		//	console.log("arriveAtSquare" + this.turn)
+		this.mapHandler.onArriveSquare(this.pos)
+		
 
-		if (this.mapId === ENUM.MAP_TYPE.CASINO) {
-			this.mapdata.checkSubway()
-		}
-
-		if (this.pos >= MAP.getFinish(this.mapId) && this.mapdata.onMainWay) {
+		if (this.pos >= MAP.getFinish(this.mapId) && this.mapHandler.isOnMainWay()) {
 			if (this.effects.has(ENUM.EFFECT.SLAVE)) {
 				this.pos = MAP.getFinish(this.mapId) - 1
 				this.killplayer()
@@ -698,7 +704,7 @@ abstract class Player extends Entity {
 		if (this.effects.has(ENUM.EFFECT.STUN)) {
 			//특정 장애물은 속박무시
 			if (SETTINGS.ignoreStunObsList.includes(obs)) {
-				if (!isForceMoved || !this.game.setting.AAOnForceMove) this.basicAttack()
+				if (this.game.setting.legacyBasicAttack) this.basicAttack()
 
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
 			}
@@ -706,7 +712,7 @@ abstract class Player extends Entity {
 
 		obs = this.obstacle(obs, isForceMoved)
 
-		if (!isForceMoved || !this.game.setting.AAOnForceMove) this.basicAttack()
+		if (this.game.setting.legacyBasicAttack) this.basicAttack()
 
 		return obs
 	}
@@ -755,7 +761,7 @@ abstract class Player extends Entity {
 	lvlup() {
 		let respawn = MAP.getRespawn(this.mapId)
 		for (let i = 1; i < respawn.length; ++i) {
-			if (this.pos >= respawn[i] && this.level <= i && this.mapdata.onMainWay) {
+			if (this.pos >= respawn[i] && this.level <= i && this.mapHandler.isOnMainWay()) {
 				this.addMaxHP(this.hpGrowth)
 				this.level += 1
 				this.ability.onLevelUp(this.game.totalnum * 5)
@@ -909,7 +915,7 @@ abstract class Player extends Entity {
 				return false
 			}
 
-			damage = this.effects.onFinalDamage(damage)
+			this.effects.onFinalDamage(damage)
 			// predictedHP = this.HP - damage
 
 			//투명망토 아이템
@@ -964,7 +970,7 @@ abstract class Player extends Entity {
 	}
 
 	canRevive(): string {
-		if (this.inven.isActiveItemAvaliable(ENUM.ITEM.GUARDIAN_ANGEL)) return "guardian_angel"
+		if (this.inven.isActiveItemAvailable(ENUM.ITEM.GUARDIAN_ANGEL)) return "guardian_angel"
 
 		if (this.inven.life > 0) return "life"
 
@@ -1028,7 +1034,7 @@ abstract class Player extends Entity {
 		this.Assist(skillfrom)
 		this.HP = 0
 		this.dead = true
-		this.mapdata.onDeath()
+		this.mapHandler.onDeath()
 		this.incrementKda("d")
 		this.damagedby = [0, 0, 0, 0]
 
@@ -1150,11 +1156,12 @@ abstract class Player extends Entity {
 		let damage: Util.Damage = this.ability.basicAttackDamage()
 
 		//지하철에서는 평타피해 40% 감소
-		if (this.mapId === ENUM.MAP_TYPE.CASINO && this.mapdata.isInSubway) {
-			damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.6)
-		}
+		// if (this.mapId === ENUM.MAP_TYPE.CASINO && this.mapHandler.isInSubway) {
+		// 	damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.6)
+		// }
+		damage=this.mapHandler.onBasicAttack(damage)
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
-		console.log("basicattack")
+	//	console.log("basicattack")
 		let died=this.mediator.basicAttack(this,EntityFilter.ALL_ENEMY(this).excludeUnattackable()
 		.inRadius(this.ability.attackRange.get()))(damage)
 

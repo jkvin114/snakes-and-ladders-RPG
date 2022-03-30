@@ -8,8 +8,7 @@ import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Player } from "./player"
 import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
-// import { PassProjectile } from "./PassProjectile"
-import { PlayerSelector, ObstacleHelper, AIHelper } from "./helpers"
+import { ObstacleHelper, AIHelper } from "./helpers"
 
 import { Creed } from "./characters/Creed"
 import { Bird } from "./characters/Bird"
@@ -19,9 +18,10 @@ import { Jellice } from "./characters/Jellice"
 import { Gorae } from "./characters/Gorae"
 import { Timo } from "./characters/Timo"
 import { Yangyi } from "./characters/Yangyi"
+import { Tree } from "./characters/Tree"
+
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { PlayerClientInterface } from "./app"
-import { Tree } from "./characters/Tree"
 import { EntityMediator } from "./EntityMediator"
 import { EntityFilter } from "./EntityFilter"
 import { Entity } from "./Entity"
@@ -61,6 +61,7 @@ class GameSetting {
 	autoNextTurnOnSilent: boolean
 	diceControlItemFrequency: number
 	shuffleObstacle: boolean
+	legacyBasicAttack: boolean
 
 	killRecord: boolean
 	itemRecord: boolean
@@ -69,7 +70,7 @@ class GameSetting {
 	constructor(setting: IGameSetting, instant: boolean, isTeam: boolean) {
 		this.instant = instant
 		this.isTeam = isTeam
-
+		this.legacyBasicAttack = true
 		if (setting === null) {
 			this.randomize()
 			this.autoNextTurnOnStore = true
@@ -221,7 +222,7 @@ class Game {
 	}[]
 	// playerSelector: PlayerSelector
 	entityMediator: EntityMediator
-
+	private static readonly PLAYER_ID_SUFFIX = "P"
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
 		this.instant = setting.instant
@@ -274,21 +275,29 @@ class Game {
 	}
 
 	thisp(): Player {
-		return this.entityMediator.getPlayer(this.thisturn)
+		return this.entityMediator.getPlayer(this.turn2Id(this.thisturn))
 	}
 
 	pOfTurn(turn: number): Player {
-		return this.entityMediator.getPlayer(turn)
+		return this.entityMediator.getPlayer(this.turn2Id(turn))
 	}
-
+	pOfId(id:string){
+		return this.entityMediator.getPlayer(id)
+	}
+	turn2Id(turn: number) {
+		return String(turn + 1) + Game.PLAYER_ID_SUFFIX
+	}
+	id2Turn(id:string):number{
+		return Number(id[0])
+	}
 	//========================================================================================================
 
-	//client:Socket(),team:number,char:int,name:str
+	//team:number,char:int,name:str
 	addPlayer(team: boolean, char: number, name: string) {
 		// console.log("add player " + char + "  " + team)
 		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, false)
 		p.setMediator(this.entityMediator)
-		this.entityMediator.register(p)
+		this.entityMediator.register(p,p.UEID)
 
 		// this.playerSelector.addPlayer(p)
 		this.PNUM += 1
@@ -303,7 +312,7 @@ class Game {
 		char = Number(char)
 		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, true)
 		p.setMediator(this.entityMediator)
-		this.entityMediator.register(p)
+		this.entityMediator.register(p,p.UEID)
 
 		// this.playerSelector.addPlayer(p)
 		this.CNUM += 1
@@ -600,9 +609,12 @@ class Game {
 		if (p.effects.has(ENUM.EFFECT.CURSE)) {
 			effects.push("badluck")
 		}
-		if (this.mapId === 2 && p.mapdata.isSubwayDice()) {
-			effects.push("subway")
-		}
+		let stun=p.effects.has(ENUM.EFFECT.STUN)
+
+		
+		// if (this.mapId === 2 && p.mapHandler.isSubwayDice()) {
+		// 	effects.push("subway")
+		// }
 
 		if (p.effects.has(ENUM.EFFECT.SLOW)) {
 			additional_dice -= 2
@@ -625,7 +637,7 @@ class Game {
 		return {
 			crypt_turn: "",
 			turn: p.turn,
-			stun: p.effects.has(ENUM.EFFECT.STUN),
+			stun: stun,
 			ai: p.AI,
 			dc: p.diceControl,
 			dc_cool: p.diceControlCool,
@@ -656,7 +668,7 @@ class Game {
 	 */
 	recordStat() {
 		this.entityMediator.forAllPlayer()(function () {
-			if (this.mapdata.onMainWay) {
+			if (this.mapHandler.isOnMainWay()) {
 				this.statistics.addPositionRecord(this.pos)
 			} else if (MAP.get(this.mapId).way2_range != undefined) {
 				this.statistics.addPositionRecord(
@@ -743,20 +755,31 @@ class Game {
 
 		let currpos = p.pos
 
+		let mapresult=p.mapHandler.onRollDice(moveDistance)
+
+
 		//need to choose between two way
-		if (p.mapdata.needToAskWay2(moveDistance)) {
+		if (mapresult.type==="ask_way2") {
 			if (p.AI) {
 			} else {
 				this.pendingAction = "ask_way2"
 			}
 		}
+		if(mapresult.type==="subway"){
+			let dist = mapresult.args[0]
+
+			//overrided by map handler
+			return {
+				dice:-1,actualdice:dist
+			}
+		}
+
 		//	console.log("move" + moveDistance)
 
-		if (this.mapId === ENUM.MAP_TYPE.CASINO && p.mapdata.isSubwayDice()) {
-			let subwayData = p.mapdata.getSubwayDice()
-			diceShown = subwayData.diceShown
-			moveDistance = subwayData.moveDistance
-		}
+		
+		// if (this.mapId === ENUM.MAP_TYPE.CASINO && p.mapHandler.isSubwayDice()) {
+		// 	let subwayData = p.mapHandler.getSubwayDice()
+		// }
 
 		//move player
 		let died = p.moveByDice(moveDistance)
@@ -779,9 +802,9 @@ class Game {
 
 	playerForceMove(player: Player, pos: number, ignoreObstacle: boolean, movetype: string) {
 		if (!ignoreObstacle) {
-			this.entityMediator.movePlayer(player.turn, pos, movetype)
+			this.entityMediator.movePlayer(player.UEID, pos, movetype)
 		} else {
-			this.entityMediator.movePlayerIgnoreObstacle(player.turn, pos, movetype)
+			this.entityMediator.movePlayerIgnoreObstacle(player.UEID, pos, movetype)
 		}
 		this.pendingObs = 0 //강제이동시 장애물무시
 	}
@@ -885,7 +908,14 @@ class Game {
 				this.dcitem_id = ""
 				this.thisp().giveDiceControl()
 			} else {
-				died = this.thisp().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
+				//died = this.thisp().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
+
+				let skillattack = new Util.SkillAttack(pp.damage, pp.name).setOnHit(pp.action)
+
+				died = this.entityMediator.skillAttackSingle(
+					this.entityMediator.getPlayer(this.turn2Id(pp.sourceTurn)),
+					this.turn2Id(this.thisturn)
+				)(skillattack)
 
 				upid = pp.UPID
 			}
@@ -933,8 +963,8 @@ class Game {
 				let skillattack = new Util.SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
 
 				let died = this.entityMediator.skillAttackSingle(
-					this.entityMediator.getPlayer(proj.sourceTurn),
-					player.turn
+					this.entityMediator.getPlayer(this.turn2Id(proj.sourceTurn)),
+					this.turn2Id(player.turn)
 				)(skillattack)
 				//player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
 
@@ -957,6 +987,11 @@ class Game {
 	getNameByTurn(turn: number) {
 		if (turn < 0) return ""
 		return this.pOfTurn(turn).name
+	}
+	getNameById(id: string) {
+		let p=this.pOfId(id)
+		if(!p) return ""
+		return p.name
 	}
 	/**
 	 *
@@ -1008,7 +1043,7 @@ class Game {
 				type: ENUM.INIT_SKILL_RESULT.PROJECTILE,
 				pos: p.pos,
 				range: skillTargetSelector.range,
-				onMainWay: p.mapdata.onMainWay,
+				onMainWay: p.mapHandler.isOnMainWay(),
 				size: skillTargetSelector.projSize
 			}
 		}
@@ -1018,7 +1053,7 @@ class Game {
 				type: ENUM.INIT_SKILL_RESULT.AREA_TARGET,
 				pos: p.pos,
 				range: skillTargetSelector.range,
-				onMainWay: p.mapdata.onMainWay,
+				onMainWay: p.mapHandler.isOnMainWay(),
 				size: skillTargetSelector.areaSize
 			}
 		}
@@ -1027,6 +1062,19 @@ class Game {
 		let targets = this.entityMediator
 			.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(p).inRadius(skillTargetSelector.range))
 			.map((p) => p.turn)
+
+		console.log(skillTargetSelector.conditionedRange)
+		console.log(skillTargetSelector.condition)
+
+		let conditionedTargets = this.entityMediator
+			.selectAllFrom(
+				EntityFilter.VALID_ATTACK_TARGET(p)
+					.inRadius(skillTargetSelector.conditionedRange)
+					.onlyIf(skillTargetSelector.condition)
+			)
+			.map((p) => p.turn)
+		targets=targets.concat(conditionedTargets)
+
 		console.log(targets)
 		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
@@ -1041,7 +1089,7 @@ class Game {
 	}
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
-		this.entityMediator.skillAttackSingle(p, target)(p.getSkillDamage(target))
+		this.entityMediator.skillAttackSingle(p, this.turn2Id(target))(p.getSkillDamage(target))
 
 		return this.getSkillStatus()
 	}
@@ -1062,12 +1110,14 @@ class Game {
 			dead: p.dead
 		}
 	}
-	getNextUPID(): string {
-		let id = "P" + String(this.nextUPID)
-		this.nextUPID += 1
-		//		console.log("upid" + id)
-		return id
-	}
+
+
+	// getNextUPID(): string {
+	// 	let id = "P" + String(this.nextUPID)
+	// 	this.nextUPID += 1
+	// 	//		console.log("upid" + id)
+	// 	return id
+	// }
 	//========================================================================================================
 	usePendingAreaSkill(pos: number) {
 		this.thisp().usePendingAreaSkill(pos)
@@ -1244,39 +1294,24 @@ class Game {
 			name = "server:pending_obs:casino"
 			argument = num
 		}
-		//공갈협박
-		else if (this.pendingObs === 63) {
-			name = "server:pending_obs:threaten"
-		}
-		//떡상
-		else if (this.pendingObs === 67) {
-			name = "server:pending_obs:sell_token"
-			argument = this.thisp().inven.token
-		} //지하철
-		else if (this.pendingObs === 6) {
-			name = "server:pending_obs:subway"
-			argument = this.thisp().mapdata.getSubwayPrices()
-		}
+		else{
+			let result=this.thisp().mapHandler.getPendingObs(this.pendingObs)
+			if(!result) return
 
+			name=result.name
+			argument=result.argument
+		}
+	
 		return { name: name, argument: argument }
 	}
 	//========================================================================================================
 	processPendingObs(info: any) {
 		//타임아웃될 경우
+		console.log("onPendingObsComplete"+this.pendingObs)
+		console.log(info)
 		if (!info) {
-			if (this.pendingObs === 33) {
-				this.kidnap(Util.randomBoolean())
-			} //타임아웃 악용방지 자동실행
-			if (this.pendingObs === 37 || this.pendingObs === 38) {
-				this.roulleteComplete()
-			}
-			if (this.pendingObs === 63) {
-				this.threaten(Util.randomBoolean())
-			}
-			if (this.pendingObs === 6) {
-				this.thisp().mapdata.selectSubway(0, 0)
-			}
-
+			this.thisp().mapHandler.onPendingObsTimeout(this.pendingObs)
+			this.roulleteComplete()
 			this.pendingObs = 0
 			return
 		}
@@ -1284,52 +1319,43 @@ class Game {
 		if (this.pendingObs === 0) {
 			return
 		}
-
-		if (info.type === "godhand") {
+		if (info.type === "roullete") {
+			this.roulleteComplete()
+		}
+		else if (info.type === "godhand") {
 			if (info.complete) {
 				this.processGodhand(info)
 			}
-		} else if (info.type === "roullete") {
-			this.roulleteComplete()
-		} else if (info.type === "kidnap") {
-			this.kidnap(info.result)
-		} else if (info.type === "threaten") {
-			this.threaten(info.result)
-		} else if (info.type === "sell_token") {
-			this.sellToken(info)
-		} else if (info.type === "subway") {
-			//console.log("subway")
-			console.log(info)
-			this.thisp().mapdata.selectSubway(info.result, info.price)
 		}
+		else{
+			
+			this.thisp().mapHandler.onPendingObsComplete(info)
+		}
+
 		this.pendingObs = 0
 	}
 	//========================================================================================================
 
-	processPendingAction(info: any) {
+	processPendingAction(info: {type:string,result:any,complete:boolean}) {
 		//console.log(info)
 
+		
+		// if (!info) {
+		// 	this.pendingAction = null
+		// 	return
+		// }
 		//타임아웃될 경우
-		if (!info) {
+		if (!info||!this.pendingAction || !info.complete) {
 			this.pendingAction = null
 			return
 		}
-
-		if (!this.pendingAction) {
-			return
-		}
-
-		if (info.type === "submarine" && info.complete) {
-			this.playerForceMove(this.thisp(), info.pos, false, "levitate")
-		}
-		if (info.type === "ask_way2" && !info.result) {
-			console.log("goWay2")
-			this.thisp().mapdata.goWay2()
-		}
+		this.thisp().mapHandler.onPendingActionComplete(info)
 
 		this.pendingAction = null
+		
 	}
 	roulleteComplete() {
+		if(this.roullete_result===-1) return
 		//	console.log("roullete" + this.pendingObs)
 
 		let p = this.thisp()
@@ -1348,31 +1374,31 @@ class Game {
 	//========================================================================================================
 
 	/**
-	 * 납치범 실행
-	 * @param result 납치범 결과 boolean
-	 */
-	kidnap(result: boolean) {
-		ObstacleHelper.kidnap(this.thisp(), result)
-		this.pendingObs = 0
-	}
-	//========================================================================================================
+	//  * 납치범 실행
+	//  * @param result 납치범 결과 boolean
+	//  */
+	// kidnap(result: boolean) {
+		
+	// 	this.pendingObs = 0
+	// }
+	// //========================================================================================================
 
-	/**
-	 * 공갈협박 실행
-	 * @param result  결과 boolean
-	 */
-	threaten(result: boolean) {
-		ObstacleHelper.threaten(this.thisp(), result)
+	// /**
+	//  * 공갈협박 실행
+	//  * @param result  결과 boolean
+	//  */
+	// threaten(result: boolean) {
+	// 	ObstacleHelper.threaten(this.thisp(), result)
 
-		this.pendingObs = 0
-	}
-	//========================================================================================================
+	// 	this.pendingObs = 0
+	// }
+	// //========================================================================================================
 
-	sellToken(info: any) {
-		if (info.token > 0) {
-			this.thisp().inven.sellToken(info)
-		}
-	}
+	// sellToken(info: any) {
+	// 	if (info.token > 0) {
+	// 		this.thisp().inven.sellToken(info)
+	// 	}
+	// }
 	//========================================================================================================
 
 	getStoreData(turn: number) {
@@ -1396,8 +1422,7 @@ class Game {
 			setting: this.setting.getSummary()
 		}
 
-		
-		let sortedplayers=this.entityMediator.allPlayer().sort((a, b) => {
+		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
 				return -1000
 			}
@@ -1411,7 +1436,6 @@ class Game {
 				}
 			}
 		})
-
 
 		for (let p of sortedplayers) {
 			data.players.push({
@@ -1443,7 +1467,7 @@ class Game {
 			players: new Array<any>()
 		}
 
-		let sortedplayers=this.entityMediator.allPlayer().sort((a, b) => {
+		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
 				return -1000
 			}

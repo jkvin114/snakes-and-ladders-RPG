@@ -54,7 +54,7 @@ export namespace SpecialEffect {
 			desc_kor: "기본 공격과 [날렵한 부리] 사용시 추가 피해"
 		},BIRD_ULT: {
 			isgood:true,
-            src:"character/8-3.png",
+            src:"skill/8-3.jpg",
 			name: "bird_r",
 			desc: "Basic attack damage and range increased,  'Baby Bird'`s additional damage doubles,'beak attack' creates an area" +
 			" that applies ignite effect to players who step on it",
@@ -87,7 +87,7 @@ export namespace SpecialEffect {
             src:"character/tree_low_hp.png",
 			name: "tree_wither",
 			desc: "Unable to heal ally with Lv1 skill, Damage absorbtion 15% increased, LV3 skill root duration increased.",
-			desc_kor: "Q 스킬로 아군 화복 불가, 모든 피해 흡혈 15% 증가, 궁극기 속박 지속시간 증가"
+			desc_kor: "Q 스킬로 아군 회복 불가, 모든 피해 흡혈 15% 증가, 궁극기 속박 지속시간 증가"
 		},
         TREE_ULT: {
 			isgood:false,

@@ -3,11 +3,10 @@ import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
-import { ShieldEffect } from "../PlayerStatusEffect"
 import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
-import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect } from "../StatusEffect"
+import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect,ShieldEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
@@ -97,7 +96,7 @@ class Bird extends Player {
 	}
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(ENUM.SKILL_INIT_TYPE.CANNOT_USE).setSkill(s) //-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s)//-1 when can`t use skill, 0 when it`s not attack skill
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
@@ -130,7 +129,7 @@ class Bird extends Player {
 			2,
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(3, PercentDamage.MAX_HP)
-		).setSourcePlayer(this.turn)
+		).setSourceId(this.UEID)
 	}
 
 	private useW() {
