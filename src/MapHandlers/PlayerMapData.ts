@@ -272,23 +272,32 @@ class CasinoMapHandler extends PlayerMapHandler {
 	}
 	onRollDice(moveDistance: number):{type:string,args?:any[]} {
 		if(this.subwayTicket !==SUBWAY_TICKET.NONE && this.isInSubway) {
-			console.log("ridesubway"+this.player.turn)
 			let dist=this.getSubwayDice()
-			let effect=CasinoMapHandler.SUBWAY_EXPRESS
-			if(this.subwayTicket===SUBWAY_TICKET.RAPID) effect=CasinoMapHandler.SUBWAY_RAPID
-			if(this.subwayTicket===SUBWAY_TICKET.LOCAL) effect=CasinoMapHandler.SUBWAY_LOCAL
 
-			setTimeout(()=>{
-				this.transfer(PlayerClientInterface.visualEffect,this.player.turn,effect,-1)
-				this.transfer(PlayerClientInterface.smoothTeleport,this.player.turn,this.player.pos,dist)
-				this.player.moveByDice(dist)
-			},CasinoMapHandler.SUBWAY_DELAY)
-
+			if(this.player.game.instant){
+				this.rideSubway(dist)
+			}
+			else{
+				setTimeout(()=>{
+					this.rideSubway(dist)
+				},CasinoMapHandler.SUBWAY_DELAY)
+			}
 			return {type:"subway",args:[dist]}
 		}
 
 		return super.onRollDice(moveDistance)
 	}
+	rideSubway(dist:number){
+		console.log("ridesubway"+this.player.turn)
+		
+		let effect=CasinoMapHandler.SUBWAY_EXPRESS
+		if(this.subwayTicket===SUBWAY_TICKET.RAPID) effect=CasinoMapHandler.SUBWAY_RAPID
+		if(this.subwayTicket===SUBWAY_TICKET.LOCAL) effect=CasinoMapHandler.SUBWAY_LOCAL
+		this.transfer(PlayerClientInterface.visualEffect,this.player.turn,effect,-1)
+		this.transfer(PlayerClientInterface.smoothTeleport,this.player.turn,this.player.pos,dist)
+		this.player.moveByDice(dist)
+	}
+
 	//called on death
 	removeSubwayTicket() {
 		this.subwayTicket = SUBWAY_TICKET.NONE

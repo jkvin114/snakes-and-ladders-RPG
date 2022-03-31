@@ -1100,15 +1100,7 @@ class Game {
 	 * @returns turn,issilent,cooltile,duration,level,isdead
 	 */
 	getSkillStatus() {
-		let p = this.thisp()
-		return {
-			turn: this.thisturn,
-			silent: p.effects.has(ENUM.EFFECT.SILENT),
-			cooltime: p.cooltime,
-			duration: p.duration,
-			level: p.level,
-			dead: p.dead
-		}
+		return this.thisp().getSkillStatus()
 	}
 
 

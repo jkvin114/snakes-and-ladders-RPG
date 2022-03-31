@@ -228,14 +228,13 @@ class Room {
 	) {
 		let setting = new SimulationSetting(isTeam, simulationsetting)
 		this.simulation = new Simulation(this.name, simulation_count, setting, runnerId)
-		let _this = this
 		this.doInstantSimulation()
-			.then(function () {
-				_this.onSimulationOver(true)
+			.then(() =>{
+				this.onSimulationOver(true)
 			})
-			.catch(function (e) {
+			.catch((e)=> {
 				console.error(e)
-				_this.onSimulationOver(false)
+				this.onSimulationOver(false)
 			})
 	}
 	doInstantSimulation(): Promise<Function> {

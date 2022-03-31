@@ -286,12 +286,27 @@ abstract class Player extends Entity {
 
 	//========================================================================================================
 	showEffect(type: string, source: number) {
-		this.mediator.sendToClient(PlayerClientInterface.visualEffect, this.turn, type, source)
+		this.transfer(PlayerClientInterface.visualEffect, this.turn, type, source)
 	}
 	//========================================================================================================
 	onMyTurnStart() {
+
 		this.passive()
+		this.cooltime = this.cooltime.map(Util.decrement)
 		this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
+		this.transfer(PlayerClientInterface.update,"skillstatus" ,this.turn,this.getSkillStatus())
+
+	}
+	getSkillStatus(){
+		return {
+			turn: this.game.thisturn,
+			silent: this.effects.has(ENUM.EFFECT.SILENT),
+			cooltime: this.cooltime,
+			cooltimeratio: this.getCooltimePercent(),
+			duration: this.getDurationPercent(),
+			level: this.level,
+			dead: this.dead
+		}
 	}
 	//========================================================================================================
 	onBeforeObs() {
@@ -310,7 +325,7 @@ abstract class Player extends Entity {
 		// }
 		// this.loanTurnLeft = Math.max(0, this.loanTurnLeft - 1)
 
-		this.cooltime = this.cooltime.map(Util.decrement)
+		
 		this.effects.onBeforeObs()
 	}
 
@@ -519,7 +534,18 @@ abstract class Player extends Entity {
 	resetSkillImage(skill:ENUM.SKILL){
 		this.changeSkillImage("",skill)
 	}
-
+	getDurationPercent(){
+		return this.duration.map((d,i)=>{
+			if(this.duration_list[i]===0) return 0
+			else return d/this.duration_list[i]
+		})
+	}
+	getCooltimePercent(){
+		return this.cooltime.map((c,i)=>{
+			if(this.cooltime_list[i]===0) return 0
+			else return c/this.cooltime_list[i]
+		})
+	}
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
    * @param {*}data Util.HPChangeData
@@ -565,7 +591,7 @@ abstract class Player extends Entity {
 			this.transfer(PlayerClientInterface.changeHP_damage, hpChangeData)
 		}
 	}
-
+	
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
    * @param {*}data Util.HPChangeData

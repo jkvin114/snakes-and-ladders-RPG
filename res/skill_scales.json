@@ -109,8 +109,7 @@
 		"Q": {
 			"base": 10,
 			"scales": [
-				{ "ability": "HP", "val": 0.2 },
-				{ "ability": "AP", "val": 1 }
+				{ "ability": "AP", "val": 1.2 }
 			]
 		},
 		"w_q_adamage": {
