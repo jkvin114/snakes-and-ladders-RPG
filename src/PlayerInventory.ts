@@ -6,6 +6,7 @@ import { items as ItemList } from "../res/item.json"
 import SETTINGS = require("../res/globalsettings.json")
 import { Player } from "./player"
 import { PlayerClientInterface, testSetting } from "./app"
+import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
 
 class PlayerInventory {
 	// player:Player
@@ -91,10 +92,10 @@ class PlayerInventory {
 		this.token += token
 		this.transfer(PlayerClientInterface.update, "token", this.player.turn, this.token)
 	}
-	sellToken(info: any) {
-		this.changeToken(-1 * info.token)
-		this.giveMoney(info.money)
-		this.player.message(this.player.name + " sold token, obtained " + info.money + "$!")
+	sellToken(token:number,moneyspent:number) {
+		this.changeToken(-1 * token)
+		this.giveMoney(moneyspent)
+		this.player.message(this.player.name + " sold token, obtained " + moneyspent + "$!")
 	}
 	//========================================================================================================
 
@@ -176,7 +177,7 @@ class PlayerInventory {
 			})
 		this.transfer(PlayerClientInterface.update, "activeItem", this.player.turn, data)
 	}
-	getStoreData(priceMultiplier: number) {
+	getStoreData(priceMultiplier: number):ServerPayloadInterface.EnterStore {
 		return {
 			item: this.itemSlots,
 			money: this.money,
@@ -250,7 +251,7 @@ class PlayerInventory {
 	 * moneyspend:int
 	 * }
 	 */
-	updateItem(data: any) {
+	playerBuyItem(data: ClientPayloadInterface.ItemBought) {
 		//	console.log("updateitem " + data.item)
 		//	console.log("updatetoken " + data.token)
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
@@ -273,7 +274,18 @@ class PlayerInventory {
 		//	this.item = data.storedata.item
 		this.transfer(PlayerClientInterface.update, "item", this.player.turn, this.itemSlots)
 	}
-	thief(thiefitem:number){
+	thief(){
+		let itemhave = []
+		for (let i of ItemList) {
+			if (this.haveItem(i.id) && i.itemlevel === 1) {
+				itemhave.push(i.id)
+			}
+		}
+		if (itemhave.length === 0) {
+			return
+		}
+		let thiefitem = Util.pickRandom(itemhave) 
+
 		this.player.message(this.player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
 		this.player.inven.changeOneItem(thiefitem, -1)
 		this.player.inven.itemSlots = this.player.inven.convertCountToItemSlots(this.player.inven.item)

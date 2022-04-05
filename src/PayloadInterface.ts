@@ -1,0 +1,176 @@
+interface TurnPayloadInterface {
+	turn: number
+}
+interface CryptedPayloadInterface extends TurnPayloadInterface {
+	crypt_turn: string
+}
+export namespace ServerPayloadInterface {
+	export interface initialSetting {
+		playerSettings: {
+			turn: number
+			team: boolean
+			HP: number
+			MaxHP: number
+			name: string
+			champ: number
+			champ_name: string
+			recommendedItem: number[]
+		}[]
+		isTeam: boolean
+		gameSettings: Object
+		shuffledObstacles: { obs: number; money: number }[]
+	}
+    interface LocationTargetSelector{
+        kind?:"location"
+        pos: number
+		range: number
+		size: number
+    }
+    interface PlayerTargetSelector{
+        kind?:"target"
+        targets:number[]
+    }
+    export interface SkillInit extends CryptedPayloadInterface{
+        type:number,data:LocationTargetSelector|PlayerTargetSelector|null
+    }
+
+	export interface SkillStatus extends TurnPayloadInterface {
+		cooltime: number[]
+		duration: number[] //remaining duration/full duration
+		cooltimeratio: number[] //remaining cooltime/full cooltime
+		level: number
+	}
+	export interface TurnStart extends CryptedPayloadInterface {
+		stun: boolean
+		dc: boolean //dice control avalibility
+		dc_cool: number //dice control cooltime left
+		adice: number //total additional dice
+		effects: string[] //dice-modifying status effects
+		avaliablepos: number[] //avaliable positions(maximum 6, for dice control)
+		ai: boolean //temporary, dont need in client
+	}
+	export interface PlayerPosSync {
+		alive: boolean
+		pos: number
+		turn: number
+	}
+	export interface DiceRoll extends CryptedPayloadInterface {
+		dice: number        //dice number shown
+		actualdice: number   //actual distance to move
+		currpos: number     //position before move
+		turn: number 
+		dcused: boolean     //dice control used
+		died: boolean       //whether player died immediately after throwing dice(mine)
+	}
+	export interface PendingObstacle {
+		name: string
+		argument: number | number[]
+	}
+	export interface NormalEffect extends TurnPayloadInterface {
+		effect: number
+		num: number     //indicator number
+	}
+	export interface PassProjectile {
+		name: string
+		pos: number
+		UPID: string
+		stopPlayer: boolean
+		sourceTurn: number
+		trajectorySpeed: number
+	}
+	export interface RangeProjectile {
+		scope: number[]
+		UPID: string
+		owner: number
+		name: string
+		trajectorySpeed: number
+	}
+	export interface SummonedEntity {
+		sourceTurn: number
+		pos: number
+		UEID: string
+		name: string
+	}
+	export interface EnterStore {
+		item: number[]
+		money: number
+		token: number
+		life: number
+		lifeBought: number
+		recommendeditem: number[]
+		itemLimit: number
+		priceMultiplier: number
+	}
+}
+
+export namespace ClientPayloadInterface {
+	export interface GameSetting {
+		itemLimit: number
+		extraResistanceAmount: number
+		additionalDiceAmount: number
+		useAdditionalLife: boolean
+		AAOnForceMove: boolean
+		AAcounterAttackStrength: number
+		autoNextTurnOnSilent: boolean
+		diceControlItemFrequency: number
+		shuffleObstacle: boolean
+
+		killRecord: boolean
+		itemRecord: boolean
+		positionRecord: boolean
+		moneyRecord: boolean
+		summaryOnly: boolean
+	}
+
+	export interface SimulationSetting {
+		mapPool: number[]
+		allowMirrorMatch: boolean
+		characterPool: number[]
+		lockedCharacters: number[]
+		teamLock: number[][]
+
+		playerNumber: number
+		randomizePlayerNumber: boolean
+		randomizeGameSetting: boolean
+		randomizePlayerNames: boolean
+		divideTeamEqually: boolean
+		gameSetting: GameSetting
+
+		killRecord: boolean
+		itemRecord: boolean
+		positionRecord: boolean
+		moneyRecord: boolean
+		summaryOnly: boolean
+	}
+    interface GodHandResult{
+        kind:"godhand"
+        target: number; location: number 
+    }
+    interface SubwayResult{
+        kind:"subway"
+        type:number,price:number
+    }
+    interface TokenStoreResult{
+        kind:"tokenstore"
+        token:number
+        money:number
+    }
+    export interface PendingObstacle{
+        type:string
+        complete:boolean
+        booleanResult?:boolean
+        objectResult?:GodHandResult|TokenStoreResult|SubwayResult
+    }
+    export interface PendingAction{
+        type:string
+        result:number|boolean
+        complete:boolean
+    }
+    export interface ItemBought extends TurnPayloadInterface{
+        item: number[]
+	    moneyspend: number
+		tokenbought: number
+		tokenprice: number
+		life: number
+    }
+}

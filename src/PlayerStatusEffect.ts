@@ -182,7 +182,11 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		let num = this.player.game.onEffectApply()
 
 		//	console.log("giveeffect" + effect)
-		this.transfer(PlayerClientInterface.giveEffect, this.player.turn, effect, num)
+		this.transfer(PlayerClientInterface.giveEffect,{
+			turn: this.player.turn,
+			effect: effect, 
+			num:num
+		})
 
 		let statusEffect = GeneralEffectFactory.create(effect, dur, timing).applyTo(this.player)
 		if (this.storage.has(effect)) {

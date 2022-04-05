@@ -124,7 +124,7 @@ class Gorae extends Player {
 		})
 		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 
-		this.mediator.skillAttack(this,EntityFilter.VALID_ATTACK_TARGET(this).inRadius(3))(dmg)
+		this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(3))(dmg)
 
 		this.startCooltime(ENUM.SKILL.W)
 	}
@@ -185,7 +185,7 @@ class Gorae extends Player {
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGET
+			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
 		) {
 			return null
 		}
@@ -198,7 +198,7 @@ class Gorae extends Player {
 			case ENUM.SKILL.W:
 				//사거리내에 1~3 명이상 있으면 사용
 				if (
-					this.mediator.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(this).inRadius(5)).length >=
+					this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(5)).length >=
 					this.game.totalnum- 1 || (this.HP/this.MaxHP < 0.3)
 				) {
 					this.useW()

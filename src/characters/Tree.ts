@@ -226,7 +226,7 @@ class Tree extends Player {
 			// let opponents = this.game.playerSelector.getPlayersIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
 			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),this.getSkillName(s)).ofSkill(s)
 
-			this.mediator.skillAttack(this,EntityFilter.VALID_ATTACK_TARGET(this).in(pos, pos + Tree.Q_AREA_SIZE - 1))(dmg)
+			this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).in(pos, pos + Tree.Q_AREA_SIZE - 1))(dmg)
 
 			if (this.isWithered) return
 			let healamt=this.getSkillAmount("qheal")
@@ -286,7 +286,7 @@ class Tree extends Player {
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGET
+			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
 		) {
 			return null
 		}

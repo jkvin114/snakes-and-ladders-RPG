@@ -3,7 +3,6 @@ import casinomap = require("../res/casino_map.json")
 import defaultmap = require("../res/map.json")
 import SETTINGS = require("../res/globalsettings.json")
 import GAMESETTINGS = require("../res/gamesetting.json")
-import { ISimulationSetting } from "./SimulationRunner"
 import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Player } from "./player"
@@ -25,27 +24,11 @@ import { PlayerClientInterface } from "./app"
 import { EntityMediator } from "./EntityMediator"
 import { EntityFilter } from "./EntityFilter"
 import { Entity } from "./Entity"
+import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
 const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 
-interface IGameSetting {
-	itemLimit: number
-	extraResistanceAmount: number
-	additionalDiceAmount: number
-	useAdditionalLife: boolean
-	AAOnForceMove: boolean
-	AAcounterAttackStrength: number
-	autoNextTurnOnSilent: boolean
-	diceControlItemFrequency: number
-	shuffleObstacle: boolean
-
-	killRecord: boolean
-	itemRecord: boolean
-	positionRecord: boolean
-	moneyRecord: boolean
-	summaryOnly: boolean
-}
 class GameSetting {
 	instant: boolean
 	isTeam: boolean
@@ -67,7 +50,7 @@ class GameSetting {
 	itemRecord: boolean
 	positionRecord: boolean
 	moneyRecord: boolean
-	constructor(setting: IGameSetting, instant: boolean, isTeam: boolean) {
+	constructor(setting: ClientPayloadInterface.GameSetting, instant: boolean, isTeam: boolean) {
 		this.instant = instant
 		this.isTeam = isTeam
 		this.legacyBasicAttack = true
@@ -110,7 +93,7 @@ class GameSetting {
 		return this
 	}
 
-	setSimulationSettings(setting: ISimulationSetting) {
+	setSimulationSettings(setting: ClientPayloadInterface.SimulationSetting) {
 		this.killRecord = setting.killRecord
 		this.itemRecord = setting.itemRecord
 		this.positionRecord = setting.positionRecord
@@ -319,7 +302,7 @@ class Game {
 		this.totalnum += 1
 	}
 
-	getInitialSetting() {
+	getInitialSetting():ServerPayloadInterface.initialSetting {
 		let setting = []
 		console.log(this.entityMediator.allPlayer())
 		for (let p of this.entityMediator.allPlayer()) {
@@ -343,7 +326,7 @@ class Game {
 	}
 
 	//()=>{turn:number,stun:boolean}
-	startTurn() {
+	startTurn():ServerPayloadInterface.TurnStart{
 		this.entityMediator.forAllPlayer()(function () {
 			this.ability.sendToClient()
 		})
@@ -359,6 +342,7 @@ class Game {
 		if (this.clientsReady !== this.PNUM) {
 			return null
 		}
+
 		return {
 			crypt_turn: "",
 			turn: p.turn,
@@ -367,7 +351,8 @@ class Game {
 			dc: p.diceControl,
 			dc_cool: p.diceControlCool,
 			adice: 0,
-			effects: new Array<string>()
+			effects: new Array<string>(),
+			avaliablepos:new Array<number>()
 		}
 	}
 	//========================================================================================================
@@ -539,7 +524,7 @@ class Game {
 		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
 	}
 
-	goNextTurn() {
+	goNextTurn():ServerPayloadInterface.TurnStart {
 		if (this.gameover) {
 			return null
 		}
@@ -648,8 +633,8 @@ class Game {
 	}
 
 	//called when start of every 1p`s turn
-	getPlayerVisibilitySyncData() {
-		let data: { alive: boolean; pos: number; turn: number }[] = []
+	getPlayerVisibilitySyncData():ServerPayloadInterface.PlayerPosSync[] {
+		let data:ServerPayloadInterface.PlayerPosSync[] = []
 
 		this.entityMediator.forAllPlayer()(function () {
 			data.push({
@@ -689,7 +674,7 @@ class Game {
 		if (this.setting.killRecord) this.killRecord.push({ killer: killer, dead: dead, pos: pos, turn: this.totalturn })
 	}
 
-	rollDice(dicenum: number) {
+	rollDice(dicenum: number):ServerPayloadInterface.DiceRoll {
 		let p: Player = this.thisp()
 
 		// //return if stun
@@ -757,7 +742,7 @@ class Game {
 
 		let mapresult=p.mapHandler.onRollDice(moveDistance)
 
-
+		let overrideMovement=false
 		//need to choose between two way
 		if (mapresult.type==="ask_way2") {
 			if (p.AI) {
@@ -766,12 +751,10 @@ class Game {
 			}
 		}
 		if(mapresult.type==="subway"){
-			let dist = mapresult.args[0]
-
+			moveDistance = mapresult.args[0]
+			diceShown=-1
+			overrideMovement=true
 			//overrided by map handler
-			return {
-				dice:-1,actualdice:dist
-			}
 		}
 
 		//	console.log("move" + moveDistance)
@@ -780,23 +763,24 @@ class Game {
 		// if (this.mapId === ENUM.MAP_TYPE.CASINO && p.mapHandler.isSubwayDice()) {
 		// 	let subwayData = p.mapHandler.getSubwayDice()
 		// }
-
+		let died=false
 		//move player
-		let died = p.moveByDice(moveDistance)
+		if(!overrideMovement){
+			died = p.moveByDice(moveDistance)
 
-		//dont move if player is killed by mine
-		if (died) {
-			moveDistance = 0
+			//dont move if player is killed by mine
+			if (died) {
+				moveDistance = 0
+			}
 		}
-
 		return {
 			dice: diceShown, //표시된 주사위 숫자
 			actualdice: moveDistance, //플레이어 움직일 거리
 			currpos: currpos,
 			turn: this.thisturn,
-			finish: MAP.getFinish(this.mapId),
 			dcused: dcused,
-			died: died
+			died: died,
+			crypt_turn:""
 		}
 	}
 
@@ -933,10 +917,10 @@ class Game {
 	 * 클라로부터 신의손 정보 받아서 실행시킴
 	 * @param {} godhand_info target,location
 	 */
-	processGodhand(godhand_info: { target: number; location: number }) {
-		let p = this.pOfTurn(godhand_info.target)
+	processGodhand(target: number, location: number ) {
+		let p = this.pOfTurn(target)
 		p.damagedby[this.thisturn] = 3
-		this.playerForceMove(p, godhand_info.location, false, "levitate")
+		this.playerForceMove(p, location, false, "levitate")
 	}
 	//========================================================================================================
 
@@ -1005,93 +989,83 @@ class Game {
 	 * projectile(pos,range,onmainway,size)
 	 *  targeting(targets)
 	 */
-	initSkill(skill: number) {
+	initSkill(skill: number):ServerPayloadInterface.SkillInit{
 		let p = this.thisp()
 		//console.log("initSkill pendingskill" + skill)
 		p.pendingSkill = skill
 
+		let payload:ServerPayloadInterface.SkillInit={
+			turn:this.thisturn,
+			crypt_turn:"",
+			type:ENUM.INIT_SKILL_RESULT.NON_TARGET,
+			data:null
+		}
 		if (!p.isSkillLearned(skill)) {
 			//	return "notlearned"
-			return ENUM.INIT_SKILL_RESULT.NOT_LEARNED
+			payload.type=ENUM.INIT_SKILL_RESULT.NOT_LEARNED
+			return payload
 		}
-
-		if (!p.isCooltimeAvaliable(skill)) {
-			//return "nocool"
-			return ENUM.INIT_SKILL_RESULT.NO_COOL
+		else if(!p.isCooltimeAvaliable(skill)) {
+			payload.type=ENUM.INIT_SKILL_RESULT.NO_COOL
+			return payload
 		}
-
 		let skillTargetSelector: Util.SkillTargetSelector = p.getSkillTargetSelector(skill)
-
-		//-1 when can`t use skill, 0 when it`s not attack skill that used immediately
 		if (skillTargetSelector.isNonTarget()) {
-			return {
-				type: ENUM.INIT_SKILL_RESULT.NON_TARGET,
-				skillstatus: this.getSkillStatus()
-			}
+			payload.type=ENUM.INIT_SKILL_RESULT.NON_TARGET
+			return payload
 		}
-
-		if (skillTargetSelector.isNoTarget()) {
-			//return "notarget"
-			return ENUM.INIT_SKILL_RESULT.NO_TARGET
+		else if (skillTargetSelector.isNoTarget()) {
+			payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+			return payload
 		}
-
 		skillTargetSelector.range = p.effects.modifySkillRange(skillTargetSelector.range)
 		//마법의성,실명 적용
 
 		if (skillTargetSelector.isProjectile()) {
-			return {
-				type: ENUM.INIT_SKILL_RESULT.PROJECTILE,
+			payload.type=ENUM.INIT_SKILL_RESULT.PROJECTILE
+			payload.data={
 				pos: p.pos,
 				range: skillTargetSelector.range,
-				onMainWay: p.mapHandler.isOnMainWay(),
 				size: skillTargetSelector.projSize
 			}
+			return payload
 		}
-
 		if (skillTargetSelector.isAreaTarget()) {
-			return {
-				type: ENUM.INIT_SKILL_RESULT.AREA_TARGET,
+			payload.type=ENUM.INIT_SKILL_RESULT.AREA_TARGET
+
+			payload.data= {
 				pos: p.pos,
 				range: skillTargetSelector.range,
-				onMainWay: p.mapHandler.isOnMainWay(),
 				size: skillTargetSelector.areaSize
 			}
+			return payload
 		}
-		console.log(p.invulnerable)
-
 		let targets = this.entityMediator
-			.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(p).inRadius(skillTargetSelector.range))
-			.map((p) => p.turn)
-
-		console.log(skillTargetSelector.conditionedRange)
-		console.log(skillTargetSelector.condition)
-
+			.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(p).inRadius(skillTargetSelector.range))
+			.map((pl) => pl.turn)
 		let conditionedTargets = this.entityMediator
 			.selectAllFrom(
-				EntityFilter.VALID_ATTACK_TARGET(p)
+				EntityFilter.ALL_ATTACKABLE_PLAYER(p)
 					.inRadius(skillTargetSelector.conditionedRange)
 					.onlyIf(skillTargetSelector.condition)
 			)
-			.map((p) => p.turn)
+			.map((pl) => pl.turn)
 		targets=targets.concat(conditionedTargets)
-
-		console.log(targets)
+		
 		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
 			//return "notarget"
-			return ENUM.INIT_SKILL_RESULT.NO_TARGET
+			payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+			return payload
 		}
-
-		return {
-			type: ENUM.INIT_SKILL_RESULT.NEED_TARGET,
-			targets: targets
-		}
+		payload.type=ENUM.INIT_SKILL_RESULT.TARGTING
+		payload.data={targets: targets}
 	}
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
 		this.entityMediator.skillAttackSingle(p, this.turn2Id(target))(p.getSkillDamage(target))
 
-		return this.getSkillStatus()
+	//	return this.getSkillStatus()
 	}
 	//========================================================================================================
 
@@ -1104,37 +1078,19 @@ class Game {
 	}
 
 
-	// getNextUPID(): string {
-	// 	let id = "P" + String(this.nextUPID)
-	// 	this.nextUPID += 1
-	// 	//		console.log("upid" + id)
-	// 	return id
-	// }
 	//========================================================================================================
-	usePendingAreaSkill(pos: number) {
+	useAreaSkill(pos: number) {
 		this.thisp().usePendingAreaSkill(pos)
 	}
-	placePendingSkillProj(pos: number) {
-		let p = this.thisp()
-		let proj = p.getSkillProjectile(pos)
+	placeSkillProjectile(pos: number) {
+		let proj = this.thisp().getSkillProjectile(pos)
 		this.placeProjectile(proj, pos)
-		// let id = this.getNextUPID()
-		// proj.place(pos, id)
-		// this.activeProjectileList.set(id, proj)
 	}
 
 	placeProjNoSelection(proj: Projectile, pos: number) {
-		//console.log("placeProjNoSelection" + proj)
 		this.placeProjectile(proj, pos)
 
-		// let id = this.getNextUPID()
-		// proj.place(pos, id)
-		// this.activeProjectileList.set(id, proj)
 	}
-
-	// removeProjectile(UPID: string) {
-	// 	this.rangeProjectileList.delete(UPID)
-	// }
 
 	//========================================================================================================
 
@@ -1146,7 +1102,7 @@ class Game {
 		return true
 	}
 	//========================================================================================================
-	getPlaceableCoordinates(start: number, size: number) {
+	getPlaceableCoordinates(start: number, size: number) :number[]{
 		let offset = 0
 		let usedSize = 0
 		let scope = []
@@ -1166,11 +1122,12 @@ class Game {
 		let upid = this.placeProjectile(new ProjectileBuilder(this, "dicecontrol", Projectile.TYPE_PASS).build(), pos)
 		this.dcitem_id = upid
 	}
+	//========================================================================================================
 	placeSubmarine(pos: number) {
 		let upid = this.placeProjectile(new ProjectileBuilder(this, "submarine", Projectile.TYPE_PASS).build(), pos)
 		this.submarine_id = upid
 	}
-
+//========================================================================================================
 	placeProjectile(proj: Projectile, pos: number): string {
 		let id = this.UPIDGen.generate()
 		proj.place(pos, id)
@@ -1184,7 +1141,7 @@ class Game {
 		}
 		return id
 	}
-
+//========================================================================================================
 	removeRangeProjectileById(UPID: string) {
 		if (!this.rangeProjectileList.has(UPID)) return
 
@@ -1192,7 +1149,7 @@ class Game {
 		this.rangeProjectileList.delete(UPID)
 		this.sendToClient(PlayerClientInterface.removeProj, UPID)
 	}
-
+//========================================================================================================
 	removePassProjectileById(UPID: string) {
 		if (!this.passProjectileList.has(UPID)) return
 
@@ -1200,44 +1157,8 @@ class Game {
 		this.passProjectileList.delete(UPID)
 		this.sendToClient(PlayerClientInterface.removeProj, UPID)
 	}
-	/**
-	 *
-	//  * @param {*} type str
-	//  * @param {*} pos
-	//  */
-	// placePassProj2(type: string, pos: number) {
-	// 	return
-	// 	if (type === "submarine") {
-	// 		// let proj = new PassProjectile(this, type, () => {}, false)
-
-	// 		let id
-	// 		this.passProjectileList.set(id, proj)
-	// 		proj.place(pos, id)
-	// 		//.log("Placed PASSPROJECTILE  PASSPROJECTILE" + id)
-	// 		this.submarine_id = id
-	// 	}
-	// 	if (type === "dicecontrol") {
-	// 		// let proj = new PassProjectile(this, type, () => {}, false)
-	// 		// this.passProjectileList.push(proj)
-	// 		let id = this.getNextPassUPID()
-	// 		this.passProjectileList.set(id, proj)
-	// 		proj.place(pos, id)
-
-	// 		this.dcitem_id = id
-	// 	}
-
-	// 	// this.passProjectileList.sort(function (a, b) {
-	// 	// 	return a.pos - b.pos
-	// 	// })
-	// }
-	// //========================================================================================================
-
-	// getNextPassUPID(): string {
-	// 	let id = "PP" + String(this.nextPassUPID)
-	// 	this.nextPassUPID += 1
-	// 	return id
-	// }
-	getGodHandTarget() {
+//========================================================================================================
+	getGodHandTarget():number[] {
 		return this.entityMediator
 			.selectAllFrom(EntityFilter.ALL_ALIVE_PLAYER(this.thisp()).excludeUntargetable().notMe())
 			.map(function (p: Player) {
@@ -1251,17 +1172,17 @@ class Game {
 	 * 선택 장애물 대기중일 경우 바로 스킬로 안넘어가고 선택지 전송
 	 * @returns false if no pending obs,  of return {name of obs,argument(false on default)}
 	 */
-	checkPendingObs(): { name: string; argument: number | number[] } {
+	checkPendingObs(): ServerPayloadInterface.PendingObstacle {
 		if (this.pendingObs === 0 || this.thisp().dead) return null
 
 		let name = ""
 		let argument: number | number[] = -1
 		if (this.pendingObs === 21) {
 			//신의손 대기중일 경우 바로 스킬로 안넘어가고 신의손 타겟 전송
-			let target = this.getGodHandTarget()
-			if (target.length > 0) {
+			let targets = this.getGodHandTarget()
+			if (targets.length > 0) {
 				name = "server:pending_obs:godhand"
-				argument = target
+				argument = targets
 			} else {
 				this.pendingObs = 0
 				return null
@@ -1288,7 +1209,7 @@ class Game {
 		}
 		else{
 			let result=this.thisp().mapHandler.getPendingObs(this.pendingObs)
-			if(!result) return
+			if(!result) return null
 
 			name=result.name
 			argument=result.argument
@@ -1297,7 +1218,7 @@ class Game {
 		return { name: name, argument: argument }
 	}
 	//========================================================================================================
-	processPendingObs(info: any) {
+	processPendingObs(info: ClientPayloadInterface.PendingObstacle) {
 		//타임아웃될 경우
 		console.log("onPendingObsComplete"+this.pendingObs)
 		console.log(info)
@@ -1315,8 +1236,8 @@ class Game {
 			this.roulleteComplete()
 		}
 		else if (info.type === "godhand") {
-			if (info.complete) {
-				this.processGodhand(info)
+			if (info.complete && info.objectResult.kind==='godhand') {
+				this.processGodhand(info.objectResult.target,info.objectResult.location)
 			}
 		}
 		else{
@@ -1328,7 +1249,7 @@ class Game {
 	}
 	//========================================================================================================
 
-	processPendingAction(info: {type:string,result:any,complete:boolean}) {
+	processPendingAction(info: ClientPayloadInterface.PendingAction) {
 		//console.log(info)
 
 		
@@ -1363,37 +1284,10 @@ class Game {
 		this.pendingObs = 0
 		this.roullete_result = -1
 	}
+
 	//========================================================================================================
 
-	/**
-	//  * 납치범 실행
-	//  * @param result 납치범 결과 boolean
-	//  */
-	// kidnap(result: boolean) {
-		
-	// 	this.pendingObs = 0
-	// }
-	// //========================================================================================================
-
-	// /**
-	//  * 공갈협박 실행
-	//  * @param result  결과 boolean
-	//  */
-	// threaten(result: boolean) {
-	// 	ObstacleHelper.threaten(this.thisp(), result)
-
-	// 	this.pendingObs = 0
-	// }
-	// //========================================================================================================
-
-	// sellToken(info: any) {
-	// 	if (info.token > 0) {
-	// 		this.thisp().inven.sellToken(info)
-	// 	}
-	// }
-	//========================================================================================================
-
-	getStoreData(turn: number) {
+	getStoreData(turn: number):ServerPayloadInterface.EnterStore {
 		let p = this.pOfTurn(turn)
 		return p.inven.getStoreData(1)
 	}
@@ -1489,4 +1383,4 @@ class Game {
 	}
 }
 
-export { Game, MAP, GameSetting, IGameSetting }
+export { Game, MAP, GameSetting }

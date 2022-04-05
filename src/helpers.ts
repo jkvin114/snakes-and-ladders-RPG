@@ -331,7 +331,7 @@ class ObstacleHelper {
 					player.inven.giveMoney(m2)
 					break
 				case 71:
-					ObstacleHelper.thief(player)
+					player.inven.thief()
 					break
 				case 72:
 					player.effects.apply(ENUM.EFFECT.CURSE, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
@@ -368,17 +368,7 @@ class ObstacleHelper {
 	}
 
 	static thief(player: Player) {
-		let itemhave = []
-		for (let i of ItemList) {
-			if (player.inven.haveItem(i.id) && i.itemlevel === 1) {
-				itemhave.push(i.id)
-			}
-		}
-		if (itemhave.length === 0) {
-			return
-		}
-		let thiefitem = Util.pickRandom(itemhave) 
-		player.inven.thief(thiefitem)
+		
 
 	}
 
@@ -743,9 +733,9 @@ class AIHelper {
 			if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.LOCATION) {
 				//	console.log(skillresult)
 
-				player.game.placePendingSkillProj(skillresult.data)
+				player.game.placeSkillProjectile(skillresult.data)
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET) {
-				player.game.usePendingAreaSkill(skillresult.data)
+				player.game.useAreaSkill(skillresult.data)
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.TARGET) {
 				player.game.useSkillToTarget(skillresult.data)
 			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {

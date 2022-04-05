@@ -5,6 +5,7 @@ import * as ENUM from "../enum"
 import { CALC_TYPE, Damage, randomBoolean, singleMap } from "../Util"
 import { EntityFilter } from "../EntityFilter"
 import { ObstacleHelper } from "../helpers"
+import { ClientPayloadInterface, ServerPayloadInterface } from "../PayloadInterface"
 
 interface TwoWayMap {
 	onMainWay: boolean //갈림길 체크시 샤용
@@ -43,7 +44,7 @@ abstract class PlayerMapHandler {
 		return damage
 	}
 	applyObstacle(obs: number) {}
-	onPendingActionComplete(info: {type:string,result:any,complete:boolean}){
+	onPendingActionComplete(info:ClientPayloadInterface.PendingAction){
 
 	}
 	onRollDice(moveDistance:number):{type:string,args?:any[]}{
@@ -57,12 +58,12 @@ abstract class PlayerMapHandler {
 			ObstacleHelper.kidnap(this.player, randomBoolean())
 		} 
 	}
-	onPendingObsComplete(info:any){
-		if (info.type === "kidnap") {
-			ObstacleHelper.kidnap(this.player,info.result)
+	onPendingObsComplete(info:ClientPayloadInterface.PendingObstacle){
+		if (info.type === "kidnap" && info.booleanResult!=null) {
+			ObstacleHelper.kidnap(this.player,info.booleanResult)
 		} 
 	}
-	getPendingObs(pendingObs:number):{ name: string; argument: number | number[] }{
+	getPendingObs(pendingObs:number):ServerPayloadInterface.PendingObstacle{
 		return null
 	}
 	shouldStunDice(){
@@ -117,7 +118,8 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 	}
 
 	inSameWayWith(other: Player): boolean {
-		if (other.mapHandler instanceof OceanMapHandler) return this.onMainWay === other.mapHandler.onMainWay
+		if (other.mapHandler instanceof OceanMapHandler) 
+			return this.onMainWay === other.mapHandler.onMainWay
 
 		return true
 	}
@@ -138,11 +140,11 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 		super.onForceMove(pos)
 	}
 
-	onPendingActionComplete(info: { type: string; result: any; complete: boolean }): void {
-		if (info.type === "submarine" && info.complete) {
+	onPendingActionComplete(info:ClientPayloadInterface.PendingAction): void {
+		if (info.type === "submarine" && info.complete && typeof info.result==='number') {
 			this.player.game.playerForceMove(this.player, info.result, false, "levitate")
 		}
-		if (info.type === "ask_way2" && !info.result) {
+		if (info.type === "ask_way2" && !info.result && typeof info.result==='boolean') {
 			console.log("goWay2")
 			this.goWay2()
 		}
@@ -237,23 +239,23 @@ class CasinoMapHandler extends PlayerMapHandler {
 		}
 		super.onPendingObsTimeout(pendingObs)
 	}
-	onPendingObsComplete(info: any): void {
+	onPendingObsComplete(info: ClientPayloadInterface.PendingObstacle): void {
 		console.log("onPendingObsComplete"+info)
-		if (info.type === "threaten") {
-			ObstacleHelper.threaten(this.player,info.result)
-		} else if (info.type === "sell_token") {
-			if (info.token > 0) {
-				this.player.inven.sellToken(info)
+		if (info.type === "threaten" && info.booleanResult!==null) {
+			ObstacleHelper.threaten(this.player,info.booleanResult)
+		} else if (info.type === "sell_token" && info.objectResult.kind==='tokenstore') {
+			if (info.objectResult.token > 0) {
+				this.player.inven.sellToken(info.objectResult.token,info.objectResult.money)
 			}
-		} else if (info.type === "subway") {
+		} else if (info.type === "subway" && info.objectResult.kind==='subway'){
 			//console.log("subway")
 			console.log(info)
-			this.selectSubway(info.result, info.price)
+			this.selectSubway(info.objectResult.type, info.objectResult.price)
 		}
 		super.onPendingObsComplete(info)
 	}
 
-	getPendingObs(pendingObs: number): { name: string; argument: number | number[] } {
+	getPendingObs(pendingObs: number): ServerPayloadInterface.PendingObstacle {
 		if (pendingObs === 63) {
 			return {name:"server:pending_obs:threaten",argument:0}
 		}
@@ -273,21 +275,21 @@ class CasinoMapHandler extends PlayerMapHandler {
 	onRollDice(moveDistance: number):{type:string,args?:any[]} {
 		if(this.subwayTicket !==SUBWAY_TICKET.NONE && this.isInSubway) {
 			let dist=this.getSubwayDice()
-
-			if(this.player.game.instant){
-				this.rideSubway(dist)
-			}
-			else{
-				setTimeout(()=>{
-					this.rideSubway(dist)
-				},CasinoMapHandler.SUBWAY_DELAY)
-			}
+			this.rideSubway(dist)
+			// if(this.player.game.instant){
+				
+			// }
+			// else{
+			// 	setTimeout(()=>{
+			// 		this.rideSubway(dist)
+			// 	},CasinoMapHandler.SUBWAY_DELAY)
+			// }
 			return {type:"subway",args:[dist]}
 		}
 
 		return super.onRollDice(moveDistance)
 	}
-	rideSubway(dist:number){
+	private rideSubway(dist:number){
 		console.log("ridesubway"+this.player.turn)
 		
 		let effect=CasinoMapHandler.SUBWAY_EXPRESS
@@ -299,16 +301,18 @@ class CasinoMapHandler extends PlayerMapHandler {
 	}
 
 	//called on death
-	removeSubwayTicket() {
+	private removeSubwayTicket() {
 		this.subwayTicket = SUBWAY_TICKET.NONE
 		this.isInSubway = false
 		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, false)
 	}
 	onBasicAttack(damage: Damage) {
-		return damage.updateAttackDamage(CALC_TYPE.multiply, 0.6)
+		if(this.isInSubway)
+			return damage.updateAttackDamage(CALC_TYPE.multiply, 0.6)
+		else return damage
 	}
 	//이동시마다 지하철 안인지 밖인지 체크
-	checkSubway() {
+	private checkSubway() {
 		if (this.subwayTicket !==SUBWAY_TICKET.NONE && !this.isInSubwayRange()) {
 			this.exitSubway()
 		}
@@ -317,17 +321,17 @@ class CasinoMapHandler extends PlayerMapHandler {
 		}
 	}
 
-	isInSubwayRange() {
+	private isInSubwayRange() {
 		return this.player.pos > this.gamemap.subway.start && this.player.pos < this.gamemap.subway.end
 	}
-	exitSubway() {
+	private exitSubway() {
 		console.log("exitsubway" + this.player.turn)
 		//단순 지하철구간에서 빠져나온 경우
 		this.isInSubway = false
 		this.transfer(PlayerClientInterface.update, "subwayTicket", this.player.turn, -1)
 		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, false)
 	}
-	enterSubwayWithoutSelection() {
+	private enterSubwayWithoutSelection() {
 		console.log("enterSubwayWithoutSelection"+this.player.turn)
 		this.isInSubway = true //지하철 구간에 이동으로 들어온경우
 		if (this.subwayTicket === SUBWAY_TICKET.NONE ) {
@@ -338,7 +342,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, true)
 	}
 	//지하철 선택칸 도착
-	enterSubwayNormal() {
+	private enterSubwayNormal() {
 		console.log("enterSubwayNormal"+this.player.turn)
 		this.isInSubway = true
 		if (this.subwayTicket === SUBWAY_TICKET.NONE ) {
@@ -349,7 +353,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		}
 		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, true)
 	}
-	aiSubwaySelection() {
+	private aiSubwaySelection() {
 		let prices = this.getSubwayPrices()
 
 		for (let i = 2; i >= 0; --i) {
@@ -373,7 +377,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		this.player.inven.changemoney(prices[this.subwayTicket], ENUM.CHANGE_MONEY_TYPE.SPEND)
 	}
 
-	getSubwayPrices(): number[] {
+	private getSubwayPrices(): number[] {
 		let prices = this.gamemap.subway.prices.map((x) => x)
 		if (this.subwayTicket !==SUBWAY_TICKET.NONE) {
 			prices[this.subwayTicket] = 0 //티켓 이미있으면 무료
@@ -418,50 +422,4 @@ class CasinoMapHandler extends PlayerMapHandler {
 	}
 }
 
-// class PlayerMapData{
-//     nextdmg: number
-// //	adamage: number
-
-// 	onMainWay: boolean //갈림길 체크시 샤용
-// 	subwayTicket: number
-// 	isInSubway: boolean
-// 	gamemap:singleMap
-// 	player:Player
-//     constructor(player:Player){
-// 		this.player=player
-//         this.nextdmg = 0
-// 	//	this.adamage = 0
-// 		this.onMainWay = true //갈림길 체크시 샤용
-// 		this.isInSubway = false
-// 		this.gamemap=MAP.get(this.player.mapId)
-//     }
-// 	transfer(func:Function,...args:any[]){
-//         this.player.mediator.sendToClient(func,...args)
-//     }
-//     // inSameWayWith(other:Player):boolean{
-//     //     return this.onMainWay ===  other.mapHandler.onMainWay
-//     // }
-
-//     // onDeath(){
-//     //     this.removeSubwayTicket()
-// 	// 	this.nextdmg = 0
-// 	// 	this.onMainWay = true
-//     // }
-//     // isSubwayDice(){
-//     //     return this.subwayTicket >= 0 && this.isInSubway
-//     // }
-
-//     //========================================================================================================
-
-// 	//죽었을경우
-// 	// removeSubwayTicket() {
-// 	// 	this.subwayTicket = -1
-// 	// 	this.isInSubway = false
-// 	// 	this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, false,)
-
-// 	// }
-
-// 	//========================================================================================================
-
-// }
 export { PlayerMapHandler }

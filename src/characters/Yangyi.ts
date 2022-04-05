@@ -103,7 +103,7 @@ class Yangyi extends Player {
 		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q)).ofSkill(ENUM.SKILL.Q)
 
 
-		let targets=this.mediator.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(this).inRadius(4))
+		let targets=this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(4))
 
 		if (targets.length > 0) {
 			this.doObstacleDamage(Math.floor(this.HP * 0.05), "noeffect")
@@ -113,7 +113,7 @@ class Yangyi extends Player {
 
 			skilldmg.damage.updateAttackDamage(CALC_TYPE.multiply, damagecoeff)
 			
-			this.mediator.skillAttack(this,EntityFilter.VALID_ATTACK_TARGET(this).inRadius(4))(skilldmg)
+			this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(4))(skilldmg)
 
 			// for (let p of targets) {
 			// 	this.mediator.skillAttackSingle(this,p.turn)(skilldmg)
@@ -209,7 +209,7 @@ class Yangyi extends Player {
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGET
+			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
 		) {
 			return null
 		}

@@ -1,8 +1,9 @@
 import { Game } from "./Game"
+import { ServerPayloadInterface } from "./PayloadInterface"
 import { Player } from "./player"
 import { Damage, decrement } from "./Util"
 
-class Projectile {
+abstract class Projectile {
 	static readonly TYPE_RANGE = 1
 	static readonly TYPE_PASS = 2
 
@@ -12,7 +13,6 @@ class Projectile {
 	
 	static readonly TARGET_ENEMY = 6
 	static readonly TARGET_ALL = 7
-
 	sourceTurn: number
 	size: number
 	name: string
@@ -86,9 +86,7 @@ class Projectile {
 		this.damage = null
 		this.duration = 0
 	}
-	getTransferData() {
-		return {}
-	}
+	
 }
 
 class RangeProjectile extends Projectile {
@@ -105,7 +103,7 @@ class RangeProjectile extends Projectile {
 		this.scope = this.game.getPlaceableCoordinates(this.pos, this.size)
 	}
 
-	getTransferData() {
+	getTransferData() :ServerPayloadInterface.RangeProjectile {
 		return {
 			scope: this.scope,
 			UPID: this.UPID,
@@ -121,7 +119,7 @@ class PassProjectile extends Projectile {
 		this.size = 1
 	}
 
-	getTransferData() {
+	getTransferData():ServerPayloadInterface.PassProjectile {
 		return {
 			name: this.name,
 			pos: this.pos,

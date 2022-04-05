@@ -24,7 +24,7 @@ class EntityFilter {
 	static readonly ALL_ENEMY_PLAYER = (source: Entity) => new EntityFilter(true, source).excludeAlly()
 	static readonly ALL_OTHER_PLAYER = (source: Entity) => new EntityFilter(true, source).notMe()
 	static readonly ALL_ALIVE_PLAYER = (source: Entity) => new EntityFilter(true, source).excludeDead()
-	static readonly VALID_ATTACK_TARGET = (source: Entity) =>
+	static readonly ALL_ATTACKABLE_PLAYER = (source: Entity) =>
 		new EntityFilter(true, source).excludeDead().excludeAlly().excludeUntargetable().excludeUnattackable()
 	static readonly VALID_MOVE_OBSTACLE_TARGET = (source: Entity) => new EntityFilter(true, source).excludeDead().notMe()
 

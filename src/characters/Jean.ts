@@ -67,6 +67,8 @@ class Jean extends Player {
 	}
 
 	getSkillTrajectorySpeed(skilltype: string): number {
+		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.Q]) return 100
+
 		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.ULT]) return 170
 
 		return 0
@@ -220,7 +222,7 @@ class Jean extends Player {
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGET
+			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
 		) {
 			return null
 		}

@@ -89,7 +89,7 @@ class Silver extends Player {
 					.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
 					.setRange(this.skill_ranges[s])
 					.setConditionedRange(function(this: Entity){
-						return (this instanceof Player) && this.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
+						return this.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
 					}, this.getSkillAmount("w_qrange"))
 
 				break
@@ -251,7 +251,7 @@ class Silver extends Player {
 		if (
 			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
 			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGET
+			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
 		) {
 			return null
 		}

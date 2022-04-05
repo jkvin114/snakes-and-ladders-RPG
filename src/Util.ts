@@ -378,7 +378,12 @@ export type singleMap = {
 
 class MapStorage {
 	map: singleMap[]
+	static instance=false
 	constructor(m: singleMap[]) {
+		if(MapStorage.instance) return
+		MapStorage.instance=true
+
+
 		this.map = m
 	}
 	get(id: number): singleMap {
@@ -430,13 +435,18 @@ class MapStorage {
 		if(lvl-1 >= this.map[id].goldperturn.length){
 			lvl=this.map[id].goldperturn.length
 		}
-		return this.map[id].goldperturn[lvl-1]
+		return this.map[id].goldperturn[lvl-1] 
 	}
 	getObstacleList(id:number){
 		return this.map[id]
 		.coordinates.map((c)=>{return {obs:c.obs,money:c.money}})
 	}
 
+	getCoordinateDistance(id:number,pos1:number,pos2:number){
+		let c1=this.map[id].coordinates[pos1]
+		let c2=this.map[id].coordinates[pos2]
+		return Math.sqrt((c1.x-c2.x)**2+(c1.y-c2.y)**2)
+	}
 }
 
 

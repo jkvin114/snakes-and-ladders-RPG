@@ -7,6 +7,7 @@ import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
+import CreedAiAgent from "../AiAgents/CreedAiAgent"
 
 const ID = 0
 class Creed extends Player {
@@ -53,6 +54,7 @@ class Creed extends Player {
 			final: ITEM.EPIC_SWORD
 		}
 		this.usedQ = false
+		this.AiAgent=new CreedAiAgent(this)
 		
 
 	}

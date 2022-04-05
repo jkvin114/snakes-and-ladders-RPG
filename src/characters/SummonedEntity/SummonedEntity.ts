@@ -2,6 +2,7 @@ import { Entity } from "../../Entity"
 import { EntityFilter } from "../../EntityFilter"
 import { ENTITY_TYPE, SKILL } from "../../enum"
 import { Game } from "../../Game"
+import { ServerPayloadInterface } from "../../PayloadInterface"
 import { Player } from "../../player"
 import { Damage, SkillAttack } from "../../Util"
 
@@ -31,7 +32,7 @@ abstract class SummonedEntity extends Entity {
 		return this
 	}
 
-	getTransferData() {
+	getTransferData():ServerPayloadInterface.SummonedEntity {
 		return {
 			sourceTurn: this.summoner.turn,
 			pos: this.pos,
@@ -138,11 +139,11 @@ class Attackable extends EntityDecorator {
 			//attack as skill damage
 			this.mediator.skillAttack(
 				this.summoner,
-				EntityFilter.VALID_ATTACK_TARGET(this).inRadius(this.attackRange)
+				EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(this.attackRange)
 			)(new SkillAttack(this.damage, this.attackName))
 		} else {
 			//attack as entity damage
-			this.mediator.attack(this.summoner, EntityFilter.VALID_ATTACK_TARGET(this).inRadius(this.attackRange))(
+			this.mediator.attack(this.summoner, EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(this.attackRange))(
 				this.damage,
 				this.attackName
 			)

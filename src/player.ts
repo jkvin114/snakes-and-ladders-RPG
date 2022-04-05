@@ -6,7 +6,7 @@ import { Game, MAP } from "./Game"
 import { Projectile } from "./Projectile"
 import {PlayerAbility} from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
-import {PlayerMapHandler} from "./MapHandlers/PlayerMapData"
+import {PlayerMapHandler} from "./MapHandlers/PlayerMapHandler"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects } from "./PlayerStatusEffect"
 import { PlayerClientInterface ,testSetting} from "./app"
@@ -14,6 +14,7 @@ import { ObstacleHelper, AIHelper, SkillInfoFactory } from "./helpers"
 import { Entity } from "./Entity"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { EntityFilter } from "./EntityFilter"
+import { AiAgent } from "./AiAgents/AiAgent"
 
 
 // class Minion extends Entity{
@@ -34,6 +35,7 @@ abstract class Player extends Entity {
 	//	players: Player[]
 	//	mapId: number
 	AI: boolean
+	AiAgent:AiAgent
 	turn: number
 	name: string
 	champ: number
@@ -159,7 +161,9 @@ abstract class Player extends Entity {
 	distance(p1: Player, p2: Player): number {
 		return Math.abs(p1.pos - p2.pos)
 	}
-
+	distanceTo(p2: Player): number {
+		return Math.abs(this.pos - p2.pos)
+	}
 	getPlayer(): Player {
 		return this
 	}

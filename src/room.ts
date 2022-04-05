@@ -1,9 +1,10 @@
-import { Game, GameSetting, IGameSetting } from "./Game"
+import { Game, GameSetting } from "./Game"
 import SETTINGS = require("../res/globalsettings.json")
 import { RoomClientInterface } from "./app"
-import { Simulation, SimulationSetting, ISimulationSetting } from "./SimulationRunner"
-import { ITEM } from "./enum"
+import { Simulation, SimulationSetting } from "./SimulationRunner"
+import { INIT_SKILL_RESULT, ITEM, SKILL_INIT_TYPE } from "./enum"
 import { randInt } from "./Util"
+import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./DBHandler")
 const crypto = require("crypto")
 
@@ -221,7 +222,7 @@ class Room {
 		this.teams = teams
 	}
 	user_simulationReady(
-		simulationsetting: ISimulationSetting,
+		simulationsetting: ClientPayloadInterface.SimulationSetting,
 		simulation_count: number,
 		isTeam: boolean,
 		runnerId: string
@@ -246,7 +247,7 @@ class Room {
 		})
 	}
 
-	user_gameReady(setting: IGameSetting, roomName: string) {
+	user_gameReady(setting: ClientPayloadInterface.GameSetting, roomName: string) {
 		this.instant = false
 
 		// room.aichamplist=aichamplist
@@ -274,7 +275,7 @@ class Room {
 			}
 		}
 	}
-	user_requestSetting() {
+	user_requestSetting():ServerPayloadInterface.initialSetting{
 		let setting = this.game.getInitialSetting()
 		//	setting.simulation = this.simulation
 		return setting
@@ -311,9 +312,8 @@ class Room {
 
 		//컴퓨터일경우만 주사위 던짐
 		if (turnUpdateData.ai && !turnUpdateData.stun) {
-			//		console.log("ai roll dice")
 			let dice = this.game.rollDice(-1)
-			//	console.log("stun" + dice)
+			
 
 			setTimeout(() => {
 				if (!this.game) return
@@ -361,8 +361,6 @@ class Room {
 		if (this.game.gameover) {
 			return
 		}
-		let _this = this
-
 		this.idleTimeout = setTimeout(() => {
 			if (!this.game) return
 			RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
@@ -403,7 +401,7 @@ class Room {
 		this.stopIdleTimeout()
 		this.startConnectionTimeout()
 		let data = this.game.rollDice(dicenum)
-
+		data.crypt_turn=this.thisCryptTurn()
 		this.afterDice(data.actualdice)
 
 		return data
@@ -459,12 +457,11 @@ class Room {
 		} else {
 			//	console.log("obscomplete, pendingobs:" + info)
 
-			RoomClientInterface.sendPendingObs(this.name, info.name, info.argument)
+			RoomClientInterface.sendPendingObs(this.name, info)
 
-			let _this = this
-			this.startIdleTimeout(function () {
-				_this.game.processPendingObs(false)
-				_this.goNextTurn()
+			this.startIdleTimeout(()=> {
+				this.game.processPendingObs(null)
+				this.goNextTurn()
 			})
 		}
 	}
@@ -474,39 +471,37 @@ class Room {
 
 		//	console.log("function checkpendingaction" + this.game.pendingAction)
 		if (!this.game.pendingAction || this.game.thisp().dead) {
-			RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
-			let _this = this
-			this.startIdleTimeout(function () {
-				_this.goNextTurn()
+			this.showSkillButtonToUser()
+			this.startIdleTimeout( ()=> {
+				this.goNextTurn()
 			})
 		} else {
 			if (this.game.pendingAction === "submarine") {
 				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.thisp().pos)
 			}
 			if (this.game.pendingAction === "ask_way2") {
-				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", null)
+				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", 0)
 			}
 
-			let _this = this
-			this.startIdleTimeout(function () {
-				_this.game.processPendingAction(null)
-				_this.goNextTurn()
+			this.startIdleTimeout(()=> {
+				this.game.processPendingAction(null)
+				this.goNextTurn()
 			})
 		}
 	}
-	user_completePendingObs(info: any) {
+	user_completePendingObs(info: ClientPayloadInterface.PendingObstacle) {
 		if (this.game == null) return
-
+		
 		this.stopIdleTimeout()
 		this.game.processPendingObs(info)
 		this.checkPendingAction()
 	}
-	user_completePendingAction(info: any) {
+	user_completePendingAction(info: ClientPayloadInterface.PendingAction) {
 		if (this.game == null) return
 
 		this.game.processPendingAction(info)
 		this.stopIdleTimeout()
-		RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
+		this.showSkillButtonToUser()
 	}
 
 	user_clickSkill(s: number) {
@@ -515,49 +510,52 @@ class Room {
 		let result = this.game.initSkill(s - 1)
 		//	console.log("getskill")
 		//	console.log(result)
-
+		if(result.type===INIT_SKILL_RESULT.NON_TARGET){
+			this.showSkillButtonToUser()
+		}
 		this.stopIdleTimeout()
 
 		// if (result.type === "targeting" || result.type === "projectile")
 		this.startIdleTimeout(() => this.goNextTurn())
 
+		result.crypt_turn=this.thisCryptTurn()
 		return result
 	}
-
-	user_choseSkillTarget(target: any) {
-		this.stopIdleTimeout()
-		this.startIdleTimeout(() => this.goNextTurn())
-		if (target === "canceled") {
-			return null
-		}
-		return this.game.useSkillToTarget(target)
+	showSkillButtonToUser(){
+		RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
 	}
 
-	user_choseSkillLocation(location: any) {
+	user_choseSkillTarget(target: number) {
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
-		if (location === "canceled") {
-			return
+		if (target > 0) {
+			this.game.useSkillToTarget(target)
 		}
-
-		this.game.placePendingSkillProj(location)
-		return this.game.getSkillStatus()
+		
+		this.showSkillButtonToUser()
 	}
-	user_choseAreaSkillLocation(location:any){
+
+	user_choseSkillLocation(location: number) {
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
-		if (location === "canceled") {
-			return
+		if (location >0) {
+			this.game.placeSkillProjectile(location)
 		}
-
-		this.game.usePendingAreaSkill(location)
-		return this.game.getSkillStatus()
+		this.showSkillButtonToUser()
+	}
+	user_choseAreaSkillLocation(location:number){
+		this.stopIdleTimeout()
+		this.startIdleTimeout(() => this.goNextTurn())
+		if (location >0) {
+			this.game.useAreaSkill(location)
+		}
+		this.showSkillButtonToUser()
 	}
 
-	user_storeComplete(data: any) {
+	user_storeComplete(data: ClientPayloadInterface.ItemBought) {
 		if (this.game == null) return
 
-		this.game.pOfTurn(data.turn).inven.updateItem(data)
+		this.game.pOfTurn(data.turn).inven.playerBuyItem(data)
 	}
 	onGameover() {
 		let stat = this.game.getFinalStatistics()

@@ -1,32 +1,13 @@
-import { GameSetting, Game,IGameSetting } from "./Game"
+import { GameSetting, Game } from "./Game"
 import cliProgress = require("cli-progress")
 import { RoomClientInterface } from "./app"
 import SETTINGS = require("../res/globalsettings.json")
 import { shuffle,pickRandom } from "./Util"
 import {ARRIVE_SQUARE_RESULT_TYPE} from "./enum"
+import { ClientPayloadInterface } from "./PayloadInterface"
 
 
-interface ISimulationSetting{
-    mapPool: number[]
-	allowMirrorMatch: boolean
-	characterPool: number[]
-	lockedCharacters:number[]
-	teamLock:number[][]
 
-	playerNumber: number
-	randomizePlayerNumber: boolean	
-	randomizeGameSetting: boolean
-	randomizePlayerNames: boolean
-	divideTeamEqually: boolean
-    gameSetting:IGameSetting
-    
-	killRecord: boolean
-	itemRecord: boolean
-	positionRecord: boolean
-	moneyRecord: boolean
-	summaryOnly: boolean
-
-}
 
 
 class SimulationSetting {
@@ -80,7 +61,7 @@ class SimulationSetting {
 		"Ernesto"
 	]
 
-	constructor(isTeam:boolean,setting:ISimulationSetting) {
+	constructor(isTeam:boolean,setting:ClientPayloadInterface.SimulationSetting) {
         this.gameSetting=new GameSetting(setting.gameSetting,true,isTeam)
         this.gameSetting.setSimulationSettings(setting)
 		this.summaryOnly=setting.summaryOnly
@@ -320,4 +301,4 @@ class Simulation {
 	
 }
 
-export { Simulation,ISimulationSetting,SimulationSetting }
+export { Simulation,SimulationSetting }
