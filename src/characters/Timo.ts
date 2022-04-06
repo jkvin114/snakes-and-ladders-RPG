@@ -109,25 +109,23 @@ class Timo extends Player {
 	}
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
-		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(skill)//-1 when can`t use skill, 0 when it`s not attack skill
+		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(skill)
 
 		switch (skill) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[skill])
-
 				break
 			case ENUM.SKILL.W:
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
-				if (!this.AI) {
-					this.useW()
-				}
-
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.ACTIVATION)
 				break
 			case ENUM.SKILL.ULT:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.PROJECTILE).setRange(this.skill_ranges[skill]).setProjectileSize(4)
 				break
 		}
 		return skillTargetSelector
+	}
+	useActivationSkill(skill: number): void {
+		if(skill===ENUM.SKILL.W) this.useW()
 	}
 
 	useW() {
@@ -197,41 +195,41 @@ class Timo extends Player {
 	}
 	onSkillDurationCount() {}
 	onSkillDurationEnd(skill: number) {}
-	/**
-	 *
-	 * @param {*} skilldata
-	 * @param {*} skill 0~
-	 */
-	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		if (
-			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGET
-		) {
-			return null
-		}
-		switch (skill) {
-			case ENUM.SKILL.Q:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-					data: this.getAiTarget(skilldata.targets)
-				}
-			case ENUM.SKILL.W:
-				if (this.cooltime[ENUM.SKILL.Q] <= 1) {
-					this.useW()
-				}
+	// /**
+	//  *
+	//  * @param {*} skilldata
+	//  * @param {*} skill 0~
+	//  */
+	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
+	// 	if (
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+	// 	) {
+	// 		return null
+	// 	}
+	// 	switch (skill) {
+	// 		case ENUM.SKILL.Q:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
+	// 				data: this.getAiTarget(skilldata.targets)
+	// 			}
+	// 		case ENUM.SKILL.W:
+	// 			if (this.cooltime[ENUM.SKILL.Q] <= 1) {
+	// 				this.useW()
+	// 			}
 
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,
-					data: null
-				}
-			case ENUM.SKILL.ULT:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-					data: this.getAiProjPos(skilldata, skill)
-				}
-		}
-	}
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,
+	// 				data: null
+	// 			}
+	// 		case ENUM.SKILL.ULT:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
+	// 				data: this.getAiProjPos(skilldata, skill)
+	// 			}
+	// 	}
+	// }
 }
 
 export { Timo }

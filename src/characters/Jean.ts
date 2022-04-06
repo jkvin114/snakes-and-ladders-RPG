@@ -9,6 +9,7 @@ import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
+import { DefaultAgent } from "../AiAgents/AiAgent"
 const ID = 4
 class Jean extends Player {
 	//	onoff: boolean[]
@@ -58,6 +59,7 @@ class Jean extends Player {
 		
 		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
+		this.AiAgent=new DefaultAgent(this)
 
 	}
 
@@ -67,7 +69,7 @@ class Jean extends Player {
 	}
 
 	getSkillTrajectorySpeed(skilltype: string): number {
-		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.Q]) return 100
+		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.Q]) return 150
 
 		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.ULT]) return 170
 
@@ -213,39 +215,39 @@ class Jean extends Player {
 			this.effects.reset(ENUM.EFFECT.STUN)
 		}
 	}
-	/**
-	 *
-	 * @param {*} skilldata
-	 * @param {*} skill 0~
-	 */
-	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		if (
-			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-		) {
-			return null
-		}
-		switch (skill) {
-			case ENUM.SKILL.Q:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-					data: this.getAiTarget(skilldata.targets)
-				}
-			case ENUM.SKILL.W:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-					data: this.getAiProjPos(skilldata, skill)
-				}
-			case ENUM.SKILL.ULT:
-				if (this.duration[ENUM.SKILL.ULT] > 0) return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
+	// /**
+	//  *
+	//  * @param {*} skilldata
+	//  * @param {*} skill 0~
+	//  */
+	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
+	// 	if (
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+	// 	) {
+	// 		return null
+	// 	}
+	// 	switch (skill) {
+	// 		case ENUM.SKILL.Q:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
+	// 				data: this.getAiTarget(skilldata.targets)
+	// 			}
+	// 		case ENUM.SKILL.W:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
+	// 				data: this.getAiProjPos(skilldata, skill)
+	// 			}
+	// 		case ENUM.SKILL.ULT:
+	// 			if (this.duration[ENUM.SKILL.ULT] > 0) return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
 
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-					data: this.getAiTarget(skilldata.targets)
-				}
-		}
-	}
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
+	// 				data: this.getAiTarget(skilldata.targets)
+	// 			}
+	// 	}
+	// }
 }
 
 export { Jean }

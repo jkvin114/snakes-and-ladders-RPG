@@ -7,7 +7,7 @@ import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
-import CreedAiAgent from "../AiAgents/CreedAiAgent"
+import CreedAgent from "../AiAgents/CreedAgent"
 
 const ID = 0
 class Creed extends Player {
@@ -54,9 +54,7 @@ class Creed extends Player {
 			final: ITEM.EPIC_SWORD
 		}
 		this.usedQ = false
-		this.AiAgent=new CreedAiAgent(this)
-		
-
+		this.AiAgent=new CreedAgent(this)
 	}
 
 
@@ -172,36 +170,36 @@ class Creed extends Player {
 	onSkillDurationCount() {}
 	onSkillDurationEnd(skill: number) {}
 	/**
-	 *
-	 * @param {*} skilldata
-	 * @param {*} skill 0~
-	 */
-	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		if (
-			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGET
-		) {
-			return null
-		}
-		switch (skill) {
-			case ENUM.SKILL.Q:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-					data: this.getAiTarget(skilldata.targets)
-				}
-			case ENUM.SKILL.W:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-					data: this.getAiProjPos(skilldata, skill)
-				}
-			case ENUM.SKILL.ULT:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-					data: this.getAiTarget(skilldata.targets)
-				}
-		}
-	}
+	//  *
+	//  * @param {*} skilldata
+	//  * @param {*} skill 0~
+	//  */
+	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
+	// 	if (
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+	// 	) {
+	// 		return null
+	// 	}
+	// 	switch (skill) {
+	// 		case ENUM.SKILL.Q:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
+	// 				data: this.getAiTarget(skilldata.targets)
+	// 			}
+	// 		case ENUM.SKILL.W:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
+	// 				data: this.getAiProjPos(skilldata, skill)
+	// 			}
+	// 		case ENUM.SKILL.ULT:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
+	// 				data: this.getAiTarget(skilldata.targets)
+	// 			}
+	// 	}
+	// }
 	/*
 
 	aiSkillFinalSelection_Q(skilldata,targets): { type: number; data: number }{

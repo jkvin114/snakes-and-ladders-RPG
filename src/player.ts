@@ -2,7 +2,7 @@ import obsInfo = require("../res/obstacles.json")
 import SETTINGS = require("../res/globalsettings.json")
 import * as ENUM from "./enum"
 import * as Util from "./Util"
-import { Game, MAP } from "./Game"
+import { Game } from "./Game"
 import { Projectile } from "./Projectile"
 import {PlayerAbility} from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
@@ -10,12 +10,13 @@ import {PlayerMapHandler} from "./MapHandlers/PlayerMapHandler"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects } from "./PlayerStatusEffect"
 import { PlayerClientInterface ,testSetting} from "./app"
-import { ObstacleHelper, AIHelper, SkillInfoFactory } from "./helpers"
+import { ObstacleHelper,  SkillInfoFactory } from "./helpers"
 import { Entity } from "./Entity"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { EntityFilter } from "./EntityFilter"
-import { AiAgent } from "./AiAgents/AiAgent"
-
+import { AiAgent, DefaultAgent } from "./AiAgents/AiAgent"
+import { ServerPayloadInterface } from "./PayloadInterface"
+import { MAP } from "./MapHandlers/MapStorage"
 
 // class Minion extends Entity{
 // 	constructor(){
@@ -68,6 +69,8 @@ abstract class Player extends Entity {
 	shield: number
 	cooltime: number[]
 	duration: number[]
+	basicAttackCount:number   //basic attack count avaliable in this turn
+
 	//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
 	// loanTurnLeft: number
 
@@ -92,11 +95,12 @@ abstract class Player extends Entity {
 	abstract getSkillTargetSelector(skill: number): Util.SkillTargetSelector
 	abstract getSkillProjectile(projpos:number): Projectile
 	abstract getSkillDamage(target: number): Util.SkillAttack
+	
 	abstract passive(): void
 	abstract getSkillName(skill: number): string
 	abstract onSkillDurationCount(): void
 	abstract onSkillDurationEnd(skill: number): void
-	abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
+	// abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
 	abstract getSkillBaseDamage(skill:number):number
 	constructor(
 		turn: number,
@@ -141,11 +145,13 @@ abstract class Player extends Entity {
 		this.inven = new PlayerInventory(this)
 		this.effects = new PlayerStatusEffects(this)
 		this.mapHandler = PlayerMapHandler.create(this,this.mapId)
+		this.AiAgent=new DefaultAgent(this)
 
 		this.shield = 0
 
 		this.cooltime = [0, 0, 0]
 		this.duration = [0, 0, 0]
+		this.basicAttackCount=0
 		// this.loanTurnLeft = 0
 
 		this.damagedby = [0, 0, 0, 0]
@@ -157,6 +163,7 @@ abstract class Player extends Entity {
 	transfer(func: Function, ...args: any[]) {
 		this.mediator.sendToClient(func, ...args)
 	}
+	
 
 	distance(p1: Player, p2: Player): number {
 		return Math.abs(p1.pos - p2.pos)
@@ -227,15 +234,15 @@ abstract class Player extends Entity {
 		//	 this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
 		return this.adice
 	}
-	getAiTarget(targets: number[]) {
-		return AIHelper.getAiTarget(this, targets)
-	}
-	getAiProjPos(skilldata: any, skill: number) {
-		return AIHelper.getAiProjPos(this, skilldata, skill)
-	}
-	getAiAreaPos(skilldata:any,skill:number){
-		return AIHelper.getAiAreaPos(this, skilldata, skill)
-	}
+	// getAiTarget(targets: number[]) {
+	// 	return AIHelper.getAiTarget(this, targets)
+	// }
+	// getAiProjPos(skilldata: any, skill: number) {
+	// 	return AIHelper.getAiProjPos(this, skilldata, skill)
+	// }
+	// getAiAreaPos(skilldata:any,skill:number){
+	// 	return AIHelper.getAiAreaPos(this, skilldata, skill)
+	// }
 	/**
 	 *
 	 * @param {*} skill 0 ~
@@ -290,11 +297,11 @@ abstract class Player extends Entity {
 
 	//========================================================================================================
 	showEffect(type: string, source: number) {
-		this.transfer(PlayerClientInterface.visualEffect, this.turn, type, source)
+		this.transfer(PlayerClientInterface.visualEffect, this.pos, type, source)
 	}
 	//========================================================================================================
 	onMyTurnStart() {
-
+		this.basicAttackCount=this.ability.basicAttackSpeed.get()
 		this.passive()
 		this.cooltime = this.cooltime.map(Util.decrement)
 		this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
@@ -585,10 +592,10 @@ abstract class Player extends Entity {
 				currmaxhp: this.MaxHP,
 				skillfrom: data.source,
 				type: data.type,
-				needDelay: data.needDelay,
+				needDelay: false,
 				killed: data.killedByDamage,
 				willRevive: data.willRevive,
-				skillTrajectorySpeed: data.skillTrajectorySpeed,
+				skillTrajectorySpeed:0,
 				isBlocked: isblocked
 			}
 
@@ -1008,6 +1015,8 @@ abstract class Player extends Entity {
 	}
 
 	prepareRevive(reviveType: string) {
+		this.transfer(PlayerClientInterface.update,"waiting_revival", this.turn)
+
 		if (reviveType === "life") this.inven.changeLife(-1)
 
 		if (reviveType === "guardian_angel") {
@@ -1019,26 +1028,25 @@ abstract class Player extends Entity {
 		this.dead = true
 	}
 
-	sendKillInfo(skillfrom: number, gostore: boolean) {
+	sendKillInfo(killer: number, gostore: boolean) {
 		// if (this.game.instant) return
 
-		let storeData = null
 		if (gostore) {
-			storeData = this.inven.getStoreData(1)
+			this.transfer(PlayerClientInterface.goStore,this.turn,this.inven.getStoreData(1))
 		}
-		let killData = {
-			skillfrom: skillfrom,
+
+		let killData:ServerPayloadInterface.Death = {
+			killer: killer,
 			turn: this.turn,
 			location: this.pos,
-			storeData: storeData,
 			isShutDown: false,
 			killerMultiKillCount: 1
 		}
 
 		//상대에게 죽은경우
-		if (skillfrom >= 0) {
+		if (killer >= 0) {
 			//console.log("sendkillinfo skillfrom " + skillfrom)
-			let killerMultiKillCount = this.game.pOfTurn(skillfrom).thisLifeKillCount + 1
+			let killerMultiKillCount = this.game.pOfTurn(killer).thisLifeKillCount + 1
 			let isShutDown = this.thisLifeKillCount > 1
 			killData.isShutDown = isShutDown
 			killData.killerMultiKillCount = killerMultiKillCount
@@ -1083,7 +1091,7 @@ abstract class Player extends Entity {
 		//this.giveEffect('silent',1,-1)
 		let gostore = MAP.getStore(this.mapId).includes(this.pos)
 		if (gostore && this.AI) {
-			AIHelper.aiStore(this)
+			this.AiAgent.store()
 		}
 
 		this.sendKillInfo(skillfrom, gostore)
@@ -1136,40 +1144,100 @@ abstract class Player extends Entity {
 		}
 		// return assists
 	}
+	useActivationSkill(skill:number):void{}
+	useNonTargetSkill(skill:number):boolean{return false}
+/**
+	 * check skill avalibility, get avaliable targets or locations from skilltargetselector
+	 * @param {*} skill
+	 */
+ initSkill(skill: number):ServerPayloadInterface.SkillInit{
+	this.pendingSkill = skill
 
-	// dealDamageTo(target: Player, damage: Util.Damage, damageType: string, name: string): boolean {
-	// 	let flags = []
-	// 	let needDelay = true
-	// 	if (damageType == "skill") {
-	// 		//this.ability.applyAttackAdditionalDamage(damage,target)
+	let payload:ServerPayloadInterface.SkillInit={
+		turn:this.turn,
+		crypt_turn:"",
+		type:ENUM.INIT_SKILL_RESULT.NON_TARGET,
+		data:null,
+		skill:skill
+	}
+	if (!this.isSkillLearned(skill)) {
+		//	return "notlearned"
+		payload.type=ENUM.INIT_SKILL_RESULT.NOT_LEARNED
+		return payload
+	}
+	else if(!this.isCooltimeAvaliable(skill)) {
+		payload.type=ENUM.INIT_SKILL_RESULT.NO_COOL
+		return payload
+	}
+	let skillTargetSelector: Util.SkillTargetSelector = this.getSkillTargetSelector(skill)
 
-	// 		//	this.ability.applySkillDmgReduction(damage)
 
-	// 		if (damage.getTotalDmg() === 0) {
-	// 			flags.push(Util.HPChangeData.FLAG_NODMG_HIT)
-	// 		}
-	// 	} else if (damageType == "basicattack") {
-	// 		//	this.ability.applyAttackAdditionalDamage(damage,target)
-	// 	} else if (damageType === "tick") {
-	// 		needDelay = false
-	// 		flags.push(Util.HPChangeData.FLAG_TICKDMG)
-	// 	}
-	// 	else if(damageType==="entity"){
-	// 		needDelay = false
-	// 	}
+	if (skillTargetSelector.isNonTarget()) {
+		payload.type=ENUM.INIT_SKILL_RESULT.NON_TARGET
+		if(!this.AI) {
+			let result=this.useNonTargetSkill(skill)
+			if(!result) payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+		}
+		return payload
+	}
 
-	// 	// let calculatedDmg = this.ability.applyResistanceToDamage(damage, target.ability)
+	if (skillTargetSelector.isActivation()) {
+		if(!this.AI) this.useActivationSkill(skill)
+		payload.type=ENUM.INIT_SKILL_RESULT.ACTIVATION
+		return payload
+	}
 
-	// 	// // if (this.effects.hasEffectFrom(ENUM.EFFECT.GHOST_ULT_DAMAGE, target.turn)) {
-	// 	// // 	damage.updateNormalDamage(Util.CALC_TYPE.multiply, 0.5)
-	// 	// // }
 
-	// 	// target.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage.getTotalDmg() - calculatedDmg)
-	// 	// this.statistics.add(ENUM.STAT.DAMAGE_DEALT, calculatedDmg)
+	else if (skillTargetSelector.isNoTarget()) {
+		payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+		return payload
+	}
+	skillTargetSelector.range = this.effects.modifySkillRange(skillTargetSelector.range)
+	//마법의성,실명 적용
 
-	// 	return target.doPlayerDamage(damage, this, name, needDelay, flags)
-	// }
+	if (skillTargetSelector.isProjectile()) {
+		payload.type=ENUM.INIT_SKILL_RESULT.PROJECTILE
+		payload.data={
+			kind:"location",
+			pos: this.pos,
+			range: skillTargetSelector.range,
+			size: skillTargetSelector.projSize
+		}
+		return payload
+	}
+	if (skillTargetSelector.isAreaTarget()) {
+		payload.type=ENUM.INIT_SKILL_RESULT.AREA_TARGET
 
+		payload.data= {
+			kind:"location",
+			pos: this.pos,
+			range: skillTargetSelector.range,
+			size: skillTargetSelector.areaSize
+		}
+		return payload
+	}
+	let targets = this.mediator
+		.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(skillTargetSelector.range))
+		.map((pl) => pl.turn)
+	let conditionedTargets = this.mediator
+		.selectAllFrom(
+			EntityFilter.ALL_ATTACKABLE_PLAYER(this)
+				.inRadius(skillTargetSelector.conditionedRange)
+				.onlyIf(skillTargetSelector.condition)
+		)
+		.map((pl) => pl.turn)
+	targets=targets.concat(conditionedTargets)
+	
+	//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
+	if (targets.length === 0) {
+		//return "notarget"
+		payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+		return payload
+	}
+	payload.type=ENUM.INIT_SKILL_RESULT.TARGTING
+	payload.data={targets: targets,kind:"target"}
+	return payload
+}
 	getBaseBasicAttackDamage(): Util.Damage {
 		return new Util.Damage(this.ability.AD.get(), 0, 0)
 	}
@@ -1179,16 +1247,12 @@ abstract class Player extends Entity {
 	usePendingAreaSkill(pos:number){}
 
 	basicAttack(){
+		this.basicAttackCount-=1
 		if (!this.effects.canBasicAttack()) {
 			return false
 		}
-
 		let damage: Util.Damage = this.ability.basicAttackDamage()
 
-		//지하철에서는 평타피해 40% 감소
-		// if (this.mapId === ENUM.MAP_TYPE.CASINO && this.mapHandler.isInSubway) {
-		// 	damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.6)
-		// }
 		damage=this.mapHandler.onBasicAttack(damage)
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 	//	console.log("basicattack")
@@ -1196,126 +1260,6 @@ abstract class Player extends Entity {
 		.inRadius(this.ability.attackRange.get()))(damage)
 
 	}
-
-	// doSkillAttack(target: Entity, skilldmgdata: Util.SkillAttack) {
-	// 	let effectname = this.getSkillName(skilldmgdata.skill)
-
-	// 	let died = this.mediator.useSkillAttack(this,target,skilldmgdata.damage, effectname,skilldmgdata.onHit)
-
-	// 	if (died && skilldmgdata.onKill) {
-	// 		skilldmgdata.onKill(this)
-	// 	}
-	// }
-	// takeSkillDamage(from: Player, target: Entity, damage: Damage, effectname: string, onHit?: Function) {
-	// 	if (target instanceof Player) {
-	// 		//방어막 효과
-	// 		if (target.effects.has(EFFECT.SHIELD)) {
-	// 			//console.log("shield")
-	// 			target.effects.reset(EFFECT.SHIELD)
-	// 			target.doPlayerDamage(new Damage(0, 0, 0), from, effectname, true, [HPChangeData.FLAG_SHIELD])
-	// 			return false
-	// 		}
-
-	// 		if (onHit != null) {
-	// 			onHit(target)
-	// 		}
-	// 		damage = target.effects.onSkillDamage(damage, from.turn)
-	// 		damage = from.effects.onSkillHit(damage, target)
-	// 	}
-	
-
-
-	// basicAttack() {
-	// 	let range = this.ability.attackRange.get()
-	// 	for (let entity of this.game.getEnemyEntityInRange(this, range)) {
-	// 		entity.doDamage(this, this.getBaseBasicAttackDamage())
-	// 	}
-
-	// 	let cancounterattack = []
-	// 	for (let p of this.game.playerSelector.getAll()) {
-	// 		if (this.game.playerSelector.isValidOpponentInRadius(this, p, range)) {
-	// 			this.hitBasicAttack(p, false)
-	// 			cancounterattack.push(p)
-	// 		}
-	// 	}
-
-	// 	for (let p of cancounterattack) {
-	// 		if (!p.dead && p.pos === this.pos && p.turn !== this.turn) {
-	// 			p.hitBasicAttack(this, true)
-	// 		}
-	// 	}
-	// }
-	// //========================================================================================================
-
-	// hitBasicAttack(target: Player, isCounterAttack: boolean): boolean {
-	// 	//console.log("hitBasicAttack"+target.name+"  "+this.name)
-
-	// 	if (!this.effects.canBasicAttack()) {
-	// 		return false
-	// 	}
-
-	// 	let damage: Util.Damage = this.ability.basicAttackDamage()
-
-	// 	//지하철에서는 평타피해 40% 감소
-	// 	if (this.mapId === ENUM.MAP_TYPE.CASINO && this.mapdata.isInSubway) {
-	// 		damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.6)
-	// 	}
-
-
-	// 	//맞공격시 피해 절반
-	// 	if (isCounterAttack) {
-	// 		if (this.game.setting.AAcounterAttackStrength == 0) return false
-
-	// 		damage = damage.updateAttackDamage(Util.CALC_TYPE.multiply, 0.5 * this.game.setting.AAcounterAttackStrength)
-	// 	}
-	// 	this.statistics.add(ENUM.STAT.BASICATTACK, 1)
-
-	// 	damage = this.effects.onBasicAttackHit(damage, target)
-
-	// 	return this.mediator.dealDamage(this,target,damage,"basicattack",this.getBasicAttackName())
-
-	// 	// return this.dealDamageTo(target, damage, "basicattack", this.getBasicAttackName())
-	// }
-	// //========================================================================================================
-
-	// hitOneTarget(target: Entity, skilldmgdata: Util.SkillAttack) {
-	// 	let effectname = this.getSkillName(skilldmgdata.skill)
-
-	// 	let died = this.mediator.useSkillAttack(this,target,skilldmgdata.damage, effectname,skilldmgdata.onHit)
-	// 	//  this.game.playerSelector
-	// 	// 	.get(target)
-	// 	// 	.hitBySkill(skilldmgdata.damage, effectname, this.turn, skilldmgdata.onHit)
-	// 	if (died && skilldmgdata.onKill) {
-	// 		skilldmgdata.onKill(this)
-	// 	}
-	// }
-	
-
-	/**
-	//  *
-	//  
-	//  */
-	// hitBySkill(skilldmg: Util.Damage, effectname: string, source: number, onHit?: Function): boolean {
-	// 	//방어막 효과
-	// 	if (this.effects.has(ENUM.EFFECT.SHIELD)) {
-	// 		//console.log("shield")
-	// 		this.effects.reset(ENUM.EFFECT.SHIELD)
-	// 		this.doPlayerDamage(new Util.Damage(0,0,0), source, effectname, true, [Util.HPChangeData.FLAG_SHIELD])
-	// 		return false
-	// 	}
-
-	// 	if (onHit != null) {
-	// 		onHit(this)
-	// 	}
-	// 	let sourcePlayer = this.game.playerSelector.get(source)
-
-		
-
-	// 	let died = this.mediator.dealDamage(source,this, skilldmg, "skill", effectname)
-
-	// 	return died
-	// }
-	//========================================================================================================
 }
 
 export { Player }

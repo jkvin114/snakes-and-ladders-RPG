@@ -10,6 +10,7 @@ import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../EntityFilter"
+import { DefaultAgent } from "../AiAgents/AiAgent"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
@@ -60,6 +61,8 @@ class Jellice extends Player {
 		}
 		this.skillInfo = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_KOR)
+		this.AiAgent=new DefaultAgent(this)
+
 	}
 
 	getSkillScale() {
@@ -88,18 +91,9 @@ class Jellice extends Player {
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
-				if (!this.AI) {
-					if (!this.useQ()) {
-						skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NO_TARGET)
-					}
-				}
-
 				break
 			case ENUM.SKILL.W:
-				if (!this.AI) {
-					this.useW()
-				}
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.ACTIVATION)
 				break
 			case ENUM.SKILL.ULT:
 				let range = (this.isSkillActivated(ENUM.SKILL.W) ? 2 : 1) * this.skill_ranges[s]
@@ -109,7 +103,12 @@ class Jellice extends Player {
 		}
 		return skillTargetSelector
 	}
-
+	useActivationSkill(skill: number): void {
+		if(skill===ENUM.SKILL.W) this.useW()
+	}
+	useNonTargetSkill(skill: number): boolean {
+		if(skill===ENUM.SKILL.Q) return this.useQ()
+	}
 	private getWShield() {
 		return new ShieldEffect(ENUM.EFFECT.MAGICIAN_W_SHIELD, 1, 50)
 	}
@@ -221,51 +220,51 @@ class Jellice extends Player {
 	onSkillDurationEnd(skill: number) {}
 	passive() {}
 	onSkillDurationCount() {}
-	/**
-	 *
-	 * @param {*} skilldata
-	 * @param {*} skill 0~
-	 */
-	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
+	// /**
+	//  *
+	//  * @param {*} skilldata
+	//  * @param {*} skill 0~
+	//  */
+	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
 			
-		if (
-			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-		) {
-			return null
-		}
+	// 	if (
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+	// 	) {
+	// 		return null
+	// 	}
 
-		console.log("aiSkillFinalSelection" + skill + "" + skilldata)
-		switch (skill) {
-			case ENUM.SKILL.Q:
-				//사거리네에 플레이어 있거나 w 쓰고 사거리안에 1~3명 있을때 사용
-				if (
-					this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this)
-					.in(this.pos + this.qRange().start + 1, this.pos + this.qRange().end_front)
-					.in(this.pos - this.qRange().end_back, this.pos - this.qRange().start)).length>0
-				) {
-					this.useQ()
-					return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-				}
-				break
-			case ENUM.SKILL.W:
-				//q 쿨 있고 사거리내에 1~3 명이상 있으면 사용
-				if (
-					this.cooltime[0] === 0 &&
-					this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).in(this.pos-23,this.pos+30)).length >= this.game.totalnum - 1
-				) {
-					this.useW()
-					return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-				}
-				break
-			case ENUM.SKILL.ULT:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-					data: this.getAiProjPos(skilldata, skill)
-				}
-		}
-		return null
-	}
+	// 	console.log("aiSkillFinalSelection" + skill + "" + skilldata)
+	// 	switch (skill) {
+	// 		case ENUM.SKILL.Q:
+	// 			//사거리네에 플레이어 있거나 w 쓰고 사거리안에 1~3명 있을때 사용
+	// 			if (
+	// 				this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this)
+	// 				.in(this.pos + this.qRange().start + 1, this.pos + this.qRange().end_front)
+	// 				.in(this.pos - this.qRange().end_back, this.pos - this.qRange().start)).length>0
+	// 			) {
+	// 				this.useQ()
+	// 				return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
+	// 			}
+	// 			break
+	// 		case ENUM.SKILL.W:
+	// 			//q 쿨 있고 사거리내에 1~3 명이상 있으면 사용
+	// 			if (
+	// 				this.cooltime[0] === 0 &&
+	// 				this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).in(this.pos-23,this.pos+30)).length >= this.game.totalnum - 1
+	// 			) {
+	// 				this.useW()
+	// 				return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
+	// 			}
+	// 			break
+	// 		case ENUM.SKILL.ULT:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
+	// 				data: this.getAiProjPos(skilldata, skill)
+	// 			}
+	// 	}
+	// 	return null
+	// }
 }
 export { Jellice }

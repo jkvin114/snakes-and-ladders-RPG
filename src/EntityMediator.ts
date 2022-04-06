@@ -4,21 +4,85 @@ import { Entity } from "./Entity"
 import { EntityFilter } from "./EntityFilter"
 import { EFFECT, ENTITY_TYPE, MAP_TYPE, STAT } from "./enum"
 import { Player } from "./player"
-import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize } from "./Util"
+import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize, sleep } from "./Util"
+import { MAP } from "./MapHandlers/MapStorage"
+import { ServerPayloadInterface } from "./PayloadInterface"
+import {trajectorySpeedRatio} from "../res/globalsettings.json"
 
 
 
 class AttackHandler{
-	static basicAttack(from:Player,target:Entity,damage:Damage):boolean{
+	static basicAttacks(from:Player,targets:Entity[],damage:Damage):boolean{
+		let died=false
+		let data:ServerPayloadInterface.Attack={
+			targets:[],source:from.turn,visualeffect:from.getBasicAttackName()
+		}
+		for(let t of targets){
+			let v=this.basicAttack(from,t,damage)
+			data.targets.push(v)
+			died=died||(v.flags.includes("died"))
+		}
+		from.transfer(PlayerClientInterface.attack,data)
+		return died
+	}
+
+	static async skillAttacks(from:Player,targets:Entity[],skillattack:SkillAttack){
+		console.log(skillattack)
+		let delay=from.getSkillTrajectorySpeed(from.getSkillName(skillattack.skill))
+		if(delay>0 && !from.game.instant){
+			delay=MAP.getCoordinateDistance(from.mapId,from.pos,targets[0].pos) * delay / trajectorySpeedRatio
+			let data:ServerPayloadInterface.skillTrajectory={
+				from:from.pos,
+				to:targets[0].pos,
+				type:from.getSkillName(skillattack.skill),
+				delay:delay
+			}
+			from.transfer(PlayerClientInterface.skillTrajectory,data)
+			await sleep(delay)
+		}
+
+		let data:ServerPayloadInterface.Attack={
+			targets:[],source:from.turn,visualeffect:skillattack.name
+		}
+
+		for(let t of targets){
+			let v=this.skillAttack(from,t,skillattack)
+			data.targets.push(v)
+		}
+
+		from.transfer(PlayerClientInterface.attack,data)
+	}
+
+	static basicAttack(from:Player,target:Entity,damage:Damage):ServerPayloadInterface.Victim{
+		
+
 		if(target instanceof Player){
 			damage = from.effects.onBasicAttackHit(damage, target)
 			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}
 		
-		return AttackHandler.doDamage(from,target,damage,from.getBasicAttackName(),true)
+		let died= AttackHandler.doDamage(from,target,damage,from.getBasicAttackName(),true)
+		let victimData:ServerPayloadInterface.Victim={
+			pos:target.pos,flags:[],damage:damage.getTotalDmg()
+		}
+		if(died) victimData.flags.push("died")
+		return victimData
 	}
 
-	static skillAttack(from:Player,target:Entity,skillattack:SkillAttack):boolean{
+
+	static skillAttackAuto(from:Player,target:Entity,skillattack:SkillAttack):boolean{
+		let v=this.skillAttack(from,target,skillattack)
+		let data:ServerPayloadInterface.Attack={
+			targets:[v],source:from.turn,visualeffect:skillattack.name
+		}
+		from.transfer(PlayerClientInterface.attack,data)
+		return (v.flags.includes("died"))
+	}
+
+	static skillAttack(from:Player,target:Entity,skillattack:SkillAttack):ServerPayloadInterface.Victim{
+		let victimData:ServerPayloadInterface.Victim={
+			pos:target.pos,flags:[],damage:0
+		}
 		if (target instanceof Player) {
 
 			let damage=skillattack.damage
@@ -28,7 +92,8 @@ class AttackHandler{
 			if (target.effects.has(EFFECT.SHIELD)) {
 				target.effects.reset(EFFECT.SHIELD)
 				AttackHandler.doDamage(from,target,new Damage(0, 0, 0),  effectname, true, [HPChangeData.FLAG_SHIELD])
-				return false
+				victimData.flags.push("shield")
+				return victimData
 			}
 
 			if (skillattack.onHit != null) {
@@ -41,18 +106,34 @@ class AttackHandler{
 				flags.push(HPChangeData.FLAG_NODMG_HIT)
 			}
 		//	console.log('skill  '+effectname)
+			victimData.damage=damage.getTotalDmg()
+
 			let died=AttackHandler.doDamage(from, target,damage, effectname, true, flags)
-			if(died) AttackHandler.onDeath(from,target,skillattack.onKill)
-			return died
+			if(died){ 
+				AttackHandler.onDeath(from,target,skillattack.onKill)
+				victimData.flags.push("died")
+			}
 		}
 		else if (target instanceof SummonedEntity) {
-			return AttackHandler.doDamage(from, target,skillattack.damage, skillattack.name, false)
+			victimData.damage=skillattack.damage.getTotalDmg()
+			if(AttackHandler.doDamage(from, target,skillattack.damage, skillattack.name, false)){
+				victimData.flags.push("died")
+			}
 		}
 
-		return false
+
+		return victimData
 	}
 
 	static plainAttack(from:Entity,target:Entity,damage:Damage,effectname:string):boolean{
+		let data:ServerPayloadInterface.Attack={
+			targets:[{
+				pos:target.pos,flags:[],damage:damage.getTotalDmg()
+			}],source:-1,visualeffect:effectname
+		}
+
+		from.game.sendToClient(PlayerClientInterface.attack,data)
+
 		return AttackHandler.doDamage(from,target,damage,effectname,false,[HPChangeData.FLAG_PLAINDMG])
 	}
 
@@ -213,37 +294,55 @@ class EntityMediator {
 	}
 	basicAttack(from:Player,filter:EntityFilter){
 		return (damage:Damage) => {
-			let attacked=false
-			for (let e of this.selectAllFrom(filter)) {
-				attacked=true
-				AttackHandler.basicAttack(from,e,damage)
-			}
-			return attacked
+			let targets=this.selectAllFrom(filter)
+			if(targets.length===0) return false
+			AttackHandler.basicAttacks(from,targets,damage)
+			return true
 		}
 	}
 
 	basicAttackSingle(from:Player,to:string){
 		return (damage:Damage) => {
-			return AttackHandler.basicAttack(from,this.getPlayer(to),damage)
+			return AttackHandler.basicAttacks(from,[this.getPlayer(to)],damage)
 		}
 	}
 
 
+	/**
+	 * skill attack by clicking skill button
+	 * @param from 
+	 * @param filter 
+	 * @returns 
+	 */
 	skillAttack(from:Player,filter:EntityFilter){
 		return (skillAttack:SkillAttack) => {
-			let attacked=false
-			for (let e of this.selectAllFrom(filter)) {
-				AttackHandler.skillAttack(from,e,skillAttack)
-				attacked=true
-			}
-			return attacked
+			let targets=this.selectAllFrom(filter)
+			if(targets.length===0) return false
+			AttackHandler.skillAttacks(from,targets,skillAttack)
+			return true
 		}
 	}
-	
+	/**
+	 * skill attack by clicking skill button
+	 * @param from 
+	 * @param filter 
+	 * @returns 
+	 */
 	skillAttackSingle(from:Player,to:string){
+		return (skillAttack:SkillAttack) => {
+			AttackHandler.skillAttacks(from,[this.getPlayer(to)],skillAttack)
+		}
+	}
+	/**
+	 * skill attack without clicking button(projectile,tickdamage...)
+	 * @param from 
+	 * @param filter 
+	 * @returns 
+	 */
+	skillAttackAuto(from:Player,to:string){
 
 		return (skillAttack:SkillAttack) => {
-			return AttackHandler.skillAttack(from,this.getPlayer(to),skillAttack)
+			return AttackHandler.skillAttackAuto(from,this.getPlayer(to),skillAttack)
 		}
 	}
 

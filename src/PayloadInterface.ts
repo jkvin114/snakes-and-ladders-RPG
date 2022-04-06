@@ -20,18 +20,18 @@ export namespace ServerPayloadInterface {
 		gameSettings: Object
 		shuffledObstacles: { obs: number; money: number }[]
 	}
-    interface LocationTargetSelector{
+    export  interface LocationTargetSelector{
         kind?:"location"
         pos: number
 		range: number
 		size: number
     }
-    interface PlayerTargetSelector{
+    export interface PlayerTargetSelector{
         kind?:"target"
         targets:number[]
     }
     export interface SkillInit extends CryptedPayloadInterface{
-        type:number,data:LocationTargetSelector|PlayerTargetSelector|null
+        type:number,data:LocationTargetSelector|PlayerTargetSelector|null,skill:number
     }
 
 	export interface SkillStatus extends TurnPayloadInterface {
@@ -39,6 +39,9 @@ export namespace ServerPayloadInterface {
 		duration: number[] //remaining duration/full duration
 		cooltimeratio: number[] //remaining cooltime/full cooltime
 		level: number
+	}
+	export interface skillTrajectory{
+		from: number,to:number ,type: string,delay:number
 	}
 	export interface TurnStart extends CryptedPayloadInterface {
 		stun: boolean
@@ -91,7 +94,7 @@ export namespace ServerPayloadInterface {
 		UEID: string
 		name: string
 	}
-	export interface EnterStore {
+	export interface EnterStore{
 		item: number[]
 		money: number
 		token: number
@@ -100,6 +103,38 @@ export namespace ServerPayloadInterface {
 		recommendeditem: number[]
 		itemLimit: number
 		priceMultiplier: number
+	}
+	export interface Death extends TurnPayloadInterface{
+		killer:number
+		location: number
+		isShutDown: boolean
+		killerMultiKillCount: number
+	}
+	export interface HPChange extends TurnPayloadInterface{
+		change:number
+		currhp:number
+		currmaxhp:number
+	}
+	export interface MaxHPChange extends TurnPayloadInterface{
+		change:number
+		currmaxhp:number
+	}
+	export interface Heal extends HPChange{
+		type:string
+	}
+	export interface Damage extends HPChange{
+		source:number
+	}
+	export interface Victim{
+		pos:number
+		flags:string[],
+		damage:number
+	}
+	export interface Attack{
+		targets:Victim[]
+		source:number
+		visualeffect:string
+		// trajectorySpeed:number
 	}
 }
 

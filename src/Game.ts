@@ -1,14 +1,12 @@
-import oceanmap = require("../res/ocean_map.json")
-import casinomap = require("../res/casino_map.json")
-import defaultmap = require("../res/map.json")
+
 import SETTINGS = require("../res/globalsettings.json")
 import GAMESETTINGS = require("../res/gamesetting.json")
 import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Player } from "./player"
 import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
-import { ObstacleHelper, AIHelper } from "./helpers"
-
+import { ObstacleHelper } from "./helpers"
+import { AiAgent } from "./AiAgents/AiAgent"
 import { Creed } from "./characters/Creed"
 import { Bird } from "./characters/Bird"
 import { Silver } from "./characters/Silver"
@@ -25,7 +23,7 @@ import { EntityMediator } from "./EntityMediator"
 import { EntityFilter } from "./EntityFilter"
 import { Entity } from "./Entity"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
-const MAP: Util.MapStorage = new Util.MapStorage([defaultmap, oceanmap, casinomap])
+import {MAP} from "./MapHandlers/MapStorage"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 
@@ -696,8 +694,8 @@ class Game {
 		}
 
 		//ai 주컨
-		if (p.AI && AIHelper.willDiceControl(p)) {
-			diceShown = AIHelper.getDiceControlDice(p)
+		if (p.AI && p.AiAgent.willDiceControl()) {
+			diceShown = p.AiAgent.getDiceControlDice()
 			dcused = true
 			p.useDiceControl()
 		}
@@ -834,7 +832,7 @@ class Game {
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE) {
 			p.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
 			if (p.AI) {
-				AIHelper.aiStore(p)
+				p.AiAgent.store()
 				result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 			}
 		}
@@ -896,7 +894,7 @@ class Game {
 
 				let skillattack = new Util.SkillAttack(pp.damage, pp.name).setOnHit(pp.action)
 
-				died = this.entityMediator.skillAttackSingle(
+				died = this.entityMediator.skillAttackAuto(
 					this.entityMediator.getPlayer(this.turn2Id(pp.sourceTurn)),
 					this.turn2Id(this.thisturn)
 				)(skillattack)
@@ -931,7 +929,7 @@ class Game {
 	//========================================================================================================
 
 	aiSkill() {
-		AIHelper.aiSkill(this.thisp())
+		AiAgent.aiSkill(this.thisp(),()=>{console.log("ai skill complete")})
 	}
 	//========================================================================================================
 	applyRangeProjectile(player: Player): boolean {
@@ -946,7 +944,7 @@ class Game {
 
 				let skillattack = new Util.SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
 
-				let died = this.entityMediator.skillAttackSingle(
+				let died = this.entityMediator.skillAttackAuto(
 					this.entityMediator.getPlayer(this.turn2Id(proj.sourceTurn)),
 					this.turn2Id(player.turn)
 				)(skillattack)
@@ -977,95 +975,15 @@ class Game {
 		if(!p) return ""
 		return p.name
 	}
-	/**
-	 *
-	 * @param {*} skill 0~
-	 *
-	 * return
-	 * notlearned
-	 * nocool
-	 *  notarget
-	 *  non-target(skillstatus)
-	 * projectile(pos,range,onmainway,size)
-	 *  targeting(targets)
-	 */
-	initSkill(skill: number):ServerPayloadInterface.SkillInit{
-		let p = this.thisp()
-		//console.log("initSkill pendingskill" + skill)
-		p.pendingSkill = skill
-
-		let payload:ServerPayloadInterface.SkillInit={
-			turn:this.thisturn,
-			crypt_turn:"",
-			type:ENUM.INIT_SKILL_RESULT.NON_TARGET,
-			data:null
-		}
-		if (!p.isSkillLearned(skill)) {
-			//	return "notlearned"
-			payload.type=ENUM.INIT_SKILL_RESULT.NOT_LEARNED
-			return payload
-		}
-		else if(!p.isCooltimeAvaliable(skill)) {
-			payload.type=ENUM.INIT_SKILL_RESULT.NO_COOL
-			return payload
-		}
-		let skillTargetSelector: Util.SkillTargetSelector = p.getSkillTargetSelector(skill)
-		if (skillTargetSelector.isNonTarget()) {
-			payload.type=ENUM.INIT_SKILL_RESULT.NON_TARGET
-			return payload
-		}
-		else if (skillTargetSelector.isNoTarget()) {
-			payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-			return payload
-		}
-		skillTargetSelector.range = p.effects.modifySkillRange(skillTargetSelector.range)
-		//마법의성,실명 적용
-
-		if (skillTargetSelector.isProjectile()) {
-			payload.type=ENUM.INIT_SKILL_RESULT.PROJECTILE
-			payload.data={
-				pos: p.pos,
-				range: skillTargetSelector.range,
-				size: skillTargetSelector.projSize
-			}
-			return payload
-		}
-		if (skillTargetSelector.isAreaTarget()) {
-			payload.type=ENUM.INIT_SKILL_RESULT.AREA_TARGET
-
-			payload.data= {
-				pos: p.pos,
-				range: skillTargetSelector.range,
-				size: skillTargetSelector.areaSize
-			}
-			return payload
-		}
-		let targets = this.entityMediator
-			.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(p).inRadius(skillTargetSelector.range))
-			.map((pl) => pl.turn)
-		let conditionedTargets = this.entityMediator
-			.selectAllFrom(
-				EntityFilter.ALL_ATTACKABLE_PLAYER(p)
-					.inRadius(skillTargetSelector.conditionedRange)
-					.onlyIf(skillTargetSelector.condition)
-			)
-			.map((pl) => pl.turn)
-		targets=targets.concat(conditionedTargets)
-		
-		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
-		if (targets.length === 0) {
-			//return "notarget"
-			payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-			return payload
-		}
-		payload.type=ENUM.INIT_SKILL_RESULT.TARGTING
-		payload.data={targets: targets}
-	}
+	
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
 		this.entityMediator.skillAttackSingle(p, this.turn2Id(target))(p.getSkillDamage(target))
 
 	//	return this.getSkillStatus()
+	}
+	onSelectSkill(skill:ENUM.SKILL):ServerPayloadInterface.SkillInit{
+		return this.thisp().initSkill(skill)
 	}
 	//========================================================================================================
 
@@ -1383,4 +1301,4 @@ class Game {
 	}
 }
 
-export { Game, MAP, GameSetting }
+export { Game, GameSetting }

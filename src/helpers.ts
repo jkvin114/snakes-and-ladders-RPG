@@ -3,7 +3,7 @@ import * as ENUM from "./enum"
 import * as Util from "./Util"
 import SETTINGS = require("../res/globalsettings.json")
 import { PlayerClientInterface } from "./app"
-import { MAP } from "./Game"
+import { MAP } from "./MapHandlers/MapStorage"
 import { items as ItemList } from "../res/item.json"
 import PlayerInventory from "./PlayerInventory"
 import { EffectFactory, StatusEffect } from "./StatusEffect"
@@ -710,41 +710,40 @@ class AIHelper {
 	 *
 	 */
 	static aiStore(player: Player) {
-		new AIStoreInstance(player.inven, player.itemtree).setItemLimit(player.game.itemLimit).run()
 	}
 
-	static async aiSkill(player: Player) {
-		if (player.effects.has(ENUM.EFFECT.SILENT) || player.dead || player.game.gameover) {
-			return
-		}
+	// static async aiSkill(player: Player) {
+	// 	if (player.effects.has(ENUM.EFFECT.SILENT) || player.dead || player.game.gameover) {
+	// 		return
+	// 	}
 
-		// p.aiUseSkills()
+	// 	// p.aiUseSkills()
 
-		//use ult first then w and q
-		for (let i = 2; i >= 0; --i) {
-			//let slist = ["Q", "W", "ult"]
-			let skillresult = player.aiSkillFinalSelection(player.game.initSkill(i), i)
-			if (!skillresult || skillresult.data === -1) {
-				continue
-			}
-			// if (skillresult.data === -1) {
-			// 	return
-			// }
-			if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.LOCATION) {
-				//	console.log(skillresult)
+	// 	//use ult first then w and q
+	// 	for (let i = 2; i >= 0; --i) {
+	// 		//let slist = ["Q", "W", "ult"]
+	// 		let skillresult = player.aiSkillFinalSelection(player.initSkill(i), i)
+	// 		if (!skillresult || skillresult.data === -1) {
+	// 			continue
+	// 		}
+	// 		// if (skillresult.data === -1) {
+	// 		// 	return
+	// 		// }
+	// 		if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.LOCATION) {
+	// 			//	console.log(skillresult)
 
-				player.game.placeSkillProjectile(skillresult.data)
-			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET) {
-				player.game.useAreaSkill(skillresult.data)
-			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.TARGET) {
-				player.game.useSkillToTarget(skillresult.data)
-			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {
-			}
-			if (!player.game.instant) {
-				await Util.sleep(300)
-			}
-		}
-	}
+	// 			player.game.placeSkillProjectile(skillresult.data)
+	// 		} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET) {
+	// 			player.game.useAreaSkill(skillresult.data)
+	// 		} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.TARGET) {
+	// 			player.game.useSkillToTarget(skillresult.data)
+	// 		} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {
+	// 		}
+	// 		if (!player.game.instant) {
+	// 			await Util.sleep(300)
+	// 		}
+	// 	}
+	// }
 
 	/**
 	 *  가장 앞에있는 플레이어반환
@@ -831,153 +830,6 @@ class AIHelper {
 
 			return Math.floor(ps[0].pos - skilldata.size + 1)
 		}
-	}
-}
-
-class AIStoreInstance {
-	build: {
-		level: number
-		items: number[]
-		final: number
-	}
-	resultItems: number[]
-	inven: PlayerInventory
-	totalMoneySpend: number
-	itemLimit: number
-	constructor(inven: PlayerInventory, build: { level: number; items: number[]; final: number }) {
-		this.inven = inven
-		this.build = build
-		this.totalMoneySpend = 0
-		this.resultItems = inven.item.map((x) => x)
-	}
-	setItemLimit(limit: number) {
-		this.itemLimit = limit
-		return this
-	}
-	hasEnoughMoney() {
-		return this.inven.money - this.totalMoneySpend >= 30
-	}
-
-	run() {
-		while (this.hasEnoughMoney()) {
-			if (this.build.level >= this.itemLimit) {
-				this.buyLife()
-				break
-			}
-
-			//console.log("aistore",this.inven.money - this.totalMoneySpend)
-			let tobuy = 0
-			if (this.build.level >= this.build.items.length) {
-				tobuy = this.build.final
-			} else {
-				tobuy = this.build.items[this.build.level]
-			}
-
-			if (this.aiAttemptItemBuy(tobuy) == 0) break
-		}
-
-		this.inven.aiUpdateItem(this.resultItems, this.totalMoneySpend)
-	}
-	buyLife() {
-		let lifeprice = 150 * Math.pow(2, this.inven.lifeBought)
-
-		while (this.inven.money >= lifeprice) {
-			lifeprice = 150 * Math.pow(2, this.inven.lifeBought)
-			this.inven.changeLife(1)
-			this.inven.lifeBought += 1
-			this.inven.changemoney(-lifeprice, ENUM.CHANGE_MONEY_TYPE.SPEND)
-		}
-	}
-
-	isItemLimitExceeded(temp_itemlist: number[]) {
-		let count = temp_itemlist.reduce((total, curr) => total + curr, 0)
-
-		return count >= this.itemLimit
-	}
-	//========================================================================================================
-
-	/**
-	 *
-	 * @param {*} tobuy index of item 0~
-	 *@returns money spent by trying to buy this item
-	 */
-	aiAttemptItemBuy(tobuy: number): number {
-		let item = ItemList[tobuy]
-		let temp_itemlist = this.resultItems.map((x) => x) //이 아이템을 샀을 경우의 아이템리스트
-		let price = item.price - this.calcDiscount(tobuy, temp_itemlist)
-
-		//구매가능
-		if (this.canbuy(price) && !this.isItemLimitExceeded(temp_itemlist) && this.inven.checkStoreLevel(item)) {
-			this.totalMoneySpend += price
-			Util.copyElementsOnly(this.resultItems, temp_itemlist)
-			this.resultItems[tobuy] += 1
-			if (item.itemlevel === 3) {
-				this.build.level += 1
-			}
-			return price
-
-			//불가
-		} else {
-			if (item.children.length === 0) {
-				return 0
-			}
-
-			temp_itemlist = this.resultItems.map((x) => x)
-
-			let moneyspent = 0
-			for (let i = 0; i < item.children.length; ++i) {
-				let child = item.children[i]
-
-				//이미 보유중인 하위템은 또 안사도록
-				if (temp_itemlist[child] > 0) {
-					temp_itemlist[child] -= 1
-					continue
-				}
-
-				moneyspent += this.aiAttemptItemBuy(child)
-			}
-			return moneyspent
-		}
-	}
-
-	//========================================================================================================
-
-	/**
-	 * 아이템 구매가능여부
-	 * @param {*} price
-	 */
-	canbuy(price: number): boolean {
-		return price <= this.inven.money - this.totalMoneySpend
-	}
-	//========================================================================================================
-
-	/**
-	 * 아이템 구입시 할인될 가격 반환
-	 * @param {*} tobuy int
-	 * @param {*} temp_itemlist copy of player`s item list
-	 */
-	calcDiscount(tobuy: number, temp_itemlist: number[]): number {
-		let thisitem = ItemList[tobuy]
-
-		if (thisitem.children.length === 0) {
-			return 0
-		}
-		let discount = 0
-		//c:number   start with 1
-		for (let c of thisitem.children) {
-			if (temp_itemlist[c] === 0) {
-				discount += this.calcDiscount(c, temp_itemlist)
-			} else {
-				discount += ItemList[c].price
-				temp_itemlist[c] -= 1
-			}
-		}
-		return discount
-	}
-	//========================================================================================================
-
-	getItemNames(): string[] {
-		return ItemList.map((i: any) => i.name)
 	}
 }
 
@@ -1674,4 +1526,4 @@ class SkillInfoFactory {
 	}
 }
 
-export { ObstacleHelper, PlayerSelector, AIHelper, SkillInfoFactory }
+export { ObstacleHelper, PlayerSelector,  SkillInfoFactory }

@@ -1,8 +1,8 @@
 import { PlayerClientInterface } from "../app"
 import { Player } from "../player"
-import { MAP } from "../Game"
+import { MAP ,singleMap} from "./MapStorage"
 import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, randomBoolean, singleMap } from "../Util"
+import { CALC_TYPE, Damage, randomBoolean} from "../Util"
 import { EntityFilter } from "../EntityFilter"
 import { ObstacleHelper } from "../helpers"
 import { ClientPayloadInterface, ServerPayloadInterface } from "../PayloadInterface"
@@ -295,7 +295,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		let effect=CasinoMapHandler.SUBWAY_EXPRESS
 		if(this.subwayTicket===SUBWAY_TICKET.RAPID) effect=CasinoMapHandler.SUBWAY_RAPID
 		if(this.subwayTicket===SUBWAY_TICKET.LOCAL) effect=CasinoMapHandler.SUBWAY_LOCAL
-		this.transfer(PlayerClientInterface.visualEffect,this.player.turn,effect,-1)
+		this.transfer(PlayerClientInterface.visualEffect,this.player.pos,effect,-1)
 		this.transfer(PlayerClientInterface.smoothTeleport,this.player.turn,this.player.pos,dist)
 		this.player.moveByDice(dist)
 	}

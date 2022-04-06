@@ -26,6 +26,7 @@
         55,
         56
     ],
+    "trajectorySpeedRatio":300,
     "idleTimeout": 20000,
     "connectionTimeout": 10000,
     "characters": [

@@ -88,9 +88,6 @@ class Gorae extends Player {
 				
 				break
 			case ENUM.SKILL.W:
-                if(!this.AI){
-                    this.useW()
-                }
 				skillTargetSelector
 				.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
 
@@ -102,6 +99,10 @@ class Gorae extends Player {
 				break
 		}
 		return skillTargetSelector
+	}
+	useNonTargetSkill(skill: number): boolean {
+		if(skill===ENUM.SKILL.W) this.useW()
+		return true
 	}
 	getSkillName(skill: number): string {
 		return Gorae.SKILL_EFFECT_NAME[skill]
@@ -115,9 +116,6 @@ class Gorae extends Player {
 	}
 
     useW() {
-		// let targets = this.game.playerSelector.getPlayersIn(this,this.pos - 3, this.pos + 3)
-
-	//	console.log(targets)
 		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W)).ofSkill(ENUM.SKILL.W)
 		.setOnHit(function(this:Player){
 			this.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
@@ -180,40 +178,40 @@ class Gorae extends Player {
 	 *
 	 * @param {*} skilldata
 	 * @param {*} skill 0~
-	 */
-	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		if (
-			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-		) {
-			return null
-		}
-        switch (skill) {
-			case ENUM.SKILL.Q:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-					data: this.getAiProjPos(skilldata, skill),
-				}
-			case ENUM.SKILL.W:
-				//사거리내에 1~3 명이상 있으면 사용
-				if (
-					this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(5)).length >=
-					this.game.totalnum- 1 || (this.HP/this.MaxHP < 0.3)
-				) {
-					this.useW()
-					return {type:ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,data:null}
-				}
-				return null
+	//  */
+	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
+	// 	if (
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+	// 	) {
+	// 		return null
+	// 	}
+    //     switch (skill) {
+	// 		case ENUM.SKILL.Q:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
+	// 				data: this.getAiProjPos(skilldata, skill),
+	// 			}
+	// 		case ENUM.SKILL.W:
+	// 			//사거리내에 1~3 명이상 있으면 사용
+	// 			if (
+	// 				this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(5)).length >=
+	// 				this.game.totalnum- 1 || (this.HP/this.MaxHP < 0.3)
+	// 			) {
+	// 				this.useW()
+	// 				return {type:ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,data:null}
+	// 			}
+	// 			return null
 
-			case ENUM.SKILL.ULT:
-				let target = this.getUltTarget(skilldata.targets)
-				if (target == null) {
-					return null
-				}
-				return { type: ENUM.AI_SKILL_RESULT_TYPE.TARGET, data: target }
-		}
-	}
+	// 		case ENUM.SKILL.ULT:
+	// 			let target = this.getUltTarget(skilldata.targets)
+	// 			if (target == null) {
+	// 				return null
+	// 			}
+	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.TARGET, data: target }
+	// 	}
+	// }
     getUltTarget(validtargets:number[]) {
 		let ps = this.mediator.allPlayer()
 		validtargets.sort((b:number, a:number):number => {

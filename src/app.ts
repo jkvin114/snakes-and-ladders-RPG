@@ -656,7 +656,7 @@ export class PlayerClientInterface {
 
 	static removeProj = (rname: string, UPID: string) => io.to(rname).emit("server:delete_projectile", UPID)
 
-	static die = (rname: string, killData: Object) => io.to(rname).emit("server:death", killData)
+	static die = (rname: string, killData: ServerPayloadInterface.Death) => io.to(rname).emit("server:death", killData)
 
 	static respawn = (rname: string, turn: number, respawnPos: number, isRevived: boolean) =>
 		io.to(rname).emit("server:respawn", { turn: turn, respawnPos: respawnPos, isRevived: isRevived })
@@ -683,9 +683,13 @@ export class PlayerClientInterface {
 	static updateSkillInfo = (rname: string, turn: number, info_kor: string[], info_eng: string[]) =>
 		io.to(rname).emit("server:update_skill_info", { turn: turn, info_kor: info_kor, info_eng: info_eng })
 
-	static visualEffect = (rname: string, turn: number, type: string, source: number) =>
-		io.to(rname).emit("server:visual_effect", { turn: turn, type: type, source: source })
-
+	static visualEffect = (rname: string, pos: number, type: string, source: number) =>
+		io.to(rname).emit("server:visual_effect", { pos: pos, type: type, source: source })
+		
+	static attack = (rname: string,data:ServerPayloadInterface.Attack) =>
+	io.to(rname).emit("server:attack", data)
+	static skillTrajectory = (rname: string, data:ServerPayloadInterface.skillTrajectory) =>
+		io.to(rname).emit("server:skill_trajectory", data)
 	static indicateObstacle = (rname: string, turn: number, obs: number) =>
 		io.to(rname).emit("server:indicate_obstacle", { turn: turn, obs: obs })
 

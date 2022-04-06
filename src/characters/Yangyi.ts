@@ -81,23 +81,27 @@ class Yangyi extends Player {
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
-				if (!this.AI) {
-					if (!this.useQ()) {
-						skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NO_TARGET)
-					}
-				}
 				break
 			case ENUM.SKILL.W:
-				if (!this.AI) {
-					this.useW()
-				}
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
+				
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.ACTIVATION)
 				break
 			case ENUM.SKILL.ULT:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
 				break
 		}
 		return skillTargetSelector
+	}
+	useNonTargetSkill(skill: number): boolean {
+		if (skill===ENUM.SKILL.Q) {
+			return this.useQ()
+		}
+		return false
+	}
+	useActivationSkill(skill:ENUM.SKILL){
+		if (skill===ENUM.SKILL.W) {
+			this.useW()
+		}
 	}
 	useQ() {
 		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q)).ofSkill(ENUM.SKILL.Q)

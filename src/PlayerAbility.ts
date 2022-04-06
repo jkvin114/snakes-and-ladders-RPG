@@ -89,7 +89,7 @@ class PlayerAbility {
 	obsR: Ability
 	ultHaste: ConstrainedAbility
 	moveSpeed: ConstrainedAbility
-
+	basicAttackSpeed:Ability
 	player: Player
 	private pendingMaxHpChange: number
 
@@ -105,7 +105,7 @@ class PlayerAbility {
 		this.AP = new Ability("AP").add(basic_stats[5])
 		// this.basicAttack_multiplier = 1 //평타 데미지 계수
 		this.extraHP = 0 //추가체력
-
+		this.basicAttackSpeed=new Ability("attackSpeed").add(1)
 		this.arP = new Ability("arP")
 		this.MP = new Ability("MP")
 		this.regen = new Ability("regen")

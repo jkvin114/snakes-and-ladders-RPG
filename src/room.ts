@@ -441,14 +441,12 @@ class Room {
 
 		if (!info) {
 			if (this.game.thisp().AI) {
-				setTimeout(() => {
-					if (!this.game) return
-					this.game.aiSkill()
-				}, 300)
+				this.game.aiSkill()
+				
 				setTimeout(() => {
 					if (!this.game) return
 					this.goNextTurn()
-				}, 1500)
+				}, 3000)
 
 				//	console.log("ai go nextturn")
 			} else {
@@ -507,10 +505,10 @@ class Room {
 	user_clickSkill(s: number) {
 		if (this.game == null) return
 
-		let result = this.game.initSkill(s - 1)
+		let result = this.game.onSelectSkill(s - 1)
 		//	console.log("getskill")
 		//	console.log(result)
-		if(result.type===INIT_SKILL_RESULT.NON_TARGET){
+		if(result.type===INIT_SKILL_RESULT.NON_TARGET || result.type===INIT_SKILL_RESULT.ACTIVATION){
 			this.showSkillButtonToUser()
 		}
 		this.stopIdleTimeout()

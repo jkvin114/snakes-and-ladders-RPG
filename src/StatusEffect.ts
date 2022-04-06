@@ -494,7 +494,7 @@ class TickEffect extends StatusEffect {
 		if (!this.source) {
 			return this.owner.doObstacleDamage(damage.getTotalDmg(), this.name)
 		} else if (this.sourceSkill != null) {
-			return this.owner.mediator.skillAttackSingle(this.owner.mediator.getPlayer(this.source),this.owner.UEID)
+			return this.owner.mediator.skillAttackAuto(this.owner.mediator.getPlayer(this.source),this.owner.UEID)
 			(new SkillAttack(damage,this.name))
 			// return this.owner.hitBySkill(damage, this.name, this.sourceTurn)
 		} else {

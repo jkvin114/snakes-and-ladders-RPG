@@ -10,6 +10,7 @@ import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect,ShieldEf
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
+import { DefaultAgent } from "../AiAgents/AiAgent"
 
 const ID = 7
 
@@ -70,7 +71,7 @@ class Bird extends Player {
 		}
 		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
-
+		this.AiAgent=new DefaultAgent(this)
 	}
 
 
@@ -102,19 +103,17 @@ class Bird extends Player {
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
 				break
 			case ENUM.SKILL.W:
-				if (!this.AI) {
-					this.useW()
-				}
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.ACTIVATION)
 				break
 			case ENUM.SKILL.ULT:
-				if (!this.AI) {
-					this.useUlt()
-				}
-				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
+				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.ACTIVATION)
 				break
 		}
 		return skillTargetSelector
+	}
+	useActivationSkill(skill: number): void {
+		if(skill===ENUM.SKILL.W) this.useW()
+		if(skill===ENUM.SKILL.ULT) this.useUlt()
 	}
 
 	private getUltShield() {
@@ -258,35 +257,35 @@ class Bird extends Player {
 	passive() {}
 	onSkillDurationCount() {}
 	/**
-	 *
-	 * @param {*} skilldata
-	 * @param {*} skill 0~
-	 */
-	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	//	console.log("aiSkillFinalSelection" + skill + "" + skilldata)
-		if (
-			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-		) {
-			return null
-		}
-		switch (skill) {
-			case ENUM.SKILL.Q:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-					data: this.getAiTarget(skilldata.targets)
-				}
-			case ENUM.SKILL.W:
-				if (this.cooltime[ENUM.SKILL.Q] < 1) {
-					this.useW()
-				}
-				return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-			case ENUM.SKILL.ULT:
-				this.useUlt()
-				return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-		}
-		return null
-	}
+	//  *
+	//  * @param {*} skilldata
+	//  * @param {*} skill 0~
+	//  */
+	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
+	// //	console.log("aiSkillFinalSelection" + skill + "" + skilldata)
+	// 	if (
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+	// 	) {
+	// 		return null
+	// 	}
+	// 	switch (skill) {
+	// 		case ENUM.SKILL.Q:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
+	// 				data: this.getAiTarget(skilldata.targets)
+	// 			}
+	// 		case ENUM.SKILL.W:
+	// 			if (this.cooltime[ENUM.SKILL.Q] < 1) {
+	// 				this.useW()
+	// 			}
+	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
+	// 		case ENUM.SKILL.ULT:
+	// 			this.useUlt()
+	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
+	// 	}
+	// 	return null
+	// }
 }
 export { Bird }

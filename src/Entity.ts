@@ -3,7 +3,7 @@ import { EntityMediator } from "./EntityMediator"
 import { Damage, decrement } from "./Util"
 import { EntityStatusEffect } from "./PlayerStatusEffect"
 import { clamp } from "./Util"
-import { MAP } from "./Game"
+import { MAP } from "./MapHandlers/MapStorage"
 import { ENTITY_TYPE } from "./enum"
 //anything that has its own HP
 class Entity {

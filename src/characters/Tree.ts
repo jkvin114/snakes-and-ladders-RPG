@@ -12,6 +12,7 @@ import { SummonedEntity } from "./SummonedEntity/SummonedEntity"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../EntityFilter"
+import { DefaultAgent } from "../AiAgents/AiAgent"
 
 const ID = 8
 class Tree extends Player {
@@ -63,6 +64,8 @@ class Tree extends Player {
 		}
 		this.isWithered = false
 		this.plantEntities = new Set<string>()
+		this.AiAgent=new DefaultAgent(this)
+
 	}
 
 	// getSkillInfoKor() {
@@ -277,37 +280,37 @@ class Tree extends Player {
 	}
 	onSkillDurationCount() {}
 	onSkillDurationEnd(skill: number) {}
-	/**
-	 *
-	 * @param {*} skilldata
-	 * @param {*} skill 0~
-	 */
-	aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-		if (
-			skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-			skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-		) {
-			return null
-		}
-		switch (skill) {
-			case ENUM.SKILL.Q:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET,
-					data: this.getAiAreaPos(skilldata, skill)
-				}
-			case ENUM.SKILL.W:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-					data: this.getAiProjPos(skilldata, skill)
-				}
-			case ENUM.SKILL.ULT:
-				return {
-					type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-					data: this.getAiTarget(skilldata.targets)
-				}
-		}
-	}
+	// /**
+	//  *
+	//  * @param {*} skilldata
+	//  * @param {*} skill 0~
+	//  */
+	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
+	// 	if (
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
+	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+	// 	) {
+	// 		return null
+	// 	}
+	// 	switch (skill) {
+	// 		case ENUM.SKILL.Q:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET,
+	// 				data: this.getAiAreaPos(skilldata, skill)
+	// 			}
+	// 		case ENUM.SKILL.W:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
+	// 				data: this.getAiProjPos(skilldata, skill)
+	// 			}
+	// 		case ENUM.SKILL.ULT:
+	// 			return {
+	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
+	// 				data: this.getAiTarget(skilldata.targets)
+	// 			}
+	// 	}
+	// }
 }
 
 export { Tree }
