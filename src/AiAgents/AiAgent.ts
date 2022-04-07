@@ -10,7 +10,7 @@ import { EntityFilter } from "../EntityFilter"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
 
 const BASICATTACK = 4
-const ONE_SKILL_DELAY = 600
+const ONE_SKILL_DELAY = 800
 abstract class AiAgent {
 	player: Player
 	mediator: EntityMediator
@@ -25,10 +25,69 @@ abstract class AiAgent {
 		this.mediator = player.mediator
 		this.attemptedSkills = new Set<SKILL>()
 	}
-	static async aiSkill(player: Player, callback: Function) {
+
+	static simulationAiSkill(player:Player){
 		player.AiAgent.attemptedSkills.clear()
 		if (player.effects.has(EFFECT.SILENT) || player.dead || player.game.gameover) {
-			await sleep(ONE_SKILL_DELAY)
+			return
+		}
+		for (let i = 0; i < 5; ++i) {
+			let skill = player.AiAgent.nextSkill()
+			console.log("aiskill "+skill)
+			if (skill < 0) break
+			if (skill === BASICATTACK) {
+				player.basicAttack()
+				continue
+			}
+			player.AiAgent.attemptedSkills.add(skill)
+
+			let skillinit = player.initSkill(skill)
+			console.log(skillinit)
+			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
+				continue
+			}
+
+			let result = false
+			switch (skillinit.type) {
+				case INIT_SKILL_RESULT.NON_TARGET:
+					result = player.AiAgent.useNonTargetSkill(skill)
+
+					break
+				case INIT_SKILL_RESULT.ACTIVATION:
+					result = player.AiAgent.useActivationSkill(skill)
+					break
+				case INIT_SKILL_RESULT.TARGTING:
+					if (skillinit.data.kind !== "target" || skillinit.data.targets.length <= 0) break
+					let target = player.AiAgent.selectTarget(skillinit.skill, skillinit.data)
+					player.game.useSkillToTarget(target.turn)
+
+					result = true
+					break
+				case INIT_SKILL_RESULT.PROJECTILE:
+					if (skillinit.data.kind !== "location") break
+					let projpos = player.AiAgent.getProjectilePos(skillinit.skill, skillinit.data)
+					if (projpos < 0) break
+					player.game.placeSkillProjectile(projpos)
+					result = true
+					break
+				case INIT_SKILL_RESULT.AREA_TARGET:
+					if (skillinit.data.kind !== "location") break
+					let areapos = player.AiAgent.getAreaPos(skillinit.skill, skillinit.data)
+					if (areapos < 0) break
+					player.game.useAreaSkill(areapos)
+					result = true
+					break
+			}
+
+			if (!result) continue
+
+		}
+	}
+	static async aiSkill(player: Player, callback: Function) {
+		player.AiAgent.attemptedSkills.clear()
+		//await sleep(ONE_SKILL_DELAY)
+		if (player.dead || player.game.gameover) {
+			callback()
 			return
 		}
 		for (let i = 0; i < 5; ++i) {
@@ -38,6 +97,9 @@ abstract class AiAgent {
 			if (skill === BASICATTACK) {
 				player.basicAttack()
 				await sleep(ONE_SKILL_DELAY)
+				continue
+			}
+			else if(player.effects.has(EFFECT.SILENT)){
 				continue
 			}
 			player.AiAgent.attemptedSkills.add(skill)
@@ -91,7 +153,7 @@ abstract class AiAgent {
 		callback()
 	}
 	nextSkill(): number {
-		if (this.player.basicAttackCount > 0) {
+		if (this.player.canBasicAttack()) {
 			return BASICATTACK
 		}
 		if (!this.attemptedSkills.has(SKILL.ULT)) {

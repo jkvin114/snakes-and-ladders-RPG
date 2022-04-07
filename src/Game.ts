@@ -51,7 +51,7 @@ class GameSetting {
 	constructor(setting: ClientPayloadInterface.GameSetting, instant: boolean, isTeam: boolean) {
 		this.instant = instant
 		this.isTeam = isTeam
-		this.legacyBasicAttack = true
+		this.legacyBasicAttack = false
 		if (setting === null) {
 			this.randomize()
 			this.autoNextTurnOnStore = true
@@ -340,7 +340,9 @@ class Game {
 		if (this.clientsReady !== this.PNUM) {
 			return null
 		}
-
+		p.onMyTurnStart()
+		this.entityMediator.onTurnStart(this.thisturn)
+		
 		return {
 			crypt_turn: "",
 			turn: p.turn,
@@ -535,6 +537,7 @@ class Game {
 
 		//다음턴 안넘어감(one more dice)
 		if (p.oneMoreDice) {
+			p.onMyTurnStart()
 			console.log("ONE MORE DICE")
 			p.oneMoreDice = false
 			p.effects.cooldownAllHarmful()
@@ -923,13 +926,16 @@ class Game {
 	//========================================================================================================
 
 	//()=>{turn:number,silent:number,cooltime:number[],duration:number[]}
-	skillCheck() {
-		return this.getSkillStatus()
-	}
+	// skillCheck() {
+	// 	return this.getSkillStatus()
+	// }
 	//========================================================================================================
 
-	aiSkill() {
-		AiAgent.aiSkill(this.thisp(),()=>{console.log("ai skill complete")})
+	aiSkill(callback:Function) {
+		AiAgent.aiSkill(this.thisp(),callback)
+	}
+	simulationAiSkill(){
+		AiAgent.simulationAiSkill(this.thisp())
 	}
 	//========================================================================================================
 	applyRangeProjectile(player: Player): boolean {
@@ -991,7 +997,7 @@ class Game {
 	 *
 	 * @returns turn,issilent,cooltile,duration,level,isdead
 	 */
-	getSkillStatus() {
+	getSkillStatus():ServerPayloadInterface.SkillStatus {
 		return this.thisp().getSkillStatus()
 	}
 
@@ -1007,7 +1013,6 @@ class Game {
 
 	placeProjNoSelection(proj: Projectile, pos: number) {
 		this.placeProjectile(proj, pos)
-
 	}
 
 	//========================================================================================================

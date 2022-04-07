@@ -20,28 +20,36 @@ export namespace ServerPayloadInterface {
 		gameSettings: Object
 		shuffledObstacles: { obs: number; money: number }[]
 	}
-    export  interface LocationTargetSelector{
-        kind?:"location"
-        pos: number
+	export interface LocationTargetSelector {
+		kind?: "location"
+		pos: number
 		range: number
 		size: number
-    }
-    export interface PlayerTargetSelector{
-        kind?:"target"
-        targets:number[]
-    }
-    export interface SkillInit extends CryptedPayloadInterface{
-        type:number,data:LocationTargetSelector|PlayerTargetSelector|null,skill:number
-    }
+	}
+	export interface PlayerTargetSelector {
+		kind?: "target"
+		targets: number[]
+	}
+	export interface SkillInit extends CryptedPayloadInterface {
+		type: number
+		data: LocationTargetSelector | PlayerTargetSelector | null
+		skill: number
+	}
 
 	export interface SkillStatus extends TurnPayloadInterface {
 		cooltime: number[]
 		duration: number[] //remaining duration/full duration
 		cooltimeratio: number[] //remaining cooltime/full cooltime
 		level: number
+		basicAttackCount:number
+		canBasicAttack:boolean
+		canUseSkill:boolean
 	}
-	export interface skillTrajectory{
-		from: number,to:number ,type: string,delay:number
+	export interface skillTrajectory {
+		from: number
+		to: number
+		type: string
+		delay: number
 	}
 	export interface TurnStart extends CryptedPayloadInterface {
 		stun: boolean
@@ -58,12 +66,12 @@ export namespace ServerPayloadInterface {
 		turn: number
 	}
 	export interface DiceRoll extends CryptedPayloadInterface {
-		dice: number        //dice number shown
-		actualdice: number   //actual distance to move
-		currpos: number     //position before move
-		turn: number 
-		dcused: boolean     //dice control used
-		died: boolean       //whether player died immediately after throwing dice(mine)
+		dice: number //dice number shown
+		actualdice: number //actual distance to move
+		currpos: number //position before move
+		turn: number
+		dcused: boolean //dice control used
+		died: boolean //whether player died immediately after throwing dice(mine)
 	}
 	export interface PendingObstacle {
 		name: string
@@ -71,7 +79,7 @@ export namespace ServerPayloadInterface {
 	}
 	export interface NormalEffect extends TurnPayloadInterface {
 		effect: number
-		num: number     //indicator number
+		num: number //indicator number
 	}
 	export interface PassProjectile {
 		name: string
@@ -94,7 +102,7 @@ export namespace ServerPayloadInterface {
 		UEID: string
 		name: string
 	}
-	export interface EnterStore{
+	export interface EnterStore {
 		item: number[]
 		money: number
 		token: number
@@ -104,36 +112,48 @@ export namespace ServerPayloadInterface {
 		itemLimit: number
 		priceMultiplier: number
 	}
-	export interface Death extends TurnPayloadInterface{
-		killer:number
+	export interface Death extends TurnPayloadInterface {
+		killer: number
 		location: number
 		isShutDown: boolean
 		killerMultiKillCount: number
 	}
-	export interface HPChange extends TurnPayloadInterface{
-		change:number
-		currhp:number
-		currmaxhp:number
+	export interface Obstacle {
+		obs: number
 	}
-	export interface MaxHPChange extends TurnPayloadInterface{
-		change:number
-		currmaxhp:number
+	export interface ObstacleEffect extends TurnPayloadInterface {
+		pos: number
+		type: number
 	}
-	export interface Heal extends HPChange{
-		type:string
+	export interface Shield extends TurnPayloadInterface {
+		turn: number
+		shield: number
+		change: number
+		indicate: boolean
 	}
-	export interface Damage extends HPChange{
-		source:number
+	export interface HPChange extends TurnPayloadInterface {
+		change: number
+		currhp: number
+		currmaxhp: number
 	}
-	export interface Victim{
-		pos:number
-		flags:string[],
-		damage:number
+	// export interface MaxHPChange extends TurnPayloadInterface{
+	// 	currmaxhp:number
+	// }
+	export interface Heal extends HPChange {
+		type: string
 	}
-	export interface Attack{
-		targets:Victim[]
-		source:number
-		visualeffect:string
+	export interface Damage extends HPChange {
+		source: number
+	}
+	export interface Victim {
+		pos: number
+		flags: string[]
+		damage: number
+	}
+	export interface Attack {
+		targets: Victim[]
+		source: number
+		visualeffect: string
 		// trajectorySpeed:number
 	}
 }
@@ -177,35 +197,37 @@ export namespace ClientPayloadInterface {
 		moneyRecord: boolean
 		summaryOnly: boolean
 	}
-    interface GodHandResult{
-        kind:"godhand"
-        target: number; location: number 
-    }
-    interface SubwayResult{
-        kind:"subway"
-        type:number,price:number
-    }
-    interface TokenStoreResult{
-        kind:"tokenstore"
-        token:number
-        money:number
-    }
-    export interface PendingObstacle{
-        type:string
-        complete:boolean
-        booleanResult?:boolean
-        objectResult?:GodHandResult|TokenStoreResult|SubwayResult
-    }
-    export interface PendingAction{
-        type:string
-        result:number|boolean
-        complete:boolean
-    }
-    export interface ItemBought extends TurnPayloadInterface{
-        item: number[]
-	    moneyspend: number
+	interface GodHandResult {
+		kind: "godhand"
+		target: number
+		location: number
+	}
+	interface SubwayResult {
+		kind: "subway"
+		type: number
+		price: number
+	}
+	interface TokenStoreResult {
+		kind: "tokenstore"
+		token: number
+		money: number
+	}
+	export interface PendingObstacle {
+		type: string
+		complete: boolean
+		booleanResult?: boolean
+		objectResult?: GodHandResult | TokenStoreResult | SubwayResult
+	}
+	export interface PendingAction {
+		type: string
+		result: number | boolean
+		complete: boolean
+	}
+	export interface ItemBought extends TurnPayloadInterface {
+		item: number[]
+		moneyspend: number
 		tokenbought: number
 		tokenprice: number
 		life: number
-    }
+	}
 }

@@ -262,7 +262,7 @@ class Simulation {
 				if (obs === ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
 					oneGame = false
 				} else {
-					this.game.aiSkill()
+					this.game.simulationAiSkill()
 				}
 			} catch (e) {
 				console.error("Unexpected error on " + this.progressCount + "th game ")

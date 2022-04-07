@@ -353,7 +353,6 @@ class HPChangeData {
 	maxHp: number
 	type: string
 	source: number
-	isRespawn: boolean
 	needDelay: boolean
 	killedByDamage: boolean
 	willRevive: boolean
@@ -364,7 +363,6 @@ class HPChangeData {
 		this.maxHp = 0
 		this.type = "noeffect"
 		this.source = -1
-		this.isRespawn = false
 		this.needDelay = false
 		this.killedByDamage = false
 		this.willRevive = false
@@ -387,7 +385,7 @@ class HPChangeData {
 		return this
 	}
 	setRespawn() {
-		this.isRespawn = true
+		this.type="respawn"
 		return this
 	}
 	setDelay() {

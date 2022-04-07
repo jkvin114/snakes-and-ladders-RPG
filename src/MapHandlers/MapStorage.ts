@@ -79,12 +79,12 @@ class MapStorage {
 			toshuffle=shuffle(toshuffle)
 			let j=0
 			for(let i=sfdata.start;i<=sfdata.end;++i){
-				
+
 				if(obslist[i].obs>0){
 					obslist[i].obs=toshuffle[j].obs
 					obslist[i].money=toshuffle[j].money
 				}
-				
+
 				++j
 			}
 		}

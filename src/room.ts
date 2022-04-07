@@ -441,12 +441,14 @@ class Room {
 
 		if (!info) {
 			if (this.game.thisp().AI) {
-				this.game.aiSkill()
-				
-				setTimeout(() => {
+				this.game.aiSkill(()=>{
 					if (!this.game) return
 					this.goNextTurn()
-				}, 3000)
+				})
+				
+				// setTimeout(() => {
+					
+				// }, 3000)
 
 				//	console.log("ai go nextturn")
 			} else {
@@ -520,9 +522,18 @@ class Room {
 		return result
 	}
 	showSkillButtonToUser(){
-		RoomClientInterface.setSkillReady(this.name, this.game.getSkillStatus())
+		let status=this.game.getSkillStatus()
+		console.log(status)
+		RoomClientInterface.setSkillReady(this.name,status )
 	}
 
+	user_basicAttack(){
+		this.stopIdleTimeout()
+		this.startIdleTimeout(() => this.goNextTurn())
+		this.game.thisp().basicAttack()
+		
+		this.showSkillButtonToUser()
+	}
 	user_choseSkillTarget(target: number) {
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())

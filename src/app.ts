@@ -458,7 +458,15 @@ io.on("connect", function (socket: Socket) {
 
 		ROOMS.get(rname).user_completePendingAction(info)
 	})
+	//execute when player clicks basic attack
+	socket.on("user:basicattack", function (crypt_turn: string) {
+		let rname = SocketSession.getRoomName(socket)
 
+		if (!ROOMS.has(rname)) return
+		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		let room = ROOMS.get(rname)
+		room.user_basicAttack()
+	})
 	//==========================================================================================
 
 	//execute when player clicks skill button, use skill or return targets or return proj positions
@@ -479,11 +487,11 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		let status = ROOMS.get(rname).user_choseSkillTarget(target)
+		ROOMS.get(rname).user_choseSkillTarget(target)
 
-		if (status != null) {
-			setTimeout(() => socket.emit("server:used_skill", status), 500)
-		}
+		// if (status != null) {
+		// 	setTimeout(() => socket.emit("server:used_skill", status), 500)
+		// }
 	})
 	//==========================================================================================
 	//execute when player chose a projectile location
@@ -493,8 +501,8 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		let skillstatus = ROOMS.get(rname).user_choseSkillLocation(location)
-		socket.emit("server:used_skill", skillstatus)
+		ROOMS.get(rname).user_choseSkillLocation(location)
+		// socket.emit("server:used_skill", skillstatus)
 	})
 	socket.on("user:chose_area_skill_location", function (crypt_turn: string, location: number) {
 		//	console.log("sendprojlocation")
@@ -502,8 +510,8 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		let skillstatus = ROOMS.get(rname).user_choseAreaSkillLocation(location)
-		socket.emit("server:used_skill", skillstatus)
+		ROOMS.get(rname).user_choseAreaSkillLocation(location)
+		// socket.emit("server:used_skill", skillstatus)
 	})
 	//==========================================================================================
 
@@ -624,18 +632,18 @@ export namespace RoomClientInterface {
 }
 
 export class PlayerClientInterface {
-	static changeHP = (rname: string, hpChangeData: any) => {
-		io.to(rname).emit("server:hp", hpChangeData)
-	}
+	// static changeHP = (rname: string, hpChangeData: any) => {
+	// 	io.to(rname).emit("server:hp", hpChangeData)
+	// }
 	static changeMoney = (rname: string, turn: number, indicate_amt: number, result: number) => {
 		io.to(rname).emit("server:money", { turn: turn, amt: indicate_amt, result: result })
 	}
 
-	static changeHP_damage = (rname: string, hpChangeData: any) => io.to(rname).emit("server:damage", hpChangeData)
+	static changeHP_damage = (rname: string, hpChangeData: ServerPayloadInterface.Damage) => io.to(rname).emit("server:damage", hpChangeData)
 
-	static changeHP_heal = (rname: string, hpChangeData: any) => io.to(rname).emit("server:heal", hpChangeData)
+	static changeHP_heal = (rname: string, hpChangeData: ServerPayloadInterface.Heal) => io.to(rname).emit("server:heal", hpChangeData)
 
-	static changeShield = (rname: string, shieldData: any) => io.to(rname).emit("server:shield", shieldData)
+	static changeShield = (rname: string, shieldData: ServerPayloadInterface.Shield) => io.to(rname).emit("server:shield", shieldData)
 
 	static giveEffect = (rname: string, data: ServerPayloadInterface.NormalEffect) =>
 		io.to(rname).emit("server:status_effect", data)
@@ -690,8 +698,10 @@ export class PlayerClientInterface {
 	io.to(rname).emit("server:attack", data)
 	static skillTrajectory = (rname: string, data:ServerPayloadInterface.skillTrajectory) =>
 		io.to(rname).emit("server:skill_trajectory", data)
-	static indicateObstacle = (rname: string, turn: number, obs: number) =>
-		io.to(rname).emit("server:indicate_obstacle", { turn: turn, obs: obs })
+	static indicateObstacle = (rname: string, data:ServerPayloadInterface.Obstacle) =>
+		io.to(rname).emit("server:indicate_obstacle", data)
+	static obstacleEffect=(rname: string, data:ServerPayloadInterface.ObstacleEffect) =>
+	io.to(rname).emit("server:obstacle_effect", data)
 
 	static indicateItem = (rname: string, turn: number, item: number[]) =>
 		io.to(rname).emit("server:indicate_item", { turn: turn, item: item })

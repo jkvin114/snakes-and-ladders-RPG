@@ -4,13 +4,13 @@ import * as ENUM from "./enum"
 import * as Util from "./Util"
 import { Game } from "./Game"
 import { Projectile } from "./Projectile"
-import {PlayerAbility} from "./PlayerAbility"
+import { PlayerAbility } from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
-import {PlayerMapHandler} from "./MapHandlers/PlayerMapHandler"
+import { PlayerMapHandler } from "./MapHandlers/PlayerMapHandler"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects } from "./PlayerStatusEffect"
-import { PlayerClientInterface ,testSetting} from "./app"
-import { ObstacleHelper,  SkillInfoFactory } from "./helpers"
+import { PlayerClientInterface, testSetting } from "./app"
+import { ObstacleHelper, SkillInfoFactory } from "./helpers"
 import { Entity } from "./Entity"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { EntityFilter } from "./EntityFilter"
@@ -26,9 +26,9 @@ import { MAP } from "./MapHandlers/MapStorage"
 
 // 	}
 // }
-export interface ValueScale{
-	base:number
-	scales:{ability:string,val:number}[]
+export interface ValueScale {
+	base: number
+	scales: { ability: string; val: number }[]
 }
 
 abstract class Player extends Entity {
@@ -36,12 +36,12 @@ abstract class Player extends Entity {
 	//	players: Player[]
 	//	mapId: number
 	AI: boolean
-	AiAgent:AiAgent
+	AiAgent: AiAgent
 	turn: number
 	name: string
 	champ: number
 	champ_name: string
-	team: boolean 
+	team: boolean
 	//	pos: number
 	lastpos: number
 	dead: boolean
@@ -69,7 +69,7 @@ abstract class Player extends Entity {
 	shield: number
 	cooltime: number[]
 	duration: number[]
-	basicAttackCount:number   //basic attack count avaliable in this turn
+	basicAttackCount: number //basic attack count avaliable in this turn
 
 	//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
 	// loanTurnLeft: number
@@ -87,31 +87,23 @@ abstract class Player extends Entity {
 		final: number
 	}
 	abstract readonly duration_list: number[]
-	abstract readonly skill_ranges:number[]
+	abstract readonly skill_ranges: number[]
 	skillInfoKor: SkillInfoFactory
 	skillInfo: SkillInfoFactory
 
 	abstract getSkillTrajectorySpeed(s: string): number
 	abstract getSkillTargetSelector(skill: number): Util.SkillTargetSelector
-	abstract getSkillProjectile(projpos:number): Projectile
+	abstract getSkillProjectile(projpos: number): Projectile
 	abstract getSkillDamage(target: number): Util.SkillAttack
-	
+
 	abstract passive(): void
 	abstract getSkillName(skill: number): string
 	abstract onSkillDurationCount(): void
 	abstract onSkillDurationEnd(skill: number): void
 	// abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
-	abstract getSkillBaseDamage(skill:number):number
-	constructor(
-		turn: number,
-		team: boolean ,
-		game: Game,
-		ai: boolean,
-		char: number,
-		name: string,
-		basic_stats: number[]
-	) {
-		super(game, basic_stats[0], testSetting.pos,ENUM.ENTITY_TYPE.PLAYER)
+	abstract getSkillBaseDamage(skill: number): number
+	constructor(turn: number, team: boolean, game: Game, ai: boolean, char: number, name: string, basic_stats: number[]) {
+		super(game, basic_stats[0], testSetting.pos, ENUM.ENTITY_TYPE.PLAYER)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
@@ -122,7 +114,7 @@ abstract class Player extends Entity {
 		this.dead = false
 		this.level = testSetting.lvl //레벨, 1에서시작
 
-		this.UEID=this.game.turn2Id(this.turn)
+		this.UEID = this.game.turn2Id(this.turn)
 
 		this.kill = 0
 		this.death = 0
@@ -144,26 +136,25 @@ abstract class Player extends Entity {
 		this.statistics = new PlayerStatistics(this)
 		this.inven = new PlayerInventory(this)
 		this.effects = new PlayerStatusEffects(this)
-		this.mapHandler = PlayerMapHandler.create(this,this.mapId)
-		this.AiAgent=new DefaultAgent(this)
+		this.mapHandler = PlayerMapHandler.create(this, this.mapId)
+		this.AiAgent = new DefaultAgent(this)
 
 		this.shield = 0
 
 		this.cooltime = [0, 0, 0]
 		this.duration = [0, 0, 0]
-		this.basicAttackCount=0
+		this.basicAttackCount = 0
 		// this.loanTurnLeft = 0
 
 		this.damagedby = [0, 0, 0, 0]
 		//for eath player, turns left to be count as assist(maximum 3)
 		this.bestMultiKill = 0
-		this.skillInfo=new SkillInfoFactory(this.champ,this,SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor=new SkillInfoFactory(this.champ,this,SkillInfoFactory.LANG_KOR)
+		this.skillInfo = new SkillInfoFactory(this.champ, this, SkillInfoFactory.LANG_ENG)
+		this.skillInfoKor = new SkillInfoFactory(this.champ, this, SkillInfoFactory.LANG_KOR)
 	}
 	transfer(func: Function, ...args: any[]) {
 		this.mediator.sendToClient(func, ...args)
 	}
-	
 
 	distance(p1: Player, p2: Player): number {
 		return Math.abs(p1.pos - p2.pos)
@@ -178,27 +169,29 @@ abstract class Player extends Entity {
 		this.transfer(PlayerClientInterface.message, text)
 	}
 	getSkillInfoKor() {
-		return [this.skillInfoKor.getQ(),this.skillInfoKor.getW(),this.skillInfoKor.getUlt()]
+		return [this.skillInfoKor.getQ(), this.skillInfoKor.getW(), this.skillInfoKor.getUlt()]
 	}
-	getSkillInfoEng() {		
-		return [this.skillInfo.getQ(),this.skillInfo.getW(),this.skillInfo.getUlt()]
+	getSkillInfoEng() {
+		return [this.skillInfo.getQ(), this.skillInfo.getW(), this.skillInfo.getUlt()]
 	}
-	getSkillAmount(key:string):number{
+	getSkillAmount(key: string): number {
 		return 0
 	}
-	calculateScale(data:ValueScale){
-		let v= data.base + data.scales.reduce((prev,curr)=>{
-			return prev + (this.ability.get(curr.ability) * curr.val)
-		},0)
+	calculateScale(data: ValueScale) {
+		let v =
+			data.base +
+			data.scales.reduce((prev, curr) => {
+				return prev + this.ability.get(curr.ability) * curr.val
+			}, 0)
 		return Math.floor(v)
 	}
 
 	calculateAdditionalDice(amount: number): number {
-		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this))(function(){
+		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this))(function () {
 			return this.pos
 		})
-		
-		if(!(first instanceof Player)) return
+
+		if (!(first instanceof Player)) return
 
 		//자신이 1등보다 15칸이상 뒤쳐져있으면 주사위숫자 2 추가,
 		//자신이 1등보다 30칸이상 뒤쳐져있으면 주사위숫자 4 추가
@@ -218,7 +211,7 @@ abstract class Player extends Entity {
 		//장화 아이템
 		if (
 			(this.inven.haveItem(ENUM.ITEM.BOOTS) || this.inven.haveItem(ENUM.ITEM.BOOTS_OF_HASTE)) &&
-			this.game.totalnum-1 === this.mediator.getPlayerRankOf(this,(p)=>p.pos)
+			this.game.totalnum - 1 === this.mediator.getPlayerRankOf(this, (p) => p.pos)
 		) {
 			this.adice += 1
 		}
@@ -257,27 +250,26 @@ abstract class Player extends Entity {
 		return true
 	}
 	isTargetableFrom(e: Entity): boolean {
-		if(!e) return true
-		if(this.invulnerable || this.effects.has(ENUM.EFFECT.INVISIBILITY)) return false
-		if(e instanceof Player && !this.mapHandler.isTargetableFrom(e)) return false
+		if (!e) return true
+		if (this.invulnerable || this.effects.has(ENUM.EFFECT.INVISIBILITY)) return false
+		if (e instanceof Player && !this.mapHandler.isTargetableFrom(e)) return false
 		return true
 	}
 	isAttackableFrom(e: Entity): boolean {
-		if(!e) return true
+		if (!e) return true
 
 		return this.isTargetableFrom(e) && this.isEnemyOf(e)
 	}
 	isEnemyOf(e: Entity): boolean {
-		if(!e) return true
+		if (!e) return true
 
-		if(e instanceof SummonedEntity){
-			if(e.summoner === this) return false
-			if(this.game.isTeam && e.summoner.team === this.team) return false
+		if (e instanceof SummonedEntity) {
+			if (e.summoner === this) return false
+			if (this.game.isTeam && e.summoner.team === this.team) return false
 			return true
-		}
-		else if(e instanceof Player){
-			if(e === this) return false
-			if(this.game.isTeam && e.team === this.team) return false
+		} else if (e instanceof Player) {
+			if (e === this) return false
+			if (this.game.isTeam && e.team === this.team) return false
 			return true
 		}
 		return super.isEnemyOf(e)
@@ -301,22 +293,23 @@ abstract class Player extends Entity {
 	}
 	//========================================================================================================
 	onMyTurnStart() {
-		this.basicAttackCount=this.ability.basicAttackSpeed.get()
+		this.basicAttackCount = this.ability.basicAttackSpeed.get()
+		console.log(this.basicAttackCount)
 		this.passive()
 		this.cooltime = this.cooltime.map(Util.decrement)
 		this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
-		this.transfer(PlayerClientInterface.update,"skillstatus" ,this.turn,this.getSkillStatus())
-
+		this.transfer(PlayerClientInterface.update, "skillstatus", this.turn, this.getSkillStatus())
 	}
-	getSkillStatus(){
+	getSkillStatus():ServerPayloadInterface.SkillStatus {
 		return {
 			turn: this.game.thisturn,
-			silent: this.effects.has(ENUM.EFFECT.SILENT),
 			cooltime: this.cooltime,
 			cooltimeratio: this.getCooltimePercent(),
 			duration: this.getDurationPercent(),
 			level: this.level,
-			dead: this.dead
+			basicAttackCount:this.basicAttackCount,
+			canBasicAttack:this.canBasicAttack(),
+			canUseSkill:!this.effects.has(ENUM.EFFECT.SILENT)
 		}
 	}
 	//========================================================================================================
@@ -336,7 +329,6 @@ abstract class Player extends Entity {
 		// }
 		// this.loanTurnLeft = Math.max(0, this.loanTurnLeft - 1)
 
-		
 		this.effects.onBeforeObs()
 	}
 
@@ -444,13 +436,13 @@ abstract class Player extends Entity {
 	changePos(pos: number): boolean {
 		if (this.mapHandler.doMineDamage()) return true
 
-		this.pos = Util.clamp(pos,0,MAP.getLimit(this.mapId))
+		this.pos = Util.clamp(pos, 0, MAP.getLimit(this.mapId))
 		this.lvlup()
 
 		return false
 	}
 
-	forceMove(pos: number):void {
+	forceMove(pos: number): void {
 		this.statistics.add(ENUM.STAT.FORCEMOVE, 1)
 		this.adice = 0
 		this.mapHandler.onForceMove(pos)
@@ -530,31 +522,35 @@ abstract class Player extends Entity {
 		this.transfer(PlayerClientInterface.update, "appearance", this.turn, name)
 		//	console.log("changeApperance"+name)
 	}
-	resetApperance(){
+	resetApperance() {
 		this.changeApperance("")
 	}
 	/**
-		 * 캐릭터 스킬 아이콘 변경
-		 * @param name name of that skill
-		 * set to default if name===""
-		 */
-	changeSkillImage(name: string,skill:ENUM.SKILL) {
-		this.transfer(PlayerClientInterface.update, "skillImg", this.turn, {champ:this.champ,skill:skill,skill_name:name})
+	 * 캐릭터 스킬 아이콘 변경
+	 * @param name name of that skill
+	 * set to default if name===""
+	 */
+	changeSkillImage(name: string, skill: ENUM.SKILL) {
+		this.transfer(PlayerClientInterface.update, "skillImg", this.turn, {
+			champ: this.champ,
+			skill: skill,
+			skill_name: name
+		})
 		//	console.log("changeApperance"+name)
 	}
-	resetSkillImage(skill:ENUM.SKILL){
-		this.changeSkillImage("",skill)
+	resetSkillImage(skill: ENUM.SKILL) {
+		this.changeSkillImage("", skill)
 	}
-	getDurationPercent(){
-		return this.duration.map((d,i)=>{
-			if(this.duration_list[i]===0) return 0
-			else return d/this.duration_list[i]
+	getDurationPercent() {
+		return this.duration.map((d, i) => {
+			if (this.duration_list[i] === 0) return 0
+			else return d / this.duration_list[i]
 		})
 	}
-	getCooltimePercent(){
-		return this.cooltime.map((c,i)=>{
-			if(this.cooltime_list[i]===0) return 0
-			else return c/this.cooltime_list[i]
+	getCooltimePercent() {
+		return this.cooltime.map((c, i) => {
+			if (this.cooltime_list[i] === 0) return 0
+			else return c / this.cooltime_list[i]
 		})
 	}
 	/**
@@ -581,63 +577,77 @@ abstract class Player extends Entity {
 
 		// if (this.game.instant) return
 
-		let isblocked = data.hasFlag(Util.HPChangeData.FLAG_SHIELD)
+		// let isblocked = data.hasFlag(Util.HPChangeData.FLAG_SHIELD)
 
-		if (hp <= 0 || isblocked || data.hasFlag(Util.HPChangeData.FLAG_NODMG_HIT)) {
-			let hpChangeData = {
+		if (hp <= 0) {
+			let hpChangeData: ServerPayloadInterface.Damage = {
 				turn: this.turn,
-				hp: hp,
-				maxhp: data.maxHp,
+				change: hp,
 				currhp: this.HP,
 				currmaxhp: this.MaxHP,
-				skillfrom: data.source,
-				type: data.type,
-				needDelay: false,
-				killed: data.killedByDamage,
-				willRevive: data.willRevive,
-				skillTrajectorySpeed:0,
-				isBlocked: isblocked
+				source: data.source
 			}
+			// = {
+			// 	turn: this.turn,
+			// 	hp: hp,
+			// 	maxhp: data.maxHp,
+			// 	currhp: this.HP,
+			// 	currmaxhp: this.MaxHP,
+			// 	skillfrom: data.source,
+			// 	type: data.type,
+			// 	needDelay: false,
+			// 	killed: data.killedByDamage,
+			// 	willRevive: data.willRevive,
+			// 	skillTrajectorySpeed:0,
+			// 	isBlocked: isblocked
+			// }
 
 			this.transfer(PlayerClientInterface.changeHP_damage, hpChangeData)
 		}
 	}
-	
+
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
    * @param {*}data Util.HPChangeData
 
    */
 	changeHP_heal(data: Util.HPChangeData) {
-		if (!data.isRespawn && this.dead) {
+		if (data.type !== "respawn" && this.dead) {
 			return
 		}
-		if(this.HP === this.MaxHP && data.maxHp===0 && data.type!=="heal"){
+		if (this.HP === this.MaxHP && data.type !== "heal") {
 			return
 		}
+		if (data.hp <= 0) return
 		let hp = data.hp
-		this.statistics.add(ENUM.STAT.HEAL_AMT, hp)
+		if (data.type !== "respawn" && data.type !== "maxhpChange") {
+			this.statistics.add(ENUM.STAT.HEAL_AMT, Math.min(hp, this.MaxHP - this.HP))
+		}
 
-		this.MaxHP += data.maxHp
 		this.HP = Math.min(this.HP + hp, this.MaxHP)
 
-		let type=data.type
-		if(!data.isRespawn && data.type==='noeffect'){
-			type='heal_simple'
+		let type = data.type
+		if (data.type === "noeffect" || data.type==="maxhpChange") {
+			type = "heal_simple"
 		}
-		
-	//	console.log("changehp"+data.maxHp)
-		// if (this.game.instant) return
+
 		if (hp > 0) {
-			let changeData = {
+			let changeData: ServerPayloadInterface.Heal = {
 				turn: this.turn,
-				hp: hp,
-				maxhp: data.maxHp,
+				change: hp,
 				currhp: this.HP,
 				currmaxhp: this.MaxHP,
-				skillfrom: data.source,
 				type: type
 			}
+			// let changeData = {
+			// 	turn: this.turn,
+			// 	hp: hp,
+			// 	maxhp: data.maxHp,
+			// 	currhp: this.HP,
+			// 	currmaxhp: this.MaxHP,
+			// 	skillfrom: data.source,
+			// 	type: type
+			// }
 			this.transfer(PlayerClientInterface.changeHP_heal, changeData)
 		}
 	}
@@ -720,7 +730,6 @@ abstract class Player extends Entity {
 		}
 		//	console.log("arriveAtSquare" + this.turn)
 		this.mapHandler.onArriveSquare(this.pos)
-		
 
 		if (this.pos >= MAP.getFinish(this.mapId) && this.mapHandler.isOnMainWay()) {
 			if (this.effects.has(ENUM.EFFECT.SLAVE)) {
@@ -823,7 +832,9 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	addMaxHP(m: number) {
-		this.changeHP_heal(new Util.HPChangeData().setMaxHpChange(m))
+		//this.transfer(PlayerClientInterface.update, "maxhp", this.turn, m)
+		this.MaxHP+=m
+		this.changeHP_heal(new Util.HPChangeData().setHpChange(m).setType("maxhpChange"))
 	}
 
 	//========================================================================================================
@@ -862,19 +873,20 @@ abstract class Player extends Entity {
 
 	// 	let pureDamage=damage.getTotalDmg()
 	// 	let finaldmg=origin.ability.applyResistanceToDamage(damage, this.ability)
-		
+
 	// 	let changeData = new Util.HPChangeData()
 	// 		.setSource(origin.turn)
 	// 		.setType(type)
 	// 		.setSkillTrajectorySpeed(origin.getSkillTrajectorySpeed(type))
 
-		
 	// 	this.damagedby[origin.turn] = 3
 	// 	origin.ability.absorb_hp(finaldmg) //모든피해흡혈, 어시스트저장
 
-		
 	// 	return this.doDamage(finaldmg, changeData)
 	// }
+	obstacleEffect(type: string) {
+		this.transfer(PlayerClientInterface.obstacleEffect, { pos: this.pos, type: type })
+	}
 
 	/**
 	 * step before givedamage
@@ -886,10 +898,10 @@ abstract class Player extends Entity {
 
 		if (type != null) {
 			changeData.setType(type)
+			this.obstacleEffect(type)
 		}
 		damage = this.effects.onObstacleDamage(damage)
 		damage *= 1 - this.ability.obsR.get() / 100 //장애물 저항
-
 		return this.doDamage(damage, changeData)
 	}
 	updateTotalShield(change: number, noindicate: boolean) {
@@ -933,13 +945,13 @@ abstract class Player extends Entity {
 	 */
 	doDamage(damage: number, changeData: Util.HPChangeData) {
 		try {
-			if (damage === 0 && changeData.hasFlag(Util.HPChangeData.FLAG_SHIELD)) {
-				this.changeHP_damage(changeData)
-				return false
-			} else if (changeData.hasFlag(Util.HPChangeData.FLAG_NODMG_HIT)) {
-				this.changeHP_damage(changeData)
-				return false
-			}
+			// if (damage === 0 && changeData.hasFlag(Util.HPChangeData.FLAG_SHIELD)) {
+			// 	this.changeHP_damage(changeData)
+			// 	return false
+			// } else if (changeData.hasFlag(Util.HPChangeData.FLAG_NODMG_HIT)) {
+			// 	this.changeHP_damage(changeData)
+			// 	return false
+			// }
 
 			if (this.invulnerable || damage === 0) {
 				return false
@@ -947,10 +959,10 @@ abstract class Player extends Entity {
 			let predictedHP = this.HP + this.shield - damage
 
 			damage = this.shieldDamage(damage)
-			if (damage === 0) {
-				this.showEffect(changeData.type, changeData.source)
-				return false
-			}
+			// if (damage === 0) {
+			// 	this.showEffect(changeData.type, changeData.source)
+			// 	return false
+			// }
 
 			this.effects.onFinalDamage(damage)
 			// predictedHP = this.HP - damage
@@ -1015,7 +1027,7 @@ abstract class Player extends Entity {
 	}
 
 	prepareRevive(reviveType: string) {
-		this.transfer(PlayerClientInterface.update,"waiting_revival", this.turn)
+		this.transfer(PlayerClientInterface.update, "waiting_revival", this.turn)
 
 		if (reviveType === "life") this.inven.changeLife(-1)
 
@@ -1032,10 +1044,10 @@ abstract class Player extends Entity {
 		// if (this.game.instant) return
 
 		if (gostore) {
-			this.transfer(PlayerClientInterface.goStore,this.turn,this.inven.getStoreData(1))
+			this.transfer(PlayerClientInterface.goStore, this.turn, this.inven.getStoreData(1))
 		}
 
-		let killData:ServerPayloadInterface.Death = {
+		let killData: ServerPayloadInterface.Death = {
 			killer: killer,
 			turn: this.turn,
 			location: this.pos,
@@ -1144,121 +1156,127 @@ abstract class Player extends Entity {
 		}
 		// return assists
 	}
-	useActivationSkill(skill:number):void{}
-	useNonTargetSkill(skill:number):boolean{return false}
-/**
+	useActivationSkill(skill: number): void {}
+	useNonTargetSkill(skill: number): boolean {
+		return false
+	}
+	/**
 	 * check skill avalibility, get avaliable targets or locations from skilltargetselector
 	 * @param {*} skill
 	 */
- initSkill(skill: number):ServerPayloadInterface.SkillInit{
-	this.pendingSkill = skill
+	initSkill(skill: number): ServerPayloadInterface.SkillInit {
+		this.pendingSkill = skill
 
-	let payload:ServerPayloadInterface.SkillInit={
-		turn:this.turn,
-		crypt_turn:"",
-		type:ENUM.INIT_SKILL_RESULT.NON_TARGET,
-		data:null,
-		skill:skill
-	}
-	if (!this.isSkillLearned(skill)) {
-		//	return "notlearned"
-		payload.type=ENUM.INIT_SKILL_RESULT.NOT_LEARNED
-		return payload
-	}
-	else if(!this.isCooltimeAvaliable(skill)) {
-		payload.type=ENUM.INIT_SKILL_RESULT.NO_COOL
-		return payload
-	}
-	let skillTargetSelector: Util.SkillTargetSelector = this.getSkillTargetSelector(skill)
-
-
-	if (skillTargetSelector.isNonTarget()) {
-		payload.type=ENUM.INIT_SKILL_RESULT.NON_TARGET
-		if(!this.AI) {
-			let result=this.useNonTargetSkill(skill)
-			if(!result) payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+		let payload: ServerPayloadInterface.SkillInit = {
+			turn: this.turn,
+			crypt_turn: "",
+			type: ENUM.INIT_SKILL_RESULT.NON_TARGET,
+			data: null,
+			skill: skill
 		}
-		return payload
-	}
-
-	if (skillTargetSelector.isActivation()) {
-		if(!this.AI) this.useActivationSkill(skill)
-		payload.type=ENUM.INIT_SKILL_RESULT.ACTIVATION
-		return payload
-	}
-
-
-	else if (skillTargetSelector.isNoTarget()) {
-		payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-		return payload
-	}
-	skillTargetSelector.range = this.effects.modifySkillRange(skillTargetSelector.range)
-	//마법의성,실명 적용
-
-	if (skillTargetSelector.isProjectile()) {
-		payload.type=ENUM.INIT_SKILL_RESULT.PROJECTILE
-		payload.data={
-			kind:"location",
-			pos: this.pos,
-			range: skillTargetSelector.range,
-			size: skillTargetSelector.projSize
+		if (!this.isSkillLearned(skill)) {
+			//	return "notlearned"
+			payload.type = ENUM.INIT_SKILL_RESULT.NOT_LEARNED
+			return payload
+		} else if (!this.isCooltimeAvaliable(skill)) {
+			payload.type = ENUM.INIT_SKILL_RESULT.NO_COOL
+			return payload
 		}
-		return payload
-	}
-	if (skillTargetSelector.isAreaTarget()) {
-		payload.type=ENUM.INIT_SKILL_RESULT.AREA_TARGET
+		let skillTargetSelector: Util.SkillTargetSelector = this.getSkillTargetSelector(skill)
 
-		payload.data= {
-			kind:"location",
-			pos: this.pos,
-			range: skillTargetSelector.range,
-			size: skillTargetSelector.areaSize
+		if (skillTargetSelector.isNonTarget()) {
+			payload.type = ENUM.INIT_SKILL_RESULT.NON_TARGET
+			if (!this.AI) {
+				let result = this.useNonTargetSkill(skill)
+				if (!result) payload.type = ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+			}
+			return payload
 		}
+
+		if (skillTargetSelector.isActivation()) {
+			if (!this.AI) this.useActivationSkill(skill)
+			payload.type = ENUM.INIT_SKILL_RESULT.ACTIVATION
+			return payload
+		} else if (skillTargetSelector.isNoTarget()) {
+			payload.type = ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+			return payload
+		}
+		skillTargetSelector.range = this.effects.modifySkillRange(skillTargetSelector.range)
+		//마법의성,실명 적용
+
+		if (skillTargetSelector.isProjectile()) {
+			payload.type = ENUM.INIT_SKILL_RESULT.PROJECTILE
+			payload.data = {
+				kind: "location",
+				pos: this.pos,
+				range: skillTargetSelector.range,
+				size: skillTargetSelector.projSize
+			}
+			return payload
+		}
+		if (skillTargetSelector.isAreaTarget()) {
+			payload.type = ENUM.INIT_SKILL_RESULT.AREA_TARGET
+
+			payload.data = {
+				kind: "location",
+				pos: this.pos,
+				range: skillTargetSelector.range,
+				size: skillTargetSelector.areaSize
+			}
+			return payload
+		}
+		let targets = this.mediator
+			.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(skillTargetSelector.range))
+			.map((pl) => pl.turn)
+		let conditionedTargets = this.mediator
+			.selectAllFrom(
+				EntityFilter.ALL_ATTACKABLE_PLAYER(this)
+					.inRadius(skillTargetSelector.conditionedRange)
+					.onlyIf(skillTargetSelector.condition)
+			)
+			.map((pl) => pl.turn)
+		targets = targets.concat(conditionedTargets)
+
+		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
+		if (targets.length === 0) {
+			//return "notarget"
+			payload.type = ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+			return payload
+		}
+		payload.type = ENUM.INIT_SKILL_RESULT.TARGTING
+		payload.data = { targets: targets, kind: "target" }
 		return payload
 	}
-	let targets = this.mediator
-		.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(skillTargetSelector.range))
-		.map((pl) => pl.turn)
-	let conditionedTargets = this.mediator
-		.selectAllFrom(
-			EntityFilter.ALL_ATTACKABLE_PLAYER(this)
-				.inRadius(skillTargetSelector.conditionedRange)
-				.onlyIf(skillTargetSelector.condition)
-		)
-		.map((pl) => pl.turn)
-	targets=targets.concat(conditionedTargets)
-	
-	//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
-	if (targets.length === 0) {
-		//return "notarget"
-		payload.type=ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-		return payload
-	}
-	payload.type=ENUM.INIT_SKILL_RESULT.TARGTING
-	payload.data={targets: targets,kind:"target"}
-	return payload
-}
 	getBaseBasicAttackDamage(): Util.Damage {
 		return new Util.Damage(this.ability.AD.get(), 0, 0)
 	}
 	getBasicAttackName(): string {
 		return "basicattack"
 	}
-	usePendingAreaSkill(pos:number){}
+	usePendingAreaSkill(pos: number) {}
 
-	basicAttack(){
-		this.basicAttackCount-=1
+	private getBasicAttackFilter(){
+		return EntityFilter.ALL_ENEMY(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
+	}
+	canBasicAttack():boolean{
+		return this.basicAttackCount > 0 && this.effects.canBasicAttack() && this.mediator.selectAllFrom(this.getBasicAttackFilter()).length>0
+	}
+
+	basicAttack() {
+		if(this.basicAttackCount<=0) return false
+
+		this.basicAttackCount -= 1
 		if (!this.effects.canBasicAttack()) {
 			return false
 		}
 		let damage: Util.Damage = this.ability.basicAttackDamage()
 
-		damage=this.mapHandler.onBasicAttack(damage)
+		damage = this.mapHandler.onBasicAttack(damage)
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
-	//	console.log("basicattack")
-		let died=this.mediator.basicAttack(this,EntityFilter.ALL_ENEMY(this).excludeUnattackable()
-		.inRadius(this.ability.attackRange.get()))(damage)
-
+		//	console.log("basicattack")
+		let died = this.mediator.basicAttack(
+			this,this.getBasicAttackFilter()
+		)(damage)
 	}
 }
 
