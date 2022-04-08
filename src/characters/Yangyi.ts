@@ -30,10 +30,10 @@ class Yangyi extends Player {
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
-		const basic_stats: number[] = [170, 40, 6, 6, 0, 0]
+		const basic_stats: number[] = [180, 40, 6, 6, 0, 0]
 		super(turn, team, game, ai, ID, name, basic_stats)
 		// this.onoff = [false, false, false]
-		this.hpGrowth = 90
+		this.hpGrowth = 105
 		this.cooltime_list = [1, 7, 8] //1 7
 		this.duration_list = [0, 3, 0]
 		this.skill_ranges=[0,0,20]

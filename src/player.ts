@@ -639,15 +639,6 @@ abstract class Player extends Entity {
 				currmaxhp: this.MaxHP,
 				type: type
 			}
-			// let changeData = {
-			// 	turn: this.turn,
-			// 	hp: hp,
-			// 	maxhp: data.maxHp,
-			// 	currhp: this.HP,
-			// 	currmaxhp: this.MaxHP,
-			// 	skillfrom: data.source,
-			// 	type: type
-			// }
 			this.transfer(PlayerClientInterface.changeHP_heal, changeData)
 		}
 	}
@@ -861,29 +852,7 @@ abstract class Player extends Entity {
 		// this.giveEffect('speed',1,1)
 	}
 
-	/**
-	//  * sterp before givedamage
-	//  * @param damage
-	//  * @param origin
-	//  * @param type
-	//  * @param needDelay
-	//  * @param flags
-	//  */
-	// doPlayerDamage(damage: Util.Damage, origin: Player, type: string, needDelay: boolean, flags?: number[]): boolean {
 
-	// 	let pureDamage=damage.getTotalDmg()
-	// 	let finaldmg=origin.ability.applyResistanceToDamage(damage, this.ability)
-
-	// 	let changeData = new Util.HPChangeData()
-	// 		.setSource(origin.turn)
-	// 		.setType(type)
-	// 		.setSkillTrajectorySpeed(origin.getSkillTrajectorySpeed(type))
-
-	// 	this.damagedby[origin.turn] = 3
-	// 	origin.ability.absorb_hp(finaldmg) //모든피해흡혈, 어시스트저장
-
-	// 	return this.doDamage(finaldmg, changeData)
-	// }
 	obstacleEffect(type: string) {
 		this.transfer(PlayerClientInterface.obstacleEffect, { pos: this.pos, type: type })
 	}
@@ -945,43 +914,16 @@ abstract class Player extends Entity {
 	 */
 	doDamage(damage: number, changeData: Util.HPChangeData) {
 		try {
-			// if (damage === 0 && changeData.hasFlag(Util.HPChangeData.FLAG_SHIELD)) {
-			// 	this.changeHP_damage(changeData)
-			// 	return false
-			// } else if (changeData.hasFlag(Util.HPChangeData.FLAG_NODMG_HIT)) {
-			// 	this.changeHP_damage(changeData)
-			// 	return false
-			// }
-
 			if (this.invulnerable || damage === 0) {
 				return false
 			}
 			let predictedHP = this.HP + this.shield - damage
 
 			damage = this.shieldDamage(damage)
-			// if (damage === 0) {
-			// 	this.showEffect(changeData.type, changeData.source)
-			// 	return false
-			// }
+
 
 			this.effects.onFinalDamage(damage)
-			// predictedHP = this.HP - damage
 
-			//투명망토 아이템
-			// if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(ENUM.ITEM.INVISIBILITY_CLOAK)) {
-			// 	this.inven.useActiveItem(ENUM.ITEM.INVISIBILITY_CLOAK)
-			// 	this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.INVISIBILITY_CLOAK)
-			// }
-
-			//방패검 아이템
-			// console.log(this.shield)
-			// console.log("predictedHP"+predictedHP)
-			// if (predictedHP > 0 && predictedHP < this.MaxHP * 0.3 && this.inven.isActiveItemAvaliable(ENUM.ITEM.WARRIORS_SHIELDSWORD)) {
-			// 	console.log("WARRIORS_SHIELDSWORD")
-			// 	this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.ITEM_SHIELDSWORD,2, Math.floor(0.7 * this.ability.AD)),"item_shieldsword")
-			// 	this.inven.useActiveItem(ENUM.ITEM.WARRIORS_SHIELDSWORD)
-			// 	this.transfer(PlayerClientInterface.indicateItem,this.turn, ENUM.ITEM.WARRIORS_SHIELDSWORD)
-			// }
 
 			let reviveType = this.canRevive()
 			if (predictedHP <= 0) {

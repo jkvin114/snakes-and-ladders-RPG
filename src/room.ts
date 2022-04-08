@@ -5,15 +5,9 @@ import { Simulation, SimulationSetting } from "./SimulationRunner"
 import { INIT_SKILL_RESULT, ITEM, SKILL_INIT_TYPE } from "./enum"
 import { randInt } from "./Util"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
+import { GameCycleState } from "./GameCycle/GameCycleState"
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./DBHandler")
-const crypto = require("crypto")
 
-function encrypt(val: string, key: string) {
-	return crypto
-		.createHash("sha512")
-		.update(val + key)
-		.digest("hex")
-}
 
 enum PlayerType {
 	EMPTY = "none",
@@ -43,8 +37,8 @@ class Room {
 	connectionTimeout: NodeJS.Timeout
 	connectionTimeoutTurn: number
 	idleTimeoutTurn: number
-	turnEncryptKey: string
-	turnEncryption: Map<number, string>
+	gameCycle:GameCycleState
+	
 
 	constructor(name: string) {
 		//	this.simulation_total_count = 1
@@ -64,24 +58,19 @@ class Room {
 		this.connectionTimeout = null
 		this.connectionTimeoutTurn = -1
 		this.simulation = null
-
-		this.turnEncryptKey = Math.round(new Date().valueOf() * Math.random() * Math.random()) + ""
-
-		this.turnEncryption = new Map<number, string>()
-		for (let i = 0; i < 4; ++i) {
-			this.turnEncryption.set(i, encrypt(String(i), this.turnEncryptKey))
-		}
+		this.gameCycle
+		
 	}
 
 	cryptTurn(turn: number) {
-		return this.turnEncryption.get(turn)
+		return this.game.cryptTurn(turn)
 	}
 	thisCryptTurn() {
-		return this.turnEncryption.get(this.game.thisturn)
+		return this.game.thisCryptTurn()
 	}
 	isThisTurn(cryptTurn: string) {
 		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
-		return this.turnEncryption.get(this.game.thisturn) === cryptTurn
+		return this.game.isThisTurn(cryptTurn)
 	}
 
 	makePlayerList(): ProtoPlayer[] {
@@ -282,18 +271,13 @@ class Room {
 	}
 
 	user_startGame() {
-		let t = this.game.startTurn()
-		if (t) {
-			t.crypt_turn = this.thisCryptTurn()
-		}
-
-		return t
+		return this.game.startTurn()
 	}
 	goNextTurn() {
 		this.stopIdleTimeout()
 
 		let turnUpdateData = this.game.goNextTurn()
-		turnUpdateData.crypt_turn = this.thisCryptTurn()
+		// turnUpdateData.crypt_turn = this.thisCryptTurn()
 
 		RoomClientInterface.updateNextTurn(this.name, turnUpdateData)
 
@@ -379,7 +363,6 @@ class Room {
 		if (this.game.gameover) {
 			return
 		}
-		let _this = this
 		this.connectionTimeout = setTimeout(() => {
 			if (!this.game) return
 			RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
@@ -396,12 +379,19 @@ class Room {
 
 		//	console.log("timeout extension"+turn)
 	}
+	onTimeOut(){
+		this.gameCycle=this.gameCycle.onTimeout()
+	}
 
-	user_pressDice(dicenum: number) {
+	user_pressDice(dicenum: number,crypt_turn:string) {
 		this.stopIdleTimeout()
 		this.startConnectionTimeout()
+		this.gameCycle=this.gameCycle.onUserPressDice(dicenum,crypt_turn)
+		this.gameCycle.timeOut(this.onTimeOut)
+
+
 		let data = this.game.rollDice(dicenum)
-		data.crypt_turn=this.thisCryptTurn()
+		// data.crypt_turn=this.thisCryptTurn()
 		this.afterDice(data.actualdice)
 
 		return data
@@ -445,12 +435,6 @@ class Room {
 					if (!this.game) return
 					this.goNextTurn()
 				})
-				
-				// setTimeout(() => {
-					
-				// }, 3000)
-
-				//	console.log("ai go nextturn")
 			} else {
 				this.checkPendingAction()
 			}
@@ -468,18 +452,18 @@ class Room {
 
 	checkPendingAction() {
 		if (this.game == null) return
-
+		let action=this.game.getPendingAction()
 		//	console.log("function checkpendingaction" + this.game.pendingAction)
-		if (!this.game.pendingAction || this.game.thisp().dead) {
+		if (!action || this.game.thisp().dead) {
 			this.showSkillButtonToUser()
 			this.startIdleTimeout( ()=> {
 				this.goNextTurn()
 			})
 		} else {
-			if (this.game.pendingAction === "submarine") {
+			if (action === "submarine") {
 				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.thisp().pos)
 			}
-			if (this.game.pendingAction === "ask_way2") {
+			if (action === "ask_way2") {
 				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", 0)
 			}
 
@@ -489,23 +473,25 @@ class Room {
 			})
 		}
 	}
-	user_completePendingObs(info: ClientPayloadInterface.PendingObstacle) {
+	user_completePendingObs(info: ClientPayloadInterface.PendingObstacle,crypt_turn:string) {
 		if (this.game == null) return
-		
+		this.gameCycle=this.gameCycle.onUserCompletePendingObs(info,crypt_turn)
+
 		this.stopIdleTimeout()
 		this.game.processPendingObs(info)
 		this.checkPendingAction()
 	}
-	user_completePendingAction(info: ClientPayloadInterface.PendingAction) {
+	user_completePendingAction(info: ClientPayloadInterface.PendingAction,crypt_turn:string) {
 		if (this.game == null) return
-
+		this.gameCycle=this.gameCycle.onUserCompletePendingAction(info,crypt_turn)
 		this.game.processPendingAction(info)
 		this.stopIdleTimeout()
 		this.showSkillButtonToUser()
 	}
 
-	user_clickSkill(s: number) {
+	user_clickSkill(s: number,crypt_turn:string) {
 		if (this.game == null) return
+		this.gameCycle=this.gameCycle.onUserClickSkill(s,crypt_turn)
 
 		let result = this.game.onSelectSkill(s - 1)
 		//	console.log("getskill")
@@ -518,7 +504,7 @@ class Room {
 		// if (result.type === "targeting" || result.type === "projectile")
 		this.startIdleTimeout(() => this.goNextTurn())
 
-		result.crypt_turn=this.thisCryptTurn()
+		// result.crypt_turn=this.thisCryptTurn()
 		return result
 	}
 	showSkillButtonToUser(){
@@ -527,14 +513,16 @@ class Room {
 		RoomClientInterface.setSkillReady(this.name,status )
 	}
 
-	user_basicAttack(){
+	user_basicAttack(crypt_turn:string){
+		this.gameCycle=this.gameCycle.onUserBasicAttack(crypt_turn)
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
 		this.game.thisp().basicAttack()
 		
 		this.showSkillButtonToUser()
 	}
-	user_choseSkillTarget(target: number) {
+	user_choseSkillTarget(target: number,crypt_turn:string) {
+		this.gameCycle=this.gameCycle.onUserChooseSkillTarget(target,crypt_turn)
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
 		if (target > 0) {
@@ -544,7 +532,9 @@ class Room {
 		this.showSkillButtonToUser()
 	}
 
-	user_choseSkillLocation(location: number) {
+	user_choseSkillLocation(location: number,crypt_turn:string) {
+		this.gameCycle=this.gameCycle.onUserChooseSkillLocation(location,crypt_turn)
+
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
 		if (location >0) {
@@ -552,7 +542,9 @@ class Room {
 		}
 		this.showSkillButtonToUser()
 	}
-	user_choseAreaSkillLocation(location:number){
+	user_choseAreaSkillLocation(location:number,crypt_turn:string){
+		this.gameCycle=this.gameCycle.onUserchooseAreaSkillLocation(location,crypt_turn)
+
 		this.stopIdleTimeout()
 		this.startIdleTimeout(() => this.goNextTurn())
 		if (location >0) {
@@ -563,8 +555,9 @@ class Room {
 
 	user_storeComplete(data: ClientPayloadInterface.ItemBought) {
 		if (this.game == null) return
+		this.gameCycle.onUserStoreComplete(data)
 
-		this.game.pOfTurn(data.turn).inven.playerBuyItem(data)
+		
 	}
 	onGameover() {
 		let stat = this.game.getFinalStatistics()

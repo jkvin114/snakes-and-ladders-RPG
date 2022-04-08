@@ -26,7 +26,14 @@ import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterfa
 import {MAP} from "./MapHandlers/MapStorage"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
+const crypto = require("crypto")
 
+function encrypt(val: string, key: string):string {
+	return crypto
+		.createHash("sha512")
+		.update(val + key)
+		.digest("hex")
+}
 class GameSetting {
 	instant: boolean
 	isTeam: boolean
@@ -176,7 +183,7 @@ class Game {
 	// skillcount: number
 	clientsReady: number
 	pendingObs: number
-	pendingAction: string
+	private pendingAction: string
 	roullete_result: number
 	nextUPID: number
 	readonly UPIDGen: Util.UniqueIdGenerator
@@ -203,7 +210,12 @@ class Game {
 	}[]
 	// playerSelector: PlayerSelector
 	entityMediator: EntityMediator
+	turnEncryption: Map<number, string>
+	turnEncryptKey: string
+	begun:boolean
+
 	private static readonly PLAYER_ID_SUFFIX = "P"
+
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
 		this.instant = setting.instant
@@ -212,7 +224,7 @@ class Game {
 
 		if (mapid < 0 || mapid > 2) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
-
+		this.begun=false
 		this.totalturn = 0
 		this.isTeam = setting.isTeam
 		this.PNUM = 0
@@ -247,6 +259,13 @@ class Game {
 		this.UPIDGen = new Util.UniqueIdGenerator(this.rname + "_P")
 		this.UEIDGen = new Util.UniqueIdGenerator(this.rname + "_ET")
 		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
+		this.turnEncryptKey = Math.round(new Date().valueOf() * Math.random() * Math.random()) + this.rname
+
+		this.turnEncryption = new Map<number, string>()
+		for (let i = 0; i < 4; ++i) {
+			this.turnEncryption.set(i, encrypt(String(i), this.turnEncryptKey).slice(0,8))
+		}
+		
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -270,6 +289,17 @@ class Game {
 	}
 	id2Turn(id:string):number{
 		return Number(id[0])
+	}
+
+	cryptTurn(turn: number) {
+		return this.turnEncryption.get(turn)
+	}
+	thisCryptTurn() {
+		return this.turnEncryption.get(this.thisturn)
+	}
+	isThisTurn(cryptTurn: string) {
+		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
+		return this.turnEncryption.get(this.thisturn) === cryptTurn
 	}
 	//========================================================================================================
 
@@ -324,7 +354,7 @@ class Game {
 	}
 
 	//()=>{turn:number,stun:boolean}
-	startTurn():ServerPayloadInterface.TurnStart{
+	startTurn():boolean{
 		this.entityMediator.forAllPlayer()(function () {
 			this.ability.sendToClient()
 		})
@@ -333,27 +363,29 @@ class Game {
 		// 	//	p.players = this.players
 		// 	p.ability.sendToClient()
 		// }
-		let p = this.pOfTurn(0)
-
+		// let p = this.pOfTurn(0)
+		
 		//if this is first turn ever
 		this.clientsReady += 1
-		if (this.clientsReady !== this.PNUM) {
-			return null
+		if (this.clientsReady < this.PNUM) {
+			return false
 		}
-		p.onMyTurnStart()
-		this.entityMediator.onTurnStart(this.thisturn)
 		
-		return {
-			crypt_turn: "",
-			turn: p.turn,
-			stun: p.effects.has(ENUM.EFFECT.STUN),
-			ai: p.AI,
-			dc: p.diceControl,
-			dc_cool: p.diceControlCool,
-			adice: 0,
-			effects: new Array<string>(),
-			avaliablepos:new Array<number>()
-		}
+		return true
+		// p.onMyTurnStart()
+		// this.entityMediator.onTurnStart(this.thisturn)
+		
+		// return {
+		// 	crypt_turn: this.cryptTurn(0),
+		// 	turn: p.turn,
+		// 	stun: p.effects.has(ENUM.EFFECT.STUN),
+		// 	ai: p.AI,
+		// 	dc: p.diceControl,
+		// 	dc_cool: p.diceControlCool,
+		// 	adice: 0,
+		// 	effects: new Array<string>(),
+		// 	avaliablepos:new Array<number>()
+		// }
 	}
 	//========================================================================================================
 
@@ -523,31 +555,42 @@ class Game {
 	getEnemyEntityInRange(attacker: Player, rad: number): Entity[] {
 		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
 	}
+	onTurnEnd(){
+		this.pendingObs = 0
+		this.pendingAction = null
+		let p = this.thisp()
+		p.onMyTurnEnd()
+		this.entityMediator.onTurnEnd(this.thisturn)
+	}
+	onOneMoreDice(p:Player){
+		p.onMyTurnStart()
+		console.log("ONE MORE DICE")
+		p.oneMoreDice = false
+		p.effects.cooldownAllHarmful()
+		this.summonDicecontrolItemOnkill(p.turn)
+		p.adice = 0
+	}
 
 	goNextTurn():ServerPayloadInterface.TurnStart {
 		if (this.gameover) {
 			return null
 		}
-		this.pendingObs = 0
-		this.pendingAction = null
-		let p = this.thisp()
-		// this.applyTickEffect()
-		p.onMyTurnEnd()
-		this.entityMediator.onTurnEnd(this.thisturn)
 
+		if(this.begun)
+			this.onTurnEnd()
+		
+
+		let p = this.thisp()
 		//다음턴 안넘어감(one more dice)
 		if (p.oneMoreDice) {
-			p.onMyTurnStart()
-			console.log("ONE MORE DICE")
-			p.oneMoreDice = false
-			p.effects.cooldownAllHarmful()
-			this.summonDicecontrolItemOnkill(p.turn)
-			// p.effects[ENUM.EFFECT.STUN] = Math.max(p.effects[ENUM.EFFECT.STUN] - 1, 0)
-			p.adice = 0
+			this.onOneMoreDice(p)
 		}
 		//다음턴 넘어감
 		else {
-			this.thisturn += 1
+			if(this.begun)
+				this.thisturn += 1
+			this.begun=true
+			
 			this.thisturn %= this.totalnum
 			console.log("thisturn" + this.thisturn)
 
@@ -621,7 +664,7 @@ class Game {
 		}
 		//	console.log("avliablepos" + avaliablepos)
 		return {
-			crypt_turn: "",
+			crypt_turn: this.cryptTurn(p.turn),
 			turn: p.turn,
 			stun: stun,
 			ai: p.AI,
@@ -781,7 +824,7 @@ class Game {
 			turn: this.thisturn,
 			dcused: dcused,
 			died: died,
-			crypt_turn:""
+			crypt_turn:this.thisCryptTurn()
 		}
 	}
 
@@ -911,6 +954,9 @@ class Game {
 		}
 		this.passProjectileQueue = []
 		return died
+	}
+	getPendingAction():string{
+		return this.pendingAction
 	}
 	//========================================================================================================
 
@@ -1159,6 +1205,7 @@ class Game {
 			this.roulleteComplete()
 		}
 		else if (info.type === "godhand") {
+			info.objectResult.kind='godhand'
 			if (info.complete && info.objectResult.kind==='godhand') {
 				this.processGodhand(info.objectResult.target,info.objectResult.location)
 			}
@@ -1208,6 +1255,9 @@ class Game {
 		this.roullete_result = -1
 	}
 
+	userCompleteStore(data: ClientPayloadInterface.ItemBought){
+		this.pOfTurn(data.turn).inven.playerBuyItem(data)
+	}
 	//========================================================================================================
 
 	getStoreData(turn: number):ServerPayloadInterface.EnterStore {

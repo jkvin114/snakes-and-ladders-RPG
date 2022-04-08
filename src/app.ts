@@ -370,12 +370,12 @@ io.on("connect", function (socket: Socket) {
 		let room = ROOMS.get(rname)
 		if (!room.game) return
 
-		let t:ServerPayloadInterface.TurnStart = room.user_startGame()
-		if (!t) {
+		let canstart = room.user_startGame()
+		if (!canstart) {
 			console.log("connecting incomplete")
 		} else {
-			//socket.emit('nextturn',t)
-			io.to(rname).emit("server:nextturn", t)
+			// io.to(rname).emit("server:nextturn", t)
+			room.goNextTurn()
 		}
 	})
 	//==========================================================================================
@@ -396,7 +396,7 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 
-		let dice = ROOMS.get(rname).user_pressDice(dicenum)
+		let dice = ROOMS.get(rname).user_pressDice(dicenum,crypt_turn)
 		console.log("press_dice" + rname)
 		io.to(rname).emit("server:rolldice", dice)
 
@@ -431,7 +431,7 @@ io.on("connect", function (socket: Socket) {
 	 * 선택 장애물(신의손,납치범 등) 선택 완료후 정보 전송 받음
 	 * 처리 후 선댁 action(잠수함, 갈림길선택 등) 체크
 	 */
-	socket.on("user:complete_obstacle_selection", function (crypt_turn: string, info: ClientPayloadInterface.PendingObstacle) {
+	socket.on("user:complete_obstacle_selection", function (crypt_turn:string,info: ClientPayloadInterface.PendingObstacle) {
 		//	console.log("obs selection complete")
 
 		let rname = SocketSession.getRoomName(socket)
@@ -439,9 +439,8 @@ io.on("connect", function (socket: Socket) {
 		console.log("complete_obstacle_selection")
 
 		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-
-		ROOMS.get(rname).user_completePendingObs(info)
+		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		ROOMS.get(rname).user_completePendingObs(info,crypt_turn)
 	})
 	//==========================================================================================
 
@@ -449,23 +448,22 @@ io.on("connect", function (socket: Socket) {
 	 * 선택 action 선택 완료후 처리
 	 * 처리 후 스킬 사용
 	 */
-	socket.on("user:complete_action_selection", function (crypt_turn: string, info: ClientPayloadInterface.PendingAction) {
+	socket.on("user:complete_action_selection", function (crypt_turn:string,info: ClientPayloadInterface.PendingAction) {
 		//	console.log("action selection complete")
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-
-		ROOMS.get(rname).user_completePendingAction(info)
+		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		ROOMS.get(rname).user_completePendingAction(info,crypt_turn)
 	})
 	//execute when player clicks basic attack
 	socket.on("user:basicattack", function (crypt_turn: string) {
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let room = ROOMS.get(rname)
-		room.user_basicAttack()
+		room.user_basicAttack(crypt_turn)
 	})
 	//==========================================================================================
 
@@ -476,7 +474,7 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let room = ROOMS.get(rname)
-		let result = room.user_clickSkill(s)
+		let result = room.user_clickSkill(s,crypt_turn)
 		socket.emit("server:skill_data", result)
 	})
 	//==========================================================================================
@@ -486,8 +484,8 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_choseSkillTarget(target)
+		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		ROOMS.get(rname).user_choseSkillTarget(target,crypt_turn)
 
 		// if (status != null) {
 		// 	setTimeout(() => socket.emit("server:used_skill", status), 500)
@@ -500,8 +498,8 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_choseSkillLocation(location)
+		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		ROOMS.get(rname).user_choseSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
 	socket.on("user:chose_area_skill_location", function (crypt_turn: string, location: number) {
@@ -509,8 +507,8 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_choseAreaSkillLocation(location)
+		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		ROOMS.get(rname).user_choseAreaSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
 	//==========================================================================================

@@ -202,28 +202,28 @@ export namespace ClientPayloadInterface {
 		target: number
 		location: number
 	}
-	interface SubwayResult {
+	export interface SubwayResult {
 		kind: "subway"
 		type: number
 		price: number
 	}
-	interface TokenStoreResult {
+	export interface TokenStoreResult {
 		kind: "tokenstore"
 		token: number
 		money: number
 	}
-	export interface PendingObstacle {
+	export interface PendingObstacle{
 		type: string
 		complete: boolean
 		booleanResult?: boolean
 		objectResult?: GodHandResult | TokenStoreResult | SubwayResult
 	}
-	export interface PendingAction {
+	export interface PendingAction{
 		type: string
 		result: number | boolean
 		complete: boolean
 	}
-	export interface ItemBought extends TurnPayloadInterface {
+	export interface ItemBought extends CryptedPayloadInterface {
 		item: number[]
 		moneyspend: number
 		tokenbought: number

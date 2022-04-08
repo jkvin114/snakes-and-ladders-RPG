@@ -239,9 +239,7 @@ abstract class AiAgent {
 		let goal = null
 		let targets = me.mediator
 			.selectAllFrom(
-				EntityFilter.ALL_PLAYER(me)
-					.excludeUntargetable()
-					.excludeDead()
+				EntityFilter.ALL_ATTACKABLE_PLAYER(me)
 					.in(me.pos - 3 - Math.floor(selector.range / 2), me.pos - 3 + Math.floor(selector.range / 2))
 			)
 			.map((p) => p.turn)

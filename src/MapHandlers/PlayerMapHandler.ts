@@ -59,6 +59,7 @@ abstract class PlayerMapHandler {
 		} 
 	}
 	onPendingObsComplete(info:ClientPayloadInterface.PendingObstacle){
+
 		if (info.type === "kidnap" && info.booleanResult!=null) {
 			ObstacleHelper.kidnap(this.player,info.booleanResult)
 		} 
@@ -243,14 +244,15 @@ class CasinoMapHandler extends PlayerMapHandler {
 		console.log("onPendingObsComplete"+info)
 		if (info.type === "threaten" && info.booleanResult!==null) {
 			ObstacleHelper.threaten(this.player,info.booleanResult)
-		} else if (info.type === "sell_token" && info.objectResult.kind==='tokenstore') {
-			if (info.objectResult.token > 0) {
-				this.player.inven.sellToken(info.objectResult.token,info.objectResult.money)
+		} else if (info.type === "sell_token") {
+			let result=(info.objectResult as ClientPayloadInterface.TokenStoreResult)
+			if (result.token > 0) {
+				this.player.inven.sellToken(result.token,result.money)
 			}
-		} else if (info.type === "subway" && info.objectResult.kind==='subway'){
-			//console.log("subway")
-			console.log(info)
-			this.selectSubway(info.objectResult.type, info.objectResult.price)
+		} else if (info.type === "subway"){
+			let result=(info.objectResult as ClientPayloadInterface.SubwayResult)
+
+			this.selectSubway(result.type, result.price)
 		}
 		super.onPendingObsComplete(info)
 	}

@@ -57,7 +57,7 @@ describe("game", () => {
 		expect(game.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY_PLAYER(game.pOfTurn(0)).inRadius(2))[0]).toBe(
 			game.pOfTurn(1)
 		)
-		expect(game.entityMediator.selectAllFrom(EntityFilter.VALID_ATTACK_TARGET(game.pOfTurn(0))).length).toBe(2)
+		expect(game.entityMediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(game.pOfTurn(0))).length).toBe(2)
 
 		expect(p1.isEnemyOf(p2)).toBe(true)
 		expect(p1.isTargetableFrom(p2)).toBe(true)
@@ -94,7 +94,7 @@ describe("game", () => {
 
 		expect(
 			game.entityMediator.selectAllFrom(
-				EntityFilter.VALID_ATTACK_TARGET(p1)
+				EntityFilter.ALL_ATTACKABLE_PLAYER(p1)
 					.inRadius(5)
 					.onlyIf(function () {
 						return this.HP === 100
@@ -104,7 +104,7 @@ describe("game", () => {
 
 		expect(
 			game.entityMediator.selectAllFrom(
-				EntityFilter.VALID_ATTACK_TARGET(p1)
+				EntityFilter.ALL_ATTACKABLE_PLAYER(p1)
 					.inRadius(10)
 					.onlyIf(function () {
 						return this.HP === 100

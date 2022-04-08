@@ -2,7 +2,7 @@ import { Player } from "./player"
 import { PlayerClientInterface } from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
 import { ITEM } from "./enum"
-import { isJSDocThisTag } from "typescript"
+
 
 class Ability {
 	protected amount: number
@@ -101,7 +101,7 @@ class PlayerAbility {
 		this.AD = new Ability("AD").add(basic_stats[1])
 		this.AR = new Ability("AR").add(basic_stats[2])
 		this.MR = new Ability("MR").add(basic_stats[3])
-		basic_stats[4]=2
+		// basic_stats[4]=2
 		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE).add(basic_stats[4])
 		this.AP = new Ability("AP").add(basic_stats[5])
 		// this.basicAttack_multiplier = 1 //평타 데미지 계수
