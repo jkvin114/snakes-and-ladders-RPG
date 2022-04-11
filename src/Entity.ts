@@ -1,5 +1,5 @@
-import { Game } from "./Game"
-import { EntityMediator } from "./EntityMediator"
+import { EntityMediator} from "./EntityMediator"
+import type { Game } from "./Game"
 import { Damage, decrement } from "./Util"
 import { EntityStatusEffect } from "./PlayerStatusEffect"
 import { clamp } from "./Util"

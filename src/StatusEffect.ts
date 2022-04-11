@@ -1,4 +1,4 @@
-import { Player } from "./player"
+import type { Player } from "./player"
 import { CALC_TYPE, Damage, decrement, HPChangeData, PercentDamage, SkillAttack } from "./Util"
 import { EFFECT, ITEM, SKILL } from "./enum"
 import {PlayerAbility} from "./PlayerAbility"

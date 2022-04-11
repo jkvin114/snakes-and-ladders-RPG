@@ -3,27 +3,27 @@ import SETTINGS = require("../res/globalsettings.json")
 import GAMESETTINGS = require("../res/gamesetting.json")
 import * as ENUM from "./enum"
 import * as Util from "./Util"
-import { Player } from "./player"
 import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
 import { ObstacleHelper } from "./helpers"
 import { AiAgent } from "./AiAgents/AiAgent"
-import { Creed } from "./characters/Creed"
-import { Bird } from "./characters/Bird"
-import { Silver } from "./characters/Silver"
-import { Jean } from "./characters/Jean"
-import { Jellice } from "./characters/Jellice"
-import { Gorae } from "./characters/Gorae"
-import { Timo } from "./characters/Timo"
-import { Yangyi } from "./characters/Yangyi"
-import { Tree } from "./characters/Tree"
 
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
-import { PlayerClientInterface } from "./app"
-import { EntityMediator } from "./EntityMediator"
-import { EntityFilter } from "./EntityFilter"
 import { Entity } from "./Entity"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
 import {MAP} from "./MapHandlers/MapStorage"
+import { EntityMediator } from "./EntityMediator"
+import { Player } from "./player"
+import { EntityFilter } from "./EntityFilter"
+import { PlayerClientInterface } from "./app"
+import { Creed } from "./characters/Creed"
+import { Silver } from "./characters/Silver"
+import { Timo } from "./characters/Timo"
+import { Yangyi } from "./characters/Yangyi"
+import { Jean } from "./characters/Jean"
+import { Jellice } from "./characters/Jellice"
+import { Gorae } from "./characters/Gorae"
+import { Bird } from "./characters/Bird"
+import { Tree } from "./characters/Tree"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -190,8 +190,8 @@ class Game {
 	readonly UEIDGen: Util.UniqueIdGenerator
 
 	// nextPassUPID: number
-	rangeProjectileList: Map<string, RangeProjectile>
-	passProjectileList: Map<string, PassProjectile>
+	rangeProjectiles: Map<string, RangeProjectile>
+	passProjectiles: Map<string, PassProjectile>
 	passProjectileQueue: PassProjectile[]
 	gameover: boolean
 	winner: number
@@ -213,7 +213,9 @@ class Game {
 	turnEncryption: Map<number, string>
 	turnEncryptKey: string
 	begun:boolean
-
+	cycle:number
+	arriveSquareCallback:Function
+	arriveSquareTimeout:NodeJS.Timeout
 	private static readonly PLAYER_ID_SUFFIX = "P"
 
 	constructor(mapid: number, rname: string, setting: GameSetting) {
@@ -242,8 +244,8 @@ class Game {
 		// this.nextUPID = 1
 		// this.nextPassUPID = 1
 		this.summonedEntityList = new Map()
-		this.rangeProjectileList = new Map()
-		this.passProjectileList = new Map()
+		this.rangeProjectiles = new Map()
+		this.passProjectiles = new Map()
 		this.passProjectileQueue = []
 		this.gameover = false
 		this.shuffledObstacles = this.setting.shuffleObstacle
@@ -265,7 +267,8 @@ class Game {
 		for (let i = 0; i < 4; ++i) {
 			this.turnEncryption.set(i, encrypt(String(i), this.turnEncryptKey).slice(0,8))
 		}
-		
+		this.arriveSquareTimeout=null
+		this.arriveSquareCallback=null
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -300,6 +303,9 @@ class Game {
 	isThisTurn(cryptTurn: string) {
 		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
 		return this.turnEncryption.get(this.thisturn) === cryptTurn
+	}
+	setCycle(cycle:number){
+		this.cycle=cycle
 	}
 	//========================================================================================================
 
@@ -354,10 +360,8 @@ class Game {
 	}
 
 	//()=>{turn:number,stun:boolean}
-	startTurn():boolean{
-		this.entityMediator.forAllPlayer()(function () {
-			this.ability.sendToClient()
-		})
+	canStart():boolean{
+		
 
 		// for (let p of this.playerSelector.getAll()) {
 		// 	//	p.players = this.players
@@ -501,26 +505,6 @@ class Game {
 	}
 
 	// cleanupDeadEntities(){
-	// 	for (let [id,entity] of this.summonedEntityList.entries()) {
-	// 		if (!entity.alive) {
-	// 			console.log("deleted entity " + entity.UEID)
-	// 			this.summonedEntityList.delete(id)
-	// 		}
-	// 	}
-	// }
-
-	// updateSummonedEntityPos(entityId: string,pos:number) {
-
-	// 	pos=Util.clamp(pos,0,MAP.getFinish(this.mapId))
-	// 	let entity=this.entityMediator.moveSummonedEntityTo(entityId,pos)
-
-	// 	if(entity instanceof SummonedEntity){
-	// 		this.sendToClient(PlayerClientInterface.update, "move_entity", entity.summoner.turn, {
-	// 			UEID: entity.UEID,
-	// 			pos: entity.pos
-	// 		})
-	// 	}
-	// }
 	getEntityById(id: string) {
 		return this.entityMediator.getEntity(id)
 	}
@@ -547,11 +531,6 @@ class Game {
 		// this.summonedEntityList.delete(entityId)
 		this.entityMediator.sendToClient(PlayerClientInterface.deleteEntity, entityId, iskilled)
 	}
-	// entityOnTurnStart() {
-	// 	for (let e of this.summonedEntityList.values()) {
-	// 		e.onTurnStart(this.thisturn)
-	// 	}
-	// }
 	getEnemyEntityInRange(attacker: Player, rad: number): Entity[] {
 		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
 	}
@@ -578,6 +557,11 @@ class Game {
 
 		if(this.begun)
 			this.onTurnEnd()
+		else{
+			this.entityMediator.forAllPlayer()(function () {
+				this.ability.sendToClient()
+			})
+		}
 		
 
 		let p = this.thisp()
@@ -830,9 +814,9 @@ class Game {
 
 	playerForceMove(player: Player, pos: number, ignoreObstacle: boolean, movetype: string) {
 		if (!ignoreObstacle) {
-			this.entityMediator.movePlayer(player.UEID, pos, movetype)
+			this.entityMediator.forceMovePlayer(player.UEID, pos, movetype)
 		} else {
-			this.entityMediator.movePlayerIgnoreObstacle(player.UEID, pos, movetype)
+			this.entityMediator.forceMovePlayerIgnoreObstacle(player.UEID, pos, movetype)
 		}
 		this.pendingObs = 0 //강제이동시 장애물무시
 	}
@@ -841,7 +825,7 @@ class Game {
 	checkPassProj(player: Player, currpos: number, dice: number) {
 		let projList = []
 
-		let sortedlist = Array.from(this.passProjectileList.values()).sort((a, b) => a.pos - b.pos)
+		let sortedlist = Array.from(this.passProjectiles.values()).sort((a, b) => a.pos - b.pos)
 
 		for (let pp of sortedlist) {
 			if ((pp.pos > currpos && pp.pos <= currpos + dice) || (pp.pos < currpos && pp.pos >= currpos + dice)) {
@@ -862,9 +846,9 @@ class Game {
 	}
 	//========================================================================================================
 
-	checkObstacle(): number {
+	checkObstacle(delay?:number): number {
 		let p = this.thisp()
-
+		this.arriveSquareCallback=null
 		p.onBeforeObs()
 
 		//passprojqueue 에 있는 투사체들을 pendingaction 에 적용
@@ -896,9 +880,32 @@ class Game {
 			}
 		}
 
-		p.onAfterObs()
-
+		if(!delay)
+			delay=0
+		
+		this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
+		
 		return result
+	}
+	onObstacleComplete()
+	{
+		if(this.arriveSquareCallback!=null){
+			this.arriveSquareCallback()
+		}
+		this.thisp().onAfterObs()
+	}
+
+	requestForceMove(player:Player, movetype: string){
+		let delay=1000
+		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=1500
+		clearTimeout(this.arriveSquareTimeout)
+		this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
+		setTimeout(
+			() => {
+				player.arriveAtSquare(true)
+			},
+			delay
+		)
 	}
 
 	onEffectApply() {
@@ -907,12 +914,12 @@ class Game {
 	}
 
 	projectileCooldown() {
-		for (let [id, proj] of this.rangeProjectileList.entries()) {
+		for (let [id, proj] of this.rangeProjectiles.entries()) {
 			if (proj.cooldown(this.thisturn)) {
 				this.removeRangeProjectileById(id)
 			}
 		}
-		for (let [id, proj] of this.passProjectileList.entries()) {
+		for (let [id, proj] of this.passProjectiles.entries()) {
 			if (proj.cooldown(this.thisturn)) {
 				this.removePassProjectileById(id)
 			}
@@ -967,7 +974,7 @@ class Game {
 	processGodhand(target: number, location: number ) {
 		let p = this.pOfTurn(target)
 		p.damagedby[this.thisturn] = 3
-		this.playerForceMove(p, location, false, "levitate")
+		this.playerForceMove(p, location, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 	}
 	//========================================================================================================
 
@@ -990,7 +997,7 @@ class Game {
 		}
 		let ignoreObstacle = false
 
-		for (let proj of this.rangeProjectileList.values()) {
+		for (let proj of this.rangeProjectiles.values()) {
 			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
 				console.log("proj hit" + proj.UPID)
 
@@ -1050,6 +1057,7 @@ class Game {
 
 	//========================================================================================================
 	useAreaSkill(pos: number) {
+		console.log("usearea"+pos)
 		this.thisp().usePendingAreaSkill(pos)
 	}
 	placeSkillProjectile(pos: number) {
@@ -1102,28 +1110,28 @@ class Game {
 		proj.place(pos, id)
 
 		if (proj instanceof PassProjectile) {
-			this.passProjectileList.set(id, proj)
+			this.passProjectiles.set(id, proj)
 			this.entityMediator.sendToClient(PlayerClientInterface.placePassProj, proj.getTransferData())
 		} else if (proj instanceof RangeProjectile) {
-			this.rangeProjectileList.set(id, proj)
+			this.rangeProjectiles.set(id, proj)
 			this.entityMediator.sendToClient(PlayerClientInterface.placeProj, proj.getTransferData())
 		}
 		return id
 	}
 //========================================================================================================
 	removeRangeProjectileById(UPID: string) {
-		if (!this.rangeProjectileList.has(UPID)) return
+		if (!this.rangeProjectiles.has(UPID)) return
 
-		this.rangeProjectileList.get(UPID).remove()
-		this.rangeProjectileList.delete(UPID)
+		this.rangeProjectiles.get(UPID).remove()
+		this.rangeProjectiles.delete(UPID)
 		this.sendToClient(PlayerClientInterface.removeProj, UPID)
 	}
 //========================================================================================================
 	removePassProjectileById(UPID: string) {
-		if (!this.passProjectileList.has(UPID)) return
+		if (!this.passProjectiles.has(UPID)) return
 
-		this.passProjectileList.get(UPID).remove()
-		this.passProjectileList.delete(UPID)
+		this.passProjectiles.get(UPID).remove()
+		this.passProjectiles.delete(UPID)
 		this.sendToClient(PlayerClientInterface.removeProj, UPID)
 	}
 //========================================================================================================

@@ -1,8 +1,10 @@
-import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 import { Damage, SkillAttack, SkillTargetSelector } from "../Util"
-import { Game } from "../Game"
+import { Player } from "../player"
+import type { Game } from "../Game"
+
+
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 

@@ -34,14 +34,14 @@ router.get("/map", function (req:express.Request, res:express.Response) {
 	if (!room) {
 		return
 	}
-	if (room.game.mapId === MAP_TYPE.OCEAN) {
+	if (room.getMapId() === MAP_TYPE.OCEAN) {
 		fs.readFile(__dirname + RESOURCE_PATH+"ocean_map.json", "utf8", function (err, data) {
 			if(err){
 				res.status(500).send({err:"error while requesting map file"})
 			}
 			res.end(data)
 		})
-	} else if (room.game.mapId === MAP_TYPE.CASINO) {
+	} else if (room.getMapId()=== MAP_TYPE.CASINO) {
 		fs.readFile(__dirname + RESOURCE_PATH+"casino_map.json", "utf8", function (err, data) {
 			if(err){
 				res.status(500).send({err:"error while requesting map file"})

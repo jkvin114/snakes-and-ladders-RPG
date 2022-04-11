@@ -2,18 +2,18 @@ import obsInfo = require("../res/obstacles.json")
 import SETTINGS = require("../res/globalsettings.json")
 import * as ENUM from "./enum"
 import * as Util from "./Util"
-import { Game } from "./Game"
+import {PlayerClientInterface, testSetting} from "./app"
+import type { Game } from "./Game"
+import { EntityFilter } from "./EntityFilter"
 import { Projectile } from "./Projectile"
 import { PlayerAbility } from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
 import { PlayerMapHandler } from "./MapHandlers/PlayerMapHandler"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects } from "./PlayerStatusEffect"
-import { PlayerClientInterface, testSetting } from "./app"
 import { ObstacleHelper, SkillInfoFactory } from "./helpers"
 import { Entity } from "./Entity"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
-import { EntityFilter } from "./EntityFilter"
 import { AiAgent, DefaultAgent } from "./AiAgents/AiAgent"
 import { ServerPayloadInterface } from "./PayloadInterface"
 import { MAP } from "./MapHandlers/MapStorage"
@@ -335,13 +335,10 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	onAfterObs() {
-		if (this.oneMoreDice) {
-			return
+		if (!this.oneMoreDice) {
+			this.onSkillDurationCount()
+			this.decrementAllSkillDuration()
 		}
-		this.onSkillDurationCount()
-
-		this.decrementAllSkillDuration()
-
 		this.effects.onAfterObs()
 	}
 
@@ -431,7 +428,7 @@ abstract class Player extends Entity {
 	/**
 	 * called to change position of player for dice or forcemove
 	 * @param {} pos
-	 * @returns
+	 * @returns died
 	 */
 	changePos(pos: number): boolean {
 		if (this.mapHandler.doMineDamage()) return true
@@ -587,21 +584,6 @@ abstract class Player extends Entity {
 				currmaxhp: this.MaxHP,
 				source: data.source
 			}
-			// = {
-			// 	turn: this.turn,
-			// 	hp: hp,
-			// 	maxhp: data.maxHp,
-			// 	currhp: this.HP,
-			// 	currmaxhp: this.MaxHP,
-			// 	skillfrom: data.source,
-			// 	type: data.type,
-			// 	needDelay: false,
-			// 	killed: data.killedByDamage,
-			// 	willRevive: data.willRevive,
-			// 	skillTrajectorySpeed:0,
-			// 	isBlocked: isblocked
-			// }
-
 			this.transfer(PlayerClientInterface.changeHP_damage, hpChangeData)
 		}
 	}
@@ -727,7 +709,7 @@ abstract class Player extends Entity {
 				this.pos = MAP.getFinish(this.mapId) - 1
 				this.killplayer()
 				this.message(this.name + " has been finally freed from slavery")
-				return 0
+				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 			} else {
 				this.game.gameover = true
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
@@ -739,7 +721,7 @@ abstract class Player extends Entity {
 		let obs = this.game.shuffledObstacles[this.pos].obs
 		//속박일경우
 		if (this.effects.has(ENUM.EFFECT.STUN)) {
-			//특정 장애물은 속박무시
+			//특정 장애물은 속박시 무시
 			if (SETTINGS.ignoreStunObsList.includes(obs)) {
 				if (this.game.setting.legacyBasicAttack) this.basicAttack()
 
@@ -755,9 +737,6 @@ abstract class Player extends Entity {
 	}
 
 	/**
-
-	 */
-	/**
 	 *
 	 * @param {*} obs obstacle id
 	 * @param {*} isForceMoved whether it is forcemoved
@@ -769,10 +748,10 @@ abstract class Player extends Entity {
 			this.invulnerable = true
 			this.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL) //cant use skill in the store
 
-			this.goStore(false)
+			this.goStore()
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE
 		}
-		//투명화   해로운 장애물일경우만 무시
+		//투명화:   해로운 장애물일경우만 무시
 		if (this.effects.has(ENUM.EFFECT.INVISIBILITY) && obsInfo.obstacles[obs].val < 0) {
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		}
@@ -786,9 +765,9 @@ abstract class Player extends Entity {
 		return obs
 	}
 
-	goStore(street_vendor: boolean) {
-		// if (this.game.instant) return
-		this.transfer(PlayerClientInterface.goStore, this.turn, this.inven.getStoreData(street_vendor ? 1.1 : 1))
+	goStore(priceMultiplier?: number) {
+		if(!priceMultiplier) priceMultiplier=1
+		this.transfer(PlayerClientInterface.goStore, this.turn, this.inven.getStoreData(priceMultiplier))
 	}
 
 	//========================================================================================================
@@ -1111,7 +1090,7 @@ abstract class Player extends Entity {
 
 		let payload: ServerPayloadInterface.SkillInit = {
 			turn: this.turn,
-			crypt_turn: "",
+			crypt_turn: this.game.cryptTurn(this.turn),
 			type: ENUM.INIT_SKILL_RESULT.NON_TARGET,
 			data: null,
 			skill: skill

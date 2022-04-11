@@ -1,9 +1,9 @@
 import { PlayerClientInterface } from "./app"
+import { Player } from "./player"
+import { EntityFilter } from "./EntityFilter"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./Entity"
-import { EntityFilter } from "./EntityFilter"
 import { EFFECT, ENTITY_TYPE, MAP_TYPE, STAT } from "./enum"
-import { Player } from "./player"
 import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize, sleep } from "./Util"
 import { MAP } from "./MapHandlers/MapStorage"
 import { ServerPayloadInterface } from "./PayloadInterface"
@@ -252,30 +252,25 @@ class EntityMediator {
 		}
 		return entity
 	}
-	movePlayerIgnoreObstacle(id:string, pos: number, movetype: string) {
+	forceMovePlayerIgnoreObstacle(id:string, pos: number, movetype: string) {
 		let player = this.getPlayer(id)
 		if (!(player instanceof Player)) return
 
-		this.sendToClient(PlayerClientInterface.tp, player.turn, pos, movetype)
+		this.sendToClient(PlayerClientInterface.playerForceMove, player.turn, pos, movetype)
 
 		player.forceMove(pos)
 
 	}
 
-	movePlayer(id:string, pos: number, movetype: string) {
+	forceMovePlayer(id:string, pos: number, movetype: string) {
 
-		this.movePlayerIgnoreObstacle(id,pos,movetype)
+		this.forceMovePlayerIgnoreObstacle(id,pos,movetype)
 		let player = this.getPlayer(id)
 
 		if (this.instant) {
 			player.arriveAtSquare(true)
 		} else {
-			setTimeout(
-				() => {
-					player.arriveAtSquare(true)
-				},
-				movetype === "simple" ? 1000 : 1500
-			)
+			player.game.requestForceMove(player,movetype)
 		}
 	}
 

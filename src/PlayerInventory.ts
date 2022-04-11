@@ -4,8 +4,8 @@ import { ITEM } from "./enum"
 
 import { items as ItemList } from "../res/item.json"
 import SETTINGS = require("../res/globalsettings.json")
-import { Player } from "./player"
-import { PlayerClientInterface, testSetting } from "./app"
+import {  PlayerClientInterface, testSetting } from "./app"
+import type { Player } from "./player"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
 
 class PlayerInventory {

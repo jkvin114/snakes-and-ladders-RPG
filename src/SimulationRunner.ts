@@ -1,13 +1,11 @@
-import { GameSetting, Game } from "./Game"
+import { ArriveSquare, GameCycleState, GameInitializer, AiSimulationSkill} from "./GameCycle/GameCycleState"
+import { GameSetting } from "./Game"
 import cliProgress = require("cli-progress")
-import { RoomClientInterface } from "./app"
+// import { RoomClientInterface } from "./app"
 import SETTINGS = require("../res/globalsettings.json")
-import { shuffle,pickRandom } from "./Util"
+import { shuffle,pickRandom, PlayerType } from "./Util"
 import {ARRIVE_SQUARE_RESULT_TYPE} from "./enum"
 import { ClientPayloadInterface } from "./PayloadInterface"
-
-
-
 
 
 class SimulationSetting {
@@ -190,7 +188,8 @@ class SimulationSetting {
 class Simulation {
 	private count: number
 	private progressCount: number
-	private game: Game
+	// private game: Game
+	private gameCycle:GameCycleState
 	private stats: Set<any>
 	private summaryStats:Set<any>
 	private roomName: string
@@ -202,7 +201,8 @@ class Simulation {
 		this.count = count
 		this.roomName = roomname
 		this.runnerId=runner
-		this.game = null
+		// this.game = null
+		this.gameCycle=null
 		this.stats = new Set<any>()
 		this.summaryStats=new Set<any>()
 		this.progressCount = 0
@@ -246,53 +246,71 @@ class Simulation {
 		let timeDiff: any = endTime - startTime
 		console.log = consolelog
 		console.log("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
-		// RoomClientInterface.simulationOver(this.roomName)
 
 		callback()
 	}
 	playOneGame(i: number) {
 		this.makeGame()
-		this.game.startTurn()
+		// this.game.startTurn()
 		this.progressCount = i
 		let oneGame = true
 		while (oneGame) {
 			try {
-				let obs = this.nextturn()
+				if(this.nextturn()) break
+				this.gameCycle=this.gameCycle.getNext()
+				this.skill()
 
-				if (obs === ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
-					oneGame = false
-				} else {
-					this.game.simulationAiSkill()
-				}
 			} catch (e) {
 				console.error("Unexpected error on " + this.progressCount + "th game ")
-				console.error("while processing " + this.game.thisturn + "th turn player")
+				console.error("while processing " + this.gameCycle.game.thisturn + "th turn player")
 				console.error(e)
 			}
 		}
 		if(!this.setting.summaryOnly){
-			this.stats.add(this.game.getFinalStatistics())
+			this.stats.add(this.gameCycle.game.getFinalStatistics())
 		}
-		this.summaryStats.add(this.game.getSummaryStatistics())
+		this.summaryStats.add(this.gameCycle.game.getSummaryStatistics())
 		
 	}
-    nextturn() {
-		this.game.goNextTurn()
-
-		this.game.rollDice(-1)
-
-		return this.game.checkObstacle()
+	skill(){
+		if(this.gameCycle instanceof AiSimulationSkill){
+			this.gameCycle.useSkill()
+		}
+		else{
+			throw new Error("invalid game cycle state for ai skill")
+		}
+	}
+	/**
+	 * 
+	 * @returns is game over
+	 */
+    nextturn():boolean {
+		this.gameCycle=this.gameCycle.getNext().getNext()
+		if(this.gameCycle instanceof ArriveSquare){
+			return this.gameCycle.result===ARRIVE_SQUARE_RESULT_TYPE.FINISH
+		}
+		else{
+			throw new Error("invalid game cycle state for nextturn")
+		}
 	}
 	makeGame() {
 		this.setting.updateGameSetting()
-		this.game = new Game(this.setting.getMap(), this.roomName, this.setting.gameSetting)
+
 
 		let playernumber = this.setting.getPlayerCount()
 		let charlist = this.setting.getCharacterList(playernumber)
 		let teamlist = this.setting.getTeamList(this.setting.isTeam,charlist)
+		let playerlist=[]
 		for (let i = 0; i < playernumber; ++i) {
-			this.game.addAI(teamlist[i], charlist[i], this.setting.getPlayerName(charlist[i], i))
+			playerlist.push({
+				type:PlayerType.AI,
+				name:this.setting.getPlayerName(charlist[i], i),
+				team:teamlist[i],
+				champ:charlist[i],
+				ready:true
+			})
 		}
+		this.gameCycle=GameInitializer.createWithSetting(this.setting.getMap(), this.roomName,this.setting.gameSetting,playerlist)
 	}
 
     getCount(){

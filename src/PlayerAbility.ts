@@ -1,4 +1,4 @@
-import { Player } from "./player"
+import type { Player } from "./player"
 import { PlayerClientInterface } from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
 import { ITEM } from "./enum"

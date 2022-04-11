@@ -1,9 +1,9 @@
-import { PlayerClientInterface } from "../app"
+import { PlayerClientInterface} from "../app"
 import { Player } from "../player"
+import { EntityFilter } from "../EntityFilter"
 import { MAP ,singleMap} from "./MapStorage"
 import * as ENUM from "../enum"
 import { CALC_TYPE, Damage, randomBoolean} from "../Util"
-import { EntityFilter } from "../EntityFilter"
 import { ObstacleHelper } from "../helpers"
 import { ClientPayloadInterface, ServerPayloadInterface } from "../PayloadInterface"
 
@@ -143,7 +143,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 
 	onPendingActionComplete(info:ClientPayloadInterface.PendingAction): void {
 		if (info.type === "submarine" && info.complete && typeof info.result==='number') {
-			this.player.game.playerForceMove(this.player, info.result, false, "levitate")
+			this.player.game.playerForceMove(this.player, info.result, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 		}
 		if (info.type === "ask_way2" && !info.result && typeof info.result==='boolean') {
 			console.log("goWay2")

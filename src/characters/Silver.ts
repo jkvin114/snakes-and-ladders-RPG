@@ -1,10 +1,11 @@
-import { Player } from "../player"
 import * as ENUM from "../enum"
+import { Player } from "../player"
+import type { Game } from "../Game"
+
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../Util"
 import { AblityChangeEffect, NormalEffect ,ShieldEffect} from "../StatusEffect"
-import { Game } from "../Game"
 import { Projectile } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
 import * as SKILL_SCALES from "../../res/skill_scales.json"

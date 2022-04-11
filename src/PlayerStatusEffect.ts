@@ -1,7 +1,7 @@
 import * as Util from "./Util"
 import { EFFECT, EFFECT_TIMING, SKILL, ITEM } from "./enum"
-import { Player } from "./player"
 import { PlayerClientInterface } from "./app"
+import type { Player } from "./player"
 import { SpecialEffect } from "./SpecialEffect"
 import {
 	StatusEffect,

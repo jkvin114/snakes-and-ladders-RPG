@@ -1,6 +1,6 @@
 import { Entity } from "../../Entity"
 import { SKILL } from "../../enum"
-import { Game } from "../../Game"
+import type { Game } from "../../Game"
 import { Damage, SkillTargetSelector } from "../../Util"
 import { Attackable, Damageable, SummonedEntity } from "./SummonedEntity"
 

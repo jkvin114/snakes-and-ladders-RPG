@@ -352,7 +352,7 @@ io.on("connect", function (socket: Socket) {
 		let turn = SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
-		if (!room.game) {
+		if (!room.gameCycle) {
 			socket.emit("server:quit")
 			return
 		}
@@ -368,14 +368,11 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
-		if (!room.game) return
+		//if (!room.game) return
 
 		let canstart = room.user_startGame()
 		if (!canstart) {
 			console.log("connecting incomplete")
-		} else {
-			// io.to(rname).emit("server:nextturn", t)
-			room.goNextTurn()
 		}
 	})
 	//==========================================================================================
@@ -397,8 +394,9 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 
 		let dice = ROOMS.get(rname).user_pressDice(dicenum,crypt_turn)
-		console.log("press_dice" + rname)
-		io.to(rname).emit("server:rolldice", dice)
+		console.log("press_dice" + dice)
+		if(dice!=null)
+			io.to(rname).emit("server:rolldice", dice)
 
 		//	console.log("pressdice")
 	})
@@ -412,7 +410,7 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:arrive_square", function () {
 		let rname = SocketSession.getRoomName(socket)
 		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_arriveSquare()
+		//ROOMS.get(rname).user_arriveSquare()
 	})
 	//==========================================================================================
 
@@ -423,7 +421,7 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_obstacleComplete()
+		//ROOMS.get(rname).user_obstacleComplete()
 	})
 	//==========================================================================================
 
@@ -475,6 +473,7 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let room = ROOMS.get(rname)
 		let result = room.user_clickSkill(s,crypt_turn)
+		console.log(result)
 		socket.emit("server:skill_data", result)
 	})
 	//==========================================================================================
@@ -565,7 +564,7 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 		let turn = SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).extendTimeout(turn)
+	//	ROOMS.get(rname).extendTimeout(turn)
 	})
 	//==========================================================================================
 
@@ -654,7 +653,7 @@ export class PlayerClientInterface {
 		sourcePlayer: string
 	) => io.to(rname).emit("server:special_effect", { turn: turn, name: name, data: data, sourcePlayer: sourcePlayer })
 
-	static tp = (rname: string, turn: number, pos: number, movetype: string) =>
+	static playerForceMove = (rname: string, turn: number, pos: number, movetype: string) =>
 		io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
 
 	static smoothTeleport = (rname: string, turn: number, pos: number, distance: number) =>
@@ -730,16 +729,12 @@ app.get("/", function (req, res) {
 app.post("/chat", function (req, res) {
 	console.log("chat " + req.body.msg + " " + req.body.turn)
 	let room = ROOMS.get(req.session.roomname)
-	if (!room || !room.game) {
+	if (!room || !room.gameCycle) {
 		return
 	}
 	io.to(req.session.roomname).emit(
 		"server:receive_message",
-		room.game.pOfTurn(Number(req.body.turn)).name +
-			"(" +
-			SETTINGS.characters[room.game.pOfTurn(Number(req.body.turn)).champ].name +
-			")",
-		req.body.msg
+		room.user_message(req.body.turn,req.body.msg)
 	)
 	res.end("")
 })

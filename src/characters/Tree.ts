@@ -1,18 +1,18 @@
-import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
+import { Player } from "../player"
+import type { Game } from "../Game"
+
 
 import { Damage, SkillTargetSelector, SkillAttack, CALC_TYPE, randInt } from "../Util"
-import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { AblityChangeEffect, OnDamageEffect, ShieldEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
 import TreePlant from "./SummonedEntity/TreePlantEntity"
-import { SummonedEntity } from "./SummonedEntity/SummonedEntity"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { EntityFilter } from "../EntityFilter"
 import { DefaultAgent } from "../AiAgents/AiAgent"
+import { EntityFilter } from "../EntityFilter"
 
 const ID = 8
 class Tree extends Player {

@@ -1,17 +1,13 @@
-import { Player } from "./player"
 import * as ENUM from "./enum"
 import * as Util from "./Util"
 import SETTINGS = require("../res/globalsettings.json")
-import { PlayerClientInterface } from "./app"
 import { MAP } from "./MapHandlers/MapStorage"
-import { items as ItemList } from "../res/item.json"
-import PlayerInventory from "./PlayerInventory"
 import { EffectFactory, StatusEffect } from "./StatusEffect"
 import { SpecialEffect } from "./SpecialEffect"
 import { statuseffect_kor, statuseffect } from "../res/string_resource.json"
+import {Player} from './player'
 import { EntityFilter } from "./EntityFilter"
-import { isTypeNode } from "typescript"
-
+import { PlayerClientInterface } from "./app"
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
 		let others: string[] = []
@@ -94,7 +90,7 @@ class ObstacleHelper {
 					break
 				case 19:
 					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(20))(function(player){
-						this.game.playerForceMove(this, player.pos, true, "simple")
+						this.game.playerForceMove(this, player.pos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 					})
 
 					// others = player.game.playerSelector.getPlayersByCondition(player, 20, false, true, false, true)
@@ -109,8 +105,8 @@ class ObstacleHelper {
 					})
 
 					if (target != null && target instanceof Player &&  target.pos != player.pos) {
-						player.game.playerForceMove(player, target.pos, false, "simple")
-						player.game.playerForceMove(target, mypos, true, "simple")
+						player.game.playerForceMove(player, target.pos, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
+						player.game.playerForceMove(target, mypos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						others.push(target.UEID)
 					}
 					break
@@ -177,7 +173,7 @@ class ObstacleHelper {
 					break
 				case 36:
 					if (!isForceMoved) {
-						player.game.playerForceMove(player, player.lastpos, false, "levitate")
+						player.game.playerForceMove(player, player.lastpos, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 					}
 					break
 				case 37:
@@ -246,20 +242,20 @@ class ObstacleHelper {
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player))(function(){
 						let died = this.doObstacleDamage(30,"wave")
 						if (!died) {
-							player.game.playerForceMove(this, this.pos - 3, false, "simple")
+							player.game.playerForceMove(this, this.pos - 3, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						}
 					})
 
 					break
 				case 54:
 					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(30))(function(player){
-						this.game.playerForceMove(this, player.pos, true, "simple")
+						this.game.playerForceMove(this, player.pos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 					})
 
 					break
 				case 55:
 					let r = Math.floor(Math.random() * 10)
-					player.game.playerForceMove(player, player.pos - 3 + r, false, "levitate")
+					player.game.playerForceMove(player, player.pos - 3 + r, false, ENUM.FORCEMOVE_TYPE.LEVITATE)
 					player.obstacleEffect("wind")
 
 					break
@@ -268,7 +264,7 @@ class ObstacleHelper {
 					let allplayers = player.mediator.selectAllFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player))
 					if (allplayers.length !== 0) {
 						let r2 = Math.floor(Math.random() * allplayers.length)
-						player.game.playerForceMove(player, allplayers[r2].pos, true, "levitate")
+						player.game.playerForceMove(player, allplayers[r2].pos, true,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 					}
 					player.obstacleEffect("wind")
 
@@ -318,7 +314,7 @@ class ObstacleHelper {
 					if (player.AI) {
 						AIHelper.aiStore(player)
 					} else {
-						player.goStore(true)
+						player.goStore(1.1)
 					}
 
 					break
@@ -413,7 +409,7 @@ class ObstacleHelper {
 				})
 
 				if (target !== null && target !== undefined) {
-					player.game.playerForceMove(player, target.pos, true, "levitate")
+					player.game.playerForceMove(player, target.pos, true,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 				}
 				break
 			case 3:

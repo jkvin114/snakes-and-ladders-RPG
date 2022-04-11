@@ -1,8 +1,9 @@
 import { Player } from "../player"
+import type { Game } from "../Game"
+
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 import { Damage, SkillTargetSelector, SkillAttack } from "../Util"
-import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
@@ -73,7 +74,7 @@ class Creed extends Player {
 			.setSize(3)
 			.setSource(this.turn)
 			.setAction(function (this: Player) {
-				this.game.playerForceMove(this,this.pos - 4, false, "simple")
+				this.game.playerForceMove(this,this.pos - 4, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 			})
 			.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
 			.setDuration(2)
@@ -155,7 +156,7 @@ class Creed extends Player {
 				this.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
-				this.game.playerForceMove(this,this.game.pOfTurn(target).pos, true, "levitate")
+				this.game.playerForceMove(this,this.game.pOfTurn(target).pos, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
 				damage = new SkillAttack(new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),this.getSkillName(s)).ofSkill(s)
 				break
 		}

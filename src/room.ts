@@ -1,28 +1,19 @@
-import { Game, GameSetting } from "./Game"
+import {ArriveSquare, GameCycleState, GameInitializer, TurnInitializer ,PendingObstacle,WaitingSkill,AiSkill} from "./GameCycle/GameCycleState"
 import SETTINGS = require("../res/globalsettings.json")
-import { RoomClientInterface } from "./app"
 import { Simulation, SimulationSetting } from "./SimulationRunner"
 import { INIT_SKILL_RESULT, ITEM, SKILL_INIT_TYPE } from "./enum"
-import { randInt } from "./Util"
+import { PlayerType, ProtoPlayer, randInt, sleep } from "./Util"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
-import { GameCycleState } from "./GameCycle/GameCycleState"
+import { GAME_CYCLE } from "./GameCycle/StateEnum"
+import { RoomClientInterface } from "./app"
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./DBHandler")
 
 
-enum PlayerType {
-	EMPTY = "none",
-	AI = "ai",
-	PLAYER = "player",
-	PLAYER_CONNECED = "player_connected",
-	SIM_AI = "sim_ai"
-}
-
-type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean }
 
 class Room {
 	//simulation_total_count: number
 	simulation_count: number
-	game: Game
+	// gameCycle: GameCycleState
 	name: string
 	hosting: number
 	guestnum: number
@@ -43,7 +34,7 @@ class Room {
 	constructor(name: string) {
 		//	this.simulation_total_count = 1
 		this.simulation_count = 1
-		this.game = null
+		// this.game = null
 		this.name = name
 		this.teams = []
 		this.hosting = 0
@@ -63,14 +54,14 @@ class Room {
 	}
 
 	cryptTurn(turn: number) {
-		return this.game.cryptTurn(turn)
+		return this.gameCycle.game.cryptTurn(turn)
 	}
 	thisCryptTurn() {
-		return this.game.thisCryptTurn()
+		return this.gameCycle.game.thisCryptTurn()
 	}
 	isThisTurn(cryptTurn: string) {
 		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
-		return this.game.isThisTurn(cryptTurn)
+		return this.gameCycle.game.isThisTurn(cryptTurn)
 	}
 
 	makePlayerList(): ProtoPlayer[] {
@@ -235,333 +226,373 @@ class Room {
 			})
 		})
 	}
-
+	getMapId(){
+		return this.gameCycle.game.mapId
+	}
 	user_gameReady(setting: ClientPayloadInterface.GameSetting, roomName: string) {
 		this.instant = false
 
 		// room.aichamplist=aichamplist
 		// room.map=map
+		this.gameCycle=GameInitializer.create(this.map, roomName,setting, false, this.isTeam,this.playerlist)
 		console.log("team" + this.isTeam)
-		this.game = new Game(this.map, roomName, new GameSetting(setting, false, this.isTeam))
-		//console.log("simulation: "+room.simulation)
-		for (let i = 0; i < this.playerlist.length; ++i) {
-			// let champ=room.champ[i]
-			let team = this.teams[i]
-			//	if (team === null) team = null
-			let p = this.playerlist[i]
-
-			if (p.champ === -1) p.champ = randInt(SETTINGS.characters.length)
-
-			if (p.type === PlayerType.PLAYER_CONNECED) {
-				this.game.addPlayer(team, p.champ, p.name)
-			} else if (p.type === PlayerType.AI) {
-				//시뮬레이션일시 첫번째 ai
-				this.game.addAI(
-					team,
-					p.champ,
-					SETTINGS.characters[Number(p.champ)].name + "_Bot(" + String(this.game.totalnum + 1) + "P) "
-				)
-			}
-		}
+		
 	}
 	user_requestSetting():ServerPayloadInterface.initialSetting{
-		let setting = this.game.getInitialSetting()
+		let setting = this.gameCycle.game.getInitialSetting()
 		//	setting.simulation = this.simulation
 		return setting
 	}
 
-	user_startGame() {
-		return this.game.startTurn()
+	setGameCycle(cycle:GameCycleState){
+		if(this.gameCycle!=null)
+			this.gameCycle.onDestroy()
+		this.gameCycle=cycle
+	}
+	nextGameCycle(){
+		this.gameCycle=this.gameCycle.getNext()
+	}
+	/**
+	 * 
+	 * @returns test if all players are connected
+	 */
+	user_startGame() :boolean{
+		let canstart= this.gameCycle.game.canStart()
+		if(!canstart) return false
+		else if(!this.gameCycle.game.begun) this.goNextTurn()
+		return true
 	}
 	goNextTurn() {
-		this.stopIdleTimeout()
-
-		let turnUpdateData = this.game.goNextTurn()
+		console.log("nextturn")
+		this.setGameCycle(new TurnInitializer(this.gameCycle.game).getNext())
+		if(this.gameCycle.id===GAME_CYCLE.BEFORE_OBS.WAITING_DICE){
+			this.idleTimeoutTurn=this.gameCycle.timeOut(this.onTimeOut)
+		}
+		else if(this.gameCycle.id===GAME_CYCLE.BEFORE_OBS.STUN){
+			this.afterDice(0)
+		}
+		else if(this.gameCycle.id===GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE){
+			let data:ServerPayloadInterface.DiceRoll=this.gameCycle.getData()
+			RoomClientInterface.rollDice(this.name, data)
+			this.afterDice(data.actualdice)
+		}
+		// let turnUpdateData = (this.gameCycle as TurnInitializer).turnUpdateData
 		// turnUpdateData.crypt_turn = this.thisCryptTurn()
 
-		RoomClientInterface.updateNextTurn(this.name, turnUpdateData)
+		// RoomClientInterface.updateNextTurn(this.name, turnUpdateData)
 
-		if (this.game.thisturn === 0) {
-			RoomClientInterface.syncVisibility(this.name, this.game.getPlayerVisibilitySyncData())
-		}
+		// if (this.game.thisturn === 0) {
+		// 	RoomClientInterface.syncVisibility(this.name, this.game.getPlayerVisibilitySyncData())
+		// }
 
-		if (turnUpdateData == null) return
+		// if (turnUpdateData == null) return
 
-		if (!turnUpdateData.ai && !turnUpdateData.stun) {
-			let _this = this
-			this.startIdleTimeout(function () {
-				_this.goNextTurn()
-			})
-		}
+		// if (!turnUpdateData.ai && !turnUpdateData.stun) {
+		// }
 
-		//컴퓨터일경우만 주사위 던짐
-		if (turnUpdateData.ai && !turnUpdateData.stun) {
-			let dice = this.game.rollDice(-1)
+		// //컴퓨터일경우만 주사위 던짐
+		// if (turnUpdateData.ai && !turnUpdateData.stun) {
+		// 	let dice = this.game.rollDice(-1)
 			
 
-			setTimeout(() => {
-				if (!this.game) return
-				RoomClientInterface.rollDice(this.name, dice)
-				this.afterDice(dice.actualdice)
-			}, 500)
-		} else if (turnUpdateData.stun) {
-			this.manageStun()
-		}
+		// 	setTimeout(() => {
+		// 		if (!this.game) return
+		// 		RoomClientInterface.rollDice(this.name, dice)
+		// 		this.afterDice(dice.actualdice)
+		// 	}, 500)
+		// } else if (turnUpdateData.stun) {
+		// 	this.manageStun()
+		// }
 		// this.connection.to(this.name).emit('')
 	}
 
-	manageStun() {
-		setTimeout(() => {
-			if (!this.game) return
-			this.user_arriveSquare()
+	
+	// manageStun() {
+	// 	setTimeout(() => {
+	// 		if (!this.game) return
+	// 		this.user_arriveSquare()
 
-			setTimeout(() => {
-				if (!this.game) return
-				this.user_obstacleComplete()
-			}, 1000)
-		}, 1000)
-	}
+	// 		setTimeout(() => {
+	// 			if (!this.game) return
+	// 			this.user_obstacleComplete()
+	// 		}, 1000)
+	// 	}, 1000)
+	// }
 
 	user_reconnect(turn: number) {
 		console.log("reconnect" + turn)
-		if (turn === this.connectionTimeoutTurn) {
-			this.stopConnectionTimeout()
-			console.log("reconnect" + turn)
-		}
+		// if (turn === this.connectionTimeoutTurn) {
+		// //	this.stopConnectionTimeout()
+		// 	console.log("reconnect" + turn)
+		// }
 		if (turn === this.idleTimeoutTurn) {
-			this.stopIdleTimeout()
+			this.gameCycle.clear()
 			console.log("reconnect" + turn)
 		}
 	}
-	stopIdleTimeout() {
-		clearTimeout(this.idleTimeout)
-		if (!this.game) return
-		this.idleTimeoutTurn = -1
-		RoomClientInterface.stopTimeout(this.name, this.thisCryptTurn())
-	}
-	startIdleTimeout(callback: Function) {
-		RoomClientInterface.startTimeout(this.name, this.thisCryptTurn(), SETTINGS.idleTimeout)
-		//	console.log("start timeout")
-		if (this.game.gameover) {
-			return
-		}
-		this.idleTimeout = setTimeout(() => {
-			if (!this.game) return
-			RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
-			callback()
-		}, SETTINGS.idleTimeout)
-		this.idleTimeoutTurn = this.game.thisturn
-	}
+	// stopIdleTimeout() {
+	// 	clearTimeout(this.idleTimeout)
+	// 	if (!this.game) return
+	// 	this.idleTimeoutTurn = -1
+	// 	RoomClientInterface.stopTimeout(this.name, this.thisCryptTurn())
+	// }
+	// startIdleTimeout(callback: Function) {
+	// 	RoomClientInterface.startTimeout(this.name, this.thisCryptTurn(), SETTINGS.idleTimeout)
+	// 	//	console.log("start timeout")
+	// 	if (this.game.gameover) {
+	// 		return
+	// 	}
+	// 	this.idleTimeout = setTimeout(() => {
+	// 		if (!this.game) return
+	// 		RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
+	// 		callback()
+	// 	}, SETTINGS.idleTimeout)
+	// 	this.idleTimeoutTurn = this.game.thisturn
+	// }
 
-	stopConnectionTimeout() {
-		//	console.log("stopConnectionTimeout")
-		this.connectionTimeoutTurn
-		clearTimeout(this.connectionTimeout)
-	}
-	startConnectionTimeout() {
-		//	console.log("startConnectionTimeout")
-		if (this.game.gameover) {
-			return
-		}
-		this.connectionTimeout = setTimeout(() => {
-			if (!this.game) return
-			RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
-			this.goNextTurn()
-		}, SETTINGS.connectionTimeout)
-		this.connectionTimeoutTurn = this.game.thisturn
-	}
+	// stopConnectionTimeout() {
+	// 	//	console.log("stopConnectionTimeout")
+	// 	this.connectionTimeoutTurn
+	// 	clearTimeout(this.connectionTimeout)
+	// }
+	// startConnectionTimeout() {
+	// 	//	console.log("startConnectionTimeout")
+	// 	if (this.game.gameover) {
+	// 		return
+	// 	}
+	// 	this.connectionTimeout = setTimeout(() => {
+	// 		if (!this.game) return
+	// 		RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
+	// 		this.goNextTurn()
+	// 	}, SETTINGS.connectionTimeout)
+	// 	this.connectionTimeoutTurn = this.game.thisturn
+	// }
 
-	extendTimeout(turn: number) {
-		if (turn !== this.game.thisturn) return
+	// extendTimeout(turn: number) {
+	// 	if (turn !== this.game.thisturn) return
 
-		this.stopIdleTimeout()
-		this.startIdleTimeout(() => this.goNextTurn())
+	// 	this.stopIdleTimeout()
+	// 	this.startIdleTimeout(() => this.goNextTurn())
 
-		//	console.log("timeout extension"+turn)
-	}
+	// 	//	console.log("timeout extension"+turn)
+	// }
 	onTimeOut(){
-		this.gameCycle=this.gameCycle.onTimeout()
+		RoomClientInterface.forceNextturn(this.name, this.gameCycle.crypt_turn)
+		this.setGameCycle(this.gameCycle.onTimeout())
 	}
 
-	user_pressDice(dicenum: number,crypt_turn:string) {
-		this.stopIdleTimeout()
-		this.startConnectionTimeout()
+	user_pressDice(dicenum: number,crypt_turn:string):ServerPayloadInterface.DiceRoll {
+		// this.stopIdleTimeout()
+		// this.startConnectionTimeout()
+		console.log("user_pressDice")
+
 		this.gameCycle=this.gameCycle.onUserPressDice(dicenum,crypt_turn)
-		this.gameCycle.timeOut(this.onTimeOut)
+		this.idleTimeoutTurn=this.gameCycle.timeOut(this.onTimeOut)
+		let diceRoll:ServerPayloadInterface.DiceRoll=this.gameCycle.getData()
+		this.afterDice(diceRoll.actualdice)
+		return diceRoll
 
+		// let data = this.game.rollDice(dicenum)
+		// // data.crypt_turn=this.thisCryptTurn()
+		// this.afterDice(data.actualdice)
 
-		let data = this.game.rollDice(dicenum)
-		// data.crypt_turn=this.thisCryptTurn()
-		this.afterDice(data.actualdice)
-
-		return data
+		// return data
 	}
 
-	afterDice(movedistance: number) {
-		setTimeout(() => {
-			if (!this.game) return
-			this.user_arriveSquare()
-			console.log("arrivesquare")
+	async afterDice(movedistance: number) {
+		
 
-			setTimeout(() => {
-				if (!this.game) return
-				console.log("obscomplete")
-				this.user_obstacleComplete()
-			}, 700)
-		}, 1300 + Math.abs(movedistance) * 100)
-	}
+		await sleep(1300 + Math.abs(movedistance) * 100)
+		console.log("afterDice   "+movedistance)
 
-	user_arriveSquare(): number {
-		let obs = this.game.checkObstacle()
-		//	console.log("checkobs" + obs)
-
-		if (obs === -7) {
-			this.stopConnectionTimeout()
+		this.nextGameCycle()
+		if(this.gameCycle.gameover){
 			this.onGameover()
+			return
 		}
-		return null
-	}
+		console.log("afterDice2")
 
-	user_obstacleComplete() {
-		if (this.game == null) return
-		//	console.log("obscomplete, pendingobs:" + this.game.pendingObs)
-		this.stopConnectionTimeout()
+		if(!(this.gameCycle instanceof ArriveSquare)) return
+		
+		await this.gameCycle.getArriveSquarePromise()
+		console.log("afterDice3")
+		this.nextGameCycle()
 
-		let info = this.game.checkPendingObs()
-
-		if (!info) {
-			if (this.game.thisp().AI) {
-				this.game.aiSkill(()=>{
-					if (!this.game) return
-					this.goNextTurn()
-				})
-			} else {
-				this.checkPendingAction()
-			}
-		} else {
-			//	console.log("obscomplete, pendingobs:" + info)
-
-			RoomClientInterface.sendPendingObs(this.name, info)
-
-			this.startIdleTimeout(()=> {
-				this.game.processPendingObs(null)
+		if(this.gameCycle instanceof WaitingSkill){
+			if(this.gameCycle.shouldPass()){
+				await sleep(1000)
 				this.goNextTurn()
-			})
+				return
+			}
+			this.gameCycle.timeOut(this.onTimeOut)
+		}
+		else if(this.gameCycle instanceof AiSkill){
+			await this.gameCycle.useSkill()
+			this.goNextTurn()
+		}
+		else if(this.gameCycle.id===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE || this.gameCycle.id===GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION){
+			this.gameCycle.timeOut(this.onTimeOut)
 		}
 	}
 
-	checkPendingAction() {
-		if (this.game == null) return
-		let action=this.game.getPendingAction()
-		//	console.log("function checkpendingaction" + this.game.pendingAction)
-		if (!action || this.game.thisp().dead) {
-			this.showSkillButtonToUser()
-			this.startIdleTimeout( ()=> {
-				this.goNextTurn()
-			})
-		} else {
-			if (action === "submarine") {
-				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.thisp().pos)
-			}
-			if (action === "ask_way2") {
-				RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", 0)
-			}
+	// user_arriveSquare(): number {
+	// 	let obs = this.game.checkObstacle()
+	// 	//	console.log("checkobs" + obs)
 
-			this.startIdleTimeout(()=> {
-				this.game.processPendingAction(null)
-				this.goNextTurn()
-			})
-		}
-	}
+	// 	if (obs === -7) {
+	// 		this.stopConnectionTimeout()
+	// 		this.onGameover()
+	// 	}
+	// 	return null
+	// }
+
+	// user_obstacleComplete() {
+	// 	if (this.game == null) return
+	// 	//	console.log("obscomplete, pendingobs:" + this.game.pendingObs)
+	// 	this.stopConnectionTimeout()
+
+	// 	let info = this.game.checkPendingObs()
+
+	// 	if (!info) {
+	// 		if (this.game.thisp().AI) {
+	// 			this.game.aiSkill(()=>{
+	// 				if (!this.game) return
+	// 				this.goNextTurn()
+	// 			})
+	// 		} else {
+	// 			this.checkPendingAction()
+	// 		}
+	// 	} else {
+	// 		//	console.log("obscomplete, pendingobs:" + info)
+
+	// 		RoomClientInterface.sendPendingObs(this.name, info)
+
+	// 		this.startIdleTimeout(()=> {
+	// 			this.game.processPendingObs(null)
+	// 			this.goNextTurn()
+	// 		})
+	// 	}
+	// }
+
+	// checkPendingAction() {
+	// 	if (this.gameCycle == null) return
+	// 	let action=this.game.getPendingAction()
+	// 	//	console.log("function checkpendingaction" + this.game.pendingAction)
+	// 	if (!action || this.game.thisp().dead) {
+	// 		this.showSkillButtonToUser()
+	// 		this.startIdleTimeout( ()=> {
+	// 			this.goNextTurn()
+	// 		})
+	// 	} else {
+	// 		if (action === "submarine") {
+	// 			RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.thisp().pos)
+	// 		}
+	// 		if (action === "ask_way2") {
+	// 			RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", 0)
+	// 		}
+
+	// 		this.startIdleTimeout(()=> {
+	// 			this.game.processPendingAction(null)
+	// 			this.goNextTurn()
+	// 		})
+	// 	}
+	// }
 	user_completePendingObs(info: ClientPayloadInterface.PendingObstacle,crypt_turn:string) {
-		if (this.game == null) return
+		if (this.gameCycle == null) return
 		this.gameCycle=this.gameCycle.onUserCompletePendingObs(info,crypt_turn)
 
-		this.stopIdleTimeout()
-		this.game.processPendingObs(info)
-		this.checkPendingAction()
+		// this.stopIdleTimeout()
+		// this.game.processPendingObs(info)
+		// this.checkPendingAction()
 	}
 	user_completePendingAction(info: ClientPayloadInterface.PendingAction,crypt_turn:string) {
-		if (this.game == null) return
+		if (this.gameCycle == null) return
 		this.gameCycle=this.gameCycle.onUserCompletePendingAction(info,crypt_turn)
-		this.game.processPendingAction(info)
-		this.stopIdleTimeout()
-		this.showSkillButtonToUser()
+		// this.game.processPendingAction(info)
+		// this.stopIdleTimeout()
+		// this.showSkillButtonToUser()
 	}
 
 	user_clickSkill(s: number,crypt_turn:string) {
-		if (this.game == null) return
-		this.gameCycle=this.gameCycle.onUserClickSkill(s,crypt_turn)
+		if (this.gameCycle == null) return
+		let result:ServerPayloadInterface.SkillInit=this.gameCycle.onUserClickSkill(s,crypt_turn)
+		this.nextGameCycle()
+		return result
 
-		let result = this.game.onSelectSkill(s - 1)
-		//	console.log("getskill")
-		//	console.log(result)
-		if(result.type===INIT_SKILL_RESULT.NON_TARGET || result.type===INIT_SKILL_RESULT.ACTIVATION){
-			this.showSkillButtonToUser()
-		}
-		this.stopIdleTimeout()
+		// let result = this.game.onSelectSkill(s - 1)
+		// //	console.log("getskill")
+		// //	console.log(result)
+		// if(result.type===INIT_SKILL_RESULT.NON_TARGET || result.type===INIT_SKILL_RESULT.ACTIVATION){
+		// 	this.showSkillButtonToUser()
+		// }
+		// this.stopIdleTimeout()
 
-		// if (result.type === "targeting" || result.type === "projectile")
-		this.startIdleTimeout(() => this.goNextTurn())
+		// // if (result.type === "targeting" || result.type === "projectile")
+		// this.startIdleTimeout(() => this.goNextTurn())
 
 		// result.crypt_turn=this.thisCryptTurn()
-		return result
 	}
 	showSkillButtonToUser(){
-		let status=this.game.getSkillStatus()
-		console.log(status)
-		RoomClientInterface.setSkillReady(this.name,status )
+		// let status=this.game.getSkillStatus()
+		// console.log(status)
+		// RoomClientInterface.setSkillReady(this.name,status )
 	}
 
 	user_basicAttack(crypt_turn:string){
 		this.gameCycle=this.gameCycle.onUserBasicAttack(crypt_turn)
-		this.stopIdleTimeout()
-		this.startIdleTimeout(() => this.goNextTurn())
-		this.game.thisp().basicAttack()
+		// this.stopIdleTimeout()
+		// this.startIdleTimeout(() => this.goNextTurn())
+		// this.game.thisp().basicAttack()
 		
-		this.showSkillButtonToUser()
+		// this.showSkillButtonToUser()
 	}
 	user_choseSkillTarget(target: number,crypt_turn:string) {
 		this.gameCycle=this.gameCycle.onUserChooseSkillTarget(target,crypt_turn)
-		this.stopIdleTimeout()
-		this.startIdleTimeout(() => this.goNextTurn())
-		if (target > 0) {
-			this.game.useSkillToTarget(target)
-		}
+		// this.stopIdleTimeout()
+		// this.startIdleTimeout(() => this.goNextTurn())
+		// if (target > 0) {
+		// 	this.game.useSkillToTarget(target)
+		// }
 		
-		this.showSkillButtonToUser()
+		// this.showSkillButtonToUser()
 	}
 
 	user_choseSkillLocation(location: number,crypt_turn:string) {
 		this.gameCycle=this.gameCycle.onUserChooseSkillLocation(location,crypt_turn)
 
-		this.stopIdleTimeout()
-		this.startIdleTimeout(() => this.goNextTurn())
-		if (location >0) {
-			this.game.placeSkillProjectile(location)
-		}
-		this.showSkillButtonToUser()
+		// this.stopIdleTimeout()
+		// this.startIdleTimeout(() => this.goNextTurn())
+		// if (location >0) {
+		// 	this.game.placeSkillProjectile(location)
+		// }
+		// this.showSkillButtonToUser()
 	}
 	user_choseAreaSkillLocation(location:number,crypt_turn:string){
-		this.gameCycle=this.gameCycle.onUserchooseAreaSkillLocation(location,crypt_turn)
+		console.log("user_choseAreaSkillLocation"+crypt_turn)
+		this.gameCycle=this.gameCycle.onUserChooseAreaSkillLocation(location,crypt_turn)
 
-		this.stopIdleTimeout()
-		this.startIdleTimeout(() => this.goNextTurn())
-		if (location >0) {
-			this.game.useAreaSkill(location)
-		}
-		this.showSkillButtonToUser()
+		// this.stopIdleTimeout()
+		// this.startIdleTimeout(() => this.goNextTurn())
+		// if (location >0) {
+		// 	this.game.useAreaSkill(location)
+		// }
+		// this.showSkillButtonToUser()
 	}
 
 	user_storeComplete(data: ClientPayloadInterface.ItemBought) {
-		if (this.game == null) return
+		if (this.gameCycle == null) return
 		this.gameCycle.onUserStoreComplete(data)
-
-		
+	}
+	user_message(turn:number,message:string){
+		return this.gameCycle.game.pOfTurn(Number(turn)).name +
+			"(" +
+			SETTINGS.characters[this.gameCycle.game.pOfTurn(Number(turn)).champ].name +
+			")",
+		message
 	}
 	onGameover() {
-		let stat = this.game.getFinalStatistics()
-		let winner = this.game.thisturn
+		let stat = this.gameCycle.game.getFinalStatistics()
+		let winner = this.gameCycle.game.thisturn
 
 		let rname = this.name
 		this.reset()
@@ -605,11 +636,11 @@ class Room {
 	}
 
 	reset() {
-		this.stopConnectionTimeout()
-		this.stopIdleTimeout()
+		// this.stopConnectionTimeout()
+		// this.stopIdleTimeout()
 		console.log(this.name + "has been reset")
 		this.name = null
-		this.game = null
+		this.setGameCycle(null)
 		this.simulation = null
 		this.hosting = 0
 		this.guestnum = 0

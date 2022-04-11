@@ -1,9 +1,10 @@
-import { Player } from "../player"
 import * as ENUM from "../enum"
 import { ITEM } from "../enum"
+import { Player } from "../player"
+import type { Game } from "../Game"
+
 
 import { Damage, SkillTargetSelector, SkillAttack, PercentDamage, CALC_TYPE } from "../Util"
-import { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { TickDamageEffect, TickEffect, OnHitEffect } from "../StatusEffect"
