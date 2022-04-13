@@ -352,7 +352,7 @@ io.on("connect", function (socket: Socket) {
 		let turn = SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
 		let room = ROOMS.get(rname)
-		if (!room.gameCycle) {
+		if (!room.gameloop) {
 			socket.emit("server:quit")
 			return
 		}
@@ -393,7 +393,7 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 
-		let dice = ROOMS.get(rname).user_pressDice(dicenum,crypt_turn)
+		let dice = ROOMS.get(rname).gameloop.user_pressDice(dicenum,crypt_turn)
 		console.log("press_dice" + dice)
 		if(dice!=null)
 			io.to(rname).emit("server:rolldice", dice)
@@ -438,7 +438,7 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_completePendingObs(info,crypt_turn)
+		ROOMS.get(rname).gameloop.user_completePendingObs(info,crypt_turn)
 	})
 	//==========================================================================================
 
@@ -452,7 +452,7 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_completePendingAction(info,crypt_turn)
+		ROOMS.get(rname).gameloop.user_completePendingAction(info,crypt_turn)
 	})
 	//execute when player clicks basic attack
 	socket.on("user:basicattack", function (crypt_turn: string) {
@@ -461,7 +461,7 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let room = ROOMS.get(rname)
-		room.user_basicAttack(crypt_turn)
+		room.gameloop.user_basicAttack(crypt_turn)
 	})
 	//==========================================================================================
 
@@ -472,7 +472,7 @@ io.on("connect", function (socket: Socket) {
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		let room = ROOMS.get(rname)
-		let result = room.user_clickSkill(s,crypt_turn)
+		let result = room.gameloop.user_clickSkill(s,crypt_turn)
 		console.log(result)
 		socket.emit("server:skill_data", result)
 	})
@@ -484,7 +484,7 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_choseSkillTarget(target,crypt_turn)
+		ROOMS.get(rname).gameloop.user_choseSkillTarget(target,crypt_turn)
 
 		// if (status != null) {
 		// 	setTimeout(() => socket.emit("server:used_skill", status), 500)
@@ -498,7 +498,7 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_choseSkillLocation(location,crypt_turn)
+		ROOMS.get(rname).gameloop.user_choseSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
 	socket.on("user:chose_area_skill_location", function (crypt_turn: string, location: number) {
@@ -507,7 +507,7 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).user_choseAreaSkillLocation(location,crypt_turn)
+		ROOMS.get(rname).gameloop.user_choseAreaSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
 	//==========================================================================================
@@ -517,7 +517,7 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 
-		ROOMS.get(rname).user_storeComplete(data)
+		ROOMS.get(rname).gameloop.user_storeComplete(data)
 	})
 
 	//==========================================================================================
@@ -527,7 +527,7 @@ io.on("connect", function (socket: Socket) {
 
 		if (!ROOMS.has(rname)) return
 		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).goNextTurn()
+		ROOMS.get(rname).gameloop.startNextTurn(false)
 	})
 
 	//==========================================================================================
@@ -557,7 +557,7 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).goNextTurn()
+		//ROOMS.get(rname).goNextTurn()
 	})
 	//==========================================================================================
 	socket.on("user:extend_timeout", function () {
@@ -581,7 +581,7 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 		let turn = SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_reconnect(turn)
+		ROOMS.get(rname).gameloop.user_reconnect(turn)
 	})
 })
 
@@ -729,12 +729,12 @@ app.get("/", function (req, res) {
 app.post("/chat", function (req, res) {
 	console.log("chat " + req.body.msg + " " + req.body.turn)
 	let room = ROOMS.get(req.session.roomname)
-	if (!room || !room.gameCycle) {
+	if (!room || !room.gameloop) {
 		return
 	}
 	io.to(req.session.roomname).emit(
 		"server:receive_message",
-		room.user_message(req.body.turn,req.body.msg)
+		room.gameloop.user_message(req.body.turn,req.body.msg)
 	)
 	res.end("")
 })

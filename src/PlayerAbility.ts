@@ -1,4 +1,4 @@
-import type { Player } from "./player"
+import type { Player,ValueScale } from "./player"
 import { PlayerClientInterface } from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
 import { ITEM } from "./enum"
@@ -304,9 +304,17 @@ class PlayerAbility {
 	getMagicCastleDamage() {
 		return this.AD.get() * 0.1 + this.AP.get() * 0.08 + this.extraHP * 0.1
 	}
-
+	calculateScale(data:ValueScale):number{
+		let v =
+			data.base +
+			data.scales.reduce((prev, curr) => {
+				return prev + this.get(curr.ability) * curr.val
+			}, 0)
+			
+		return Math.floor(v)
+	}
 	static applySkillDmgReduction(damage: Damage, reduction: number) {
 		return damage.updateNormalDamage(CALC_TYPE.multiply, 1 - reduction * 0.01)
-	}
+	}	
 }
 export { PlayerAbility }

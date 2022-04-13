@@ -50,6 +50,9 @@ abstract class PlayerMapHandler {
 	onRollDice(moveDistance:number):{type:string,args?:any[]}{
 		return {type:""}
 	}
+	canAttack(){
+		return !(this.gamemap.muststop.includes(this.player.pos) && this.gamemap.store.includes(this.player.pos) && this.gamemap.respawn.includes(this.player.pos)) 
+	}
 
 
 	//타임아웃 악용방지 자동실행

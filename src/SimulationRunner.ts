@@ -1,4 +1,4 @@
-import { ArriveSquare, GameCycleState, GameInitializer, AiSimulationSkill} from "./GameCycle/GameCycleState"
+import { ArriveSquare, GameCycleState, AiSimulationSkill, GameLoop} from "./GameCycle/GameCycleState"
 import { GameSetting } from "./Game"
 import cliProgress = require("cli-progress")
 // import { RoomClientInterface } from "./app"
@@ -310,7 +310,8 @@ class Simulation {
 				ready:true
 			})
 		}
-		this.gameCycle=GameInitializer.createWithSetting(this.setting.getMap(), this.roomName,this.setting.gameSetting,playerlist)
+		this.gameCycle=GameLoop.createWithSetting(this.setting.getMap(), this.roomName,this.setting.gameSetting,playerlist)
+		.startTurn().state
 	}
 
     getCount(){

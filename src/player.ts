@@ -178,12 +178,7 @@ abstract class Player extends Entity {
 		return 0
 	}
 	calculateScale(data: ValueScale) {
-		let v =
-			data.base +
-			data.scales.reduce((prev, curr) => {
-				return prev + this.ability.get(curr.ability) * curr.val
-			}, 0)
-		return Math.floor(v)
+		return this.ability.calculateScale(data)
 	}
 
 	calculateAdditionalDice(amount: number): number {
@@ -309,9 +304,17 @@ abstract class Player extends Entity {
 			level: this.level,
 			basicAttackCount:this.basicAttackCount,
 			canBasicAttack:this.canBasicAttack(),
-			canUseSkill:!this.effects.has(ENUM.EFFECT.SILENT)
+			canUseSkill:this.canUseSkill()
 		}
 	}
+	canBasicAttack():boolean{
+		return this.basicAttackCount > 0 && this.effects.canBasicAttack() && this.mediator.selectAllFrom(this.getBasicAttackFilter()).length>0 && !this.dead && this.mapHandler.canAttack()
+	}
+
+	canUseSkill():boolean{
+		return !this.effects.has(ENUM.EFFECT.SILENT) && !this.dead && this.mapHandler.canAttack()
+	}
+
 	//========================================================================================================
 	onBeforeObs() {
 		if (this.oneMoreDice) {
@@ -1179,9 +1182,7 @@ abstract class Player extends Entity {
 	private getBasicAttackFilter(){
 		return EntityFilter.ALL_ENEMY(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
 	}
-	canBasicAttack():boolean{
-		return this.basicAttackCount > 0 && this.effects.canBasicAttack() && this.mediator.selectAllFrom(this.getBasicAttackFilter()).length>0
-	}
+	
 
 	basicAttack() {
 		if(this.basicAttackCount<=0) return false

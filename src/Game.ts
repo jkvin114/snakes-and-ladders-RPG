@@ -896,15 +896,12 @@ class Game {
 	}
 
 	requestForceMove(player:Player, movetype: string){
-		let delay=1000
-		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=1500
+		let delay=SETTINGS.delay_simple_forcemove
+		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
 		clearTimeout(this.arriveSquareTimeout)
 		this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		setTimeout(
-			() => {
-				player.arriveAtSquare(true)
-			},
-			delay
+			() =>player.arriveAtSquare(true),delay
 		)
 	}
 

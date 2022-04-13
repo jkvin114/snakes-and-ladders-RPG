@@ -8,9 +8,9 @@ import {trajectorySpeedRatio} from "../../res/globalsettings.json"
 import { EntityMediator } from "../EntityMediator"
 import { Player } from "../player"
 import { EntityFilter } from "../EntityFilter"
+import SETTINGS = require("./../../res/globalsettings.json")
 
 const BASICATTACK = 4
-const ONE_SKILL_DELAY = 800
 abstract class AiAgent {
 	player: Player
 	mediator: EntityMediator
@@ -28,7 +28,7 @@ abstract class AiAgent {
 
 	static simulationAiSkill(player:Player){
 		player.AiAgent.attemptedSkills.clear()
-		if (player.effects.has(EFFECT.SILENT) || player.dead || player.game.gameover) {
+		if (player.game.gameover || !(player.canUseSkill() || player.canBasicAttack())) {
 			return
 		}
 		for (let i = 0; i < 5; ++i) {
@@ -51,7 +51,6 @@ abstract class AiAgent {
 			switch (skillinit.type) {
 				case INIT_SKILL_RESULT.NON_TARGET:
 					result = player.AiAgent.useNonTargetSkill(skill)
-
 					break
 				case INIT_SKILL_RESULT.ACTIVATION:
 					result = player.AiAgent.useActivationSkill(skill)
@@ -60,7 +59,6 @@ abstract class AiAgent {
 					if (skillinit.data.kind !== "target" || skillinit.data.targets.length <= 0) break
 					let target = player.AiAgent.selectTarget(skillinit.skill, skillinit.data)
 					player.game.useSkillToTarget(target.turn)
-
 					result = true
 					break
 				case INIT_SKILL_RESULT.PROJECTILE:
@@ -86,7 +84,7 @@ abstract class AiAgent {
 	static async aiSkill(player: Player, callback: Function) {
 		player.AiAgent.attemptedSkills.clear()
 		//await sleep(ONE_SKILL_DELAY)
-		if (player.dead || player.game.gameover) {
+		if (player.game.gameover || !(player.canUseSkill() || player.canBasicAttack())) {
 			callback()
 			return
 		}
@@ -96,10 +94,10 @@ abstract class AiAgent {
 			if (skill < 0) break
 			if (skill === BASICATTACK) {
 				player.basicAttack()
-				await sleep(ONE_SKILL_DELAY)
+				await sleep(SETTINGS.delay_per_ai_skill)
 				continue
 			}
-			else if(player.effects.has(EFFECT.SILENT)){
+			else if(!player.canUseSkill()){
 				continue
 			}
 			player.AiAgent.attemptedSkills.add(skill)
@@ -148,7 +146,7 @@ abstract class AiAgent {
 
 			if (!result) continue
 
-			await sleep(ONE_SKILL_DELAY)
+			await sleep(SETTINGS.delay_per_ai_skill)
 		}
 		callback()
 	}

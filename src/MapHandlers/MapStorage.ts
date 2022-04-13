@@ -107,6 +107,9 @@ class MapStorage {
 		let c2=this.map[id].coordinates[pos2]
 		return Math.sqrt((c1.x-c2.x)**2+(c1.y-c2.y)**2)
 	}
+	canAttackAt(id:number,pos:number){
+		return !(this.getRespawn(id).includes(pos) && this.getMuststop(id).includes(pos) && this.getStore(id).includes(pos))
+	}
 }
 
 export const MAP: MapStorage = new MapStorage([defaultmap, oceanmap, casinomap])
