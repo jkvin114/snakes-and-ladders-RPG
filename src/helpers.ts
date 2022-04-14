@@ -104,7 +104,10 @@ class ObstacleHelper {
 						return Math.abs(this.pos-mypos)
 					})
 
-					if (target != null && target instanceof Player &&  target.pos != player.pos) {
+					//if target is also on change obstacle(causes infinite loop)
+					if(MAP.get(player.mapId).coordinates[target.pos].obs===20 || target.pos === player.pos) break
+
+					if (target != null && target instanceof Player) {
 						player.game.playerForceMove(player, target.pos, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						player.game.playerForceMove(target, mypos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						others.push(target.UEID)
@@ -242,7 +245,7 @@ class ObstacleHelper {
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player))(function(){
 						let died = this.doObstacleDamage(30,"wave")
 						if (!died) {
-							player.game.playerForceMove(this, this.pos - 3, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
+							player.game.playerForceMove(this, this.pos - 3, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						}
 					})
 

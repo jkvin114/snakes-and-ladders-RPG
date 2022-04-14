@@ -1,4 +1,4 @@
-import { ArriveSquare, GameCycleState, AiSimulationSkill, GameLoop} from "./GameCycle/GameCycleState"
+import { ArriveSquare, GameCycleState, AiSimulationSkill, GameLoop, TurnInitializer} from "./GameCycle/GameCycleState"
 import { GameSetting } from "./Game"
 import cliProgress = require("cli-progress")
 // import { RoomClientInterface } from "./app"
@@ -270,11 +270,11 @@ class Simulation {
 			this.stats.add(this.gameCycle.game.getFinalStatistics())
 		}
 		this.summaryStats.add(this.gameCycle.game.getSummaryStatistics())
-		
 	}
 	skill(){
 		if(this.gameCycle instanceof AiSimulationSkill){
 			this.gameCycle.useSkill()
+			this.gameCycle=this.gameCycle.getNext()
 		}
 		else{
 			throw new Error("invalid game cycle state for ai skill")
@@ -293,7 +293,7 @@ class Simulation {
 			throw new Error("invalid game cycle state for nextturn")
 		}
 	}
-	makeGame() {
+	makeGame(){
 		this.setting.updateGameSetting()
 
 
@@ -311,7 +311,7 @@ class Simulation {
 			})
 		}
 		this.gameCycle=GameLoop.createWithSetting(this.setting.getMap(), this.roomName,this.setting.gameSetting,playerlist)
-		.startTurn().state
+		.startSimulation().state.getNext()//turninitializer
 	}
 
     getCount(){

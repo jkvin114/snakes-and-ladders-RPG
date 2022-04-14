@@ -292,6 +292,8 @@ abstract class Player extends Entity {
 		console.log(this.basicAttackCount)
 		this.passive()
 		this.cooltime = this.cooltime.map(Util.decrement)
+		this.onSkillDurationCount()
+		this.decrementAllSkillDuration()
 		this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
 		this.transfer(PlayerClientInterface.update, "skillstatus", this.turn, this.getSkillStatus())
 	}
@@ -338,10 +340,9 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	onAfterObs() {
-		if (!this.oneMoreDice) {
-			this.onSkillDurationCount()
-			this.decrementAllSkillDuration()
-		}
+		// if (!this.oneMoreDice) {
+			
+		// }
 		this.effects.onAfterObs()
 	}
 

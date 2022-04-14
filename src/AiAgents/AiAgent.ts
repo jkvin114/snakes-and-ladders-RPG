@@ -33,7 +33,7 @@ abstract class AiAgent {
 		}
 		for (let i = 0; i < 5; ++i) {
 			let skill = player.AiAgent.nextSkill()
-			console.log("aiskill "+skill)
+		//	console.log("aiskill "+skill)
 			if (skill < 0) break
 			if (skill === BASICATTACK) {
 				player.basicAttack()
@@ -42,7 +42,7 @@ abstract class AiAgent {
 			player.AiAgent.attemptedSkills.add(skill)
 
 			let skillinit = player.initSkill(skill)
-			console.log(skillinit)
+		//	console.log(skillinit)
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
 				continue
 			}
@@ -90,7 +90,7 @@ abstract class AiAgent {
 		}
 		for (let i = 0; i < 5; ++i) {
 			let skill = player.AiAgent.nextSkill()
-			console.log("aiskill "+skill)
+		//	console.log("aiskill "+skill)
 			if (skill < 0) break
 			if (skill === BASICATTACK) {
 				player.basicAttack()
@@ -103,7 +103,7 @@ abstract class AiAgent {
 			player.AiAgent.attemptedSkills.add(skill)
 
 			let skillinit = player.initSkill(skill)
-			console.log(skillinit)
+		//	console.log(skillinit)
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
 				continue
 			}

@@ -31,25 +31,29 @@ class GameLoop {
 		this.startNextTurn(false)
 		return this
 	}
-	setGameCycle(cycle: GameCycleState):boolean {
+	startSimulation() {
+		this.setGameCycle(new GameInitializer(this.game))
+		return this
+	}
+	setGameCycle(cycle: GameCycleState): boolean {
 		if (this.state != null) {
 			this.state.onDestroy()
-			if(this.state.shouldStopTimeoutOnDestroy())	this.stopTimeout()
+			if (this.state.shouldStopTimeoutOnDestroy()) this.stopTimeout()
 		}
 		this.state = cycle
-		if(this.state.shouldPass()){
-			this.startNextTurn(false)
+		if (this.state.shouldPass()) {
+			setTimeout(this.startNextTurn.bind(this), SETTINGS.delay_state_pass)
 			return true
 		}
-		if(this.state.shouldStartTimeoutOnCreate())	{
+		if (this.state.shouldStartTimeoutOnCreate()) {
 			this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
 		}
 
 		console.log("thisgamecycle " + this.state.id)
 		return false
 	}
-	nextGameCycle():boolean  {
-		return this.setGameCycle(this.state.getNext()) 
+	nextGameCycle(): boolean {
+		return this.setGameCycle(this.state.getNext())
 	}
 	static create(
 		mapid: number,
@@ -115,7 +119,7 @@ class GameLoop {
 	}
 	stopTimeout() {
 		console.log("stoptimeout" + this.state.turn)
-		if (this.idleTimeout != null && this.state!=null && this.idleTimeoutTurn === this.state.turn) {
+		if (this.idleTimeout != null && this.state != null && this.idleTimeoutTurn === this.state.turn) {
 			RoomClientInterface.stopTimeout(this.rname, this.game.thisCryptTurn())
 			clearTimeout(this.idleTimeout)
 			this.idleTimeout = null
@@ -163,15 +167,15 @@ class GameLoop {
 
 		await this.state.getArriveSquarePromise()
 		console.log("afterDice3")
-		this.nextGameCycle()
+		if (this.nextGameCycle()) return
 
 		if (this.state instanceof WaitingSkill) {
-			if (this.state.shouldPass()) {
-				console.log("shouldPass")
-				await sleep(SETTINGS.delay_on_silent)
-				this.startNextTurn(false)
-				return
-			}
+			// if (this.state.shouldPass()) {
+			// 	console.log("shouldPass")
+			// 	await sleep(SETTINGS.delay_on_silent)
+			// 	this.startNextTurn(false)
+			// 	return
+			// }
 			//this.startTimeOut(this.getOnTimeout())
 		} else if (this.state instanceof AiSkill) {
 			await this.state.useSkill()
@@ -198,7 +202,16 @@ class GameLoop {
 	user_clickSkill(s: number, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		let result: ServerPayloadInterface.SkillInit = this.state.onUserClickSkill(s)
-		this.nextGameCycle()
+		if (
+			!(
+				result.type === INIT_SKILL_RESULT.NO_COOL ||
+				result.type === INIT_SKILL_RESULT.NOT_LEARNED ||
+				result.type === INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
+			)
+		) {
+			this.nextGameCycle()
+		}
+
 		return result
 	}
 	user_basicAttack(crypt_turn: string) {
@@ -231,9 +244,11 @@ class GameLoop {
 		)
 	}
 	onGameover() {
+		console.log("gameover")
 		this.gameOverCallBack()
 	}
-	onDestroy(){
+	onDestroy() {
+		this.game.onDestroy()
 		this.state.onDestroy()
 		clearTimeout(this.idleTimeout)
 	}
@@ -268,7 +283,7 @@ abstract class GameCycleState {
 	shouldStartTimeoutOnCreate() {
 		return false
 	}
-	shouldPass(){
+	shouldPass() {
 		return false
 	}
 	onUserPressDice(dicenum: number): GameCycleState {
@@ -329,8 +344,8 @@ abstract class GameCycleState {
 		this.onDestroy()
 		return new TurnInitializer(this.game)
 	}
-	getOnTimeout() {
-		return () => {}
+	getOnTimeout(): Function {
+		return null
 	}
 }
 class GameInitializer extends GameCycleState {
@@ -410,7 +425,7 @@ class ThrowDice extends GameCycleState {
 		super(game, ThrowDice.id)
 		this.diceData = diceData
 	}
-	
+
 	getData<T>(): T {
 		return this.diceData as unknown as T
 	}
@@ -429,6 +444,7 @@ class ArriveSquare extends GameCycleState {
 	onCreate(): void {
 		this.result = this.game.checkObstacle(SETTINGS.delay_initial_arrive_square)
 		if (this.result === ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
+			console.log("game finished")
 			this.gameover = true
 		}
 	}
@@ -457,7 +473,7 @@ class ArriveSquare extends GameCycleState {
 	}
 	getArriveSquarePromise(): Promise<unknown> {
 		if (this.result === ARRIVE_SQUARE_RESULT_TYPE.NONE) {
-			return sleep(0)
+			return sleep(500)
 		}
 		return new Promise<void>((resolve) => {
 			this.game.arriveSquareCallback = resolve
@@ -607,9 +623,6 @@ export class WaitingSkill extends GameCycleState {
 	shouldPass() {
 		console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)
 		return !this.canUseSkill && !this.canUseBasicAttack
-	}
-	onPass(){
-
 	}
 	onUserClickSkill(skill: number): ServerPayloadInterface.SkillInit {
 		this.skillInit = this.game.onSelectSkill(skill - 1)

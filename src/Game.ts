@@ -24,6 +24,7 @@ import { Jellice } from "./characters/Jellice"
 import { Gorae } from "./characters/Gorae"
 import { Bird } from "./characters/Bird"
 import { Tree } from "./characters/Tree"
+import { GAME_CYCLE } from "./GameCycle/StateEnum"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -849,6 +850,7 @@ class Game {
 	checkObstacle(delay?:number): number {
 		let p = this.thisp()
 		this.arriveSquareCallback=null
+		this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		p.onBeforeObs()
 
 		//passprojqueue 에 있는 투사체들을 pendingaction 에 적용
@@ -868,13 +870,13 @@ class Game {
 		}
 		this.winner = this.thisturn
 
-		//게임 오버시 player 배열 순위순으로 정렬후 게임 끝냄
+	
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
 
 		//godhand, 사형재판, 납치범 대기중으로 표시
-		if (SETTINGS.pendingObsList.some((a) => result === a)) {
+		if (SETTINGS.pendingObsList.includes(result)) {
 			if (!this.thisp().AI) {
 				this.pendingObs = result
 			}
@@ -883,26 +885,37 @@ class Game {
 		if(!delay)
 			delay=0
 		
-		this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		
 		return result
 	}
 	onObstacleComplete()
 	{
+		console.log("--------------------------------onObstacleComplete")
 		if(this.arriveSquareCallback!=null){
 			this.arriveSquareCallback()
+			this.arriveSquareCallback=null
 		}
 		this.thisp().onAfterObs()
 	}
 
-	requestForceMove(player:Player, movetype: string){
+	requestForceMove(player:Player, movetype: string,ignoreObstacle:boolean){
 		let delay=SETTINGS.delay_simple_forcemove
 		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
-		clearTimeout(this.arriveSquareTimeout)
-		this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
-		setTimeout(
-			() =>player.arriveAtSquare(true),delay
-		)
+		console.log("--------------------------------requestForceMove")
+
+		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
+			console.log("--------------------------------extendtimeout")
+			console.log(player.name)
+			clearTimeout(this.arriveSquareTimeout)
+			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay+1500)
+		}
+
+		if(!ignoreObstacle){
+			setTimeout(
+				() =>player.arriveAtSquare(true),delay
+			)
+		}
+		
 	}
 
 	onEffectApply() {
@@ -1268,6 +1281,9 @@ class Game {
 	getStoreData(turn: number):ServerPayloadInterface.EnterStore {
 		let p = this.pOfTurn(turn)
 		return p.inven.getStoreData(1)
+	}
+	onDestroy(){
+		clearTimeout(this.arriveSquareTimeout)
 	}
 	//========================================================================================================
 	getFinalStatistics() {

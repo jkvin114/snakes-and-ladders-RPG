@@ -27,7 +27,7 @@ class AttackHandler{
 	}
 
 	static async skillAttacks(from:Player,targets:Entity[],skillattack:SkillAttack){
-		console.log(skillattack)
+	//	console.log(skillattack)
 		let delay=from.getSkillTrajectorySpeed(from.getSkillName(skillattack.skill))
 		if(delay>0 && !from.game.instant){
 			delay=MAP.getCoordinateDistance(from.mapId,from.pos,targets[0].pos) * delay / trajectorySpeedRatio
@@ -260,17 +260,24 @@ class EntityMediator {
 
 		player.forceMove(pos)
 
+		if (!this.instant){
+			player.game.requestForceMove(player,movetype,true)
+		}
 	}
 
 	forceMovePlayer(id:string, pos: number, movetype: string) {
 
-		this.forceMovePlayerIgnoreObstacle(id,pos,movetype)
 		let player = this.getPlayer(id)
+		if (!(player instanceof Player)) return
+
+		this.sendToClient(PlayerClientInterface.playerForceMove, player.turn, pos, movetype)
+
+		player.forceMove(pos)
 
 		if (this.instant) {
 			player.arriveAtSquare(true)
 		} else {
-			player.game.requestForceMove(player,movetype)
+			player.game.requestForceMove(player,movetype,false)
 		}
 	}
 
