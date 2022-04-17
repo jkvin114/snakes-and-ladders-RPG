@@ -118,7 +118,7 @@ class Gorae extends Player {
     useW() {
 		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W)).ofSkill(ENUM.SKILL.W)
 		.setOnHit(function(this:Player){
-			this.effects.apply(ENUM.EFFECT.SLOW, 1,ENUM.EFFECT_TIMING.TURN_END)
+			this.effects.apply(ENUM.EFFECT.SLOW, 1)
 		})
 		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 

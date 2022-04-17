@@ -23,8 +23,16 @@ enum EFFECT_TYPE {
 enum EFFECT_TIMING {
 	TURN_START,
 	TURN_END,
-	BEFORE_SKILL
+	BEFORE_SKILL,
+	BEFORE_OBS
 }
+const SHIELD_EFFECT_TIMING=EFFECT_TIMING.BEFORE_SKILL
+const ABILITY_CHANGE_EFFECT_TIMING=EFFECT_TIMING.TURN_START
+const TICK_EFFECT_TIMING=EFFECT_TIMING.TURN_END
+const ONHIT_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
+const ONFINALDAMAGE_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
+const ON_DAMAGE_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
+
 
 class EffectFactory {
 	
@@ -101,8 +109,8 @@ class ItemEffectFactory {
 						if (this.inven.isActiveItemAvailable(ITEM.CARD_OF_DECEPTION)) {
 							//	console.log("CARD_OF_DECEPTION")
 							damage.updateNormalDamage(CALC_TYPE.multiply, 1.1)
-							target.effects.apply(EFFECT.SLOW, 1, EFFECT_TIMING.BEFORE_SKILL)
-							this.effects.apply(EFFECT.SPEED, 1, EFFECT_TIMING.BEFORE_SKILL)
+							target.effects.apply(EFFECT.SLOW, 1)
+							this.effects.apply(EFFECT.SPEED, 1)
 							this.inven.useActiveItem(ITEM.CARD_OF_DECEPTION)
 						}
 						return damage
@@ -198,7 +206,7 @@ class ItemEffectFactory {
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.INVISIBILITY_CLOAK)) {
 							console.log("invisibility cloak")
-							owner.effects.apply(EFFECT.INVISIBILITY, 1, EFFECT_TIMING.TURN_END)
+							owner.effects.apply(EFFECT.INVISIBILITY, 1)
 
 							owner.inven.useActiveItem(ITEM.INVISIBILITY_CLOAK)
 						}
@@ -218,22 +226,24 @@ class ItemEffectFactory {
  *
  */
 class GeneralEffectFactory {
-	static create(id: EFFECT, dur: number, timing: EFFECT_TIMING):StatusEffect {
+	static create(id: EFFECT, dur: number):StatusEffect {
 		switch (id) {
 			case EFFECT.SLOW:
-			case EFFECT.STUN:
-			case EFFECT.SILENT:
 			case EFFECT.BACKDICE:
+			case EFFECT.STUN:
+			case EFFECT.CURSE:
+				return new NormalEffect(id, dur, EFFECT_TIMING.BEFORE_OBS)
+			case EFFECT.SILENT:
 			case EFFECT.BLIND:
 			case EFFECT.PRIVATE_LOAN:
-			case EFFECT.CURSE:
-				return new NormalEffect(id, dur, timing)
-			case EFFECT.SPEED:
+				return new NormalEffect(id, dur, EFFECT_TIMING.TURN_END)
 			case EFFECT.SHIELD:
+				return new NormalEffect(id, dur, EFFECT_TIMING.TURN_START).setGood()
+			case EFFECT.SPEED:
 			case EFFECT.DOUBLEDICE:
 			case EFFECT.INVISIBILITY:
 			case EFFECT.FARSIGHT:
-				return new NormalEffect(id, dur, timing).setGood()
+				return new NormalEffect(id, dur, EFFECT_TIMING.BEFORE_OBS).setGood()
 			case EFFECT.POISON: //poison
 				return new TickDamageEffect(id, dur, TickEffect.FREQ_EVERY_TURN, new Damage(0, 0, 30))
 			case EFFECT.RADI: //radiation
@@ -291,9 +301,9 @@ abstract class StatusEffect {
 		this.name = ""
 		this.source =null
 
-		if (timing === EFFECT_TIMING.BEFORE_SKILL || timing === EFFECT_TIMING.TURN_END) {
-			this.duration += 1
-		}
+		// if (timing === EFFECT_TIMING.BEFORE_SKILL || timing === EFFECT_TIMING.TURN_END) {
+		// 	this.duration += 1
+		// }
 	}
 	applyTo(owner: Player) {
 		this.owner = owner
@@ -352,7 +362,7 @@ class ShieldEffect extends StatusEffect {
 	// name:string
 	public amount: number
 	constructor(id: EFFECT, duration: number, amount: number) {
-		super(id, duration, EFFECT_TIMING.BEFORE_SKILL)
+		super(id, duration,SHIELD_EFFECT_TIMING)
 		this.amount = amount
 		this.isgood = true
 		this.effectType = EFFECT_TYPE.SHIELD
@@ -384,7 +394,7 @@ class AblityChangeEffect extends StatusEffect {
 	protected remainingChanges: Map<string, number>
 	protected decay: boolean
 	constructor(id: EFFECT, dur: number, abilityChanges: Map<string, number>) {
-		super(id, dur, EFFECT_TIMING.TURN_START)
+		super(id, dur, ABILITY_CHANGE_EFFECT_TIMING)
 		this.decay = false
 		this.abilityChanges = abilityChanges
 		this.remainingChanges = new Map()
@@ -454,7 +464,7 @@ class TickEffect extends StatusEffect {
 	protected sourceSkill: SKILL //스킬 판정인지 여부, null 이면 스킬판정 아님
 
 	constructor(id: EFFECT, dur: number, frequency: number) {
-		super(id, dur, EFFECT_TIMING.TURN_START)
+		super(id, dur, TICK_EFFECT_TIMING)
 		this.frequency = frequency
 		this.effectType = EFFECT_TYPE.TICK
 		this.sourceSkill = null
@@ -556,7 +566,7 @@ class OnHitEffect extends StatusEffect {
 	static readonly EVERYATTACK = 2 //skill and basic attack
 
 	constructor(id: EFFECT, dur: number, onHit: onHitFunction) {
-		super(id, dur, EFFECT_TIMING.BEFORE_SKILL)
+		super(id, dur, ONHIT_EFFECT_TIMING)
 		this.onHit = onHit
 		this.attack = OnHitEffect.EVERYATTACK
 		this.validTargets = []
@@ -611,7 +621,7 @@ class OnFinalDamageEffect extends StatusEffect {
 	private conditionHpPercent: number
 
 	constructor(id: EFFECT, dur: number, f: OnFinalDamageFunction) {
-		super(id, dur, EFFECT_TIMING.BEFORE_SKILL)
+		super(id, dur, ONFINALDAMAGE_EFFECT_TIMING)
 		this.onDamage = f
 		this.conditionHpPercent = 100
 		this.effectType=EFFECT_TYPE.ON_FINAL_DAMAGE
@@ -655,7 +665,7 @@ class OnDamageEffect extends StatusEffect {
 	static readonly OBSTACLE_DAMAGE = 2
 
 	constructor(id: EFFECT, dur: number, f: OnDamageFunction) {
-		super(id, dur, EFFECT_TIMING.BEFORE_SKILL)
+		super(id, dur, ON_DAMAGE_EFFECT_TIMING)
 		this.onDamage = f
 		this.effectType = EFFECT_TYPE.ONDAMAGE
 		this.sourceIds = []
@@ -713,7 +723,7 @@ class OnDamageEffect extends StatusEffect {
 
 export {
 	StatusEffect,
-	EFFECT_TYPE,
+	EFFECT_TYPE,EFFECT_TIMING,
 	EFFECT_SOURCE,
 	TickActionFunction,
 	AblityChangeEffect,

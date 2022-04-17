@@ -287,7 +287,7 @@ class Simulation {
     nextturn():boolean {
 		this.gameCycle=this.gameCycle.getNext().getNext()
 		if(this.gameCycle instanceof ArriveSquare){
-			return this.gameCycle.result===ARRIVE_SQUARE_RESULT_TYPE.FINISH
+			return this.gameCycle.gameover
 		}
 		else{
 			throw new Error("invalid game cycle state for nextturn")
@@ -311,7 +311,7 @@ class Simulation {
 			})
 		}
 		this.gameCycle=GameLoop.createWithSetting(this.setting.getMap(), this.roomName,this.setting.gameSetting,playerlist)
-		.startSimulation().state.getNext()//turninitializer
+		.startSimulation().state.getTurnInitializer()//turninitializer
 	}
 
     getCount(){

@@ -94,7 +94,7 @@ class Tree extends Player {
 			.setSource(this.turn)
 			.setAction(function(this: Player){
 				if (!this.isEnemyOf(_this)) {
-					this.effects.apply(ENUM.EFFECT.SPEED, 1, ENUM.EFFECT_TIMING.TURN_END)
+					this.effects.apply(ENUM.EFFECT.SPEED, 1)
 				}
 			})
 			.setDuration(3)
@@ -207,7 +207,7 @@ class Tree extends Player {
 				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0),this.getSkillName(s)).ofSkill(s).setOnHit(
 					function(this: Player){
 						this.effects.applySpecial(_this.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
-						this.effects.apply(ENUM.EFFECT.STUN, _this.isWithered ? 2 : 1, ENUM.EFFECT_TIMING.TURN_END)
+						this.effects.apply(ENUM.EFFECT.STUN, _this.isWithered ? 2 : 1,)
 					}
 				)
 				this.moveAllPlantTo(this.game.pOfTurn(targetTurn).pos)

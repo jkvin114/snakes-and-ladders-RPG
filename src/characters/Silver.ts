@@ -5,7 +5,7 @@ import type { Game } from "../Game"
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../Util"
-import { AblityChangeEffect, NormalEffect ,ShieldEffect} from "../StatusEffect"
+import { AblityChangeEffect, EFFECT_TIMING, NormalEffect ,ShieldEffect} from "../StatusEffect"
 import { Projectile } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
@@ -158,7 +158,7 @@ class Silver extends Player {
 	}
 
 	private getWEffect() {
-		return new NormalEffect(ENUM.EFFECT.ELEPHANT_W_SIGN, this.duration_list[1], ENUM.EFFECT_TIMING.TURN_END).setSourceId(this.UEID)
+		return new NormalEffect(ENUM.EFFECT.ELEPHANT_W_SIGN, this.duration_list[1], EFFECT_TIMING.TURN_END).setSourceId(this.UEID)
 	}
 
 	/**
@@ -195,7 +195,7 @@ class Silver extends Player {
 				let effect = this.getWEffect()
 				let onhit = function (this: Player) {
 					this.effects.applySpecial(effect,SpecialEffect.SKILL.ELEPHANT_W.name)
-					this.effects.apply(ENUM.EFFECT.CURSE, 1, ENUM.EFFECT_TIMING.TURN_START)
+					this.effects.apply(ENUM.EFFECT.CURSE, 1)
 				}
 				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
 

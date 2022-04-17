@@ -1,5 +1,5 @@
 import * as Util from "./Util"
-import { EFFECT, EFFECT_TIMING, SKILL, ITEM } from "./enum"
+import { EFFECT,  SKILL, ITEM } from "./enum"
 import { PlayerClientInterface } from "./app"
 import type { Player } from "./player"
 import { SpecialEffect } from "./SpecialEffect"
@@ -13,7 +13,7 @@ import {
 	OnHitEffect,
 	OnDamageEffect,
 	ItemEffectFactory,
-	OnFinalDamageEffect
+	OnFinalDamageEffect,EFFECT_TIMING
 } from "./StatusEffect"
 import PlayerInventory from "./PlayerInventory"
 import { Entity } from "./Entity"
@@ -96,8 +96,11 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 			if (effect.onDeath()) this.removeByKey(key)
 		}
 	}
-	onBeforeObs() {
+	onTurnStart(){
 		this.cooldownEffectTurnStart()
+	}
+	onBeforeObs() {
+		this.cooldownEffectBeforeObs()
 	}
 
 	onAfterObs() {
@@ -172,7 +175,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	 * @param {*} dur 지속시간
 	 * @param {*} num 번호
 	 */
-	apply(effect: number, dur: number, timing: EFFECT_TIMING) {
+	apply(effect: number, dur: number) {
 		if (dur === 0) return
 		if (effect === EFFECT.SLOW && this.player.inven.haveItem(ITEM.BOOTS_OF_HASTE)) {
 			return
@@ -188,7 +191,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 			num:num
 		})
 
-		let statusEffect = GeneralEffectFactory.create(effect, dur, timing).applyTo(this.player)
+		let statusEffect = GeneralEffectFactory.create(effect, dur).applyTo(this.player)
 		if (this.storage.has(effect)) {
 			this.storage.get(effect).onBeforeReapply()
 		}
@@ -217,13 +220,13 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	// }
 	removeByKey(key: number) {
 		if (key < 0) return
-
+		
 		let effect = this.storage.get(key)
 		if (!effect) return
 	//	console.log("removeeffect" + effect.name + " " + key + " " + this.player.turn)
 		let effectType = effect.effectType
 		effect.onBeforeRemove()
-
+		console.log("----------------------------------removeeffect"+effect.name)
 		this.category[effectType].delete(key)
 		this.storage.delete(key)
 		if (key < 30) {
@@ -258,6 +261,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.cooldown(EFFECT_TIMING.TURN_START)
 	}
 
+	cooldownEffectBeforeObs() {
+		this.cooldown(EFFECT_TIMING.BEFORE_OBS)
+	}
 	cooldownAllHarmful() {
 		for (const [key, effect] of this.storage.entries()) {
 			if (!effect.isgood && !effect.cooldown()) this.removeByKey(key)

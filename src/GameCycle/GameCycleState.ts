@@ -130,7 +130,7 @@ class GameLoop {
 		this.setGameCycle(this.state.getTurnInitializer())
 		this.nextGameCycle()
 		console.log("nextturn" + this.state.id)
-		if (this.state.id === GAME_CYCLE.BEFORE_OBS.STUN) {
+		if (this.state.id === GAME_CYCLE.BEFORE_OBS.ROOTED) {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
 			let data: ServerPayloadInterface.DiceRoll = this.state.getData()
@@ -248,8 +248,10 @@ class GameLoop {
 		this.gameOverCallBack()
 	}
 	onDestroy() {
-		this.game.onDestroy()
-		this.state.onDestroy()
+		if(this.game!=null)
+			this.game.onDestroy()
+		if(this.state!=null)
+			this.state.onDestroy()
 		clearTimeout(this.idleTimeout)
 	}
 }
@@ -385,14 +387,14 @@ class TurnInitializer extends GameCycleState {
 			return new AiThrowDice(this.game)
 		}
 		if (this.turnUpdateData.stun) {
-			return new StunDice(this.game)
+			return new RootedHandler(this.game)
 		}
 	}
 }
-class StunDice extends GameCycleState {
-	static id = GAME_CYCLE.BEFORE_OBS.STUN
+class RootedHandler extends GameCycleState {
+	static id = GAME_CYCLE.BEFORE_OBS.ROOTED
 	constructor(game: Game) {
-		super(game, StunDice.id)
+		super(game, RootedHandler.id)
 	}
 	onCreate(): void {}
 	getNext(): GameCycleState {
@@ -458,7 +460,7 @@ class ArriveSquare extends GameCycleState {
 			}
 		} else {
 			let obs = this.game.checkPendingObs()
-			if (!obs) {
+			if (!obs || this.game.thisp().dead) {
 				let action = this.game.getPendingAction()
 				if (!action || this.game.thisp().dead) {
 					return new WaitingSkill(this.game)
@@ -594,8 +596,14 @@ class PendingAction extends GameCycleState {
 	onUserCompletePendingAction(info: ClientPayloadInterface.PendingAction): GameCycleState {
 		this.onDestroy()
 		this.game.processPendingAction(info)
-
-		return new WaitingSkill(this.game)
+		console.log(this.game.pendingObs)
+		let obs=this.game.checkPendingObs()
+		if(!obs || this.game.thisp().dead){
+			return new WaitingSkill(this.game)			
+		}
+		else{
+			return new PendingObstacle(this.game,obs)
+		}
 	}
 }
 

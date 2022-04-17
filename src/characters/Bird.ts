@@ -7,7 +7,7 @@ import { ITEM } from "../enum"
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
-import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect,ShieldEffect } from "../StatusEffect"
+import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect,ShieldEffect, EFFECT_TIMING } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
@@ -44,6 +44,8 @@ class Bird extends Player {
 	static AANAME_ULT_W="bird_r_w_hit"
 	static AANAME_W="bird_w_hit"
 	static AANAME_ULT="bird_r_hit"
+
+	static EFFECT_ULT_SHIELD='bird_r_shield'
 
 	static SKILL_SCALES=SKILL_SCALES[ID]
 
@@ -134,13 +136,13 @@ class Bird extends Player {
 
 	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
-		this.effects.apply(ENUM.EFFECT.SPEED, 1, ENUM.EFFECT_TIMING.TURN_END)
-		this.effects.applySpecial(new NormalEffect(ENUM.EFFECT.BIRD_W,2,ENUM.EFFECT_TIMING.TURN_END),SpecialEffect.SKILL.BIRD_W.name)
+		this.effects.apply(ENUM.EFFECT.SPEED, 1)
+		this.effects.applySpecial(new NormalEffect(ENUM.EFFECT.BIRD_W,2,EFFECT_TIMING.TURN_START),SpecialEffect.SKILL.BIRD_W.name)
 		this.startDuration(ENUM.SKILL.W)
 	}
 	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.applySpecial(this.getUltShield(),SpecialEffect.SKILL.BIRD_ULT.name)
+		this.effects.applySpecial(this.getUltShield(),Bird.EFFECT_ULT_SHIELD)
 		this.effects.applySpecial(this.getUltAbility(),SpecialEffect.SKILL.BIRD_ULT.name)
 
 		this.startDuration(ENUM.SKILL.ULT)
@@ -226,7 +228,12 @@ class Bird extends Player {
 				let damage = new Damage(0, this.getSkillBaseDamage(s), 0)
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
-					this.game.pOfTurn(target).effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					onhit = function(this: Player){
+						this.inven.takeMoney(20)
+						_this.inven.giveMoney(20)
+						this.effects.apply(ENUM.EFFECT.STUN, 1)
+					}
+					
 					damage.updateMagicDamage(CALC_TYPE.plus, this.getSkillAmount("w_q_adamage"))
 					if (this.isSkillActivated(ENUM.SKILL.ULT)) 
 					{

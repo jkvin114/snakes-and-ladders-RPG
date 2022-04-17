@@ -236,7 +236,6 @@ class EntityMediator {
 		for (let e of this.storage.all()) {
 			e.onTurnEnd(thisturn)
 			e.effects.tick(thisturn)
-			
 		}
 	}
 	moveSummonedEntityTo(entityId: string, pos: number): Entity {

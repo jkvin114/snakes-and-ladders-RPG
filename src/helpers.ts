@@ -37,14 +37,14 @@ class ObstacleHelper {
 					player.heal(50)
 					break
 				case 10:
-					player.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SILENT, 1)
 					break
 				case 11:
 					player.resetCooltime([ENUM.SKILL.Q, ENUM.SKILL.W])
 					player.cooltime[ENUM.SKILL.ULT] = Math.floor(player.cooltime[ENUM.SKILL.ULT] / 2)
 					break
 				case 12:
-					player.effects.apply(ENUM.EFFECT.FARSIGHT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.FARSIGHT, 1)
 					player.effects.applySpecial(
 						EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE),
 						SpecialEffect.OBSTACLE.MAGIC_CASTLE_ADAMAGE.name
@@ -52,7 +52,7 @@ class ObstacleHelper {
 					// player.message(player.name + ": skill range x3, additional damage 30")
 					break
 				case 13:
-					player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 1)
 					player.obstacleEffect("web")
 
 					break
@@ -70,14 +70,14 @@ class ObstacleHelper {
 
 					break
 				case 16:
-					player.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.doObstacleDamage(20)
+					player.effects.apply(ENUM.EFFECT.SLOW, 1)
+					player.doObstacleDamage(20,'hit')
 					break
 				case 17:
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player).excludeDead())(function(player){
 						this.heal(20)
 					})
-					player.doObstacleDamage(20 * others.length)
+					player.doObstacleDamage(20 * others.length,'hit')
 					
 					break
 				case 18:
@@ -105,7 +105,7 @@ class ObstacleHelper {
 					})
 
 					//if target is also on change obstacle(causes infinite loop)
-					if(MAP.get(player.mapId).coordinates[target.pos].obs===20 || target.pos === player.pos) break
+					if(player.game.shuffledObstacles[target.pos].obs===20 || target.pos === player.pos) break
 
 					if (target != null && target instanceof Player) {
 						player.game.playerForceMove(player, target.pos, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
@@ -117,7 +117,7 @@ class ObstacleHelper {
 					//godhand
 					break
 				case 22:
-					player.effects.apply(ENUM.EFFECT.ANNUITY, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.ANNUITY, perma)
 					break
 				case 23:
 					player.inven.takeMoney(30)
@@ -125,12 +125,12 @@ class ObstacleHelper {
 					break
 				case 24:
 					player.effects.resetAllHarmful()
-					player.effects.apply(ENUM.EFFECT.SHIELD, 99999, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.TURN_START)
+					player.effects.apply(ENUM.EFFECT.SHIELD, 99999)
+					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1)
 					player.heal(70)
 					break
 				case 25:
-					player.effects.apply(ENUM.EFFECT.SHIELD, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SHIELD, perma)
 					break
 				case 26:
 					player.mapHandler.nextdmg = 70
@@ -139,23 +139,23 @@ class ObstacleHelper {
 					player.doObstacleDamage(100,"knifeslash")
 					break
 				case 28:
-					player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.apply(ENUM.EFFECT.SLOW, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 1)
+					player.effects.apply(ENUM.EFFECT.SLOW, 2)
 					player.obstacleEffect("web")
 
 					break
 				case 29:
-					player.effects.apply(ENUM.EFFECT.POISON, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.POISON, perma)
 					break
 				case 30:
 					player.doObstacleDamage(new Util.PercentDamage(33, Util.PercentDamage.CURR_HP).getTotal(player),"explode")
 					break
 				case 31:
 					player.doObstacleDamage(new Util.PercentDamage(50, Util.PercentDamage.MISSING_HP).getTotal(player),"explode")
-					player.effects.apply(ENUM.EFFECT.RADI, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.RADI, 1)
 					break
 				case 32:
-					player.effects.apply(ENUM.EFFECT.RADI, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.RADI, 1)
 					break
 				case 33:
 					// kidnap
@@ -168,11 +168,11 @@ class ObstacleHelper {
 					}
 					break
 				case 34:
-					player.effects.apply(ENUM.EFFECT.SLAVE, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SLAVE, perma)
 					break
 				case 35:
-					player.effects.apply(ENUM.EFFECT.STUN, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.effects.apply(ENUM.EFFECT.SPEED, 4, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 3)
+					player.effects.apply(ENUM.EFFECT.SPEED, 4)
 					break
 				case 36:
 					if (!isForceMoved) {
@@ -194,30 +194,30 @@ class ObstacleHelper {
 					}
 					break
 				case 39:
-					player.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1)
 					break
 				case 40:
-					player.effects.apply(ENUM.EFFECT.BACKDICE, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.BACKDICE, 1)
 					break
 				case 41:
-					player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.STUN, 1)
 					player.obstacleEffect("web")
 					break
 				case 42:
 					player.heal(50)
 					break
 				case 43:
-					player.effects.apply(ENUM.EFFECT.POISON, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.POISON, 3)
 					break
 				case 44:
 					player.doObstacleDamage(40,"knifeslash")
 					break
 				case 45:
-					player.effects.apply(ENUM.EFFECT.BLIND, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.BLIND, 3)
 					break
 				case 46:
-					player.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
-					player.doObstacleDamage(30)
+					player.effects.apply(ENUM.EFFECT.SLOW, 1)
+					player.doObstacleDamage(30,'hit')
 					break
 				case 48:
 					break
@@ -227,12 +227,12 @@ class ObstacleHelper {
 
 					break
 				case 50:
-					player.effects.apply(ENUM.EFFECT.IGNITE, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.IGNITE, 3)
 					player.doObstacleDamage(30,"knifeslash")
 
 					break
 				case 51:
-					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.INVISIBILITY, 1)
 					break
 				case 52:
 					// player.doObstacleDamage(75, "lightning")
@@ -279,10 +279,10 @@ class ObstacleHelper {
 					player.doObstacleDamage(120,"explode")
 					break
 				case 59:
-					player.effects.apply(ENUM.EFFECT.SPEED, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.SPEED, 3)
 					break
 				case 60:
-					player.effects.apply(ENUM.EFFECT.IGNITE, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.IGNITE, 3)
 					player.doObstacleDamage(new Util.PercentDamage(25, Util.PercentDamage.MAX_HP).getTotal(player),"explode")
 
 					break
@@ -298,14 +298,14 @@ class ObstacleHelper {
 					//Threaten
 					break
 				case 64:
-					player.effects.apply(ENUM.EFFECT.PRIVATE_LOAN, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.PRIVATE_LOAN, 2)
 					break
 				case 65:
 					player.inven.takeMoney(Math.floor(player.inven.money / 2))
 					player.inven.changeToken(-1 * Math.floor(player.inven.token / 2))
 					break
 				case 66:
-					player.effects.apply(ENUM.EFFECT.ANNUITY_LOTTERY, perma, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.ANNUITY_LOTTERY, perma)
 					break
 				case 67: //coin store
 					if (player.effects.has(ENUM.EFFECT.PRIVATE_LOAN)) {
@@ -346,10 +346,10 @@ class ObstacleHelper {
 					player.inven.thief()
 					break
 				case 72:
-					player.effects.apply(ENUM.EFFECT.CURSE, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					player.effects.apply(ENUM.EFFECT.CURSE, 2)
 					break
 				case 73:
-					player.doObstacleDamage(Math.floor(player.inven.money / 2))
+					player.doObstacleDamage(Math.floor(player.inven.money / 2),'hit')
 					break
 				case 74:
 					if (!player.AI) {
@@ -382,7 +382,7 @@ class ObstacleHelper {
 
 	static kidnap(player: Player, result: boolean) {
 		if (result) {
-			player.effects.apply(ENUM.EFFECT.STUN, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			player.effects.apply(ENUM.EFFECT.STUN, 2)
 		} else {
 			player.doObstacleDamage(300,"stab")
 
@@ -403,7 +403,7 @@ class ObstacleHelper {
 				player.message(player.name + "fine 100$")
 				break
 			case 1:
-				player.effects.apply(ENUM.EFFECT.SLAVE, 99999, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.SLAVE, StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE)
 				break
 			case 2:
 
@@ -422,7 +422,7 @@ class ObstacleHelper {
 			case 4:
 				player.doObstacleDamage(Math.floor(player.HP / 2),"stab")
 
-				player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.STUN, 1)
 				player.message(player.name + " will get retrial")
 				break
 			case 5:
@@ -446,7 +446,7 @@ class ObstacleHelper {
 				player.inven.giveMoney(player.inven.money)
 				break
 			case 2:
-				player.effects.apply(ENUM.EFFECT.SPEED, 2, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.SPEED, 2)
 				break
 			case 3:
 				player.doObstacleDamage(Math.floor(player.HP / 2),"stab")
@@ -458,7 +458,7 @@ class ObstacleHelper {
 			case 5:
 				player.doObstacleDamage(50,"stab")
 
-				player.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				player.effects.apply(ENUM.EFFECT.STUN, 1)
 				break
 		}
 	}

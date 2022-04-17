@@ -81,7 +81,7 @@ class Timo extends Player {
 			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.ULT), 0)
 		)
 			.setAction(function(this: Player){
-				this.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_START)
+				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 				return false
 			})
 			.setSourceSkill(ENUM.SKILL.ULT)
@@ -132,7 +132,7 @@ class Timo extends Player {
 	useW() {
 		this.startCooltime(ENUM.SKILL.W)
 		this.startDuration(ENUM.SKILL.W)
-		this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1, ENUM.EFFECT_TIMING.TURN_END)
+		this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1)
 	}
 	getSkillName(skill: number): string {
 		if (skill === ENUM.SKILL.Q && this.effects.has(ENUM.EFFECT.INVISIBILITY)) {
@@ -182,7 +182,7 @@ class Timo extends Player {
 					new Damage(0, this.getSkillBaseDamage(s), 0).mergeWith(admg),
 					this.getSkillName(s)
 				).ofSkill(s).setOnHit(function (this: Player) {
-					this.effects.apply(ENUM.EFFECT.BLIND, 1, ENUM.EFFECT_TIMING.TURN_START)
+					this.effects.apply(ENUM.EFFECT.BLIND, 1)
 				})
 				break
 		}

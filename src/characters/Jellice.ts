@@ -6,7 +6,7 @@ import * as ENUM from "../enum"
 import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
-import { TickDamageEffect, TickEffect,ShieldEffect } from "../StatusEffect"
+import { TickDamageEffect, TickEffect,ShieldEffect, NormalEffect, EFFECT_TIMING } from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
@@ -38,6 +38,7 @@ class Jellice extends Player {
 	static readonly SKILLNAME_W_Q = "magician_w_q"
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
 	static readonly SKILL_EFFECT_NAME = ["magician_q", "hit", "magician_r"]
+	static readonly EFFECT_W_SHIELD="magician_w_shield"
 
 	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -80,7 +81,7 @@ class Jellice extends Player {
 			.setSize(3)
 			.setSource(this.turn)
 			.setAction(function (this: Player) {
-				this.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				this.effects.apply(ENUM.EFFECT.SILENT, 1)
 			})
 			.setDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.ULT), 0))
 			.setDuration(2)
@@ -112,7 +113,10 @@ class Jellice extends Player {
 		if(skill===ENUM.SKILL.Q) return this.useQ()
 	}
 	private getWShield() {
-		return new ShieldEffect(ENUM.EFFECT.MAGICIAN_W_SHIELD, 1, 50)
+		return new ShieldEffect(ENUM.EFFECT.MAGICIAN_W_SHIELD, 2, 50)
+	}
+	private getWEffect(){
+		return new NormalEffect(ENUM.EFFECT.MAGICIAN_W,2,EFFECT_TIMING.TURN_START)
 	}
 	private getWBurnEffect() {
 		return new TickDamageEffect(
@@ -124,11 +128,12 @@ class Jellice extends Player {
 	}
 	private useW() {
 		console.log("usew")
-		this.effects.applySpecial(this.getWShield(), SpecialEffect.SKILL.MAGICIAN_W.name)
+		this.effects.applySpecial(this.getWShield(), Jellice.EFFECT_W_SHIELD)
+		this.effects.applySpecial(this.getWEffect(), SpecialEffect.SKILL.MAGICIAN_W.name)
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
-		this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.TURN_START)
+		this.effects.apply(ENUM.EFFECT.STUN, 1)
 	}
 
 	private qRange(){

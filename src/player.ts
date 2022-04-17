@@ -2,7 +2,7 @@ import obsInfo = require("../res/obstacles.json")
 import SETTINGS = require("../res/globalsettings.json")
 import * as ENUM from "./enum"
 import * as Util from "./Util"
-import {PlayerClientInterface, testSetting} from "./app"
+import { PlayerClientInterface, testSetting } from "./app"
 import type { Game } from "./Game"
 import { EntityFilter } from "./EntityFilter"
 import { Projectile } from "./Projectile"
@@ -17,7 +17,7 @@ import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { AiAgent, DefaultAgent } from "./AiAgents/AiAgent"
 import { ServerPayloadInterface } from "./PayloadInterface"
 import { MAP } from "./MapHandlers/MapStorage"
-
+import { EFFECT_TIMING } from "./StatusEffect"
 // class Minion extends Entity{
 // 	constructor(){
 // 		super(null,null)
@@ -217,7 +217,7 @@ abstract class Player extends Entity {
 			(this.thisLevelDeathCount >= 2 && this.level < 2) ||
 			this.thisLevelDeathCount >= 7
 		) {
-			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1, ENUM.EFFECT_TIMING.TURN_START)
+			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1)
 		}
 		//	 this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
 		return this.adice
@@ -288,36 +288,54 @@ abstract class Player extends Entity {
 	}
 	//========================================================================================================
 	onMyTurnStart() {
-		this.basicAttackCount = this.ability.basicAttackSpeed.get()
-		console.log(this.basicAttackCount)
+
+		if (!this.oneMoreDice) {
+			this.onSkillDurationCount()
+			this.decrementAllSkillDuration()
+			this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
+			this.effects.onTurnStart()
+			console.log("-------------------------onmyturnstart"+this.turn)
+		}
+		this.rechargeBasicAttack()
 		this.passive()
 		this.cooltime = this.cooltime.map(Util.decrement)
-		this.onSkillDurationCount()
-		this.decrementAllSkillDuration()
-		this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
+
 		this.transfer(PlayerClientInterface.update, "skillstatus", this.turn, this.getSkillStatus())
 	}
-	getSkillStatus():ServerPayloadInterface.SkillStatus {
+
+	getSkillStatus(): ServerPayloadInterface.SkillStatus {
 		return {
 			turn: this.game.thisturn,
 			cooltime: this.cooltime,
 			cooltimeratio: this.getCooltimePercent(),
 			duration: this.getDurationPercent(),
 			level: this.level,
-			basicAttackCount:this.basicAttackCount,
-			canBasicAttack:this.canBasicAttack(),
-			canUseSkill:this.canUseSkill()
+			basicAttackCount: this.basicAttackCount,
+			canBasicAttack: this.canBasicAttack(),
+			canUseSkill: this.canUseSkill()
 		}
 	}
-	canBasicAttack():boolean{
-		return this.basicAttackCount > 0 && this.effects.canBasicAttack() && this.mediator.selectAllFrom(this.getBasicAttackFilter()).length>0 && !this.dead && this.mapHandler.canAttack()
+	rechargeBasicAttack() {
+		this.basicAttackCount = this.ability.basicAttackSpeed.get()
+	}
+	canBasicAttack(): boolean {
+		return (
+			this.basicAttackCount > 0 &&
+			this.effects.canBasicAttack() &&
+			this.mediator.selectAllFrom(this.getBasicAttackFilter()).length > 0 &&
+			!this.dead &&
+			this.mapHandler.canAttack()
+		)
 	}
 
-	canUseSkill():boolean{
+	canUseSkill(): boolean {
 		return !this.effects.has(ENUM.EFFECT.SILENT) && !this.dead && this.mapHandler.canAttack()
 	}
 
 	//========================================================================================================
+	/**
+	 * called right before receiving obstacle effects
+	 */
 	onBeforeObs() {
 		if (this.oneMoreDice) {
 			return
@@ -341,8 +359,11 @@ abstract class Player extends Entity {
 
 	onAfterObs() {
 		// if (!this.oneMoreDice) {
-			
+
 		// }
+		if (this.oneMoreDice) {
+			return
+		}
 		this.effects.onAfterObs()
 	}
 
@@ -613,7 +634,7 @@ abstract class Player extends Entity {
 		this.HP = Math.min(this.HP + hp, this.MaxHP)
 
 		let type = data.type
-		if (data.type === "noeffect" || data.type==="maxhpChange") {
+		if (data.type === "noeffect" || data.type === "maxhpChange") {
 			type = "heal_simple"
 		}
 
@@ -722,22 +743,13 @@ abstract class Player extends Entity {
 
 		if (this.game.applyRangeProjectile(this)) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 
-		let obs = this.game.shuffledObstacles[this.pos].obs
-		//속박일경우
-		if (this.effects.has(ENUM.EFFECT.STUN)) {
-			//특정 장애물은 속박시 무시
-			if (SETTINGS.ignoreStunObsList.includes(obs)) {
-				if (this.game.setting.legacyBasicAttack) this.basicAttack()
-
-				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
-			}
+		let isRooted=this.effects.has(ENUM.EFFECT.STUN)
+		let isInvisible=this.effects.has(ENUM.EFFECT.INVISIBILITY)
+		if(!isForceMoved){
+			this.onBeforeObs()
 		}
 
-		obs = this.obstacle(obs, isForceMoved)
-
-		if (this.game.setting.legacyBasicAttack) this.basicAttack()
-
-		return obs
+		return this.obstacle(this.game.shuffledObstacles[this.pos].obs, isForceMoved,isRooted,isInvisible)
 	}
 
 	/**
@@ -746,31 +758,43 @@ abstract class Player extends Entity {
 	 * @param {*} isForceMoved whether it is forcemoved
 	 * @returns
 	 */
-	obstacle(obs: number, isForceMoved: boolean): number {
-		//  if(obs===-1){return 'finish'}
-		if (obs === 0) {
+	obstacle(obs: number, isForceMoved: boolean,isRooted:boolean,isInvisible:boolean): number {
+		//속박일경우
+		if (isRooted) {
+			//특정 장애물은 속박시 무시
+			if (SETTINGS.ignoreStunObsList.includes(obs)) {
+				if (this.game.setting.legacyBasicAttack) this.basicAttack()
+
+				obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
+			}
+		}
+		else if (obs === 0) {
 			this.invulnerable = true
-			this.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL) //cant use skill in the store
+			//this.effects.apply(ENUM.EFFECT.SILENT, 1, EFFECT_TIMING.BEFORE_SKILL) //cant use skill in the store
 
 			this.goStore()
-			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE
+			obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE
+		} else if (obs === -1) {
+			obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
 		//투명화:   해로운 장애물일경우만 무시
-		if (this.effects.has(ENUM.EFFECT.INVISIBILITY) && obsInfo.obstacles[obs].val < 0) {
-			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+		else if (isInvisible && obsInfo.obstacles[obs].val < 0) {
+			obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+		} else {
+			let money = this.game.shuffledObstacles[this.pos].money * 10
+			if (money > 0) {
+				this.inven.giveMoney(money)
+			}
+			obs = ObstacleHelper.applyObstacle(this, obs, isForceMoved)
 		}
 
-		let money = this.game.shuffledObstacles[this.pos].money * 10
-		if (money > 0) {
-			this.inven.giveMoney(money)
-		}
+		if (this.game.setting.legacyBasicAttack) this.basicAttack()
 
-		obs = ObstacleHelper.applyObstacle(this, obs, isForceMoved)
 		return obs
 	}
 
 	goStore(priceMultiplier?: number) {
-		if(!priceMultiplier) priceMultiplier=1
+		if (!priceMultiplier) priceMultiplier = 1
 		this.transfer(PlayerClientInterface.goStore, this.turn, this.inven.getStoreData(priceMultiplier))
 	}
 
@@ -807,7 +831,7 @@ abstract class Player extends Entity {
 
 	addMaxHP(m: number) {
 		//this.transfer(PlayerClientInterface.update, "maxhp", this.turn, m)
-		this.MaxHP+=m
+		this.MaxHP += m
 		this.changeHP_heal(new Util.HPChangeData().setHpChange(m).setType("maxhpChange"))
 	}
 
@@ -834,7 +858,6 @@ abstract class Player extends Entity {
 
 		// this.giveEffect('speed',1,1)
 	}
-
 
 	obstacleEffect(type: string) {
 		this.transfer(PlayerClientInterface.obstacleEffect, { pos: this.pos, type: type })
@@ -904,9 +927,7 @@ abstract class Player extends Entity {
 
 			damage = this.shieldDamage(damage)
 
-
 			this.effects.onFinalDamage(damage)
-
 
 			let reviveType = this.canRevive()
 			if (predictedHP <= 0) {
@@ -1180,13 +1201,12 @@ abstract class Player extends Entity {
 	}
 	usePendingAreaSkill(pos: number) {}
 
-	private getBasicAttackFilter(){
+	private getBasicAttackFilter() {
 		return EntityFilter.ALL_ENEMY(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
 	}
-	
 
 	basicAttack() {
-		if(this.basicAttackCount<=0) return false
+		if (this.basicAttackCount <= 0) return false
 
 		this.basicAttackCount -= 1
 		if (!this.effects.canBasicAttack()) {
@@ -1197,9 +1217,7 @@ abstract class Player extends Entity {
 		damage = this.mapHandler.onBasicAttack(damage)
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 		//	console.log("basicattack")
-		let died = this.mediator.basicAttack(
-			this,this.getBasicAttackFilter()
-		)(damage)
+		let died = this.mediator.basicAttack(this, this.getBasicAttackFilter())(damage)
 	}
 }
 

@@ -7,7 +7,7 @@ import { ITEM } from "../enum"
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
 import { Projectile } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
-import { NormalEffect } from "../StatusEffect"
+import { EFFECT_TIMING, NormalEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
@@ -134,9 +134,9 @@ class Yangyi extends Player {
 		if (this.duration[ENUM.SKILL.W] === 0) {
 			this.startDuration(ENUM.SKILL.W)
 			this.startCooltime(ENUM.SKILL.W)
-			this.effects.apply(ENUM.EFFECT.SLOW, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			this.effects.apply(ENUM.EFFECT.SLOW, 3)
 			this.effects.applySpecial(
-				new NormalEffect(ENUM.EFFECT.DINOSAUR_W, 3, ENUM.EFFECT_TIMING.BEFORE_SKILL).setGood(),
+				new NormalEffect(ENUM.EFFECT.DINOSAUR_W, 3, EFFECT_TIMING.TURN_START).setGood(),
 				SpecialEffect.SKILL.DINOSAUR_W_HEAL.name
 			)
 		}

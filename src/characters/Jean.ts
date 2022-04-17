@@ -81,7 +81,7 @@ class Jean extends Player {
 	private buildProjectile() {
 		return new ProjectileBuilder(this.game,Jean.PROJ_W,Projectile.TYPE_RANGE)
 			.setAction(function (this: Player) {
-				this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+				this.effects.apply(ENUM.EFFECT.STUN, 2)
 			})
 			.setSize(3)
 			.setSource(this.turn)
@@ -167,13 +167,13 @@ class Jean extends Player {
 				this.effects.applySpecial(this.getUltShield(),Jean.EFFECT_ULT)
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
 					let onhit = function (this: Player) {
-						this.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_END)
+						this.effects.apply(ENUM.EFFECT.SLOW, 1)
 					}
 
 					skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
 					this.startDuration(ENUM.SKILL.ULT)
 
-					this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+					this.effects.apply(ENUM.EFFECT.STUN, 1)
 					this.u_target = this.game.turn2Id(target)
 					this.startCooltime(ENUM.SKILL.ULT)
 				}
@@ -190,9 +190,9 @@ class Jean extends Player {
 
 	onSkillDurationCount() {
 		if (this.duration[ENUM.SKILL.ULT] === 2) {
-			this.effects.apply(ENUM.EFFECT.STUN, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+			this.effects.apply(ENUM.EFFECT.STUN, 1)
 			let onhit = function (this: Player) {
-				this.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_END)
+				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
 			let skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0), this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
 			this.mediator.skillAttackSingle(this,this.u_target)(skillattr)
@@ -201,7 +201,7 @@ class Jean extends Player {
 		//궁 세번째 공격
 		if (this.duration[ENUM.SKILL.ULT] === 1) {
 			let onhit = function (this: Player) {
-				this.effects.apply(ENUM.EFFECT.SLOW, 1, ENUM.EFFECT_TIMING.TURN_END)
+				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
 			let skillattr = new SkillAttack(new Damage(0,0,this.getSkillBaseDamage(ENUM.SKILL.ULT)),this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
 
@@ -213,7 +213,7 @@ class Jean extends Player {
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
 			this.u_target = null
-			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1, ENUM.EFFECT_TIMING.TURN_END)
+			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1)
 			this.effects.reset(ENUM.EFFECT.STUN)
 		}
 	}

@@ -3,7 +3,7 @@ export namespace GAME_CYCLE{
 		INITIALIZE=0,
 		WAITING_DICE,
 		THROW_DICE,
-		STUN,
+		ROOTED,
 		AI_THROW_DICE
 	}
 	export enum BEFORE_SKILL {

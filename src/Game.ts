@@ -6,7 +6,7 @@ import * as Util from "./Util"
 import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
 import { ObstacleHelper } from "./helpers"
 import { AiAgent } from "./AiAgents/AiAgent"
-
+import { EFFECT_TIMING } from "./StatusEffect"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./Entity"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
@@ -308,6 +308,12 @@ class Game {
 	setCycle(cycle:number){
 		this.cycle=cycle
 	}
+	getObstacleAt(pos:number){
+		return this.shuffledObstacles[pos].obs
+	}
+	getMoneyAt(pos:number){
+		return this.shuffledObstacles[pos].money
+	}
 	//========================================================================================================
 
 	//team:number,char:int,name:str
@@ -339,7 +345,6 @@ class Game {
 
 	getInitialSetting():ServerPayloadInterface.initialSetting {
 		let setting = []
-		console.log(this.entityMediator.allPlayer())
 		for (let p of this.entityMediator.allPlayer()) {
 			setting.push({
 				turn: p.turn,
@@ -408,6 +413,7 @@ class Game {
 			}
 
 			this.placeSubmarine(pos)
+			// this.placeSubmarine(60)
 			this.submarine_cool = SETTINGS.submarine_cooltime
 		} else {
 			this.submarine_cool = Math.max(0, this.submarine_cool - 1)
@@ -536,11 +542,11 @@ class Game {
 		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
 	}
 	onTurnEnd(){
-		this.pendingObs = 0
+		this.resetPendingObs()
 		this.pendingAction = null
 		let p = this.thisp()
-		p.onMyTurnEnd()
 		this.entityMediator.onTurnEnd(this.thisturn)
+		p.onMyTurnEnd()
 	}
 	onOneMoreDice(p:Player){
 		p.onMyTurnStart()
@@ -555,15 +561,12 @@ class Game {
 		if (this.gameover) {
 			return null
 		}
-
-		if(this.begun)
-			this.onTurnEnd()
-		else{
-			this.entityMediator.forAllPlayer()(function () {
-				this.ability.sendToClient()
-			})
-		}
+			
+		this.entityMediator.forAllPlayer()(function () {
+			this.ability.sendToClient()
+		})
 		
+	
 
 		let p = this.thisp()
 		//다음턴 안넘어감(one more dice)
@@ -572,11 +575,15 @@ class Game {
 		}
 		//다음턴 넘어감
 		else {
-			if(this.begun)
-				this.thisturn += 1
+			if(this.begun){
+				this.onTurnEnd()
+				// this.thisturn += 1
+				this.thisturn =(this.thisturn+1) % this.totalnum
+			}
+				
 			this.begun=true
 			
-			this.thisturn %= this.totalnum
+			
 			console.log("thisturn" + this.thisturn)
 
 			this.summonDicecontrolItem()
@@ -605,8 +612,8 @@ class Game {
 			if (p.dead || p.waitingRevival) {
 				p.respawn()
 			}
-			p.onMyTurnStart()
 			this.entityMediator.onTurnStart(this.thisturn)
+			p.onMyTurnStart()
 		}
 
 		let additional_dice = p.calculateAdditionalDice(this.setting.additionalDiceAmount)
@@ -819,7 +826,7 @@ class Game {
 		} else {
 			this.entityMediator.forceMovePlayerIgnoreObstacle(player.UEID, pos, movetype)
 		}
-		this.pendingObs = 0 //강제이동시 장애물무시
+		//this.pendingObs = 0 //강제이동시 장애물무시
 	}
 	//========================================================================================================
 
@@ -845,13 +852,27 @@ class Game {
 
 		return { moveDistance: dice, projList: projList }
 	}
+	setPendingObs(obs:number){
+		if (SETTINGS.pendingObsList.includes(obs)) {
+			if (!this.thisp().AI) {
+				this.pendingObs=obs
+			}
+		}
+	}
+	hasPendingObs(){
+		return this.pendingObs!==0
+	}
+	resetPendingObs(){
+		this.pendingObs=0
+	}
 	//========================================================================================================
 
 	checkObstacle(delay?:number): number {
 		let p = this.thisp()
 		this.arriveSquareCallback=null
-		this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
-		p.onBeforeObs()
+		if(!this.instant)
+			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
+	//	p.onBeforeObs()
 
 		//passprojqueue 에 있는 투사체들을 pendingaction 에 적용
 		let died = this.applyPassProj()
@@ -862,7 +883,7 @@ class Game {
 		let result = p.arriveAtSquare(false)
 
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE) {
-			p.effects.apply(ENUM.EFFECT.SILENT, 1, ENUM.EFFECT_TIMING.BEFORE_SKILL)
+		//	p.effects.apply(ENUM.EFFECT.SILENT, 1, EFFECT_TIMING.BEFORE_SKILL)
 			if (p.AI) {
 				p.AiAgent.store()
 				result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
@@ -870,27 +891,22 @@ class Game {
 		}
 		this.winner = this.thisturn
 
-	
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
 
 		//godhand, 사형재판, 납치범 대기중으로 표시
-		if (SETTINGS.pendingObsList.includes(result)) {
-			if (!this.thisp().AI) {
-				this.pendingObs = result
-			}
-		}
+		this.setPendingObs(result)
 
 		if(!delay)
 			delay=0
-		
+		if(this.instant) this.onObstacleComplete()
 		
 		return result
 	}
 	onObstacleComplete()
 	{
-		console.log("--------------------------------onObstacleComplete")
+	//	console.log("--------------------------------onObstacleComplete")
 		if(this.arriveSquareCallback!=null){
 			this.arriveSquareCallback()
 			this.arriveSquareCallback=null
@@ -901,13 +917,13 @@ class Game {
 	requestForceMove(player:Player, movetype: string,ignoreObstacle:boolean){
 		let delay=SETTINGS.delay_simple_forcemove
 		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
-		console.log("--------------------------------requestForceMove")
+	//	console.log("--------------------------------requestForceMove")
 
 		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
-			console.log("--------------------------------extendtimeout")
+		//	console.log("--------------------------------extendtimeout")
 			console.log(player.name)
 			clearTimeout(this.arriveSquareTimeout)
-			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay+1500)
+			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		}
 
 		if(!ignoreObstacle){
@@ -1157,7 +1173,7 @@ class Game {
 
 	/**
 	 * 선택 장애물 대기중일 경우 바로 스킬로 안넘어가고 선택지 전송
-	 * @returns false if no pending obs,  of return {name of obs,argument(false on default)}
+	 * @returns null if no pending obs,  or return {name,arg}
 	 */
 	checkPendingObs(): ServerPayloadInterface.PendingObstacle {
 		if (this.pendingObs === 0 || this.thisp().dead) return null
@@ -1171,7 +1187,7 @@ class Game {
 				name = "server:pending_obs:godhand"
 				argument = targets
 			} else {
-				this.pendingObs = 0
+				this.resetPendingObs()
 				return null
 			}
 		}
@@ -1207,12 +1223,13 @@ class Game {
 	//========================================================================================================
 	processPendingObs(info: ClientPayloadInterface.PendingObstacle) {
 		//타임아웃될 경우
+		if(!info.complete) return
 		console.log("onPendingObsComplete"+this.pendingObs)
 		console.log(info)
 		if (!info) {
 			this.thisp().mapHandler.onPendingObsTimeout(this.pendingObs)
 			this.roulleteComplete()
-			this.pendingObs = 0
+			this.resetPendingObs()
 			return
 		}
 
@@ -1233,7 +1250,7 @@ class Game {
 			this.thisp().mapHandler.onPendingObsComplete(info)
 		}
 
-		this.pendingObs = 0
+		this.resetPendingObs()
 	}
 	//========================================================================================================
 
@@ -1269,7 +1286,7 @@ class Game {
 			ObstacleHelper.casino(p, this.roullete_result)
 		}
 
-		this.pendingObs = 0
+		this.resetPendingObs()
 		this.roullete_result = -1
 	}
 
