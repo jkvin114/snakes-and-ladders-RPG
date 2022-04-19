@@ -26,10 +26,10 @@ class Gorae extends Player {
 	
 	skillInfo:SkillInfoFactory
 	skillInfoKor:SkillInfoFactory
-
+	static readonly VISUALEFFECT_W='kraken_w_wave'
 	static readonly PROJ_Q="kraken_q"
 	static readonly EFFECT_W="kraken_w"
-	static readonly SKILL_EFFECT_NAME=["kraken_q", "hit", "kraken_r"]
+	static readonly SKILL_EFFECT_NAME=["kraken_q", "kraken_w", "kraken_r"]
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
@@ -68,6 +68,7 @@ class Gorae extends Player {
 		return new ProjectileBuilder(this.game,Gorae.PROJ_Q,Projectile.TYPE_RANGE)
 		.setSize(2)
 		.setSource(this.turn)
+		.setTrajectorySpeed(300)
 		.setDuration(2)
         .setDamage(new Damage( 0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0))
 		.build()
@@ -123,6 +124,7 @@ class Gorae extends Player {
 		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 
 		this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(3))(dmg)
+		this.showEffect(Gorae.VISUALEFFECT_W, this.turn)
 
 		this.startCooltime(ENUM.SKILL.W)
 	}

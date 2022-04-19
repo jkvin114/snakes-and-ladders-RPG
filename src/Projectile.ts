@@ -123,10 +123,10 @@ class PassProjectile extends Projectile {
 	getTransferData():ServerPayloadInterface.PassProjectile {
 		return {
 			name: this.name,
-			pos: this.pos,
+			scope: [this.pos],
 			UPID: this.UPID,
 			stopPlayer: this.hasFlag(Projectile.FLAG_STOP_PLAYER),
-			sourceTurn: this.sourceTurn,
+			owner: this.sourceTurn,
 			trajectorySpeed: this.trajectorySpeed
 		}
 	}

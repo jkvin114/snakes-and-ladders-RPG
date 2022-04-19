@@ -83,6 +83,7 @@ class Jean extends Player {
 			.setAction(function (this: Player) {
 				this.effects.apply(ENUM.EFFECT.STUN, 2)
 			})
+			.setTrajectorySpeed(300)
 			.setSize(3)
 			.setSource(this.turn)
 			.setDuration(2)

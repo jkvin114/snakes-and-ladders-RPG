@@ -860,7 +860,7 @@ abstract class Player extends Entity {
 	}
 
 	obstacleEffect(type: string) {
-		this.transfer(PlayerClientInterface.obstacleEffect, { pos: this.pos, type: type })
+		this.transfer(PlayerClientInterface.visualEffect,this.pos,type,-1)
 	}
 
 	/**

@@ -99,6 +99,7 @@ class Tree extends Player {
 			})
 			.setDuration(3)
 			.setCanApplyToAlly()
+			.setTrajectorySpeed(300)
 			.addFlag(Projectile.FLAG_STOP_PLAYER)
 			.build()
 	}

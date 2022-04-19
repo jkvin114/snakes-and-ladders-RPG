@@ -76,6 +76,7 @@ class Creed extends Player {
 			.setAction(function (this: Player) {
 				this.game.playerForceMove(this,this.pos - 4, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 			})
+			.setTrajectorySpeed(300)
 			.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
 			.setDuration(2)
 			.build()

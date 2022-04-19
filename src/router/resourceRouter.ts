@@ -29,6 +29,14 @@ router.get("/globalsetting", function (req:express.Request, res:express.Response
 		res.end(data)
 	})
 })
+router.get("/visualeffects", function (req:express.Request, res:express.Response) {
+	fs.readFile(__dirname + RESOURCE_PATH+"visualeffects.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting visualeffects setting file"})
+		}
+		res.end(data)
+	})
+})
 router.get("/map", function (req:express.Request, res:express.Response) {
 	let room = ROOMS.get(req.session.roomname)
 	if (!room) {

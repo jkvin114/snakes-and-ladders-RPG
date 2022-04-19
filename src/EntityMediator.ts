@@ -15,7 +15,7 @@ class AttackHandler{
 	static basicAttacks(from:Player,targets:Entity[],damage:Damage):boolean{
 		let died=false
 		let data:ServerPayloadInterface.Attack={
-			targets:[],source:from.turn,visualeffect:from.getBasicAttackName()
+			targets:[],source:from.turn,visualeffect:from.getBasicAttackName(),sourcePos:from.pos
 		}
 		for(let t of targets){
 			let v=this.basicAttack(from,t,damage)
@@ -42,7 +42,7 @@ class AttackHandler{
 		}
 
 		let data:ServerPayloadInterface.Attack={
-			targets:[],source:from.turn,visualeffect:skillattack.name
+			targets:[],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
 		}
 
 		for(let t of targets){
@@ -60,11 +60,12 @@ class AttackHandler{
 			damage = from.effects.onBasicAttackHit(damage, target)
 			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}
-		
-		let died= AttackHandler.doDamage(from,target,damage,from.getBasicAttackName(),true)
 		let victimData:ServerPayloadInterface.Victim={
 			pos:target.pos,flags:[],damage:damage.getTotalDmg()
 		}
+		
+		let died= AttackHandler.doDamage(from,target,damage,from.getBasicAttackName(),true)
+		
 		if(died) victimData.flags.push("died")
 		return victimData
 	}
@@ -73,7 +74,7 @@ class AttackHandler{
 	static skillAttackAuto(from:Player,target:Entity,skillattack:SkillAttack):boolean{
 		let v=this.skillAttack(from,target,skillattack)
 		let data:ServerPayloadInterface.Attack={
-			targets:[v],source:from.turn,visualeffect:skillattack.name
+			targets:[v],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
 		}
 		from.transfer(PlayerClientInterface.attack,data)
 		return (v.flags.includes("died"))
@@ -129,7 +130,7 @@ class AttackHandler{
 		let data:ServerPayloadInterface.Attack={
 			targets:[{
 				pos:target.pos,flags:[],damage:damage.getTotalDmg()
-			}],source:-1,visualeffect:effectname
+			}],source:-1,visualeffect:effectname,sourcePos:0
 		}
 
 		from.game.sendToClient(PlayerClientInterface.attack,data)

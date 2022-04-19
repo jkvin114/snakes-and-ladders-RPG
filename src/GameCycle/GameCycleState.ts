@@ -36,6 +36,7 @@ class GameLoop {
 		return this
 	}
 	setGameCycle(cycle: GameCycleState): boolean {
+		if(!this.game) return false
 		if (this.state != null) {
 			this.state.onDestroy()
 			if (this.state.shouldStopTimeoutOnDestroy()) this.stopTimeout()
@@ -86,7 +87,7 @@ class GameLoop {
 		return new GameLoop(game)
 	}
 	user_storeComplete(data: ClientPayloadInterface.ItemBought) {
-		if (!this.state) return
+		if (!this.game) return
 		this.game.userCompleteStore(data)
 	}
 	user_reconnect(turn: number) {
@@ -98,7 +99,7 @@ class GameLoop {
 	}
 	getOnTimeout() {
 		return (() => {
-			if (!this.state) return
+			if (!this.game) return
 			RoomClientInterface.forceNextturn(this.rname, this.state.crypt_turn)
 			this.startNextTurn(true)
 		}).bind(this)
@@ -109,7 +110,7 @@ class GameLoop {
 			RoomClientInterface.startTimeout(this.rname, this.game.thisCryptTurn(), SETTINGS.idleTimeout)
 
 			this.idleTimeout = setTimeout(() => {
-				if (!this.state) return
+				if (!this.game) return
 				RoomClientInterface.forceNextturn(this.rname, this.state.crypt_turn)
 				this.startNextTurn(true)
 				if (additional != null) additional()
@@ -126,6 +127,7 @@ class GameLoop {
 		}
 	}
 	startNextTurn(isTimeout: boolean) {
+		if (!this.game) return
 		this.stopTimeout()
 		this.setGameCycle(this.state.getTurnInitializer())
 		this.nextGameCycle()
@@ -151,7 +153,7 @@ class GameLoop {
 	async afterDice(movedistance: number) {
 		await sleep(SETTINGS.delay_on_dice + Math.abs(movedistance) * SETTINGS.delay_per_dice)
 		console.log("afterDice   " + movedistance)
-
+		if(!this.game) return
 		this.nextGameCycle()
 		if (this.state.gameover) {
 			this.onGameover()
@@ -166,6 +168,7 @@ class GameLoop {
 		}
 
 		await this.state.getArriveSquarePromise()
+		if(!this.game) return
 		console.log("afterDice3")
 		if (this.nextGameCycle()) return
 
@@ -179,6 +182,7 @@ class GameLoop {
 			//this.startTimeOut(this.getOnTimeout())
 		} else if (this.state instanceof AiSkill) {
 			await this.state.useSkill()
+			if(!this.game) return
 			this.startNextTurn(false)
 		} else if (
 			this.state.id === GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE ||
@@ -252,6 +256,9 @@ class GameLoop {
 			this.game.onDestroy()
 		if(this.state!=null)
 			this.state.onDestroy()
+		this.game=null
+		this.state=null
+		console.log("ondestroy"+this.game)
 		clearTimeout(this.idleTimeout)
 	}
 }

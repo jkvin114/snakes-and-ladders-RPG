@@ -83,10 +83,10 @@ export namespace ServerPayloadInterface {
 	}
 	export interface PassProjectile {
 		name: string
-		pos: number
+		scope: number[]
 		UPID: string
 		stopPlayer: boolean
-		sourceTurn: number
+		owner: number
 		trajectorySpeed: number
 	}
 	export interface RangeProjectile {
@@ -154,6 +154,7 @@ export namespace ServerPayloadInterface {
 		targets: Victim[]
 		source: number
 		visualeffect: string
+		sourcePos:number
 		// trajectorySpeed:number
 	}
 }
