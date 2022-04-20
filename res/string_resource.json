@@ -8,7 +8,7 @@
         "{Poison} -30 HP for every turn",
         "{Radiation} Damage x2",
         "[Annuity] +20$ for every turn",
-        "{Slavery} -80HP for every turn, die if you reach the end",
+        "{Slavery} -80HP for every turn, die if you reach the end(freed if you kill an opponent)",
         "{Backslide}next dice goes back",
         "[Rapidness]next dice x2",
         "{Blind} Can`t basic attack, Skill range halves",
@@ -28,7 +28,7 @@
         "{독} 매턴마다 체력 -30",
         "{방사능} 모든 피해 2배",
         "[연금] 매턴마다 +20골드",
-        "{노예계약} 매턴마다 체력 -80, 끝지점 도착시 처형",
+        "{노예계약} 매턴마다 체력 -80, 끝지점 도착시 처형 (적 처치시 해방)",
         "{퇴보}다음턴 주사위 뒤로",
         "[쾌속]다음턴 주사위 2배",
         "{실명} 기본공격불가, 스킬 사거리 절반",
@@ -77,36 +77,36 @@
     },
 
     "casinolabel" : [
-        "+100$",
-        "Money doubles",
-        "Speed for 2 turns",
-        "HP halves",
-        "Money halves",
-        "Stun, HP-50"
+        {"name":"Win","desc":"Receives 100$"},
+        {"name":"JACKPOT","desc":"Money Doubles"},
+        {"name":"Escape","desc":"Speed effect for 2 turns"},
+        {"name":"Robbery","desc":"HP -50%"},
+        {"name":"Lose","desc":"Money Halves"},
+        {"name":"Addiction","desc":"Rooted, HP -50"}
     ],
     "casinolabel_kor" : [
-        "+100$",
-        "재산 2배",
-        "신속 2턴",
-        "체력 -50%",
-        "재산 절반몰수",
-        "속박, 체력-50"
+        {"name":"대박","desc":"100$ 획득"},
+        {"name":"잭팟","desc":"재산 2배"},
+        {"name":"탈출","desc":"신속 2턴"},
+        {"name":"강도","desc":"체력 -50%"},
+        {"name":"쪽박","desc":"재산 절반몰수"},
+        {"name":"중독","desc":"속박, 체력 -50"}
     ],
     "triallabel" : [
-        "-100$",
-        "Slavery",
-        "Move to nearest player",
-        "Death!",
-        "Stun, HP-50%",
-        "50% chance of death <br>for every player"
+        {"name":"Fine","desc":"Take away 100$"},
+        {"name":"Slavery","desc":"Slavery effect(dies if you reach the end)"},
+        {"name":"Banishment","desc":"Move to nearest player"},
+        {"name":"Death","desc":"Death!"},
+        {"name":"Re-trial","desc":"Rooted, HP-50%"},
+        {"name":"Thanos","desc":"50% chance of death for every player"}
     ],  
     "triallabel_kor" : [
-        "벌금 -100$",
-        "노예계약",
-        "가장 가까운 플레이어에게 이동",
-        "사형",
-        "속박, 체력 -50%",
-        "모든플레이어 각각 <br>50%로 사망"
+        {"name":"벌금","desc":"벌금 -100$"},
+        {"name":"강제노역","desc":"노예계약 효과(끝지점도착시 사망)"},
+        {"name":"유배","desc":"가장 가까운 플레이어에게 이동"},
+        {"name":"사형","desc":"사형!"},
+        {"name":"재심","desc":"속박, 체력 -50%"},
+        {"name":"인구감축","desc":"모든플레이어 각각 50% 확률로 사망"}
     ],
     "stat_detail":{
         "attackRange":"Attack range applies up to 5",

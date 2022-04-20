@@ -4,7 +4,6 @@ import cliProgress = require("cli-progress")
 // import { RoomClientInterface } from "./app"
 import SETTINGS = require("../res/globalsettings.json")
 import { shuffle,pickRandom, PlayerType } from "./Util"
-import {ARRIVE_SQUARE_RESULT_TYPE} from "./enum"
 import { ClientPayloadInterface } from "./PayloadInterface"
 
 
@@ -264,6 +263,7 @@ class Simulation {
 				console.error("Unexpected error on " + this.progressCount + "th game ")
 				console.error("while processing " + this.gameCycle.game.thisturn + "th turn player")
 				console.error(e)
+				break
 			}
 		}
 		if(!this.setting.summaryOnly){
@@ -273,7 +273,7 @@ class Simulation {
 	}
 	skill(){
 		if(this.gameCycle instanceof AiSimulationSkill){
-			this.gameCycle.useSkill()
+			this.gameCycle.process()
 			this.gameCycle=this.gameCycle.getNext()
 		}
 		else{

@@ -1,11 +1,10 @@
 import { Room } from "./room"
-import { MAP_TYPE } from "./enum"
 import SETTINGS = require("../res/globalsettings.json")
 import { SpecialEffect } from "./SpecialEffect"
 const { GameRecord, SimulationRecord, User } = require("./DBHandler")
 
 import { createServer } from "http"
-import { Namespace, Server, Socket } from "socket.io"
+import {  Server, Socket } from "socket.io"
 import express = require("express")
 import fs = require("fs")
 import cors = require("cors")

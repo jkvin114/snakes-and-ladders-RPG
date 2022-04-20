@@ -35,6 +35,11 @@ class GameLoop {
 		this.setGameCycle(new GameInitializer(this.game))
 		return this
 	}
+	/**
+	 * 
+	 * @param cycle 
+	 * @returns should pass
+	 */
 	setGameCycle(cycle: GameCycleState): boolean {
 		if(!this.game) return false
 		if (this.state != null) {
@@ -167,21 +172,15 @@ class GameLoop {
 			return
 		}
 
-		await this.state.getArriveSquarePromise()
+		await this.state.getPromise()
 		if(!this.game) return
 		console.log("afterDice3")
 		if (this.nextGameCycle()) return
 
 		if (this.state instanceof WaitingSkill) {
-			// if (this.state.shouldPass()) {
-			// 	console.log("shouldPass")
-			// 	await sleep(SETTINGS.delay_on_silent)
-			// 	this.startNextTurn(false)
-			// 	return
-			// }
-			//this.startTimeOut(this.getOnTimeout())
-		} else if (this.state instanceof AiSkill) {
-			await this.state.useSkill()
+
+		} else if (this.state.id===GAME_CYCLE.SKILL.AI_SKILL) {
+			await this.state.getPromise()
 			if(!this.game) return
 			this.startNextTurn(false)
 		} else if (
@@ -192,15 +191,27 @@ class GameLoop {
 			this.startNextTurn(false)
 		}
 	}
-	user_completePendingObs(info: ClientPayloadInterface.PendingObstacle, crypt_turn: string) {
+	async user_completePendingObs(info: ClientPayloadInterface.PendingObstacle, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
-
-		this.setGameCycle(this.state.onUserCompletePendingObs(info))
+		if(this.state.id===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE){
+			this.setGameCycle(this.state.onUserCompletePendingObs(info))
+			await this.state.getPromise()
+			this.nextGameCycle()
+		}else{
+			console.error("invalid game cycle state, should be PendingObstacle but received" + this.state.id)
+		}
 	}
-	user_completePendingAction(info: ClientPayloadInterface.PendingAction, crypt_turn: string) {
+	async user_completePendingAction(info: ClientPayloadInterface.PendingAction, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
-
-		this.setGameCycle(this.state.onUserCompletePendingAction(info))
+		if(this.state.id===GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION){
+			this.setGameCycle(this.state.onUserCompletePendingAction(info))
+			await this.state.getPromise()
+			this.nextGameCycle()
+		}
+		else{
+			console.error("invalid game cycle state, should be PendingAction but received" + this.state.id)
+		}
+		//this.setGameCycle(this.state.onUserCompletePendingAction(info))
 	}
 
 	user_clickSkill(s: number, crypt_turn: string) {
@@ -325,15 +336,15 @@ abstract class GameCycleState {
 		return this
 	}
 
-	onUserCompletePendingObs(info: ClientPayloadInterface.PendingObstacle): GameCycleState {
+	onUserCompletePendingObs(info: ClientPayloadInterface.PendingObstacle):  GameCycleState {
 		console.error("invalid request, state id:" + this.id)
 
-		return this
+		return null
 	}
 	onUserCompletePendingAction(info: ClientPayloadInterface.PendingObstacle): GameCycleState {
 		console.error("invalid request, state id:" + this.id)
 
-		return this
+		return null
 	}
 
 	onTimeout(): GameCycleState {
@@ -355,6 +366,10 @@ abstract class GameCycleState {
 	}
 	getOnTimeout(): Function {
 		return null
+	}
+	getPromise():Promise<unknown>{
+		console.error("this state doesn`t have a promise, state id:" + this.id)
+		return sleep(0)
 	}
 }
 class GameInitializer extends GameCycleState {
@@ -480,7 +495,7 @@ class ArriveSquare extends GameCycleState {
 	getData<T>(): T {
 		return this.result as unknown as T
 	}
-	getArriveSquarePromise(): Promise<unknown> {
+	getPromise(): Promise<unknown> {
 		if (this.result === ARRIVE_SQUARE_RESULT_TYPE.NONE) {
 			return sleep(500)
 		}
@@ -513,7 +528,10 @@ class AiSkill extends GameCycleState {
 		super(game, AiSkill.id)
 	}
 	onCreate(): void {}
-	useSkill(): Promise<unknown> {
+	// useSkill(): Promise<unknown> {
+		
+	// }
+	getPromise(): Promise<unknown> {
 		return new Promise((resolve) => {
 			this.game.aiSkill(resolve)
 		})
@@ -529,7 +547,7 @@ class AiSimulationSkill extends GameCycleState {
 		super(game, AiSkill.id)
 	}
 	onCreate(): void {}
-	useSkill() {
+	process() {
 		this.game.simulationAiSkill()
 	}
 	getNext(): GameCycleState {
@@ -541,6 +559,7 @@ class AiSimulationSkill extends GameCycleState {
 class PendingObstacle extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE
 	obs: ServerPayloadInterface.PendingObstacle
+	result:ClientPayloadInterface.PendingObstacle
 	constructor(game: Game, obs: ServerPayloadInterface.PendingObstacle) {
 		super(game, PendingObstacle.id)
 		this.obs = obs
@@ -557,9 +576,34 @@ class PendingObstacle extends GameCycleState {
 		return () => this.game.processPendingObs(null)
 	}
 	onUserCompletePendingObs(info: ClientPayloadInterface.PendingObstacle): GameCycleState {
-		this.game.processPendingObs(info)
-
+		this.result=info
 		return this.getNext()
+	}
+	getNext(): GameCycleState {
+		return new PendingObstacleProgress(this.game,this.result)
+	}
+}
+class PendingObstacleProgress extends GameCycleState{
+	
+	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS
+	result: ClientPayloadInterface.PendingObstacle
+	constructor(game: Game, result: ClientPayloadInterface.PendingObstacle) {
+		super(game, PendingObstacleProgress.id)
+		this.result = result
+		this.process()
+	}
+	onCreate(): void {
+	}
+	process(){
+		this.game.processPendingObs(this.result,SETTINGS.delay_initial_pending_action)
+	}
+	getPromise(): Promise<unknown> {
+		console.log(this.result)
+		if(!this.result.complete) return sleep(0)
+
+		return new Promise<void>((resolve)=>{
+			this.game.arriveSquareCallback = resolve
+		})
 	}
 	getNext(): GameCycleState {
 		let action = this.game.getPendingAction()
@@ -572,11 +616,10 @@ class PendingObstacle extends GameCycleState {
 		}
 	}
 }
-
 class PendingAction extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION
 	action: string
-
+	result:ClientPayloadInterface.PendingAction
 	constructor(game: Game, action: string) {
 		super(game, PendingAction.id)
 		this.action = action
@@ -601,10 +644,42 @@ class PendingAction extends GameCycleState {
 		}
 	}
 	onUserCompletePendingAction(info: ClientPayloadInterface.PendingAction): GameCycleState {
+		this.result=info
+		return this.getNext()
+	}
+	getNext(): GameCycleState {
 		this.onDestroy()
-		this.game.processPendingAction(info)
+		return new PendingActionProgress(this.game,this.result)
+	}
+}
+
+class PendingActionProgress extends GameCycleState{
+	
+	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS
+	result: ClientPayloadInterface.PendingAction
+	constructor(game: Game, result: ClientPayloadInterface.PendingAction) {
+		super(game, PendingActionProgress.id)
+		this.result = result
+		this.process()
+	}
+	process(){
+		this.game.processPendingAction(this.result,SETTINGS.delay_initial_pending_action)
+	}
+	onCreate(): void {
+	}
+	getPromise(): Promise<unknown> {
+		console.log(this.result)
+
+		if(!this.result.complete) return sleep(0)
+
+		return new Promise<void>((resolve)=>{
+			this.game.arriveSquareCallback = resolve
+		})
+	}
+	getNext(): GameCycleState {
 		console.log(this.game.pendingObs)
 		let obs=this.game.checkPendingObs()
+		console.log("pendingobs"+obs)
 		if(!obs || this.game.thisp().dead){
 			return new WaitingSkill(this.game)			
 		}
@@ -613,7 +688,6 @@ class PendingAction extends GameCycleState {
 		}
 	}
 }
-
 export class WaitingSkill extends GameCycleState {
 	static id = GAME_CYCLE.SKILL.WAITING_SKILL
 	canUseSkill: boolean
@@ -696,7 +770,7 @@ class WaitingTarget extends WaitingSkillResult {
 	}
 	onCreate(): void {}
 	onUserChooseSkillTarget(target: number): GameCycleState {
-		if (target > 0) {
+		if (target >=0) {
 			this.game.useSkillToTarget(target)
 		}
 		this.onDestroy()

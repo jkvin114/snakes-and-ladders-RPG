@@ -6,7 +6,6 @@ import * as Util from "./Util"
 import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
 import { ObstacleHelper } from "./helpers"
 import { AiAgent } from "./AiAgents/AiAgent"
-import { EFFECT_TIMING } from "./StatusEffect"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./Entity"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
@@ -411,7 +410,7 @@ class Game {
 				let diff = submarine_range.end - submarine_range.start
 				pos = submarine_range.start + Math.floor(Math.random() * diff)
 			}
-
+			pos=60
 			this.placeSubmarine(pos)
 			// this.placeSubmarine(60)
 			this.submarine_cool = SETTINGS.submarine_cooltime
@@ -601,7 +600,7 @@ class Game {
 				this.recordStat()
 
 				//잠수함, 1턴 일때만 소환
-				if (this.mapId === 1) {
+				if (this.mapId === ENUM.MAP_TYPE.OCEAN) {
 					this.summonSubmarine()
 				}
 			}
@@ -870,6 +869,9 @@ class Game {
 	checkObstacle(delay?:number): number {
 		let p = this.thisp()
 		this.arriveSquareCallback=null
+		if(!delay)
+			delay=0
+
 		if(!this.instant)
 			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 	//	p.onBeforeObs()
@@ -898,40 +900,52 @@ class Game {
 		//godhand, 사형재판, 납치범 대기중으로 표시
 		this.setPendingObs(result)
 
-		if(!delay)
-			delay=0
+		
 		if(this.instant) this.onObstacleComplete()
 		
 		return result
 	}
-	onObstacleComplete()
-	{
-	//	console.log("--------------------------------onObstacleComplete")
+
+	resolveArriveSquareCallback(){
+		console.log("resolveArriveSquareCallback")
 		if(this.arriveSquareCallback!=null){
 			this.arriveSquareCallback()
 			this.arriveSquareCallback=null
 		}
+	}
+
+
+	onObstacleComplete()
+	{
+	//	console.log("--------------------------------onObstacleComplete")
+		this.resolveArriveSquareCallback()
 		this.thisp().onAfterObs()
 	}
 
 	requestForceMove(player:Player, movetype: string,ignoreObstacle:boolean){
 		let delay=SETTINGS.delay_simple_forcemove
 		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
-	//	console.log("--------------------------------requestForceMove")
-
+		console.log("--------------------------------requestForceMove")
+		console.log(this.cycle)
 		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
-		//	console.log("--------------------------------extendtimeout")
+			console.log("--------------------------------extendtimeout ARRIVE_SQUARE")
 			console.log(player.name)
 			clearTimeout(this.arriveSquareTimeout)
 			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		}
+		else if(this.cycle===GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION_PROGRESS
+			 || this.cycle===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS){
+			console.log("--------------------------------extendtimeout PENDING_ACTION")
+			console.log(player.name)
+			clearTimeout(this.arriveSquareTimeout)
+			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
+		}
 
 		if(!ignoreObstacle){
 			setTimeout(
-				() =>player.arriveAtSquare(true),delay
+				() =>player.arriveAtSquare(true),delay-400
 			)
 		}
-		
 	}
 
 	onEffectApply() {
@@ -1220,8 +1234,17 @@ class Game {
 	
 		return { name: name, argument: argument }
 	}
+
 	//========================================================================================================
-	processPendingObs(info: ClientPayloadInterface.PendingObstacle) {
+	processPendingObs(info: ClientPayloadInterface.PendingObstacle,delay?:number) {
+		
+		this.arriveSquareCallback=null
+
+		if(!delay)
+			delay=0
+		if(!this.instant)
+			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
+		
 		//타임아웃될 경우
 		if(!info.complete) return
 		console.log("onPendingObsComplete"+this.pendingObs)
@@ -1254,7 +1277,7 @@ class Game {
 	}
 	//========================================================================================================
 
-	processPendingAction(info: ClientPayloadInterface.PendingAction) {
+	processPendingAction(info: ClientPayloadInterface.PendingAction,delay?:number) {
 		//console.log(info)
 
 		
@@ -1263,6 +1286,13 @@ class Game {
 		// 	return
 		// }
 		//타임아웃될 경우
+		if(!delay)
+			delay=0
+		this.arriveSquareCallback=null
+
+		if(!this.instant)
+			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
+
 		if (!info||!this.pendingAction || !info.complete) {
 			this.pendingAction = null
 			return

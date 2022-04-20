@@ -3,7 +3,6 @@ import * as ENUM from "./enum"
 import { ITEM } from "./enum"
 
 import { items as ItemList } from "../res/item.json"
-import SETTINGS = require("../res/globalsettings.json")
 import {  PlayerClientInterface, testSetting } from "./app"
 import type { Player } from "./player"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"

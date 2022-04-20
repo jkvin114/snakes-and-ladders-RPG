@@ -17,7 +17,6 @@ import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { AiAgent, DefaultAgent } from "./AiAgents/AiAgent"
 import { ServerPayloadInterface } from "./PayloadInterface"
 import { MAP } from "./MapHandlers/MapStorage"
-import { EFFECT_TIMING } from "./StatusEffect"
 // class Minion extends Entity{
 // 	constructor(){
 // 		super(null,null)
@@ -813,7 +812,7 @@ abstract class Player extends Entity {
 				this.effects.reset(ENUM.EFFECT.ANNUITY_LOTTERY) //연금복권 끝
 
 				if (this.level === 3) {
-					this.cooltime[2] = 4
+					this.cooltime[2] = 1
 				}
 				this.thisLevelDeathCount = 0
 
@@ -1005,6 +1004,8 @@ abstract class Player extends Entity {
 		if (killer >= 0) {
 			//console.log("sendkillinfo skillfrom " + skillfrom)
 			let killerMultiKillCount = this.game.pOfTurn(killer).thisLifeKillCount + 1
+			this.game.pOfTurn(killer).effects.reset(ENUM.EFFECT.SLAVE)
+
 			let isShutDown = this.thisLifeKillCount > 1
 			killData.isShutDown = isShutDown
 			killData.killerMultiKillCount = killerMultiKillCount

@@ -1,10 +1,8 @@
 import {GameLoop} from "./GameCycle/GameCycleState"
 import SETTINGS = require("../res/globalsettings.json")
 import { Simulation, SimulationSetting } from "./SimulationRunner"
-import { INIT_SKILL_RESULT, ITEM, SKILL_INIT_TYPE } from "./enum"
-import { PlayerType, ProtoPlayer, randInt, sleep } from "./Util"
+import { PlayerType, ProtoPlayer } from "./Util"
 import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
-import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { RoomClientInterface } from "./app"
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./DBHandler")
 
