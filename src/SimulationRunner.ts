@@ -258,7 +258,7 @@ class Simulation {
 				if(this.nextturn()) break
 				this.gameCycle=this.gameCycle.getNext()
 				this.skill()
-
+				this.gameCycle=this.gameCycle.getNext()
 			} catch (e) {
 				console.error("Unexpected error on " + this.progressCount + "th game ")
 				console.error("while processing " + this.gameCycle.game.thisturn + "th turn player")

@@ -64,6 +64,10 @@ class Damage {
 		this.magic = Math.floor(magic)
 		this.fixed = Math.floor(fixed)
 	}
+	
+	clone():Damage{
+		return new Damage(this.attack,this.magic,this.fixed)
+	}
 
 	getTotalDmg(): number {
 		return this.attack + this.magic + this.fixed

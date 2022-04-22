@@ -10,7 +10,6 @@ import { Player } from "../player"
 import { EntityFilter } from "../EntityFilter"
 import SETTINGS = require("./../../res/globalsettings.json")
 
-const BASICATTACK = 4
 abstract class AiAgent {
 	player: Player
 	mediator: EntityMediator
@@ -20,6 +19,7 @@ abstract class AiAgent {
 		items: number[]
 		final: number
 	}
+	static readonly BASICATTACK = 4
 	constructor(player: Player) {
 		this.player = player
 		this.mediator = player.mediator
@@ -35,7 +35,7 @@ abstract class AiAgent {
 			let skill = player.AiAgent.nextSkill()
 		//	console.log("aiskill "+skill)
 			if (skill < 0) break
-			if (skill === BASICATTACK) {
+			if (skill === AiAgent.BASICATTACK) {
 				player.basicAttack()
 				continue
 			}
@@ -90,18 +90,18 @@ abstract class AiAgent {
 		}
 		for (let i = 0; i < 5; ++i) {
 			let skill = player.AiAgent.nextSkill()
-		//	console.log("aiskill "+skill)
+			
 			if (skill < 0) break
-			if (skill === BASICATTACK) {
+			if (skill ===  AiAgent.BASICATTACK) {
 				player.basicAttack()
-				await sleep(SETTINGS.delay_per_ai_skill)
+				await sleep(SETTINGS.delay_per_ai_skill/2)
 				continue
 			}
 			else if(!player.canUseSkill()){
 				continue
 			}
 			player.AiAgent.attemptedSkills.add(skill)
-
+			console.log(player.AiAgent.attemptedSkills)
 			let skillinit = player.initSkill(skill)
 		//	console.log(skillinit)
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
@@ -152,7 +152,7 @@ abstract class AiAgent {
 	}
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
-			return BASICATTACK
+			return AiAgent.BASICATTACK
 		}
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
 			return SKILL.ULT
@@ -270,7 +270,7 @@ abstract class AiAgent {
 		return 6
 	}
 	store() {
-		new AIStoreInstance(this.player.inven, this.player.itemtree).setItemLimit(this.player.game.itemLimit).run()
+		new AIStoreInstance(this.player.inven, this.itemtree).setItemLimit(this.player.game.itemLimit).run()
 	}
 }
 
@@ -286,11 +286,11 @@ class DefaultAgent extends AiAgent {
 			level: 0,
 			items: [
 				ITEM.EPIC_SWORD,
-				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.SWORD_OF_BLOOD,
+				ITEM.EPIC_CRYSTAL_BALL,
 				ITEM.EPIC_WHIP,
-				ITEM.CROSSBOW_OF_PIERCING,
-				ITEM.GUARDIAN_ANGEL
+				ITEM.TIME_WARP_POTION,
+				ITEM.EPIC_FRUIT,
+				ITEM.BOOTS_OF_HASTE
 			],
 			final: ITEM.EPIC_SWORD
 		}

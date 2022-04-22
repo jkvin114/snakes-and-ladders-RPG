@@ -4,7 +4,7 @@ import { EntityFilter } from "./EntityFilter"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./Entity"
 import { EFFECT, ENTITY_TYPE,  STAT } from "./enum"
-import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize, sleep } from "./Util"
+import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize, sleep, CALC_TYPE } from "./Util"
 import { MAP } from "./MapHandlers/MapStorage"
 import { ServerPayloadInterface } from "./PayloadInterface"
 import {trajectorySpeedRatio} from "../res/globalsettings.json"
@@ -53,17 +53,20 @@ class AttackHandler{
 		from.transfer(PlayerClientInterface.attack,data)
 	}
 
-	static basicAttack(from:Player,target:Entity,damage:Damage):ServerPayloadInterface.Victim{
+	static basicAttack(from:Player,target:Entity,dmg:Damage):ServerPayloadInterface.Victim{
 		
+		let damage=dmg.clone()
 
 		if(target instanceof Player){
 			damage = from.effects.onBasicAttackHit(damage, target)
+			.updateAllDamage(CALC_TYPE.multiply,from.ability.basicAttackMultiplier())
+
 			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}
 		let victimData:ServerPayloadInterface.Victim={
 			pos:target.pos,flags:[],damage:damage.getTotalDmg()
 		}
-		
+		console.log("-----------basicattack"+damage.getTotalDmg())
 		let died= AttackHandler.doDamage(from,target,damage,from.getBasicAttackName(),true)
 		
 		if(died) victimData.flags.push("died")
@@ -84,9 +87,12 @@ class AttackHandler{
 		let victimData:ServerPayloadInterface.Victim={
 			pos:target.pos,flags:[],damage:0
 		}
+		let damage=skillattack.damage.clone()
+
+
 		if (target instanceof Player) {
 
-			let damage=skillattack.damage
+			
 			let effectname=skillattack.name
 			let flags=[]
 			//방어막 효과
@@ -116,8 +122,8 @@ class AttackHandler{
 			}
 		}
 		else if (target instanceof SummonedEntity) {
-			victimData.damage=skillattack.damage.getTotalDmg()
-			if(AttackHandler.doDamage(from, target,skillattack.damage, skillattack.name, false)){
+			victimData.damage=damage.getTotalDmg()
+			if(AttackHandler.doDamage(from, target,damage, skillattack.name, false)){
 				victimData.flags.push("died")
 			}
 		}
@@ -126,7 +132,9 @@ class AttackHandler{
 		return victimData
 	}
 
-	static plainAttack(from:Entity,target:Entity,damage:Damage,effectname:string):boolean{
+	static plainAttack(from:Entity,target:Entity,dmg:Damage,effectname:string):boolean{
+		let damage=dmg.clone()
+
 		let data:ServerPayloadInterface.Attack={
 			targets:[{
 				pos:target.pos,flags:[],damage:damage.getTotalDmg()

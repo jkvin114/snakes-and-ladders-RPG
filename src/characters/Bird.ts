@@ -11,7 +11,7 @@ import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect,ShieldEf
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { DefaultAgent } from "../AiAgents/AiAgent"
+import BirdAgent from "../AiAgents/BirdAgent"
 
 const ID = 7
 
@@ -21,11 +21,6 @@ class Bird extends Player {
 	readonly cooltime_list: number[]
 	skill_ranges: number[]
 
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 	readonly duration_list:number[]
 
 	skillInfo:SkillInfoFactory
@@ -54,27 +49,15 @@ class Bird extends Player {
 	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 30, 7, 7, 0, 30]
-		super(turn, team, game, ai, ID, name, basic_stats)
+		super(turn, team, game, ai, ID, name)
 		//	this.onoff = [false, false, false]
-		this.hpGrowth = 100
 		this.cooltime_list = [3, 5, 10]
 		this.duration_list=[0,2,4]
 		this.skill_ranges=[20,0,0]
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_CRYSTAL_BALL,
-				ITEM.EPIC_WHIP,
-				ITEM.ANCIENT_SPEAR,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.CARD_OF_DECEPTION,
-				ITEM.GUARDIAN_ANGEL
-			],
-			final: ITEM.ANCIENT_SPEAR
-		}
+		
 		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
-		this.AiAgent=new DefaultAgent(this)
+		this.AiAgent=new BirdAgent(this)
 	}
 
 

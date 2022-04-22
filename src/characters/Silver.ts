@@ -1,9 +1,6 @@
 import * as ENUM from "../enum"
 import { Player } from "../player"
 import type { Game } from "../Game"
-
-import { ITEM } from "../enum"
-
 import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../Util"
 import { AblityChangeEffect, EFFECT_TIMING, NormalEffect ,ShieldEffect} from "../StatusEffect"
 import { Projectile } from "../Projectile"
@@ -11,6 +8,7 @@ import { SpecialEffect } from "../SpecialEffect"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { SkillInfoFactory } from "../helpers"
 import { Entity } from "../Entity"
+import SilverAgent from "../AiAgents/SilverAgent"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 1
@@ -20,12 +18,6 @@ class Silver extends Player {
 	usedQ: boolean
 	readonly cooltime_list: number[]
 	readonly skill_ranges: number[]
-
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 
 	private readonly skill_name: string[]
 	// private u_active_amt: number
@@ -45,25 +37,14 @@ class Silver extends Player {
 	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [250, 25, 15, 15, 0, 20]
-		super(turn, team, game, ai, ID, name, basic_stats)
+		super(turn, team, game, ai, ID, name)
 		//	this.onoff = [false, false, false]
 		this.cooltime_list = [2, 4, 9]
 		this.duration_list = [0, 2, 3]
-		this.hpGrowth = 130
 		this.skill_ranges=[3,15,0]
 		this.skill_name = Silver.SKILL_EFFECT_NAME
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SHIELD,
-				ITEM.EPIC_ARMOR,
-				ITEM.POWER_OF_MOTHER_NATURE,
-				ITEM.EPIC_FRUIT,
-				ITEM.BOOTS_OF_ENDURANCE,
-				ITEM.GUARDIAN_ANGEL
-			],
-			final: ITEM.EPIC_SHIELD
-		}
+		
+		this.AiAgent=new SilverAgent(this)
 
 	}
 

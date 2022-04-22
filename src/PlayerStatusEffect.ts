@@ -191,7 +191,10 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 			num:num
 		})
 
-		let statusEffect = GeneralEffectFactory.create(effect, dur).applyTo(this.player)
+		let statusEffect = GeneralEffectFactory.create(effect, dur)
+		if(!statusEffect) return
+		
+		statusEffect.applyTo(this.player)
 		if (this.storage.has(effect)) {
 			this.storage.get(effect).onBeforeReapply()
 		}

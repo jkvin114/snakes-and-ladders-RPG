@@ -1,37 +1,38 @@
-import { Creed } from "../characters/Creed";
+import { Bird } from "../characters/Bird";
 import { ITEM, SKILL } from "../enum";
 import { AiAgent } from "./AiAgent";
 
-class CreedAgent extends AiAgent{
+class BirdAgent extends AiAgent{
     itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-    constructor(player:Creed){
+    constructor(player:Bird){
         super(player)
         this.itemtree = {
 			level: 0,
 			items: [
-				ITEM.EPIC_SWORD,
+				ITEM.EPIC_CRYSTAL_BALL,
 				ITEM.EPIC_WHIP,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.CROSSBOW_OF_PIERCING,
+				ITEM.TIME_WARP_POTION,
+				ITEM.ANCIENT_SPEAR,
+				ITEM.CARD_OF_DECEPTION,
 				ITEM.GUARDIAN_ANGEL
 			],
-			final: ITEM.EPIC_SWORD
+			final: ITEM.ANCIENT_SPEAR
 		}
     }
 	nextSkill(): number {
-		if (this.player.canBasicAttack()) {
-			return  AiAgent.BASICATTACK
-		}
+		
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
 			return SKILL.ULT
 		}
 		if (!this.attemptedSkills.has(SKILL.W)) {
 			return SKILL.W
+		}
+		if (this.player.canBasicAttack()) {
+			return AiAgent.BASICATTACK
 		}
 		if (!this.attemptedSkills.has(SKILL.Q)) {
 			return SKILL.Q
@@ -39,4 +40,4 @@ class CreedAgent extends AiAgent{
 		return -1
 	}
 }
-export default CreedAgent
+export default BirdAgent

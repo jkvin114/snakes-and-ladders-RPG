@@ -23,9 +23,9 @@ class PlayerInventory {
 		ITEM.INVISIBILITY_CLOAK,
 		ITEM.CARD_OF_DECEPTION,
 		ITEM.GUARDIAN_ANGEL,
-		ITEM.POWER_OF_MOTHER_NATURE
+		ITEM.POWER_OF_MOTHER_NATURE,
+		ITEM.TIME_WARP_POTION
 	]
-
 	constructor(player: Player) {
 		this.player = player
 
@@ -126,6 +126,13 @@ class PlayerInventory {
 		//console.log("buy active item" + itemdata)
 	}
 
+	onKillEnemy(){
+		if(this.haveItem(ITEM.TIME_WARP_POTION)){
+			console.log("------------time warp potion")
+			this.useActiveItem(ITEM.TIME_WARP_POTION)
+			this.player.resetCooltime([ENUM.SKILL.Q,ENUM.SKILL.W])
+		}
+	}
 	/**
 	 * 한번이라도 산적있으면 true
 	 * @param {}item_id id of item
@@ -183,7 +190,7 @@ class PlayerInventory {
 			token: this.token,
 			life: this.life,
 			lifeBought: this.lifeBought,
-			recommendeditem: this.player.itemtree.items,
+			recommendeditem: this.player.AiAgent.itemtree.items,
 			itemLimit: this.player.game.itemLimit,
 			priceMultiplier: priceMultiplier
 		}

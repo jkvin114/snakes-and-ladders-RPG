@@ -13,6 +13,7 @@ import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { DefaultAgent } from "../AiAgents/AiAgent"
 import { EntityFilter } from "../EntityFilter"
+import TreeAgent from "../AiAgents/TreeAgent"
 
 const ID = 8
 class Tree extends Player {
@@ -21,11 +22,7 @@ class Tree extends Player {
 	readonly cooltime_list: number[]
 	readonly duration_list: number[]
 	readonly skill_ranges: number[]
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+
 
 	private isWithered: boolean
 	private plantEntities: Set<string>
@@ -45,26 +42,14 @@ class Tree extends Player {
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
-		super(turn, team, game, ai, ID, name, Tree.BASIC_STATS)
-		this.hpGrowth = 90
+		super(turn, team, game, ai, ID, name)
 		this.cooltime_list = Tree.COOLTIME
 		this.duration_list = [0, 0, 0]
 		this.skill_ranges = Tree.RANGES
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_CRYSTAL_BALL,
-				ITEM.CARD_OF_DECEPTION,
-				ITEM.ANCIENT_SPEAR,
-				ITEM.EPIC_FRUIT,
-				ITEM.BOOTS_OF_HASTE,
-				ITEM.POWER_OF_MOTHER_NATURE
-			],
-			final: ITEM.EPIC_CRYSTAL_BALL
-		}
+		
 		this.isWithered = false
 		this.plantEntities = new Set<string>()
-		this.AiAgent=new DefaultAgent(this)
+		this.AiAgent=new TreeAgent(this)
 
 	}
 
@@ -82,8 +67,8 @@ class Tree extends Player {
 		if (skilltype === "tree_q") {
 			return 300
 		}
-		if (skilltype === "tree_r") {
-			return 600
+		if (skilltype === "tree_r" || skilltype === Tree.SKILLNAME_STRONG_R) {
+			return 450
 		}
 		return 0
 	}

@@ -150,8 +150,8 @@ io.on("connect", function (socket: Socket) {
 */
 		ROOMS.get(roomName).setSimulation(false).setNickname(SocketSession.getUsername(socket), 0)
 		// ROOMS.set(roomName, room)
-		//console.log("join"+roomName)
 		socket.join(roomName)
+		console.log(socket.rooms)
 		//	socket.emit("server:create_room",roomName)
 	})
 	//==========================================================================================
@@ -580,6 +580,12 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 		let turn = SocketSession.getTurn(socket)
 		if (!ROOMS.has(rname)) return
+		console.log("reconnect"+rname)
+		// console.log(socket.rooms)
+		// if(!socket.rooms.has(rname))
+		// 	socket.join(rname)
+		// console.log(socket.rooms)
+
 		ROOMS.get(rname).gameloop.user_reconnect(turn)
 	})
 })

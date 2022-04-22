@@ -1,26 +1,26 @@
-import { Creed } from "../characters/Creed";
+import { Silver } from "../characters/Silver";
 import { ITEM, SKILL } from "../enum";
 import { AiAgent } from "./AiAgent";
 
-class CreedAgent extends AiAgent{
+class SilverAgent extends AiAgent{
     itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-    constructor(player:Creed){
+    constructor(player:Silver){
         super(player)
         this.itemtree = {
 			level: 0,
 			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.EPIC_WHIP,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.CROSSBOW_OF_PIERCING,
+				ITEM.EPIC_SHIELD,
+				ITEM.EPIC_ARMOR,
+				ITEM.POWER_OF_MOTHER_NATURE,
+				ITEM.EPIC_FRUIT,
+				ITEM.BOOTS_OF_ENDURANCE,
 				ITEM.GUARDIAN_ANGEL
 			],
-			final: ITEM.EPIC_SWORD
+			final: ITEM.EPIC_SHIELD
 		}
     }
 	nextSkill(): number {
@@ -39,4 +39,4 @@ class CreedAgent extends AiAgent{
 		return -1
 	}
 }
-export default CreedAgent
+export default SilverAgent

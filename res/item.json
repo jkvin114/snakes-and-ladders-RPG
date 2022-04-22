@@ -71,7 +71,7 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "AP", "value": 50, "type_kor": "주문력" }],
 			"children": [5, 5],
-			"parents": [3,20,33],
+			"parents": [3,20,33,38],
 			"summary":{
 				"kor":"주문력","eng":"Magic Power"
 			},
@@ -85,7 +85,7 @@
 			"itemlevel": 1,
 			"ability": [{ "type": "AP", "value": 20, "type_kor": "주문력" }],
 			"children": [],
-			"parents": [4],
+			"parents": [4,38],
 			"summary":{
 				"kor":"주문력","eng":"Magic Power"
 			},
@@ -264,6 +264,9 @@
 			"summary":{
 				"kor":"공격 방어, 사망시 부활","eng":"Defence, Revive on death"
 			},
+			"active_summary":{
+				"kor":"부활!","eng":"Revival!"
+			},
 			"category":["defence"]
 		},
 		{
@@ -320,6 +323,9 @@
 			"summary":{
 				"kor":"스킬 방어","eng":"Skill defence"
 			},
+			"active_summary":{
+				"kor":"이동속도 증가!","eng":"Move speed increased!"
+			},
 			"category":["defence","utility"]
 		},
 		{
@@ -345,7 +351,7 @@
 			"id": 20,
 			"name": "Card of Deception",
 			"kor_name": "속임수의 마법카드",
-			"price": 350,
+			"price": 330,
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "AP", "value": 100, "type_kor": "주문력" },
@@ -353,11 +359,14 @@
 			],
 			"children": [4,21],
 			"parents": [],
-			"unique_effect": "Hitting skill to enemies in front of you slows them, deals 10% more damage, then grants you speed(cooltime 4 turns)",
-			"unique_effect_kor": "자신보다 앞에있는 적에게 스킬 사용시 피해량 10% 증가, 둔화 부여 후 자신은 신속 효과를 받음(쿨타임 4턴) ",
-			"active_cooltime":4,
+			"unique_effect": "Hitting skill to enemies in front of you slows them, deals 10% more damage, then grants you speed(cooltime 3 turns)",
+			"unique_effect_kor": "자신보다 앞에있는 적에게 스킬 사용시 피해량 10% 증가, 둔화 부여 후 자신은 신속 효과를 받음(쿨타임 3턴) ",
+			"active_cooltime":3,
 			"summary":{
 				"kor":"주문력, 따라잡기","eng":"Magic Power, Catch-up"
+			},
+			"active_summary":{
+				"kor":"추가 피해와 둔화!","eng":"Additional damage and slowness!"
 			},
 			"category":["magic","utility"]
 		},
@@ -401,8 +410,9 @@
 			"price": 340,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "AD", "value": 60, "type_kor": "공격력" },
-				{ "type": "attackRange", "value": 2, "type_kor": "기본 공격 사거리" }
+				{ "type": "AD", "value": 45, "type_kor": "공격력" },
+				{ "type": "attackRange", "value": 2, "type_kor": "기본 공격 사거리" },
+				{ "type": "basicAttackSpeed", "value": 1, "type_kor": "공격 속도" }
 			],
 			"children": [24, 1],
 			"parents": [],
@@ -570,7 +580,7 @@
 			"id": 33,
 			"name": "Invisibility Cloak",
 			"kor_name": "방어의 투명망토",
-			"price": 300,
+			"price": 280,
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "AP", "value": 60, "type_kor": "주문력" },
@@ -584,6 +594,9 @@
 			"active_cooltime": 6,
 			"summary":{
 				"kor":"주문력,생존","eng":"Magic Power, Survival from attack"
+			},
+			"active_summary":{
+				"kor":"투명화!","eng":"Invisible!"
 			},
 			"category":["defence","magic"]
 		},
@@ -618,6 +631,9 @@
 			"summary":{
 				"kor":"공격력,생존","eng":"Attack Power, Survival from attack"
 			},
+			"active_summary":{
+				"kor":"방어막 획득!","eng":"Obtained shield!"
+			},
 			"unique_effect": "If HP goes below 30%, gain shield based on attack power for 2 turns and absorb increases 30%(cooltime 7 turns)",
 			"unique_effect_kor": "체력이 30% 이하로 내려가면 2턴간 공격력 비례 방어막 획득, 모든피해 흡혈 30% 증가(쿨타임 7턴)",
 			"active_cooltime": 7,
@@ -636,8 +652,8 @@
 			],
 			"children": [28,7],
 			"parents": [],
-			"unique_effect": "Reduces incoming basic attack damage by 20%",
-			"unique_effect_kor": "기본 공격으로 받는 피해 20% 감소",
+			"unique_effect": "Reduces incoming basic attack damage by 35%",
+			"unique_effect_kor": "기본 공격으로 받는 피해 35% 감소",
 			"summary":{
 				"kor":"빠른 이동, 방어력","eng":"Fast Movement, Attack Defence"
 			},
@@ -662,6 +678,28 @@
 				"kor":"빠른 이동, 마법 저항","eng":"Fast Movement, Magic Resistance"
 			},
 			"category":["utility","defence"]
+		},
+		{
+			"id": 38,
+			"name": "Time Warp Potion",
+			"kor_name": "시간 가속 물약",
+			"price": 350,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "AP", "value": 120, "type_kor": "주문력" },
+				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
+			],
+			"children": [4,5],
+			"parents": [],
+			"unique_effect": "Normal skill cooltime reset if you kill an enemy(cooltime 1 turn)",
+			"unique_effect_kor": "적 처치시 기본스킬 쿨타임 초기화(쿨타임 1턴)",
+			"active_cooltime": 1,
+			"summary":{
+				"kor":"주문력, 쿨타임감소","eng":"Magic power, Cooltime reduction"
+			},"active_summary":{
+				"kor":"스킬쿨타임 초기화!","eng":"Skill cooltime reset!"
+			},
+			"category":["magic"]
 		}
 	]
 }

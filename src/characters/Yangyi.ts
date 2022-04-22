@@ -2,7 +2,6 @@ import { Player } from "../player"
 import type { Game } from "../Game"
 
 import * as ENUM from "../enum"
-import { ITEM } from "../enum"
 
 import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
 import { Projectile } from "../Projectile"
@@ -12,6 +11,7 @@ import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../EntityFilter"
+import YangyiAgent from "../AiAgents/YangyiAgent"
 const ID = 3
 class Yangyi extends Player {
 	skillInfoKor: SkillInfoFactory
@@ -21,35 +21,18 @@ class Yangyi extends Player {
 
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 	readonly duration_list: number[]
 	static readonly SKILL_EFFECT_NAME= ["dinosaur_q", "hit", "dinosaur_r"]
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
 	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		const basic_stats: number[] = [180, 40, 6, 6, 0, 0]
-		super(turn, team, game, ai, ID, name, basic_stats)
+		super(turn, team, game, ai, ID, name)
 		// this.onoff = [false, false, false]
-		this.hpGrowth = 105
 		this.cooltime_list = [1, 7, 8] //1 7
 		this.duration_list = [0, 3, 0]
 		this.skill_ranges=[0,0,20]
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.ANCIENT_SPEAR,
-				ITEM.EPIC_WHIP,
-				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.EPIC_FRUIT
-			],
-			final: ITEM.ANCIENT_SPEAR
-		}
+		this.AiAgent=new YangyiAgent(this)
 	}
 
 

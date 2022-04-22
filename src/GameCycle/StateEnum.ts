@@ -19,6 +19,7 @@ export namespace GAME_CYCLE{
 		WAITING_LOCATION,
 		WAITING_AREA_TARGET
 	}
+	export const TURN_END=40
 	export const BEFORE_START=-999
 	export const GAMEOVER=999
 }

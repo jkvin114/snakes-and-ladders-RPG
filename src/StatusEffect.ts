@@ -170,7 +170,7 @@ class ItemEffectFactory {
 					StatusEffect.FOREVER,
 					(damage: Damage, owner: Player) => {
 						//	console.log("BOOTS_OF_PROTECTION")
-						return damage.updateNormalDamage(CALC_TYPE.multiply, 0.8)
+						return damage.updateNormalDamage(CALC_TYPE.multiply, 0.65)
 					}
 				)
 					.on([OnDamageEffect.BASICATTACK_DAMAGE])
@@ -206,7 +206,7 @@ class ItemEffectFactory {
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.INVISIBILITY_CLOAK)) {
 							console.log("invisibility cloak")
-							owner.effects.apply(EFFECT.INVISIBILITY, 1)
+							owner.effects.apply(EFFECT.INVISIBILITY, 2)
 
 							owner.inven.useActiveItem(ITEM.INVISIBILITY_CLOAK)
 						}
@@ -307,6 +307,8 @@ abstract class StatusEffect {
 	}
 	applyTo(owner: Player) {
 		this.owner = owner
+	//	if(!owner.isMyTurn()) this.duration+=1
+
 		return this
 	}
 	setName(name: string) {

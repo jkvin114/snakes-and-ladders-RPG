@@ -36,8 +36,7 @@ class Creed extends Player {
 	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		//hp:200, ad:20, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
-		super(turn, team, game, ai, ID, name, basic_stats)
-		this.hpGrowth = 100
+		super(turn, team, game, ai, ID, name)
 		this.skill_ranges=[7,30,20]
 
 		this.cooltime_list = [3, 4, 9]
@@ -46,9 +45,9 @@ class Creed extends Player {
 			level: 0,
 			items: [
 				ITEM.EPIC_SWORD,
-				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.SWORD_OF_BLOOD,
 				ITEM.EPIC_WHIP,
+				ITEM.SWORD_OF_BLOOD,
+				ITEM.WARRIORS_SHIELDSWORD,
 				ITEM.CROSSBOW_OF_PIERCING,
 				ITEM.GUARDIAN_ANGEL
 			],

@@ -108,7 +108,6 @@ export namespace SpecialEffect {
 			desc:"30% increased damage absorb",
 			desc_kor:"모든피해 흡혈 30% 증가",
 			item_id: ENUM.ITEM.WARRIORS_SHIELDSWORD,
-
 		}
 		,WARRIOR_SHIELDSWORD_SHIELD:{
 			name:"shieldsword_shield",

@@ -98,8 +98,8 @@ class GameLoop {
 	user_reconnect(turn: number) {
 		console.log("reconnect" + turn)
 		if (turn === this.idleTimeoutTurn) {
-			this.stopTimeout()
-			console.log("reconnect" + turn)
+			//this.stopTimeout()
+			console.log("----------------------reconnect" + turn)
 		}
 	}
 	getOnTimeout() {
@@ -131,9 +131,12 @@ class GameLoop {
 			this.idleTimeout = null
 		}
 	}
-	startNextTurn(isTimeout: boolean) {
+	async startNextTurn(isTimeout: boolean) {
 		if (!this.game) return
 		this.stopTimeout()
+		this.setGameCycle(this.state.getTurnTerminator())
+		await sleep(SETTINGS.delay_next_turn)
+		if(!this.game) return
 		this.setGameCycle(this.state.getTurnInitializer())
 		this.nextGameCycle()
 		console.log("nextturn" + this.state.id)
@@ -364,6 +367,10 @@ abstract class GameCycleState {
 		this.onDestroy()
 		return new TurnInitializer(this.game)
 	}
+	getTurnTerminator() {
+		this.onDestroy()
+		return new TurnTerminator(this.game)
+	}
 	getOnTimeout(): Function {
 		return null
 	}
@@ -538,7 +545,7 @@ class AiSkill extends GameCycleState {
 	}
 	getNext(): GameCycleState {
 		this.onDestroy()
-		return new TurnInitializer(this.game)
+		return new TurnTerminator(this.game)
 	}
 }
 class AiSimulationSkill extends GameCycleState {
@@ -552,7 +559,7 @@ class AiSimulationSkill extends GameCycleState {
 	}
 	getNext(): GameCycleState {
 		this.onDestroy()
-		return new TurnInitializer(this.game)
+		return new TurnTerminator(this.game)
 	}
 }
 
@@ -805,6 +812,20 @@ class WaitingAreaTarget extends WaitingSkillResult {
 		}
 		this.onDestroy()
 		return new WaitingSkill(this.game)
+	}
+}
+class TurnTerminator extends GameCycleState {
+	static id = GAME_CYCLE.TURN_END
+
+	constructor(game: Game) {
+		super(game, TurnTerminator.id)
+	}
+	onCreate(): void {
+		this.game.onTurnEnd()
+	}
+	getNext(): GameCycleState {
+		this.onDestroy()
+		return new TurnInitializer(this.game)
 	}
 }
 export { PendingObstacle, PendingAction }

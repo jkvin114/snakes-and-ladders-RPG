@@ -353,7 +353,7 @@ class Game {
 				name: p.name,
 				champ: p.champ,
 				champ_name: p.champ_name,
-				recommendedItem: p.itemtree.items
+				recommendedItem: p.AiAgent.itemtree.items
 			})
 		}
 		return {
@@ -541,6 +541,7 @@ class Game {
 		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
 	}
 	onTurnEnd(){
+		if(!this.begun) return
 		this.resetPendingObs()
 		this.pendingAction = null
 		let p = this.thisp()
@@ -575,7 +576,7 @@ class Game {
 		//다음턴 넘어감
 		else {
 			if(this.begun){
-				this.onTurnEnd()
+				//this.onTurnEnd()
 				// this.thisturn += 1
 				this.thisturn =(this.thisturn+1) % this.totalnum
 			}
@@ -884,13 +885,13 @@ class Game {
 		//장애물 효과 적용
 		let result = p.arriveAtSquare(false)
 
-		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE) {
-		//	p.effects.apply(ENUM.EFFECT.SILENT, 1, EFFECT_TIMING.BEFORE_SKILL)
-			if (p.AI) {
-				p.AiAgent.store()
-				result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
-			}
-		}
+		// if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.STORE) {
+		// //	p.effects.apply(ENUM.EFFECT.SILENT, 1, EFFECT_TIMING.BEFORE_SKILL)
+		// 	if (p.AI) {
+		// 		p.AiAgent.store()
+		// 		result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+		// 	}
+		// }
 		this.winner = this.thisturn
 
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH) {

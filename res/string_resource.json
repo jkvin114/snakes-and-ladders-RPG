@@ -48,14 +48,16 @@
         "HP": "Maximum HP",
         "regen": "HP regen per turn",
         "MR": "Magic Resistance",
-        "absorb": "Healing from damage dealt",
+        "absorb": "Damage absorbtion",
         "skillDmgReduction": "Skill Damage Reduction",
         "adStat": "Adaptative Stat",
         "addMdmg": "Additional magic damage",
         "attackRange": "Basic Attack Range",
         "obsR": "Obstacle damage reduction",
         "ultHaste": "Lv3 skill cooltime reduction",
-        "moveSpeed": "Movement speed"
+        "moveSpeed": "Movement speed",
+        "basicAttackSpeed": "Basic attack count"
+
     }
     ,"stat_kor":{
         "AD": "공격력",
@@ -73,7 +75,8 @@
         "attackRange": "기본공격 사거리",
         "obsR": "장애물 저항",
         "ultHaste": "궁극기 가속",
-        "moveSpeed": "이동 속도"
+        "moveSpeed": "이동 속도",
+        "basicAttackSpeed": "기본공격 횟수"
     },
 
     "casinolabel" : [
@@ -112,12 +115,14 @@
         "attackRange":"Attack range applies up to 5",
         "ultHaste":"ultimate Haste applies up to 3 turns",
         "moveSpeed":"movement speed applies up to 2",
+        "basicAttackSpeed":"Damage of each basic attack decreases based on attack speed<br> (total damage will still increase)",
         "adStat":"Adaptative Stat applies to higher one between attack and magic power "
     },
     "stat_detail_kor":{
         "attackRange":"기본공격 사거리는 5까지만 증가",
         "ultHaste":"궁극기 가속은 3턴까지만 적용",
         "moveSpeed":"이동속도 증가는 2까지만 적용",
-        "adStat":"적응형 능력치는 공격력과 주문력 중 높은 것에 적용됨"
+        "adStat":"적응형 능력치는 공격력과 주문력 중 높은 것에 적용됨",
+        "basicAttackSpeed":"공격속도에 비례해 기본공격 1회당 데미지 감소(데미지 총량은 증가)"
     }
 }

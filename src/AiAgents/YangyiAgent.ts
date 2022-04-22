@@ -1,24 +1,24 @@
-import { Creed } from "../characters/Creed";
+import { Yangyi } from "../characters/Yangyi";
 import { ITEM, SKILL } from "../enum";
 import { AiAgent } from "./AiAgent";
 
-class CreedAgent extends AiAgent{
+class YangyiAgent extends AiAgent{
     itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-    constructor(player:Creed){
+    constructor(player:Yangyi){
         super(player)
         this.itemtree = {
 			level: 0,
 			items: [
 				ITEM.EPIC_SWORD,
+				ITEM.ANCIENT_SPEAR,
 				ITEM.EPIC_WHIP,
 				ITEM.SWORD_OF_BLOOD,
 				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.CROSSBOW_OF_PIERCING,
-				ITEM.GUARDIAN_ANGEL
+				ITEM.EPIC_FRUIT
 			],
 			final: ITEM.EPIC_SWORD
 		}
@@ -27,16 +27,16 @@ class CreedAgent extends AiAgent{
 		if (this.player.canBasicAttack()) {
 			return  AiAgent.BASICATTACK
 		}
-		if (!this.attemptedSkills.has(SKILL.ULT)) {
-			return SKILL.ULT
+		if (!this.attemptedSkills.has(SKILL.Q)) {
+			return SKILL.Q
 		}
 		if (!this.attemptedSkills.has(SKILL.W)) {
 			return SKILL.W
 		}
-		if (!this.attemptedSkills.has(SKILL.Q)) {
-			return SKILL.Q
+		if (!this.attemptedSkills.has(SKILL.ULT)) {
+			return SKILL.ULT
 		}
 		return -1
 	}
 }
-export default CreedAgent
+export default YangyiAgent

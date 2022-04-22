@@ -1,5 +1,4 @@
 import * as ENUM from "../enum"
-import { ITEM } from "../enum"
 import { Player } from "../player"
 import type { Game } from "../Game"
 
@@ -10,6 +9,7 @@ import { ShieldEffect } from "../StatusEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../EntityFilter"
+import GoraeAgent from "../AiAgents/GoraeAgent"
 const ID=6
 class Gorae extends Player {
 	skill_ranges: number[]
@@ -35,25 +35,14 @@ class Gorae extends Player {
 	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
-		super(turn, team, game, ai, ID, name,  basic_stats)
-		this.hpGrowth = 125
+		super(turn, team, game, ai, ID, name)
 		this.cooltime_list = [2, 4, 6]
 		this.duration_list=[0,2,0]
 		this.skill_ranges=[15,0,20]
-		this.itemtree = {
-			level: 0,
-			items: [ITEM.FULL_DIAMOND_ARMOR,
-				 	ITEM.EPIC_FRUIT,
-				 	ITEM.EPIC_SHIELD, 
-				 	ITEM.EPIC_ARMOR,
-				  	ITEM.POWER_OF_MOTHER_NATURE,
-					ITEM.WARRIORS_SHIELDSWORD
-				],
-			final: ITEM.FULL_DIAMOND_ARMOR,
-		}
+		
 		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
-
+		this.AiAgent=new GoraeAgent(this)
 	}
 
 	getSkillTrajectorySpeed(skilltype:string):number{

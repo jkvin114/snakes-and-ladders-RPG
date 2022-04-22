@@ -1,5 +1,4 @@
 import * as ENUM from "../enum"
-import { ITEM } from "../enum"
 import { Player } from "../player"
 import type { Game } from "../Game"
 
@@ -11,6 +10,7 @@ import { TickDamageEffect, TickEffect, OnHitEffect } from "../StatusEffect"
 import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
+import TimoAgent from "../AiAgents/TimoAgent"
 const ID = 2
 class Timo extends Player {
 	skillInfoKor: SkillInfoFactory
@@ -21,11 +21,6 @@ class Timo extends Player {
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 	readonly duration_list: number[]
 
 	static readonly PROJ_ULT="ghost_r"
@@ -36,28 +31,16 @@ class Timo extends Player {
 	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [170, 30, 6, 6, 0, 30]
-		super(turn, team, game, ai, ID, name, basic_stats)
+		super(turn, team, game, ai, ID, name)
 		//	this.onoff = [false, false, false]
 		this.skill_ranges=[18,0,30]
-		this.hpGrowth = 100
 		this.cooltime_list = [3, 6, 6]
 		this.duration_list = [0, 1, 0]
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_CRYSTAL_BALL,
-				ITEM.INVISIBILITY_CLOAK,
-				ITEM.CARD_OF_DECEPTION,
-				ITEM.ANCIENT_SPEAR,
-				ITEM.POWER_OF_MOTHER_NATURE,
-				ITEM.BOOTS_OF_HASTE
-			],
-			final: ITEM.EPIC_CRYSTAL_BALL
-		}
+	
 		
 		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
-
+		this.AiAgent=new TimoAgent(this)
 	}
 
 

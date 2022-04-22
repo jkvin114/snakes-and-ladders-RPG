@@ -12,7 +12,7 @@ import { SpecialEffect } from "../SpecialEffect"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../EntityFilter"
-import { DefaultAgent } from "../AiAgents/AiAgent"
+import JelliceAgent from "../AiAgents/JelliceAgent"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
@@ -24,11 +24,7 @@ class Jellice extends Player {
 	readonly cooltime_list: number[]
 	skill_ranges: number[]
 
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+	
 	private u_used: number
 	readonly duration_list: number[]
 
@@ -43,28 +39,16 @@ class Jellice extends Player {
 	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [170, 30, 6, 6, 0, 50]
-		super(turn, team, game, ai, ID, name, basic_stats)
+		super(turn, team, game, ai, ID, name)
 		//	this.onoff = [false, false, false]
-		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 7] //3 5 7
 		this.duration_list = [0, 1, 0]
 		this.skill_ranges = [0, 0, 30]
 		this.u_used = 0
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_CRYSTAL_BALL,
-				ITEM.CARD_OF_DECEPTION,
-				ITEM.INVISIBILITY_CLOAK,
-				ITEM.CROSSBOW_OF_PIERCING,
-				ITEM.ANCIENT_SPEAR,
-				ITEM.EPIC_CRYSTAL_BALL
-			],
-			final: ITEM.EPIC_CRYSTAL_BALL
-		}
+		
 		this.skillInfo = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_KOR)
-		this.AiAgent=new DefaultAgent(this)
+		this.AiAgent=new JelliceAgent(this)
 
 	}
 
@@ -140,7 +124,7 @@ class Jellice extends Player {
 		let w_on = this.isSkillActivated(ENUM.SKILL.W)
 		let end_front = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_front"))
 		let end_back = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_back"))
-		let start = this.getSkillAmount("qrange_start")
+		let start = this.getSkillAmount("qrange_start") - (w_on ? 1 : 0)
 		return {end_front:end_front,end_back:end_back,start:start}
 	}
 	private useQ(): boolean {
@@ -152,16 +136,18 @@ class Jellice extends Player {
 		).ofSkill(ENUM.SKILL.Q)
 
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
-			let burn = this.getWBurnEffect()
+			// let burn = this.
+			let _this=this
 			dmg.setOnHit(function (this: Player) {
-				this.effects.applySpecial(burn, SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
+				this.effects.applySpecial(_this.getWBurnEffect(), SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
 			})
 		}
+		let range=this.qRange()
 		let attacked=this.mediator.skillAttack(
 			this,
 			EntityFilter.ALL_ATTACKABLE_PLAYER(this)
-				.in(this.pos + this.qRange().start + 1, this.pos + this.qRange().end_front)
-				.in(this.pos - this.qRange().end_back, this.pos - this.qRange().start)
+				.in(this.pos + range.start + 1, this.pos + range.end_front)
+				.in(this.pos - range.end_back, this.pos - range.start)
 		)(dmg)
 
 		
@@ -216,7 +202,7 @@ class Jellice extends Player {
 	}
 	getSkillAmount(key: string): number {
 		if (key === "qrange_start") return 3
-		if (key === "qrange_end_front") return 15
+		if (key === "qrange_end_front") return 20
 		if (key === "qrange_end_back") return 8
 		//앞 3~15, 뒤 3~8
 		return 0

@@ -11,7 +11,7 @@ import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SkillInfoFactory } from "../helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
-import { DefaultAgent } from "../AiAgents/AiAgent"
+import JeanAgent from "../AiAgents/JeanAgent"
 const ID = 4
 class Jean extends Player {
 	//	onoff: boolean[]
@@ -19,11 +19,6 @@ class Jean extends Player {
 	readonly cooltime_list: number[]
 	skill_ranges: number[]
 
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 	private readonly skill_name: string[]
 	private u_target: string
 	readonly duration_list: number[]
@@ -39,29 +34,17 @@ class Jean extends Player {
 	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [190, 40, 7, 7, 0, 0]
-		super(turn, team, game, ai, ID, name, basic_stats)
+		super(turn, team, game, ai, ID, name)
 		//	this.onoff = [false, false, false]
-		this.hpGrowth = 90
 		this.cooltime_list = [3, 4, 9]
 		this.duration_list=[0,0,2]
 		this.skill_ranges=[20,40,40]
 		this.u_target = null
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.EPIC_WHIP,
-				ITEM.BOOTS_OF_HASTE,
-				ITEM.CROSSBOW_OF_PIERCING,
-				ITEM.WARRIORS_SHIELDSWORD
-			],
-			final: ITEM.EPIC_SWORD
-		}
+		
 		
 		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
 		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
-		this.AiAgent=new DefaultAgent(this)
+		this.AiAgent=new JeanAgent(this)
 
 	}
 

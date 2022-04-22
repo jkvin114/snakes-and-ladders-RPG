@@ -1,26 +1,26 @@
-import { Creed } from "../characters/Creed";
+import { Jellice } from "../characters/Jellice";
 import { ITEM, SKILL } from "../enum";
 import { AiAgent } from "./AiAgent";
 
-class CreedAgent extends AiAgent{
+class JelliceAgent extends AiAgent{
     itemtree: {
 		level: number
 		items: number[]
 		final: number
 	}
-    constructor(player:Creed){
+    constructor(player:Jellice){
         super(player)
         this.itemtree = {
 			level: 0,
 			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.EPIC_WHIP,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.WARRIORS_SHIELDSWORD,
+				ITEM.EPIC_CRYSTAL_BALL,
+				ITEM.TIME_WARP_POTION,
+				ITEM.CARD_OF_DECEPTION,
+				ITEM.INVISIBILITY_CLOAK,
 				ITEM.CROSSBOW_OF_PIERCING,
-				ITEM.GUARDIAN_ANGEL
+				ITEM.BOOTS_OF_PROTECTION
 			],
-			final: ITEM.EPIC_SWORD
+			final: ITEM.EPIC_CRYSTAL_BALL
 		}
     }
 	nextSkill(): number {
@@ -39,4 +39,4 @@ class CreedAgent extends AiAgent{
 		return -1
 	}
 }
-export default CreedAgent
+export default JelliceAgent

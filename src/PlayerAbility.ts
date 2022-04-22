@@ -1,8 +1,8 @@
-import type { Player,ValueScale } from "./player"
+import type { Player, ValueScale } from "./player"
 import { PlayerClientInterface } from "./app"
 import { HPChangeData, CALC_TYPE, Damage } from "./Util"
 import { ITEM } from "./enum"
-
+import ABILITY = require("../res/character_ability.json")
 
 class Ability {
 	protected amount: number
@@ -26,7 +26,7 @@ class Ability {
 	}
 
 	add(amt: number) {
-		amt=Math.max(0, amt)
+		amt = Math.max(0, amt)
 		this.amount += amt
 		return this
 	}
@@ -35,7 +35,7 @@ class Ability {
 		return this
 	}
 	subtract(amt: number) {
-		amt=Math.max(0, amt)
+		amt = Math.max(0, amt)
 		this.amount = Math.max(0, this.amount - amt)
 		return this
 	}
@@ -61,12 +61,12 @@ class ConstrainedAbility extends Ability {
 		if (this.actual > this.constrain) {
 			amt = this.constrain
 		}
-		return super.set(Math.min(this.actual,this.constrain))
+		return super.set(Math.min(this.actual, this.constrain))
 	}
 	subtract(amt: number) {
 		let amtExceeded = Math.max(0, this.actual - this.constrain)
 		this.actual = Math.max(0, this.actual - amt)
-		return super.subtract(Math.max(amt - amtExceeded,0))
+		return super.subtract(Math.max(amt - amtExceeded, 0))
 	}
 }
 
@@ -89,24 +89,24 @@ class PlayerAbility {
 	obsR: Ability
 	ultHaste: ConstrainedAbility
 	moveSpeed: ConstrainedAbility
-	basicAttackSpeed:Ability
+	basicAttackSpeed: Ability
 	player: Player
 	private pendingMaxHpChange: number
 
 	static readonly MAX_ATTACKRANGE = 4
 	static readonly MAX_MOVESPEED = 3
 	static readonly MAX_ULTHASTE = 3
-	constructor(player: Player, basic_stats: number[]) {
+	constructor(player: Player) {
 		this.player = player
-		this.AD = new Ability("AD").add(basic_stats[1])
-		this.AR = new Ability("AR").add(basic_stats[2])
-		this.MR = new Ability("MR").add(basic_stats[3])
+		this.AD = new Ability("AD").add(this.initial().AD)
+		this.AR = new Ability("AR").add(this.initial().AR)
+		this.MR = new Ability("MR").add(this.initial().MR)
 		// basic_stats[4]=2
-		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE).add(basic_stats[4])
-		this.AP = new Ability("AP").add(basic_stats[5])
+		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE).add(0)
+		this.AP = new Ability("AP").add(this.initial().AP)
 		// this.basicAttack_multiplier = 1 //평타 데미지 계수
 		this.extraHP = 0 //추가체력
-		this.basicAttackSpeed=new Ability("attackSpeed").add(1)
+		this.basicAttackSpeed = new Ability("attackSpeed").add(1)
 		this.arP = new Ability("arP")
 		this.MP = new Ability("MP")
 		this.regen = new Ability("regen")
@@ -119,6 +119,12 @@ class PlayerAbility {
 		this.ultHaste = new ConstrainedAbility("ultHaste", PlayerAbility.MAX_ULTHASTE)
 		this.moveSpeed = new ConstrainedAbility("moveSpeed", PlayerAbility.MAX_MOVESPEED)
 		this.pendingMaxHpChange = 0
+	}
+	initial(){
+		return ABILITY[this.player.champ].initial
+	}
+	growth(){
+		return ABILITY[this.player.champ].growth
 	}
 	transfer(func: Function, ...args: any[]) {
 		this.player.mediator.sendToClient(func, ...args)
@@ -154,7 +160,7 @@ class PlayerAbility {
 	update(ability: string, change_amt: number) {
 		switch (ability) {
 			case "HP":
-		//		console.log("hp"+change_amt)
+				//		console.log("hp"+change_amt)
 
 				this.pendingMaxHpChange += change_amt
 				break
@@ -220,6 +226,9 @@ class PlayerAbility {
 			case "moveSpeed":
 				this.moveSpeed.update(change_amt)
 				break
+			case "basicAttackSpeed":
+				this.basicAttackSpeed.update(change_amt)
+				break
 		}
 		return this
 	}
@@ -228,7 +237,7 @@ class PlayerAbility {
 	 *
 	 */
 	flushChange() {
-	//	console.log("flushChange"+this.pendingMaxHpChange)
+		//	console.log("flushChange"+this.pendingMaxHpChange)
 		this.addMaxHP(this.pendingMaxHpChange)
 		this.pendingMaxHpChange = 0
 		this.sendToClient()
@@ -248,7 +257,8 @@ class PlayerAbility {
 			attackRange: this.attackRange.get(),
 			obsR: this.obsR.get(),
 			ultHaste: this.ultHaste.get(),
-			moveSpeed: this.moveSpeed.get()
+			moveSpeed: this.moveSpeed.get(),
+			basicAttackSpeed: this.basicAttackSpeed.get()
 		}
 	}
 	sendToClient() {
@@ -260,9 +270,10 @@ class PlayerAbility {
 		this.transfer(PlayerClientInterface.updateSkillInfo, this.player.turn, info_kor, info_eng)
 	}
 
-	onLevelUp(resistanceChange: number) {
-		this.MR.update(resistanceChange)
-		this.AD.add(10)
+	onLevelUp(playercount: number) {
+		this.MR.update(playercount * this.growth().MR)
+		this.AR.update(playercount * this.growth().AR)
+		this.AD.add(this.growth().AD)
 		this.flushChange()
 	}
 	//게임 길어지는거 방지용 저항 추가부여
@@ -274,6 +285,16 @@ class PlayerAbility {
 	//모든피해 흡혈
 	absorb_hp(damage: number) {
 		this.player.changeHP_heal(new HPChangeData().setHpChange(Math.floor((damage * this.absorb.get()) / 100)))
+	}
+	/**
+	 * 공격속도 비례 데미지 감소
+	 * 공속 2: 기본 평타데미지 총 14%증가
+	 * 3: 18%, 4:20% ...
+	 * 
+	 * @returns
+	 */
+	basicAttackMultiplier() {
+		return 1 / (1 + (this.basicAttackSpeed.get() - 1) * 0.75)
 	}
 
 	basicAttackDamage() {
@@ -292,29 +313,31 @@ class PlayerAbility {
 		let pp = 0
 		if (this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)) pp = 40
 
-		return damage.applyResistance({
-			AR: target.AR.get(),
-			MR: target.MR.get(),
-			arP: this.arP.get(),
-			MP: this.MP.get(),
-			percentPenetration: pp
-		}).getTotalDmg()
+		return damage
+			.applyResistance({
+				AR: target.AR.get(),
+				MR: target.MR.get(),
+				arP: this.arP.get(),
+				MP: this.MP.get(),
+				percentPenetration: pp
+			})
+			.getTotalDmg()
 	}
 
 	getMagicCastleDamage() {
 		return this.AD.get() * 0.1 + this.AP.get() * 0.08 + this.extraHP * 0.1
 	}
-	calculateScale(data:ValueScale):number{
+	calculateScale(data: ValueScale): number {
 		let v =
 			data.base +
 			data.scales.reduce((prev, curr) => {
 				return prev + this.get(curr.ability) * curr.val
 			}, 0)
-			
+
 		return Math.floor(v)
 	}
 	static applySkillDmgReduction(damage: Damage, reduction: number) {
 		return damage.updateNormalDamage(CALC_TYPE.multiply, 1 - reduction * 0.01)
-	}	
+	}
 }
 export { PlayerAbility }

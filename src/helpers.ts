@@ -103,11 +103,11 @@ class ObstacleHelper {
 					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(){
 						return Math.abs(this.pos-mypos)
 					})
-
 					//if target is also on change obstacle(causes infinite loop)
-					if(player.game.shuffledObstacles[target.pos].obs===20 || target.pos === player.pos) break
-
+					
 					if (target != null && target instanceof Player) {
+						if(player.game.shuffledObstacles[target.pos].obs===20 || target.pos === player.pos) break
+
 						player.game.playerForceMove(player, target.pos, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						player.game.playerForceMove(target, mypos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						others.push(target.UEID)
@@ -314,12 +314,7 @@ class ObstacleHelper {
 					break
 				case 68:
 					// street_vendor
-					if (player.AI) {
-						AIHelper.aiStore(player)
-					} else {
-						player.goStore(1.1)
-					}
-
+					player.goStore(1.1)
 					break
 				case 69:
 					let m1 = 0
@@ -886,6 +881,9 @@ class SkillInfoFactory {
 		if (lang === SkillInfoFactory.LANG_KOR) {
 			this.names = SkillInfoFactory.SKILL_NAME_KOR[char]
 		}
+	}
+	get(){
+		return [this.getQ(),this.getW(),this.getUlt()]
 	}
 	hotkey(s: number) {
 		return SkillInfoFactory.HOTKEY[s]
