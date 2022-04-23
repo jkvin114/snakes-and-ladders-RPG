@@ -1,14 +1,8 @@
-import {GameLoop} from "./GameCycle/GameCycleState"
 import SETTINGS = require("../res/globalsettings.json")
-import { Simulation, SimulationSetting } from "./SimulationRunner"
-import { PlayerType, ProtoPlayer } from "./Util"
-import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
-import { RoomClientInterface } from "./app"
-const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./DBHandler")
+import { PlayerType, ProtoPlayer } from "./core/Util"
 
 
-
-class Room {
+abstract class Room {
 	//simulation_total_count: number
 	simulation_count: number
 	// gameCycle: GameCycleState
@@ -18,7 +12,7 @@ class Room {
 	isTeam: boolean
 	playerlist: ProtoPlayer[]
 	teams: boolean[]
-	simulation: Simulation
+	
 	//simulation: boolean
 	instant: boolean
 	map: number
@@ -26,8 +20,9 @@ class Room {
 	connectionTimeout: NodeJS.Timeout
 	connectionTimeoutTurn: number
 	idleTimeoutTurn: number
-	gameloop:GameLoop
-
+	
+	abstract user_message(turn:number,msg:string):string
+	abstract getMapId():number
 	constructor(name: string) {
 		//	this.simulation_total_count = 1
 		this.simulation_count = 1
@@ -45,23 +40,10 @@ class Room {
 		this.idleTimeoutTurn = -1
 		this.connectionTimeout = null
 		this.connectionTimeoutTurn = -1
-		this.simulation = null
-		this.gameloop
-		
-		
 	}
 	
 
-	cryptTurn(turn: number) {
-		return this.gameloop.game.cryptTurn(turn)
-	}
-	thisCryptTurn() {
-		return this.gameloop.game.thisCryptTurn()
-	}
-	isThisTurn(cryptTurn: string) {
-		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
-		return this.gameloop.game.isThisTurn(cryptTurn)
-	}
+	
 
 	makePlayerList(): ProtoPlayer[] {
 		let p = []
@@ -200,239 +182,13 @@ class Room {
 	user_updateTeams(teams: boolean[]) {
 		this.teams = teams
 	}
-	user_simulationReady(
-		simulationsetting: ClientPayloadInterface.SimulationSetting,
-		simulation_count: number,
-		isTeam: boolean,
-		runnerId: string
-	) {
-		let setting = new SimulationSetting(isTeam, simulationsetting)
-		this.simulation = new Simulation(this.name, simulation_count, setting, runnerId)
-		this.doInstantSimulation()
-			.then(() =>{
-				this.onSimulationOver(true)
-			})
-			.catch((e)=> {
-				console.error(e)
-				this.onSimulationOver(false)
-			})
-	}
-	doInstantSimulation(): Promise<Function> {
-		return new Promise((resolve, reject) => {
-			this.simulation.run(function () {
-				resolve(null)
-				reject(new Error("Request is failed"))
-			})
-		})
-	}
-	getMapId(){
-		return this.gameloop.game.mapId
-	}
-	user_gameReady(setting: ClientPayloadInterface.GameSetting, roomName: string) {
-		this.instant = false
-
-		// room.aichamplist=aichamplist
-		// room.map=map
-		this.gameloop=GameLoop.create(this.map, roomName,setting, false, this.isTeam,this.playerlist)
-		console.log("team" + this.isTeam)
-		
-	}
-	user_requestSetting():ServerPayloadInterface.initialSetting{
-		let setting = this.gameloop.game.getInitialSetting()
-		//	setting.simulation = this.simulation
-		return setting
-	}
-
-
-	/**
-	 * 
-	 * @returns test if all players are connected
-	 */
-	user_startGame() :boolean{
-		let canstart= this.gameloop.game.canStart()
-		if(!canstart) return false
-		else if(!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
-		return true
-	}
-
 	
-	// manageStun() {
-	// 	setTimeout(() => {
-	// 		if (!this.game) return
-	// 		this.user_arriveSquare()
-
-	// 		setTimeout(() => {
-	// 			if (!this.game) return
-	// 			this.user_obstacleComplete()
-	// 		}, 1000)
-	// 	}, 1000)
-	// }
-
-	// stopIdleTimeout() {
-	// 	clearTimeout(this.idleTimeout)
-	// 	if (!this.game) return
-	// 	this.idleTimeoutTurn = -1
-	// 	RoomClientInterface.stopTimeout(this.name, this.thisCryptTurn())
-	// }
-	// startIdleTimeout(callback: Function) {
-	// 	RoomClientInterface.startTimeout(this.name, this.thisCryptTurn(), SETTINGS.idleTimeout)
-	// 	//	console.log("start timeout")
-	// 	if (this.game.gameover) {
-	// 		return
-	// 	}
-	// 	this.idleTimeout = setTimeout(() => {
-	// 		if (!this.game) return
-	// 		RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
-	// 		callback()
-	// 	}, SETTINGS.idleTimeout)
-	// 	this.idleTimeoutTurn = this.game.thisturn
-	// }
-
-	// stopConnectionTimeout() {
-	// 	//	console.log("stopConnectionTimeout")
-	// 	this.connectionTimeoutTurn
-	// 	clearTimeout(this.connectionTimeout)
-	// }
-	// startConnectionTimeout() {
-	// 	//	console.log("startConnectionTimeout")
-	// 	if (this.game.gameover) {
-	// 		return
-	// 	}
-	// 	this.connectionTimeout = setTimeout(() => {
-	// 		if (!this.game) return
-	// 		RoomClientInterface.forceNextturn(this.name, this.thisCryptTurn())
-	// 		this.goNextTurn()
-	// 	}, SETTINGS.connectionTimeout)
-	// 	this.connectionTimeoutTurn = this.game.thisturn
-	// }
-
-	// extendTimeout(turn: number) {
-	// 	if (turn !== this.game.thisturn) return
-
-	// 	this.stopIdleTimeout()
-	// 	this.startIdleTimeout(() => this.goNextTurn())
-
-	// 	//	console.log("timeout extension"+turn)
-	// }
-
-
-	// user_arriveSquare(): number {
-	// 	let obs = this.game.checkObstacle()
-	// 	//	console.log("checkobs" + obs)
-
-	// 	if (obs === -7) {
-	// 		this.stopConnectionTimeout()
-	// 		this.onGameover()
-	// 	}
-	// 	return null
-	// }
-
-	// user_obstacleComplete() {
-	// 	if (this.game == null) return
-	// 	//	console.log("obscomplete, pendingobs:" + this.game.pendingObs)
-	// 	this.stopConnectionTimeout()
-
-	// 	let info = this.game.checkPendingObs()
-
-	// 	if (!info) {
-	// 		if (this.game.thisp().AI) {
-	// 			this.game.aiSkill(()=>{
-	// 				if (!this.game) return
-	// 				this.goNextTurn()
-	// 			})
-	// 		} else {
-	// 			this.checkPendingAction()
-	// 		}
-	// 	} else {
-	// 		//	console.log("obscomplete, pendingobs:" + info)
-
-	// 		RoomClientInterface.sendPendingObs(this.name, info)
-
-	// 		this.startIdleTimeout(()=> {
-	// 			this.game.processPendingObs(null)
-	// 			this.goNextTurn()
-	// 		})
-	// 	}
-	// }
-
-	// checkPendingAction() {
-	// 	if (this.gameCycle == null) return
-	// 	let action=this.game.getPendingAction()
-	// 	//	console.log("function checkpendingaction" + this.game.pendingAction)
-	// 	if (!action || this.game.thisp().dead) {
-	// 		this.showSkillButtonToUser()
-	// 		this.startIdleTimeout( ()=> {
-	// 			this.goNextTurn()
-	// 		})
-	// 	} else {
-	// 		if (action === "submarine") {
-	// 			RoomClientInterface.sendPendingAction(this.name, "server:pending_action:submarine", this.game.thisp().pos)
-	// 		}
-	// 		if (action === "ask_way2") {
-	// 			RoomClientInterface.sendPendingAction(this.name, "server:pending_action:ask_way2", 0)
-	// 		}
-
-	// 		this.startIdleTimeout(()=> {
-	// 			this.game.processPendingAction(null)
-	// 			this.goNextTurn()
-	// 		})
-	// 	}
-	// }
-
-	onGameover() {
-		let stat = this.gameloop.game.getFinalStatistics()
-		let winner = this.gameloop.game.thisturn
-
-		let rname = this.name
-		this.reset()
-
-		GameRecord.create(stat)
-			.then((resolvedData: any) => {
-				console.log("stat saved successfully")
-				RoomClientInterface.gameStatReady(rname, resolvedData.id)
-			})
-			.catch((e: any) => console.error(e))
-
-		RoomClientInterface.gameOver(rname, winner)
-	}
-	onSimulationOver(result: boolean) {
-		let rname = this.name
-		if (result) {
-			let stat = this.simulation.getFinalStatistics()
-			let simple_stat = this.simulation.getSimpleResults()
-			this.reset()
-			SimulationRecord.create(stat)
-				.then((resolvedData: any) => {
-					console.log("stat saved successfully")
-
-					simple_stat.simulation = resolvedData.id
-
-					SimpleSimulationRecord.create(simple_stat)
-						.then((resolvedData: any) => {
-							console.log("simple stat saved successfully")
-						})
-						.catch((e: any) => console.error(e))
-
-					RoomClientInterface.simulationStatReady(rname, resolvedData.id)
-				})
-				.catch((e: any) => console.error(e))
-
-			RoomClientInterface.simulationOver(rname, "success")
-		} else {
-			//error
-			RoomClientInterface.simulationOver(rname, "error")
-		}
-	}
-
 	reset() {
 		// this.stopConnectionTimeout()
 		// this.stopIdleTimeout()
 		console.log(this.name + "has been reset")
 		this.name = null
-		if(this.gameloop!=null)
-			this.gameloop.onDestroy()
-		this.gameloop=null
-		this.simulation = null
+		
 		this.hosting = 0
 		this.guestnum = 0
 		this.isTeam = false

@@ -3,9 +3,11 @@ import SETTINGS = require("../../res/globalsettings.json")
 
 import { Game, GameSetting } from "../Game"
 import { GAME_CYCLE } from "./StateEnum"
-import { ClientPayloadInterface, ServerPayloadInterface } from "../PayloadInterface"
-import { ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../enum"
-import { PlayerType, ProtoPlayer, randInt, sleep } from "../Util"
+import { ClientPayloadInterface, ServerPayloadInterface } from "../data/PayloadInterface"
+import { ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../data/enum"
+import { PlayerType, ProtoPlayer, randInt, sleep } from "../core/Util"
+
+
 
 class GameLoop {
 	idleTimeout: NodeJS.Timeout

@@ -1,10 +1,10 @@
-import { ArriveSquare, GameCycleState, AiSimulationSkill, GameLoop, TurnInitializer} from "./GameCycle/GameCycleState"
+import { ArriveSquare, GameCycleState, AiSimulationSkill, GameLoop} from "./GameCycle/RPGGameCycleState"
 import { GameSetting } from "./Game"
 import cliProgress = require("cli-progress")
 // import { RoomClientInterface } from "./app"
 import SETTINGS = require("../res/globalsettings.json")
-import { shuffle,pickRandom, PlayerType } from "./Util"
-import { ClientPayloadInterface } from "./PayloadInterface"
+import { shuffle,pickRandom, PlayerType } from "./core/Util"
+import { ClientPayloadInterface } from "./data/PayloadInterface"
 
 
 class SimulationSetting {

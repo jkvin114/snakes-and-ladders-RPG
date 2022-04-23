@@ -1,8 +1,8 @@
-import * as Util from "./Util"
-import { EFFECT,  SKILL, ITEM } from "./enum"
-import { PlayerClientInterface } from "./app"
+import * as Util from "../core/Util"
+import { EFFECT,  SKILL, ITEM } from "../data/enum"
+import { PlayerClientInterface } from "../app"
 import type { Player } from "./player"
-import { SpecialEffect } from "./SpecialEffect"
+import { SpecialEffect } from "../data/SpecialEffect"
 import {
 	StatusEffect,
 	EFFECT_TYPE,
@@ -14,9 +14,9 @@ import {
 	OnDamageEffect,
 	ItemEffectFactory,
 	OnFinalDamageEffect,EFFECT_TIMING
-} from "./StatusEffect"
+} from "../StatusEffect"
 import PlayerInventory from "./PlayerInventory"
-import { Entity } from "./Entity"
+import { Entity } from "../entity/Entity"
 
 interface StatusEffectManager {
 	owner: Entity

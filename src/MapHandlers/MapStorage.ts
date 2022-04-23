@@ -1,4 +1,4 @@
-import { shuffle } from "../Util";
+import { shuffle } from "../core/Util";
 import oceanmap = require("../../res/ocean_map.json")
 import casinomap = require("../../res/casino_map.json")
 import defaultmap = require("../../res/map.json")

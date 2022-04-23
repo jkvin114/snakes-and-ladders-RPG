@@ -1,5 +1,5 @@
 import { Silver } from "../characters/Silver";
-import { ITEM, SKILL } from "../enum";
+import { ITEM, SKILL } from "../data/enum";
 import { AiAgent } from "./AiAgent";
 
 class SilverAgent extends AiAgent{

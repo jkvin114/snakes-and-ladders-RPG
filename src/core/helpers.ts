@@ -1,13 +1,13 @@
-import * as ENUM from "./enum"
+import * as ENUM from "../data/enum"
 import * as Util from "./Util"
-import SETTINGS = require("../res/globalsettings.json")
-import { MAP } from "./MapHandlers/MapStorage"
-import { EffectFactory, StatusEffect } from "./StatusEffect"
-import { SpecialEffect } from "./SpecialEffect"
-import { statuseffect_kor, statuseffect } from "../res/string_resource.json"
-import {Player} from './player'
-import { EntityFilter } from "./EntityFilter"
-import { PlayerClientInterface } from "./app"
+import SETTINGS = require("../../res/globalsettings.json")
+import { MAP } from "../MapHandlers/MapStorage"
+import { EffectFactory, StatusEffect } from "../StatusEffect"
+import { SpecialEffect } from "../data/SpecialEffect"
+import { statuseffect_kor, statuseffect } from "../../res/string_resource.json"
+import {Player} from '../player/player'
+import { EntityFilter } from "../entity/EntityFilter"
+import { PlayerClientInterface } from "../app"
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
 		let others: string[] = []
@@ -774,70 +774,70 @@ class AIHelper {
 
 
 	}
-	//========================================================================================================
-	static getAiProjPos(me: Player, skilldata: any, skill: number): number {
-		let goal = null
-		let targets=me.mediator.selectAllFrom(EntityFilter.ALL_ENEMY_PLAYER(me).in(me.pos - 3 - Math.floor(skilldata.range / 2),
-		me.pos - 3 + Math.floor(skilldata.range / 2))).map((p)=>p.turn)
+	// //========================================================================================================
+	// static getAiProjPos(me: Player, skilldata: any, skill: number): number {
+	// 	let goal = null
+	// 	let targets=me.mediator.selectAllFrom(EntityFilter.ALL_ENEMY_PLAYER(me).in(me.pos - 3 - Math.floor(skilldata.range / 2),
+	// 	me.pos - 3 + Math.floor(skilldata.range / 2))).map((p)=>p.turn)
 
 
-		//	console.log("getAiProjPos" + targets)
-		if (targets.length === 0) {
-			return -1
-		}
-		if (targets.length === 1) {
-			//타겟이 1명일경우
-			goal = targets[0]
-			//속박걸렸으면 플레이어 위치 그대로
-			if (me.game.pOfTurn(goal).effects.has(ENUM.EFFECT.STUN)) {
-				return Math.floor(me.game.pOfTurn(goal).pos)
-			}
-		} else {
-			//타겟이 여러명일경우
-			let ps = me.mediator.allPlayer()
+	// 	//	console.log("getAiProjPos" + targets)
+	// 	if (targets.length === 0) {
+	// 		return -1
+	// 	}
+	// 	if (targets.length === 1) {
+	// 		//타겟이 1명일경우
+	// 		goal = targets[0]
+	// 		//속박걸렸으면 플레이어 위치 그대로
+	// 		if (me.game.pOfTurn(goal).effects.has(ENUM.EFFECT.STUN)) {
+	// 			return Math.floor(me.game.pOfTurn(goal).pos)
+	// 		}
+	// 	} else {
+	// 		//타겟이 여러명일경우
+	// 		let ps = me.mediator.allPlayer()
 
-			//앞에있는플레이어 우선
-			targets.sort(function (b: number, a: number): number {
-				return ps[a].pos - ps[b].pos
-			})
+	// 		//앞에있는플레이어 우선
+	// 		targets.sort(function (b: number, a: number): number {
+	// 			return ps[a].pos - ps[b].pos
+	// 		})
 
-			//속박걸린 플레이어있으면 그 플레이어 위치 그대로
-			for (let t in targets) {
-				if (ps[t].effects.has(ENUM.EFFECT.STUN)) {
-					return Math.floor(ps[t].pos)
-				}
-			}
+	// 		//속박걸린 플레이어있으면 그 플레이어 위치 그대로
+	// 		for (let t in targets) {
+	// 			if (ps[t].effects.has(ENUM.EFFECT.STUN)) {
+	// 				return Math.floor(ps[t].pos)
+	// 			}
+	// 		}
 
-			goal = targets[0]
-		}
-		return Math.floor(Math.min(me.game.pOfTurn(goal).pos + 7 - skilldata.size, me.pos + skilldata.range / 2))
-	}
+	// 		goal = targets[0]
+	// 	}
+	// 	return Math.floor(Math.min(me.game.pOfTurn(goal).pos + 7 - skilldata.size, me.pos + skilldata.range / 2))
+	// }
 
-	static getAiAreaPos(me: Player, skilldata: any, skill: number): number {
-		let goal = null
-		let targets=me.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(me).excludeUntargetable().excludeDead().in(me.pos - 3 - Math.floor(skilldata.range / 2),
-		me.pos - 3 + Math.floor(skilldata.range / 2))).map((p)=>p.turn)
+	// static getAiAreaPos(me: Player, skilldata: any, skill: number): number {
+	// 	let goal = null
+	// 	let targets=me.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(me).excludeUntargetable().excludeDead().in(me.pos - 3 - Math.floor(skilldata.range / 2),
+	// 	me.pos - 3 + Math.floor(skilldata.range / 2))).map((p)=>p.turn)
 
-		//	console.log("getAiProjPos" + targets)
-		if (targets.length === 0) {
-			return -1
-		}
-		if (targets.length === 1) {
-			//타겟이 1명일경우
-			goal = targets[0]
-			return Math.floor(me.game.pOfTurn(goal).pos - skilldata.size + 1)
-		} else {
-			//타겟이 여러명일경우
-			let ps = me.mediator.allPlayer()
+	// 	//	console.log("getAiProjPos" + targets)
+	// 	if (targets.length === 0) {
+	// 		return -1
+	// 	}
+	// 	if (targets.length === 1) {
+	// 		//타겟이 1명일경우
+	// 		goal = targets[0]
+	// 		return Math.floor(me.game.pOfTurn(goal).pos - skilldata.size + 1)
+	// 	} else {
+	// 		//타겟이 여러명일경우
+	// 		let ps = me.mediator.allPlayer()
 
-			//앞에있는플레이어 우선
-			targets.sort(function (b: number, a: number): number {
-				return ps[b].pos - ps[a].pos
-			})
+	// 		//앞에있는플레이어 우선
+	// 		targets.sort(function (b: number, a: number): number {
+	// 			return ps[b].pos - ps[a].pos
+	// 		})
 
-			return Math.floor(ps[0].pos - skilldata.size + 1)
-		}
-	}
+	// 		return Math.floor(ps[0].pos - skilldata.size + 1)
+	// 	}
+	// }
 }
 
 

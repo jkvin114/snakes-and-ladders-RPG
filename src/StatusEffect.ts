@@ -1,9 +1,9 @@
-import type { Player } from "./player"
-import { CALC_TYPE, Damage, decrement, HPChangeData, PercentDamage, SkillAttack } from "./Util"
-import { EFFECT, ITEM, SKILL } from "./enum"
-import {PlayerAbility} from "./PlayerAbility"
-import { SpecialEffect } from "./SpecialEffect"
-import { Entity } from "./Entity"
+import type { Player } from "./player/player"
+import { CALC_TYPE, Damage, decrement, HPChangeData, PercentDamage, SkillAttack } from "./core/Util"
+import { EFFECT, ITEM, SKILL } from "./data/enum"
+import {PlayerAbility} from "./player/PlayerAbility"
+import { SpecialEffect } from "./data/SpecialEffect"
+import { Entity } from "./entity/Entity"
 
 enum EFFECT_SOURCE {
 	ENEMY,

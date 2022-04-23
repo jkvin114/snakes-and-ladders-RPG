@@ -1,5 +1,5 @@
 import { Jellice } from "../characters/Jellice";
-import { ITEM, SKILL } from "../enum";
+import { ITEM, SKILL } from "../data/enum";
 import { AiAgent } from "./AiAgent";
 
 class JelliceAgent extends AiAgent{

@@ -1,14 +1,14 @@
-import * as ENUM from "../enum"
-import { Player } from "../player"
+import * as ENUM from "../data/enum"
+import { Player } from "../player/player"
 import type { Game } from "../Game"
 
 
-import { Damage, SkillTargetSelector, SkillAttack, PercentDamage, CALC_TYPE } from "../Util"
+import { Damage, SkillTargetSelector, SkillAttack, PercentDamage, CALC_TYPE } from "../core/Util"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { TickDamageEffect, TickEffect, OnHitEffect } from "../StatusEffect"
-import { SpecialEffect } from "../SpecialEffect"
-import { SkillInfoFactory } from "../helpers"
+import { SpecialEffect } from "../data/SpecialEffect"
+import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import TimoAgent from "../AiAgents/TimoAgent"
 const ID = 2

@@ -1,14 +1,14 @@
-import * as ENUM from "../enum"
-import { ITEM } from "../enum"
-import { Damage, SkillAttack, SkillTargetSelector } from "../Util"
-import { Player } from "../player"
+import * as ENUM from "../data/enum"
+import { ITEM } from "../data/enum"
+import { Damage, SkillAttack, SkillTargetSelector } from "../core/Util"
+import { Player } from "../player/player"
 import type { Game } from "../Game"
 
 
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 
-import { SkillInfoFactory } from "../helpers"
+import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
 import JeanAgent from "../AiAgents/JeanAgent"

@@ -1,14 +1,14 @@
-import * as ENUM from "../enum"
-import { Player } from "../player"
+import * as ENUM from "../data/enum"
+import { Player } from "../player/player"
 import type { Game } from "../Game"
 
-import { Damage, SkillTargetSelector, SkillAttack } from "../Util"
+import { Damage, SkillTargetSelector, SkillAttack } from "../core/Util"
 import {Projectile,ProjectileBuilder} from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { ShieldEffect } from "../StatusEffect"
-import { SkillInfoFactory } from "../helpers"
+import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { EntityFilter } from "../EntityFilter"
+import { EntityFilter } from "../entity/EntityFilter"
 import GoraeAgent from "../AiAgents/GoraeAgent"
 const ID=6
 class Gorae extends Player {

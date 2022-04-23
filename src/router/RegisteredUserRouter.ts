@@ -25,7 +25,7 @@ import express = require('express');
 
 const router = express.Router()
 const crypto = require('crypto')
-const {User} = require("../DBHandler")
+const {User} = require("../mongodb/DBHandler")
 
 
 function createSalt(){

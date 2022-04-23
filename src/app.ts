@@ -1,7 +1,6 @@
-import { Room } from "./room"
 import SETTINGS = require("../res/globalsettings.json")
-import { SpecialEffect } from "./SpecialEffect"
-const { GameRecord, SimulationRecord, User } = require("./DBHandler")
+import { SpecialEffect } from "./data/SpecialEffect"
+const { GameRecord, SimulationRecord, User } = require("./mongodb/DBHandler")
 
 import { createServer } from "http"
 import {  Server, Socket } from "socket.io"
@@ -9,7 +8,10 @@ import express = require("express")
 import fs = require("fs")
 import cors = require("cors")
 import os = require("os")
-import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
+import { ClientPayloadInterface, ServerPayloadInterface } from "./data/PayloadInterface"
+import { RPGRoom } from "./RPGRoom"
+import { MarbleRoom } from "./Marble/MarbleRoom"
+import type { Room } from "./room"
 
 const args = require("minimist")(process.argv.slice(2))
 export let testSetting = {
@@ -33,7 +35,9 @@ const session = require("express-session")({
 	}
 })
 
-export var ROOMS = new Map<string, Room>()
+const ROOMS = new Map<string, RPGRoom>()
+const MARBLE_ROOMS = new Map<string, MarbleRoom>()
+
 const clientPath = `${__dirname}/../../SALR-android-webview-master`
 const firstpage = fs.readFileSync(__dirname + "/../../SALR-android-webview-master/index.html", "utf8")
 const PORT = 4000
@@ -75,6 +79,44 @@ console.log("version " + SETTINGS.version)
 // }
 function errorHandler(err: any, req: any, res: any, next: any) {
 	res.send("error!!" + err)
+}
+export namespace R{
+	export function getRoom(name:string):Room{
+		if(ROOMS.has(name)) return ROOMS.get(name)
+		if(MARBLE_ROOMS.has(name)) return MARBLE_ROOMS.get(name)
+		return null
+	}
+	export function getRPGRoom(name:string):RPGRoom{
+		if(ROOMS.has(name)) return ROOMS.get(name)
+		return null
+	}
+	export function getMarbleRoom(name:string):MarbleRoom{
+		if(MARBLE_ROOMS.has(name)) return MARBLE_ROOMS.get(name)
+		return null
+	}
+	export function setRPGRoom(name:string,room:RPGRoom){
+		ROOMS.set(name,room)
+	}
+	export function setMarbleRoom(name:string,room:MarbleRoom){
+		MARBLE_ROOMS.set(name,room)
+	}
+	export function hasRPGRoom(name:string){
+		return ROOMS.has(name)
+	}
+	export function hasMarbleRoom(name:string){
+		return MARBLE_ROOMS.has(name)
+	}
+	export function hasRoom(name:string){
+		return (ROOMS.has(name) || MARBLE_ROOMS.has(name))
+	}
+	export function all():IterableIterator<RPGRoom>{
+		return ROOMS.values()
+	}
+	export function remove(name:string){
+		if(ROOMS.has(name)) ROOMS.delete(name)
+		if(MARBLE_ROOMS.has(name)) MARBLE_ROOMS.delete(name)
+	}
+
 }
 
 namespace SocketSession {
@@ -137,7 +179,7 @@ io.on("connect", function (socket: Socket) {
 
 	socket.on("user:host_connect", function () {
 		let roomName = SocketSession.getRoomName(socket)
-		if (!ROOMS.has(roomName)) return
+		if (!R.hasRoom(roomName)) return
 
 		// if (ROOMS.get(roomName) != null) {
 		// 	socket.emit("server:room_name_exist")
@@ -148,7 +190,7 @@ io.on("connect", function (socket: Socket) {
 		.then((resolvedData)=>console.log(resolvedData))
 		.catch((e)=>console.error(e))
 */
-		ROOMS.get(roomName).setSimulation(false).setNickname(SocketSession.getUsername(socket), 0)
+		R.getRoom(roomName).setSimulation(false).setNickname(SocketSession.getUsername(socket), 0)
 		// ROOMS.set(roomName, room)
 		socket.join(roomName)
 		console.log(socket.rooms)
@@ -156,11 +198,11 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 	socket.on("user:register", function (rname: string) {
-		if (!ROOMS.has(rname)) {
+		if (R.hasRoom(rname)) {
 			socket.emit("server:room_full")
 			return
 		}
-		let room = ROOMS.get(rname)
+		let room = R.getRoom(rname)
 
 		if (room.hosting <= 0) {
 			socket.emit("server:room_full")
@@ -184,8 +226,8 @@ io.on("connect", function (socket: Socket) {
 		try {
 			let rname = SocketSession.getRoomName(socket)
 			console.log(rname)
-			if (!ROOMS.has(rname)) return
-			let room = ROOMS.get(rname)
+			if (!R.hasRoom(rname)) return
+			let room = R.getRoom(rname)
 			let turnchange = room.user_updatePlayerList(playerlist)
 			io.to(rname).emit("server:update_playerlist", room.playerlist, turnchange)
 		} catch (e) {
@@ -196,8 +238,8 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:update_ready", function (turn: number, ready: boolean) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_updateReady(turn, ready)
+		if (!R.hasRoom(rname)) return
+		R.getRoom(rname).user_updateReady(turn, ready)
 
 		io.to(rname).emit("server:update_ready", turn, ready)
 	})
@@ -205,9 +247,9 @@ io.on("connect", function (socket: Socket) {
 		try {
 			let rname = SocketSession.getRoomName(socket)
 			let nickname = SocketSession.getUsername(socket)
-			if (!ROOMS.has(rname)) return
+			if (!R.hasRoom(rname)) return
 
-			let room = ROOMS.get(rname)
+			let room = R.getRoom(rname)
 			let turn = room.user_requestPlayers(nickname)
 			SocketSession.setTurn(socket, turn)
 
@@ -227,8 +269,8 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:kick_player", function (turn: number) {
 		try {
 			let rname = SocketSession.getRoomName(socket)
-			if (!ROOMS.has(rname)) return
-			let room = ROOMS.get(rname)
+			if (!R.hasRoom(rname)) return
+			let room = R.getRoom(rname)
 			room.guestnum -= 1
 
 			io.to(rname).emit("server:kick_player", turn)
@@ -245,23 +287,23 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:go_teampage", function () {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).setTeamGame()
+		if (!R.hasRoom(rname)) return
+		R.getRoom(rname).setTeamGame()
 		io.to(rname).emit("server:go_teampage")
 	})
 	socket.on("user:exit_teampage", function () {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).unsetTeamGame()
+		if (!R.hasRoom(rname)) return
+		R.getRoom(rname).unsetTeamGame()
 		io.to(rname).emit("server:exit_teampage")
 	})
 
 	socket.on("user:request_names", function () {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		let names = ROOMS.get(rname).user_requestNames()
+		if (!R.hasRoom(rname)) return
+		let names = R.getRoom(rname).user_requestNames()
 
 		io.to(rname).emit("server:player_names", names)
 	})
@@ -269,8 +311,8 @@ io.on("connect", function (socket: Socket) {
 
 	socket.on("user:update_champ", function (turn: number, champ: number) {
 		let rname = SocketSession.getRoomName(socket)
-		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_updateChamp(turn, champ)
+		if (!R.hasRoom(rname)) return
+		R.getRoom(rname).user_updateChamp(turn, champ)
 		io.to(rname).emit("server:update_champ", turn, champ)
 		console.log("changechamp" + turn + champ)
 	})
@@ -279,8 +321,8 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:update_map", function (map: number) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_updateMap(map)
+		if (!R.hasRoom(rname)) return
+		R.getRoom(rname).user_updateMap(map)
 
 		io.to(rname).emit("server:map", map)
 		console.log("setmap" + map)
@@ -291,8 +333,8 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 
 		console.log("set team" + check_status)
-		if (!ROOMS.has(rname)) return
-		ROOMS.get(rname).user_updateTeams(check_status)
+		if (!R.hasRoom(rname)) return
+		R.getRoom(rname).user_updateTeams(check_status)
 		io.to(rname).emit("server:teams", check_status)
 	})
 	//==========================================================================================
@@ -306,8 +348,8 @@ io.on("connect", function (socket: Socket) {
 		let rname = "simulation_" + String(Math.floor(Math.random() * 1000000))
 		SocketSession.setRoomName(socket, rname)
 		socket.join(rname)
-		let room = new Room(rname).setSimulation(true)
-		ROOMS.set(rname, room)
+		let room = new RPGRoom(rname).setSimulation(true)
+		R.setRPGRoom(rname, room)
 
 		let u = SocketSession.getUsername(socket)
 		User.findOneByUsername(u)
@@ -325,9 +367,9 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:gameready", function (setting:ClientPayloadInterface.GameSetting) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRoom(rname)) return
 
-		ROOMS.get(rname).user_gameReady(setting, rname)
+		R.getRPGRoom(rname).user_gameReady(setting, rname)
 
 		//게스트 페이지 바꾸기
 		socket.to(rname).emit("server:to_gamepage")
@@ -349,8 +391,8 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:requestsetting", function () {
 		let rname = SocketSession.getRoomName(socket)
 		let turn = SocketSession.getTurn(socket)
-		if (!ROOMS.has(rname)) return
-		let room = ROOMS.get(rname)
+		if (!R.hasRPGRoom(rname)) return
+		let room =R.getRPGRoom(rname)
 		if (!room.gameloop) {
 			socket.emit("server:quit")
 			return
@@ -365,8 +407,8 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:start_game", function () {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		let room = ROOMS.get(rname)
+		if (!R.hasRPGRoom(rname)) return
+		let room = R.getRPGRoom(rname)
 		//if (!room.game) return
 
 		let canstart = room.user_startGame()
@@ -378,10 +420,10 @@ io.on("connect", function (socket: Socket) {
 	socket.on("start_instant_simulation", function () {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 
 		socket.join(rname)
-		ROOMS.get(rname).doInstantSimulation()
+		R.getRPGRoom(rname).doInstantSimulation()
 	})
 
 	//==========================================================================================
@@ -389,10 +431,10 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:press_dice", function (crypt_turn: string, dicenum: number) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		if (!R.hasRPGRoom(rname)) return
+		if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 
-		let dice = ROOMS.get(rname).gameloop.user_pressDice(dicenum,crypt_turn)
+		let dice = R.getRPGRoom(rname).gameloop.user_pressDice(dicenum,crypt_turn)
 		console.log("press_dice" + dice)
 		if(dice!=null)
 			io.to(rname).emit("server:rolldice", dice)
@@ -408,7 +450,7 @@ io.on("connect", function (socket: Socket) {
 	 */
 	socket.on("user:arrive_square", function () {
 		let rname = SocketSession.getRoomName(socket)
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		//ROOMS.get(rname).user_arriveSquare()
 	})
 	//==========================================================================================
@@ -419,7 +461,7 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:obstacle_complete", function () {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		//ROOMS.get(rname).user_obstacleComplete()
 	})
 	//==========================================================================================
@@ -435,9 +477,9 @@ io.on("connect", function (socket: Socket) {
 
 		console.log("complete_obstacle_selection")
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).gameloop.user_completePendingObs(info,crypt_turn)
+		R.getRPGRoom(rname).gameloop.user_completePendingObs(info,crypt_turn)
 	})
 	//==========================================================================================
 
@@ -449,17 +491,17 @@ io.on("connect", function (socket: Socket) {
 		//	console.log("action selection complete")
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).gameloop.user_completePendingAction(info,crypt_turn)
+		R.getRPGRoom(rname).gameloop.user_completePendingAction(info,crypt_turn)
 	})
 	//execute when player clicks basic attack
 	socket.on("user:basicattack", function (crypt_turn: string) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		let room = ROOMS.get(rname)
+		let room = R.getRPGRoom(rname)
 		room.gameloop.user_basicAttack(crypt_turn)
 	})
 	//==========================================================================================
@@ -468,9 +510,9 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:get_skill_data", function (crypt_turn: string, s: number) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		let room = ROOMS.get(rname)
+		if (!R.hasRPGRoom(rname)) return
+		if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
+		let room = R.getRPGRoom(rname)
 		let result = room.gameloop.user_clickSkill(s,crypt_turn)
 		console.log(result)
 		socket.emit("server:skill_data", result)
@@ -481,9 +523,9 @@ io.on("connect", function (socket: Socket) {
 		//	console.log("sendtarget")
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).gameloop.user_choseSkillTarget(target,crypt_turn)
+		R.getRPGRoom(rname).gameloop.user_choseSkillTarget(target,crypt_turn)
 
 		// if (status != null) {
 		// 	setTimeout(() => socket.emit("server:used_skill", status), 500)
@@ -495,18 +537,18 @@ io.on("connect", function (socket: Socket) {
 		//	console.log("sendprojlocation")
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).gameloop.user_choseSkillLocation(location,crypt_turn)
+		R.getRPGRoom(rname).gameloop.user_choseSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
 	socket.on("user:chose_area_skill_location", function (crypt_turn: string, location: number) {
 		//	console.log("sendprojlocation")
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).gameloop.user_choseAreaSkillLocation(location,crypt_turn)
+		R.getRPGRoom(rname).gameloop.user_choseAreaSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
 	//==========================================================================================
@@ -514,9 +556,9 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:store_data", function (data: ClientPayloadInterface.ItemBought) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 
-		ROOMS.get(rname).gameloop.user_storeComplete(data)
+		R.getRPGRoom(rname).gameloop.user_storeComplete(data)
 	})
 
 	//==========================================================================================
@@ -524,9 +566,9 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:nextturn", function (crypt_turn: string) {
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
-		if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		ROOMS.get(rname).gameloop.startNextTurn(false)
+		if (!R.hasRPGRoom(rname)) return
+		if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
+		R.getRPGRoom(rname).gameloop.startNextTurn(false)
 	})
 
 	//==========================================================================================
@@ -535,10 +577,10 @@ io.on("connect", function (socket: Socket) {
 		let rname = SocketSession.getRoomName(socket)
 		let quitter = SocketSession.getTurn(socket)
 		console.log(rname, quitter)
-		if (!ROOMS.has(rname)) return
-		let room = ROOMS.get(rname)
+		if (!R.hasRPGRoom(rname)) return
+		let room = R.getRPGRoom(rname)
 		io.to(rname).emit("server:quit", quitter)
-		console.log("an user has been disconnected " + ROOMS.get(rname))
+		console.log("an user has been disconnected " + R.getRPGRoom(rname))
 
 		try {
 			room.reset()
@@ -546,7 +588,7 @@ io.on("connect", function (socket: Socket) {
 			console.error("Error while resetting room " + e)
 		}
 
-		ROOMS.delete(rname)
+		R.remove(rname)
 	})
 
 	//==========================================================================================
@@ -555,14 +597,14 @@ io.on("connect", function (socket: Socket) {
 		console.log("reloadgame")
 		let rname = SocketSession.getRoomName(socket)
 
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		//ROOMS.get(rname).goNextTurn()
 	})
 	//==========================================================================================
 	socket.on("user:extend_timeout", function () {
 		let rname = SocketSession.getRoomName(socket)
 		let turn = SocketSession.getTurn(socket)
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 	//	ROOMS.get(rname).extendTimeout(turn)
 	})
 	//==========================================================================================
@@ -579,14 +621,14 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:reconnect", function () {
 		let rname = SocketSession.getRoomName(socket)
 		let turn = SocketSession.getTurn(socket)
-		if (!ROOMS.has(rname)) return
+		if (!R.hasRPGRoom(rname)) return
 		console.log("reconnect"+rname)
 		// console.log(socket.rooms)
 		// if(!socket.rooms.has(rname))
 		// 	socket.join(rname)
 		// console.log(socket.rooms)
 
-		ROOMS.get(rname).gameloop.user_reconnect(turn)
+		R.getRPGRoom(rname).gameloop.user_reconnect(turn)
 	})
 })
 
@@ -733,13 +775,13 @@ app.get("/", function (req, res) {
 // })
 app.post("/chat", function (req, res) {
 	console.log("chat " + req.body.msg + " " + req.body.turn)
-	let room = ROOMS.get(req.session.roomname)
-	if (!room || !room.gameloop) {
+	let room = R.getRoom(req.session.roomname)
+	if (!room) {
 		return
 	}
 	io.to(req.session.roomname).emit(
 		"server:receive_message",
-		room.gameloop.user_message(req.body.turn,req.body.msg)
+		room.user_message(req.body.turn,req.body.msg)
 	)
 	res.end("")
 })
@@ -748,11 +790,10 @@ app.post("/reset_game", function (req, res) {
 	//console.log(req.session)
 	let rname = req.session.roomname
 	//console.log("reset"+rname)
-	if (!ROOMS.has(rname)) return
-	ROOMS.get(rname).reset()
-	console.log(ROOMS.keys())
+	if (!R.hasRoom(rname)) return
+	R.getRPGRoom(rname).reset()
 
-	ROOMS.delete(rname)
+	R.remove(rname)
 	io.to(rname).emit("server:quit")
 	delete req.session.turn
 	// req.session.destroy((e)=>{console.error("session destroyed")})
@@ -762,9 +803,9 @@ app.post("/reset_game", function (req, res) {
 app.get("/stat/result", function (req: express.Request, res: express.Response) {
 	let rname = req.session.roomname
 
-	if (rname != null && ROOMS.has(rname.toString())) {
-		ROOMS.get(rname).reset()
-		ROOMS.delete(rname.toString())
+	if (rname != null && R.hasRoom(rname)) {
+		R.getRoom(rname).reset()
+		R.remove(rname.toString())
 	}
 
 	if (req.query.statid == null || req.query.type == null) {

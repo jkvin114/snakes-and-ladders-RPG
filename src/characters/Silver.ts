@@ -1,13 +1,13 @@
-import * as ENUM from "../enum"
-import { Player } from "../player"
+import * as ENUM from "../data/enum"
+import { Player } from "../player/player"
 import type { Game } from "../Game"
-import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../Util"
+import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../core/Util"
 import { AblityChangeEffect, EFFECT_TIMING, NormalEffect ,ShieldEffect} from "../StatusEffect"
 import { Projectile } from "../Projectile"
-import { SpecialEffect } from "../SpecialEffect"
+import { SpecialEffect } from "../data/SpecialEffect"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { SkillInfoFactory } from "../helpers"
-import { Entity } from "../Entity"
+import { SkillInfoFactory } from "../core/helpers"
+import { Entity } from "../entity/Entity"
 import SilverAgent from "../AiAgents/SilverAgent"
 
 // import SETTINGS = require("../../res/globalsettings.json")
@@ -162,8 +162,8 @@ class Silver extends Player {
 				let dmg = this.getSkillBaseDamage(s)
 				let heal=_this.isSkillActivated(ENUM.SKILL.ULT) ? this.getSkillAmount("r_qheal") : this.getSkillAmount("qheal")
 				
-				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s)).ofSkill(s).setOnKill(function(this: Player){
-					this.heal(heal)
+				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s)).ofSkill(s).setOnHit(function(this: Player){
+					_this.heal(heal)
 				})
 
 				if (this.game.pOfTurn(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.UEID)) {

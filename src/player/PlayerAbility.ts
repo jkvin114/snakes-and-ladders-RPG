@@ -1,8 +1,8 @@
 import type { Player, ValueScale } from "./player"
-import { PlayerClientInterface } from "./app"
-import { HPChangeData, CALC_TYPE, Damage } from "./Util"
-import { ITEM } from "./enum"
-import ABILITY = require("../res/character_ability.json")
+import { PlayerClientInterface } from "../app"
+import { HPChangeData, CALC_TYPE, Damage } from "../core/Util"
+import { ITEM } from "../data/enum"
+import ABILITY = require("../../res/character_ability.json")
 
 class Ability {
 	protected amount: number

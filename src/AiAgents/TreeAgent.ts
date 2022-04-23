@@ -1,5 +1,5 @@
 import { Tree } from "../characters/Tree";
-import { ITEM, SKILL } from "../enum";
+import { ITEM, SKILL } from "../data/enum";
 import { AiAgent } from "./AiAgent";
 
 class TreeAgent extends AiAgent{

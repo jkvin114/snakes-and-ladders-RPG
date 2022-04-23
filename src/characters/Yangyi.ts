@@ -1,16 +1,16 @@
-import { Player } from "../player"
+import { Player } from "../player/player"
 import type { Game } from "../Game"
 
-import * as ENUM from "../enum"
+import * as ENUM from "../data/enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../core/Util"
 import { Projectile } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { EFFECT_TIMING, NormalEffect } from "../StatusEffect"
-import { SpecialEffect } from "../SpecialEffect"
-import { SkillInfoFactory } from "../helpers"
+import { SpecialEffect } from "../data/SpecialEffect"
+import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { EntityFilter } from "../EntityFilter"
+import { EntityFilter } from "../entity/EntityFilter"
 import YangyiAgent from "../AiAgents/YangyiAgent"
 const ID = 3
 class Yangyi extends Player {

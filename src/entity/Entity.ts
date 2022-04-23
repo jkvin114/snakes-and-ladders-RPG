@@ -1,10 +1,10 @@
 import { EntityMediator} from "./EntityMediator"
-import type { Game } from "./Game"
-import { Damage, decrement } from "./Util"
-import { EntityStatusEffect } from "./PlayerStatusEffect"
-import { clamp } from "./Util"
-import { MAP } from "./MapHandlers/MapStorage"
-import { ENTITY_TYPE } from "./enum"
+import type { Game } from "../Game"
+import { Damage, decrement } from "../core/Util"
+import { EntityStatusEffect } from "../player/PlayerStatusEffect"
+import { clamp } from "../core/Util"
+import { MAP } from "../MapHandlers/MapStorage"
+import { ENTITY_TYPE } from "../data/enum"
 //anything that has its own HP
 class Entity {
 	game: Game

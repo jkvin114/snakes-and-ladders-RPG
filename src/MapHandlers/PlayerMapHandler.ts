@@ -1,11 +1,11 @@
 import { PlayerClientInterface} from "../app"
-import { Player } from "../player"
-import { EntityFilter } from "../EntityFilter"
+import { Player } from "../player/player"
+import { EntityFilter } from "../entity/EntityFilter"
 import { MAP ,singleMap} from "./MapStorage"
-import * as ENUM from "../enum"
-import { CALC_TYPE, Damage, randomBoolean} from "../Util"
-import { ObstacleHelper } from "../helpers"
-import { ClientPayloadInterface, ServerPayloadInterface } from "../PayloadInterface"
+import * as ENUM from "../data/enum"
+import { CALC_TYPE, Damage, randomBoolean} from "../core/Util"
+import { ObstacleHelper } from "../core/helpers"
+import { ClientPayloadInterface, ServerPayloadInterface } from "../data/PayloadInterface"
 
 interface TwoWayMap {
 	onMainWay: boolean //갈림길 체크시 샤용

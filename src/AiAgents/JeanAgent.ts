@@ -1,5 +1,5 @@
 import { Jean } from "../characters/Jean";
-import { ITEM, SKILL } from "../enum";
+import { ITEM, SKILL } from "../data/enum";
 import { AiAgent } from "./AiAgent";
 
 class JeanAgent extends AiAgent{

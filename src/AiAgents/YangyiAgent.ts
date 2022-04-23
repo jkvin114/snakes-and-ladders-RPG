@@ -1,5 +1,5 @@
 import { Yangyi } from "../characters/Yangyi";
-import { ITEM, SKILL } from "../enum";
+import { ITEM, SKILL } from "../data/enum";
 import { AiAgent } from "./AiAgent";
 
 class YangyiAgent extends AiAgent{

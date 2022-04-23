@@ -1,6 +1,6 @@
-import { STAT } from "./enum"
+import { STAT } from "../data/enum"
 import { Player } from "./player"
-import * as Util from "./Util"
+import * as Util from "../core/Util"
 class PlayerStatistics {
 	stats: number[]
 	//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt

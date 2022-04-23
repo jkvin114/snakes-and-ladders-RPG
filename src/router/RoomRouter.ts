@@ -1,7 +1,7 @@
 import express = require('express');
-import { ROOMS } from '../app';
+import { R } from '../app';
 const router = express.Router()
-import { Room } from "../room"
+import { RPGRoom } from '../RPGRoom';
 
 
 /**
@@ -15,14 +15,13 @@ router.post('/create',function(req:express.Request,res:express.Response){
         body.roomname="room_"+String(Math.floor(Math.random()*1000000))
     }
     let rname=String(body.roomname)
-    console.log(ROOMS.keys())
-    if(ROOMS.has(rname)){
+    if(R.hasRPGRoom(rname)){
         console.log("exidt")
         res.status(400).end("room name exists")
         return
     }
     console.log(rname)
-    ROOMS.set(rname,new Room(rname)) 
+    R.setRPGRoom(rname,new RPGRoom(rname)) 
 
     if(req.session){
         if(!req.session.username){
@@ -68,7 +67,7 @@ router.post('/join',async function(req:express.Request,res:express.Response){
         }//guest 
         else if(req.session.turn===1){
             let list=""
-            for (let r of ROOMS.values()) {
+            for (let r of R.all()) {
                 if (r.hosting > 0) {
                     list += r.name + "||"
                 }

@@ -1,7 +1,7 @@
 import { Entity } from "./Entity"
 import { EntityStorage } from "./EntityMediator"
-import { ENTITY_TYPE } from "./enum"
-import { PriorityArray } from "./Util"
+import { ENTITY_TYPE } from "../data/enum"
+import { PriorityArray } from "../core/Util"
 
 class EntityFilter {
 	private playerOnly: boolean

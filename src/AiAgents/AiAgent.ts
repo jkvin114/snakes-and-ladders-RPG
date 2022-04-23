@@ -1,13 +1,13 @@
-import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../enum"
+import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
-import { ServerPayloadInterface } from "../PayloadInterface"
-import { copyElementsOnly, SkillTargetSelector, sleep } from "../Util"
+import { ServerPayloadInterface } from "../data/PayloadInterface"
+import { copyElementsOnly, SkillTargetSelector, sleep } from "../core/Util"
 import { items as ItemList } from "../../res/item.json"
-import PlayerInventory from "../PlayerInventory"
+import PlayerInventory from "../player/PlayerInventory"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
-import { EntityMediator } from "../EntityMediator"
-import { Player } from "../player"
-import { EntityFilter } from "../EntityFilter"
+import { EntityMediator } from "../entity/EntityMediator"
+import { Player } from "../player/player"
+import { EntityFilter } from "../entity/EntityFilter"
 import SETTINGS = require("./../../res/globalsettings.json")
 
 abstract class AiAgent {
@@ -198,7 +198,7 @@ abstract class AiAgent {
 					me.pos - 3 + Math.floor(selector.range / 2)
 				)
 			)
-			.map((p) => p.turn)
+			.map((p:Player) => p.turn)
 
 		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {
@@ -221,7 +221,7 @@ abstract class AiAgent {
 			})
 
 			//속박걸린 플레이어있으면 그 플레이어 위치 그대로
-			for (let t in targets) {
+			for (let t of targets) {
 				if (ps[t].effects.has(EFFECT.STUN)) {
 					return Math.floor(ps[t].pos)
 				}
@@ -240,7 +240,7 @@ abstract class AiAgent {
 				EntityFilter.ALL_ATTACKABLE_PLAYER(me)
 					.in(me.pos - 3 - Math.floor(selector.range / 2), me.pos - 3 + Math.floor(selector.range / 2))
 			)
-			.map((p) => p.turn)
+			.map((p:Player) => p.turn)
 
 		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {

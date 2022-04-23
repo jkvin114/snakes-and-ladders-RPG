@@ -1,8 +1,8 @@
-import { Player } from "./player"
+import { Player } from "./player/player"
 import type { Game } from "./Game";
 
-import { ServerPayloadInterface } from "./PayloadInterface"
-import { Damage, decrement } from "./Util"
+import { ServerPayloadInterface } from "./data/PayloadInterface"
+import { Damage, decrement } from "./core/Util"
 
 abstract class Projectile {
 	static readonly TYPE_RANGE = 1

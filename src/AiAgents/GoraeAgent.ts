@@ -1,5 +1,5 @@
 import { Gorae } from "../characters/Gorae";
-import { ITEM, SKILL } from "../enum";
+import { ITEM, SKILL } from "../data/enum";
 import { AiAgent } from "./AiAgent";
 
 class GoraeAgent extends AiAgent{

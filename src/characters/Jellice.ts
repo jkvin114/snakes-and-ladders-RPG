@@ -1,17 +1,17 @@
-import { Player } from "../player"
+import { Player } from "../player/player"
 import type { Game } from "../Game"
 
 
-import * as ENUM from "../enum"
-import { ITEM } from "../enum"
+import * as ENUM from "../data/enum"
+import { ITEM } from "../data/enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../Util"
+import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../core/Util"
 import { TickDamageEffect, TickEffect,ShieldEffect, NormalEffect, EFFECT_TIMING } from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import { SpecialEffect } from "../SpecialEffect"
-import { SkillInfoFactory } from "../helpers"
+import { SpecialEffect } from "../data/SpecialEffect"
+import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { EntityFilter } from "../EntityFilter"
+import { EntityFilter } from "../entity/EntityFilter"
 import JelliceAgent from "../AiAgents/JelliceAgent"
 
 // import SETTINGS = require("../../res/globalsettings.json")
@@ -129,7 +129,7 @@ class Jellice extends Player {
 	}
 	private useQ(): boolean {
 		
-		
+		this.startCooltime(ENUM.SKILL.Q)
 		let dmg = new SkillAttack(
 			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),
 			this.getSkillName(ENUM.SKILL.Q)
@@ -151,10 +151,11 @@ class Jellice extends Player {
 		)(dmg)
 
 		
-		if(!attacked) return false
+		if(!attacked) 
+			this.resetCooltime([ENUM.SKILL.Q])
 
 
-		this.startCooltime(ENUM.SKILL.Q)
+		
 		return true
 	}
 

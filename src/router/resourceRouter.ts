@@ -1,6 +1,6 @@
 import express = require('express');
-import { ROOMS } from '../app';
-import { MAP_TYPE } from '../enum';
+import { R } from '../app';
+import { MAP_TYPE } from '../data/enum';
 import fs = require("fs")
 const RESOURCE_PATH="/../../res/"
 const router = express.Router()
@@ -38,7 +38,7 @@ router.get("/visualeffects", function (req:express.Request, res:express.Response
 	})
 })
 router.get("/map", function (req:express.Request, res:express.Response) {
-	let room = ROOMS.get(req.session.roomname)
+	let room = R.getRoom(req.session.roomname)
 	if (!room) {
 		return
 	}

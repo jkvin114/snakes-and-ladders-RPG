@@ -1,6 +1,6 @@
-import { Entity } from "./Entity"
-import * as ENUM from "./enum"
-import { Player } from "./player"
+import { Entity } from "../entity/Entity"
+import * as ENUM from "../data/enum"
+import { Player } from "../player/player"
 const CALC_TYPE = {
 	set: (o: number, n: number) => n,
 	plus: (o: number, n: number) => o + n,

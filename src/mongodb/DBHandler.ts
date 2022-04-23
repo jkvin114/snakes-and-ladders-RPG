@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-require('dotenv').config({path:__dirname+'/variables.env'})
+require('dotenv').config({path:__dirname+'/../data/variables.env'})
 
 
 console.log("connecting to mongodb ")

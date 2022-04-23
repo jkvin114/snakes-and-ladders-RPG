@@ -1,11 +1,11 @@
-import { Entity } from "../../Entity"
-import { Player} from "../../player"
+import { Entity } from "../../entity/Entity"
+import { Player} from "../../player/player"
 import type {Game } from "../../Game"
-import { EntityFilter } from "../../EntityFilter"
-import { ENTITY_TYPE, SKILL } from "../../enum"
-import { ServerPayloadInterface } from "../../PayloadInterface"
-import {  SkillAttack }  from "../../Util"
-import type {Damage} from "../../Util"
+import { EntityFilter } from "../../entity/EntityFilter"
+import { ENTITY_TYPE, SKILL } from "../../data/enum"
+import { ServerPayloadInterface } from "../../data/PayloadInterface"
+import {  SkillAttack }  from "../../core/Util"
+import type {Damage} from "../../core/Util"
 abstract class SummonedEntity extends Entity {
 	summoner: Player
 	lifeTime: number

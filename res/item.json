@@ -258,8 +258,8 @@
 			],
 			"children": [7, 13],
 			"parents": [],
-			"unique_effect": "revive when dies with 50% HP(cooldown 8 turns)",
-			"unique_effect_kor": "사망시 50% 체력으로 부활함 (쿨타임 8턴)",
+			"unique_effect": "revive when dies with 50% HP",
+			"unique_effect_kor": "사망시 50% 체력으로 부활함",
 			"active_cooltime": 8,
 			"summary":{
 				"kor":"공격 방어, 사망시 부활","eng":"Defence, Revive on death"
@@ -317,8 +317,8 @@
 			],
 			"children": [19, 21],
 			"parents": [],
-			"unique_effect_kor": "스킬로 받는 피해 30% 감소, 이후 1턴간 이동속도 1 증가(쿨타임 3턴)",
-			"unique_effect": "30% skill damage reduction, movement speed +1 for 1 turn afterwards.(cooltime 3 turns)",
+			"unique_effect_kor": "스킬로 받는 피해 30% 감소, 이후 1턴간 이동속도 1 증가",
+			"unique_effect": "30% skill damage reduction, movement speed +1 for 1 turn afterwards.",
 			"active_cooltime":3,
 			"summary":{
 				"kor":"스킬 방어","eng":"Skill defence"
@@ -359,8 +359,8 @@
 			],
 			"children": [4,21],
 			"parents": [],
-			"unique_effect": "Hitting skill to enemies in front of you slows them, deals 10% more damage, then grants you speed(cooltime 3 turns)",
-			"unique_effect_kor": "자신보다 앞에있는 적에게 스킬 사용시 피해량 10% 증가, 둔화 부여 후 자신은 신속 효과를 받음(쿨타임 3턴) ",
+			"unique_effect": "Hitting skill to enemies in front of you slows them, deals 10% more damage, then grants you speed",
+			"unique_effect_kor": "자신보다 앞에있는 적에게 스킬 사용시 피해량 10% 증가, 둔화 부여 후 자신은 신속 효과를 받음",
 			"active_cooltime":3,
 			"summary":{
 				"kor":"주문력, 따라잡기","eng":"Magic Power, Catch-up"
@@ -589,8 +589,8 @@
 			],
 			"children": [4,7],
 			"parents": [],
-			"unique_effect": "Become invisible for 1 turn if HP is below 30%(cooltime 6 turns)",
-			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화 (쿨타임 6턴)",
+			"unique_effect": "Become invisible for 1 turn if HP is below 30%",
+			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화",
 			"active_cooltime": 6,
 			"summary":{
 				"kor":"주문력,생존","eng":"Magic Power, Survival from attack"
@@ -634,8 +634,8 @@
 			"active_summary":{
 				"kor":"방어막 획득!","eng":"Obtained shield!"
 			},
-			"unique_effect": "If HP goes below 30%, gain shield based on attack power for 2 turns and absorb increases 30%(cooltime 7 turns)",
-			"unique_effect_kor": "체력이 30% 이하로 내려가면 2턴간 공격력 비례 방어막 획득, 모든피해 흡혈 30% 증가(쿨타임 7턴)",
+			"unique_effect": "If HP goes below 30%, gain shield based on attack power for 2 turns and absorb increases 30%",
+			"unique_effect_kor": "체력이 30% 이하로 내려가면 2턴간 공격력 비례 방어막 획득, 모든피해 흡혈 30% 증가",
 			"active_cooltime": 7,
 			"category":["health","attack","defence"]
 		},
@@ -691,8 +691,8 @@
 			],
 			"children": [4,5],
 			"parents": [],
-			"unique_effect": "Normal skill cooltime reset if you kill an enemy(cooltime 1 turn)",
-			"unique_effect_kor": "적 처치시 기본스킬 쿨타임 초기화(쿨타임 1턴)",
+			"unique_effect": "Normal skill cooltime reset if you kill an enemy",
+			"unique_effect_kor": "적 처치시 기본스킬 쿨타임 초기화",
 			"active_cooltime": 1,
 			"summary":{
 				"kor":"주문력, 쿨타임감소","eng":"Magic power, Cooltime reduction"

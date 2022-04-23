@@ -1,6 +1,6 @@
-import { Entity } from "../../Entity"
+import { Entity } from "../../entity/Entity"
 import type { Game } from "../../Game"
-import { Damage } from "../../Util"
+import { Damage } from "../../core/Util"
 import { Attackable, Damageable, SummonedEntity } from "./SummonedEntity"
 
 

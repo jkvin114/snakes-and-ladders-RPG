@@ -1,6 +1,6 @@
 import express = require('express');
 const router = express.Router()
-const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../DBHandler")
+const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../mongodb/DBHandler")
 
 
 

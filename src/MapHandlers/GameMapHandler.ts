@@ -1,4 +1,4 @@
-import { MAP_TYPE } from "../enum";
+import { MAP_TYPE } from "../data/enum";
 import { Game } from "../Game";
 
 

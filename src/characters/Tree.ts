@@ -1,18 +1,17 @@
-import * as ENUM from "../enum"
-import { ITEM } from "../enum"
-import { Player } from "../player"
+import * as ENUM from "../data/enum"
+import { ITEM } from "../data/enum"
+import { Player } from "../player/player"
 import type { Game } from "../Game"
 
 
-import { Damage, SkillTargetSelector, SkillAttack, CALC_TYPE, randInt } from "../Util"
+import { Damage, SkillTargetSelector, SkillAttack, CALC_TYPE, randInt } from "../core/Util"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { AblityChangeEffect, OnDamageEffect, ShieldEffect } from "../StatusEffect"
-import { SpecialEffect } from "../SpecialEffect"
+import { SpecialEffect } from "../data/SpecialEffect"
 import TreePlant from "./SummonedEntity/TreePlantEntity"
-import { SkillInfoFactory } from "../helpers"
+import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { DefaultAgent } from "../AiAgents/AiAgent"
-import { EntityFilter } from "../EntityFilter"
+import { EntityFilter } from "../entity/EntityFilter"
 import TreeAgent from "../AiAgents/TreeAgent"
 
 const ID = 8
@@ -177,7 +176,7 @@ class Tree extends Player {
 			return damage.updateAllDamage(CALC_TYPE.multiply, 1.2)
 		})
 			.on([OnDamageEffect.BASICATTACK_DAMAGE, OnDamageEffect.SKILL_DAMAGE])
-			.from(this.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(this).excludeEnemy()).map((p)=>p.turn))
+			.from(this.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(this).excludeEnemy()).map((p:Player)=>p.UEID))
 			.setSourceId(this.UEID)
 	}
 

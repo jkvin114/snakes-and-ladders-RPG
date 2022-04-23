@@ -1,23 +1,23 @@
-import obsInfo = require("../res/obstacles.json")
-import SETTINGS = require("../res/globalsettings.json")
-import * as ENUM from "./enum"
-import * as Util from "./Util"
-import { PlayerClientInterface, testSetting } from "./app"
-import type { Game } from "./Game"
-import { EntityFilter } from "./EntityFilter"
-import { Projectile } from "./Projectile"
+import obsInfo = require("../../res/obstacles.json")
+import SETTINGS = require("../../res/globalsettings.json")
+import * as ENUM from "../data/enum"
+import * as Util from "../core/Util"
+import { PlayerClientInterface, testSetting } from "../app"
+import type { Game } from "../Game"
+import { EntityFilter } from "../entity/EntityFilter"
+import { Projectile } from "../Projectile"
 import { PlayerAbility } from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
-import { PlayerMapHandler } from "./MapHandlers/PlayerMapHandler"
+import { PlayerMapHandler } from "../MapHandlers/PlayerMapHandler"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects } from "./PlayerStatusEffect"
-import { ObstacleHelper, SkillInfoFactory } from "./helpers"
-import { Entity } from "./Entity"
-import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
-import { AiAgent, DefaultAgent } from "./AiAgents/AiAgent"
-import { ServerPayloadInterface } from "./PayloadInterface"
-import { MAP } from "./MapHandlers/MapStorage"
-import ABILITY = require("../res/character_ability.json")
+import { ObstacleHelper, SkillInfoFactory } from "../core/helpers"
+import { Entity } from "../entity/Entity"
+import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
+import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
+import { ServerPayloadInterface } from "../data/PayloadInterface"
+import { MAP } from "../MapHandlers/MapStorage"
+import ABILITY = require("../../res/character_ability.json")
 
 // class Minion extends Entity{
 // 	constructor(){
@@ -1191,14 +1191,14 @@ abstract class Player extends Entity {
 		}
 		let targets = this.mediator
 			.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(skillTargetSelector.range))
-			.map((pl) => pl.turn)
+			.map((pl:Player) => pl.turn)
 		let conditionedTargets = this.mediator
 			.selectAllFrom(
 				EntityFilter.ALL_ATTACKABLE_PLAYER(this)
 					.inRadius(skillTargetSelector.conditionedRange)
 					.onlyIf(skillTargetSelector.condition)
 			)
-			.map((pl) => pl.turn)
+			.map((pl:Player) => pl.turn)
 		targets = targets.concat(conditionedTargets)
 
 		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)

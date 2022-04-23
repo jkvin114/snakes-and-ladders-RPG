@@ -1,5 +1,5 @@
 import { Creed } from "../characters/Creed";
-import { ITEM, SKILL } from "../enum";
+import { ITEM, SKILL } from "../data/enum";
 import { AiAgent } from "./AiAgent";
 
 class CreedAgent extends AiAgent{

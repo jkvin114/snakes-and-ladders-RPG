@@ -1,11 +1,11 @@
-import * as Util from "./Util"
-import * as ENUM from "./enum"
-import { ITEM } from "./enum"
+import * as Util from "../core/Util"
+import * as ENUM from "../data/enum"
+import { ITEM } from "../data/enum"
 
-import { items as ItemList } from "../res/item.json"
-import {  PlayerClientInterface, testSetting } from "./app"
+import { items as ItemList } from "../../res/item.json"
+import {  PlayerClientInterface, testSetting } from "../app"
 import type { Player } from "./player"
-import { ClientPayloadInterface, ServerPayloadInterface } from "./PayloadInterface"
+import { ClientPayloadInterface, ServerPayloadInterface } from "../data/PayloadInterface"
 
 class PlayerInventory {
 	// player:Player
@@ -127,7 +127,7 @@ class PlayerInventory {
 	}
 
 	onKillEnemy(){
-		if(this.haveItem(ITEM.TIME_WARP_POTION)){
+		if(this.isActiveItemAvailable(ITEM.TIME_WARP_POTION)){
 			console.log("------------time warp potion")
 			this.useActiveItem(ITEM.TIME_WARP_POTION)
 			this.player.resetCooltime([ENUM.SKILL.Q,ENUM.SKILL.W])
@@ -181,6 +181,7 @@ class PlayerInventory {
 			.map((item) => {
 				return { id: item.id, cool: item.cooltime, coolRatio: 1 - item.cooltime / item.resetVal }
 			})
+			console.log(data)
 		this.transfer(PlayerClientInterface.update, "activeItem", this.player.turn, data)
 	}
 	getStoreData(priceMultiplier: number):ServerPayloadInterface.EnterStore {
