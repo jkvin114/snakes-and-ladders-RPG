@@ -165,9 +165,7 @@ export namespace ClientPayloadInterface {
 		extraResistanceAmount: number
 		additionalDiceAmount: number
 		useAdditionalLife: boolean
-		AAOnForceMove: boolean
-		AAcounterAttackStrength: number
-		autoNextTurnOnSilent: boolean
+		legacyAA:boolean
 		diceControlItemFrequency: number
 		shuffleObstacle: boolean
 

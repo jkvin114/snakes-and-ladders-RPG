@@ -186,7 +186,10 @@ abstract class Player extends Entity {
 	isMyTurn(){
 		return this.game.thisturn===this.turn
 	}
-
+	toggleAutoBuy(){
+		if(this.AI) return
+		this.autoBuy=!this.autoBuy
+	}
 	calculateAdditionalDice(amount: number): number {
 		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this))(function () {
 			return this.pos
@@ -769,7 +772,7 @@ abstract class Player extends Entity {
 		if (isRooted) {
 			//특정 장애물은 속박시 무시
 			if (SETTINGS.ignoreStunObsList.includes(obs)) {
-				if (this.game.setting.legacyBasicAttack) this.basicAttack()
+				if (this.game.setting.legacyAA) this.basicAttack()
 
 				obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
 			}
@@ -794,7 +797,7 @@ abstract class Player extends Entity {
 			obs = ObstacleHelper.applyObstacle(this, obs, isForceMoved)
 		}
 
-		if (this.game.setting.legacyBasicAttack) this.basicAttack()
+		if (this.game.setting.legacyAA) this.basicAttack()
 
 		return obs
 	}

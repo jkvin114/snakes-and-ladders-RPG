@@ -65,7 +65,7 @@ class ItemEffectFactory {
 	static create(item: ITEM) {
 		switch (item) {
 			case ITEM.EPIC_FRUIT:
-				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.FOREVER, TickEffect.FREQ_EVERY_TURN)
+				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_FOREVER, TickEffect.FREQ_EVERY_TURN)
 					.setAction(function (this: Player) {
 						this.changeHP_heal(new HPChangeData().setHpChange(this.ability.extraHP * 0.15))
 
@@ -73,7 +73,7 @@ class ItemEffectFactory {
 					})
 					.setGood()
 			case ITEM.POWER_OF_MOTHER_NATURE:
-				return new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE, StatusEffect.FOREVER, function (
+				return new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE, StatusEffect.DURATION_FOREVER, function (
 					Damage: Damage,
 					owner: Player
 				) {
@@ -93,7 +93,7 @@ class ItemEffectFactory {
 			case ITEM.POWER_OF_NATURE:
 				return new OnDamageEffect(
 					EFFECT.ITEM_POWER_OF_NATURE,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					(Damage: Damage, owner: Player) => {
 						return PlayerAbility.applySkillDmgReduction(Damage, 10)
 					}
@@ -104,7 +104,7 @@ class ItemEffectFactory {
 			case ITEM.CARD_OF_DECEPTION:
 				return new OnHitEffect(
 					EFFECT.ITEM_CARD_OF_DECEPTION,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					function(this: Player, target: Player, damage: Damage){
 						if (this.inven.isActiveItemAvailable(ITEM.CARD_OF_DECEPTION)) {
 							//	console.log("CARD_OF_DECEPTION")
@@ -124,7 +124,7 @@ class ItemEffectFactory {
 			case ITEM.ANCIENT_SPEAR:
 				return new OnHitEffect(
 					EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					function(this: Player, target: Player, damage: Damage){
 						return damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.1)
 					}
@@ -134,7 +134,7 @@ class ItemEffectFactory {
 			case ITEM.SPEAR:
 				return new OnHitEffect(
 					EFFECT.ITEM_SPEAR_ADAMAGE,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					function(this: Player, target: Player, damage: Damage){
 						//	console.log("ITEM_SPEAR_ADAMAGE")
 						return damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.05)
@@ -145,7 +145,7 @@ class ItemEffectFactory {
 			case ITEM.CROSSBOW_OF_PIERCING:
 				return new OnHitEffect(
 					EFFECT.ITEM_CROSSBOW_ADAMAGE,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					function(this: Player, target: Player, damage: Damage){
 						return damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
 					}
@@ -155,7 +155,7 @@ class ItemEffectFactory {
 			case ITEM.FULL_DIAMOND_ARMOR:
 				return new OnHitEffect(
 					EFFECT.ITEM_DIAMOND_ARMOR_MAXHP_GROWTH,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					function(this: Player, target: Player, damage: Damage){
 						this.ability.addMaxHP(5)
 						//	console.log("FULL_DIAMOND_ARMOR")
@@ -167,7 +167,7 @@ class ItemEffectFactory {
 			case ITEM.BOOTS_OF_PROTECTION:
 				return new OnDamageEffect(
 					EFFECT.ITEM_BOOTS_OF_ENDURANCE,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					(damage: Damage, owner: Player) => {
 						//	console.log("BOOTS_OF_PROTECTION")
 						return damage.updateNormalDamage(CALC_TYPE.multiply, 0.65)
@@ -178,7 +178,7 @@ class ItemEffectFactory {
 			case ITEM.WARRIORS_SHIELDSWORD:
 				return new OnFinalDamageEffect(
 					EFFECT.ITEM_SHIELDSWORD,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.WARRIORS_SHIELDSWORD)) {
 							console.log("WARRIORS_SHIELDSWORD")
@@ -202,7 +202,7 @@ class ItemEffectFactory {
 			case ITEM.INVISIBILITY_CLOAK:
 				return new OnFinalDamageEffect(
 					EFFECT.ITEM_INVISIBILITY_CLOAK,
-					StatusEffect.FOREVER,
+					StatusEffect.DURATION_FOREVER,
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.INVISIBILITY_CLOAK)) {
 							console.log("invisibility cloak")
@@ -290,7 +290,7 @@ abstract class StatusEffect {
 	public effectType: EFFECT_TYPE
 	static readonly DURATION_UNTIL_LETHAL_DAMAGE = 1000
 	static readonly DURATION_UNTIL_DEATH = 2000
-	static readonly FOREVER = 10000
+	static readonly DURATION_FOREVER = 10000
 
 	constructor(id: EFFECT, dur: number, timing: EFFECT_TIMING) {
 		this.id = id
@@ -345,7 +345,7 @@ abstract class StatusEffect {
 		return true
 	}
 	onDeath() {
-		if (this.duration >= StatusEffect.FOREVER) {
+		if (this.duration >= StatusEffect.DURATION_FOREVER) {
 			return false
 		}
 

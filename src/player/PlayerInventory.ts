@@ -127,7 +127,7 @@ class PlayerInventory {
 	}
 
 	onKillEnemy(){
-		if(this.isActiveItemAvailable(ITEM.TIME_WARP_POTION)){
+		if(this.isActiveItemAvailable(ITEM.TIME_WARP_POTION) && this.player.ability.AP.get()>=200){
 			console.log("------------time warp potion")
 			this.useActiveItem(ITEM.TIME_WARP_POTION)
 			this.player.resetCooltime([ENUM.SKILL.Q,ENUM.SKILL.W])

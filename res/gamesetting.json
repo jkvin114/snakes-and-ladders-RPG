@@ -25,22 +25,10 @@
 			"desc_kor": "추가 목숨 판매",
 			"default": true
 		},
-		"AAOnForceMove": {
-			"desc": "Basic Attack after Force Move",
-			"desc_kor": "강제이동후 기본공격",
-			"default": true
-		},
-		"AAcounterAttackStrength": {
-			"desc": "Basic Attack Counter Attack Strength",
-			"desc_kor": "기본공격 반격 데미지",
-			"default": 1,
-			"options": ["None", "50%", "100%"],
-			"options_kor": [" 없음", "50%", "100%"]
-		},
-		"autoNextTurnOnSilent": {
-			"desc": "Go next turn automatically when unable to use skill",
-			"desc_kor": "스킬사용 불가시 자동으로 다음턴으로",
-			"default": true
+		"legacyAA": {
+			"desc": "Legacy basic attack",
+			"desc_kor": "예전 기본공격 방식",
+			"default": false
 		},
 		"diceControlItemFrequency": {
 			"desc": "Dice Control Item appear frequency",

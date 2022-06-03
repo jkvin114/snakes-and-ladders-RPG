@@ -945,23 +945,23 @@ class SkillInfoFactory {
 	area(s: number) {
 		return `<area>${this.chooseLang(`Select ${s} Squares`, s + "칸 범위를 선택")}</>`
 	}
-	mDmg(d: number | string, scale?: string) {
-		if (scale == null) {
+	mDmg(d: number | string, scaleType?: string) {
+		if (scaleType == null) {
 			return `<mdmg>${d}${this.chooseLang(" magic damage", "의 마법 피해")}</>`
 		}
-		return `<mdmg><scale${scale}>${d}</>${this.chooseLang(" magic damage", "의 마법 피해")}</>`
+		return `<mdmg><scale${scaleType}>${d}</>${this.chooseLang(" magic damage", "의 마법 피해")}</>`
 	}
-	pDmg(d: number | string, scale?: string) {
-		if (scale == null) {
+	pDmg(d: number | string, scaleType?: string) {
+		if (scaleType == null) {
 			return `<pdmg>${d}${this.chooseLang(" attack damage", "의 물리 피해")}</>`
 		}
-		return `<pdmg><scale${scale}>${d}</>${this.chooseLang(" attack damage", "의 물리 피해")}</>`
+		return `<pdmg><scale${scaleType}>${d}</>${this.chooseLang(" attack damage", "의 물리 피해")}</>`
 	}
-	tDmg(d: number | string, scale?: string) {
-		if (scale == null) {
+	tDmg(d: number | string, scaleType?: string) {
+		if (scaleType == null) {
 			return `<tdmg>${d}${this.chooseLang(" fixed damage", "의 고정 피해")}</>`
 		}
-		return `<tdmg><scale${scale}>${d}</>${this.chooseLang(" fixed damage", "의 고정 피해")}</>`
+		return `<tdmg><scale${scaleType}>${d}</>${this.chooseLang(" fixed damage", "의 고정 피해")}</>`
 	}
 
 	baseDmg(s: number) {

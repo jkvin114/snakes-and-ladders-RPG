@@ -43,13 +43,13 @@ class GameSetting {
 	extraResistanceAmount: number
 	additionalDiceAmount: number
 	useAdditionalLife: boolean
+	legacyAA:boolean
 	AAOnForceMove: boolean
 	AAcounterAttackStrength: number
 	autoNextTurnOnStore: boolean
 	autoNextTurnOnSilent: boolean
 	diceControlItemFrequency: number
 	shuffleObstacle: boolean
-	legacyBasicAttack: boolean
 
 	killRecord: boolean
 	itemRecord: boolean
@@ -58,7 +58,6 @@ class GameSetting {
 	constructor(setting: ClientPayloadInterface.GameSetting, instant: boolean, isTeam: boolean) {
 		this.instant = instant
 		this.isTeam = isTeam
-		this.legacyBasicAttack = false
 		if (setting === null) {
 			this.randomize()
 			this.autoNextTurnOnStore = true
@@ -75,9 +74,10 @@ class GameSetting {
 		this.extraResistanceAmount = setting.extraResistanceAmount
 		this.additionalDiceAmount = setting.additionalDiceAmount
 		this.useAdditionalLife = setting.useAdditionalLife
-		this.AAOnForceMove = setting.AAOnForceMove
-		this.AAcounterAttackStrength = setting.AAcounterAttackStrength
-		this.autoNextTurnOnSilent = setting.autoNextTurnOnSilent
+		this.legacyAA=setting.legacyAA
+		// this.AAOnForceMove = setting.AAOnForceMove
+		// this.AAcounterAttackStrength = setting.AAcounterAttackStrength
+		// this.autoNextTurnOnSilent = setting.autoNextTurnOnSilent
 		this.diceControlItemFrequency = setting.diceControlItemFrequency
 		this.shuffleObstacle = setting.shuffleObstacle
 
@@ -92,7 +92,7 @@ class GameSetting {
 		this.additionalDiceAmount = Util.randInt(GAMESETTINGS.gameplaySetting.additionalDiceAmount.options.length)
 		this.useAdditionalLife = Util.randomBoolean()
 		this.AAOnForceMove = Util.randomBoolean()
-		this.AAcounterAttackStrength = Util.randInt(GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length)
+	//	this.AAcounterAttackStrength = Util.randInt(GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length)
 		this.diceControlItemFrequency = Util.randInt(GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length)
 		this.shuffleObstacle = Util.randomBoolean()
 		return this
@@ -124,11 +124,7 @@ class GameSetting {
 				value: GAMESETTINGS.gameplaySetting.additionalDiceAmount.options[this.additionalDiceAmount]
 			},
 			{ name: "useAdditionalLife", value: this.useAdditionalLife },
-			{ name: "AAOnForceMove", value: this.AAOnForceMove },
-			{
-				name: "AAcounterAttackStrength",
-				value: GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options[this.AAcounterAttackStrength]
-			},
+			{ name: "legacyAA", value: this.legacyAA },
 			{
 				name: "diceControlItemFrequency",
 				value: GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options[this.diceControlItemFrequency]
@@ -174,7 +170,7 @@ class Game {
 	readonly isTeam: boolean
 	readonly shuffledObstacles: { obs: number; money: number }[]
 	readonly setting: GameSetting
-
+	
 	PNUM: number
 	CNUM: number
 	totalnum: number
@@ -398,6 +394,11 @@ class Game {
 	}
 	//========================================================================================================
 
+	user_update<T>(turn:number,type:string,data:T){
+		if(type==='auto_store'){
+			this.pOfTurn(turn).toggleAutoBuy()
+		}
+	}
 	summonSubmarine() {
 		if (this.submarine_cool === 0) {
 			console.log("submarine" + this.submarine_id)

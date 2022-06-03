@@ -93,6 +93,10 @@ class GameLoop {
 		}
 		return new GameLoop(game)
 	}
+	user_update<T>(turn:number,type:string,data:T){
+		this.game.user_update(turn,type,data)
+		console.log("user_update"+type)
+	}
 	user_storeComplete(data: ClientPayloadInterface.ItemBought) {
 		if (!this.game) return
 		this.game.userCompleteStore(data)

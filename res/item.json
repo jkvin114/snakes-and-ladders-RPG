@@ -686,13 +686,13 @@
 			"price": 350,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "AP", "value": 120, "type_kor": "주문력" },
+				{ "type": "AP", "value": 70, "type_kor": "주문력" },
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
 			"children": [4,5],
 			"parents": [],
-			"unique_effect": "Normal skill cooltime reset if you kill an enemy",
-			"unique_effect_kor": "적 처치시 기본스킬 쿨타임 초기화",
+			"unique_effect": "When AP is higher than 200, Normal skill cooltime resets if you kill an enemy",
+			"unique_effect_kor": "주문력이 200 이상일 때, 적 처치시 기본스킬 쿨타임 초기화",
 			"active_cooltime": 1,
 			"summary":{
 				"kor":"주문력, 쿨타임감소","eng":"Magic power, Cooltime reduction"

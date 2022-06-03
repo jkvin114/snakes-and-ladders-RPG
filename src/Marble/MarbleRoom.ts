@@ -1,4 +1,5 @@
 import { Room } from "../room";
+import { MarbleGameLoop } from "./MarbleGameLoop";
 
 class MarbleRoom extends Room{
     getMapId(): number {

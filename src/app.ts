@@ -1,5 +1,5 @@
 import SETTINGS = require("../res/globalsettings.json")
-import { SpecialEffect } from "./data/SpecialEffect"
+import type { SpecialEffect } from "./data/SpecialEffect"
 const { GameRecord, SimulationRecord, User } = require("./mongodb/DBHandler")
 
 import { createServer } from "http"
@@ -60,7 +60,7 @@ app.on("error", (err: any) => {
 	console.error("Server error:", err)
 })
 
-var interfaces = os.networkInterfaces()
+const interfaces = os.networkInterfaces()
 var addresses = []
 for (var k in interfaces) {
 	for (var k2 in interfaces[k]) {
@@ -147,7 +147,7 @@ namespace SocketSession {
 	}
 }
 
-var io = new Server(httpserver, {
+const io = new Server(httpserver, {
 	cors: {
 		origin: "http://127.0.0.1:" + PORT,
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -426,6 +426,15 @@ io.on("connect", function (socket: Socket) {
 		R.getRPGRoom(rname).doInstantSimulation()
 	})
 
+	socket.on("user:update", function (type:string,data:any) {
+		//	console.log("action selection complete")
+		let rname = SocketSession.getRoomName(socket)
+
+		if (!R.hasRPGRoom(rname)) return
+		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
+		R.getRPGRoom(rname).gameloop.user_update(SocketSession.getTurn(socket),type,data)
+	})
+	
 	//==========================================================================================
 
 	socket.on("user:press_dice", function (crypt_turn: string, dicenum: number) {
@@ -482,7 +491,7 @@ io.on("connect", function (socket: Socket) {
 		R.getRPGRoom(rname).gameloop.user_completePendingObs(info,crypt_turn)
 	})
 	//==========================================================================================
-
+	
 	/**
 	 * 선택 action 선택 완료후 처리
 	 * 처리 후 스킬 사용
