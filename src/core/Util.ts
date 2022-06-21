@@ -1,6 +1,6 @@
-import { Entity } from "../entity/Entity"
+import type { Entity } from "../entity/Entity"
 import * as ENUM from "../data/enum"
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 const CALC_TYPE = {
 	set: (o: number, n: number) => n,
 	plus: (o: number, n: number) => o + n,
@@ -287,6 +287,12 @@ export const Normalize = function (list: number[]): number[] {
 }
 
 export type Movement = { player: number; to: number; type: string }
+
+export const hasProp = <T>(
+	varToBeChecked: unknown,
+	propertyToCheckFor: keyof T
+  ): varToBeChecked is T =>
+	(varToBeChecked as T)[propertyToCheckFor] !== undefined
 
 class PriorityArray<T> extends Array {
 	constructor() {

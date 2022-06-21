@@ -21,7 +21,7 @@ router.post('/create',function(req:express.Request,res:express.Response){
         return
     }
     console.log(rname)
-    R.setRPGRoom(rname,new RPGRoom(rname)) 
+    R.setRPGRoom(rname,new RPGRoom(rname))
 
     if(req.session){
         if(!req.session.username){

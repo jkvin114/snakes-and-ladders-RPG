@@ -3,11 +3,10 @@ import * as Util from "./Util"
 import SETTINGS = require("../../res/globalsettings.json")
 import { MAP } from "../MapHandlers/MapStorage"
 import { EffectFactory, StatusEffect } from "../StatusEffect"
-import { SpecialEffect } from "../data/SpecialEffect"
+import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import { statuseffect_kor, statuseffect } from "../../res/string_resource.json"
 import {Player} from '../player/player'
 import { EntityFilter } from "../entity/EntityFilter"
-import { PlayerClientInterface } from "../app"
 class ObstacleHelper {
 	static applyObstacle(player: Player, obs: number, isForceMoved: boolean) {
 		let others: string[] = []
@@ -363,12 +362,12 @@ class ObstacleHelper {
 
 		//not ai, not pending obs and forcemoved, not arrive at none
 		if (!player.AI && !(pendingObsList.includes(obs) && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
-			player.transfer(PlayerClientInterface.indicateObstacle, {turn:player.turn,obs:obs})
+			player.game.clientInterface.indicateObstacle({turn:player.turn,obs:obs})
 		}
 
 		console.log(others)
 		for (let pid of others) {
-			player.transfer(PlayerClientInterface.indicateObstacle,{turn:player.game.id2Turn(pid),obs:obs})
+			player.game.clientInterface.indicateObstacle({turn:player.game.id2Turn(pid),obs:obs})
 		}
 
 		return obs

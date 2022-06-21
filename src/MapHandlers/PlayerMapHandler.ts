@@ -1,4 +1,3 @@
-import { PlayerClientInterface} from "../app"
 import { Player } from "../player/player"
 import { EntityFilter } from "../entity/EntityFilter"
 import { MAP ,singleMap} from "./MapStorage"
@@ -174,7 +173,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 	goWay2() {
 		this.player.pos = this.gamemap.way2_range.way_start
 		this.onMainWay = false
-		this.transfer(PlayerClientInterface.update, "way", this.player.turn, false)
+		this.player.game.clientInterface.update("way", this.player.turn, false)
 	}
 
 	exitWay2(dice: number) {
@@ -182,7 +181,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 
 		this.player.pos = this.gamemap.way2_range.end - dice
 
-		this.transfer(PlayerClientInterface.update, "way", this.player.turn, true)
+		this.player.game.clientInterface.update("way", this.player.turn, true)
 	}
 
 	checkWay2OnForceMove(pos: number) {
@@ -301,8 +300,8 @@ class CasinoMapHandler extends PlayerMapHandler {
 		let effect=CasinoMapHandler.SUBWAY_EXPRESS
 		if(this.subwayTicket===SUBWAY_TICKET.RAPID) effect=CasinoMapHandler.SUBWAY_RAPID
 		if(this.subwayTicket===SUBWAY_TICKET.LOCAL) effect=CasinoMapHandler.SUBWAY_LOCAL
-		this.transfer(PlayerClientInterface.visualEffect,this.player.pos,effect,-1)
-		this.transfer(PlayerClientInterface.smoothTeleport,this.player.turn,this.player.pos,dist)
+		this.player.game.clientInterface.visualEffect(this.player.pos,effect,-1)
+		this.player.game.clientInterface.smoothTeleport(this.player.turn,this.player.pos,dist)
 		this.player.moveByDice(dist)
 	}
 
@@ -310,7 +309,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 	private removeSubwayTicket() {
 		this.subwayTicket = SUBWAY_TICKET.NONE
 		this.isInSubway = false
-		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, false)
+		this.player.game.clientInterface.update("isInSubway", this.player.turn, false)
 	}
 	onBasicAttack(damage: Damage) {
 		if(this.isInSubway)
@@ -334,8 +333,8 @@ class CasinoMapHandler extends PlayerMapHandler {
 		console.log("exitsubway" + this.player.turn)
 		//단순 지하철구간에서 빠져나온 경우
 		this.isInSubway = false
-		this.transfer(PlayerClientInterface.update, "subwayTicket", this.player.turn, -1)
-		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, false)
+		this.player.game.clientInterface.update("subwayTicket", this.player.turn, -1)
+		this.player.game.clientInterface.update("isInSubway", this.player.turn, false)
 	}
 	private enterSubwayWithoutSelection() {
 		console.log("enterSubwayWithoutSelection"+this.player.turn)
@@ -345,7 +344,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 			//처음 아니면 기존티켓 사용
 			this.subwayTicket = SUBWAY_TICKET.LOCAL 
 		}
-		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, true)
+		this.player.game.clientInterface.update("isInSubway", this.player.turn, true)
 	}
 	//지하철 선택칸 도착
 	private enterSubwayNormal() {
@@ -357,7 +356,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		if (this.player.AI) {
 			this.aiSubwaySelection()
 		}
-		this.transfer(PlayerClientInterface.update, "isInSubway", this.player.turn, true)
+		this.player.game.clientInterface.update("isInSubway", this.player.turn, true)
 	}
 	private aiSubwaySelection() {
 		let prices = this.getSubwayPrices()

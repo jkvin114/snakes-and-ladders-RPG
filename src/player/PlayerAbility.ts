@@ -1,5 +1,4 @@
 import type { Player, ValueScale } from "./player"
-import { PlayerClientInterface } from "../app"
 import { HPChangeData, CALC_TYPE, Damage } from "../core/Util"
 import { ITEM } from "../data/enum"
 import ABILITY = require("../../res/character_ability.json")
@@ -266,8 +265,8 @@ class PlayerAbility {
 		let info_eng = this.player.getSkillInfoEng()
 
 		if (this.player.game.instant) return
-		this.transfer(PlayerClientInterface.update, "stat", this.player.turn, this.getAll())
-		this.transfer(PlayerClientInterface.updateSkillInfo, this.player.turn, info_kor, info_eng)
+		this.player.game.clientInterface.update("stat", this.player.turn, this.getAll())
+		this.player.game.clientInterface.updateSkillInfo(this.player.turn, info_kor, info_eng)
 	}
 
 	onLevelUp(playercount: number) {

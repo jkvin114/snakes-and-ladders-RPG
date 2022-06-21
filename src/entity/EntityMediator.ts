@@ -1,4 +1,4 @@
-import { PlayerClientInterface } from "../app"
+// import { PlayerClientInterface } from "../app"
 import { Player } from "../player/player"
 import { EntityFilter } from "./EntityFilter"
 import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
@@ -8,6 +8,7 @@ import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize, sleep, CALC
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerPayloadInterface } from "../data/PayloadInterface"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
+import { ClientInterface } from "../ClientInterface"
 
 
 
@@ -22,7 +23,8 @@ class AttackHandler{
 			data.targets.push(v)
 			died=died||(v.flags.includes("died"))
 		}
-		from.transfer(PlayerClientInterface.attack,data)
+		
+		from.game.clientInterface.attack(data)
 		return died
 	}
 
@@ -37,7 +39,7 @@ class AttackHandler{
 				type:from.getSkillName(skillattack.skill),
 				delay:delay
 			}
-			from.transfer(PlayerClientInterface.skillTrajectory,data)
+			from.game.clientInterface.skillTrajectory(data)
 			await sleep(delay)
 		}
 
@@ -50,7 +52,7 @@ class AttackHandler{
 			data.targets.push(v)
 		}
 
-		from.transfer(PlayerClientInterface.attack,data)
+		from.game.clientInterface.attack(data)
 	}
 
 	static basicAttack(from:Player,target:Entity,dmg:Damage):ServerPayloadInterface.Victim{
@@ -79,7 +81,7 @@ class AttackHandler{
 		let data:ServerPayloadInterface.Attack={
 			targets:[v],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
 		}
-		from.transfer(PlayerClientInterface.attack,data)
+		from.game.clientInterface.attack(data)
 		return (v.flags.includes("died"))
 	}
 
@@ -141,7 +143,7 @@ class AttackHandler{
 			}],source:-1,visualeffect:effectname,sourcePos:0
 		}
 
-		from.game.sendToClient(PlayerClientInterface.attack,data)
+		from.game.clientInterface.attack(data)
 
 		return AttackHandler.doDamage(from,target,damage,effectname,false,[HPChangeData.FLAG_PLAINDMG])
 	}
@@ -197,10 +199,12 @@ class EntityMediator {
 	readonly isTeam: boolean
 	readonly instant: boolean
 	readonly rname: string
-	constructor(isTeam: boolean, instant: boolean, rname: string) {
+	readonly clientInterface:ClientInterface
+	constructor(isTeam: boolean, instant: boolean, rname: string,ci:ClientInterface) {
 		this.isTeam = isTeam
 		this.instant = instant
 		this.rname = rname
+		this.clientInterface=ci
 		this.storage = new EntityStorage()
 	}
 	sendToClient(sender: Function, ...args: any[]) {
@@ -253,7 +257,7 @@ class EntityMediator {
 
 		entity.forceMove(pos)
 		if (entity instanceof SummonedEntity) {
-			this.sendToClient(PlayerClientInterface.update, "move_entity", entity.summoner.turn, {
+			this.clientInterface.update( "move_entity", entity.summoner.turn, {
 				UEID: entity.UEID,
 				pos: entity.pos
 			})
@@ -264,7 +268,7 @@ class EntityMediator {
 		let player = this.getPlayer(id)
 		if (!(player instanceof Player)) return
 
-		this.sendToClient(PlayerClientInterface.playerForceMove, player.turn, pos, movetype)
+		this.clientInterface.playerForceMove(player.turn, pos, movetype)
 
 		player.forceMove(pos)
 
@@ -278,7 +282,7 @@ class EntityMediator {
 		let player = this.getPlayer(id)
 		if (!(player instanceof Player)) return
 
-		this.sendToClient(PlayerClientInterface.playerForceMove, player.turn, pos, movetype)
+		this.clientInterface.playerForceMove(player.turn, pos, movetype)
 
 		player.forceMove(pos)
 

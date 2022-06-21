@@ -1,8 +1,7 @@
 import * as Util from "../core/Util"
 import { EFFECT,  SKILL, ITEM } from "../data/enum"
-import { PlayerClientInterface } from "../app"
 import type { Player } from "./player"
-import { SpecialEffect } from "../data/SpecialEffect"
+import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import {
 	StatusEffect,
 	EFFECT_TYPE,
@@ -143,9 +142,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 
 		if (data != null) {
 		//	console.log(this.getEffectSourcePlayerName(effect.source))
-
-			this.transfer(
-				PlayerClientInterface.giveSpecialEffect,
+			this.player.game.clientInterface.giveSpecialEffect(
 				this.player.turn,
 				effect.name,
 				data,
@@ -185,7 +182,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		let num = this.player.game.onEffectApply()
 
 		//	console.log("giveeffect" + effect)
-		this.transfer(PlayerClientInterface.giveEffect,{
+		this.player.game.clientInterface.giveEffect({
 			turn: this.player.turn,
 			effect: effect, 
 			num:num
@@ -233,9 +230,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.category[effectType].delete(key)
 		this.storage.delete(key)
 		if (key < 30) {
-			this.transfer(PlayerClientInterface.update, "removeEffect", this.player.turn, key)
+			this.player.game.clientInterface.update("removeEffect", this.player.turn, key)
 		} else {
-			this.transfer(PlayerClientInterface.update, "removeSpecialEffect", this.player.turn, effect.name)
+			this.player.game.clientInterface.update("removeSpecialEffect", this.player.turn, effect.name)
 		}
 	}
 	getKeyByName(name: string) {

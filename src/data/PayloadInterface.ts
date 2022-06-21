@@ -118,7 +118,7 @@ export namespace ServerPayloadInterface {
 		isShutDown: boolean
 		killerMultiKillCount: number
 	}
-	export interface Obstacle {
+	export interface Obstacle extends TurnPayloadInterface {
 		obs: number
 	}
 	export interface ObstacleEffect extends TurnPayloadInterface {

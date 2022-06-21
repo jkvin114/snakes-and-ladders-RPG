@@ -7,7 +7,7 @@ import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } fr
 import { Projectile } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { EFFECT_TIMING, NormalEffect } from "../StatusEffect"
-import { SpecialEffect } from "../data/SpecialEffect"
+import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"

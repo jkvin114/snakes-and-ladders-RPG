@@ -1,5 +1,5 @@
 import SETTINGS = require("../res/globalsettings.json")
-import type { SpecialEffect } from "./data/SpecialEffect"
+import type { SpecialEffect } from "./data/SpecialEffectRegistry"
 const { GameRecord, SimulationRecord, User } = require("./mongodb/DBHandler")
 
 import { createServer } from "http"
@@ -12,18 +12,11 @@ import { ClientPayloadInterface, ServerPayloadInterface } from "./data/PayloadIn
 import { RPGRoom } from "./RPGRoom"
 import { MarbleRoom } from "./Marble/MarbleRoom"
 import type { Room } from "./room"
+const { isMainThread } = require('worker_threads')
 
-const args = require("minimist")(process.argv.slice(2))
-export let testSetting = {
-	lvl: 1,
-	pos: 0,
-	money: 0
-}
-if (args["l"]) testSetting.lvl = args["l"]
-if (args["p"]) testSetting.pos = args["p"]
-if (args["m"]) testSetting.money = args["m"]
 
-console.log(testSetting)
+
+console.log(isMainThread)
 
 const session = require("express-session")({
 	key: "sid", //세션의 키 값
@@ -190,7 +183,10 @@ io.on("connect", function (socket: Socket) {
 		.then((resolvedData)=>console.log(resolvedData))
 		.catch((e)=>console.error(e))
 */
-		R.getRoom(roomName).setSimulation(false).setNickname(SocketSession.getUsername(socket), 0)
+		R.getRoom(roomName).setSimulation(false).registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
+			console.log(args)
+			io.to(roomname).emit(type,...args)
+		}).setNickname(SocketSession.getUsername(socket), 0)
 		// ROOMS.set(roomName, room)
 		socket.join(roomName)
 		console.log(socket.rooms)
@@ -348,7 +344,13 @@ io.on("connect", function (socket: Socket) {
 		let rname = "simulation_" + String(Math.floor(Math.random() * 1000000))
 		SocketSession.setRoomName(socket, rname)
 		socket.join(rname)
+
 		let room = new RPGRoom(rname).setSimulation(true)
+		.registerSimulationClientInterface(function(roomname:string,type:string,...args:unknown[]){
+			io.to(roomname).emit(type,...args)
+		})
+		
+
 		R.setRPGRoom(rname, room)
 
 		let u = SocketSession.getUsername(socket)
@@ -357,10 +359,12 @@ io.on("connect", function (socket: Socket) {
 				console.log(setting)
 				console.log("team:" + isTeam + "   count:" + count + "runner:" + user._id)
 
-				room.user_simulationReady(setting, count, isTeam, user._id)
+				room.user_simulationStart(setting, count, isTeam, user._id.toString())
 			})
 			.catch((e: Error) => {
+
 				console.error(e)
+				console.error("Invalid user")
 			})
 	})
 
@@ -422,8 +426,8 @@ io.on("connect", function (socket: Socket) {
 
 		if (!R.hasRPGRoom(rname)) return
 
-		socket.join(rname)
-		R.getRPGRoom(rname).doInstantSimulation()
+		//socket.join(rname)
+	//	R.getRPGRoom(rname).doInstantSimulation()
 	})
 
 	socket.on("user:update", function (type:string,data:any) {
@@ -632,139 +636,9 @@ io.on("connect", function (socket: Socket) {
 		let turn = SocketSession.getTurn(socket)
 		if (!R.hasRPGRoom(rname)) return
 		console.log("reconnect"+rname)
-		// console.log(socket.rooms)
-		// if(!socket.rooms.has(rname))
-		// 	socket.join(rname)
-		// console.log(socket.rooms)
-
 		R.getRPGRoom(rname).gameloop.user_reconnect(turn)
 	})
 })
-
-export namespace RoomClientInterface {
-	export const updateNextTurn = function (rname: string, turnUpdateData: ServerPayloadInterface.TurnStart) {
-		io.to(rname).emit("server:nextturn", turnUpdateData)
-	}
-	export const syncVisibility = function (rname: string, data: ServerPayloadInterface.PlayerPosSync[]) {
-		io.to(rname).emit("server:sync_player_visibility", data)
-	}
-	export const rollDice = function (rname: string, data: ServerPayloadInterface.DiceRoll) {
-		io.to(rname).emit("server:rolldice", data)
-	}
-	export const startTimeout = function (rname: string, crypt_turn: string, time: number) {
-		io.to(rname).emit("server:start_timeout_countdown", crypt_turn, time)
-	}
-	export const stopTimeout = function (rname: string, crypt_turn: string) {
-		io.to(rname).emit("server:stop_timeout_countdown", crypt_turn)
-	}
-	export const forceNextturn = function (rname: string, crypt_turn: string) {
-		io.to(rname).emit("server:force_nextturn", crypt_turn)
-	}
-	export const sendPendingObs = function (rname: string, data: ServerPayloadInterface.PendingObstacle) {
-		io.to(rname).emit(data.name, data.argument)
-	}
-	export const setSkillReady = function (rname: string, skildata: ServerPayloadInterface.SkillStatus) {
-		io.to(rname).emit("server:skills", skildata)
-	}
-	export const sendPendingAction = function (rname: string, name: string, data: number) {
-		io.to(rname).emit(name, data)
-	}
-	export const simulationOver = function (rname: string, msg: string) {
-		io.to(rname).emit("server:simulationover", msg)
-	}
-	export const gameOver = function (rname: string, winner: number) {
-		//	console.log(rname)
-		io.to(rname).emit("server:gameover", winner)
-	}
-	export const gameStatReady = function (rname: string, id: string) {
-		io.to(rname).emit("server:game_stat_ready", id)
-	}
-	export const simulationStatReady = function (rname: string, id: string) {
-		io.to(rname).emit("server:simulation_stat_ready", id)
-	}
-}
-
-export class PlayerClientInterface {
-	// static changeHP = (rname: string, hpChangeData: any) => {
-	// 	io.to(rname).emit("server:hp", hpChangeData)
-	// }
-	static changeMoney = (rname: string, turn: number, indicate_amt: number, result: number) => {
-		io.to(rname).emit("server:money", { turn: turn, amt: indicate_amt, result: result })
-	}
-
-	static changeHP_damage = (rname: string, hpChangeData: ServerPayloadInterface.Damage) => io.to(rname).emit("server:damage", hpChangeData)
-
-	static changeHP_heal = (rname: string, hpChangeData: ServerPayloadInterface.Heal) => io.to(rname).emit("server:heal", hpChangeData)
-
-	static changeShield = (rname: string, shieldData: ServerPayloadInterface.Shield) => io.to(rname).emit("server:shield", shieldData)
-
-	static giveEffect = (rname: string, data: ServerPayloadInterface.NormalEffect) =>
-		io.to(rname).emit("server:status_effect", data)
-
-	static giveSpecialEffect = (
-		rname: string,
-		turn: number,
-		name: string,
-		data: SpecialEffect.DescriptionData,
-		sourcePlayer: string
-	) => io.to(rname).emit("server:special_effect", { turn: turn, name: name, data: data, sourcePlayer: sourcePlayer })
-
-	static playerForceMove = (rname: string, turn: number, pos: number, movetype: string) =>
-		io.to(rname).emit("server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
-
-	static smoothTeleport = (rname: string, turn: number, pos: number, distance: number) =>
-		io.to(rname).emit("server:smooth_teleport", { turn: turn, pos: pos, distance: distance })
-
-	static removeProj = (rname: string, UPID: string) => io.to(rname).emit("server:delete_projectile", UPID)
-
-	static die = (rname: string, killData: ServerPayloadInterface.Death) => io.to(rname).emit("server:death", killData)
-
-	static respawn = (rname: string, turn: number, respawnPos: number, isRevived: boolean) =>
-		io.to(rname).emit("server:respawn", { turn: turn, respawnPos: respawnPos, isRevived: isRevived })
-
-	static message = (rname: string, message: string) => io.to(rname).emit("server:receive_message", "[@]", message)
-
-	static playsound = (rname: string, sound: string) => io.to(rname).emit("server:sound", sound)
-
-	static placePassProj = (rname: string, data: ServerPayloadInterface.PassProjectile) =>
-		io.to(rname).emit("server:create_passprojectile", data)
-
-	static placeProj = (rname: string, proj: ServerPayloadInterface.PassProjectile) =>
-		io.to(rname).emit("server:create_projectile", proj)
-
-	static summonEntity = (rname: string, entity: ServerPayloadInterface.SummonedEntity) =>
-		io.to(rname).emit("server:create_entity", entity)
-
-	static deleteEntity = (rname: string, UEID: string, iskilled: boolean) =>
-		io.to(rname).emit("server:delete_entity", UEID, iskilled)
-
-	static update = (rname: string, type: string, turn: number, amt: any) =>
-		io.to(rname).emit("server:update_other_data", { type: type, turn: turn, amt: amt })
-
-	static updateSkillInfo = (rname: string, turn: number, info_kor: string[], info_eng: string[]) =>
-		io.to(rname).emit("server:update_skill_info", { turn: turn, info_kor: info_kor, info_eng: info_eng })
-
-	static visualEffect = (rname: string, pos: number, type: string, source: number) =>
-		io.to(rname).emit("server:visual_effect", { pos: pos, type: type, source: source })
-		
-	static attack = (rname: string,data:ServerPayloadInterface.Attack) =>
-	io.to(rname).emit("server:attack", data)
-	static skillTrajectory = (rname: string, data:ServerPayloadInterface.skillTrajectory) =>
-		io.to(rname).emit("server:skill_trajectory", data)
-	static indicateObstacle = (rname: string, data:ServerPayloadInterface.Obstacle) =>
-		io.to(rname).emit("server:indicate_obstacle", data)
-	static obstacleEffect=(rname: string, data:ServerPayloadInterface.ObstacleEffect) =>
-	io.to(rname).emit("server:obstacle_effect", data)
-
-	static indicateItem = (rname: string, turn: number, item: number[]) =>
-		io.to(rname).emit("server:indicate_item", { turn: turn, item: item })
-
-	static goStore = (rname: string, turn: number, storeData: ServerPayloadInterface.EnterStore) =>
-		io.to(rname).emit("server:store", {
-			turn: turn,
-			storeData: storeData
-		})
-}
 
 app.get("/connection_check", function (req, res) {
 	res.end()

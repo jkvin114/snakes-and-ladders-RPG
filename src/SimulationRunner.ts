@@ -1,28 +1,37 @@
-import { ArriveSquare, GameCycleState, AiSimulationSkill, GameLoop} from "./GameCycle/RPGGameCycleState"
-import { GameSetting } from "./Game"
+import type { GameCycleState } from "./GameCycle/RPGGameCycleState"
+import { GameLoop } from "./GameCycle/RPGGameCycleState"
+import { GAME_CYCLE } from "./GameCycle/StateEnum"
+import { GameSetting } from "./GameSetting"
 import cliProgress = require("cli-progress")
-// import { RoomClientInterface } from "./app"
 import SETTINGS = require("../res/globalsettings.json")
-import { shuffle,pickRandom, PlayerType } from "./core/Util"
+import { shuffle, pickRandom, PlayerType } from "./core/Util"
 import { ClientPayloadInterface } from "./data/PayloadInterface"
+const { workerData, parentPort, isMainThread } = require("worker_threads")
 
-
+interface SimulationInit {
+	setting: ClientPayloadInterface.SimulationSetting
+	count: number
+	isTeam: boolean
+	runnerId: string
+	roomName: string
+	path: string
+}
 class SimulationSetting {
 	mapPool: number[]
 	allowMirrorMatch: boolean
 	characterPool: number[]
-	lockedCharacters:number[]
-	teamLock:number[][]
+	lockedCharacters: number[]
+	teamLock: number[][]
 
 	playerNumber: number
-	randomizePlayerNumber: boolean	
+	randomizePlayerNumber: boolean
 	randomizeGameSetting: boolean
 	randomizePlayerNames: boolean
 	divideTeamEqually: boolean
-	summaryOnly:boolean
-    isTeam:boolean
-    
-    simulationCount: number
+	summaryOnly: boolean
+	isTeam: boolean
+	saveStatistics: boolean
+	simulationCount: number
 	gameSetting: GameSetting
 	private static PLAYERCOUNT = [2, 3, 4]
 	private static NAMES = [
@@ -58,25 +67,26 @@ class SimulationSetting {
 		"Ernesto"
 	]
 
-	constructor(isTeam:boolean,setting:ClientPayloadInterface.SimulationSetting) {
-        this.gameSetting=new GameSetting(setting.gameSetting,true,isTeam)
-        this.gameSetting.setSimulationSettings(setting)
-		this.summaryOnly=setting.summaryOnly
-        this.isTeam=isTeam
-        this.mapPool=setting.mapPool
-        this.allowMirrorMatch=setting.allowMirrorMatch
+	constructor(isTeam: boolean, setting: ClientPayloadInterface.SimulationSetting) {
+		this.gameSetting = new GameSetting(setting.gameSetting, true, isTeam)
+		this.gameSetting.setSimulationSettings(setting)
+		this.summaryOnly = setting.summaryOnly
+		this.isTeam = isTeam
+		this.mapPool = setting.mapPool
+		this.allowMirrorMatch = setting.allowMirrorMatch
 
-        this.characterPool=setting.characterPool   //not locked
-		this.lockedCharacters=setting.lockedCharacters   //locked
+		this.characterPool = setting.characterPool //not locked
+		this.lockedCharacters = setting.lockedCharacters //locked
 
-        this.playerNumber=setting.playerNumber
-        this.randomizePlayerNumber=setting.randomizePlayerNumber
-        this.randomizeGameSetting=setting.randomizeGameSetting
-        this.randomizePlayerNames=setting.randomizePlayerNames
-        this.divideTeamEqually=setting.divideTeamEqually
-		this.teamLock=setting.teamLock
-    }
-	
+		this.playerNumber = setting.playerNumber
+		this.randomizePlayerNumber = setting.randomizePlayerNumber
+		this.randomizeGameSetting = setting.randomizeGameSetting
+		this.randomizePlayerNames = setting.randomizePlayerNames
+		this.divideTeamEqually = setting.divideTeamEqually
+		this.teamLock = setting.teamLock
+		this.saveStatistics = true
+	}
+
 	getMap() {
 		return pickRandom(this.mapPool)
 	}
@@ -86,8 +96,7 @@ class SimulationSetting {
 		}
 	}
 	getPlayerCount() {
-        if(this.isTeam || this.playerNumber<2 || this.playerNumber>4)
-            this.playerNumber=4
+		if (this.isTeam || this.playerNumber < 2 || this.playerNumber > 4) this.playerNumber = 4
 
 		if (!this.randomizePlayerNumber) {
 			return this.playerNumber
@@ -100,7 +109,9 @@ class SimulationSetting {
 	}
 	getPlayerName(char: number, turn: number) {
 		if (this.randomizePlayerNames) {
-			return pickRandom(SimulationSetting.NAMES)+" "+ pickRandom(SimulationSetting.NAMES) + "(" + String(turn + 1) + "P) "
+			return (
+				pickRandom(SimulationSetting.NAMES) + " " + pickRandom(SimulationSetting.NAMES) + "(" + String(turn + 1) + "P) "
+			)
 		} else {
 			return String(turn + 1) + "P"
 		}
@@ -109,66 +120,63 @@ class SimulationSetting {
 		this.characterPool = shuffle(this.characterPool)
 		this.lockedCharacters = shuffle(this.lockedCharacters)
 		let list = []
-		for(let i=0;i < count && i < this.lockedCharacters.length;++i){
+		for (let i = 0; i < count && i < this.lockedCharacters.length; ++i) {
 			list.push(this.lockedCharacters[i])
 		}
 
 		if (this.allowMirrorMatch) {
-			for (let i = 0; i < count-this.lockedCharacters.length; ++i) 
+			for (let i = 0; i < count - this.lockedCharacters.length; ++i)
 				list.push(pickRandom(this.characterPool.concat(this.lockedCharacters)))
 		} else {
-			for (let i = 0; i < count-this.lockedCharacters.length; ++i) {
+			for (let i = 0; i < count - this.lockedCharacters.length; ++i) {
 				list.push(this.characterPool[i])
 			}
 		}
 		return list
 	}
 	/**
-	 * 
-	 * @param isTeam 
-	 * @param charlist 
+	 *
+	 * @param isTeam
+	 * @param charlist
 	 * @returns true:red/false:blue/all true:no team
 	 */
-	getTeamList(isTeam: boolean,charlist:number[]): boolean[] {
+	getTeamList(isTeam: boolean, charlist: number[]): boolean[] {
 		if (!isTeam) {
 			return [true, true, true, true]
-		} else{
-			let maxRed=this.divideTeamEqually? 2: pickRandom([1,2,3])
-			let maxBlue=4-maxRed
-			let red=0
-			let blue=0
-			let redlocked=new Set(this.teamLock[0])
-			let bluelocked=new Set(this.teamLock[1])
+		} else {
+			let maxRed = this.divideTeamEqually ? 2 : pickRandom([1, 2, 3])
+			let maxBlue = 4 - maxRed
+			let red = 0
+			let blue = 0
+			let redlocked = new Set(this.teamLock[0])
+			let bluelocked = new Set(this.teamLock[1])
 
-			let teamlist=charlist.map((c)=>{
-				if(redlocked.has(c) && red < maxRed){
+			let teamlist = charlist.map((c) => {
+				if (redlocked.has(c) && red < maxRed) {
 					red++
 					redlocked.delete(c)
 					return true
-				}
-				else if(bluelocked.has(c) && blue < maxBlue){
+				} else if (bluelocked.has(c) && blue < maxBlue) {
 					blue++
 					bluelocked.delete(c)
 					return false
 				}
 				return null
-			},this)
+			}, this)
 
-
-			for(let i in teamlist){
-				if(teamlist[i]===null && red < maxRed){
-					teamlist[i]=true
+			for (let i in teamlist) {
+				if (teamlist[i] === null && red < maxRed) {
+					teamlist[i] = true
 					red++
-				}
-				else if(teamlist[i]===null && blue < maxBlue){
-					teamlist[i]=false
+				} else if (teamlist[i] === null && blue < maxBlue) {
+					teamlist[i] = false
 					blue++
 				}
 			}
 			return teamlist
-		} 
+		}
 	}
-	getSummary(){
+	getSummary() {
 		return [
 			{ name: "allowMirrorMatch", value: this.allowMirrorMatch },
 			{ name: "isTeam", value: this.isTeam },
@@ -179,7 +187,7 @@ class SimulationSetting {
 			{ name: "mapPool", value: this.mapPool },
 			{ name: "playerNumber", value: this.playerNumber },
 			{ name: "randomizePlayerNumber", value: this.randomizePlayerNumber },
-			{ name: "randomizeGameSetting", value: this.randomizeGameSetting },
+			{ name: "randomizeGameSetting", value: this.randomizeGameSetting }
 		]
 	}
 }
@@ -188,58 +196,69 @@ class Simulation {
 	private count: number
 	private progressCount: number
 	// private game: Game
-	private gameCycle:GameCycleState
+	private gameCycle: GameCycleState
 	private stats: Set<any>
-	private summaryStats:Set<any>
+	private summaryStats: Set<any>
 	private roomName: string
 	private setting: SimulationSetting
-	private runnerId:string
+	private runnerId: string
 
-	constructor(roomname: string, count: number, setting: SimulationSetting,runner:string) {
+	constructor(roomname: string, count: number, setting: SimulationSetting, runner: string) {
 		this.setting = setting
 		this.count = count
 		this.roomName = roomname
-		this.runnerId=runner
+		this.runnerId = runner
 		// this.game = null
-		this.gameCycle=null
+		this.gameCycle = null
 		this.stats = new Set<any>()
-		this.summaryStats=new Set<any>()
+		this.summaryStats = new Set<any>()
 		this.progressCount = 0
 	}
 
 	getFinalStatistics() {
+		if (!this.setting.saveStatistics) return null
+
 		return {
 			stat: Array.from(this.stats),
-			count: this.count-1,
+			count: this.count - 1,
 			multiple: true,
-			version:SETTINGS.version,
-			setting:this.setting.getSummary()
+			version: SETTINGS.version,
+			setting: this.setting.getSummary()
 		}
 	}
 
-	getSimpleResults(){
-		return{
+	getSimpleResults() {
+		if (!this.setting.saveStatistics) return null
+
+		return {
 			stat: Array.from(this.summaryStats),
-			count: this.count-1,
-			serverVersion:SETTINGS.version,
-			setting:this.setting.getSummary(),
-			simulation:"",
-			runner:this.runnerId
+			count: this.count - 1,
+			serverVersion: SETTINGS.version,
+			setting: this.setting.getSummary(),
+			simulation: "",
+			runner: this.runnerId
 		}
 	}
 
-	run(callback:Function) {
+	run(callback: Function,onError:Function) {
 		let consolelog = console.log
 		console.log = function () {}
 		const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
 		bar1.start(this.count - 2, 0)
 		let startTime: any = new Date()
 		let i = 0
-
-		for (i = 0; i < this.count - 1; ++i) {
-			this.playOneGame(i)
-			bar1.update(i)
+		try{
+			for (i = 0; i < this.count - 1; ++i) {
+				if (i % 10 === 0) parentPort.postMessage({ type: "progress", value: i / this.count })
+				this.playOneGame(i)
+				bar1.update(i)
+			}
+			
 		}
+		catch(e){
+			onError(e)
+		}
+		
 		bar1.stop()
 		let endTime: any = new Date()
 		let timeDiff: any = endTime - startTime
@@ -255,69 +274,103 @@ class Simulation {
 		let oneGame = true
 		while (oneGame) {
 			try {
-				if(this.nextturn()) break
-				this.gameCycle=this.gameCycle.getNext()
+				if (this.nextturn()) break
+				this.gameCycle = this.gameCycle.getNext()
 				this.skill()
-				this.gameCycle=this.gameCycle.getNext()
+				this.gameCycle = this.gameCycle.getNext()
 			} catch (e) {
 				console.error("Unexpected error on " + this.progressCount + "th game ")
 				console.error("while processing " + this.gameCycle.game.thisturn + "th turn player")
 				console.error(e)
-				break
+				continue
 			}
 		}
-		if(!this.setting.summaryOnly){
-			this.stats.add(this.gameCycle.game.getFinalStatistics())
+		if (this.setting.saveStatistics) {
+			if (!this.setting.summaryOnly) {
+				this.stats.add(this.gameCycle.game.getFinalStatistics())
+			}
+			this.summaryStats.add(this.gameCycle.game.getSummaryStatistics())
 		}
-		this.summaryStats.add(this.gameCycle.game.getSummaryStatistics())
 	}
-	skill(){
-		if(this.gameCycle instanceof AiSimulationSkill){
+	skill() {
+		if (this.gameCycle.id === GAME_CYCLE.SKILL.AI_SKILL) {
 			this.gameCycle.process()
-			this.gameCycle=this.gameCycle.getNext()
-		}
-		else{
+			this.gameCycle = this.gameCycle.getNext()
+		} else {
 			throw new Error("invalid game cycle state for ai skill")
 		}
 	}
 	/**
-	 * 
+	 *
 	 * @returns is game over
 	 */
-    nextturn():boolean {
-		this.gameCycle=this.gameCycle.getNext().getNext()
-		if(this.gameCycle instanceof ArriveSquare){
+	nextturn(): boolean {
+		this.gameCycle = this.gameCycle.getNext().getNext()
+		if (this.gameCycle.id === GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE) {
 			return this.gameCycle.gameover
-		}
-		else{
+		} else {
 			throw new Error("invalid game cycle state for nextturn")
 		}
 	}
-	makeGame(){
+	makeGame() {
 		this.setting.updateGameSetting()
-
 
 		let playernumber = this.setting.getPlayerCount()
 		let charlist = this.setting.getCharacterList(playernumber)
-		let teamlist = this.setting.getTeamList(this.setting.isTeam,charlist)
-		let playerlist=[]
+		let teamlist = this.setting.getTeamList(this.setting.isTeam, charlist)
+		let playerlist = []
 		for (let i = 0; i < playernumber; ++i) {
 			playerlist.push({
-				type:PlayerType.AI,
-				name:this.setting.getPlayerName(charlist[i], i),
-				team:teamlist[i],
-				champ:charlist[i],
-				ready:true
+				type: PlayerType.AI,
+				name: this.setting.getPlayerName(charlist[i], i),
+				team: teamlist[i],
+				champ: charlist[i],
+				ready: true
 			})
 		}
-		this.gameCycle=GameLoop.createWithSetting(this.setting.getMap(), this.roomName,this.setting.gameSetting,playerlist)
-		.startSimulation().state.getTurnInitializer()//turninitializer
+		this.gameCycle = GameLoop.createWithSetting(
+			this.setting.getMap(),
+			this.roomName,
+			this.setting.gameSetting,
+			playerlist
+		)
+			.startSimulation()
+			.state.getTurnInitializer() //turninitializer
 	}
 
-    getCount(){
-        return this.count
-    }
-	
+	getCount() {
+		return this.count
+	}
+	isSummaryOnly(): boolean {
+		return this.setting.summaryOnly
+	}
 }
 
-export { Simulation,SimulationSetting }
+function runSimulation(data: SimulationInit): Promise<any> {
+	//console.log("runnerid"+data.runnerId)
+	let setting = new SimulationSetting(data.isTeam, data.setting)
+	let simulation = new Simulation(data.roomName, data.count, setting, data.runnerId)
+
+	return new Promise((resolve, reject) => {
+		simulation.run(function () {
+			resolve({
+				stat: simulation.isSummaryOnly() ? null : simulation.getFinalStatistics(),
+				simple_stat: simulation.getSimpleResults()
+			})
+			reject(new Error("Request is failed"))
+		},
+		(e:unknown)=>reject(e))
+	})
+}
+//console.log("start simulation" + isMainThread)
+runSimulation(workerData)
+.then((stat) => {
+	parentPort.postMessage({ type: "end", value: stat })
+	parentPort.close()
+})
+.catch((e)=>{
+	parentPort.postMessage({ type: "error", value: e })
+	parentPort.close()
+})
+
+export { Simulation, SimulationSetting, runSimulation }

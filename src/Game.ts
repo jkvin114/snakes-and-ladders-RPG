@@ -1,6 +1,5 @@
 
 import SETTINGS = require("../res/globalsettings.json")
-import GAMESETTINGS = require("../res/gamesetting.json")
 import * as ENUM from "./data/enum"
 import * as Util from "./core/Util"
 import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
@@ -13,7 +12,7 @@ import {MAP} from "./MapHandlers/MapStorage"
 import { EntityMediator } from "./entity/EntityMediator"
 import { Player } from "./player/player"
 import { EntityFilter } from "./entity/EntityFilter"
-import { PlayerClientInterface } from "./app"
+// import { PlayerClientInterface } from "./app"
 import { Creed } from "./characters/Creed"
 import { Silver } from "./characters/Silver"
 import { Timo } from "./characters/Timo"
@@ -24,6 +23,8 @@ import { Gorae } from "./characters/Gorae"
 import { Bird } from "./characters/Bird"
 import { Tree } from "./characters/Tree"
 import { GAME_CYCLE } from "./GameCycle/StateEnum"
+import { GameSetting } from "./GameSetting"
+import { ClientInterface } from "./ClientInterface"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -33,105 +34,6 @@ function encrypt(val: string, key: string):string {
 		.createHash("sha512")
 		.update(val + key)
 		.digest("hex")
-}
-class GameSetting {
-	instant: boolean
-	isTeam: boolean
-	GameSpeed: number
-
-	itemLimit: number
-	extraResistanceAmount: number
-	additionalDiceAmount: number
-	useAdditionalLife: boolean
-	legacyAA:boolean
-	AAOnForceMove: boolean
-	AAcounterAttackStrength: number
-	autoNextTurnOnStore: boolean
-	autoNextTurnOnSilent: boolean
-	diceControlItemFrequency: number
-	shuffleObstacle: boolean
-
-	killRecord: boolean
-	itemRecord: boolean
-	positionRecord: boolean
-	moneyRecord: boolean
-	constructor(setting: ClientPayloadInterface.GameSetting, instant: boolean, isTeam: boolean) {
-		this.instant = instant
-		this.isTeam = isTeam
-		if (setting === null) {
-			this.randomize()
-			this.autoNextTurnOnStore = true
-			this.autoNextTurnOnSilent = true
-			this.killRecord = true
-			this.itemRecord = true
-			this.positionRecord = true
-			this.moneyRecord = true
-			this.itemLimit = 6
-			return
-		}
-
-		this.itemLimit = setting.itemLimit
-		this.extraResistanceAmount = setting.extraResistanceAmount
-		this.additionalDiceAmount = setting.additionalDiceAmount
-		this.useAdditionalLife = setting.useAdditionalLife
-		this.legacyAA=setting.legacyAA
-		// this.AAOnForceMove = setting.AAOnForceMove
-		// this.AAcounterAttackStrength = setting.AAcounterAttackStrength
-		// this.autoNextTurnOnSilent = setting.autoNextTurnOnSilent
-		this.diceControlItemFrequency = setting.diceControlItemFrequency
-		this.shuffleObstacle = setting.shuffleObstacle
-
-		this.killRecord = setting.killRecord
-		this.itemRecord = setting.itemRecord
-		this.positionRecord = setting.positionRecord
-		this.moneyRecord = setting.moneyRecord
-	}
-
-	randomize() {
-		this.extraResistanceAmount = Util.randInt(GAMESETTINGS.gameplaySetting.extraResistanceAmount.options.length)
-		this.additionalDiceAmount = Util.randInt(GAMESETTINGS.gameplaySetting.additionalDiceAmount.options.length)
-		this.useAdditionalLife = Util.randomBoolean()
-		this.AAOnForceMove = Util.randomBoolean()
-	//	this.AAcounterAttackStrength = Util.randInt(GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length)
-		this.diceControlItemFrequency = Util.randInt(GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length)
-		this.shuffleObstacle = Util.randomBoolean()
-		return this
-	}
-
-	setSimulationSettings(setting: ClientPayloadInterface.SimulationSetting) {
-		this.killRecord = setting.killRecord
-		this.itemRecord = setting.itemRecord
-		this.positionRecord = setting.positionRecord
-		this.moneyRecord = setting.moneyRecord
-	}
-	getInitialSetting() {
-		return {
-			itemLimit: this.itemLimit,
-			useAdditionalLife: this.useAdditionalLife,
-			autoNextTurnOnSilent: this.autoNextTurnOnSilent
-		}
-	}
-
-	getSummary() {
-		return [
-			{ name: "itemLimit", value: this.itemLimit },
-			{
-				name: "extraResistanceAmount",
-				value: GAMESETTINGS.gameplaySetting.extraResistanceAmount.options[this.extraResistanceAmount]
-			},
-			{
-				name: "additionalDiceAmount",
-				value: GAMESETTINGS.gameplaySetting.additionalDiceAmount.options[this.additionalDiceAmount]
-			},
-			{ name: "useAdditionalLife", value: this.useAdditionalLife },
-			{ name: "legacyAA", value: this.legacyAA },
-			{
-				name: "diceControlItemFrequency",
-				value: GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options[this.diceControlItemFrequency]
-			},
-			{ name: "shuffleObstacle", value: this.shuffleObstacle }
-		]
-	}
 }
 
 class PlayerFactory {
@@ -212,6 +114,8 @@ class Game {
 	cycle:number
 	arriveSquareCallback:Function
 	arriveSquareTimeout:NodeJS.Timeout
+	clientInterface:ClientInterface
+
 	private static readonly PLAYER_ID_SUFFIX = "P"
 
 	constructor(mapid: number, rname: string, setting: GameSetting) {
@@ -256,7 +160,6 @@ class Game {
 		// this.playerSelector = new PlayerSelector(this.isTeam)
 		this.UPIDGen = new Util.UniqueIdGenerator(this.rname + "_P")
 		this.UEIDGen = new Util.UniqueIdGenerator(this.rname + "_ET")
-		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
 		this.turnEncryptKey = Math.round(new Date().valueOf() * Math.random() * Math.random()) + this.rname
 
 		this.turnEncryption = new Map<number, string>()
@@ -265,6 +168,10 @@ class Game {
 		}
 		this.arriveSquareTimeout=null
 		this.arriveSquareCallback=null
+
+		this.clientInterface=new ClientInterface(this.rname)
+		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname,this.clientInterface)
+		
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -527,8 +434,8 @@ class Game {
 
 		entity = entity.summon(summoner, lifespan, pos, id)
 		// this.summonedEntityList.set(id, entity)
-
-		this.entityMediator.sendToClient(PlayerClientInterface.summonEntity, entity.getTransferData())
+		this.clientInterface.summonEntity(entity.getTransferData())
+		// this.entityMediator.sendToClient(PlayerClientInterface.summonEntity, )
 		return entity
 	}
 
@@ -536,7 +443,7 @@ class Game {
 		// if (!this.summonedEntityList.has(entityId)) return
 		this.entityMediator.withdraw(entityId)
 		// this.summonedEntityList.delete(entityId)
-		this.entityMediator.sendToClient(PlayerClientInterface.deleteEntity, entityId, iskilled)
+		this.clientInterface.deleteEntity(entityId, iskilled)
 	}
 	getEnemyEntityInRange(attacker: Player, rad: number): Entity[] {
 		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
@@ -1153,10 +1060,10 @@ class Game {
 
 		if (proj instanceof PassProjectile) {
 			this.passProjectiles.set(id, proj)
-			this.entityMediator.sendToClient(PlayerClientInterface.placePassProj, proj.getTransferData())
+			this.clientInterface.placePassProj( proj.getTransferData())
 		} else if (proj instanceof RangeProjectile) {
 			this.rangeProjectiles.set(id, proj)
-			this.entityMediator.sendToClient(PlayerClientInterface.placeProj, proj.getTransferData())
+			this.clientInterface.placeProj(proj.getTransferData())
 		}
 		return id
 	}
@@ -1166,7 +1073,7 @@ class Game {
 
 		this.rangeProjectiles.get(UPID).remove()
 		this.rangeProjectiles.delete(UPID)
-		this.sendToClient(PlayerClientInterface.removeProj, UPID)
+		this.clientInterface.removeProj(UPID)
 	}
 //========================================================================================================
 	removePassProjectileById(UPID: string) {
@@ -1174,7 +1081,7 @@ class Game {
 
 		this.passProjectiles.get(UPID).remove()
 		this.passProjectiles.delete(UPID)
-		this.sendToClient(PlayerClientInterface.removeProj, UPID)
+		this.clientInterface.removeProj(UPID)
 	}
 //========================================================================================================
 	getGodHandTarget():number[] {
@@ -1426,4 +1333,4 @@ class Game {
 	}
 }
 
-export { Game, GameSetting }
+export { Game }

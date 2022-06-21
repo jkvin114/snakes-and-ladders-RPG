@@ -8,7 +8,7 @@ import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } fr
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect,ShieldEffect, EFFECT_TIMING } from "../StatusEffect"
-import { SpecialEffect } from "../data/SpecialEffect"
+import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import BirdAgent from "../AiAgents/BirdAgent"

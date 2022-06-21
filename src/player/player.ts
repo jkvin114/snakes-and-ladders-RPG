@@ -2,7 +2,7 @@ import obsInfo = require("../../res/obstacles.json")
 import SETTINGS = require("../../res/globalsettings.json")
 import * as ENUM from "../data/enum"
 import * as Util from "../core/Util"
-import { PlayerClientInterface, testSetting } from "../app"
+// import { PlayerClientInterface, testSetting } from "../app"
 import type { Game } from "../Game"
 import { EntityFilter } from "../entity/EntityFilter"
 import { Projectile } from "../Projectile"
@@ -18,6 +18,7 @@ import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
 import { ServerPayloadInterface } from "../data/PayloadInterface"
 import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../res/character_ability.json")
+const { isMainThread } = require('worker_threads')
 
 // class Minion extends Entity{
 // 	constructor(){
@@ -27,6 +28,23 @@ import ABILITY = require("../../res/character_ability.json")
 
 // 	}
 // }
+
+// let args
+
+// if(isMainThread){
+// 	args=require("minimist")(process.argv.slice(2))
+// }
+
+const testSetting = {
+	lvl: 1,
+	pos: 0,
+	money: 0
+}
+// if (args["l"]) testSetting.lvl = args["l"]
+// if (args["p"]) testSetting.pos = args["p"]
+// if (args["m"]) testSetting.money = args["m"]
+
+console.log(testSetting)
 export interface ValueScale {
 	base: number
 	scales: { ability: string; val: number }[]
@@ -136,7 +154,7 @@ abstract class Player extends Entity {
 		// this.MaxHP = basic_stats[0]
 		this.ability = new PlayerAbility(this)
 		this.statistics = new PlayerStatistics(this)
-		this.inven = new PlayerInventory(this)
+		this.inven = new PlayerInventory(this,testSetting.money)
 		this.effects = new PlayerStatusEffects(this)
 		this.mapHandler = PlayerMapHandler.create(this, this.mapId)
 		this.AiAgent = new DefaultAgent(this)
@@ -169,7 +187,7 @@ abstract class Player extends Entity {
 		return this
 	}
 	message(text: string) {
-		this.transfer(PlayerClientInterface.message, text)
+		this.game.clientInterface.message(text)
 	}
 	getSkillInfoKor() {
 		return this.skillInfoKor.get()
@@ -293,7 +311,7 @@ abstract class Player extends Entity {
 
 	//========================================================================================================
 	showEffect(type: string, source: number) {
-		this.transfer(PlayerClientInterface.visualEffect, this.pos, type, source)
+		this.game.clientInterface.visualEffect(this.pos, type, source)
 	}
 	//========================================================================================================
 	onMyTurnStart() {
@@ -309,7 +327,7 @@ abstract class Player extends Entity {
 		this.passive()
 		this.cooltime = this.cooltime.map(Util.decrement)
 
-		this.transfer(PlayerClientInterface.update, "skillstatus", this.turn, this.getSkillStatus())
+		this.game.clientInterface.update( "skillstatus", this.turn, this.getSkillStatus())
 	}
 
 	getSkillStatus(): ServerPayloadInterface.SkillStatus {
@@ -438,12 +456,12 @@ abstract class Player extends Entity {
 	giveDiceControl() {
 		this.diceControlCool = 3
 		this.diceControl = true
-		this.transfer(PlayerClientInterface.update, "dc_item", this.turn, 1)
+		this.game.clientInterface.update("dc_item", this.turn, 1)
 	}
 	useDiceControl() {
 		this.diceControlCool = 0
 		this.diceControl = false
-		this.transfer(PlayerClientInterface.update, "dc_item", this.turn, -1)
+		this.game.clientInterface.update("dc_item", this.turn, -1)
 	}
 	diceControlCooldown() {
 		this.diceControlCool = Math.max(this.diceControlCool - 1, 0)
@@ -541,7 +559,7 @@ abstract class Player extends Entity {
 		let str = this.kill + "/" + this.death + "/" + this.assist
 
 		// if (this.game.instant) return
-		this.transfer(PlayerClientInterface.update, "kda", this.turn, str)
+		this.game.clientInterface.update("kda", this.turn, str)
 	}
 
 	/**
@@ -550,7 +568,7 @@ abstract class Player extends Entity {
 	 * set to default if name===""
 	 */
 	changeApperance(name: string) {
-		this.transfer(PlayerClientInterface.update, "appearance", this.turn, name)
+		this.game.clientInterface.update("appearance", this.turn, name)
 		//	console.log("changeApperance"+name)
 	}
 	resetApperance() {
@@ -562,7 +580,7 @@ abstract class Player extends Entity {
 	 * set to default if name===""
 	 */
 	changeSkillImage(name: string, skill: ENUM.SKILL) {
-		this.transfer(PlayerClientInterface.update, "skillImg", this.turn, {
+		this.game.clientInterface.update("skillImg", this.turn, {
 			champ: this.champ,
 			skill: skill,
 			skill_name: name
@@ -618,7 +636,7 @@ abstract class Player extends Entity {
 				currmaxhp: this.MaxHP,
 				source: data.source
 			}
-			this.transfer(PlayerClientInterface.changeHP_damage, hpChangeData)
+			this.game.clientInterface.changeHP_damage(hpChangeData)
 		}
 	}
 
@@ -655,7 +673,7 @@ abstract class Player extends Entity {
 				currmaxhp: this.MaxHP,
 				type: type
 			}
-			this.transfer(PlayerClientInterface.changeHP_heal, changeData)
+			this.game.clientInterface.changeHP_heal(changeData)
 		}
 	}
 
@@ -809,7 +827,7 @@ abstract class Player extends Entity {
 			this.AiAgent.store()
 		}
 		else{
-			this.transfer(PlayerClientInterface.goStore, this.turn, this.inven.getStoreData(priceMultiplier))
+			this.game.clientInterface.goStore(this.turn, this.inven.getStoreData(priceMultiplier))
 		}
 		
 	}
@@ -878,7 +896,7 @@ abstract class Player extends Entity {
 	}
 
 	obstacleEffect(type: string) {
-		this.transfer(PlayerClientInterface.visualEffect,this.pos,type,-1)
+		this.game.clientInterface.visualEffect(this.pos,type,-1)
 	}
 
 	/**
@@ -901,7 +919,7 @@ abstract class Player extends Entity {
 		//	console.log("updateshield" + change)
 		this.shield += Math.floor(change)
 		if (change === 0) return
-		this.transfer(PlayerClientInterface.changeShield, {
+		this.game.clientInterface.changeShield( {
 			turn: this.turn,
 			shield: this.shield,
 			change: change,
@@ -986,12 +1004,12 @@ abstract class Player extends Entity {
 	}
 
 	prepareRevive(reviveType: string) {
-		this.transfer(PlayerClientInterface.update, "waiting_revival", this.turn)
+		this.game.clientInterface.update("waiting_revival", this.turn,"")
 
 		if (reviveType === "life") this.inven.changeLife(-1)
 
 		if (reviveType === "guardian_angel") {
-			this.transfer(PlayerClientInterface.indicateItem, this.turn, ENUM.ITEM.GUARDIAN_ANGEL)
+			this.game.clientInterface.indicateItem(this.turn, ENUM.ITEM.GUARDIAN_ANGEL)
 			this.inven.useActiveItem(ENUM.ITEM.GUARDIAN_ANGEL)
 		}
 		this.waitingRevival = true
@@ -1025,7 +1043,7 @@ abstract class Player extends Entity {
 			killData.isShutDown = isShutDown
 			killData.killerMultiKillCount = killerMultiKillCount
 		}
-		this.transfer(PlayerClientInterface.die, killData)
+		this.game.clientInterface.die(killData)
 	}
 
 	/**
@@ -1096,7 +1114,7 @@ abstract class Player extends Entity {
 		this.dead = false
 		this.invulnerable=false
 		//	console.log("revive" + this.HP)
-		this.transfer(PlayerClientInterface.respawn, this.turn, this.pos, this.waitingRevival)
+		this.game.clientInterface.respawn(this.turn, this.pos, this.waitingRevival)
 
 		this.waitingRevival = false
 	}

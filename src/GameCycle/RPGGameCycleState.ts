@@ -1,11 +1,13 @@
-import { RoomClientInterface } from "../app"
+// import { this.clientInterface } from "../app"
 import SETTINGS = require("../../res/globalsettings.json")
 
-import { Game, GameSetting } from "../Game"
+import { Game } from "../Game"
+import { GameSetting } from "../GameSetting"
 import { GAME_CYCLE } from "./StateEnum"
 import { ClientPayloadInterface, ServerPayloadInterface } from "../data/PayloadInterface"
 import { ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../data/enum"
 import { PlayerType, ProtoPlayer, randInt, sleep } from "../core/Util"
+import { ClientInterface } from "../ClientInterface"
 
 
 
@@ -17,12 +19,15 @@ class GameLoop {
 	readonly rname: string
 	idleTimeoutTurn: number
 	gameOverCallBack: Function
+	clientInterface:ClientInterface
+
 	constructor(game: Game) {
 		this.game = game
 		this.gameover = false
 		this.rname = this.game.rname
 		this.gameOverCallBack
 		this.idleTimeoutTurn = -1
+		this.clientInterface=new ClientInterface(this.rname)
 	}
 	setOnGameOver(gameOverCallBack: Function) {
 		this.gameOverCallBack = gameOverCallBack
@@ -93,6 +98,10 @@ class GameLoop {
 		}
 		return new GameLoop(game)
 	}
+	setClientInterface(ci:ClientInterface){
+		this.game.clientInterface=ci
+		this.clientInterface=ci
+	}
 	user_update<T>(turn:number,type:string,data:T){
 		this.game.user_update(turn,type,data)
 		console.log("user_update"+type)
@@ -111,18 +120,18 @@ class GameLoop {
 	getOnTimeout() {
 		return (() => {
 			if (!this.game) return
-			RoomClientInterface.forceNextturn(this.rname, this.state.crypt_turn)
+			this.clientInterface.forceNextturn(this.state.crypt_turn)
 			this.startNextTurn(true)
 		}).bind(this)
 	}
 	startTimeOut(additional: Function): number {
 		if (!this.idleTimeout) {
 			console.log("starttimeout" + this.state.turn)
-			RoomClientInterface.startTimeout(this.rname, this.game.thisCryptTurn(), SETTINGS.idleTimeout)
+			this.clientInterface.startTimeout(this.game.thisCryptTurn(), SETTINGS.idleTimeout)
 
 			this.idleTimeout = setTimeout(() => {
 				if (!this.game) return
-				RoomClientInterface.forceNextturn(this.rname, this.state.crypt_turn)
+				this.clientInterface.forceNextturn(this.state.crypt_turn)
 				this.startNextTurn(true)
 				if (additional != null) additional()
 			}, SETTINGS.idleTimeout)
@@ -132,7 +141,7 @@ class GameLoop {
 	stopTimeout() {
 		console.log("stoptimeout" + this.state.turn)
 		if (this.idleTimeout != null && this.state != null && this.idleTimeoutTurn === this.state.turn) {
-			RoomClientInterface.stopTimeout(this.rname, this.game.thisCryptTurn())
+			this.clientInterface.stopTimeout(this.game.thisCryptTurn())
 			clearTimeout(this.idleTimeout)
 			this.idleTimeout = null
 		}
@@ -150,7 +159,7 @@ class GameLoop {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
 			let data: ServerPayloadInterface.DiceRoll = this.state.getData()
-			RoomClientInterface.rollDice(this.rname, data)
+			this.clientInterface.rollDice(data)
 			this.afterDice(data.actualdice)
 		}
 	}
@@ -384,6 +393,9 @@ abstract class GameCycleState {
 		console.error("this state doesn`t have a promise, state id:" + this.id)
 		return sleep(0)
 	}
+	process(){
+
+	}
 }
 class GameInitializer extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_START
@@ -403,11 +415,11 @@ class TurnInitializer extends GameCycleState {
 		let turnUpdateData = game.goNextTurn()
 		super(game, TurnInitializer.id)
 		this.turnUpdateData = turnUpdateData
-		RoomClientInterface.updateNextTurn(this.rname, turnUpdateData)
+		this.game.clientInterface.updateNextTurn(turnUpdateData)
 	}
 	onCreate(): void {
 		if (this.game.thisturn === 0) {
-			RoomClientInterface.syncVisibility(this.rname, this.game.getPlayerVisibilitySyncData())
+			this.game.clientInterface.syncVisibility(this.game.getPlayerVisibilitySyncData())
 		}
 		// if(!this.turnUpdateData) return
 	}
@@ -576,7 +588,7 @@ class PendingObstacle extends GameCycleState {
 	constructor(game: Game, obs: ServerPayloadInterface.PendingObstacle) {
 		super(game, PendingObstacle.id)
 		this.obs = obs
-		RoomClientInterface.sendPendingObs(this.rname, this.obs)
+		this.game.clientInterface.sendPendingObs(this.obs)
 	}
 	shouldStopTimeoutOnDestroy() {
 		return true
@@ -650,10 +662,10 @@ class PendingAction extends GameCycleState {
 	onCreate(): void {}
 	send() {
 		if (this.action === "submarine") {
-			RoomClientInterface.sendPendingAction(this.rname, "server:pending_action:submarine", this.game.thisp().pos)
+			this.game.clientInterface.sendPendingAction("server:pending_action:submarine", this.game.thisp().pos)
 		}
 		if (this.action === "ask_way2") {
-			RoomClientInterface.sendPendingAction(this.rname, "server:pending_action:ask_way2", 0)
+			this.game.clientInterface.sendPendingAction("server:pending_action:ask_way2", 0)
 		}
 	}
 	onUserCompletePendingAction(info: ClientPayloadInterface.PendingAction): GameCycleState {
@@ -720,7 +732,7 @@ export class WaitingSkill extends GameCycleState {
 		this.canUseSkill = status.canUseSkill
 		this.canUseBasicAttack = status.canBasicAttack
 
-		if (!this.shouldPass()) RoomClientInterface.setSkillReady(this.rname, status)
+		if (!this.shouldPass()) this.game.clientInterface.setSkillReady(status)
 	}
 	shouldPass() {
 		console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)

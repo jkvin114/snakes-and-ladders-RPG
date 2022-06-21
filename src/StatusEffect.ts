@@ -2,7 +2,7 @@ import type { Player } from "./player/player"
 import { CALC_TYPE, Damage, decrement, HPChangeData, PercentDamage, SkillAttack } from "./core/Util"
 import { EFFECT, ITEM, SKILL } from "./data/enum"
 import {PlayerAbility} from "./player/PlayerAbility"
-import { SpecialEffect } from "./data/SpecialEffect"
+import { SpecialEffect } from "./data/SpecialEffectRegistry"
 import { Entity } from "./entity/Entity"
 
 enum EFFECT_SOURCE {

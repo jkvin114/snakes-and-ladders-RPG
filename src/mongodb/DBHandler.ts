@@ -107,7 +107,7 @@ const simpleSimulationRecordSchema=new mongoose.Schema({
     count:Number,
     serverVersion:String,
     setting:[simulationSettingSchema],
-    simulation:mongoose.Types.ObjectId,
+    simulation:String,
     runner:String
 },{timestamps:true})
 
