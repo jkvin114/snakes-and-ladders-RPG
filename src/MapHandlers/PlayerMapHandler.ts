@@ -93,8 +93,10 @@ abstract class PlayerMapHandler {
 		} else if (mapId === ENUM.MAP_TYPE.CASINO) {
 			return new CasinoMapHandler(player)
 		}
-		console.error("Invaild map id")
-		return null
+		else if (mapId === ENUM.MAP_TYPE.TRAIN) {
+			return new TrainMapHandler(player)
+		}
+		return new DefaultMapHandler(player)
 	}
 }
 
@@ -103,6 +105,12 @@ class DefaultMapHandler extends PlayerMapHandler {
 	constructor(player: Player) {
 		super(player)
 		this.gamemap = MAP.get(ENUM.MAP_TYPE.NORMAL)
+	}
+}
+class TrainMapHandler extends PlayerMapHandler {
+	constructor(player: Player) {
+		super(player)
+		this.gamemap = MAP.get(ENUM.MAP_TYPE.TRAIN)
 	}
 }
 
@@ -149,7 +157,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 			this.player.game.playerForceMove(this.player, info.result, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 		}
 		if (info.type === "ask_way2" && !info.result && typeof info.result==='boolean') {
-			console.log("goWay2")
+		//	console.log("goWay2")
 			this.goWay2()
 		}
 		super.onPendingActionComplete(info)
@@ -244,7 +252,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		super.onPendingObsTimeout(pendingObs)
 	}
 	onPendingObsComplete(info: ClientPayloadInterface.PendingObstacle): void {
-		console.log("onPendingObsComplete"+info)
+	//	console.log("onPendingObsComplete"+info)
 		if (info.type === "threaten" && info.booleanResult!==null) {
 			ObstacleHelper.threaten(this.player,info.booleanResult)
 		} else if (info.type === "sell_token") {
@@ -295,7 +303,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		return super.onRollDice(moveDistance)
 	}
 	private rideSubway(dist:number){
-		console.log("ridesubway"+this.player.turn)
+	//	console.log("ridesubway"+this.player.turn)
 		
 		let effect=CasinoMapHandler.SUBWAY_EXPRESS
 		if(this.subwayTicket===SUBWAY_TICKET.RAPID) effect=CasinoMapHandler.SUBWAY_RAPID
@@ -330,14 +338,14 @@ class CasinoMapHandler extends PlayerMapHandler {
 		return this.player.pos > this.gamemap.subway.start && this.player.pos < this.gamemap.subway.end
 	}
 	private exitSubway() {
-		console.log("exitsubway" + this.player.turn)
+		//console.log("exitsubway" + this.player.turn)
 		//단순 지하철구간에서 빠져나온 경우
 		this.isInSubway = false
 		this.player.game.clientInterface.update("subwayTicket", this.player.turn, -1)
 		this.player.game.clientInterface.update("isInSubway", this.player.turn, false)
 	}
 	private enterSubwayWithoutSelection() {
-		console.log("enterSubwayWithoutSelection"+this.player.turn)
+	//	console.log("enterSubwayWithoutSelection"+this.player.turn)
 		this.isInSubway = true //지하철 구간에 이동으로 들어온경우
 		if (this.subwayTicket === SUBWAY_TICKET.NONE ) {
 			//처음 들어왔을 경우에만 기본으로
@@ -348,7 +356,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 	}
 	//지하철 선택칸 도착
 	private enterSubwayNormal() {
-		console.log("enterSubwayNormal"+this.player.turn)
+		//console.log("enterSubwayNormal"+this.player.turn)
 		this.isInSubway = true
 		if (this.subwayTicket === SUBWAY_TICKET.NONE ) {
 			this.subwayTicket = SUBWAY_TICKET.LOCAL 
@@ -422,7 +430,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		if (this.player.pos + moveDistance > this.gamemap.subway.end) {
 			moveDistance = this.gamemap.subway.end - this.player.pos
 		}
-		console.log("movedistance"+moveDistance)
+	//	console.log("movedistance"+moveDistance)
 		return moveDistance 
 	}
 }

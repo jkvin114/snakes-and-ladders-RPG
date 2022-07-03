@@ -120,7 +120,7 @@ class Jellice extends Player {
 		this.effects.apply(ENUM.EFFECT.STUN, 1)
 	}
 
-	private qRange(){
+	qRange(){
 		let w_on = this.isSkillActivated(ENUM.SKILL.W)
 		let end_front = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_front"))
 		let end_back = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_back"))
@@ -202,9 +202,9 @@ class Jellice extends Player {
 		}
 	}
 	getSkillAmount(key: string): number {
-		if (key === "qrange_start") return 3
-		if (key === "qrange_end_front") return 20
-		if (key === "qrange_end_back") return 8
+		if (key === "qrange_start") return Jellice.SKILL_SCALES.qrange_start.base
+		if (key === "qrange_end_front") return Jellice.SKILL_SCALES.qrange_end_front.base
+		if (key === "qrange_end_back") return Jellice.SKILL_SCALES.qrange_end_back.base
 		//앞 3~15, 뒤 3~8
 		return 0
 	}

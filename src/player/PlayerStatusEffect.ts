@@ -226,7 +226,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	//	console.log("removeeffect" + effect.name + " " + key + " " + this.player.turn)
 		let effectType = effect.effectType
 		effect.onBeforeRemove()
-		console.log("----------------------------------removeeffect"+effect.name)
+		//console.log("----------------------------------removeeffect"+effect.name)
 		this.category[effectType].delete(key)
 		this.storage.delete(key)
 		if (key < 30) {

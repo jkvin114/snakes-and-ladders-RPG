@@ -2,10 +2,13 @@ import type { GameCycleState } from "./GameCycle/RPGGameCycleState"
 import { GameLoop } from "./GameCycle/RPGGameCycleState"
 import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
-import cliProgress = require("cli-progress")
+//import cliProgress = require("cli-progress")
 import SETTINGS = require("../res/globalsettings.json")
 import { shuffle, pickRandom, PlayerType } from "./core/Util"
 import { ClientPayloadInterface } from "./data/PayloadInterface"
+import { TrainData } from "./TrainHelper"
+import TRAIN_SETTINGS = require("../res/train_setting.json")
+
 const { workerData, parentPort, isMainThread } = require("worker_threads")
 
 interface SimulationInit {
@@ -67,6 +70,7 @@ class SimulationSetting {
 		"Ernesto"
 	]
 
+	isTrain:boolean
 	constructor(isTeam: boolean, setting: ClientPayloadInterface.SimulationSetting) {
 		this.gameSetting = new GameSetting(setting.gameSetting, true, isTeam)
 		this.gameSetting.setSimulationSettings(setting)
@@ -84,7 +88,10 @@ class SimulationSetting {
 		this.randomizePlayerNames = setting.randomizePlayerNames
 		this.divideTeamEqually = setting.divideTeamEqually
 		this.teamLock = setting.teamLock
-		this.saveStatistics = true
+		this.saveStatistics = !TRAIN_SETTINGS.train
+		this.isTrain=TRAIN_SETTINGS.train
+		
+		if(this.isTrain) this.lockedCharacters=[TRAIN_SETTINGS.focus_character]
 	}
 
 	getMap() {
@@ -132,7 +139,7 @@ class SimulationSetting {
 				list.push(this.characterPool[i])
 			}
 		}
-		return list
+		return shuffle(list)
 	}
 	/**
 	 *
@@ -202,6 +209,7 @@ class Simulation {
 	private roomName: string
 	private setting: SimulationSetting
 	private runnerId: string
+	private trainData:TrainData
 
 	constructor(roomname: string, count: number, setting: SimulationSetting, runner: string) {
 		this.setting = setting
@@ -213,6 +221,8 @@ class Simulation {
 		this.stats = new Set<any>()
 		this.summaryStats = new Set<any>()
 		this.progressCount = 0
+		this.trainData=new TrainData()
+		
 	}
 
 	getFinalStatistics() {
@@ -243,27 +253,30 @@ class Simulation {
 	run(callback: Function,onError:Function) {
 		let consolelog = console.log
 		console.log = function () {}
-		const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
-		bar1.start(this.count - 2, 0)
+		//const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
+		//bar1.start(this.count - 2, 0)
 		let startTime: any = new Date()
 		let i = 0
 		try{
 			for (i = 0; i < this.count - 1; ++i) {
 				if (i % 10 === 0) parentPort.postMessage({ type: "progress", value: i / this.count })
 				this.playOneGame(i)
-				bar1.update(i)
+		//		bar1.update(i)
 			}
-			
 		}
 		catch(e){
 			onError(e)
 		}
 		
-		bar1.stop()
+	//	bar1.stop()
 		let endTime: any = new Date()
 		let timeDiff: any = endTime - startTime
 		console.log = consolelog
 		console.log("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
+
+		if(this.setting.isTrain){
+			this.trainData.onFinish()
+		}
 
 		callback()
 	}
@@ -290,6 +303,10 @@ class Simulation {
 				this.stats.add(this.gameCycle.game.getFinalStatistics())
 			}
 			this.summaryStats.add(this.gameCycle.game.getSummaryStatistics())
+		}
+
+		if(this.setting.isTrain){
+			this.trainData.addGame(this.gameCycle.game.getTrainData())
 		}
 	}
 	skill() {

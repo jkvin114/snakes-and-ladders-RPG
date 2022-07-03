@@ -21,8 +21,8 @@ router.get('/simulation/summary' ,function (req: express.Request, res:express.Re
     console.log(count)
     if(start<0) return res.end()
     
-    SimulationRecord.findByRange(Number(start),Number(count))
-    .then((stat:simulationRecord[]) => {
+    SimulationRecord.findSummaryByRange(Number(start),Number(count))
+    .then((stat:any[]) => {
         if (!stat) return res.status(404).send({ err: 'Statistic not found' });
         else if(stat.length===0) return res.end()
         let result=[]
@@ -30,7 +30,7 @@ router.get('/simulation/summary' ,function (req: express.Request, res:express.Re
             result.push({
                 date:s.createdAt,
                 id:s._id,
-                count:s.stat.length,
+                count:s.count,
                 setting:s.setting
             })
         }

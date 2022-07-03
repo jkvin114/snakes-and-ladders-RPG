@@ -23,7 +23,7 @@
 		"useAdditionalLife": {
 			"desc": "Additional Life on Store",
 			"desc_kor": "추가 목숨 판매",
-			"default": true
+			"default": false
 		},
 		"legacyAA": {
 			"desc": "Legacy basic attack",

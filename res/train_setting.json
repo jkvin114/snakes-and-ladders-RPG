@@ -1,0 +1,10 @@
+{
+    "train":true,
+    "random_item":true,
+    "random_item_exclude_character":[],
+    "random_item_allow_duplicate":false,
+    "save_indicator_text":true,
+    "save_indicator_json":false,
+    "focus_character":-1
+
+}

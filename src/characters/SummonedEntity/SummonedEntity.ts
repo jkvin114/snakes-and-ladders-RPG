@@ -62,12 +62,12 @@ abstract class SummonedEntity extends Entity {
 	}
 
 	naturalDeath() {
-		console.log("expired plant " + this.UEID)
+		//console.log("expired plant " + this.UEID)
 		this.dead = true
 		this.game.removeEntity(this.UEID, false)
 	}
 	killed() {
-		console.log("died plant " + this.UEID)
+	//	console.log("died plant " + this.UEID)
 		this.dead = true
 		this.game.removeEntity(this.UEID, true)
 	}
@@ -122,7 +122,7 @@ class Attackable extends EntityDecorator {
 		this.attackName = ""
 	}
 	doDamage(source: Entity, damage: Damage): boolean {
-		console.log("dodamage attackable")
+//		console.log("dodamage attackable")
 		return this.entity.doDamage(source, damage)
 	}
 	setAttackName(name: string) {
@@ -166,7 +166,7 @@ class Damageable extends EntityDecorator {
 		this.entity.basicAttack()
 	}
 	doDamage(source: Entity, damage: Damage) {
-		console.log("entitydamage" + damage.getTotalDmg())
+	//	console.log("entitydamage" + damage.getTotalDmg())
 
 		let dmg = damage.getTotalDmg()
 		this.HP -= dmg

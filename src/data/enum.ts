@@ -128,7 +128,8 @@ enum SKILL_INIT_TYPE {
 enum MAP_TYPE{
 	NORMAL=0,
 	OCEAN=1,
-	CASINO=2
+	CASINO=2,TRAIN=3
+
 }
 enum FORCEMOVE_TYPE{
 	SIMPLE='simple',LEVITATE='levitate'

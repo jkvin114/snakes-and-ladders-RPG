@@ -1,0 +1,317 @@
+[
+    [
+        {
+            "isWinner": false,
+            "character": 0,
+            "damage_per_death": 774.264619883041,
+            "damage_per_gold": 0.41017454514522694,
+            "damage_reduction_per_gold": 0.49224110244983527,
+            "damage_reduction_per_turn": 35.885376852487326,
+            "heal_per_gold": 0.08746620169066445,
+            "end_position": 71.21462747778537,
+            "damage_reduction_rate": 0.49985752385418414
+        },
+        {
+            "isWinner": false,
+            "character": 0,
+            "damage_per_death": 845.8055810397552,
+            "damage_per_gold": 0.39473637305530224,
+            "damage_reduction_per_gold": 0.4657749147708823,
+            "damage_reduction_per_turn": 34.86312902296645,
+            "heal_per_gold": 0.10339939092599944,
+            "end_position": 80,
+            "damage_reduction_rate": 0.4998524951787636
+        },
+        {
+            "isWinner": false,
+            "character": 0,
+            "damage_per_death": 0.09239859257358438,
+            "damage_per_gold": -0.03763805500036246,
+            "damage_reduction_per_gold": -0.05376671624379472,
+            "damage_reduction_per_turn": -0.028486473298664095,
+            "heal_per_gold": 0.18216395507472447,
+            "end_position": 0.12336471920681086,
+            "damage_reduction_rate": -0.000010060217523068167
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 1,
+            "damage_per_death": 1136.9625429176715,
+            "damage_per_gold": 0.4514723357691101,
+            "damage_reduction_per_gold": 0.48751999767705423,
+            "damage_reduction_per_turn": 36.61217664717432,
+            "heal_per_gold": 0.23235975147112298,
+            "end_position": 72.77668200745124,
+            "damage_reduction_rate": 0.49274388863487095
+        },
+        {
+            "isWinner": false,
+            "character": 1,
+            "damage_per_death": 1149.2023457520204,
+            "damage_per_gold": 0.4124101362133285,
+            "damage_reduction_per_gold": 0.4944238931237429,
+            "damage_reduction_per_turn": 37.74476973325863,
+            "heal_per_gold": 0.22637265969392742,
+            "end_position": 80,
+            "damage_reduction_rate": 0.5118108589728316
+        },
+        {
+            "isWinner": false,
+            "character": 1,
+            "damage_per_death": 0.010765352746748481,
+            "damage_per_gold": -0.08652180091884659,
+            "damage_reduction_per_gold": 0.014161255906597696,
+            "damage_reduction_per_turn": 0.030934874399818506,
+            "heal_per_gold": -0.025766475214790446,
+            "end_position": 0.09925319200192718,
+            "damage_reduction_rate": 0.03869549836687985
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 2,
+            "damage_per_death": 593.7544203724826,
+            "damage_per_gold": 0.41105852268352977,
+            "damage_reduction_per_gold": 0.21180098588097646,
+            "damage_reduction_per_turn": 15.532375570633668,
+            "heal_per_gold": 0.07384147023087123,
+            "end_position": 68.86864310148232,
+            "damage_reduction_rate": 0.28866166297786056
+        },
+        {
+            "isWinner": false,
+            "character": 2,
+            "damage_per_death": 767.1461449942466,
+            "damage_per_gold": 0.41333481449101783,
+            "damage_reduction_per_gold": 0.21663388292295935,
+            "damage_reduction_per_turn": 16.232878614597965,
+            "heal_per_gold": 0.09463142023831154,
+            "end_position": 80,
+            "damage_reduction_rate": 0.31478973455763626
+        },
+        {
+            "isWinner": false,
+            "character": 2,
+            "damage_per_death": 0.29202599369784793,
+            "damage_per_gold": 0.005537634380203713,
+            "damage_reduction_per_gold": 0.022818104561131664,
+            "damage_reduction_per_turn": 0.04509954325909455,
+            "heal_per_gold": 0.2815484299329209,
+            "end_position": 0.16163171506246926,
+            "damage_reduction_rate": 0.09051451900552393
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 3,
+            "damage_per_death": 1285.0732616326839,
+            "damage_per_gold": 0.61478584849166,
+            "damage_reduction_per_gold": 0.2591007957911454,
+            "damage_reduction_per_turn": 20.024300703361234,
+            "heal_per_gold": 0.35658870972881235,
+            "end_position": 68.7447904996639,
+            "damage_reduction_rate": 0.3085858833880939
+        },
+        {
+            "isWinner": false,
+            "character": 3,
+            "damage_per_death": 1644.7298850574712,
+            "damage_per_gold": 0.6466684975350779,
+            "damage_reduction_per_gold": 0.2925964457415498,
+            "damage_reduction_per_turn": 23.871402008927735,
+            "heal_per_gold": 0.40023642567670265,
+            "end_position": 80,
+            "damage_reduction_rate": 0.3429714068366738
+        },
+        {
+            "isWinner": false,
+            "character": 3,
+            "damage_per_death": 0.2798724665454824,
+            "damage_per_gold": 0.05185976404896133,
+            "damage_reduction_per_gold": 0.1292765228610273,
+            "damage_reduction_per_turn": 0.19212163074043004,
+            "heal_per_gold": 0.12240352752919358,
+            "end_position": 0.16372454434043435,
+            "damage_reduction_rate": 0.11142934690027566
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 4,
+            "damage_per_death": 678.9811890402806,
+            "damage_per_gold": 0.4768792407971921,
+            "damage_reduction_per_gold": 0.3579327661214135,
+            "damage_reduction_per_turn": 25.654849664035392,
+            "heal_per_gold": 0.0841265831334733,
+            "end_position": 69.99776636140273,
+            "damage_reduction_rate": 0.3919106375417444
+        },
+        {
+            "isWinner": false,
+            "character": 4,
+            "damage_per_death": 947.379365079365,
+            "damage_per_gold": 0.49866474840832575,
+            "damage_reduction_per_gold": 0.34165370680445256,
+            "damage_reduction_per_turn": 25.421324329650584,
+            "heal_per_gold": 0.09845416034329492,
+            "end_position": 80,
+            "damage_reduction_rate": 0.4229603369600283
+        },
+        {
+            "isWinner": false,
+            "character": 4,
+            "damage_per_death": 0.39529545202637667,
+            "damage_per_gold": 0.04568348912549665,
+            "damage_reduction_per_gold": -0.045480774206178604,
+            "damage_reduction_per_turn": -0.009102580503996436,
+            "heal_per_gold": 0.17030974843100197,
+            "end_position": 0.14289361158976321,
+            "damage_reduction_rate": 0.07922647778341227
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 5,
+            "damage_per_death": 1640.2612785592028,
+            "damage_per_gold": 1.0449402433611323,
+            "damage_reduction_per_gold": 0.32751012540425195,
+            "damage_reduction_per_turn": 23.3213557588531,
+            "heal_per_gold": 0.0654062377284206,
+            "end_position": 64.29158294262112,
+            "damage_reduction_rate": 0.4319900537750896
+        },
+        {
+            "isWinner": false,
+            "character": 5,
+            "damage_per_death": 2347.7586050724635,
+            "damage_per_gold": 1.1346313869270719,
+            "damage_reduction_per_gold": 0.3598684477172381,
+            "damage_reduction_per_turn": 27.53774588394042,
+            "heal_per_gold": 0.07806227206447866,
+            "end_position": 80,
+            "damage_reduction_rate": 0.4827104588744629
+        },
+        {
+            "isWinner": false,
+            "character": 5,
+            "damage_per_death": 0.4313320906622406,
+            "damage_per_gold": 0.08583375378236074,
+            "damage_reduction_per_gold": 0.0988009829407431,
+            "damage_reduction_per_turn": 0.1807952405805876,
+            "heal_per_gold": 0.1934988890296424,
+            "end_position": 0.2443308492092707,
+            "damage_reduction_rate": 0.11741104837052632
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 6,
+            "damage_per_death": 1535.9925463488455,
+            "damage_per_gold": 0.6893613569045062,
+            "damage_reduction_per_gold": 0.4755953414037744,
+            "damage_reduction_per_turn": 36.42860345324552,
+            "heal_per_gold": 0.0901310564040049,
+            "end_position": 71.99455164585699,
+            "damage_reduction_rate": 0.530374682869174
+        },
+        {
+            "isWinner": false,
+            "character": 6,
+            "damage_per_death": 1718.1694462262133,
+            "damage_per_gold": 0.6665888039553868,
+            "damage_reduction_per_gold": 0.45820556441476884,
+            "damage_reduction_per_turn": 36.272137911961366,
+            "heal_per_gold": 0.10127383638196989,
+            "end_position": 80,
+            "damage_reduction_rate": 0.5593844181437221
+        },
+        {
+            "isWinner": false,
+            "character": 6,
+            "damage_per_death": 0.11860532807298717,
+            "damage_per_gold": -0.0330342754507981,
+            "damage_reduction_per_gold": -0.03656422903066636,
+            "damage_reduction_per_turn": -0.00429512872995454,
+            "heal_per_gold": 0.12362864058775053,
+            "end_position": 0.11119519701326866,
+            "damage_reduction_rate": 0.05469668182050808
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 7,
+            "damage_per_death": 850.3583198893753,
+            "damage_per_gold": 0.4797897392758052,
+            "damage_reduction_per_gold": 0.32115602835172014,
+            "damage_reduction_per_turn": 25.90384552597648,
+            "heal_per_gold": 0.09076399341494926,
+            "end_position": 72.28508873012215,
+            "damage_reduction_rate": 0.3865029350396357
+        },
+        {
+            "isWinner": false,
+            "character": 7,
+            "damage_per_death": 997.5126754661638,
+            "damage_per_gold": 0.46957779056061993,
+            "damage_reduction_per_gold": 0.30307094200920226,
+            "damage_reduction_per_turn": 25.062605977670934,
+            "heal_per_gold": 0.10064661997935938,
+            "end_position": 80,
+            "damage_reduction_rate": 0.4011808163622197
+        },
+        {
+            "isWinner": false,
+            "character": 7,
+            "damage_per_death": 0.1730498216280546,
+            "damage_per_gold": -0.02128421656244502,
+            "damage_reduction_per_gold": -0.056312461065534315,
+            "damage_reduction_per_turn": -0.032475469615580684,
+            "heal_per_gold": 0.1088826768477378,
+            "end_position": 0.10672894514498865,
+            "damage_reduction_rate": 0.037976118657621086
+        }
+    ],
+    [
+        {
+            "isWinner": false,
+            "character": 8,
+            "damage_per_death": 860.7903358540923,
+            "damage_per_gold": 0.5301945807025215,
+            "damage_reduction_per_gold": 0.3361362572361107,
+            "damage_reduction_per_turn": 25.353656760143675,
+            "heal_per_gold": 0.12371442290409461,
+            "end_position": 69.40591637010677,
+            "damage_reduction_rate": 0.37890323530008957
+        },
+        {
+            "isWinner": false,
+            "character": 8,
+            "damage_per_death": 1116.3262990455994,
+            "damage_per_gold": 0.5235657017717722,
+            "damage_reduction_per_gold": 0.33046041947245036,
+            "damage_reduction_per_turn": 25.68512152080995,
+            "heal_per_gold": 0.15001884349364877,
+            "end_position": 80,
+            "damage_reduction_rate": 0.402490555473555
+        },
+        {
+            "isWinner": false,
+            "character": 8,
+            "damage_per_death": 0.296862026149445,
+            "damage_per_gold": -0.012502728568002006,
+            "damage_reduction_per_gold": -0.016885526751353887,
+            "damage_reduction_per_turn": 0.013073647079869867,
+            "heal_per_gold": 0.212622101547091,
+            "end_position": 0.15263948931097351,
+            "damage_reduction_rate": 0.06225156709148811
+        }
+    ]
+]

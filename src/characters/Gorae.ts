@@ -203,20 +203,20 @@ class Gorae extends Player {
 	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.TARGET, data: target }
 	// 	}
 	// }
-    getUltTarget(validtargets:number[]) {
-		let ps = this.mediator.allPlayer()
-		validtargets.sort((b:number, a:number):number => {
-			return ps[a].pos - ps[b].pos
-		})
+    // getUltTarget(validtargets:number[]) {
+	// 	let ps = this.mediator.allPlayer()
+	// 	validtargets.sort((b:number, a:number):number => {
+	// 		return ps[a].pos - ps[b].pos
+	// 	})
 
-		for (let p of validtargets) {
-			if (ps[p].HP+ ps[p].shield < this.getSkillBaseDamage(ENUM.SKILL.ULT) 
-			&& !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
-				return p
-			}
-		}
-		return null
-	}
+	// 	for (let p of validtargets) {
+	// 		if (ps[p].HP+ ps[p].shield < this.getSkillBaseDamage(ENUM.SKILL.ULT) 
+	// 		&& !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
+	// 			return p
+	// 		}
+	// 	}
+	// 	return null
+	// }
 
 }
 

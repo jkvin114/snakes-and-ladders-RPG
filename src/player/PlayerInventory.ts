@@ -128,7 +128,7 @@ class PlayerInventory {
 
 	onKillEnemy(){
 		if(this.isActiveItemAvailable(ITEM.TIME_WARP_POTION) && this.player.ability.AP.get()>=200){
-			console.log("------------time warp potion")
+		//	console.log("------------time warp potion")
 			this.useActiveItem(ITEM.TIME_WARP_POTION)
 			this.player.resetCooltime([ENUM.SKILL.Q,ENUM.SKILL.W])
 		}
@@ -181,7 +181,7 @@ class PlayerInventory {
 			.map((item) => {
 				return { id: item.id, cool: item.cooltime, coolRatio: 1 - item.cooltime / item.resetVal }
 			})
-			console.log(data)
+		//	console.log(data)
 		this.player.game.clientInterface.update("activeItem", this.player.turn, data)
 	}
 	getStoreData(priceMultiplier: number):ServerPayloadInterface.EnterStore {

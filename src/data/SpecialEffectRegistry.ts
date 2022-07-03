@@ -44,7 +44,7 @@ export namespace SpecialEffect {
             src:"skill/6-2.jpg",
 			name: "magician_w_burn",
 			desc: "For every player turn, receives 4(+0.01AP)% of Max HP as fixed damage",
-			desc_kor: "매 플레이어 턴마다 최대체력의 4(+0.01AP)% 의 고정 피해"
+			desc_kor: "매 플레이어 턴마다 최대체력 비례 고정 피해"
 		},
         BIRD_W: {
 			isgood:true,

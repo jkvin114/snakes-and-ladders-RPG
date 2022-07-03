@@ -25,6 +25,7 @@ import { Tree } from "./characters/Tree"
 import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
 import { ClientInterface } from "./ClientInterface"
+import { GameRecord } from "./TrainHelper"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -37,29 +38,42 @@ function encrypt(val: string, key: string):string {
 }
 
 class PlayerFactory {
-	static create(character_id: number, name: string, turn: number, team: boolean, game: Game, isAI: boolean) {
+	static create(character_id: number, name: string, turn: number, team: boolean, game: Game, isAI: boolean) :Player{
+		let char:Player
 		switch (character_id) {
 			case 0:
-				return new Creed(turn, team, game, isAI, name)
+				char= new Creed(turn, team, game, isAI, name)
+				break
 			case 1:
-				return new Silver(turn, team, game, isAI, name)
+				char= new Silver(turn, team, game, isAI, name)
+				break
 			case 2:
-				return new Timo(turn, team, game, isAI, name)
+				char= new Timo(turn, team, game, isAI, name)
+				break
 			case 3:
-				return new Yangyi(turn, team, game, isAI, name)
+				char= new Yangyi(turn, team, game, isAI, name)
+				break
 			case 4:
-				return new Jean(turn, team, game, isAI, name)
+				char= new Jean(turn, team, game, isAI, name)
+				break
 			case 5:
-				return new Jellice(turn, team, game, isAI, name)
+				char= new Jellice(turn, team, game, isAI, name)
+				break
 			case 6:
-				return new Gorae(turn, team, game, isAI, name)
+				char= new Gorae(turn, team, game, isAI, name)
+				break
 			case 7:
-				return new Bird(turn, team, game, isAI, name)
+				char= new Bird(turn, team, game, isAI, name)
+				break
 			case 8:
-				return new Tree(turn, team, game, isAI, name)
+				char= new Tree(turn, team, game, isAI, name)
+				break
 			default:
-				return new Creed(turn, team, game, isAI, name)
+				char=new Creed(turn, team, game, isAI, name)
+				break
 		}
+		char.AiAgent.onAfterCreate()
+		return char
 	}
 }
 
@@ -124,7 +138,7 @@ class Game {
 		this.simulation = false
 		this.rname = rname
 
-		if (mapid < 0 || mapid > 2) mapid = 0
+		if (mapid < 0 || mapid > 3) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
 		this.begun=false
 		this.totalturn = 0
@@ -170,7 +184,7 @@ class Game {
 		this.arriveSquareCallback=null
 
 		this.clientInterface=new ClientInterface(this.rname)
-		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname,this.clientInterface)
+		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
 		
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
@@ -308,7 +322,7 @@ class Game {
 	}
 	summonSubmarine() {
 		if (this.submarine_cool === 0) {
-			console.log("submarine" + this.submarine_id)
+			//console.log("submarine" + this.submarine_id)
 			this.removePassProjectileById(this.submarine_id)
 			this.submarine_id = ""
 			let pos = 0
@@ -427,7 +441,7 @@ class Game {
 		let id = this.UEIDGen.generate()
 
 		pos = Util.clamp(pos, 0, MAP.getLimit(this.mapId))
-		console.log(id)
+	//	console.log(id)
 
 		entity.setMediator(this.entityMediator)
 		this.entityMediator.register(entity, id)
@@ -458,7 +472,7 @@ class Game {
 	}
 	onOneMoreDice(p:Player){
 		p.onMyTurnStart()
-		console.log("ONE MORE DICE")
+	//	console.log("ONE MORE DICE")
 		p.oneMoreDice = false
 		p.effects.cooldownAllHarmful()
 		this.summonDicecontrolItemOnkill(p.turn)
@@ -492,13 +506,13 @@ class Game {
 			this.begun=true
 			
 			
-			console.log("thisturn" + this.thisturn)
+		//	console.log("thisturn" + this.thisturn)
 
 			this.summonDicecontrolItem()
 			this.projectileCooldown()
 
 			if (this.thisturn === 0) {
-				console.log(`turn ${this.totalturn}===========================================================================`)
+			//	console.log(`turn ${this.totalturn}===========================================================================`)
 
 				this.totalturn += 1
 				if (this.totalturn >= 30 && this.totalturn % 10 === 0) {
@@ -816,7 +830,7 @@ class Game {
 	}
 
 	resolveArriveSquareCallback(){
-		console.log("resolveArriveSquareCallback")
+	//	console.log("resolveArriveSquareCallback")
 		if(this.arriveSquareCallback!=null){
 			this.arriveSquareCallback()
 			this.arriveSquareCallback=null
@@ -834,18 +848,18 @@ class Game {
 	requestForceMove(player:Player, movetype: string,ignoreObstacle:boolean){
 		let delay=SETTINGS.delay_simple_forcemove
 		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
-		console.log("--------------------------------requestForceMove")
-		console.log(this.cycle)
+	//	console.log("--------------------------------requestForceMove")
+	//	console.log(this.cycle)
 		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
-			console.log("--------------------------------extendtimeout ARRIVE_SQUARE")
-			console.log(player.name)
+		//	console.log("--------------------------------extendtimeout ARRIVE_SQUARE")
+		//	console.log(player.name)
 			clearTimeout(this.arriveSquareTimeout)
 			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		}
 		else if(this.cycle===GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION_PROGRESS
 			 || this.cycle===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS){
-			console.log("--------------------------------extendtimeout PENDING_ACTION")
-			console.log(player.name)
+		//	console.log("--------------------------------extendtimeout PENDING_ACTION")
+			//console.log(player.name)
 			clearTimeout(this.arriveSquareTimeout)
 			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
 		}
@@ -948,7 +962,7 @@ class Game {
 
 		for (let proj of this.rangeProjectiles.values()) {
 			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
-				console.log("proj hit" + proj.UPID)
+			//	console.log("proj hit" + proj.UPID)
 
 				let skillattack = new Util.SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
 
@@ -1006,7 +1020,7 @@ class Game {
 
 	//========================================================================================================
 	useAreaSkill(pos: number) {
-		console.log("usearea"+pos)
+	//	console.log("usearea"+pos)
 		this.thisp().usePendingAreaSkill(pos)
 	}
 	placeSkillProjectile(pos: number) {
@@ -1156,8 +1170,8 @@ class Game {
 		
 		//타임아웃될 경우
 		if(!info.complete) return
-		console.log("onPendingObsComplete"+this.pendingObs)
-		console.log(info)
+		//console.log("onPendingObsComplete"+this.pendingObs)
+		//console.log(info)
 		if (!info) {
 			this.thisp().mapHandler.onPendingObsTimeout(this.pendingObs)
 			this.roulleteComplete()
@@ -1260,10 +1274,10 @@ class Game {
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
-				return -1000
+				return -Infinity
 			}
 			if (b.turn === this.winner) {
-				return 1000
+				return Infinity
 			} else {
 				if (b.kill === a.kill) {
 					return a.death - b.death
@@ -1305,10 +1319,10 @@ class Game {
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
-				return -1000
+				return -Infinity
 			}
 			if (b.turn === this.winner) {
-				return 1000
+				return Infinity
 			} else {
 				if (b.kill === a.kill) {
 					return a.death - b.death
@@ -1330,6 +1344,13 @@ class Game {
 			})
 		}
 		return gameresult
+	}
+	getTrainData():GameRecord {
+		let g=new GameRecord(this.totalturn)
+		for (const p of this.entityMediator.allPlayer()) {
+			g.add(p.getTrainIndicator(this.totalturn),p.getCoreItemBuild())
+		}
+		return g
 	}
 }
 

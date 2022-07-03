@@ -62,7 +62,7 @@ class GameLoop {
 			this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
 		}
 
-		console.log("thisgamecycle " + this.state.id)
+	//	console.log("thisgamecycle " + this.state.id)
 		return false
 	}
 	nextGameCycle(): boolean {
@@ -100,21 +100,22 @@ class GameLoop {
 	}
 	setClientInterface(ci:ClientInterface){
 		this.game.clientInterface=ci
+		this.game.entityMediator.clientInterface=ci
 		this.clientInterface=ci
 	}
 	user_update<T>(turn:number,type:string,data:T){
 		this.game.user_update(turn,type,data)
-		console.log("user_update"+type)
+		//console.log("user_update"+type)
 	}
 	user_storeComplete(data: ClientPayloadInterface.ItemBought) {
 		if (!this.game) return
 		this.game.userCompleteStore(data)
 	}
 	user_reconnect(turn: number) {
-		console.log("reconnect" + turn)
+		//console.log("reconnect" + turn)
 		if (turn === this.idleTimeoutTurn) {
 			//this.stopTimeout()
-			console.log("----------------------reconnect" + turn)
+		//	console.log("----------------------reconnect" + turn)
 		}
 	}
 	getOnTimeout() {
@@ -126,7 +127,7 @@ class GameLoop {
 	}
 	startTimeOut(additional: Function): number {
 		if (!this.idleTimeout) {
-			console.log("starttimeout" + this.state.turn)
+		//	console.log("starttimeout" + this.state.turn)
 			this.clientInterface.startTimeout(this.game.thisCryptTurn(), SETTINGS.idleTimeout)
 
 			this.idleTimeout = setTimeout(() => {
@@ -139,7 +140,7 @@ class GameLoop {
 		return this.game.thisturn
 	}
 	stopTimeout() {
-		console.log("stoptimeout" + this.state.turn)
+		//console.log("stoptimeout" + this.state.turn)
 		if (this.idleTimeout != null && this.state != null && this.idleTimeoutTurn === this.state.turn) {
 			this.clientInterface.stopTimeout(this.game.thisCryptTurn())
 			clearTimeout(this.idleTimeout)
@@ -154,7 +155,7 @@ class GameLoop {
 		if(!this.game) return
 		this.setGameCycle(this.state.getTurnInitializer())
 		this.nextGameCycle()
-		console.log("nextturn" + this.state.id)
+	//	console.log("nextturn" + this.state.id)
 		if (this.state.id === GAME_CYCLE.BEFORE_OBS.ROOTED) {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
@@ -164,7 +165,7 @@ class GameLoop {
 		}
 	}
 	user_pressDice(dicenum: number, crypt_turn: string): ServerPayloadInterface.DiceRoll {
-		console.log("user_pressDice")
+	//	console.log("user_pressDice")
 		if (this.state.crypt_turn !== crypt_turn) return
 
 		this.setGameCycle(this.state.onUserPressDice(dicenum))
@@ -175,14 +176,14 @@ class GameLoop {
 	}
 	async afterDice(movedistance: number) {
 		await sleep(SETTINGS.delay_on_dice + Math.abs(movedistance) * SETTINGS.delay_per_dice)
-		console.log("afterDice   " + movedistance)
+	//	console.log("afterDice   " + movedistance)
 		if(!this.game) return
 		this.nextGameCycle()
 		if (this.state.gameover) {
 			this.onGameover()
 			return
 		}
-		console.log("afterDice2")
+	//	console.log("afterDice2")
 
 		if (!(this.state instanceof ArriveSquare)) {
 			this.startNextTurn(false)
@@ -192,7 +193,7 @@ class GameLoop {
 
 		await this.state.getPromise()
 		if(!this.game) return
-		console.log("afterDice3")
+	//	console.log("afterDice3")
 		if (this.nextGameCycle()) return
 
 		if (this.state instanceof WaitingSkill) {
@@ -262,7 +263,7 @@ class GameLoop {
 	}
 	user_choseAreaSkillLocation(location: number, crypt_turn: string) {
 		if (this.state.crypt_turn !== crypt_turn) return
-		console.log("user_choseAreaSkillLocation" + crypt_turn)
+	//	console.log("user_choseAreaSkillLocation" + crypt_turn)
 		this.setGameCycle(this.state.onUserChooseAreaSkillLocation(location))
 	}
 	user_message(turn: number, message: string) {
@@ -277,7 +278,7 @@ class GameLoop {
 		)
 	}
 	onGameover() {
-		console.log("gameover")
+	//	console.log("gameover")
 		this.gameOverCallBack()
 	}
 	onDestroy() {
@@ -287,7 +288,7 @@ class GameLoop {
 			this.state.onDestroy()
 		this.game=null
 		this.state=null
-		console.log("ondestroy"+this.game)
+	//	console.log("ondestroy"+this.game)
 		clearTimeout(this.idleTimeout)
 	}
 }
@@ -310,7 +311,7 @@ abstract class GameCycleState {
 		this.rname = this.game.rname
 		// this.idleTimeout = null
 		this.onCreate()
-		console.log("gamecycle" + id)
+	//	console.log("gamecycle" + id)
 	}
 	onDestroy() {
 		//	console.log("gamecycle ondestroy" + this.id)
@@ -493,7 +494,7 @@ class ArriveSquare extends GameCycleState {
 	onCreate(): void {
 		this.result = this.game.checkObstacle(SETTINGS.delay_initial_arrive_square)
 		if (this.result === ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
-			console.log("game finished")
+		//	console.log("game finished")
 			this.gameover = true
 		}
 	}
@@ -623,7 +624,7 @@ class PendingObstacleProgress extends GameCycleState{
 		this.game.processPendingObs(this.result,SETTINGS.delay_initial_pending_action)
 	}
 	getPromise(): Promise<unknown> {
-		console.log(this.result)
+	//	console.log(this.result)
 		if(!this.result.complete) return sleep(0)
 
 		return new Promise<void>((resolve)=>{
@@ -693,7 +694,7 @@ class PendingActionProgress extends GameCycleState{
 	onCreate(): void {
 	}
 	getPromise(): Promise<unknown> {
-		console.log(this.result)
+//		console.log(this.result)
 
 		if(!this.result.complete) return sleep(0)
 
@@ -702,9 +703,9 @@ class PendingActionProgress extends GameCycleState{
 		})
 	}
 	getNext(): GameCycleState {
-		console.log(this.game.pendingObs)
+	//	console.log(this.game.pendingObs)
 		let obs=this.game.checkPendingObs()
-		console.log("pendingobs"+obs)
+	//	console.log("pendingobs"+obs)
 		if(!obs || this.game.thisp().dead){
 			return new WaitingSkill(this.game)			
 		}
@@ -735,7 +736,7 @@ export class WaitingSkill extends GameCycleState {
 		if (!this.shouldPass()) this.game.clientInterface.setSkillReady(status)
 	}
 	shouldPass() {
-		console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)
+	//	console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)
 		return !this.canUseSkill && !this.canUseBasicAttack
 	}
 	onUserClickSkill(skill: number): ServerPayloadInterface.SkillInit {

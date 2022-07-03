@@ -10,7 +10,7 @@ catch(e){
     console.log('mongodb Connection Failed!');
 }
 
-var db=mongoose.connection
+const db=mongoose.connection
 
 db.on('error', function(){
     console.log('Connection Failed!');
@@ -117,7 +117,10 @@ const userSchema=new mongoose.Schema({
     email:{ type: String, required: true },
     password:{ type: String, required: true },
     salt:{ type: String, required: true },
-    simulations:[mongoose.Types.ObjectId]
+    simulations:[mongoose.Types.ObjectId],
+    boardData:{
+        type:mongoose.Types.ObjectId,ref:"UserBoardData"
+    }
 },{timestamps:true})
 
 
@@ -142,9 +145,9 @@ simulationRecordSchema.statics.create=function(data){
 simulationRecordSchema.statics.findOneById = function(id) {
     return this.findById(id)
 };
-simulationRecordSchema.statics.findByRange = function(start:number,count:number) {
-    console.log(count)    //asc, desc  or 1, -1
-    return this.find({}).sort({createdAt:"desc"}).skip(start).limit(count)
+simulationRecordSchema.statics.findSummaryByRange = function(start:number,count:number) {
+ //   console.log(count)    //asc, desc  or 1, -1
+    return this.find({}).sort({createdAt:"desc"}).skip(start).limit(count).select("createdAt count setting")
 };
 
 //====================================================================================================

@@ -181,7 +181,7 @@ class ItemEffectFactory {
 					StatusEffect.DURATION_FOREVER,
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.WARRIORS_SHIELDSWORD)) {
-							console.log("WARRIORS_SHIELDSWORD")
+						//	console.log("WARRIORS_SHIELDSWORD")
 
 							owner.effects.applySpecial(
 								new ShieldEffect(EFFECT.ITEM_SHIELDSWORD_SHIELD, 2, Math.floor(0.7 * owner.ability.AD.get())).setGood(),
@@ -205,7 +205,7 @@ class ItemEffectFactory {
 					StatusEffect.DURATION_FOREVER,
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.INVISIBILITY_CLOAK)) {
-							console.log("invisibility cloak")
+						//	console.log("invisibility cloak")
 							owner.effects.apply(EFFECT.INVISIBILITY, 2)
 
 							owner.inven.useActiveItem(ITEM.INVISIBILITY_CLOAK)

@@ -1,5 +1,5 @@
-import { ServerPayloadInterface } from "./data/PayloadInterface"
-import { SpecialEffect } from "./data/SpecialEffectRegistry"
+import type { ServerPayloadInterface } from "./data/PayloadInterface"
+import type { SpecialEffect } from "./data/SpecialEffectRegistry"
 export interface ClientInterfaceCallback {
 	(roomname: string, type: string, ...args: unknown[]): void
 }
@@ -17,11 +17,11 @@ export class ClientInterface {
         this.callback = (roomname: string, type: string, ...args: unknown[]) => {}
     }
 	registerCallback(callback: ClientInterfaceCallback) {
-        console.log("registerCallback")
+    //    console.log("registerCallback")
 		this.callback = callback
 	}
     registerSimulationCallback(callback: ClientInterfaceCallback) {
-        console.log("registerCallback")
+    //    console.log("registerCallback")
 		this.callback_simulation = callback
 	}
 	updateNextTurn(turnUpdateData: ServerPayloadInterface.TurnStart) {

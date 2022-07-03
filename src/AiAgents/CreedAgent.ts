@@ -1,5 +1,7 @@
 import { Creed } from "../characters/Creed";
 import { ITEM, SKILL } from "../data/enum";
+import { ServerPayloadInterface } from "../data/PayloadInterface";
+import { Player } from "../player/player";
 import { AiAgent } from "./AiAgent";
 
 class CreedAgent extends AiAgent{
@@ -37,6 +39,22 @@ class CreedAgent extends AiAgent{
 			return SKILL.Q
 		}
 		return -1
+	}
+	selectTarget(skill: SKILL, targets: ServerPayloadInterface.PlayerTargetSelector): Player {
+		//가장 앞에있는 플레이어 선택, 본인보다 3칸이상 뒤쳐져있으면 사용안함
+		if(skill===SKILL.ULT){
+			let players = targets.targets
+			let ps = this.player.mediator.allPlayer()
+
+			players.sort(function (b, a) {
+				return ps[a].pos - ps[b].pos
+			})
+			
+			if(ps[players[0]].pos + 3 <this.player.pos) return null
+
+			return ps[players[0]]
+		}
+		return super.selectTarget(skill,targets)
 	}
 }
 export default CreedAgent

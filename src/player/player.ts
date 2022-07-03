@@ -18,6 +18,7 @@ import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
 import { ServerPayloadInterface } from "../data/PayloadInterface"
 import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../res/character_ability.json")
+import { Indicator } from "../TrainHelper"
 const { isMainThread } = require('worker_threads')
 
 // class Minion extends Entity{
@@ -1257,6 +1258,33 @@ abstract class Player extends Entity {
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 		//	console.log("basicattack")
 		let died = this.mediator.basicAttack(this, this.getBasicAttackFilter())(damage)
+	}
+	getTargetParameters(){
+
+	}
+
+
+	//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt
+	//3.healamt  4.moneyearned  5.moneyspent   6.moneytaken  7.damagereduced
+	//8 timesrevived 9 timesforcemoved 10 basicattackused  11 timesexecuted
+
+	getTrainIndicator(totalturn:number):Indicator{
+		let ind=new Indicator(this.champ)
+		ind.damage_per_death=this.statistics.stats[ENUM.STAT.DAMAGE_DEALT]/Math.max(0.5,this.death)
+		ind.damage_reduction_per_gold=this.statistics.stats[ENUM.STAT.DAMAGE_REDUCED]/this.statistics.stats[ENUM.STAT.MONEY_EARNED]
+		ind.damage_reduction_per_turn=this.statistics.stats[ENUM.STAT.DAMAGE_REDUCED]/totalturn
+		ind.damage_per_gold=this.statistics.stats[2]/this.statistics.stats[ENUM.STAT.MONEY_EARNED]
+		ind.end_position=this.pos
+		ind.damage_reduction_rate=this.statistics.stats[7]/Math.max(1,(this.statistics.stats[7]+this.statistics.stats[0]))
+		ind.heal_per_gold=this.statistics.stats[3]/this.statistics.stats[ENUM.STAT.MONEY_EARNED]
+
+		if(this.pos >= this.mapHandler.gamemap.finish) 
+			ind.isWinner=true
+
+		return ind
+	}
+	getCoreItemBuild():number[]{
+		return this.AiAgent.itemtree.items.slice(0,this.AiAgent.itemtree.level)
 	}
 }
 

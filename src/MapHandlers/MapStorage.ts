@@ -2,6 +2,7 @@ import { shuffle } from "../core/Util";
 import oceanmap = require("../../res/ocean_map.json")
 import casinomap = require("../../res/casino_map.json")
 import defaultmap = require("../../res/map.json")
+import trainmap = require("../../res/train_map.json")
 
 export type singleMap = {
 	mapname: string
@@ -112,4 +113,4 @@ class MapStorage {
 	}
 }
 
-export const MAP: MapStorage = new MapStorage([defaultmap, oceanmap, casinomap])
+export const MAP: MapStorage = new MapStorage([defaultmap, oceanmap, casinomap,trainmap])

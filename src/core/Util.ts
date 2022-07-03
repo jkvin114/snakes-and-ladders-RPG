@@ -1,6 +1,9 @@
 import type { Entity } from "../entity/Entity"
 import * as ENUM from "../data/enum"
 import type { Player } from "../player/player"
+
+import fs = require("fs")
+
 const CALC_TYPE = {
 	set: (o: number, n: number) => n,
 	plus: (o: number, n: number) => o + n,
@@ -136,8 +139,8 @@ class Damage {
 		AR = AR * (1 - percentPenetration / 100)
 		MR = MR * (1 - percentPenetration / 100)
 
-		this.attack = Math.floor(this.attack * (100 / (100 + Math.max(AR - arP, 0))))
-		this.magic = Math.floor(this.magic * (100 / (100 + Math.max(MR - MP, 0))))
+		this.attack = Math.floor(this.attack * (100 / (100 + (AR - arP))))
+		this.magic = Math.floor(this.magic * (100 / (100 + (MR - MP))))
 
 		return this
 	}
@@ -212,6 +215,13 @@ export const copyElementsOnly = function <T>(arr1: T[], arr2: T[]): T[] {
 	return arr1
 }
 
+export const roundToNearest=function(num:number,digit?:number){
+	if(!digit) digit=0
+
+	num=num * (10**-digit)
+
+	return Math.round(num) / (10**-digit)
+}
 export const pickRandom = function <T>(list: T[]): T {
 	return list[Math.floor(Math.random() * list.length)]
 }
@@ -294,6 +304,46 @@ export const hasProp = <T>(
   ): varToBeChecked is T =>
 	(varToBeChecked as T)[propertyToCheckFor] !== undefined
 
+
+export const getCurrentTime = function(){
+	let date_ob = new Date()
+	let date = ("0" + date_ob.getDate()).slice(-2)
+
+	// current month
+	let month = ("0" + (date_ob.getMonth() + 1)).slice(-2)
+	let year=date_ob.getFullYear()
+	// current hours
+	let hours = date_ob.getHours()
+
+	// current minutes
+	let minutes = date_ob.getMinutes()
+
+	// current seconds
+	let seconds = date_ob.getSeconds()
+
+	return year+"_"+month + "_" + date + "_" + hours + "_" + minutes + "_" + seconds
+}
+export function writeFile(data:string,dir:string,extension:string,onSuccess:string){
+	fs.writeFile(__dirname + "/../../"+dir +getCurrentTime()+ "."+extension, data, (err) => {
+		if (err) {
+			console.log(err)
+			throw err
+		}
+		console.log(onSuccess)
+	})
+}
+
+export function dot(arr1:number[],arr2:number[]){
+	let list=[]
+	for(let i=0;i<arr1.length;++i){
+		list.push(arr1[i]*arr2[i])
+	}
+	return list.reduce((prev,curr)=>prev+curr)
+}
+export function normalize(list:number[]){
+	let sorted=list.sort((a,b)=>a-b)
+	return list.map((val)=>(val-sorted[0])/(sorted[sorted.length-1]-sorted[0]))
+}
 class PriorityArray<T> extends Array {
 	constructor() {
 		super()

@@ -68,7 +68,7 @@ class AttackHandler{
 		let victimData:ServerPayloadInterface.Victim={
 			pos:target.pos,flags:[],damage:damage.getTotalDmg()
 		}
-		console.log("-----------basicattack"+damage.getTotalDmg())
+	//("-----------basicattack"+damage.getTotalDmg())
 		let died= AttackHandler.doDamage(from,target,damage,from.getBasicAttackName(),true)
 		
 		if(died) victimData.flags.push("died")
@@ -199,12 +199,12 @@ class EntityMediator {
 	readonly isTeam: boolean
 	readonly instant: boolean
 	readonly rname: string
-	readonly clientInterface:ClientInterface
-	constructor(isTeam: boolean, instant: boolean, rname: string,ci:ClientInterface) {
+	clientInterface:ClientInterface
+	constructor(isTeam: boolean, instant: boolean, rname: string) {
 		this.isTeam = isTeam
 		this.instant = instant
 		this.rname = rname
-		this.clientInterface=ci
+		this.clientInterface=new ClientInterface(this.rname)
 		this.storage = new EntityStorage()
 	}
 	sendToClient(sender: Function, ...args: any[]) {
@@ -436,6 +436,9 @@ class EntityMediator {
 				return this.selectAllFrom(filter).getMax(priority)
 		}
 	}
+	count(filter: EntityFilter):number{
+		return this.selectAllFrom(filter).length
+	}
 
 }
 
@@ -502,7 +505,7 @@ class EntityStorage {
 	cleanUpDeadEntity() {
 		for (let [id, entity] of this.entities.entries()) {
 			if (entity.type!==ENTITY_TYPE.PLAYER && entity.dead) {
-				console.log("deleted entity " + id)
+		//		console.log("deleted entity " + id)
 				this.entities.delete(id)
 			}
 		}

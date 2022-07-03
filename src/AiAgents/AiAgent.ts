@@ -1,7 +1,7 @@
 import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerPayloadInterface } from "../data/PayloadInterface"
-import { copyElementsOnly, SkillTargetSelector, sleep } from "../core/Util"
+import { copyElementsOnly, pickRandom, shuffle, SkillTargetSelector, sleep } from "../core/Util"
 import { items as ItemList } from "../../res/item.json"
 import PlayerInventory from "../player/PlayerInventory"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
@@ -9,11 +9,14 @@ import { EntityMediator } from "../entity/EntityMediator"
 import { Player } from "../player/player"
 import { EntityFilter } from "../entity/EntityFilter"
 import SETTINGS = require("./../../res/globalsettings.json")
+import TRAIN_SETTINGS = require("./../../res/train_setting.json")
+
+const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)
 
 abstract class AiAgent {
 	player: Player
-	mediator: EntityMediator
 	attemptedSkills: Set<SKILL>
+	isRandomItem:boolean
 	abstract itemtree: {
 		level: number
 		items: number[]
@@ -22,10 +25,19 @@ abstract class AiAgent {
 	static readonly BASICATTACK = 4
 	constructor(player: Player) {
 		this.player = player
-		this.mediator = player.mediator
+		this.isRandomItem=TRAIN_SETTINGS.train && TRAIN_SETTINGS.random_item
 		this.attemptedSkills = new Set<SKILL>()
 	}
+	onAfterCreate(){
+		if(this.isRandomItem){
+			if(TRAIN_SETTINGS.random_item_exclude_character.includes(this.player.champ)) 
+				return
 
+			let randTree=shuffle(CORE_ITEMS)
+
+			this.itemtree.items=randTree
+		}
+	}
 	static simulationAiSkill(player:Player){
 		player.AiAgent.attemptedSkills.clear()
 		if (player.game.gameover || !(player.canUseSkill() || player.canBasicAttack())) {
@@ -58,6 +70,8 @@ abstract class AiAgent {
 				case INIT_SKILL_RESULT.TARGTING:
 					if (skillinit.data.kind !== "target" || skillinit.data.targets.length <= 0) break
 					let target = player.AiAgent.selectTarget(skillinit.skill, skillinit.data)
+					if(!target) break
+
 					player.game.useSkillToTarget(target.turn)
 					result = true
 					break
@@ -101,7 +115,7 @@ abstract class AiAgent {
 				continue
 			}
 			player.AiAgent.attemptedSkills.add(skill)
-			console.log(player.AiAgent.attemptedSkills)
+			//console.log(player.AiAgent.attemptedSkills)
 			let skillinit = player.initSkill(skill)
 		//	console.log(skillinit)
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
@@ -121,6 +135,8 @@ abstract class AiAgent {
 				case INIT_SKILL_RESULT.TARGTING:
 					if (skillinit.data.kind !== "target" || skillinit.data.targets.length <= 0) break
 					let target = player.AiAgent.selectTarget(skillinit.skill, skillinit.data)
+					if(!target) break
+
 					player.game.useSkillToTarget(target.turn)
 					if (delay > 0) {
 						delay = (MAP.getCoordinateDistance(player.mapId, player.pos, target.pos) * delay) / trajectorySpeedRatio
@@ -335,6 +351,7 @@ class AIStoreInstance {
 			} else {
 				tobuy = this.build.items[this.build.level]
 			}
+			
 
 			if (this.aiAttemptItemBuy(tobuy) == 0) break
 		}

@@ -190,6 +190,7 @@ abstract class Room {
 	}
 	user_updateTeams(teams: boolean[]) {
 		this.teams = teams
+		teams.forEach((t,i)=>this.playerlist[i].team=t)
 	}
 	
 	reset() {

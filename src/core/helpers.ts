@@ -365,7 +365,7 @@ class ObstacleHelper {
 			player.game.clientInterface.indicateObstacle({turn:player.turn,obs:obs})
 		}
 
-		console.log(others)
+		//console.log(others)
 		for (let pid of others) {
 			player.game.clientInterface.indicateObstacle({turn:player.game.id2Turn(pid),obs:obs})
 		}
@@ -390,7 +390,7 @@ class ObstacleHelper {
 		}
 	}
 	static trial(player: Player, num: number) {
-		console.log("trial" + num)
+		//console.log("trial" + num)
 		switch (num) {
 			case 0:
 				player.inven.takeMoney(100)

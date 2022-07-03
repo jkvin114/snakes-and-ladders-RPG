@@ -26,15 +26,19 @@ class BirdAgent extends AiAgent{
 	nextSkill(): number {
 		
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
-			return SKILL.ULT
+			if(this.player.cooltime[SKILL.Q] <=2 && this.player.cooltime[SKILL.W] <=1)
+				return SKILL.ULT
 		}
 		if (!this.attemptedSkills.has(SKILL.W)) {
-			return SKILL.W
+			if(this.player.cooltime[SKILL.Q] <=1)
+				return SKILL.W
 		}
 		if (this.player.canBasicAttack()) {
 			return AiAgent.BASICATTACK
 		}
 		if (!this.attemptedSkills.has(SKILL.Q)) {
+			if(this.player.cooltime[SKILL.W] === 1 || this.player.cooltime[SKILL.ULT] === 1) return -1
+
 			return SKILL.Q
 		}
 		return -1

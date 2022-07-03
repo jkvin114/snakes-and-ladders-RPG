@@ -44,7 +44,7 @@ class RPGRoom extends Room {
 		// room.map=map
 		this.gameloop = GameLoop.create(this.map, roomName, setting, false, this.isTeam, this.playerlist)
 		this.gameloop.setClientInterface(this.clientInterface)
-		console.log("team" + this.isTeam)
+	//	console.log("team" + this.isTeam)
 	}
 	user_requestSetting(): ServerPayloadInterface.initialSetting {
 		let setting = this.gameloop.game.getInitialSetting()

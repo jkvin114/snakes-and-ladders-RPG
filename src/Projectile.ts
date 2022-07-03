@@ -75,7 +75,7 @@ abstract class Projectile {
 		return this.flags.has(flag)
 	}
 	place(pos: number, id: string) {
-		console.log("placeproj"+id)
+		//console.log("placeproj"+id)
 		this.UPID = id
 		this.pos = pos
 		this.activated = true

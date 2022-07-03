@@ -1,5 +1,4 @@
 import SETTINGS = require("../res/globalsettings.json")
-import type { SpecialEffect } from "./data/SpecialEffectRegistry"
 const { GameRecord, SimulationRecord, User } = require("./mongodb/DBHandler")
 
 import { createServer } from "http"
@@ -32,7 +31,7 @@ const ROOMS = new Map<string, RPGRoom>()
 const MARBLE_ROOMS = new Map<string, MarbleRoom>()
 
 const clientPath = `${__dirname}/../../SALR-android-webview-master`
-const firstpage = fs.readFileSync(__dirname + "/../../SALR-android-webview-master/index.html", "utf8")
+const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 4000
 const app = express()
 
@@ -44,6 +43,7 @@ app.use("/stat", require("./router/statRouter"))
 app.use("/user", require("./router/RegisteredUserRouter"))
 app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
+app.use("/board", require("./router/BoardRouter"))
 
 app.use(express.static(clientPath))
 app.use(errorHandler)
@@ -183,8 +183,9 @@ io.on("connect", function (socket: Socket) {
 		.then((resolvedData)=>console.log(resolvedData))
 		.catch((e)=>console.error(e))
 */
-		R.getRoom(roomName).setSimulation(false).registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
-			console.log(args)
+		R.getRoom(roomName).setSimulation(false)
+		.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
+			//console.log(args)
 			io.to(roomname).emit(type,...args)
 		}).setNickname(SocketSession.getUsername(socket), 0)
 		// ROOMS.set(roomName, room)
@@ -448,7 +449,7 @@ io.on("connect", function (socket: Socket) {
 		if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 
 		let dice = R.getRPGRoom(rname).gameloop.user_pressDice(dicenum,crypt_turn)
-		console.log("press_dice" + dice)
+		//console.log("press_dice" + dice)
 		if(dice!=null)
 			io.to(rname).emit("server:rolldice", dice)
 
@@ -488,7 +489,7 @@ io.on("connect", function (socket: Socket) {
 
 		let rname = SocketSession.getRoomName(socket)
 
-		console.log("complete_obstacle_selection")
+	//	console.log("complete_obstacle_selection")
 
 		if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
@@ -527,7 +528,7 @@ io.on("connect", function (socket: Socket) {
 		if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 		let room = R.getRPGRoom(rname)
 		let result = room.gameloop.user_clickSkill(s,crypt_turn)
-		console.log(result)
+	//	console.log(result)
 		socket.emit("server:skill_data", result)
 	})
 	//==========================================================================================
@@ -589,7 +590,7 @@ io.on("connect", function (socket: Socket) {
 	socket.on("user:reset_game", function () {
 		let rname = SocketSession.getRoomName(socket)
 		let quitter = SocketSession.getTurn(socket)
-		console.log(rname, quitter)
+		//console.log(rname, quitter)
 		if (!R.hasRPGRoom(rname)) return
 		let room = R.getRPGRoom(rname)
 		io.to(rname).emit("server:quit", quitter)
