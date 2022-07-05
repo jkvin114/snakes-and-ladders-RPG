@@ -1,0 +1,108 @@
+<html>
+  <script src="/lib/jquery-3.6.0.min.js"></script>
+
+<style>
+  @font-face {
+    font-family: "cookierun";
+    src: url("/res/font/CookieRun.ttf");
+  }
+
+  a,p{
+    font-family: 'cookierun';
+  }
+  .filter-black{
+    filter: brightness(0%);
+  }
+  #comments{
+    background-color: rgb(221, 221, 221);
+  }
+  .comment{
+    background-color: rgb(160, 160, 160);
+    padding: 50px;
+    display: inline-block;
+  }
+  .delete_comment{
+    background-color: red;
+  }
+  .postimg{
+    width: 40%;
+  }
+</style>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+
+  <meta charset="utf-8" >
+</head>
+
+<body>
+  
+  <img src="/res/img/svg/list.svg" id="postlistbtn" class="filter-black"><br>
+    <h1><%= title %> </h1>
+    <p><%= author %> </p>
+    <p><%= content %>  </p>
+    <%if(image!=null) {%>
+      <img class="postimg" src="/uploads/<%= image %>"> 
+   <% }  %>
+  
+   <div id="comments">
+    <%for(const comm of comment){%>
+      <div class="comment">
+        <%if(comm.deleted){%>
+          <p> 삭제된 댓글입니다</p>
+        <%}else{%>
+          <p> <%= comm.content %> </p>
+          <b> <%= comm.author %> </b>
+          <%if(comm.canModify){%>
+            <button value="<%= comm._id%>" class="delete_comment">&times;</button>
+          <%}%>
+        <%}%>
+
+        <a href="/board/post/comment/<%=comm._id%>/reply">답글:<%=comm.replyCount %> </a>
+           <br>
+      </div>
+     <%}%>
+   </div>
+    
+    
+    <%if(true){%>
+      
+      <form class=comment action="/board/post/comment" method="post"> 
+        <p>댓글쓰기</p>
+        <input type="hidden" name="postUrl" value="<%= url %>">  
+        <input type="hidden" name="postId" value="<%= id %>">  
+        <input type="text" name="content">
+        <input type="submit">
+     </form>
+  <%}else{%>
+      <p>답글을 쓰려면 로그인하세요</p>
+ <% }%>
+   
+</body>
+<script>
+  
+$("#postlistbtn").click(()=>{
+    window.location.href="/board"
+})
+
+$(".delete_comment").click(function(){
+  let value=$(this).val()
+  $.ajax({
+        method: 'POST',
+        url: '/board/post/comment/delete',
+        data:{commentId:value}
+    })
+    .done(function(data, statusText, xhr){
+      let status = xhr.status;
+      if(status==201){
+        window.location.reload()
+      }
+    })
+    .fail(function(data, statusText, xhr){
+      if(data.status==400){
+        alert("error")
+        window.location.reload()
+      }
+    })
+})
+</script>
+</html>

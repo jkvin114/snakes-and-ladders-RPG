@@ -1,5 +1,5 @@
 import express = require('express');
-// import session from 'express-session';
+import session from 'express-session';
 /**
  * https://icecokel.tistory.com/17?category=956647
  * 
@@ -8,6 +8,7 @@ import express = require('express');
         isLogined:boolean
         turn:number
         roomname:string
+        id:string
  */
 
 /**
@@ -23,6 +24,7 @@ import express = require('express');
  */
 
 
+const{UserBoardData} = require("../mongodb/BoardDBHandler")
 const router = express.Router()
 const crypto = require('crypto')
 const {User} = require("../mongodb/DBHandler")
@@ -74,13 +76,21 @@ router.post('/register',async function(req:express.Request,res:express.Response)
     let salt = createSalt()
     let encryptedPw = await encrypt(body.password,salt)
 
-    
+    let boardData = await UserBoardData.create({
+        articles: [],
+	    comments: [],
+	    bookmarks: [],
+        replys:[],
+        username:body.username
+    })
+
     User.create({
       username: body.username,
       email: body.email,
       password: encryptedPw,
       salt:salt,
-      simulations:[]
+      simulations:[],
+      boardData:boardData._id
     })  
     .then((data:any) => {
         console.log(data)
@@ -103,6 +113,7 @@ router.post('/login',async function(req:express.Request,res:express.Response){
         res.end("username")
         return
     }
+    
 
     if(user.password !== encrypt(body.password,user.salt)){
         res.end("password")
@@ -111,8 +122,21 @@ router.post('/login',async function(req:express.Request,res:express.Response){
     if(req.session){
         req.session.username=body.username
         req.session.isLogined=true
-
+        req.session.userId=String(user._id)
+        if(user.boardData==null || user.boardData.username==null){
+            console.log("added board data")
+            let boardData = await UserBoardData.create({
+                articles: [],
+                comments: [],
+                bookmarks: [],
+                replys: [],
+                username:body.username
+            })
+            user = await User.setBoardData(user._id,boardData._id)
+           
+        }
     }
+    
     console.log(req.session)
     console.log(body.username+" has logged in")
     res.status(200).end(body.username)

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+  <script src="lib/jquery-3.6.0.min.js"></script>
+  <script src="lib/socket.io.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
+  <script src="src/client.js"></script>
+<script src="src/matching.js"></script>
+<script src="src/gamesetting.js"></script>
+<link rel="stylesheet" href="./src/style/style_matchingpage.css">
+
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+    <meta charset="utf-8" />
+</head>
+<style>
+    @font-face {
+    font-family: "cookierun";
+    src: url("res/font/CookieRun.ttf");
+}
+@font-face {
+    font-family: "Do Hyeon";
+    src: url("res/font/DoHyeon.ttf");
+}
+</style>
+<body> 
+  <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off">
+
+  <button class=button id="quitbtn">Quit</button>
+
+  <div id="room" class=hidden>
+    <h3> Choose a room to enter</h3>
+      <div id=roombtn>
+      </div>
+  </div>
+<!-- 1P================================================================ -->
+<a id=rname></a><br>
+<a id=connection>connecting with server...</a>
+
+<div class=champmenu>
+  <!-- <a value=0>Reaper</a>
+  <a value=1>Elephant</a>
+  <a value=2>Ghost</a> -->
+</div> 
+
+<div id="page">
+
+  
+  <div id=Hostingpage>
+    <div id=player_choice>
+      
+      <div class="playercard connected me">
+        <p class="iname">1P</p>
+        <img class="playerchamp" src="res/img/ui/random.png">
+      </div>
+
+      <div class="waiting"></div>
+
+      <div class="aicard hidden">
+        <p class="iname">1P(Computer)</p>
+        <img class="aichamp hidden" value=0>
+      </div>
+<!-- 2P================================================================ -->
+      <div class="playercard connected hidden">
+        <p class="iname"> 2P</p>  
+        <img class="playerchamp" src="res/img/ui/random.png">
+        <button class="kick_player" value=1> &times; </button>
+      </div>
+
+      <div class="playercard waiting hidden">
+        <p class="iname">2P(Waiting for player)</p>
+        <img class="toai" src="res/img/ui/robot.png" value=1>
+        <button class="kick" value=1>  &times; </button>
+        
+      </div>
+
+      <div class="aicard hidden">
+        <p class="iname">2P(Computer)</p>
+        <img class="aichamp" src="res/img/ui/random.png" value=1>
+        <img class="toplayer" src="res/img/ui/user.png" value=1>
+        <button class="kick" value=1>  &times; </button>
+      </div>
+<!-- 3P================================================================ -->
+
+      <div class="playercard connected hidden">
+        <p class="iname"> 3P</p>
+        <img class="playerchamp" src="res/img/ui/random.png" >
+        <button class="kick_player" value=2> &times; </button>
+
+      </div>
+
+      <div class="playercard waiting hidden">
+        <p class="iname"> 3P(Waiting for player)</p>  
+        <img class="toai" src="res/img/ui/robot.png" value=2>
+        <button class="kick" value=2>  &times; </button>    
+      </div>
+
+      <div class="aicard hidden">
+        <p class="iname">3P(Computer)</p>
+        <img class="aichamp" src="res/img/ui/random.png"  value=2>
+        <img class="toplayer" src="res/img/ui/user.png" value=2>
+        <button class="kick" value=2> &times; </button>
+        
+      </div>
+
+<!-- 4P================================================================ -->
+
+      <div class="playercard connected hidden">
+        <button class="kick_player hidden" value=3> &times; </button>
+        <p class="iname">4P</p>
+        <img class="playerchamp" src="res/img/ui/random.png" >
+
+      </div>
+
+      <div class="playercard waiting hidden">
+        <p class="iname"> 4P(Waiting for player)</p>
+      </div>
+
+      <div class="aicard hidden">          
+        <p class="iname">4P(Computer)</p>
+        <img class="aichamp" src="res/img/ui/random.png"  value=3>
+        <button class="kick" value=3> &times; </button>
+      </div>
+
+    
+
+<!-- Addai================================================================ -->
+
+        <button class="addai hidden" value=0> +</button>
+        
+        <button class="addai " value=1> +</button>        
+
+        <button class="addai " value=2> +</button>
+        
+        <button class="addai " value=3> +</button>
+        
+       
+        <!-- <form id="mainbtncontainer" display='inline' action="http://jyj.ganpandirect.co.kr/check_players">
+          
+          <button type='submit' disabled=true id="team" name="gamemode" value="team" class="mainbtn">
+              팀전
+          </button>
+  
+        </form> -->
+
+
+    </div>
+    <div id=map_choice>
+      <!-- <a>Choose the map</a> -->
+      <!-- <br> -->
+      <img class="mapbtn" src="res/img/map_thumbnail\default.jpg" value=0>
+      <img class="mapbtn" src="res/img/map_thumbnail\ocean.jpg"  value=1>
+      <img class="mapbtn" src="res/img/map_thumbnail\casino.jpg" value=2>      
+      <br>
+      <div id="character_selection">
+        <!-- <div class=champbtn_new style="background-color: #7e0000;" value=0>
+          <img src="res/img/character/reaper.png">
+          <div class="champbtn_name">Reaper</div>
+        </div>
+      -->
+
+
+      </div>
+
+      <button type='submit' id="individual" name="gamemode" value="individual" class="mainbtn disabled">
+          Game Start
+      </button>
+      <button type='submit' id="team" name="gamemode" value="team" class="mainbtn">
+        Choose Team
+      </button>
+      <img id="setting" src="./res/img/ui/setting.png">
+      <button id=readybtn class="mainbtn hidden">
+        Ready
+      </button>
+      <!-- <button type='submit' id="instant" name="gamemode" value="instant" class="mainbtn hidden">
+        Warp to result
+      </button>
+      <p id=simulation_input class=hidden>
+        Enter simulation repeat number
+        <input type="text" id="num">
+      </p> -->
+      
+    </div>
+      
+  </div>
+
+</div>
+
+  <div id="TeamSelectpage">
+    
+    <div id=choicecontainer>
+        <div class="name"><img src="res/img/ui/random.png" class="teamchamp"> <a>1P</a> 
+        </div>
+        <div class="name">
+          <img src="res/img/ui/random.png" class="teamchamp" > <a>1P</a> 
+        </div>
+        <div class="name">
+          <img src="res/img/ui/random.png" class="teamchamp" > <a>1P</a> 
+        </div>
+        <div class="name">
+          <img src="res/img/ui/random.png" class="teamchamp" > <a>1P</a> 
+        </div>
+        <div class="teamchoice red" value="0"><a>R</a>
+          <img src="res/img/ui/confirm.png" class="hidden check redcheck"></img>
+        </div>
+        <div class="teamchoice blue" value="0">
+          <a>B</a>
+          <img src="res/img/ui/confirm.png" class="hidden check bluecheck"></img>
+        </div>
+        
+        <div class="teamchoice red" value="1"><a>R</a>
+          
+          <img src="res/img/ui/confirm.png" class="hidden check redcheck"></img>
+        </div>
+        <div class="teamchoice blue" value="1"><a>B</a>
+          <img src="res/img/ui/confirm.png" class="hidden check bluecheck"></img>
+        </div>
+
+        <div class="teamchoice red" value="2"><a>R</a>
+          <img src="res/img/ui/confirm.png" class="hidden check redcheck"></img>
+        </div>
+        <div class="teamchoice blue" value="2"><a>B</a>
+          <img src="res/img/ui/confirm.png" class="hidden check bluecheck"></img>
+        </div>
+
+        <div class="teamchoice red" value="3"><a>R</a>
+          <img src="res/img/ui/confirm.png" class="hidden check redcheck"></img>
+        </div>
+        <div class="teamchoice blue" value="3"><a>B</a>
+          <img src="res/img/ui/confirm.png" class="hidden check bluecheck"></img>
+        </div>
+
+    </div>
+    <div id="teambuttons">
+      
+      <button id="submitTeam"> Start</button>
+      <button id="back"> Back</button>
+    </div>
+
+    
+
+</div>
+
+<div id="settingpage" class="hidden">
+  <button id="settingclose"> &times; </button>
+  <!-- <button id="reset"> Reset </button> -->
+  <div id="settingwrapper">
+    <div id="gameplay">
+        <h5>Gameplay setting</h5>
+        <div class="setting_category">
+         <!-- <div class="onesetting">
+            <h6>Basicattacl</h6>
+            <button class="rangedown rangearrow">	&#9664;</button>
+            <div class="rangevalue_wrapper"><a class="rangevalue">No dice control</a></div>
+            <button class="rangeup rangearrow">	&#9654;</button>
+          </div>   -->
+          <!-- <div class="onesetting">
+            <h6>Basicattacl</h6>
+            <label class="switch">
+              <input type="checkbox" value="1" checked="true">
+              <span class="slider"></span>
+            </label>
+          </div>  -->
+        </div>
+        
+      <hr>
+    </div>
+    <div id="match">
+      <h5>Match setting</h5>
+      <div class="setting_category"></div>
+    <hr>
+    </div>
+    <div id="statistic">
+      <h5>Statistic setting</h5>
+      <div class="onesetting">
+        <a>All </a>
+        <label class="switch">
+          <input type="checkbox" checked=true class="toggleallstat">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="setting_category">
+      
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
+
+
+<script>
+  
+</script>
+</html>

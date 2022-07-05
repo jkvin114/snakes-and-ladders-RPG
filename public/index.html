@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src="lib/jquery-3.6.0.min.js"></script>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+
+  <meta charset="utf-8" >
+</head>
+
+<style>
+  @font-face {
+    font-family: "cookierun";
+    src: url("res/font/CookieRun.ttf");
+}
+
+@font-face {
+    font-family: "Do Hyeon";
+    src: url("res/font/DoHyeon.ttf");
+}
+body{     
+   background-color: rgb(36, 36, 36);
+   color: beige;
+
+
+font-family: 'cookierun';
+text-align:center;
+
+}
+div{
+text-align:center;
+}
+h1{
+  color:black;
+  font-size: 60px;
+}
+
+.button{
+  font-family: 'cookierun';
+  color:white;
+  background-color: #7E00BF;
+  cursor:pointer;
+  text-align:center;
+  padding: 10px 20px;
+  font-size: 20px;
+  margin: 15px 5px;
+  border:none;
+  vertical-align: middle;
+  border-radius: 10px;
+}
+input{
+  text-align: center;
+}
+.button:hover{
+  background-color: rgb(74, 2, 110);
+}
+#startgame{
+  display:block;
+}
+footer{
+  /* background-color:#ededed;
+  border:1px solid gray; */
+  width:100%;
+  font-size: 10px;
+  display: none;
+}
+#signin{
+  display:none;
+  
+  visibility: collapse;
+}
+form > input{
+  font-size:20px;
+}
+#sign{
+  display:none;
+}
+input{
+  border: none;
+  background-color: rgb(68, 68, 68);
+   color: beige;
+   font-size: 20px;
+   border-radius:10px;
+  padding: 5px;
+  font-family:"cookierun" ;
+  width: min(70%,400px);
+}
+#simulation{
+  background-color: rgb(127, 187, 255);
+}
+#simulation:hover{
+  background-color: rgb(77, 159, 253);
+}
+
+#logout{
+  font-size:13px;
+  padding: 4px 8px;
+  background-color: #ff5656;
+}
+#firstpage,#loginpage,#signuppage{
+  font-size:15px;
+  /* display: inline; */
+}
+#field{
+  text-align: center;
+  display: none;
+
+}
+#createroom{
+  display:none;
+}
+footer{
+  font-family: 'Do Hyeon';
+  padding: 0;
+}
+#navbar{
+  display: flex;
+  background: none;
+  justify-content:space-between;
+  align-items: stretch;
+  height: 40px;
+}
+.navbtn{
+  font-family: 'cookierun';
+  color:white;
+  background-color: #7E00BF;
+  cursor:pointer;
+  text-align:center;
+  font-size: 20px;
+  border:none;
+  vertical-align: middle;
+  border-radius: 5px;
+
+  height: 30px;
+}
+.navbtn:hover{
+  transform: scale(1.1);
+}
+img.navbtn{
+  padding: 5px;
+}
+button.navbtn{
+  height: 40px;
+}
+
+#quitbtn{
+  background-color: #ff5656;
+
+}
+.hidden{
+  display: none;
+}
+
+.lang_dropdown{
+  display: none;
+  position: absolute;
+  background: rgb(121, 121, 121);
+  z-index: 2;
+  width: 120px;
+}
+.lang_dropdown > a{
+  display: block;
+  font-size: 30px;
+  color: rgb(255, 255, 255);
+  cursor:pointer;
+}
+.dropitem:hover{
+  background: rgb(73, 73, 73);
+
+}
+.input_alert{
+  font-size: 12px;
+  color:rgb(255, 78, 78)
+}
+
+#loginpage,#signuppage{
+  background-color: rgb(48, 48, 48);
+  margin-left: 5vw;
+  margin-right: 5vw;
+  padding: 10px;
+}
+
+#toggle_fullscreen{
+  position: fixed;
+  z-index: 99;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 40px;
+  height: 20px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  left: 50%;
+  transform: translate(-50%,0);
+  top:0;
+  cursor: pointer;
+}
+.cool{
+  position:relative;
+  width: 5vw;
+  height: 5vw;
+}
+.img{
+  width: inherit;
+  height: inherit;
+  display: inline-block;
+}
+.mask{
+  position: absolute;
+  top:0;
+  left: 0;
+  width: inherit;
+  height: inherit;
+  z-index: 2;
+  background: conic-gradient(rgba(255,255,255,0.0) 0%,rgba(255,255,255,0.0) 30%,rgba(255,255,255,0.6) 30% ,rgba(255,255,255,0.6) 100%);
+}
+#postbtn{
+  background-color: rgb(163, 87, 33);
+}
+</style>
+<body>
+<img id="toggle_fullscreen" src="res/img/svg/maximize.svg" data-on=false>
+
+
+  <div>
+
+    <div id="navbar">
+      <div>
+        <button class=navbtn id="loginbtn" onclick="open_login()">Log in</button>
+        <button class='navbtn hidden' id="logoutbtn" onclick="logout()">Log Out</button>
+      </div>
+      <!-- <div class="cool">
+        <img class=img src="res/img/skill/7-3.jpg">
+        <div class="mask"></div>
+      </div> -->
+      
+      <div>
+        <img class='navbtn postbtn' id="postbtn" src="res/img/svg/list.svg">
+        <img class=navbtn id="statbtn" onclick="toStatpage()" src="res/img/svg/chart_white.svg">
+        <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg">
+        <div class="lang_dropdown">
+          <a class="dropitem" value="kor">한국어</a>
+          <a class="dropitem" value="eng">English</a>
+        </div>
+        
+        <img class=navbtn id="quitbtn" src="res/img/svg/out.svg">
+      </div>
+      
+    </div>
+
+
+    <div id="firstpage" class="page">
+      
+
+      Username 
+      <br>
+      <input type='text' name="nickname" value="">
+      <div id="ip_area">
+        Server ip address 
+        <br>
+        <input type='text' name="ip" value="">
+
+      </div>
+     
+      <!-- <button onclick="tolocalhost()">localhost</button> -->
+      <br>
+      <div id=buttons>
+        <button class=button id="open_create_room" onclick="open_createroom()">Create room</button>
+        
+        <button class=button id="join" onclick="join()">Join</button>
+        <button class=button id="simulation" onclick="simulation()">simulation</button>
+        <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
+      </div>
+      <div id=field>
+        Room Name<br>
+        <input type='text' name="room_name" value="">
+        <br>
+        
+        <button class=button id="create_room" onclick="createroom()">Start</button>
+        <button class=button id=close_createroom onclick="close_createroom()">Cancel</button>
+      </div>
+    </div>
+
+
+    <div id="loginpage" class="hidden page">
+      <form id="loginform" method="post" action="/user/login">
+        Username 
+        <br>
+        
+
+        <input type='text' name="username">
+        <br><a class="input_alert login_id"></a><br>
+        Password 
+        <br>
+        
+        <input type='password' name="password"><br>
+        <a class="input_alert login_pw"></a><br>
+        <button class='button loginpage_btn' type="submit" >Login</button>
+        <button class='button loginpage_btn' type="button" onclick="open_signup()">Sign up</button>
+        <button class='button loginpage_btn' type="button" onclick="open_firstpage()">Home</button>
+
+      </form>
+
+
+    </div>
+    <br>
+    <div id="signuppage" class="hidden page">
+      <form id="registerform" method="post" action="/user/register">
+
+        Username 
+        <br>
+        <input type='text' name="username">
+        <br><a class="input_alert register_id"></a><br>
+        Password 
+        <br>
+        <input type='password' name="password"><br><a class="input_alert register_pw"></a><br>
+        Verify Password 
+        <br>
+        <input type='password' name="password2"><br><a class="input_alert"></a><br>
+        Email
+        <br>
+        <input type='email' name="email">
+        <br><a class="input_alert register_email"></a><br>
+        <button class='button regpage_btn' type="submit" >Sign up</button>
+        <button class='button regpage_btn' type="button" onclick="open_login()">Login</button>
+        <button class='button regpage_btn' type="button" onclick="open_firstpage()">Home</button>
+
+      </form>
+     
+
+    </div>
+
+    <div id="lowbtns">
+      <!-- <button class=button onclick="toStatpage()">to statpage</button>
+      <button class=button onclick="changelang()" id="langbtn">language</button>
+      <button class=button onclick="logintest()" >request test</button> -->
+
+    </div>
+    </div>
+</body>
+<!-- <footer>  
+  <br>
+  <a href="https://pngtree.com/free-backgrounds">free background photos from pngtree.com</a>
+  Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from 
+  <a href="https://www.flaticon.com/"title="Flaticon">www.flaticon.com</a> 
+  is licensed by <a href="http://creativecommons.org/licenses/by/3.0/"title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
+</footer> -->
+
+
+
+
+<script>
+const names=['Trump','Obama','Bush','Biden','Annonymous','Illuminati','Challenger','Iron','Grandmaster',
+,'Goinmul','NoobMaster','Newbie','Hacker','Luke','Leia','Anakin','Rey','Finn','Harry','Hermione','HanSolo','Chewbacca','Windu','Palpatine','Grogu'
+,'Ron','Malfoy','Voldemote','Dumbledore','Hagrid','Hedwig','Snape','Gandalf','Saruman','Frodo','Sam','Marry','Pippin','Legolas','Gimli'
+,'Bormir','Sauron','Stark','Steve','Peter','Natasha','Clint','Bruce','Gamora','Drax','Groot','Thanos','Thor','Loki','Valkyrie','Wanda','Odin'
+,'Yangyi','Gorae','Creed','Silver','Jean','Timo','Jellice','Emiya','Muljomdao',"Faker","Undefined","Null","NAN","/(?![^<>]+>)(\d+)/"]
+
+$("document").ready(function(){
+
+  
+  $("#firstpage").show()
+  let page = document.location.href.match(/page=([^&]+)/)
+  console.log(page)
+  if(page && page[1]==="login"){
+    delete sessionStorage.username
+    open_login()
+  }
+
+  if(sessionStorage.username!=null){
+    login(sessionStorage.username)
+  }
+  $("#toggle_fullscreen").click(()=>{
+    console.log($(this).data("on"))
+    if(!$(this).data("on")){
+      
+      document.documentElement.requestFullscreen()
+      $(this).data("on",true)
+    }
+    else {
+      document.exitFullscreen()
+      $(this).data("on",false)
+    }
+  })
+ 
+  $("input[name='ip']" ).val(window.location.href.split("://")[1].split("/")[0])
+  
+
+  $("#open_create_room").html(chooseLang("Create Room","방 만들기"))
+  $("#join").html(chooseLang("Join","방 참가"))
+
+  $("#simulation").html(chooseLang("Simulation","시물레이션"))
+
+  let loginbtns=$(".loginpage_btn").toArray()
+  let registerbtns=$(".regpage_btn").toArray()
+
+  $(loginbtns[0]).html(chooseLang("Login","로그인"))
+  $(loginbtns[1]).html(chooseLang("Register","회원가입"))
+  $(loginbtns[2]).html(chooseLang("Home","홈으로"))
+
+  $(registerbtns[1]).html(chooseLang("Login","로그인"))
+  $(registerbtns[0]).html(chooseLang("Register","회원가입"))
+  $(registerbtns[2]).html(chooseLang("Home","홈으로"))
+
+  $("#langbtn").click(function(){
+      $(".lang_dropdown").show()
+  })
+
+  $(".dropitem").click(function(){
+    $(".lang_dropdown").hide()
+    let lang=$(this).attr("value")
+    sessionStorage.language=lang
+    window.location.reload()
+  })
+  $("#quitbtn").click(function(){
+    try{
+      android.quit()
+    }
+    catch(e){}
+  })
+
+  window.onbeforeunload = function (e) {
+    
+  }
+  $("#postbtn").click(()=>window.location.href="/board")
+})
+
+
+// $("#logout").click(function(){
+//   try{
+//     android.quit()
+//   }
+//   catch(e){}
+// })
+
+// $("#selectsignin").click(function(){
+//   var loginpage=$("#signin")
+//   if($(loginpage).css("display")==="none"){
+//     $("#signin").fadeIn(700)
+//   }
+//   else{
+//     $("#signin").hide()
+//   }
+// })
+// $("#selectsignup").click(function(){
+//   window.location.href="file:///android_asset/html/signup.html"
+// })
+function chooseLang(eng,kor){
+  return sessionStorage.language==="eng"?eng:kor
+}
+
+$("#loginform").submit(function(e){
+  e.preventDefault()
+
+
+  let username = $( this ).find( "input[name='username']" ).val()
+  let password = $( this ).find( "input[name='password']" ).val()
+  if(username==="" || password===""){
+    alert("Empty")
+    return
+  }
+  let data={username:username,password:password}
+  $(".input_alert").html("")
+
+  $.ajax({
+        method: 'POST',
+        url: '/user/login',
+        data: data,
+      })
+  .done(function(res, statusText, xhr){
+        let status = xhr.status;   
+        console.log(res)
+        console.log(statusText)
+        console.log(xhr)
+        if(res==='username'){
+          $(".input_alert.login_id").html(chooseLang("Username does not exist","존재하지 않는 아이디입니다"))
+        }
+        else if(res==="password"){
+          $(".input_alert.login_pw").html(chooseLang("Password does not match","비밀번호 미일치"))
+        }
+        else if(status===200){
+          let redirect = document.location.href.match(/redirect=([^&]+)/)
+          console.log(redirect)
+          login(username)
+          if(redirect){
+            window.location.href=redirect[1]
+          }          
+       //  alert("Logged in")
+        }
+      })
+      .fail(function(res, statusText, xhr){
+        let status = xhr.status;
+        alert("server error, status:"+status)
+      })
+})
+
+
+
+$("#registerform").submit(function(e){
+  e.preventDefault()
+
+  $(".input_alert").html("")
+  let username = $( this ).find( "input[name='username']" ).val()
+  let password = $( this ).find( "input[name='password']" ).val()
+  let password2 = $( this ).find( "input[name='password2']" ).val()
+  let email = $( this ).find( "input[name='email']" ).val()
+  if(username==="" || password===""|| password2===""|| email===""){
+    alert("Empty")
+    return
+  }
+  if(password!==password2){
+    $(".input_alert.register_pw").html(chooseLang("Password not match","비밀번호가 다릅니다"))
+    return
+  }
+  if(email.match(/[^@]+@[^.]+\.[a-z]+/)==null){
+    $(".input_alert.register_email").html(chooseLang("Not a valid email","유효한 이메일을 입력하세요"))
+    return
+  } 
+
+
+  let data={username:username,password:password,email:email}
+  
+
+  $.ajax({
+        method: 'POST',
+        url: '/user/register',
+        data: data,
+      })
+  .done(function(res, statusText, xhr){
+        let status = xhr.status;   
+        console.log(res)
+        console.log(statusText)
+        console.log(xhr)
+       
+        if(status===200){
+          alert("Registered")
+          window.location.href="index.html?page=login"
+        }
+      })
+      .fail(function(res, statusText, xhr){
+        console.log(res)
+        console.log(res.responseText)
+        console.log(xhr.status)
+
+        let status = res.status;
+        if(status===400){
+          if(res.responseText==='username'){
+            $(".input_alert.register_id").html(chooseLang("Username should be longer than5 characters","아이디는 5글자 이상이어야 합니다"))
+          }
+          else if(res.responseText==="password"){
+            $(".input_alert.register_pw").html(chooseLang("Password should be longer than 3 characters containing both alphabet and nunmber","비밀번호는 숫자와 영문포함 3글자 이상이어야 합니다 "))
+          }
+          else if(res.responseText==="duplicate username"){
+            $(".input_alert.register_id").html(chooseLang("Username duplicate","아이디 중복"))
+          }
+        }
+        else{
+          alert("server error, status:"+status)
+        }
+        
+        
+      })
+})
+
+function login(username){
+  sessionStorage.username=username
+  $(".page").hide()
+
+  $("#firstpage").show()
+
+  $(".input_alert").html("")
+  $("#loginbtn").hide()
+  $("#logoutbtn").show()
+  $("input[name='nickname']" ).val(username)
+  let redirect = document.location.href.match(/redirect=([^&]+)/)
+  console.log(redirect)
+  if(redirect){
+    window.location.href=redirect[1]
+  }         
+}
+
+function logout(){
+  delete sessionStorage.username
+
+  $.ajax({
+        method: 'POST',
+        url: '/user/logout'
+      })
+     // alert("Logged out")
+  $("#loginbtn").show()
+  $("#logoutbtn").hide()
+  $("input[name='nickname']" ).val("")
+}
+function open_firstpage(){
+  window.location.href="index.html"
+}
+function open_login(){
+  $(".page").hide()
+
+  $("#loginpage").show()
+
+}
+function open_signup(){
+  $(".page").hide()
+
+  $("#signuppage").show()
+  
+}
+function open_createroom(){
+  $("#field").show()
+  $("#buttons").hide()
+  $("#simulation").hide()
+  $("#lowbtns").hide()
+  $("#ip_area").hide()
+}
+function close_createroom(){
+  $("#field").hide()
+  $("#buttons").show()
+  $("#simulation").show()
+  $("#lowbtns").show()
+  $("#ip_area").show()
+
+}
+function createroom(){
+
+ 
+
+
+  console.log("create room")
+  let roomName=$("input[name='room_name']" ).val()
+
+
+  // if(!r || r===""){
+  //   r="room_"+String(Math.floor(Math.random()*1000000))
+  // }
+  // sessionStorage.roomName=r
+  if(!roomName){
+    roomName=""
+  }
+ 
+  let n=$("input[name='nickname']" ).val()
+  if(!n || n===""){
+    let l=names.length-1
+    n=names[Math.floor(Math.random()*l)]
+    n+=String(Math.floor(Math.random()*10))
+  }
+  
+  sessionStorage.ip_address=$("input[name='ip']" ).val()
+  sessionStorage.nickName=n
+  // sessionStorage.turn=0
+  // sessionStorage.host="true"
+  // window.location.href="matching.html"
+
+  $.ajax({
+        method: 'POST',
+        url: '/room/create',
+        data: {roomname:roomName,username:n},
+    })
+    .done(function(data, statusText, xhr){
+      let status = xhr.status;
+      console.log(status)
+      if(status==201){
+        window.location.href="matching.html"
+      }
+    })
+    .fail(function(data, statusText, xhr){
+      if(data.status==400){
+        alert("That room name already exist")
+      }
+    })
+}
+
+function toStatpage(){
+  sessionStorage.ip_address=$("input[name='ip']" ).val()
+
+  window.location.href="statpage.html"
+}
+// function changelang(){
+//   if(sessionStorage.language==="eng"){
+//     sessionStorage.language="kor"
+//     alert("Changed to Korean")
+//     // $("#changelang").html("Change to English")
+//   }
+//   else{
+//     sessionStorage.language="eng"
+//     alert("Changed to English")
+//     // $("#changelang").html("Change to Korean")
+//   }
+
+// }
+
+function tolocalhost(){
+  $("input[name='ip']" ).val("127.0.0.1:4000")
+}
+
+
+function join(){
+  let n=$("input[name='nickname']" ).val()
+  if(!n || n===""){
+    let l=names.length
+    n=names[Math.floor(Math.random()*l)]
+    n+=String(Math.floor(Math.random()*10))
+  }
+
+  sessionStorage.nickName=n
+  let url=$("input[name='ip']" ).val()
+  sessionStorage.ip_address=url
+
+  $.ajax({
+        method: 'POST',
+        url: '/room/join',
+        data: {username:n},
+    })
+    .done(function(data, statusText, xhr){
+      let status = xhr.status;
+      console.log(status)
+      if(status==200){
+        window.location.href="matching.html"
+      }
+    })
+    .fail(function(data, statusText, xhr){
+
+        console.error("error")
+      
+    })
+}
+function simulation(){
+  let r="simulation_"+String(Math.floor(Math.random()*1000000))
+  
+  sessionStorage.ip_address=$("input[name='ip']" ).val()
+
+  window.location.href="simulation_selection_page.html"
+
+}
+
+</script>
+</html>

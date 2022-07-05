@@ -1,0 +1,56 @@
+<html>
+  <script src="/lib/jquery-3.6.0.min.js"></script>
+
+<style>
+  @font-face {
+    font-family: "cookierun";
+    src: url("/res/font/CookieRun.ttf");
+  }
+
+  a,p{
+    font-family: 'cookierun';
+  }
+  .post{
+    background-color: cadetblue;
+    margin: 10px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  .filter-black{
+    filter: brightness(0%);
+  }
+  .thumbnail-img{
+    width: 100px;
+    max-height: 100px;
+  }
+</style>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+
+  <meta charset="utf-8" >
+</head>
+
+<body>
+  <img src="/res/img/svg/home.svg" id="homebtn"  class="filter-black" onclick="golink('/')"><br>
+    <img src="/res/img/ui/write.png" id="writepostbtn" onclick="golink('/board/post/write')"><br>
+    <% for(let i=0;i<posts.length;++i){%>
+      <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
+        <%if(posts[i].imagedir!=null) {%>
+          <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
+        <% }  %>
+        <h3 class="title"><%= posts[i].title %> </h3> 
+        <a> <%= posts[i].createdAt %></a><br>
+        <a> views<%= posts[i].views %></a><br>
+        <a>좋아요: <%= posts[i].upvote %></a>
+        <a>싫어요: <%= posts[i].downvote %></a><br>
+        <a>댓글: <%= posts[i].commentCount %></a><br>
+      </div>
+         
+  <% }  %> 
+</body>
+<script>
+function golink(link){
+  window.location.href=link
+}
+</script>
+</html>

@@ -15,7 +15,6 @@ const { isMainThread } = require('worker_threads')
 
 
 
-console.log(isMainThread)
 
 const session = require("express-session")({
 	key: "sid", //세션의 키 값
@@ -30,7 +29,7 @@ const session = require("express-session")({
 const ROOMS = new Map<string, RPGRoom>()
 const MARBLE_ROOMS = new Map<string, MarbleRoom>()
 
-const clientPath = `${__dirname}/../../SALR-android-webview-master`
+const clientPath = `${__dirname}/../public`
 const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 4000
 const app = express()
@@ -44,6 +43,8 @@ app.use("/user", require("./router/RegisteredUserRouter"))
 app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
 app.use("/board", require("./router/BoardRouter"))
+app.set('view engine','ejs')
+app.engine('html', require('ejs').renderFile);
 
 app.use(express.static(clientPath))
 app.use(errorHandler)

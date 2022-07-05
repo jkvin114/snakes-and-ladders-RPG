@@ -1,0 +1,17 @@
+.tf-tree{font-size:1.5vw;overflow:hidden}
+.tf-tree *{box-sizing:border-box;margin:0;padding:0}
+.tf-tree ul{display:inline-flex}
+.tf-tree li{align-items:center;display:flex;flex-direction:column;flex-wrap:wrap;padding:0 0.5em;position:relative}
+.tf-tree li ul{margin:2em 0}
+.tf-tree li li:before{border-top:.2625em solid rgb(255, 255, 255);content:"";display:block;height:.0625em;left:-.03125em;position:absolute;top:-1.03125em;width:100%}
+.tf-tree li li:first-child:before{left:calc(50% - .03125em);max-width:calc(50% + .0625em)}
+.tf-tree li li:last-child:before{left:auto;max-width:calc(50% + .0625em);right:calc(50% - .03125em)}
+.tf-tree li li:only-child:before{display:none}
+.tf-tree li li:only-child>.tf-nc:before,.tf-tree li li:only-child>.tf-node-content:before{height:1.0625em;top:-1.0625em}
+.tf-tree .tf-nc,.tf-tree .tf-node-content{border:.2625em solid rgb(255, 255, 255);display:inline-block;padding:.5em 1em;position:relative}
+.tf-tree .tf-nc:before,.tf-tree .tf-node-content:before{top:-1.03125em}
+.tf-tree .tf-nc:after,.tf-tree .tf-nc:before,.tf-tree .tf-node-content:after,.tf-tree 
+.tf-node-content:before{border-left:.2625em solid rgb(255, 255, 255);content:"";display:block;height:1em;left:calc(50% - .03125em);position:absolute;width:.0625em}
+.tf-tree .tf-nc:after,.tf-tree .tf-node-content:after{top:calc(100% + .03125em)}
+.tf-tree .tf-nc:only-child:after,.tf-tree .tf-node-content:only-child:after,.tf-tree>ul>li>.tf-nc:before,.tf-tree>ul>li>.tf-node-content:before{display:none}
+.tf-tree .parents~ul>li>.tf-nc:before,.tf-tree .parents:after  {border-left:.2625em dotted rgb(117, 117, 117)}

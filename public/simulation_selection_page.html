@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<script src="lib/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="./src/style/style_matchingpage.css">
+
+<head>
+    <meta charset="utf-8" />
+</head>
+<style>
+    @font-face {
+    font-family: "cookierun";
+    src: url("res/font/CookieRun.ttf");
+}
+@font-face {
+    font-family: "nanumEB";
+    src: url("res/font/NanumSquareEB.ttf");
+}@font-face {
+    font-family: "Do Hyeon";
+    src: url("res/font/DoHyeon.ttf");
+}
+#matchingpage{
+  display: grid;
+  grid-template-columns: 60% 40%;
+  visibility: hidden;
+}
+#toggle_fullscreen{
+  position: fixed;
+  z-index: 99;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 40px;
+  height: 20px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  left: 50%;
+  transform: translate(-50%,0);
+  top:0;
+  cursor: pointer;
+}
+.mapbtn{
+    border: rgb(148, 148, 148) solid 3px;
+    color:antiquewhite;
+    cursor: pointer;
+    margin: 2px;
+    border-radius: 2vw;
+    cursor: pointer;
+    user-select: none;
+    width: 13vw;
+    filter: brightness(0.7);
+  }
+  .mapbtn:hover,.champbtn:hover{
+    transform: scale(1.05);
+  }
+
+#map_pool{
+  width: 400px;
+  height: 400px;
+  background-color: white;
+}
+.mapbtnwrapper{
+  display: inline-block;
+  vertical-align: middle;
+  overflow-wrap: unset;
+}
+.removemap_btn{
+  border: none;
+  background-color: rgb(255, 181, 181);
+  display: inline-block;
+  top:50%;
+  transform: translate(0,-50%);
+  font-size: 3.5vw;
+  width: 4vw;
+  height: 4vw;
+  cursor: pointer;
+}
+.removemap_btn:hover{
+  background-color: red;
+}
+.map_selected{
+  filter: brightness(1.0);
+  border: rgb(247, 197, 70) solid 3px;
+
+}
+.mapcheck{
+    width: 8vw;
+    height: 8vw;
+    /* left: -50%;
+    top:25%; */
+    transform: translate(-150%,0);
+    position: absolute;
+    z-index: inherit+1;
+    user-select: none;
+    pointer-events: none;
+
+}
+#team_overlay{
+  position: absolute;
+  top:0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(177, 177, 177, 0.6);
+  z-index: 1;
+  display: none;
+}
+#team_overlay_text{
+  font-family: "nanumEB";
+  position: absolute;
+  text-align: center;
+  top:0%;
+  left: 50%;
+  transform: translate(-50%,0);
+  font-size:3vw;
+  color: rgb(255, 255, 255);
+  padding: 1vw;
+  /* background-color: rgba(0, 0, 0, 0.4); */
+  text-shadow:
+   -2px -2px 0 #000,  
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+     2px 2px 0 #000;
+     user-select: none;
+}
+#team_overlay_exit{
+  position: absolute;
+  top:0;
+  right: 0;
+  background-color: rgb(255, 255, 255);
+  cursor: pointer;
+  z-index: 2;
+  width: 4vw;
+  height: 4vw;
+  padding: 1vw;
+  /* border: 3px solid black; */
+
+}
+#team_overlay_exit:hover{
+  background-color: rgb(255, 60, 60);
+}
+#charbtns{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+
+}
+.charbtnwrapper{
+  z-index: 0;
+  cursor: pointer;
+  user-select: none;
+  border: 2px solid gray;
+  height: 4vw;
+  width: 22vw;
+  display: flex;
+  justify-content:space-between;
+  align-items: center;
+  border-radius: 1vw;
+  background: linear-gradient(to bottom,rgb(205, 151, 255) 0%,rgb(170, 92, 243) 100%);
+  filter: brightness(0.6);
+  position: relative;
+}
+.char_selected{
+  z-index: 2;
+  filter: brightness(1.0);
+  border: 2px solid rgb(247, 197, 70);
+}
+.char_locked{
+  filter: brightness(1.1);
+  z-index: 2;
+  border: 2px solid rgb(93, 255, 101);
+}
+.charbtn{
+  margin: 0;
+  width: 4vw;
+  height: 4vw;
+  background-color: rgb(255, 255, 255);
+  border-top-left-radius: 1vw;
+  border-bottom-left-radius: 1vw;
+
+}
+
+.teamlock{
+  /* padding: 0.5vw; */
+  padding: 0.2vw;
+  border-radius: 50%;
+  width: 2.5vw;
+  height: 2.5vw;
+  vertical-align: center;
+  margin: 0;
+  font-family: 'Do Hyeon';
+  color: rgb(59, 59, 59);
+  opacity: 0;
+}
+.teamlock.blue{
+  background-color: rgb(83, 123, 255);
+  opacity: 1;
+}
+.teamlock.red{
+  background-color: rgb(255, 83, 83);
+  opacity: 1;
+}
+.charname{
+  display: inline;
+  margin: 0;
+  font-size: 2.5vw;
+  vertical-align: 1.2vw;
+  line-height: 4vw;
+  margin-right: 1vw;
+  margin-left: 1vw;
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+}
+.charlock{
+    width: 4vw;
+    height: 4vw;
+    left: 50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    position: absolute;
+    z-index: inherit+1;
+    user-select: none;
+    pointer-events: none;
+
+}
+.charcheck{
+    width: 4vw;
+    height: 4vw;
+    left: 50%;
+    top:50%;
+    transform: translate(-50%,-50%);
+    position: absolute;
+    z-index: inherit+1;
+    user-select: none;
+    pointer-events: none;
+
+}
+#match .setting_category{
+  background-color: rgb(61, 61, 61);
+  padding-left: 0vw;
+  border-radius: 2vw;
+}
+h6{
+  word-break: keep-all;
+}
+#teamsetting,#countsetting{
+  display: inline-block;
+  margin-right: 2vw;
+  font-size: 2.5vw;
+  text-align: center;
+}
+#countsetting{
+  width: 12vw;
+}
+
+#countsetting input{
+  width: 7vw;
+  text-align: center;
+  height: 2.3vw;
+  font-size: 2.3vw;
+  font-family: "Cookierun";
+  left: 50%;
+}
+
+.maintxt,#teamtxt{
+  text-align: center;
+  font-size: 2.5vw;
+  display: inline-block;
+  vertical-align: middle;
+}
+#setting{
+  display: inline-block;
+  width: 30px;
+  height:30px;
+}
+#run_simulation{
+  width: 20vw;
+  font-size: 5vh;
+  background-color: #58d0ff;
+}
+.teamlockbtn{
+  display: inline;
+  padding: 0.3vw;
+  border-radius: 10%;
+  width: 5vw;
+  height: 3.2vw;
+  vertical-align: center;
+  margin: 0.5vw 1vw;
+  cursor: pointer;
+  visibility: hidden;
+}
+#lockblueteam{
+  background-color: rgb(71, 71, 255);
+}
+#lockredteam{
+  background-color: rgb(255, 71, 71);
+}
+.teamlockbtn:hover{
+  transform: scale(1.1)
+}
+#map_char_gap{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#loadingoverlay{
+  position: absolute;
+  top:0;
+  width: 100%;
+  height: 100%;
+  background: #363636;
+  border: 10px solid #242424;
+  z-index: 15;
+}
+#loadingoverlay img{
+    left:50%;
+    top:30%;
+    width:140px;
+    transform:scale(0.3);
+    transform: translate(-50%, 0);
+   
+    position:absolute;
+
+}
+
+
+  #loadingtext{
+    font-family: 'Spartan';
+    position:absolute;
+    width:max-content;
+    left:50%;
+    top:0;
+    transform: translate(-50%, 0);
+    font-size:4.5vw;
+    color:white;
+    user-select: none;
+    z-index: 16;
+    pointer-events: none;
+    text-shadow:
+   -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+     1px 1px 0 #000;
+  }
+
+  #progressbar{
+    display: block;
+    height: 40px;
+    position:absolute;
+    width:400px;
+    left:50%;
+    bottom:10%;
+    transform: translate(-50%, 0);
+    background-color:white;
+    user-select: none;
+  }
+  #progress{
+    display: block;
+    height: 40px;
+    width: 0px;
+    background-color: greenyellow;
+  }
+</style>
+<body> 
+  <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off">
+
+  <button class=button id="quitbtn">Quit</button>
+
+<!-- 1P================================================================ -->
+<a id=rname>Simulation</a>:
+<a id=connection></a>
+<div id="team_overlay">
+  <p id="team_overlay_text">Select Red Team</p>
+  <img id="team_overlay_exit" src="res/img/ui/cancel.png">
+</div>
+  <div id=matchingpage>
+    
+    <div id=map_choice>
+      <a class="maintxt">Choose Maps</a><br>
+      <div class="mapbtnwrapper">
+        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail\default.jpg" value=0>
+        <img class="mapcheck hidden" draggable="false"  src="res/img/ui/confirm.png">
+      </div>
+      <div class="mapbtnwrapper">
+        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail\ocean.jpg" value=1>
+        <img class="mapcheck hidden" draggable="false" src="res/img/ui/confirm.png">
+      </div>
+      <div class="mapbtnwrapper">
+        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail\casino.jpg" value=2>
+        <img class="mapcheck hidden" draggable="false" src="res/img/ui/confirm.png">
+      </div><br>
+      <div id="map_char_gap">
+        <a class="maintxt">Choose Characters</a><button onclick="submitTrain()">train</button>
+        <img class="teamlockbtn" id="lockredteam" src="res/img/svg/lock.svg">
+        <img class="teamlockbtn" id="lockblueteam" src="res/img/svg/lock.svg">
+      </div>
+      <div id="charbtns">
+        <!-- <div class="charbtnwrapper" value=0>
+          <img class="charbtn" draggable="false" src="res/img/character/reaper.png">
+          <a class="charname">Dinosaur</a>
+          <img class="charlock hidden" draggable="false" src="res/img/svg/lock.svg">
+          <img class="teamlock hidden" src="res/img/svg/lock.svg"></img>
+          <img class="charcheck hidden" draggable="false" src="res/img/ui/confirm.png">
+        </div>  -->
+        
+      </div>
+     
+
+    </div>
+    
+    <div>
+      <div>
+        <div class="onesetting" id="teamsetting">
+          <h6 id="teamtxt">팀전</h6>
+          <label class="switch">
+            <input type="checkbox" id="teamchoice">
+            <span class="slider"></span>
+          </label>
+          
+        </div>
+        <div id="countsetting">
+          <a id=simulation_input class="over">Count</a><br>
+          <input type="text" id="num" value="1">
+        </div>
+        <img id="setting" src="./res/img/ui/setting.png">
+
+      </div>
+     
+      <div id="match">
+        <a class="maintxt">Match setting</a>
+        <div class="setting_category">
+        </div>
+        <button id="run_simulation" class="mainbtn">Run</button>
+      </div>
+      <!-- <a class="maintxt">Gameplay Settings</a><br> -->
+    </div>
+    <!-- <button class="mainbtn" id="instant"> Start simulation</button> -->
+    
+  </div>
+
+
+</div>
+<div id="settingpage" class="">
+  <button id="settingclose"> &times; </button>
+  <!-- <button id="reset"> Reset </button> -->
+  <div id="settingwrapper">
+    <div id="gameplay">
+        <h5>Gameplay setting</h5>
+        <div class="setting_category">
+          <!-- <div class="onesetting">
+            <h6>Basicattacl</h6>
+            <button class="rangedown rangearrow">	&#9664;</button>
+            <a class="rangevalue">No dice control</a>
+            <button class="rangeup rangearrow">	&#9654;</button>
+          </div> -->
+          <!-- <div class="onesetting">
+            <h6>Basicattacl</h6>
+            <label class="switch">
+              <input type="checkbox" value="1" checked="true">
+              <span class="slider"></span>
+            </label>
+          </div>  -->
+        </div>
+        
+      <hr>
+    </div>
+    <!-- <div id="match">
+      <h5>Match setting</h5>
+      <div class="setting_category"></div>
+    <hr>
+    </div> -->
+    <div id="statistic">
+      <h5>Statistic setting</h5>
+      <div class="onesetting">
+        <a>All </a>
+        <label class="switch">
+          <input type="checkbox" checked=true class="toggleallstat">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="setting_category">
+      
+      </div>
+    </div>
+  </div>
+</div>
+<div id=loadingoverlay class="hidden">
+  <h6 id=loadingtext>
+    RUNNING...
+  </h6>
+  <div id="progressbar">
+    <span id="progress"></span>
+  </div>
+  <img src="res/img/ui/loading.gif" id="loadingimg">  
+</div>
+
+</body>
+<script src="lib/socket.io.min.js"></script>
+
+
+<script>
+
+
+
+</script>
+<!-- <script src="src/client.js"></script> -->
+<script src="src/simulation.js"></script>
+<script src="src/gamesetting.js"></script>
+</html>

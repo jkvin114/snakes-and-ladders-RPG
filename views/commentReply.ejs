@@ -1,0 +1,76 @@
+<html>
+  <script src="/lib/jquery-3.6.0.min.js"></script>
+
+<style>
+  @font-face {
+    font-family: "cookierun";
+    src: url("/res/font/CookieRun.ttf");
+  }
+  .comment{
+    background-color: rgb(160, 160, 160);
+    padding: 50px;
+    display: inline-block;
+  }
+  .delete_comment{
+    background-color: red;
+  }
+</style>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+
+  <meta charset="utf-8" >
+</head>
+
+<body>
+    <h5>답글 작성</h5>
+    <a href="/board/post/<%=postUrl%>">x</a>
+    <%if(comment.deleted){%>
+        <p> 삭제된 댓글입니다</p>
+    <%}else{%>
+        <p> <%= comment.content %> </p>
+    <%}%>
+    <%for(const r of reply){%>
+        <div class="comment">
+            
+                <p> <%= r.content %> </p><br>
+                <%if(r.canModify){%>
+                    <button value="<%= r._id%>" class="delete_comment">&times;</button>
+                <%}%>
+            
+        </div>
+    <%}%>
+        <%if(logined){%>
+            <form action="/board/post/comment/reply" method="post"> 
+                <input type="hidden" name="commentId" value="<%= comment._id %>">  
+                <input type="text" name="content">
+                <input type="submit">
+             </form>
+        <%}else{%>
+            <p>답글을 쓰려면 로그인하세요</p>
+       <% }%>
+
+</body>
+<script>
+
+$(".delete_comment").click(function(){
+  let value=$(this).val()
+  $.ajax({
+        method: 'POST',
+        url: '/board/post/reply/delete',
+        data:{commentId:value}
+    })
+    .done(function(data, statusText, xhr){
+      let status = xhr.status;
+      if(status==201){
+        window.location.reload()
+      }
+    })
+    .fail(function(data, statusText, xhr){
+      if(data.status==400){
+        alert("error")
+        window.location.reload()
+      }
+    })
+})
+</script>
+</html>

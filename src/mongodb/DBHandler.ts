@@ -189,6 +189,13 @@ userSchema.statics.create=function(data){
 userSchema.statics.findOneByUsername = function(username) {
     return this.findOne({username:username})
 };
+userSchema.statics.findIdByUsername = function(username) {
+    return this.findOne({username:username}).select('_id')
+};
+userSchema.statics.findUsernameById = function(id) {
+    return this.findById(id).select('username')
+};
+
 userSchema.statics.deleteOneById = function(id) {
     return this.findByIdAndDelete(id)
 };
@@ -203,6 +210,9 @@ userSchema.statics.updateEmail = function(id,email) {
 //add link to the simulation record
 userSchema.statics.addSimulationId = function(id,sim_id) {
     return this.findByIdAndUpdate(id,{ $push: { simulations: sim_id}})
+};
+userSchema.statics.setBoardData = function(id,boardData) {
+    return this.findByIdAndUpdate(id,{ boardData:boardData})
 };
 
 //=============================================================================================
