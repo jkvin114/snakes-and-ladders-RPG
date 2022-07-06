@@ -1,6 +1,11 @@
 <script src="/lib/jquery-3.6.0.min.js"></script>
 <html>
-
+<style>
+    .postimg{
+    max-width: 40%;
+    max-height: 200px;
+  }
+</style>
 
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -9,11 +14,23 @@
 </head>
 
 <body>
-    <form action="/board/post/write" method="post" enctype="multipart/form-data">
-        <input type="text" name="title" value="<%= title %> ">
+  <%if(isEdit){%>
+      <h1>게시글 편집</h1>
+    <%}else{%>
+      <h1>게시글 작성</h1>
+    <%}%>
+    <form action="/board/post/<%= isEdit?'edit':'write'%>" method="post" enctype="multipart/form-data">
+        <input type="text" name="title" value="<%= title %> "required>
         
-        <input type="text" name="content" value="<%= content %> ">
+        <input type="text" name="content" value="<%= content %> "required>
         <input type="file" class="uploadimg" accept="image/*" name="img">
+        <%if(imagedir!=="") {%>
+          <img class="postimg" src="/uploads/<%= imagedir %>"> 
+        <% }  %>
+
+        <%if(isEdit){%>
+          <input type="hidden" value="<%= url %>" name="url">
+        <%}%>
         <input type="submit">
       </form>
 </body>

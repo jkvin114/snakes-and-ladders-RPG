@@ -123,7 +123,7 @@ router.post('/login',async function(req:express.Request,res:express.Response){
         req.session.username=body.username
         req.session.isLogined=true
         req.session.userId=String(user._id)
-        if(user.boardData==null || user.boardData.username==null){
+        if(user.boardData==null){
             console.log("added board data")
             let boardData = await UserBoardData.create({
                 articles: [],

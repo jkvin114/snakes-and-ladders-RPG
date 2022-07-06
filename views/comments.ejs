@@ -1,0 +1,103 @@
+<html>
+  <script src="/lib/jquery-3.6.0.min.js"></script>
+
+<style>
+  @font-face {
+    font-family: "cookierun";
+    src: url("/res/font/CookieRun.ttf");
+  }
+  .comment{
+    background-color: rgb(160, 160, 160);
+    padding: 20px;
+    display: inline-block;
+    margin: 10px;
+  }
+  .delete_comment{
+    cursor: pointer;
+    background-color: red;
+  }
+  .vote{
+    display: inline-block;
+  }
+  .vote a{
+    font-size: 15px;
+  }
+  .vote img{
+    width: 15px;
+  }
+  .downvote img{
+    transform: rotate(180deg);
+  }
+  .filter-black{
+    filter: brightness(0%);
+  }
+</style>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+
+  <meta charset="utf-8" >
+</head>
+
+<body>
+    <img src="/res/img/svg/list.svg" id="homebtn"  class="filter-black" onclick="golink('/board/')"><br>
+
+    <h1><%=user%>의 댓글모음</h1>
+    <%for(const comm of comments){%>
+        <div class="comment">
+            <p> <%= comm.content %> </p><br>
+            <a> <%= comm.createdAt.toString().substring(0,24) %></a><br>
+            <%if(canModify){%>
+                <button value="<%= comm.id%>" class="delete_comment" data-type="<%=comm.type%>">&times;</button>
+            <%}%>
+            <div class="vote upvote replyvote" data-type="up" data-id="<%=comm.id%>" >
+                <img src="/res/img/svg/like.svg">
+                <a class="vote_count"><%= comm.upvote %></a>
+            </div>
+            <div class="vote downvote replyvote" data-type="down" data-id="<%=comm.id%>" >
+                <img src="/res/img/svg/like.svg">
+                <a class="vote_count"><%= comm.downvote %></a>
+            </div>
+            <div class="parent">
+                <%if(comm.type==='comment'){%>
+                    <%if(comm.articleUrl===0){%>
+                        <a>원문이 삭제된 댓글입니다</a>
+                    <%}else{%>
+                        <a href="/board/post/<%=comm.articleUrl%>">게시글 보기</a>
+                        
+                    <%}%>
+                    <a href="/board/post/comment/<%=comm.id%>/reply">답글:<%=comm.replyCount%></a>
+                <%}else if(comm.type==='reply'){%>
+                    <a href="/board/post/comment/<%=comm.commentId%>/reply">답글 보기</a>
+                <%}%>
+            </div>
+        </div>
+       
+    <%}%>
+</body>
+<script>
+
+$(".delete_comment").click(function(){
+    if(!confirm("정말 삭제하시겠습니까?")) return
+
+  let value=$(this).val()
+  let type=$(this).data('type')
+  $.ajax({
+        method: 'POST',
+        url: '/board/post/'+type+'/delete',
+        data:{commentId:value}
+    })
+    .done(function(data, statusText, xhr){
+      let status = xhr.status;
+        window.location.reload()
+      
+    })
+    .fail(function(data, statusText, xhr){
+        alert("error")
+      
+    })
+})
+function golink(link){
+  window.location.href=link
+}
+</script>
+</html>

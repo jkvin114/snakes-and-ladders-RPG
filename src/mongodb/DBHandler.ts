@@ -195,7 +195,9 @@ userSchema.statics.findIdByUsername = function(username) {
 userSchema.statics.findUsernameById = function(id) {
     return this.findById(id).select('username')
 };
-
+userSchema.statics.getBoardData = function(id) {
+    return this.findById(id).select('boardData')
+};
 userSchema.statics.deleteOneById = function(id) {
     return this.findByIdAndDelete(id)
 };

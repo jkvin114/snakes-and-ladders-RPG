@@ -15,6 +15,7 @@ const articleSchema = new mongoose.Schema(
 			type: mongoose.Types.ObjectId,
 			ref: "User"
 		},
+		authorName:String,
 		comments: [
 			{
 				type: mongoose.Types.ObjectId,
@@ -53,14 +54,13 @@ const commentSchema = new mongoose.Schema(
 			type: String
 		},
 		article: {
-			required: true,
 			type: mongoose.Types.ObjectId
 		},
 		author: {
 			required: true,
 			type: mongoose.Types.ObjectId,
 			ref: "User"
-		},
+		},authorName:String,
 		reply: [
 			{
 				type: mongoose.Types.ObjectId,
@@ -95,7 +95,6 @@ const commentReplySchema = new mongoose.Schema(
 			type: String
 		},
 		article: {
-			required: true,
 			type: mongoose.Types.ObjectId
 		},
 		comment: {
@@ -106,7 +105,7 @@ const commentReplySchema = new mongoose.Schema(
 			required: true,
 			type: mongoose.Types.ObjectId,
 			ref: "User"
-		},
+		},authorName:String,
 		upvote: Number,
 		downvote: Number,
 		deleted: Boolean,
@@ -128,10 +127,22 @@ const commentReplySchema = new mongoose.Schema(
 )
 
 const userBoardDataSchema = new mongoose.Schema({
-	articles: [mongoose.Types.ObjectId],
-	comments: [mongoose.Types.ObjectId],
-	replys: [mongoose.Types.ObjectId],
-	bookmarks: [mongoose.Types.ObjectId],
+	articles: [{
+		type:mongoose.Types.ObjectId,
+		ref:'Article'
+	}],
+	comments: [{
+		type:mongoose.Types.ObjectId,
+		ref:'Comment'
+	}],
+	replys: [{
+		type:mongoose.Types.ObjectId,
+		ref:'CommentReply'
+	}],
+	bookmarks: [{
+		type:mongoose.Types.ObjectId,
+		ref:'Article'
+	}],
 	username:String
 })
 
@@ -146,7 +157,15 @@ userBoardDataSchema.statics.findOneById = function (id:mongoose.Types.ObjectId) 
 userBoardDataSchema.statics.findOneByUsername = function (name) {
 	return this.findOne({username:name})
 }
-
+userBoardDataSchema.statics.getComments = function (id:mongoose.Types.ObjectId) {
+	return this.findById(id).select('comments').populate('comments')
+}
+userBoardDataSchema.statics.getPosts = function (id:mongoose.Types.ObjectId) {
+	return this.findById(id).select('articles').populate('articles')
+}
+userBoardDataSchema.statics.getReplys = function (id:mongoose.Types.ObjectId) {
+	return this.findById(id).select('replys').populate('replys')
+}
 userBoardDataSchema.statics.addPost = function (id:mongoose.Types.ObjectId, articleId) {
 	return this.findByIdAndUpdate(id, { $addToSet: { articles: articleId }})
 }
@@ -187,7 +206,10 @@ articleSchema.statics.getUrlById = function (id:mongoose.Types.ObjectId) {
 	return this.findById(id).select("articleId")
 }
 articleSchema.statics.findOneByArticleId = function (id) {
-	return this.findOne({ articleId: id }).populate('author').populate('comments')
+	return this.findOne({ articleId: id })
+}
+articleSchema.statics.findOneByArticleIdWithComment = function (id) {
+	return this.findOne({ articleId: id }).populate('comments')
 }
 articleSchema.statics.findTitleByRange = function (start: number, count: number) {
 	//   console.log(count)    //asc, desc  or 1, -1
@@ -195,10 +217,21 @@ articleSchema.statics.findTitleByRange = function (start: number, count: number)
 		.sort({ createdAt: "desc" })
 		.skip(start)
 		.limit(count)
-		.select("createdAt articleId title views upvote downvote imagedir commentCount")
+		.select("createdAt articleId title views upvote downvote imagedir commentCount authorName")
 }
-articleSchema.statics.update = function (id:number, title:string, content:string, image:string) {
-	return this.findOneAndUpdate({ articleId: id }, { title: title, content: content, imgdir: image })
+articleSchema.statics.findTitleOfUserByRange = function (start: number, count: number,author:mongoose.Types.ObjectId) {
+	//   console.log(count)    //asc, desc  or 1, -1
+	return this.find({ deleted: false, uploaded: true,author:author})
+		.sort({ createdAt: "desc" })
+		.skip(start)
+		.limit(count)
+		.select("createdAt articleId title views upvote downvote imagedir commentCount authorName")
+}
+articleSchema.statics.update = function (url:number, title:string, content:string) {
+	return this.findOneAndUpdate({ articleId: url }, { title: title, content: content})
+}
+articleSchema.statics.updateImage = function (url:number, image:string) {
+	return this.findOneAndUpdate({ articleId: url }, {imagedir: image })
 }
 articleSchema.statics.incrementView = function (id) {
 	return this.findOneAndUpdate({ articleId: id }, { $inc: { views: 1 } })
@@ -206,18 +239,21 @@ articleSchema.statics.incrementView = function (id) {
 
 articleSchema.statics.changeUpvote = function (id, change, voter) {
 	if (change < 0) {
-		return this.findOneAndUpdate({ articleId: id }, { $inc: { upvote: change }, $pullAll: { upvoters: voter } })
+		return this.findByIdAndUpdate(id, { $inc: { upvote: change }, $pullAll: { upvoters: voter } })
 	} else {
-		return this.findOneAndUpdate({ articleId: id }, { $inc: { upvote: change }, $addToSet: { upvoters: voter } })
+		return this.findByIdAndUpdate(id, { $inc: { upvote: change }, $addToSet: { upvoters: voter } })
 	}
 }
 
 articleSchema.statics.changeDownvote = function (id, change, voter) {
 	if (change < 0) {
-		return this.findOneAndUpdate({ articleId: id }, { $inc: { downvote: change }, $pullAll: { downvoters: voter } })
+		return this.findByIdAndUpdate(id, { $inc: { downvote: change }, $pullAll: { downvoters: voter } })
 	} else {
-		return this.findOneAndUpdate({ articleId: id }, { $inc: { downvote: change }, $addToSet: { downvoters: voter } })
+		return this.findByIdAndUpdate(id, { $inc: { downvote: change }, $addToSet: { downvoters: voter } })
 	}
+}
+articleSchema.statics.getVotersById = function(id){
+	return this.findById(id).select('upvoters downvoters').populate('upvoters').populate('downvoters')
 }
 articleSchema.statics.delete = function (id:mongoose.Types.ObjectId) {
 	return this.findByIdAndUpdate(id, { deleted: true })
@@ -234,13 +270,18 @@ articleSchema.statics.addReply = function (id:mongoose.Types.ObjectId) {
 articleSchema.statics.removeReply = function (id:mongoose.Types.ObjectId) {
 	return this.findByIdAndUpdate(id, { $inc: { commentCount: -1 }})
 }
-
+articleSchema.statics.getComments = function(id){
+	return this.findById(id).select('comments').populate('comments')
+}
+articleSchema.statics.delete = function (id:mongoose.Types.ObjectId) {
+	return this.findByIdAndDelete(id)
+}
 //==========================================================================================
 commentSchema.statics.create = function (data) {
 	return new Comment(data).save()
 }
 commentSchema.statics.delete = function (id:mongoose.Types.ObjectId) {
-	return this.findByIdAndUpdate(id, { deleted: true, content: "" })
+	return this.findByIdAndUpdate(id, { deleted: true, content: "" ,upvoters:[],downvoters:[]})
 }
 commentSchema.statics.findOneById = function (id:mongoose.Types.ObjectId) {
 	return this.findById(id)
@@ -254,9 +295,37 @@ commentSchema.statics.addReply = function (id:mongoose.Types.ObjectId, commentId
 commentSchema.statics.removeReply = function (id:mongoose.Types.ObjectId, commentId) {
 	return this.findByIdAndUpdate(id, { $inc: { replyCount: -1 }, $pull: { reply: commentId } })
 }
+commentSchema.statics.onPostRemoved = function (id:mongoose.Types.ObjectId) {
+	return this.findByIdAndUpdate(id, {article:null})
+}
+commentSchema.statics.getVotersById = function(id){
+	return this.findById(id).select('upvoters downvoters').populate('upvoters').populate('downvoters')
+}
 
+commentSchema.statics.findOfUserByRange = function (start: number, count: number,author:mongoose.Types.ObjectId) {
+	//   console.log(count)    //asc, desc  or 1, -1
+	return this.find({ deleted: false, uploaded: true,author:author})
+		.sort({ createdAt: "desc" })
+		.skip(start)
+		.limit(count)
+}
 
+commentSchema.statics.changeUpvote = function (id, change, voter) {
+	if (change < 0) {
+		return this.findByIdAndUpdate(id, { $inc: { upvote: change }, $pullAll: { upvoters: voter } })
+	} else {
+		return this.findByIdAndUpdate(id, { $inc: { upvote: change }, $addToSet: { upvoters: voter } })
+	}
+}
 
+commentSchema.statics.changeDownvote = function (id, change, voter) {
+	if (change < 0) {
+		return this.findByIdAndUpdate(id, { $inc: { downvote: change }, $pullAll: { downvoters: voter } })
+	} else {
+		return this.findByIdAndUpdate(id, { $inc: { downvote: change }, $addToSet: { downvoters: voter } })
+	}
+}
+//==============================================================================================
 commentReplySchema.statics.create = function (data) {
 	return new CommentReply(data).save()
 }
@@ -265,6 +334,37 @@ commentReplySchema.statics.delete = function (id:mongoose.Types.ObjectId) {
 }
 commentReplySchema.statics.findOneById = function (id:mongoose.Types.ObjectId) {
 	return this.findById(id)
+}
+commentReplySchema.statics.getVotersById = function(id){
+	return this.findById(id).select('upvoters downvoters').populate('upvoters').populate('downvoters')
+}
+
+commentReplySchema.statics.findOfUserByRange = function (start: number, count: number,author:mongoose.Types.ObjectId) {
+	//   console.log(count)    //asc, desc  or 1, -1
+	return this.find({ deleted: false, uploaded: true,author:author})
+		.sort({ createdAt: "desc" })
+		.skip(start)
+		.limit(count)
+}
+
+
+commentReplySchema.statics.changeUpvote = function (id, change, voter) {
+	if (change < 0) {
+		return this.findByIdAndUpdate(id, { $inc: { upvote: change }, $pullAll: { upvoters: voter } })
+	} else {
+		return this.findByIdAndUpdate(id, { $inc: { upvote: change }, $addToSet: { upvoters: voter } })
+	}
+}
+
+commentReplySchema.statics.changeDownvote = function (id, change, voter) {
+	if (change < 0) {
+		return this.findByIdAndUpdate(id, { $inc: { downvote: change }, $pullAll: { downvoters: voter } })
+	} else {
+		return this.findByIdAndUpdate(id, { $inc: { downvote: change }, $addToSet: { downvoters: voter } })
+	}
+}
+commentReplySchema.statics.onPostRemoved = function (id:mongoose.Types.ObjectId) {
+	return this.findByIdAndUpdate(id, {article:null})
 }
 
 const UserBoardData = mongoose.model("UserBoardData", userBoardDataSchema)

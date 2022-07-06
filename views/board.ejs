@@ -6,22 +6,102 @@
     font-family: "cookierun";
     src: url("/res/font/CookieRun.ttf");
   }
+  body{     
+   background-color: rgb(36, 36, 36);
+   color: rgb(254, 254, 245);
 
+    
+  font-family: 'cookierun';
+    text-align: center;
+  }
   a,p{
     font-family: 'cookierun';
   }
   .post{
-    background-color: cadetblue;
+    background-color: rgb(65, 65, 65);
     margin: 10px;
-    padding: 10px;
+    padding: 5px;
     cursor: pointer;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: min-content auto max-content;
+    align-items: center;
   }
-  .filter-black{
-    filter: brightness(0%);
+  .filter-white{
+    filter:invert();
   }
   .thumbnail-img{
-    width: 100px;
-    max-height: 100px;
+    max-width: 60px;
+    max-height: 60px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .thumbnail-img-container{
+    width: 60px;
+    height: 60px;
+    overflow: hidden;
+    /* border: 2px solid rgb(97, 97, 97); */
+  }
+  .vote_container{
+    text-align: start;
+  }
+  .vote{
+    display: inline-block;
+    
+  }
+  .vote a{
+    font-size: 12px;
+  }
+  .vote img{
+    width: 15px;
+  }
+  .downvote img{
+    transform: rotate(180deg);
+  }
+  #navbar{
+    display: flex;
+    background: none;
+    justify-content:flex-start;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    height: 40px;
+  }
+  #navbar img{
+    font-family: 'cookierun';
+    color:white;
+    background-color: #7E00BF;
+    cursor:pointer;
+    text-align:center;
+    font-size: 20px;
+    border:none;
+    vertical-align: middle;
+    border-radius: 5px;
+    padding: 5px;
+    margin-right: 5px;
+    height: 30px;
+  }
+  #navbar img:hover{
+    background-color: rgb(74, 2, 110);
+  }
+  #post_container{
+    width: min(99%,700px);
+    display: inline-block;
+  }
+  .title{
+    font-size: 17px;
+  }
+  .title_container{
+    padding: 7px;
+  }
+  .subtext{
+    font-size: 10px;
+    color: rgb(239, 161, 255);
+  }
+  .subtext_container{
+    text-align: center;
+  }
+  .comment{
+    color: rgb(161, 195, 255);
   }
 </style>
 <head>
@@ -31,22 +111,63 @@
 </head>
 
 <body>
-  <img src="/res/img/svg/home.svg" id="homebtn"  class="filter-black" onclick="golink('/')"><br>
-    <img src="/res/img/ui/write.png" id="writepostbtn" onclick="golink('/board/post/write')"><br>
-    <% for(let i=0;i<posts.length;++i){%>
-      <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
-        <%if(posts[i].imagedir!=null) {%>
-          <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
-        <% }  %>
-        <h3 class="title"><%= posts[i].title %> </h3> 
-        <a> <%= posts[i].createdAt %></a><br>
-        <a> views<%= posts[i].views %></a><br>
-        <a>좋아요: <%= posts[i].upvote %></a>
-        <a>싫어요: <%= posts[i].downvote %></a><br>
-        <a>댓글: <%= posts[i].commentCount %></a><br>
-      </div>
-         
-  <% }  %> 
+  <div id="navbar">
+    <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br>
+    <%if(!user) {%>
+      <img src="/res/img/ui/write.png" id="writepostbtn" onclick="golink('/board/post/write')"><br>
+      <% }%>
+    <%if(logined) {%>
+      <img src="/res/img/svg/user.svg" id="mypagebtn" onclick="golink('/board/mypage')"><br>
+    <% }  %>
+  </div>
+  
+  <div>
+    <%if(!user) {%>
+      <h1>전체게시판</h1>
+      <% }else{%>
+        <h1><%=user%>의 게시글</h1>
+        <a href='/board/user/<%=user%>/comments'>댓글모음</a>
+      <% }%>
+  </div>
+     
+        
+        
+    
+    <div id="post_container">
+        <% for(let i=0;i<posts.length;++i){%>
+          <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
+            <%if(posts[i].imagedir!=="") {%>
+              <div class="thumbnail-img-container">
+
+                <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
+              </div>
+            <% } else{ %><div></div>
+              <% }  %> 
+            <div class="title_container">
+              <a class="title"><%= posts[i].title %> </a> 
+            </div>
+            <div class="vote_container">
+              <div class="vote upvote" >
+                <img src="/res/img/svg/like.svg" class="filter-white">
+                <a><%= posts[i].upvote %></a>
+              </div><br>
+              <div class="vote downvote" >
+                <img src="/res/img/svg/like.svg" class="filter-white">
+                <a><%= posts[i].downvote %></a>
+              </div>
+            </div>
+            <div></div>
+            <div class="subtext_container">
+              <a class="subtext">작성자: <%=posts[i].authorName%></a>
+              <a class="subtext"> <%= posts[i].createdAt.toString().substring(0,24) %></a>
+              <a class="subtext"> 조회:<%= posts[i].views %></a>
+            </div>
+            <div>
+              <a class="subtext comment">댓글 [<%= posts[i].commentCount %>]</a><br>
+            </div>
+          </div>
+      <% }  %> 
+    </div>
 </body>
 <script>
 function golink(link){
