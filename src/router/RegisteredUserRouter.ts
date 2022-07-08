@@ -59,7 +59,7 @@ router.post('/register',async function(req:express.Request,res:express.Response)
     let body = req.body;
 
 
-    if(body.username.length < 5 || body.username.length > 50){
+    if(body.username.length < 2 || body.username.length > 15){
         res.status(400).end("username");
         return
     }

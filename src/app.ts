@@ -196,7 +196,7 @@ io.on("connect", function (socket: Socket) {
 	})
 	//==========================================================================================
 	socket.on("user:register", function (rname: string) {
-		if (R.hasRoom(rname)) {
+		if (!R.hasRoom(rname)) {
 			socket.emit("server:room_full")
 			return
 		}

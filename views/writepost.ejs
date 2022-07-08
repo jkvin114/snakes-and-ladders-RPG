@@ -1,39 +1,245 @@
 <script src="/lib/jquery-3.6.0.min.js"></script>
 <html>
 <style>
+    @font-face {
+    font-family: "cookierun";
+    src: url("/res/font/CookieRun.ttf");
+  }
     .postimg{
     max-width: 40%;
     max-height: 200px;
   }
+  
+  body{     
+   background-color: rgb(36, 36, 36);
+   color:white;
+
+
+    font-family: 'cookierun';
+    text-align:center;
+
+  }
+  a,p{
+    font-family: 'cookierun';
+  }
+  .filter-invert{
+    filter: invert();
+  }
+  #write_post{
+    display: inline-block;
+    width: min(95%,900px);
+    background-color: rgb(65, 65, 65);
+    border-radius: 10px;
+  }
+  #navbar-container{
+    background-color: rgb(36, 36, 36);
+    position: sticky;
+    display: block;
+    z-index: 3;
+    top: 0;
+  }
+  #navbar{
+    padding: 5px;
+    /* position:fixed; */
+    display: flex;
+    /* background: none; */
+    justify-content:flex-start;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    height: 40px;
+    border-bottom: 1px solid gray;
+  }
+  #navbar img{
+    color:white;
+    /* background-color: #7E00BF; */
+    cursor:pointer;
+    text-align:center;
+    font-size: 20px;
+    border:none;
+    vertical-align: middle;
+    border-radius: 5px;
+    padding: 5px;
+    margin-right: 5px;
+    height: 30px;
+  }
+  #navbar img:hover{
+    filter: brightness(0.9);
+    /* background-color: rgb(74, 2, 110); */
+  }
+  #savebtn{
+    background-color: #2abb4e;
+  }
+  #cancelbtn{
+    background-color: #ff5656;
+  }
+  .textarea{
+    border-radius: 10px;
+    resize: none;
+    background: none;
+    border: none;
+    width: 100%;
+    font-family:'cookierun';
+    color: white;
+    /* height: max-content; */
+    overflow: visible;
+    outline: none;
+    padding: 5px;
+    text-align: start;
+  }
+  ::placeholder{
+    color: rgb(140, 140, 140);
+    opacity: 1;
+    /* text-align: center; */
+  }
+  #title-input{
+    /* border-radius: 10px; */
+
+    font-size: 30px;
+    /* border-bottom: 2px solid gray; */
+  }
+  #content-input{
+    /* border-radius: 10px; */
+
+    position: relative;
+    font-size: 15px;
+    min-height: 100%;
+    width: 100%;
+    word-wrap: normal;
+  }
+  .input:focus{
+    border: none;
+  }
+  hr{
+    margin: 10px;
+    height: 1px;
+    border: 1px solid gray;
+  }
+  #filebox{
+    background-color:rgb(36, 36, 36);
+    
+  
+  }
+  #file{
+    position: absolute;
+    width: 0;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+  }
+  #filebtn{
+    width: 40px;
+    background-color: #7E00BF;
+    cursor:pointer;
+    text-align:center;
+    font-size: 20px;
+    border:none;
+    vertical-align: middle;
+    border-radius: 5px;
+    padding: 5px;
+    margin-right: 5px;
+  }
 </style>
+
 
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
 
   <meta charset="utf-8" >
 </head>
-
+ 
 <body>
-  <%if(isEdit){%>
+  <div id="navbar-container">
+    <div id="navbar">
+      
+      <img src="/res/img/svg/save.svg" id="savebtn"  onclick="save()">
+      <img src="/res/img/svg/out.svg" id="cancelbtn"  onclick="cancel()">
+      <label for="file" id="filebtn-container">
+        <img id="filebtn" src="/res/img/svg/image.svg">
+      </label>
+      
+      
+    </div>
+  </div>
+ 
+  <div>
+    <%if(isEdit){%>
       <h1>게시글 편집</h1>
     <%}else{%>
       <h1>게시글 작성</h1>
     <%}%>
-    <form action="/board/post/<%= isEdit?'edit':'write'%>" method="post" enctype="multipart/form-data">
-        <input type="text" name="title" value="<%= title %> "required>
+  </div>
+    <form id="form" action="/board/post/<%= isEdit?'edit':'write'%>" method="post" enctype="multipart/form-data">
+      <div class="filebox">
+
+        <!-- <input class="upload-name" value="첨부파일" placeholder="첨부파일"> -->
+          
+        <input type="file"  id="file" class="uploadimg" accept="image/*" name="img">
         
-        <input type="text" name="content" value="<%= content %> "required>
-        <input type="file" class="uploadimg" accept="image/*" name="img">
+    </div>
+    <input id="title-input-submit" type="hidden" name="title" value="<%= title %>">
+    <input  id="content-input-submit" type="hidden" name="content" value="<%= content %>">
+    <%if(isEdit){%>
+      <input type="hidden" value="<%= url %>" name="url">
+    <%}%>
+  </form>
+    <div id="write_post">
+        <div class="textarea" id="title-input" placeholder="제목" contenteditable><%= title %></div>
+        
+       <hr> 
+       <div id="imagearea">
         <%if(imagedir!=="") {%>
           <img class="postimg" src="/uploads/<%= imagedir %>"> 
-        <% }  %>
-
-        <%if(isEdit){%>
-          <input type="hidden" value="<%= url %>" name="url">
-        <%}%>
-        <input type="submit">
-      </form>
+          <hr>
+        <% } %>
+        </div>
+       <div  class="textarea"  id="content-input" placeholder="내용" contenteditable><%- content %></div>
+      </div>
+      
 </body>
 <script>
+ function cancel(){
+  history.back()
+  }
+  function save(){
+    let title=$("#title-input").html()
+    let content=$("#content-input").html()
+    if(title==="" || content===""){
+      alert("내용을 입력하세요")
+      return
+    }
+    // console.log(content)
+
+
+    title=title.replace(/\<div\>/g," ").replace(/\<\/div\>/g,"").replace(/\<.+?\>/g,"")
+    content=content
+    .replace(/\<br.*?\>/g,"[[]]")
+    .replace(/\<\/div\>/g,"[[]]")
+    .replace(/\<.+?\>/g,"")
+    .replace(/\[\[\]\]/g,"<br>")
+
+
+
+    $("#title-input-submit").val(title)
+    $("#content-input-submit").val(content)
+    // console.log(content)
+    // console.log(title)
+    document.getElementById("form").submit()
+  }
+  const inputImage = document.getElementById("file")
+  inputImage.addEventListener("change", e => {
+    let input=e.target
+    if(input.files && input.files[0]) {
+        // 이미지 파일인지 검사 (생략)
+        // FileReader 인스턴스 생성
+        const reader = new FileReader()
+        // 이미지가 로드가 된 경우
+        reader.onload = e => {
+          $("#imagearea").html("<img class='postimg' src='"+e.target.result+"'><hr>")
+        }
+        // reader가 이미지 읽도록 하기
+        reader.readAsDataURL(input.files[0])
+    }
+  })
 </script>
 </html>

@@ -489,46 +489,6 @@ height:60vh;
     margin-right: 5px;
     margin-top: 20px;
 }
-  /* Screen smaller than 1000px */
-@media (max-width: 900px){
-    #gamelist_side{
-        justify-content: flex-start;
-    }
-    #gamelist_wrapper{
-        border: none;
-        height: 320px;
-    }
-    #maximize_list_btn{
-        display: none;
-    }
-    #togglelist{left: -50px;}
-    #holder{
-        display: none;
-    }
-}
-  /* Screen larger than 900px */
-@media (min-width: 900px) {
-    /* #gamelist { grid-template-columns: repeat(2, 1fr); } */
-    #graphcontainer{grid-template-columns: repeat(2, 1fr);}
-    #main{grid-template-columns: 200px auto;}
-    #togglelist{left:206px}
-    #listhidebar{display: none;}
-    #detailbtn_container{
-        height: 50px;
-    }
-    .detailbtn{
-        height: 45px;
-    }
-}
-
-  /* Screen larger than 1300px */
-  @media (min-width: 1300px) {
-
-    /* #gamelist { grid-template-columns: repeat(3, 1fr); } */
-    #togglelist{left:406px}
-    #main{grid-template-columns: 400px auto;}
-  }
-
 #toolbar{
     display: flex;
     flex-wrap:nowrap;
@@ -875,4 +835,43 @@ transform: scale(1.1);
   #train_detail{
     background-color: white;
     color: black;
+  }
+  /* Screen smaller than 1000px */
+@media (max-width: 900px){
+    #gamelist_side{
+        justify-content: flex-start;
+    }
+    #gamelist_wrapper{
+        border: none;
+        height: 320px;
+    }
+    #maximize_list_btn{
+        display: none;
+    }
+    #togglelist{left: -50px;}
+    #holder{
+        display: none;
+    }
+}
+  /* Screen larger than 900px */
+@media (min-width: 900px) {
+    /* #gamelist { grid-template-columns: repeat(2, 1fr); } */
+    #graphcontainer{grid-template-columns: repeat(2, 1fr);}
+    #main{grid-template-columns: 200px auto;}
+    #togglelist{left:206px}
+    #listhidebar{display: none;}
+    #detailbtn_container{
+        height: 50px;
+    }
+    .detailbtn{
+        height: 45px;
+    }
+}
+
+  /* Screen larger than 1300px */
+  @media (min-width: 1300px) {
+
+    /* #gamelist { grid-template-columns: repeat(3, 1fr); } */
+    #togglelist{left:406px}
+    #main{grid-template-columns: 400px auto;}
   }

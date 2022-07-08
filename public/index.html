@@ -546,10 +546,11 @@ $("#registerform").submit(function(e){
         let status = res.status;
         if(status===400){
           if(res.responseText==='username'){
-            $(".input_alert.register_id").html(chooseLang("Username should be longer than5 characters","아이디는 5글자 이상이어야 합니다"))
+            $(".input_alert.register_id").html(chooseLang("Username should be between 2~15 characters","아이디는 2~15글자 사이여야 합니다"))
           }
           else if(res.responseText==="password"){
-            $(".input_alert.register_pw").html(chooseLang("Password should be longer than 3 characters containing both alphabet and nunmber","비밀번호는 숫자와 영문포함 3글자 이상이어야 합니다 "))
+            $(".input_alert.register_pw").html(chooseLang("Password should be longer than 3 characters containing both alphabet and number"
+            ,"비밀번호는 숫자와 영문포함 3글자 이상이어야 합니다 "))
           }
           else if(res.responseText==="duplicate username"){
             $(".input_alert.register_id").html(chooseLang("Username duplicate","아이디 중복"))

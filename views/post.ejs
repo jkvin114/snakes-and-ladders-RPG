@@ -25,13 +25,19 @@
   #navbar{
     /* position:fixed; */
     display: flex;
-    background: none;
+    /* background: none; */
     justify-content:flex-start;
     flex-direction: row-reverse;
     align-items: stretch;
     height: 40px;
+    background-color: rgb(36, 36, 36);
+    position: sticky;
+    top: 0;
+    padding: 5px;
+    border-bottom: 1px solid rgb(95, 95, 95);
+    z-index: 3;
   }
-  #navbar img{
+  #navbar img, #navbar > div{
     color:white;
     background-color: #7E00BF;
     cursor:pointer;
@@ -44,7 +50,7 @@
     margin-right: 5px;
     height: 30px;
   }
-  #navbar img:hover{
+  #navbar img:hover,#navbar > div:hover{
     background-color: rgb(74, 2, 110);
   }
   #navbar img.delete_post{
@@ -173,7 +179,11 @@
     /* width: 90%; */
     display: block;
     margin: 10px;
-  }.comment_content{
+    border: 0;
+    height: 1px;
+    background: gray;
+  }
+  .comment_content{
     font-size: 13px;
   }.enter_comment{
     position: relative;
@@ -221,6 +231,7 @@
       <!-- <button value="<%= id%>" class="delete_post">&times;</button>
       <button onclick="golink('/board/post/edit/<%=url%>')" class="edit_post">edit</button> -->
     <%}%>
+
   </div>
  <div id="post_container">
 
@@ -238,7 +249,7 @@
       <%if(image!=="") {%>
         <img class="postimg" src="/uploads/<%= image %>"> 
      <% }  %>
-     <p class="content"><%= content %>  </p>
+     <div class="content"><%- content %>  </div>
      <div class="vote upvote postvote"  data-type="up" data-id="<%=id%>">
       <img src="/res/img/svg/like.svg" class="filter-invert">
       <a class="vote_count "><%= upvotes %></a>

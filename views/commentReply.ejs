@@ -6,27 +6,186 @@
     font-family: "cookierun";
     src: url("/res/font/CookieRun.ttf");
   }
-  .comment{
-    background-color: rgb(160, 160, 160);
-    padding: 50px;
+  body{     
+   background-color: rgb(36, 36, 36);
+   color:white;
+
+
+  font-family: 'cookierun';
+  text-align:center;
+
+  }
+  a,p{
+    font-family: 'cookierun';
+  }
+  .filter-invert{
+    filter: invert();
+  }
+  
+  #navbar{
+    /* position:fixed; */
+    display: flex;
+    /* background: none; */
+    justify-content:flex-start;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    height: 40px;
+    background-color: rgb(36, 36, 36);
+    position: sticky;
+    top: 0;
+    padding: 5px;
+    border-bottom: 1px solid rgb(95, 95, 95);
+    z-index: 3;
+  }
+  #navbar img, #navbar > div{
+    color:white;
+    background-color: #7E00BF;
+    cursor:pointer;
+    text-align:center;
+    font-size: 20px;
+    border:none;
+    vertical-align: middle;
+    border-radius: 5px;
+    padding: 5px;
+    margin-right: 5px;
+    height: 30px;
+  }
+  #navbar img:hover,#navbar > div:hover,.submit_comment:hover{
+    background-color: rgb(74, 2, 110);
+  }
+  #comments form{
+    width: 100%;
+  }
+  #main{
+    border-radius: 10px;
+    width: min(95%,900px);
     display: inline-block;
+    padding: 5px;
+    background-color: rgb(83, 83, 83);
+  }
+  .comment{
+    min-height: 70px;
+    padding: 7px;
+    /* padding: 50px; */
+    display: block;
+    text-align: start;
+    /* border: 2px solid white; */
+  }
+  .delete_comment,.delete_post{
+    
+    cursor: pointer;
+    /* background-color: red; */
+  }
+  .delete_comment{
+    border: none;
+    float: right;
+    font-size: 25px;
+    color: white;
+    background: none;
+  }
+  .delete_comment:hover{
+    transform: scale(1.1);
   }
   .delete_comment{
     cursor: pointer;
-    background-color: red;
+    /* background-color: red; */
   }
   .vote{
     cursor: pointer;
     display: inline-block;
+    min-width: 50px;
+    background: none;
+    border: 1px solid white;
   }
   .vote a{
-    font-size: 15px;
+    font-size: 17px;
   }
   .vote img{
     width: 15px;
   }
   .downvote img{
     transform: rotate(180deg);
+  }
+  
+  .reply{
+    display: inline;
+    /* text-align: end; */
+    float: right;
+    border: 1px solid white;
+    padding: 5px;
+    margin: 4px;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .reply a{
+    text-decoration: none;
+    color: white;
+  }
+  .comment_info{
+    font-size: 12px;
+    color: #d2d2d2;
+    
+  }
+  .comment_author{
+    cursor: pointer;
+    font-size: 15px;
+    color: #ffffff;
+  }
+  .comment_hr{
+    /* width: 90%; */
+    display: block;
+    margin: 10px;
+  }.comment_content{
+    font-size: 13px;
+  }.enter_comment{
+    position: relative;
+    width: 100%;
+    font-size: 15px;
+    padding: 6px;
+    color: white;
+    background:none;
+    border: none;
+    border-bottom:2px solid rgb(210, 210, 210);
+    font-family: 'cookierun';
+    flex-grow: 1;
+  }
+  .submit_comment{
+    border-radius: 5px;
+    font-size: 15px;
+    padding: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    border: none;
+    background-color: #7E00BF;
+    color: white;
+    font-family: 'cookierun';
+    cursor: pointer;
+  }
+  .commententer{
+    display: flex;
+    width: 100%;
+    position: relative;
+  }
+  .white-text{
+    color: white;
+    text-decoration: none;
+  }
+  .comment_hr{
+    /* width: 90%; */
+    display: block;
+    margin: 10px;
+    border: 0;
+    height: 1px;
+    background: gray;
+  }
+  #reply-container{
+    display: grid;
+    grid-template-columns: 50px auto;
+  }
+  .reply-indicator{
+    font-size: 40px;
+    color:white;
   }
 </style>
 <head>
@@ -36,55 +195,90 @@
 </head>
 
 <body>
-    <h5>답글 작성</h5>
-    <%if(postUrl!==""){%>
-      <a href="/board/post/<%=postUrl%>">x</a>
-    <%}else{%>
-    <p> 원글이 삭제된 댓글입니다</p>
-    <%}%>
     
-    <%if(comment.deleted){%>
-        <p> 삭제된 댓글입니다</p>
-    <%}else{%>
-        <p> <%= comment.content %> </p>
-        <b onclick="golink('/board/user/<%=comment.authorName%>/comments')"> <%= comment.authorName %> </b>
+  <div id="navbar">
+    <img onclick="golink('/board/')" src="/res/img/svg/list.svg" id="boardbtn">
+    
+      <%if(postUrl!==""){%>
+        <div   onclick="golink('/board/post/<%=postUrl%>')">
+        <a class='white-text'>게시글 보기</a>
+        </div>
+      <%}else{%>
+        <a> 원글이 삭제된 댓글입니다</a>
+      <%}%>
+  </div>
 
-        <div class="vote upvote commentvote" data-type="up" data-id="<%=comment._id%>" >
-          <img src="/res/img/svg/like.svg">
-          <a class="vote_count"><%= comment.upvote %></a>
+    <div id="main">
+
+      <div class="comment">
+
+        <%if(comment.deleted){%>
+          <a> 삭제된 댓글입니다</a>
+          <div></div>
+        <%}else{%>
+          <a class="comment_info comment_author">작성자: </a> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
+          <%= comment.authorName %> </u>
+          <a class="comment_info"><%= comment.createdAt.toString().substring(0,24) %></a>
+
+          <p class="comment_content"> <%= comment.content %> </p>
+          
+          <div class="vote upvote commentvote" data-type="up" data-id="<%=comment._id%>" >
+            <img src="/res/img/svg/like.svg" class="filter-invert">
+            <a class="vote_count"><%= comment.upvote %></a>
+          </div>
+          <div class="vote downvote commentvote" data-type="down" data-id="<%=comment._id%>" >
+            <img src="/res/img/svg/like.svg" class="filter-invert">
+            <a class="vote_count"><%= comment.downvote %></a>
+          </div>
+        <%}%>
+    </div>
+
+    <%if(logined && !comment.deleted){%>
+       <form action="/board/post/comment/reply" method="post"> 
+        <input type="hidden" name="commentId" value="<%= comment._id %>">  
+        <div class="commententer">
+          <input class="enter_comment" type="text" name="content" placeholder="답글쓰기" required>
+          <input class="submit_comment" type="submit" value="등록">
         </div>
-        <div class="vote downvote commentvote" data-type="down" data-id="<%=comment._id%>" >
-          <img src="/res/img/svg/like.svg">
-          <a class="vote_count"><%= comment.downvote %></a>
-        </div>
-    <%}%>
+      </form>
+  <%}else if(comment.deleted){%>
+    <p>삭제된 댓글에는 답글을 달 수 없습니다</p>
+  <% }else{%>
+      <p>답글을 쓰려면 로그인하세요</p>
+ <% }%>
+
+
+    <div id="reply-container">
     <%for(let i=reply.length-1;i>=0;--i){%>
       <% const r=reply[i]%>
+      <div class="reply-indicator">
+        <!-- &#8618; -->
+        ㄴ
+      </div>
         <div class="comment">
-                <b onclick="golink('/board/user/<%=r.author%>/comments')"> <%= r.author %> </b>
-                <p> <%= r.content %> </p><br>
-                <%if(r.canModify){%>
-                    <button value="<%= r._id%>" class="delete_comment">&times;</button>
-                <%}%>
-                <div class="vote upvote replyvote" data-type="up" data-id="<%=r._id%>" >
-                  <img src="/res/img/svg/like.svg">
-                  <a class="vote_count"><%= r.upvotes %></a>
-                </div>
-                <div class="vote downvote replyvote" data-type="down" data-id="<%=r._id%>" >
-                  <img src="/res/img/svg/like.svg">
-                  <a class="vote_count"><%= r.downvotes %></a>
-                </div>
+          <a class="comment_info comment_author">작성자: </a> 
+          <u class="comment_info comment_author" onclick="golink('/board/user/<%=r.author%>/comments')">
+            <%=r.author %> </u>
+            <a class="comment_info"><%= r.createdAt.toString().substring(0,24) %></a>
+            <%if(r.canModify){%>
+              <button value="<%= r._id%>" class="delete_comment">&times;</button>
+            <%}%><br>
+            <p class="comment_content"> <%= r.content %> </p>
+            
+            <div class="vote upvote commentvote" data-type="up" data-id="<%=r._id%>" >
+              <img src="/res/img/svg/like.svg" class="filter-invert">
+              <a class="vote_count"><%= r.upvotes %></a>
+            </div>
+            <div class="vote downvote commentvote" data-type="down" data-id="<%=r._id%>" >
+              <img src="/res/img/svg/like.svg" class="filter-invert">
+              <a class="vote_count"><%= r.downvotes %></a>
+            </div>
+            <hr class="comment_hr">
         </div>
-    <%}%>
-        <%if(logined){%>
-            <form action="/board/post/comment/reply" method="post"> 
-                <input type="hidden" name="commentId" value="<%= comment._id %>">  
-                <input type="text" name="content" required>
-                <input type="submit">
-             </form>
-        <%}else{%>
-            <p>답글을 쓰려면 로그인하세요</p>
-       <% }%>
+        
+      <%}%>
+    </div>
+  </div>
 
 </body>
 <script>

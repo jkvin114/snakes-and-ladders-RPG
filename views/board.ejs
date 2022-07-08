@@ -60,13 +60,18 @@
   }
   #navbar{
     display: flex;
-    background: none;
     justify-content:flex-start;
     flex-direction: row-reverse;
     align-items: stretch;
     height: 40px;
+    background-color: rgb(36, 36, 36);
+    position: sticky;
+    top: 0;
+    padding: 5px;
+    z-index: 3;
+    border-bottom: 1px solid rgb(95, 95, 95);
   }
-  #navbar img{
+  #navbar img,#navbar > div,.pagebtn{
     font-family: 'cookierun';
     color:white;
     background-color: #7E00BF;
@@ -78,10 +83,21 @@
     border-radius: 5px;
     padding: 5px;
     margin-right: 5px;
-    height: 30px;
+    /* height: 30px; */
   }
-  #navbar img:hover{
+  #navbar img:hover,#navbar > div:hover,.pagebtn:hover{
     background-color: rgb(74, 2, 110);
+  }
+  .pagebtn{
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 10px;
+  }
+  #prevbtn{
+    float: left;
+  }
+  #nextbtn{
+    float: right;
   }
   #post_container{
     width: min(99%,700px);
@@ -96,11 +112,13 @@
   .subtext{
     font-size: 10px;
     color: rgb(239, 161, 255);
+    word-break: keep-all;
   }
   .subtext_container{
     text-align: center;
   }
   .comment{
+    margin-left: 3px;
     color: rgb(161, 195, 255);
   }
 </style>
@@ -114,25 +132,29 @@
   <div id="navbar">
     <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br>
     <%if(!user) {%>
-      <img src="/res/img/ui/write.png" id="writepostbtn" onclick="golink('/board/post/write')"><br>
-      <% }%>
-    <%if(logined) {%>
-      <img src="/res/img/svg/user.svg" id="mypagebtn" onclick="golink('/board/mypage')"><br>
-    <% }  %>
+      <%if(logined) {%>
+        <img src="/res/img/ui/write.png" id="writepostbtn" onclick="golink('/board/post/write')">
+
+        <img src="/res/img/svg/user.svg" id="mypagebtn" onclick="golink('/board/mypage')"><br>
+      <% }  %>
+    <% }else{%>
+      <img src="/res/img/svg/list.svg" class="filter-black" onclick="golink('/board/')"><br>
+      <div onclick="golink('/board/user/<%=user%>/comments')">
+        <a class='white-text'>댓글모음</a>
+      </div>
+      <%}%>
+    
+
   </div>
   
   <div>
     <%if(!user) {%>
       <h1>전체게시판</h1>
       <% }else{%>
-        <h1><%=user%>의 게시글</h1>
-        <a href='/board/user/<%=user%>/comments'>댓글모음</a>
+        <h1><%=user%>님의 게시글</h1>
       <% }%>
   </div>
      
-        
-        
-    
     <div id="post_container">
         <% for(let i=0;i<posts.length;++i){%>
           <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
@@ -166,12 +188,26 @@
               <a class="subtext comment">댓글 [<%= posts[i].commentCount %>]</a><br>
             </div>
           </div>
-      <% }  %> 
+      <% } %> 
+      <%if(start>0){%>
+        <button id="prevbtn" class="pagebtn" value='/board/<%=(!user?``:`user/${user}/posts`)+`?start=${start-count}`%>'>
+          ❮ 이전</button>
+      <% }%>
+
+      <%if(!isEnd){ %> 
+        <button id="nextbtn" class="pagebtn" value='/board/<%=(!user?``:`user/${user}/posts`)+`?start=${start+count}`%>'>
+          다음 ❯</button>
+      <% } %> 
+
+
     </div>
 </body>
 <script>
 function golink(link){
   window.location.href=link
 }
+$(".pagebtn").click(function(){
+  window.location.href=$(this).val()
+})
 </script>
 </html>
