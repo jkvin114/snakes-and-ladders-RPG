@@ -1,3 +1,4 @@
+
 sessionStorage.status = null
 var MATCH = null
 const RANDOM_CHAR_DIR = "res/img/ui/random.png"
@@ -162,8 +163,14 @@ class ProtoPlayer {
 
 class MatchStatus {
 	constructor() {
+		let param=new URLSearchParams(window.location.search)
+		if(param.has('gametype'))
+			this.gametype= param.get('gametype')
+		else
+			this.gametype='rpg'
+		console.log(this.gametype)
 		this.playerlist = this.makePlayerList()
-		this.ui = new MatchInterface(this)
+		this.ui = new MatchInterface(this,this.gametype)
 		this.teamSelector = new TeamSelector(this)
 		this.map = 0
 		this.myturn = -1
@@ -178,6 +185,7 @@ class MatchStatus {
 		}
 		MatchStatus._instance = this
 	}
+
 
 	makePlayerList() {
 		let p = []
@@ -425,7 +433,7 @@ class MatchStatus {
 		} else {
 
 			window.onbeforeunload = function () {}
-			ServerConnection.finalSubmit(this.setting.getSummary())
+			ServerConnection.finalSubmit(this.setting.getSummary(),this.gametype)
 		}
 	}
 
@@ -446,9 +454,10 @@ class MatchStatus {
 }
 
 class MatchInterface {
-	constructor(match) {
+	constructor(match,gametype) {
 		this.match = match
-
+		this.gametype=gametype
+		if(this.gametype==='marble') this.setAsMarble()
 		this.switch_player = $(".toplayer").toArray()
 		this.switch_ai = $(".toai").toArray()
 		this.playercard = $(".connected").toArray()
@@ -469,6 +478,10 @@ class MatchInterface {
 		MatchInterface._instance = this
 	}
 
+	setAsMarble(){
+		$(".mapbtn").hide()
+		$("#setting").hide()
+	}
 	setAsHost(roomname) {
 		$("#Hostingpage").addClass("pending")
 		$(".me p").html(sessionStorage.nickName)
@@ -637,7 +650,7 @@ class TeamSelector {
 			} else if (this.check_status.every((c) => c) || this.check_status.every((c) => !c)) {
 				alert("You must divide teams!!")
 			} else {
-				ServerConnection.finalSubmit(this.match.setting.getSummary())
+				ServerConnection.finalSubmit(this.match.setting.getSummary(),this.match.gametype)
 			}
 		}
 	}

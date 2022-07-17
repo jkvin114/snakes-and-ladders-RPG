@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.15, user-scalable=no" />
+<!-- <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=0;"/> -->
+<!-- <meta name="viewport" content="width=device-width, target-densityDpi=medium-dpi"/> -->
+<!-- jQuery library -->
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src="./../lib/jquery-3.6.0.min.js"></script>
+
+<script src="./../lib/fabric.min.js"></script>
+<script src="./../lib/howler.min.js"></script>
+<script src="./../lib/socket.io.min.js"></script>
+<head>
+    <meta charset="utf-8"/>
+</head>
+<style>
+@font-face {
+    font-family: "cookierun";
+    src: url("./../res/font/CookieRun.ttf");
+}
+@font-face {
+    font-family: "CookierunBlack";
+    src: url("./../res/font/CookieRun_Black.ttf");
+}
+@font-face {
+    font-family: "nanumEB";
+    src: url("./../res/font/NanumSquareEB.ttf");
+}
+
+html{
+  font-size: 1vw;
+}
+body{
+    background-color: rgb(36, 36, 36);
+    text-align: center;
+    
+}
+#loadingoverlay {
+  position: absolute;
+  top: 0;
+  width: 99%;
+  height: 99%;
+  background: #363636;
+  border: 10px solid #242424;
+  z-index: 15;
+}
+
+#loadingoverlay img {
+  left: 50%;
+  top: 30%;
+  width: 140px;
+  transform: scale(0.3);
+  transform: translate(-50%, 0);
+
+  position: absolute;
+
+}
+
+
+#loadingtext {
+  font-family: 'nanumB';
+  position: absolute;
+  width: max-content;
+  left: 50%;
+  top: 5%;
+  transform: translate(-50%, 0);
+  font-size: 3.5rem;
+  color: white;
+  user-select: none;
+  z-index: 16;
+  pointer-events: none;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
+
+.resultimg {
+  position: absolute;
+  z-index: 100;
+  left: 50%;
+  transform: translate(-50%);
+  top: 10%;
+  width: 250px;
+  height: 250px;
+}
+#toggle_fullscreen {
+  position: fixed;
+  z-index: 99;
+  background-color: rgba(255, 255, 255, 0.5);
+  width: 40px;
+  height: 20px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  top: 0;
+  cursor: pointer;
+}
+
+#dialog{
+  position: absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  width: max(30%,300px);
+  /* height: max(20%,150px); */
+  min-height: 100px;
+  z-index: 11;
+  background-color: #363636;
+  border: 2px solid white;
+  color: white;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+#dialog p{
+  font-size: 1.5rem;
+  margin-right: 1vw;
+  margin-left: 1vw;
+  /* padding: 1.5vw; */
+  text-align: center;
+  grid-column: 1/3;
+}
+#dialog .dialog_cancel,#dialog .dialog_confirm{
+
+  border: none;
+  background: none;
+  font-size: 2rem;
+  color: white;
+  cursor: pointer;
+}
+#dialog .dialog_cancel:hover{
+  background-color: rgba(255, 97, 97,0.5);
+}
+#dialog .dialog_confirm:hover{
+  background-color: rgba(100, 255, 97,0.5);
+}
+#dialog .dialog_confirm{
+  left:50%;
+}
+.hidden{
+    display: none;
+}
+.hidden2{
+    visibility: hidden;
+}
+#quit {
+  z-index: 7;
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: rgb(255, 106, 108);
+  width: 20px;
+  height: 20px;
+  border: none;
+}
+#canvas-container {
+    display: inline-block;
+  overflow: hidden;
+  /* width: 1200px;
+  height: 1200px; */
+  /* transform-origin: 50% 50%; */
+  transform-origin: 100% 100%;
+
+}
+
+#board {
+  overflow: hidden;
+}
+
+#boardwrapper {
+  /* overflow: hidden; */
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  transform-origin: 100% 100%;
+}
+#testbtn{
+    font-family: 'nanumEB';
+}
+.window{
+  position: absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  width: max(30%,300px);
+  /* height: max(20%,150px); */
+  height: fit-content;
+  /* min-height: 200px; */
+  z-index: 11;
+  background-color: #f3e7c6;
+  border: 5px solid rgb(111, 77, 10);
+  color: black;
+  border-radius: 10px;
+  font-family: 'cookierun';
+  box-shadow: 0 0 5px 2px black;
+  /* border-style: 'ridge'; */
+
+}
+.window-header{
+  display: block;
+  background-color: rgb(255, 126, 112);
+  border-radius: 4px;
+  border: 1px solid rgb(82, 57, 9);
+  color: white;
+  height: 30px;
+  font-size: 20px;
+}
+.window-header.confirmwindow{
+  background-color: rgb(49, 35, 10);
+}
+.window-close{
+  height: 30px;
+  font-size: 20px;
+  float: right;
+  outline: 3px solid rgb(169, 132, 62);
+  outline-offset: -2px;
+  background-color:rgb(92, 65, 11) ;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'CookierunBlack';
+  box-shadow: 0 0 3px 1px black;
+}
+.window-content{
+  text-align: center;
+}
+.window-confirm-btn,.window-cancel-btn{
+  display: inline-block;
+  
+  width: fit-content;
+  font-size: 15px;
+  border: 2px solid rgb(118, 84, 21);
+  border-radius: 6px;
+  padding: 4px;
+  color: rgb(82, 57, 9);
+  cursor: pointer;
+  user-select: none;
+  padding-left: 23px;
+  padding-right: 23px;
+  margin-bottom: 10px;
+}
+.window-confirm-btn{
+  background: linear-gradient(to bottom, rgba(255, 255, 134, 1) 0%, rgb(234, 139, 14) 100%);
+}
+.window-cancel-btn{
+  background: linear-gradient(to bottom, rgb(183, 223, 255) 0%, rgb(48, 133, 170) 100%);
+  
+}
+
+.window-confirm-btn > img{
+  height: 20px;
+  vertical-align: bottom;
+  
+}
+.window-content-text1,.window-content-text2,.window-content-text-nobackground{
+  display: inline-block;
+  color:  rgb(82, 57, 9);
+  font-size: 12px;
+  padding: 2px;
+  padding-left: 13px;
+  padding-right: 13px;
+  margin: 5px;
+  border-radius: 7px
+}
+.window-content-text1{
+  background-color: #e9d49a;
+}
+.window-content-text2{
+  background-color: #ffe97b;
+}
+.building-selection-container{
+  margin-top: 6px;
+
+}
+.building-selection{
+  cursor: pointer;
+  display: inline-block;
+  width: 60px;
+  border: 2px solid #f3e7c6;
+  box-shadow: 0 0 3px 1px black;
+  /* height: 100px; */
+  border-radius: 7px;
+  font-size: 11px;
+  user-select: none;
+}
+.building-selection-name{
+  background-color: orange;
+  display: block;
+  text-align: right;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  padding: 2px;
+}
+
+.building-selection-price{
+  background-color: rgb(255, 207, 49);
+  color: red;
+  display: block;
+  text-align: right;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  padding: 2px;
+}
+.building-selection.have > .building-selection-name{
+  background-color: rgb(35, 139, 177);
+  color: white;
+}
+.building-selection.have > .building-selection-price{
+  background-color: rgb(89, 189, 225);
+  color: black;
+}
+.building-selection.have > .building-selection-check > img{
+  display: none;
+}
+.building-selection-img{
+  background-color: whitesmoke;
+  height: 50px;
+}
+.building-selection-img > img{
+  height: 40px;
+}
+.building-selection-check{
+  position: absolute;
+  top:80px
+}
+.building-selection-check > img{
+  height: 20px;
+}
+.building-selection-desc{
+  position: absolute;
+  z-index: inherit+1;
+  background-color: rgba(53, 53, 53, 0.5);
+  color: white;
+  width: 55px;
+  transform: translate(0,-20px);
+  padding: 3px;
+  font-size: 9px;
+}
+.selection-text{
+  padding: 20px;
+  background-color: #e9d49a;
+  border-radius: 10px;
+  margin: 5px;
+  font-size: 20px;
+  color:  rgb(82, 57, 9);
+}
+#selectionname {
+  margin: 0;
+  text-align: center;
+  font-size: 1.5rem;
+  color: black;
+  background: linear-gradient(to bottom, #F1CA89 0%, #d39829 100%);
+  ;
+  /* background: #F1CA89; */
+  padding: 0.5rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translate(-50%, 0);
+  z-index: 7;
+  border: 0.3rem outset #CC9B6D;
+  border-radius: 0.5rem;
+  user-select: none;
+  /* font-family: "Cookierun Black"; */
+}
+
+#selectiondesc {
+  margin: 0;
+  text-align: center;
+  font-size: 1.3rem;
+  color: white;
+  background: linear-gradient(to left, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.6) 20%, rgba(20, 20, 20, 0.6) 80%, rgba(20, 20, 20, 0) 100%);
+  padding: 0.5rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, 0);
+  z-index: 7;
+  user-select: none;
+
+}
+
+
+#dice_container{
+  position: absolute;
+  left: 50%;
+  top:50%;
+  z-index: 7;
+  transform: translate(-50%, -50%);
+}
+.dicebtn{
+  
+  z-index: 7;
+  cursor: pointer;
+  color: white;
+  position: absolute;
+  border: 3px solid white;
+  border-radius: 50%;
+  font-family: 'CookierunBlack';
+  user-select: none;
+}
+#dicebtn{
+  width: 12vw;
+  height: 9vw;
+  left: 50%;
+  top:50%;
+  transform: translate(-50%, 3vw);
+  font-size: 3vw;
+  background: linear-gradient(to top, rgba(255, 37, 251, 1) 0%, rgb(255, 211, 253)100%);
+
+  box-shadow: 0 0 10px 3px black;
+}
+#odd,#even{
+  width: 6vw;
+  height: 4vw;
+  font-size: 2vw;
+  top:30px;
+  box-shadow: 0 0 4px 1px black;
+}
+#odd{
+  left: 10px;
+  background: linear-gradient(to top, rgb(37, 168, 255) 0%, rgb(221, 253, 255)100%);
+}
+#even{
+  right: 10px;
+  background: linear-gradient(to top, rgb(38, 135, 208) 0%, rgb(221, 253, 255)100%);
+}
+.dicebtn:active{
+  filter: brightness(0.8);
+}
+#smalldicebtn {
+  user-select: none;
+  width: 60px;
+  height: 60px;
+
+}
+#dicegage{
+  width: 300px;
+  height: 16px;
+  border: 3px solid black;
+  background-color: gray;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 4px 1px black;
+  background: repeating-linear-gradient(to right,rgb(0, 0, 0) 0px, rgba(0, 0, 0, 1) 1px, rgba(110, 110, 110,0.8) 1px, rgba(110, 110, 110,0.8) 74px,
+      rgb(0, 0, 0) 74px, rgba(0, 0, 0, 1) 75px);
+      text-align: left;
+}
+#dicegage > #gage{
+  display: inline-block;
+  height: 100%;
+  width: 0%;
+  background:linear-gradient(to left,rgba(255, 255, 255,0) -1px, rgba(255, 255, 255, 1) 1px,rgba(255, 255, 255, 1) 3px,rgba(255, 231, 110, 0.5) 10px,rgba(255, 255, 255,0) 100px, rgba(255, 211, 253,0) 100%)
+,linear-gradient(to top, rgb(194, 19, 191) 0%,rgba(255, 37, 251, 1) 10%, rgb(255, 211, 253)100%);
+
+  /* background-color: rgba(255, 37, 251,0.7); */
+}
+@media screen and (orientation: portrait) {
+    html{
+        font-size: 1vh;
+    }
+    #dicebtn{
+        font-size: 6vw;
+        width: 26vw;
+        height: 20vw;
+    }
+    #odd,#even{
+      width: 12vw;
+      height: 8vw;
+      font-size: 4vw;
+    }
+  }
+  #toastmessage {
+    position: absolute;
+    bottom: 80px;
+    user-select: none;
+    padding: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    color: white;
+    background: rgba(49, 49, 49, 0.5);
+    font-size: 3rem;
+    border-radius: 10px;
+    z-index: 9;
+  }
+  
+.overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 2;
+  display: hidden;
+  user-select: none;
+  pointer-events: none;
+}
+#loan-window{
+  position: absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  z-index: 7;
+  user-select: none;
+  
+}
+.loan-window-name{
+  position: relative;
+  text-align: center;
+  font-size: 1.5rem;
+  color: black;
+  background: linear-gradient(to bottom, #654715 0%, #563905 100%);
+  font-family: 'cookierun';
+  padding: 0.5rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
+  border: 0.3rem outset #563905;
+  border-radius: 0.5rem;
+  
+}
+.loan-window-amount{
+  position: relative;
+
+  font-family: 'cookierun';
+  text-align: center;
+  font-size: 1.3rem;
+  color: rgb(255, 75, 75);
+  background: linear-gradient(to left, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.6) 20%, rgba(20, 20, 20, 0.6) 80%, rgba(20, 20, 20, 0) 100%);
+  padding: 0.5rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
+  margin: 20px;
+}
+.loan-window-confirm,.loan-window-bankrupt{
+  position: relative;
+
+  height: 30px;
+  font-size: 15px;
+  
+  color: white;
+  border:none;
+  cursor: pointer;
+  font-family: 'CookierunBlack';
+  box-shadow: 0 0 3px 1px black;
+}
+.loan-window-confirm{
+  background-color:rgb(226, 200, 53) ;
+}
+.loan-window-bankrupt{
+  background-color:rgb(226, 131, 53) ;
+}
+#status{
+  background-color: white;
+  font-family: 'cookierun';
+}
+</style>
+
+
+<body>
+    <img id="toggle_fullscreen" src="./../res/img/svg/maximize.svg" value="off">
+
+    <div id="overlay" class="hidden">  
+    </div>
+    
+    <!-- <button id="testbtn">test</button> -->
+    <div id="canvas-container">
+        <div id="boardwrapper">
+          <canvas id="board">
+          </canvas>
+        </div>
+    </div>
+    <div id=loadingoverlay class="hidden">
+        <h6 id=loadingtext>
+          LOADING RESOURCE...
+        </h6>
+        <img src="./../res/img/ui/loading.gif">  
+    </div>
+    <div id="dialog" class="hidden2">
+        <p>content</p>
+        <button class="dialog_cancel">No</button>
+        <button class="dialog_confirm">Yes</button>
+    </div>
+    
+    <div class="window hidden" id="landwindow">
+      <div class="window-header">
+        <a class="window-header-content">
+          건설
+        </a>
+        <button class="window-close">X</button>
+      </div>
+      <div class="window-content">
+        <div class="building-selection-container hidd3en">
+          <div class="building-selection" data-building="1">
+            <div class="building-selection-name">
+              땅값
+            </div>
+            <div class="building-selection-img">
+              <img src="res/land.png">
+            </div>
+            <div class="building-selection-check">
+              <img src="./../res/img/ui/confirm_red.png">
+            </div>
+            <div class="building-selection-desc">
+              필수 건설지
+            </div>
+            <div class="building-selection-price">
+              20만
+            </div>
+          </div>
+          <div class="building-selection "data-building="2">
+            <div class="building-selection-name">
+              빌라
+            </div>
+            <div class="building-selection-img">
+              <img src="res/house.png">
+            </div>
+            <div class="building-selection-check">
+              <img src="./../res/img/ui/confirm_red.png">
+            </div>
+            <div class="building-selection-desc hidden">
+              
+            </div>
+            <div class="building-selection-price">
+              20만
+            </div>
+          </div>
+          <div class="building-selection" data-building="3">
+            <div class="building-selection-name">
+              빌딩
+            </div>
+            <div class="building-selection-img">
+              <img src="res/house.png">
+            </div>
+            <div class="building-selection-check">
+              <img src="./../res/img/ui/confirm_red.png">
+            </div>
+            <div class="building-selection-desc hidden">
+              
+            </div>
+            <div class="building-selection-price">
+              120만
+            </div>
+          </div>
+          <div class="building-selection"data-building="4">
+            <div class="building-selection-name">
+              호텔
+            </div>
+            <div class="building-selection-img">
+              <img src="res/house.png">
+            </div>
+            <div class="building-selection-check">
+              <img src="./../res/img/ui/confirm_red.png">
+            </div>
+            <div class="building-selection-desc hidden">
+              
+            </div>
+            <div class="building-selection-price">
+              220만
+            </div>
+          </div>
+        </div>
+        <div class="selection-text hidden">
+          인수 하시겠습니까?
+        </div>
+        <a class="window-content-text1">건설 비용 : 120만</a><br>
+        <a class="window-content-text2">건설 비용 할인: 50만</a><br>
+        <div class="window-confirm-btn">
+          <a id="window-confirm-btn-type">건설</a>
+          <img src="res/money.png">
+          <a id="window-confirm-btn-price">2000만</a>
+        </div><br>
+        <a class="window-content-text-nobackground">통행료:5000만</a>
+      </div>
+    </div>
+
+    <div class="window hidden" id="confirmwindow">
+      <div class="window-header confirmwindow">
+        <a class="window-header-content">
+          천사카드
+        </a>
+      </div>
+      <div class="window-content">
+        <div class="selection-text">
+          통행료 1000만 -> 무료
+        </div>
+        <a class="window-content-text-nobackground">천사카드를 사용할까요?</a><br>
+        <div class="window-cancel-btn">
+          취소
+        </div>
+        <div class="window-confirm-btn">
+          사용
+        </div>
+      </div>
+    </div>
+    <h6 id=selectionname class="hidden">블랙홀</h6>
+    <h6 id=selectiondesc class="hidden">화이트홀을 발생시킬 지역 선탣</h6>
+
+    <div id="loan-window" class="hidden">
+      <a class="loan-window-name">대출 선택</a><br><br>
+      <a class="loan-window-amount">부족한 금액: -1000만</a><br><br>
+      <button class="loan-window-confirm">대출권</button>
+      <button class="loan-window-bankrupt">파산</button>
+    </div>
+    <div id="dice_container" class="hidden">
+      <div id="dicegage">
+        <div id="gage"></div>
+        <!-- <div id="highlight"></div> -->
+      </div>
+      <button class="dicebtn" id="odd">홀</button>
+      <button class="dicebtn" id="even">짝</button>
+      <button class="dicebtn" id="dicebtn">ROLL</button>
+      <!-- <img id="largedicebtn" class="dicebtn" src="./../res/img/ui/dicebtn.png" draggable="false"> -->
+    </div>
+    
+    <table id="status">
+      <tr>
+        <td>player
+        </td>
+        <td>money
+        </td>
+      </tr>
+      <tr>
+        <td>1
+        </td>
+        <td class="money-table">money
+        </td>
+      </tr>
+      <tr>
+        <td>2
+        </td>
+        <td  class="money-table">money
+        </td>
+      </tr>
+      <tr>
+        <td>3
+        </td>
+        <td  class="money-table">money
+        </td>
+      </tr>
+      <tr>
+        <td>4
+        </td>
+        <td  class="money-table">money
+        </td>
+      </tr>
+    </table>
+
+    <!-- <img id="largedicebtn_pressed" class="dicebtn hidden" src="./../res/img/ui/dicebtn_pressed.png"> -->
+    
+    
+    <!-- <img id="largedicebtnimg" class="dicebtn">
+    <img id="smalldicebtn" class="dicebtn"> -->
+
+    <a id=toastmessage class="hidden"></a>
+
+    <img src="./../res/img/ui/victory.png" class=" resultimg victory hidden">
+    <img src="./../res/img/ui/defeat.png" class=" resultimg defeat hidden">
+    <img src="res/marblemap.jpg" id="marble_boardimg" class="hidden">
+    <img src="res/buildings.png" id="marble_buildingimg" class="hidden">
+    <img src="./../res/img/board/tiles_casino_3d.png" id="marble_tileimg" class="hidden">
+    <img src="./../res/img/board/tile_shadow.png" id='tile_shadow' class=" resultimg defeat hidden">
+    <img class="hidden" src='./../res/img/ui/arrow.png' id="arrow">
+    <img id="pin" src="./../res/img/ui/pin.png" class=hidden>
+
+    <img class="hidden" src='./../res/img/character/reaper.png' id="playerimg1" >
+    <img class="hidden" src='./../res/img/character/elephant.png' id="playerimg2">
+    <img class="hidden" src='./../res/img/character/ghost.png' id="playerimg3">
+    <img class="hidden" src='./../res/img/character/dinosaur.png' id="playerimg4">
+    <img class="hidden" src='./../res/img/character/sniper.png' id="playerimg5">
+    <img class="hidden" src='./../res/img/character/magician.png' id="playerimg6">
+    <img class="hidden" src='./../res/img/character/kraken.png' id="playerimg7">
+    <img class="hidden" src='./../res/img/character/bird.png' id="playerimg8">
+    <img class="hidden" src='./../res/img/character/tree.png' id="playerimg9">
+
+    <img src="res/column.png" id="marble_img_column" class="hidden">
+    <button id="quit">&times;</button>
+</body>
+<script type="module" src="src/marble.js"></script>
+
+</html>

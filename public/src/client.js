@@ -41,6 +41,10 @@ function connectSocket(){
 		window.onbeforeunload = function () {}
 		window.location.href = "gamepage.html"
 	})
+	socket.on("server:to_marble_gamepage", () => {
+		window.onbeforeunload = function () {}
+		window.location.href = "/marble/gamepage.html"
+	})
 	socket.on("server:go_teampage", () => {
 		MATCH.teamSelector.showTeamPage(true)
 	})
@@ -175,12 +179,19 @@ class ServerConnection{
 	static sendReady=function(turn,ready) {
 		socket.emit("user:update_ready",turn, ready)
 	}
-	static finalSubmit=function(setting) {
+	static finalSubmit=function(setting,gametype) {
 		window.onbeforeunload = () => {}
-	
-		socket.emit("user:gameready",setting)
+		if(gametype==='rpg'){
+			socket.emit("user:gameready",setting)
 
-		window.location.href = "gamepage.html"
+			window.location.href = "gamepage.html"
+		}
+		else if(gametype==='marble'){
+			socket.emit("marble:user:gameready")
+
+			window.location.href = "/marble/gamepage.html"
+		}
+		
 		
 	}
 	

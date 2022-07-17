@@ -1,5 +1,5 @@
 import express = require('express');
-import { R } from '../app';
+import { R } from '../RoomStorage';
 import { MAP_TYPE } from '../data/enum';
 import fs = require("fs")
 const RESOURCE_PATH="/../../res/"
@@ -103,7 +103,23 @@ router.get("/string_resource", function (req:express.Request, res:express.Respon
 		res.end(data)
 	})
 })
+router.get("/marble_map", function (req:express.Request, res:express.Response) {
+	fs.readFile(__dirname + RESOURCE_PATH+"marble/godhand_map.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting resource file"})
+		}
+		res.end(data)
+	})
+})
 
+router.get("/marble_map_coordinates", function (req:express.Request, res:express.Response) {
+	fs.readFile(__dirname + RESOURCE_PATH+"marble/map_coordinates.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting resource file"})
+		}
+		res.end(data)
+	})
+})
 
 
 

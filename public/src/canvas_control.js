@@ -772,7 +772,7 @@ export class Scene extends Board{
 		this.board_drawn = true
 		super.drawBoard(resolveFunc)
 
-		this.showObjects()
+		
 		this.forceRender()
 		resolveFunc()
 		console.log("resolve")
@@ -781,6 +781,77 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	
+	setBoardScale(boardimg){
+		
+		this.boardInnerWidth = boardimg.naturalWidth - BOARD_MARGIN * 2
+		this.boardInnerHeight = boardimg.naturalHeight - BOARD_MARGIN * 2
+		const winwidth=window.innerWidth
+		const winheight=window.innerHeight
+
+		let win_ratio = winwidth / winheight
+		// if(win_ratio <1) win_ratio=1.3
+		let board_ratio = this.boardInnerWidth / this.boardInnerHeight
+
+		//map image has vertically longer ratio than the viewport
+		if (win_ratio >= board_ratio) {
+			this.boardScale = winwidth/ this.boardInnerWidth
+			console.log("vertically longer map, scale" + this.boardScale)
+		}
+		//map image has horizontally longer ratio than the viewport
+		else {
+			this.boardScale =winheight / this.boardInnerHeight
+			console.log("horizontally longer map, scale" + this.boardScale)
+		}
+		const max_boardscale=win_ratio<0.7?0.5:1
+		console.log(win_ratio)
+		this.boardScale=Math.min(max_boardscale,this.boardScale)
+		console.log(this.boardScale)
+		$("#canvas-container").css("width", winwidth * 2)
+		$("#canvas-container").css("height", winheight * 2)
+
+		this.canvas.setZoom(this.boardScale)
+
+		this.boardOriginalHeight = (this.boardInnerHeight + BOARD_MARGIN * 2) * this.boardScale
+		this.boardOriginalWidth = (this.boardInnerWidth + BOARD_MARGIN * 2) * this.boardScale
+		this.canvas.setWidth(this.boardOriginalWidth)
+		this.canvas.setHeight(this.boardOriginalHeight)
+		// console.log(this.boardOriginalHeight)
+		// console.log(this.boardOriginalWidth)
+
+	//	this.canvas.forceRender()
+		this.zoomScale = 1
+		$("#boardwrapper").css("margin", "1300px")
+
+		this.game.ui.elements.board_container.scrollTo(
+			BOARD_MARGIN * this.boardScale + 1000,
+			BOARD_MARGIN * this.boardScale + 1000
+		)
+	}
+
+	drawTiles(){
+		let obsimg = document.getElementById("obstacles")
+
+		let tile_img
+		if (this.mapname === "ocean") {
+			tile_img = document.getElementById("tiles_ocean")
+		}
+		if (this.mapname === "casino" || this.mapname === "marble") {
+			tile_img = document.getElementById("tiles_casino")
+		}
+		else{
+			tile_img = document.getElementById("tiles_3d")
+		}
+		let tileshadows = []
+		for (let i = 0; i < this.Map.coordinates.length; ++i) {
+			this.drawWay(i, obsimg, tile_img, tileshadows)
+		}
+		let tileshadowgroup = new fabric.Group(tileshadows, { evented: false })
+
+		// this.lockFabricObject(tileshadowgroup)
+		this.canvas.add(tileshadowgroup)
+		this.tile_shadows = tileshadowgroup
+
+	}
 	/**	//===========================================================================================================================
 
 	 *
@@ -972,7 +1043,7 @@ export class Scene extends Board{
 			// })
 		}
 
-		this.canvas.renderAll()
+		// this.canvas.renderAll()
 
 		//플레이어별 오브젝트=================================================================
 
@@ -1053,7 +1124,7 @@ export class Scene extends Board{
 				strokeWidth: 1,
 				top: 0,
 				left: 0,
-				fontFamily: "Do Hyeon"
+				fontFamily: "nanumB"
 			})
 			this.lockFabricObject(name)
 			this.canvas.add(name)
@@ -3283,10 +3354,6 @@ export class Scene extends Board{
 			})
 		}, 500)
 	}
-	//===========================================================================================================================
-
-	 //===========================================================================================================================
-
 	
 	//===========================================================================================================================
 

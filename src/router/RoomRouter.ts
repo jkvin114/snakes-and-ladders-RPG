@@ -1,5 +1,6 @@
 import express = require('express');
-import { R } from '../app';
+import { R } from '../RoomStorage';
+import { MarbleRoom } from '../Marble/MarbleRoom';
 const router = express.Router()
 import { RPGRoom } from '../RPGRoom';
 
@@ -7,7 +8,7 @@ import { RPGRoom } from '../RPGRoom';
 /**
  * roomname:string,username:string
  */
-router.post('/create',function(req:express.Request,res:express.Response){
+router.post('/create_rpg',function(req:express.Request,res:express.Response){
     let body = req.body;
 
 
@@ -15,6 +16,7 @@ router.post('/create',function(req:express.Request,res:express.Response){
         body.roomname="room_"+String(Math.floor(Math.random()*1000000))
     }
     let rname=String(body.roomname)
+
     if(R.hasRPGRoom(rname)){
         console.log("exidt")
         res.status(400).end("room name exists")
@@ -22,6 +24,35 @@ router.post('/create',function(req:express.Request,res:express.Response){
     }
     console.log(rname)
     R.setRPGRoom(rname,new RPGRoom(rname))
+
+    if(req.session){
+        if(!req.session.username){
+            req.session.username=String(body.username)
+        }
+        
+        req.session.roomname=rname
+        req.session.turn=0
+    }
+   // console.log(req.session)
+    return res.status(201).end()
+})
+
+router.post('/create_marble',function(req:express.Request,res:express.Response){
+    let body = req.body;
+
+
+    if(body.roomname===""){
+        body.roomname="room_"+String(Math.floor(Math.random()*1000000))
+    }
+    let rname=String(body.roomname)
+
+    if(R.hasMarbleRoom(rname)){
+        console.log("exidt")
+        res.status(400).end("room name exists")
+        return
+    }
+    console.log(rname)
+    R.setMarbleRoom(rname,new MarbleRoom(rname))
 
     if(req.session){
         if(!req.session.username){

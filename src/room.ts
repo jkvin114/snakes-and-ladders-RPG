@@ -1,6 +1,6 @@
 import SETTINGS = require("../res/globalsettings.json")
 import { PlayerType, ProtoPlayer } from "./core/Util"
-import { ClientInterfaceCallback,ClientInterface } from "./ClientInterface";
+import { ClientInterfaceCallback } from "./ClientInterface";
 
 
 abstract class Room {
@@ -21,10 +21,11 @@ abstract class Room {
 	connectionTimeout: NodeJS.Timeout
 	connectionTimeoutTurn: number
 	idleTimeoutTurn: number
-	clientInterface:ClientInterface
 
 	abstract user_message(turn:number,msg:string):string
 	abstract getMapId():number
+	abstract registerClientInterface(callback:ClientInterfaceCallback):Room
+	abstract registerSimulationClientInterface(callback:ClientInterfaceCallback):Room
 	constructor(name: string) {
 		//	this.simulation_total_count = 1
 		this.simulation_count = 1
@@ -42,17 +43,9 @@ abstract class Room {
 		this.idleTimeoutTurn = -1
 		this.connectionTimeout = null
 		this.connectionTimeoutTurn = -1
-		this.clientInterface=new ClientInterface(name)
 	}
 	
-	registerClientInterface(callback:ClientInterfaceCallback){
-		this.clientInterface.registerCallback(callback)
-		return this
-	}
-	registerSimulationClientInterface(callback:ClientInterfaceCallback){
-		this.clientInterface.registerSimulationCallback(callback)
-		return this
-	}
+	
 
 	makePlayerList(): ProtoPlayer[] {
 		let p = []

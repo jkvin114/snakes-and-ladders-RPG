@@ -5,6 +5,7 @@ import { ClientPayloadInterface, ServerPayloadInterface } from "./data/PayloadIn
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./mongodb/DBHandler")
 import { hasProp } from "./core/Util"
 import { Worker, isMainThread } from "worker_threads"
+import { ClientInterface, ClientInterfaceCallback } from "./ClientInterface"
 const path = require("path")
 
 function workerTs(data: unknown) {
@@ -12,14 +13,24 @@ function workerTs(data: unknown) {
 }
 
 class RPGRoom extends Room {
+
 	gameloop: GameLoop
+	clientInterface:ClientInterface
 
 	// simulation: Simulation
 	constructor(name: string) {
 		super(name)
 		this.gameloop
-
+		this.clientInterface=new ClientInterface(name)
 		// this.simulation = null
+	}
+	registerClientInterface(callback:ClientInterfaceCallback){
+		this.clientInterface.registerCallback(callback)
+		return this
+	}
+	registerSimulationClientInterface(callback:ClientInterfaceCallback){
+		this.clientInterface.registerSimulationCallback(callback)
+		return this
 	}
 	cryptTurn(turn: number) {
 		return this.gameloop.game.cryptTurn(turn)

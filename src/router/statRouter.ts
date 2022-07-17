@@ -1,4 +1,5 @@
 import express = require('express');
+import { R } from '../RoomStorage';
 const router = express.Router()
 const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../mongodb/DBHandler")
 
@@ -105,6 +106,42 @@ router.get('/simulation/simple' ,function (req: express.Request, res:express.Res
     }
     
     
+})
+
+router.get("/result", function (req: express.Request, res: express.Response) {
+	let rname = req.session.roomname
+
+	if (rname != null && R.hasRoom(rname)) {
+		R.getRoom(rname).reset()
+		R.remove(rname.toString())
+	}
+
+	if (req.query.statid == null || req.query.type == null) {
+		return
+	}
+	if (req.query.type === "game") {
+		GameRecord.findById(req.query.statid)
+			.then((stat: any) => {
+				if (!stat) return res.status(404).send({ err: "Statistic not found" })
+				res.end(JSON.stringify(stat))
+			})
+			.catch((err: any) => res.status(500).send(err))
+	} else if (req.query.type === "simulation") {
+		console.log(req.query)
+		SimulationRecord.findOneById(req.query.statid)
+			.then((stat: any) => {
+				if (!stat) return res.status(404).send({ err: "Statistic not found" })
+				res.end(JSON.stringify(stat))
+			})
+			.catch((err: any) => res.status(500).send(err))
+	} else {
+		res.status(404).end("unknown statistic type")
+	}
+	//let str = JSON.stringify(stat)
+
+	//writeStat(str, isSimulation)
+
+	//res.end()
 })
 module.exports=router
 

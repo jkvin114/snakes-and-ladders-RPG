@@ -1,5 +1,5 @@
 import express = require("express")
-import { R } from "../app"
+import { R } from "../RoomStorage"
 const router = express.Router()
 const { upload } = require("../mongodb/mutler")
 const { UserBoardData, Article, Comment, CommentReply } = require("../mongodb/BoardDBHandler")

@@ -236,7 +236,7 @@ button.navbtn{
       </div> -->
       
       <div>
-        
+        <img class='navbtn' onclick="createroom(true)" src="marble/res/icon.jpg">
         <img class=navbtn id="statbtn" onclick="toStatpage()" src="res/img/svg/chart_white.svg">
         <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg">
         <div class="lang_dropdown">
@@ -251,8 +251,6 @@ button.navbtn{
 
 
     <div id="firstpage" class="page">
-      
-
       Username 
       <br>
       <input type='text' name="nickname" value="">
@@ -277,7 +275,7 @@ button.navbtn{
         <input type='text' name="room_name" value="">
         <br>
         
-        <button class=button id="create_room" onclick="createroom()">Start</button>
+        <button class=button id="create_room" onclick="createroom(false)">Start</button>
         <button class=button id=close_createroom onclick="close_createroom()">Cancel</button>
       </div>
     </div>
@@ -623,9 +621,7 @@ function close_createroom(){
   $("#ip_area").show()
 
 }
-function createroom(){
-
- 
+function createroom(isMarble){
 
 
   console.log("create room")
@@ -655,14 +651,14 @@ function createroom(){
 
   $.ajax({
         method: 'POST',
-        url: '/room/create',
+        url: (isMarble?'/room/create_marble':'/room/create_rpg'),
         data: {roomname:roomName,username:n},
     })
     .done(function(data, statusText, xhr){
       let status = xhr.status;
       console.log(status)
       if(status==201){
-        window.location.href="matching.html"
+        window.location.href="matching.html?gametype="+(isMarble?"marble":"rpg")
       }
     })
     .fail(function(data, statusText, xhr){
@@ -734,6 +730,8 @@ function simulation(){
   window.location.href="simulation_selection_page.html"
 
 }
-
+function marble(){
+  window.location.href="/marble/gamepage.html"
+}
 </script>
 </html>

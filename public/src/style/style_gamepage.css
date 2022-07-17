@@ -2140,7 +2140,9 @@ b {
 #newstoremoney b {
   color: rgb(209, 183, 37);
 }
-
+#typelist{
+  overflow: hidden;
+}
 .typelistbtn {
 
   background: rgb(54, 54, 54);

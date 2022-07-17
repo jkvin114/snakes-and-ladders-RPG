@@ -5,12 +5,13 @@ const PLAYER_POS_DIFF = [
 	[6, -5],
 	[-12, -9]
 ] //플레이어별 위치 차이
-const BOARD_MARGIN = 200
+let BOARD_MARGIN = 200
 const FRAME = 30 //milisecond
 const TILE_SHADOW_THICKNESS_RIGHT = 5
 const TILE_SHADOW_THICKNESS_BOTTOM = 10
 export const COLOR_LIST_BG = ["#a6c8ff", "#ff7070", "#95ff80", "#fdff80"] //플레이어별 연한 색상
 
+const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
 
 
@@ -38,7 +39,8 @@ export class Board{
 		this.renderInterval = null
 		this.Map
 		this.mapname
-		this.players
+		this.coordinates
+		this.players=[]
 		this.board_drawn = false
 		//singleton
 		if (Board._instance) {
@@ -308,13 +310,32 @@ export class Board{
 
 	getTilePos(tile) {
 		return {
-			x: this.Map.coordinates[tile].x + BOARD_MARGIN,
-			y: this.Map.coordinates[tile].y + BOARD_MARGIN
+			x: this.getCoord(tile).x + BOARD_MARGIN,
+			y: this.getCoord(tile).y + BOARD_MARGIN
 		}
 	}
 	setMap(map){
 		this.Map = map
 		this.mapname = this.Map.mapname
+		console.log(this.Map)
+	}
+	setMapCoordinates(coord){
+		this.coordinates=coord
+	}
+
+	setToMarble(){
+		BOARD_MARGIN=0
+	}
+
+	getCoord(i){
+		if(!this.coordinates) return this.Map.coordinates[i]
+
+		return this.coordinates[i]
+	}
+	mapLength(){
+		if(this.Map.coordinates!=null) return this.Map.coordinates.length
+
+		return this.coordinates.length
 	}
 	tileShadow(i) {
 		return new fabric.Image(document.getElementById("tile_shadow"), {
@@ -323,8 +344,19 @@ export class Board{
 			width: 55,
 			height: 55,
 			objectCaching: false,
-			top: this.Map.coordinates[i].y + BOARD_MARGIN + TILE_SHADOW_THICKNESS_BOTTOM,
-			left: this.Map.coordinates[i].x + BOARD_MARGIN + TILE_SHADOW_THICKNESS_RIGHT
+			top: this.getCoord(i).y + BOARD_MARGIN + TILE_SHADOW_THICKNESS_BOTTOM,
+			left: this.getCoord(i).x + BOARD_MARGIN + TILE_SHADOW_THICKNESS_RIGHT
+		})
+	}
+	tileShadowLarge(i) {
+		return new fabric.Image(document.getElementById("tile_shadow"), {
+			originX: "center",
+			originY: "center",
+			width: 110,
+			height: 110,
+			objectCaching: false,
+			top: this.getCoord(i).y + BOARD_MARGIN + TILE_SHADOW_THICKNESS_BOTTOM *2,
+			left: this.getCoord(i).x + BOARD_MARGIN + TILE_SHADOW_THICKNESS_RIGHT*2
 		})
 	}
 	drawBoard(resolve)
@@ -335,14 +367,19 @@ export class Board{
 		this.canvas.selection = false
 
 
-		let boardimg = document.getElementById("boardimg")
+		let boardimg
 		if (this.mapname === "ocean") {
 			boardimg = document.getElementById("ocean_boardimg")
 		}
 		if (this.mapname === "casino") {
 			boardimg = document.getElementById("casino_boardimg")
 		}
-
+		if(this.mapname==='marble_godhand'){
+			boardimg = document.getElementById("marble_boardimg")
+		}
+		else{
+			boardimg = document.getElementById("boardimg")
+		}
 
 		this.canvas.setBackgroundImage(
 			new fabric.Image(boardimg, {
@@ -359,87 +396,10 @@ export class Board{
 				objectCaching: false
 			})
 		)
-
-		this.boardInnerWidth = boardimg.naturalWidth - BOARD_MARGIN * 2
-		this.boardInnerHeight = boardimg.naturalHeight - BOARD_MARGIN * 2
-		const winwidth=window.innerWidth
-		const winheight=window.innerHeight
-
-		let win_ratio = winwidth / winheight
-		// if(win_ratio <1) win_ratio=1.3
-		let board_ratio = this.boardInnerWidth / this.boardInnerHeight
-
-		//map image has vertically longer ratio than the viewport
-		if (win_ratio >= board_ratio) {
-			this.boardScale = winwidth/ this.boardInnerWidth
-			console.log("vertically longer map, scale" + this.boardScale)
-		}
-		//map image has horizontally longer ratio than the viewport
-		else {
-			this.boardScale =winheight / this.boardInnerHeight
-			console.log("horizontally longer map, scale" + this.boardScale)
-		}
-		const max_boardscale=win_ratio<0.7?0.5:1
-		console.log(win_ratio)
-		this.boardScale=Math.min(max_boardscale,this.boardScale)
-		console.log(this.boardScale)
-		$("#canvas-container").css("width", winwidth * 2)
-		$("#canvas-container").css("height", winheight * 2)
-
-		this.canvas.setZoom(this.boardScale)
-
-		this.boardOriginalHeight = (this.boardInnerHeight + BOARD_MARGIN * 2) * this.boardScale
-		this.boardOriginalWidth = (this.boardInnerWidth + BOARD_MARGIN * 2) * this.boardScale
-		this.canvas.setWidth(this.boardOriginalWidth)
-		this.canvas.setHeight(this.boardOriginalHeight)
-		// console.log(this.boardOriginalHeight)
-		// console.log(this.boardOriginalWidth)
-
-	//	this.canvas.forceRender()
-		this.zoomScale = 1
-		$("#boardwrapper").css("margin", "1300px")
-
-		this.game.ui.elements.board_container.scrollTo(
-			BOARD_MARGIN * this.boardScale + 1000,
-			BOARD_MARGIN * this.boardScale + 1000
-		)
-		let obsimg = document.getElementById("obstacles")
-		let tile_img = document.getElementById("tiles_3d")
-		if (this.mapname === "ocean") {
-			tile_img = document.getElementById("tiles_ocean")
-		}
-		if (this.mapname === "casino") {
-			tile_img = document.getElementById("tiles_casino")
-		}
-		let tileshadows = []
-		for (let i = 0; i < this.Map.coordinates.length; ++i) {
-			this.drawWay(i, obsimg, tile_img, tileshadows)
-		}
-		let tileshadowgroup = new fabric.Group(tileshadows, { evented: false })
-
-		// this.lockFabricObject(tileshadowgroup)
-		this.canvas.add(tileshadowgroup)
-		this.tile_shadows = tileshadowgroup
-
-		this.shadow = new fabric.Rect({
-			left: 0,
-			top: 0,
-			width: 2500,
-			height: 2500,
-			lockMovementX: true,
-			lockMovementY: true,
-			visible: false,
-			hasControls: false,
-			hasBorders: false,
-			evented: false,
-			lockScalingX: true,
-			lockScalingY: true,
-			lockRotation: true,
-			opacity: 0.4
-		})
-		this.canvas.add(this.shadow)
-		this.shadow.bringForward()
-
+		this.setBoardScale(boardimg)
+		this.drawTiles()
+		
+		this.showObjects()
 	}
 	showObjects(){
 		//화살표 =============================================================================
@@ -488,12 +448,31 @@ export class Board{
 			this.canvas.add(dicenum)
 			this.possiblePosTexts.push(dicenum)
 		}
+		
+		this.shadow = new fabric.Rect({
+			left: 0,
+			top: 0,
+			width: 2500,
+			height: 2500,
+			lockMovementX: true,
+			lockMovementY: true,
+			visible: false,
+			hasControls: false,
+			hasBorders: false,
+			evented: false,
+			lockScalingX: true,
+			lockScalingY: true,
+			lockRotation: true,
+			opacity: 0.4
+		})
+		this.canvas.add(this.shadow)
+		// this.shadow.bringForward()
 	}
 	showPlayer(target, pos) {
 		this.players[target].playerimg.set({
 			opacity: 1,
-			top: this.Map.coordinates[pos].y + BOARD_MARGIN + PLAYER_POS_DIFF[target][1],
-			left: this.Map.coordinates[pos].x + BOARD_MARGIN + PLAYER_POS_DIFF[target][0]
+			top: this.getCoord(pos).y + BOARD_MARGIN + PLAYER_POS_DIFF[target][1],
+			left: this.getCoord(pos).x + BOARD_MARGIN + PLAYER_POS_DIFF[target][0]
 		})
 		this.players[target].nametext.set("stroke", "black")
 		this.updateNameText(target)
@@ -511,9 +490,14 @@ export class Board{
 	//===========================================================================================================================
 
 	showArrow(turn) {
+		this.playersToFront() 
 		let pos = this.getPlayerPos(turn)
-		//	console.log(pos)
+		console.log(pos)
 		this.arrow.set({ top: pos.y - 70, left: pos.x, opacity: 1 }).bringToFront()
+		this.forceRender()
+	}
+	hideArrow(){
+		this.arrow.set({ opacity: 0 })
 		this.forceRender()
 	}
 	showPin(pos) {
@@ -523,14 +507,13 @@ export class Board{
 		this.forceRender()
 	}
 	teleportPlayer(target, pos, movetype) {
+		this.hideArrow()
 		if (movetype === "simple") {
 			this.tpPlayerSimple(target, pos)
 		} else if (movetype === "levitate") {
+			console.log("tp")
 			this.levitatePlayer(target)
 			let time = 300
-			if (this.game.simulation) {
-				time = 50
-			}
 			//	console.log("tp")
 			setTimeout(() => this.tpPlayer(target, pos), time)
 		}
@@ -542,8 +525,8 @@ export class Board{
 
 	tpPlayerSimple(target, pos) {
 		pos = Math.max(pos, 0)
-		let x = this.Map.coordinates[pos].x + BOARD_MARGIN
-		let y = this.Map.coordinates[pos].y + BOARD_MARGIN
+		let x = this.getCoord(pos).x + BOARD_MARGIN
+		let y = this.getCoord(pos).y + BOARD_MARGIN
 
 		this.players[target].pos = pos
 		let time = 500
@@ -578,8 +561,9 @@ export class Board{
 			this.moveComplete(turn)
 			return
 		}
-		let x = this.Map.coordinates[pos - count].x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
-		let y = this.Map.coordinates[pos - count].y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
+		console.log(pos-count)
+		let x = this.getCoord(pos-count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
+		let y = this.getCoord(pos-count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 
 		this.players[turn].playerimg.animate("left", x, {
 			onChange: this.render.bind(this),
@@ -616,8 +600,8 @@ export class Board{
 
 			return
 		}
-		let x = this.Map.coordinates[pos + count].x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
-		let y = this.Map.coordinates[pos + count].y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
+		let x = this.getCoord(pos+count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
+		let y = this.getCoord(pos+count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 
 		this.players[turn].playerimg.animate("left", x, {
 			onChange: this.render.bind(this),
@@ -645,7 +629,7 @@ export class Board{
 
 	/**
 	 *
-	 * @param {*} actualdice 주사위 숫자
+	 * @param {*} distance 이동해야할 칸수
 	 * @param {*} count 현재까지 이동한 칸수
 	 * @param {*} pos 움직이기 전 위치
 	 * @param {*} turn 플레이어 턴
@@ -668,12 +652,35 @@ export class Board{
 
 		this.moveForward(distance, count, pos, turn)
 	}
+	async movePlayerThrough(poslist,turn,callback){
+		this.arrow.set({ opacity: 0 })
+		this.arrow.bringToFront()
+		this.players[turn].nametext.set("text", "")
+		this.players[turn].playerimg.bringToFront()
+		for(const pos of poslist){
+			let x = this.getCoord(pos).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
+			let y = this.getCoord(pos).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
+
+			this.players[turn].playerimg.animate("left", x, {
+				onChange: this.render.bind(this),
+				duration: 100,
+				easing: fabric.util.ease.easeOutCubic
+			})
+			this.players[turn].playerimg.animate("top", y, {
+				onChange: this.render.bind(this),
+				duration: 100,
+				easing: fabric.util.ease.easeOutCubic
+			})
+			await sleep(100)
+		}
+		callback(turn)
+	}
 	//===========================================================================================================================
 
 	tpPlayer(target, pos) {
 		this.players[target].playerimg.set({ opacity: 1 })
-		let x = this.Map.coordinates[pos].x + BOARD_MARGIN
-		let y = this.Map.coordinates[pos].y + BOARD_MARGIN
+		let x = this.getCoord(pos).x + BOARD_MARGIN
+		let y = this.getCoord(pos).y + BOARD_MARGIN
 		this.players[target].playerimg.set({ left: x + PLAYER_POS_DIFF[target][0], top: 0 })
 
 		this.players[target].pos = pos
@@ -715,7 +722,7 @@ export class Board{
 
 		for (let i = 0; i < this.possiblePosList.length; ++i) {
 			let pos = this.possiblePosList[i]
-			if (pos < 0 || pos > this.Map.coordinates.length) {
+			if (pos < 0 || pos > this.mapLength()) {
 				continue
 			}
 			console.log(pos)
@@ -780,6 +787,17 @@ export class Board{
 		}
 		this.playersToFront()
 	}
+
+	showRangeTilesByList(list, type, size) {
+		this.canvas.bringToFront(this.shadow)
+		this.canvas.discardActiveObject()
+		this.shadow.set({ visible: true })
+		for (let i of list) {
+			this.liftTile(i, type, size)
+		}
+		this.playersToFront()
+	}
+
 	tileReset(){
 		this.canvas.discardActiveObject()
 		this.playersToFront()
@@ -789,15 +807,14 @@ export class Board{
 			this.tiles[t].set({
 				hoverCursor: "default",
 				evented: false,
-				scaleX: 1,
-				scaleY: 1
 			})
 		}
 		this.shadow.set({ visible: false, opacity: 0.4 })
 		
 
 		this.shadow.sendToBack()
-		this.tile_shadows.sendToBack()
+		if(this.tile_shadows)
+			this.tile_shadows.sendToBack()
 		this.canvas.renderAll()
 		this.activetiles = []
 	}
