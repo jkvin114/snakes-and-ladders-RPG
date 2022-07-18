@@ -49,3 +49,11 @@ export class AskLoanAction extends QueryAction {
 		this.receiver=receiver
 	}
 }
+export class TileSelectionAction extends QueryAction {
+    tiles:number[]
+
+	constructor(type:ACTION_TYPE,turn: number, source:ActionSource,tiles:number[]) {
+		super(type,turn,source)
+        this.tiles=tiles
+	}
+}

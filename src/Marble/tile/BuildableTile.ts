@@ -106,6 +106,7 @@ abstract class BuildableTile extends Tile{
         this.multiplier.festival=f
     }
     setOlympic(num:number){
+        this.olympic=true
         this.multiplier.setOlympic(num)
     }
     getToll(){

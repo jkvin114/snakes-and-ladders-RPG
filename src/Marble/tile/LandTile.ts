@@ -116,7 +116,7 @@ class LandTile extends BuildableTile{
         this.color=color
     }
     /**
-     * 
+     * 건물 건설 후 건설비용 반환
      * 
      */
     build(buildings:BUILDING[]):number{
@@ -147,6 +147,9 @@ class LandTile extends BuildableTile{
         }
         return price
     }
+    /**
+     * 랜드마크 건설
+     */
     buildLandMark(){
         this.land=true
         this.villa=true
@@ -154,6 +157,10 @@ class LandTile extends BuildableTile{
         this.hotel=true
         this.landMark=true
     }
+    /**
+     * 
+     * @returns 다음단계 건물 반환
+     */
     getNextBuild():BUILDING{
         if(!this.land) return BUILDING.NONE
         if(!this.villa) return BUILDING.VILLA
@@ -169,7 +176,10 @@ class LandTile extends BuildableTile{
     isEmpty():boolean{
         return !this.land
     }
-    
+    /**
+     * 현재 건설 가능한 건물 반환
+     * @returns 
+     */
     getBuildables():BUILDING[]{
         let bs=new Set<BUILDING>([BUILDING.LAND,BUILDING.VILLA,BUILDING.BUILDING,BUILDING.HOTEL])
         if(!this.land) return Array.from(bs)
@@ -182,12 +192,20 @@ class LandTile extends BuildableTile{
         if(this.villa && this.building && this.hotel) return [BUILDING.LANDMARK]
         return Array.from(bs)
     }
+    /**
+     * 최소 건설비용(가장 싼 건물가격) 반환
+     * @returns 
+     */
     getMinimumBuildPrice():number{
         let buildable=this.getBuildables()
         if(buildable.length===0) return 0
 
         return this.buildPrice.getSingle(buildable[0])
     }
+    /**
+     * 현재 건설된 건물 반환
+     * @returns 
+     */
     getCurrentBuilds(): BUILDING[] {
         let bs=new Set<BUILDING>()
         if(this.land)bs.add(BUILDING.LAND)
@@ -197,6 +215,11 @@ class LandTile extends BuildableTile{
         if(this.landMark) bs.add(BUILDING.LANDMARK)
         return Array.from(bs)
     }
+    /**
+     * 건설 가능한 건물의 가격,통행료, 건설가능여부 반환
+     * @param cycleLevel 
+     * @returns 
+     */
     getBuildingAvaliability(cycleLevel:number):ServerPayloadInterface.buildAvaliability[]{
         let list:ServerPayloadInterface.buildAvaliability[]=[]
 
@@ -215,6 +238,10 @@ class LandTile extends BuildableTile{
         }
         return list
     }
+    /**
+     * 건물 한단계 다운그레이드
+     * @returns 
+     */
     removeOneHouse():BUILDING{
         if(this.landMark) return BUILDING.NONE
 
@@ -233,6 +260,9 @@ class LandTile extends BuildableTile{
 
         return BUILDING.NONE
     }
+    /**
+     *  빈땅으로 바꿈
+     */
     removeAll(){
         this.villa=false
         this.building=false
@@ -243,9 +273,17 @@ class LandTile extends BuildableTile{
     getBaseToll():number{
         return this.baseToll.get(this)
     }
+    /**
+     * 소모된 건설비용
+     * @returns 
+     */
     getBuildPrice():number{
         return this.buildPrice.getSpendPrice(this)
     }
+    /**
+     * 인수비용(건설비용 x2)
+     * @returns 
+     */
     getBuyOutPrice():number{
         return this.buildPrice.getSpendPrice(this) * 2
     }

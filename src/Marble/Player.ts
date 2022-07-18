@@ -1,4 +1,5 @@
 import { Ability } from "./Abilty"
+import { Action } from "./action/Action"
 import { ActionSource } from "./action/ActionSource"
 import { BuildableTile } from "./tile/BuildableTile"
 
@@ -19,6 +20,7 @@ class MarblePlayer{
     oddeven:number
     cycleLevel:number
     num:number
+    private pendingActions:Action[]
     constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat){
         this.num=num
         this.turn=0
@@ -36,6 +38,16 @@ class MarblePlayer{
         this.hadLoan=false
         this.oddeven=3
         this.cycleLevel=3 //start with 1
+        this.pendingActions=[]
+    }
+    addPendingAction(action:Action){
+        this.pendingActions.push(action)
+    }
+    getPendingAction(){
+        return this.pendingActions
+    }
+    clearPendingAction(){
+        this.pendingActions=[]
     }
 
     sampleAbility(ability:string){
@@ -83,8 +95,7 @@ class MarblePlayer{
     }
     getDiceData(){
         return {
-            hasOddEven:this.oddeven > 0,
-
+            hasOddEven:this.oddeven > 0,origin:this.pos
         }
     }
     onTurnStart(){
@@ -158,7 +169,7 @@ class MarblePlayer{
         this.hadLoan=true
     }
     takeMoney(amt:number){
-        this.money-=amt
+        this.money=Math.max(0,this.money-amt)
     }
     earnMoney(amt:number){
         this.money+=amt

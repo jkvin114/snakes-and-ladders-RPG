@@ -9,6 +9,7 @@ import { MarblePlayer, MarblePlayerStat } from "./Player"
 import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction } from "./action/QueryAction"
 import { BuildableTile } from "./tile/BuildableTile"
 import { distance, getTilesBewteen, PlayerType, ProtoPlayer } from "./util"
+import { randInt } from "../core/Util"
 
 class PlayerMediator {
 	map: MarbleGameMap
@@ -28,11 +29,13 @@ class PlayerMediator {
 
 		for (let i=0;i<playerlist.length;++i) {
             const p=playerlist[i]
+			let champ=(p.champ === -1)? randInt(9):p.champ
+
 			if (p.type === PlayerType.AI) {
 				this.players.push(
 					new MarblePlayer(i,
 						p.name,
-						p.champ,
+						champ,
 						p.team,
 						true,
 						startmoney,
@@ -44,7 +47,7 @@ class PlayerMediator {
 				this.players.push(
 					new MarblePlayer(i,
 						p.name,
-						p.champ,
+						champ,
 						p.team,
 						false,
 						startmoney,
@@ -161,23 +164,7 @@ class PlayerMediator {
 
 		let event = player.onArriveEmptyLand(tile, source)
 
-		let builds = tile.getBuildingAvaliability(player.cycleLevel)
-
-		let mainaction = [
-			new AskBuildAction(
-				playerTurn,
-				new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE),
-				tile.position,
-				builds,
-				tile.getCurrentBuilds(),
-				player.getBuildDiscount(),
-				player.money
-			),
-		]
-
-		if(!player.canBuildLandOfMinimumPrice(tile.getMinimumBuildPrice())) mainaction=[]
-
-		this.game.pushActions(abilityToAction(source, event), mainaction)
+		this.game.pushActions(abilityToAction(source, event), this.game.getAskBuildAction(playerTurn,tile,source))
 	}
 	/**
 	 * 내땅에 도착
@@ -190,25 +177,7 @@ class PlayerMediator {
 
 		let event = player.onArriveMyLand(tile, source)
 
-		let mainaction: Action[] | undefined = undefined
-
-		if (tile.isMoreBuildable() && player.canBuildLandOfMinimumPrice(tile.getMinimumBuildPrice())) {
-			let builds = tile.getBuildingAvaliability(player.cycleLevel)
-			mainaction = [
-				new AskBuildAction(
-					playerTurn,
-					new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE),
-					tile.position,
-					builds,
-					tile.getCurrentBuilds(),
-					player.getBuildDiscount(),
-					player.money
-				),
-			]
-		}
-
-
-		this.game.pushActions(abilityToAction(source, event), mainaction)
+		this.game.pushActions(abilityToAction(source, event), this.game.getAskBuildAction(playerTurn,tile,source))
 	}
 
 	/**

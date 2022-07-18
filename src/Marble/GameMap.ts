@@ -1,127 +1,15 @@
 import { ActionSource } from "./action/ActionSource"
+import type { MarbleGame } from "./Game"
 import { MarbleClientInterface } from "./MarbleClientInterface"
 import type { MarblePlayer } from "./Player"
 import { BuildableTile } from "./tile/BuildableTile"
 import { LandTile } from "./tile/LandTile"
 import { SightTile } from "./tile/SightTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
+import { TileFilter } from "./TileFilter"
 import { arrayOf, countIterator, countList, distance, range } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/marble/godhand_map.json")
-class TileFilter{
-    static BUILDABLE=0
-    static ALL=1
-    owners:number[]
-    ownedOnly:boolean
-    myLandOnly:boolean
-    emptyOnly:boolean
-    moreBuildable:boolean
-    canBuyOut:boolean
-    landmarkOnly:boolean
-    excludeLandMark:boolean
-    cornerOnly:boolean
-    specialOnly:boolean
-    exclude:Set<number>
-    excludeMyPos:boolean
-    sameLine:boolean
-    radius:number
-    buildableOnly:boolean
-    landTileOnly:boolean
-
-    static ALL_EXCLUDE_MY_POS=()=>new TileFilter().setExcludeMyPos()
-    static MORE_BUILDABLE_MY_LAND=()=>new TileFilter().fromBuildable().setOnlyMoreBuildable().setMyLandOnly()
-    static MY_LAND=()=>new TileFilter().fromBuildable().setMyLandOnly()
-    static MY_LANDMARK=()=>new TileFilter().fromBuildable().setMyLandOnly().setLandMarkOnly()
-    static LANDS_CAN_BUYOUT=()=>new TileFilter().fromBuildable().setOnlyCanBuyOut()
-    static EMPTY_BULDABLE_LAND=()=>new TileFilter().fromBuildable().setEmptyOnly().setLandTileOnly()
-    constructor(){
-        this.owners=[]
-        this.exclude=new Set<number>()
-        this.radius=Infinity
-        this.buildableOnly=false
-        this.ownedOnly=false
-        this.myLandOnly=false
-        this.emptyOnly=false
-        this.moreBuildable=false
-        this.canBuyOut=false
-        this.landmarkOnly=false
-        this.excludeLandMark=false
-        this.cornerOnly=false
-        this.exclude=new Set()
-        this.excludeMyPos=false
-        this.sameLine=false
-        this.specialOnly=false
-        this.landTileOnly=false
-    }
-    setLandTileOnly(){
-        this.landTileOnly=true
-        return this
-    }
-
-    fromBuildable(){
-        this.buildableOnly=true
-        return this
-    }
-    addOwner(o:number){
-        this.owners.push(o)
-        return this
-    }
-    setOwnedOnly(){
-        this.ownedOnly=true
-        return this
-    }
-    setSpecialOnly(){
-        this.specialOnly=true
-        return this
-    }
-    setMyLandOnly(){
-        this.myLandOnly=true
-        return this
-    }
-    
-    setEmptyOnly(){
-        this.emptyOnly=true
-        return this
-    }
-    setOnlyMoreBuildable(){
-        this.moreBuildable=true
-        return this
-    }
-    setOnlyCanBuyOut(){
-        this.canBuyOut=true
-        return this
-    }
-    setLandMarkOnly(){
-        this.landmarkOnly=true
-        return this
-    }
-    setNoLandMark(){
-        this.excludeLandMark=true
-        return this
-    }
-
-    setCornerOnly(){
-        this.cornerOnly=true
-        return this
-    }
-    setExclude(pos:number[]){
-        this.exclude=new Set(pos)
-        return this
-    }
-    setExcludeMyPos(){
-        this.excludeMyPos=true
-        return this
-    }
-    setSameLineOnly(){
-        this.sameLine=true
-        return this
-    }
-    inRadius(rad:number){
-        this.radius=rad
-        return this
-    }
-
-}
 const MAP_SIZE=32
 const SAME_LINE_TILES:Set<number>[]=[0,8,16,24].map((i)=>new Set(range((i+8),i).map((i)=>i%MAP_SIZE)))
 const pos2Line=function(pos:number){
@@ -142,7 +30,7 @@ class MarbleGameMap{
     readonly travel:number
     sights:number[]
     readonly sameColors:Map<number,LandTile[]>  //color,landtile[]
-
+    name:string
     olympicPos:number
     festival:Set<number>
     blackholeTile:number
@@ -151,6 +39,7 @@ class MarbleGameMap{
     tileOwners:number[]
     multipliers:Map<number,number> //position,multiplier
     clientInterface:MarbleClientInterface
+    olympicStage:number
     constructor(map:string){ 
         this.buildableTiles=new Map<number,BuildableTile>()
         this.tiles=[]
@@ -158,6 +47,7 @@ class MarbleGameMap{
         this.sameColors=new Map<number,LandTile[]>()
         this.specials=new Set<Tile>()
         this.sights=[]
+        this.name=map
         if(map==='god_hand'){
             
             this.setMap(GOD_HAND_MAP)
@@ -175,6 +65,7 @@ class MarbleGameMap{
         this.colorMonopolys=new Map<number,number>()
         this.multipliers=new Map<number,number>()
         this.clientInterface = new MarbleClientInterface("")
+        this.olympicStage=1
     }
     setClientInterface(ci: MarbleClientInterface) {
 		this.clientInterface = ci
@@ -226,16 +117,30 @@ class MarbleGameMap{
         return SAME_LINE_TILES.some((line)=>line.has(pos1) && line.has(pos2))
     }
 
-    getTiles(filter:TileFilter,source:MarblePlayer):number[]{
-        if(filter.buildableOnly) return this.filterFromBuildable(filter,source)
-        return this.filterFromAll(filter,source)
+    getTiles(source:MarblePlayer,...filters:TileFilter[]):number[]{
+        let result=new Set<number>()
+        for(const f of filters){
+            let tiles:Set<number>
+            if(f.buildableOnly){
+                tiles=this.filterFromBuildable(f,source)
+            }
+            else{
+                tiles=this.filterFromAll(f,source)
+            }
+            tiles.forEach((t)=>result.add(t))
+        }
+        return Array.from(result)
     }
-    onTilePass(tile:number,player:MarblePlayer,source:ActionSource):boolean{
+    onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionSource):boolean{
+        if(this.start===tile){
+            game.receiveMoney(player,game.SALARY)
+        }
         return false
     }
 
-    private filterFromBuildable(filter:TileFilter,source:MarblePlayer):number[]{
-        let tiles:number[]=[]
+
+    private filterFromBuildable(filter:TileFilter,source:MarblePlayer):Set<number>{
+        let tiles=new Set<number>()
         for(const t of this.buildableTiles.values()){
             if(filter.excludeMyPos && t.position===source.pos) continue
             if(filter.exclude.has(t.position)) continue
@@ -253,12 +158,12 @@ class MarbleGameMap{
             if(filter.ownedOnly && t.owner===-1) continue
             if(distance(t.position,source.pos) > filter.radius) continue
             if(filter.sameLine && !this.isSameLine(t.position,source.pos)) continue
-            tiles.push(t.position)
+            tiles.add(t.position)
         }
         return tiles
     }
-    private filterFromAll(filter:TileFilter,source:MarblePlayer):number[]{
-        let tiles:number[]=[]
+    private filterFromAll(filter:TileFilter,source:MarblePlayer):Set<number>{
+        let tiles=new Set<number>()
         for(const t of this.tiles){
             if(filter.excludeMyPos && t.position===source.pos) continue
             if(distance(t.position,source.pos) > filter.radius) continue
@@ -266,7 +171,7 @@ class MarbleGameMap{
             if(filter.cornerOnly && !t.isCorner) continue
             if(filter.specialOnly && !t.isSpecial) continue
             if(filter.sameLine && !this.isSameLine(t.position,source.pos)) continue
-            tiles.push(t.position)
+            tiles.add(t.position)
         }
         return tiles
 
@@ -292,6 +197,8 @@ class MarbleGameMap{
     updateColorMonopoly(tile:LandTile,newOwner:number,prevOwner:number){
         let color=tile.color
         let change=[-1,-1]  //add,remove
+
+        //remove color monopoly
         if(this.colorMonopolys.get(color)===prevOwner){
             let t=this.sameColors.get(color)
             if(t) t.forEach((land)=>land.removeColorMonopoly())
@@ -300,15 +207,14 @@ class MarbleGameMap{
         }
 
         let colors=this.sameColors.get(color)
-        if( colors!==undefined && colors.every((tile)=>tile.owner===newOwner)){
+        //add color monopoly
+        if( colors!==undefined && newOwner!==-1 && colors.every((tile)=>tile.owner===newOwner)){
             this.colorMonopolys.set(color,newOwner)
             let tiles=this.sameColors.get(color)
             if(tiles)
                 tiles.forEach((land)=>land.setColorMonopoly())
             change[0]=color
         }
-
-        
     }
     updateMultiplier()
     {
@@ -326,18 +232,19 @@ class MarbleGameMap{
         }
         this.clientInterface.updateMultipliers(change)
     }
-    setOlympic(pos:number,stage:number){
+    setOlympic(pos:number){
         if(!this.buildableTiles.has(pos)){
             console.error("invalid olympic position")
-            return
+            return 
         }
         if(this.olympicPos!==-1){
             let o=this.buildableTiles.get(this.olympicPos)
             if(o) o.setOlympic(0)
         }
         let o=this.buildableTiles.get(pos)
-        if(o) o.setOlympic(stage)
+        if(o) o.setOlympic(this.olympicStage)
         this.olympicPos=pos
+        this.olympicStage+=1
         this.updateMultiplier()
     }
     setFestival(pos:number,takeFrom?:number){
@@ -367,6 +274,23 @@ class MarbleGameMap{
             this.blackholeTile=-1
             this.whiteholeTile=-1
         }
+    }
+    clearTile(tile:BuildableTile)
+    {
+        if(tile.olympic) this.olympicPos=-1
+        tile.removeAll()
+        this.setLandOwner(tile,-1)
+    }
+    onPlayerRetire(player:MarblePlayer):number[]{
+        let toremove=this.getTiles(player,TileFilter.MY_LAND())
+        for(let t of toremove){
+            let tile=this.tileAt(t)
+            if(tile instanceof BuildableTile) {
+                this.clearTile(tile)
+            }
+        }
+        return toremove
+        
     }
     checkMonopoly(changedTile:BuildableTile,invoker:number):MONOPOLY{
         //관독

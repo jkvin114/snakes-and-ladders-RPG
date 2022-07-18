@@ -247,12 +247,16 @@ body{
 }
 .window-confirm-btn{
   background: linear-gradient(to bottom, rgba(255, 255, 134, 1) 0%, rgb(234, 139, 14) 100%);
+  min-width: 150px;
 }
 .window-cancel-btn{
   background: linear-gradient(to bottom, rgb(183, 223, 255) 0%, rgb(48, 133, 170) 100%);
   
 }
-
+.disabled{
+  filter: grayscale(1);
+  pointer-events: none;
+}
 .window-confirm-btn > img{
   height: 20px;
   vertical-align: bottom;
@@ -435,6 +439,10 @@ body{
   right: 10px;
   background: linear-gradient(to top, rgb(38, 135, 208) 0%, rgb(221, 253, 255)100%);
 }
+#odd.activated,#even.activated
+{
+  filter: brightness(0.5);
+}
 .dicebtn:active{
   filter: brightness(0.8);
 }
@@ -524,8 +532,8 @@ body{
   position: relative;
   text-align: center;
   font-size: 1.5rem;
-  color: black;
-  background: linear-gradient(to bottom, #654715 0%, #563905 100%);
+  color: white;
+  background: linear-gradient(to bottom, #896321 0%, #5f410a 100%);
   font-family: 'cookierun';
   padding: 0.5rem;
   padding-left: 4rem;
@@ -551,23 +559,70 @@ body{
   position: relative;
 
   height: 30px;
-  font-size: 15px;
+  font-size: 12px;
   
   color: white;
   border:none;
   cursor: pointer;
   font-family: 'CookierunBlack';
   box-shadow: 0 0 3px 1px black;
+  border-radius: 5px;
+  
 }
 .loan-window-confirm{
   background-color:rgb(226, 200, 53) ;
+  transform: translate(-20px,0);
 }
 .loan-window-bankrupt{
+  margin-right:10px ;
   background-color:rgb(226, 131, 53) ;
+  transform: translate(20px,0);
 }
 #status{
+  position: absolute;
+  top:0;
+  left:0;
   background-color: white;
   font-family: 'cookierun';
+  border: 2px solid black;
+}
+#largetext {
+  display: inline-block;
+  width: max-content;
+  /* font-family: 'Spartan'; */
+  /* position: absolute; */
+  /* left: 50%;
+  top: 5%; */
+  /* transform: translate(- 50%, 0); */
+  font-size: 3.5rem;
+  color: white;
+  user-select: none;
+  /* z-index: 3; */
+  pointer-events: none;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+  
+}
+#largetext-container{
+  top:15%;
+  left: 50%;
+  position: absolute;
+  z-index: 10;
+  transform: translate(-50%);
+  transform-origin: 50% 50%;
+  width: max-content;
+  /* background: linear-gradient(to left, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.6) 20%, rgba(20, 20, 20, 0.6) 80%, rgba(20, 20, 20, 0) 100%); */
+}
+#largetext-container.good{
+  background: linear-gradient(to left, rgba(20, 20, 20, 0) 0%, rgba(119, 255, 137, 0.4) 20%, rgba(119, 255, 137, 0.4) 80%, rgba(20, 20, 20, 0) 100%);
+
+}
+#largetext-container.bad{
+  background: linear-gradient(to left, rgba(20, 20, 20, 0) 0%, rgba(255, 134, 134, 0.4) 20%, rgba(255, 134, 134, 0.4) 80%, rgba(20, 20, 20, 0) 100%);
+
 }
 </style>
 
@@ -591,7 +646,7 @@ body{
         </h6>
         <img src="./../res/img/ui/loading.gif">  
     </div>
-    <div id="dialog" class="hidden2">
+    <div id="dialog">
         <p>content</p>
         <button class="dialog_cancel">No</button>
         <button class="dialog_confirm">Yes</button>
@@ -708,8 +763,8 @@ body{
         </div>
       </div>
     </div>
-    <h6 id=selectionname class="hidden">블랙홀</h6>
-    <h6 id=selectiondesc class="hidden">화이트홀을 발생시킬 지역 선탣</h6>
+    <h6 id=selectionname class="selectiontitle hidden">블랙홀</h6>
+    <h6 id=selectiondesc class="selectiontitle hidden">화이트홀을 발생시킬 지역 선탣</h6>
 
     <div id="loan-window" class="hidden">
       <a class="loan-window-name">대출 선택</a><br><br>
@@ -736,27 +791,27 @@ body{
         </td>
       </tr>
       <tr>
-        <td>1
+        <td style="background-color: red;">1
         </td>
-        <td class="money-table">money
-        </td>
-      </tr>
-      <tr>
-        <td>2
-        </td>
-        <td  class="money-table">money
+        <td class="money-table">0
         </td>
       </tr>
       <tr>
-        <td>3
+        <td style="background-color: blue;">2
         </td>
-        <td  class="money-table">money
+        <td  class="money-table">0
         </td>
       </tr>
       <tr>
-        <td>4
+        <td style="background-color: green;">3
         </td>
-        <td  class="money-table">money
+        <td  class="money-table">0
+        </td>
+      </tr>
+      <tr>
+        <td style="background-color: yellow;">4
+        </td>
+        <td  class="money-table">0
         </td>
       </tr>
     </table>
@@ -768,7 +823,10 @@ body{
     <img id="smalldicebtn" class="dicebtn"> -->
 
     <a id=toastmessage class="hidden"></a>
-
+    <div id="largetext-container" class="hidden">
+      <a id=largetext>
+      </a>
+    </div>
     <img src="./../res/img/ui/victory.png" class=" resultimg victory hidden">
     <img src="./../res/img/ui/defeat.png" class=" resultimg defeat hidden">
     <img src="res/marblemap.jpg" id="marble_boardimg" class="hidden">
@@ -777,6 +835,9 @@ body{
     <img src="./../res/img/board/tile_shadow.png" id='tile_shadow' class=" resultimg defeat hidden">
     <img class="hidden" src='./../res/img/ui/arrow.png' id="arrow">
     <img id="pin" src="./../res/img/ui/pin.png" class=hidden>
+    <img src="res/tile_highlight_red.png" id="tile_highlight_red" class="hidden">
+    <img src="res/tile_highlight_yellow.png" id="tile_highlight_yellow" class="hidden">
+    <img src="res/tile_highlight_white.png" id="tile_highlight_white" class="hidden">
 
     <img class="hidden" src='./../res/img/character/reaper.png' id="playerimg1" >
     <img class="hidden" src='./../res/img/character/elephant.png' id="playerimg2">

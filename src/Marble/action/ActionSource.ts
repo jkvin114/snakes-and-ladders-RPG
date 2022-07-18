@@ -7,7 +7,12 @@ export enum ACTION_SOURCE_TYPE{
     BUYOUT,
     THREE_DOUBLES,//6
     BUILD_DIRECT,
-    BUYOUT_DIRECT
+    BUYOUT_DIRECT,
+    GOD_HAND_SPECIAL_BUILD=9,
+    START_TILE_BUILD=10,
+    ARRIVE_TRAVEL_TILE=11,
+    TRAVEL,
+    ARRIVE_OLYMPIC_TILE=13
 }
 export class ActionSource {
 	eventType: ACTION_SOURCE_TYPE //이벤트 종류(이동/통행료/인수 등 행동 분류)

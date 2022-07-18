@@ -19,6 +19,7 @@ class Game{
         this.myNum=0
         this.myTurn=0
         this.ui=new GameInterface(this)
+        this.isTeam=false
     }
     turnToPlayerNum(turn){
         for(let i=0;i<this.playerCount;++i){
@@ -28,11 +29,20 @@ class Game{
     }
     init(setting,num,turn)
     {
+
         console.log(num,turn)
         console.log("game init")
         this.myNum=num
         this.myTurn=turn
+        this.isTeam=setting.isTeam
+        this.playerCount=setting.players.length
 
+        for(let i=0;i<this.playerCount;++i){
+            let p=setting.players[i]
+            this.players.push(new Player(p.turn,p.turn,p.char,p.name,p.team))
+        }
+        this.scene.players=this.players
+        this.ui.init(setting)
         console.log(setting)
         requestMap()
     }
@@ -41,10 +51,14 @@ class Game{
         this.connection.gameReady()
         this.scene.startRenderInterval()
     }
-    showDiceBtn(player,data){
-        $("#dice_container").show()
+    turnStart(player){
         this.scene.showArrow(this.turnToPlayerNum(player))
         this.scene.focusPlayer(this.turnToPlayerNum(player))
+    }
+    showDiceBtn(player,data){
+        
+        this.ui.showDiceBtn(data.hasOddEven,data.origin)
+        
     }
     diceRoll(data){
         toast(data.dice + ((data.isDouble)?"(더블)":""))
@@ -121,6 +135,9 @@ class Game{
     setLandOwner(pos,player){
         this.scene.setLandOwner(pos,this.turnToPlayerNum(player))
     }
+    setOlympic(pos){
+        this.scene.setOlympic(pos)
+    }
     onDiceHoldStart(){
         if(this.pressingDice) return
 
@@ -143,7 +160,7 @@ class Game{
 
         clearInterval(this.diceGageInterval)
 
-        this.connection.clickDice(this.diceGage,0)
+        this.connection.clickDice(this.diceGage,this.ui.oddeven)
 
         $("#dice_container").hide()
         $("#gage").stop()
@@ -171,24 +188,48 @@ class Game{
         }
       //  console.log(this.diceGage)
     }
+
+    askTileSelection(tiles,source){
+        this.ui.showSelectionTitle(source)
+        this.scene.showRangeTilesByList(tiles,source, 1)
+    }
+
+    onTileSelect(pos,type){
+        this.ui.hideSelectionTitle()
+        this.connection.onTileSelect(pos,type)
+    }
     addPlayers(){
-        for(let i=0;i<this.playerCount;++i){
-            this.players.push(new Player(i,i,i,(i+1)+"P",true))
-        }
-        this.scene.players=this.players
+        
     }
     moveComplete(turn){
+    }
+    alertMonopoly(player,type,pos){
+        this.ui.largeText(MONOPOLY[type]+" 경고!",false)
+        this.scene.showTileHighlight(pos,'red')
+        setTimeout(()=>{
+            this.scene.clearTileHighlight('red')
+        },14000)
     }
     bankrupt(turn){
         this.scene.removePlayer(this.turnToPlayerNum(turn))
         this.ui.onBankrupt(turn)
     }
     gameoverBankrupt(winner){   
-        alert((winner+1)+"P 파산 승리")
+        this.ui.largeText((winner+1)+"P 파산 승리",false)
     }
     gameoverMonopoly(winner,monopoly){
-        alert((winner+1)+"P "+MONOPOLY[monopoly]+"으로 승리")
+        this.ui.largeText((winner+1)+"P "+MONOPOLY[monopoly]+"으로 승리",false)
 	}
+    onQuit(){
+        this.ui.showDialog(
+				"정말 게임을 떠나시겠습니까?(나가면 게임이 초기화됩니다)"
+			,
+			() => {
+				document.onbeforeunload = () => {}
+				window.location.href = "/index.html"
+			}
+		)
+    }
 }
 function toast(msg) {
     $("#toastmessage").html(msg)
@@ -239,7 +280,7 @@ $(window).on("load", function (e) {
     })
 
     $("#dicebtn").on('mousedown touchstart',function(e){    
-        
+        GAME.scene.clearTileHighlight('yellow')
         GAME.onDiceHoldStart()
         return false
     })

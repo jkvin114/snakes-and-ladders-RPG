@@ -32,7 +32,10 @@ export function openConnection(isInitial){
 		console.log("initialsetting")
 		GAME.init(setting,num,turn)
 	})
-    socket.on("server:nextturn", function (turn,data) {
+	socket.on("server:nextturn", function (turn) {
+		GAME.turnStart(turn)
+	})
+    socket.on("server:show_dice", function (turn,data) {
 		GAME.showDiceBtn(turn,data)
 		console.log(data)
 	})
@@ -90,11 +93,31 @@ export function openConnection(isInitial){
 		console.log(player,amount)
 		GAME.askLoan(amount)
 	})
-	
+	socket.on("server:tile_selection", function (player,tiles,source) {
+        console.log("tile_selection")
+		console.log(player,tiles,source)
+		GAME.askTileSelection(tiles,source)
+	})
 	socket.on("server:update_money", function (player,money) {
         console.log("update_money")
 		console.log(player,money)
 		GAME.ui.updateMoney(player,money)
+	})
+	socket.on("server:update_olympic", function (pos) {
+        console.log("update_olympic")
+		console.log(pos)
+		GAME.setOlympic(pos)
+	})
+	socket.on("server:clear_buildings", function (positions) {
+        console.log("clear_buildings")
+		console.log(positions)
+		GAME.scene.clearBuildings(positions)
+	})
+
+	socket.on("server:monopoly_alert", function (player,type,pos) {
+        console.log("monopoly_alert")
+		console.log(player,type,pos)
+		GAME.alertMonopoly(player,type,pos)
 	})
 	socket.on("server:bankrupt", function (player) {
         console.log("bankrupt")
@@ -111,6 +134,7 @@ export function openConnection(isInitial){
 		console.log(player,monopoly)
 		GAME.gameoverMonopoly(player,monopoly)
 	})
+
 	GAME.connection.clickDice=function(gage,oddeven){
 		socket.emit(PREFIX+"press_dice",GAME.myTurn,gage,oddeven)
 	}
@@ -131,5 +155,8 @@ export function openConnection(isInitial){
 	}
 	GAME.connection.chooseLoan=function(result){
 		socket.emit(PREFIX+"select_loan",GAME.myTurn,result)
+	}
+	GAME.connection.onTileSelect=function(pos,type){
+		socket.emit(PREFIX+"select_tile",GAME.myTurn,pos,type)
 	}
 }

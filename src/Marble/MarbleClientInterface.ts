@@ -4,6 +4,7 @@ import { BUILDING } from "./tile/Tile"
 const prefix="server:"
 const SERVER_EVENTS={
     NEXTTURN:prefix+"nextturn",
+    SHOW_DICE:prefix+"show_dice",
     THROW_DICE:prefix+"throwdice",
     WALK_MOVE:prefix+"walk_move",
     TELEPORT:prefix+"teleport",
@@ -21,6 +22,9 @@ const SERVER_EVENTS={
     BANKRUPT:prefix+"bankrupt",
     GAMEOVER_BANKRUPT:prefix+"gameover_bankrupt",
     GAMEOVER_MONOPOLY:prefix+"gameover_monopoly",
+    ASK_TILE_SELECTION:prefix+"tile_selection",
+    CLEAR_BUILDINGS:prefix+"clear_buildings",
+    UPDATE_OLYMPIC:prefix+"update_olympic",
 }
 
 export class MarbleClientInterface {
@@ -36,8 +40,11 @@ export class MarbleClientInterface {
         //    console.log("registerCallback")
             this.callback = callback
     }
+    turnStart(turn:number){
+        this.callback(this.rname, SERVER_EVENTS.NEXTTURN, turn)
+    }
     showDiceBtn(player:number,data:any){
-        this.callback(this.rname, SERVER_EVENTS.NEXTTURN, player,data)
+        this.callback(this.rname, SERVER_EVENTS.SHOW_DICE, player,data)
     }
     throwDice(player:number,data:any){
         this.callback(this.rname,SERVER_EVENTS.THROW_DICE, player,data)
@@ -57,6 +64,9 @@ export class MarbleClientInterface {
     askBuyout(player:number,pos:number,price:number,originalPrice:number){
         this.callback(this.rname, SERVER_EVENTS.ASK_BUYOUT, player,pos,price,originalPrice)
     }
+    askTileSelection(turn:number,tiles:number[],source:number){
+        this.callback(this.rname, SERVER_EVENTS.ASK_TILE_SELECTION, turn,tiles,source)
+    }
     setLandOwner(pos:number,player:number){
         this.callback(this.rname, SERVER_EVENTS.SET_LANDOWNER, pos,player)
     }
@@ -65,6 +75,9 @@ export class MarbleClientInterface {
     }
     updateMultipliers(change:{pos:number,toll:number,mul:number}[]){
         this.callback(this.rname, SERVER_EVENTS.UPDATE_MULTIPLIERS, change)
+    }
+    setOlympic(pos:number){
+        this.callback(this.rname, SERVER_EVENTS.UPDATE_OLYMPIC, pos)
     }
     /**
      * 
@@ -88,7 +101,9 @@ export class MarbleClientInterface {
     changeMoney(player:number,money:number){
         this.callback(this.rname, SERVER_EVENTS.UPDATE_MONEY, player,money)
     }
-
+    clearBuildings(toremove:number[]){
+        this.callback(this.rname, SERVER_EVENTS.CLEAR_BUILDINGS, toremove)
+    }
 
     bankrupt(player:number)
     {

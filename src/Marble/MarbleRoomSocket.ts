@@ -10,7 +10,8 @@ const USER_EVENTS={
 	PRESS_DICE:`${prefix}press_dice`,
 	SELECT_BUILD:`${prefix}select_build`,
 	SELECT_BUYOUT:`${prefix}select_buyout`,
-	SELECT_LOAN:`${prefix}select_loan`
+	SELECT_LOAN:`${prefix}select_loan`,
+	SELECT_TILE:`${prefix}select_tile`,
 }
 function getRoom(socket:Socket){
 	
@@ -77,5 +78,10 @@ module.exports=function(socket:Socket){
 		let rname = SocketSession.getRoomName(socket)
 		if (!R.hasMarbleRoom(rname)) return
 		R.getMarbleRoom(rname).onClientEvent("select_loan",invoker,result)
+	})
+	socket.on(USER_EVENTS.SELECT_TILE, function (invoker:number,pos:number,source:number) {
+		let rname = SocketSession.getRoomName(socket)
+		if (!R.hasMarbleRoom(rname)) return
+		R.getMarbleRoom(rname).onClientEvent("select_tile",invoker,pos,source)
 	})
 }

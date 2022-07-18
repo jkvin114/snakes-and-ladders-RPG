@@ -20,7 +20,9 @@ export enum ACTION_TYPE {
     PAY_MONEY,
     ASK_LOAN,
     ASK_BUYOUT,//18
-    BUYOUT,GAMEOVER
+    BUYOUT,
+	GAMEOVER,
+	CHOOSE_OLYMPIC_POSITION
 }
 
 export const ACTION_LIST=[
@@ -43,7 +45,7 @@ export const ACTION_LIST=[
     "PAY_MONEY",
     "ASK_LOAN",
     "ASK_BUYOUT",//18
-    "BUYOUT","GAMEOVER"
+    "BUYOUT","GAMEOVER","CHOOSE_OLYMPIC_POSITION"
 ]
 export abstract class Action {
 	type:ACTION_TYPE
@@ -51,11 +53,16 @@ export abstract class Action {
 	turn: number
 	priority: number
     delay:number
+	valid:boolean
 	constructor( type:ACTION_TYPE,turn: number,source:ActionSource) {
 		this.type=type
 		this.source = source
         this.delay=0
         this.turn = turn
+		this.valid=true
+	}
+	off(){
+		this.valid=false
 	}
 }
 // export class EventAction extends Action {

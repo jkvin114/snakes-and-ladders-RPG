@@ -1,12 +1,12 @@
 import { sleep,ProtoPlayer,PlayerType } from "../core/Util";
 import { Action,ACTION_TYPE } from "./action/Action";
-import { ActionSource } from "./action/ActionSource";
+import { ActionSource, ACTION_SOURCE_TYPE } from "./action/ActionSource";
 import { DelayedAction, MoveAction, RollDiceAction } from "./action/DelayedAction";
 import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction, TeleportAction } from "./action/InstantAction";
 import { MarbleClientInterface } from "./MarbleClientInterface";
-import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction } from "./action/QueryAction";
+import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 import { BUILDING } from "./tile/Tile";
 import e from "cors";
@@ -67,6 +67,9 @@ class MarbleGameLoop{
     onGameOver(winner:number){
         this.gameover=true
         this.gameOverCallBack(winner)
+    }
+    onDestroy(){
+        this.gameover=true
     }
     // /**
 	//  * 
@@ -145,6 +148,11 @@ class MarbleGameLoop{
                 break
             }
             
+            if(!action.valid) {
+                console.log("action ignored")
+                continue
+            }
+
             if(action instanceof InstantAction){
                 this.game.executeAction(action)
                 continue
@@ -197,6 +205,9 @@ class MarbleGameLoop{
                 break
             case 'select_loan':
                 result=this.state.onUserConfirmLoan(args[0])
+                break
+            case 'select_tile':
+                result=this.state.onUserSelectTile(args[0],args[1])
                 break
         }
         console.log(result)
@@ -265,6 +276,12 @@ abstract class MarbleGameCycleState {
             case ACTION_TYPE.ASK_LOAN:
                 if(action instanceof AskLoanAction)
                     return new WaitingLoan(this.game,action)
+            case ACTION_TYPE.CHOOSE_BUILD_POSITION:
+            case ACTION_TYPE.CHOOSE_MOVE_POSITION:
+            case ACTION_TYPE.CHOOSE_OLYMPIC_POSITION:
+                if(action instanceof TileSelectionAction)
+                    return new WaitingTileSelection(this.game,action)
+                            
                 break
         }
 
@@ -301,8 +318,8 @@ abstract class MarbleGameCycleState {
     {
 
     }
-    onUserSelectTile(){
-
+    onUserSelectTile(pos:number,source:number){
+        return new EventResult(false)
     }
     onUserSelectPlayer(){
 
@@ -339,6 +356,7 @@ class TurnInitializer extends MarbleGameCycleState {
 	}
 	onCreate(): void {
         this.game.onTurnStart()
+        this.game.clientInterface.turnStart(this.turn)
     }
 }
 class ArriveTile extends MarbleGameCycleState{
@@ -422,7 +440,7 @@ class ThrowingDice extends MarbleGameCycleState{
             this.game.onTripleDouble()
         }
         else{
-            this.game.onWalkMove(this.action.pos,this.action.dice,this.turn,this.action.source)
+            this.game.requestWalkMove(this.action.pos,this.action.dice,this.turn,this.action.source)
         }
     }
 }
@@ -523,7 +541,36 @@ class WaitingBuyOut extends MarbleGameCycleState{
         return new EventResult(result)
     }
 }
+class WaitingTileSelection extends MarbleGameCycleState{
+    static id = GAME_CYCLE.WAITING_TILE_SELECTION
+    tiles:number[]
+    type:ACTION_TYPE
+    source:ActionSource
 
+    constructor(game:MarbleGame,sourceAction:TileSelectionAction){
+        super(game,sourceAction.turn,WaitingTileSelection.id)
+        this.tiles=sourceAction.tiles
+        this.type=sourceAction.type
+        this.source=sourceAction.source
+    }
+    onCreate(): void {
+        this.game.clientInterface.askTileSelection(this.turn,this.tiles,this.source.eventType)
+    }
+    onUserSelectTile(pos: number,source:number): EventResult {
+        if(source !== this.source.eventType) return new EventResult(false)
+
+        if(this.type === ACTION_TYPE.CHOOSE_BUILD_POSITION){
+            this.game.onSelectBuildPosition(this.turn,pos,this.source)
+        }
+        else if(this.type===ACTION_TYPE.CHOOSE_MOVE_POSITION){
+            this.game.onSelectMovePosition(this.turn,pos,this.source)
+        }
+        else if(this.type===ACTION_TYPE.CHOOSE_OLYMPIC_POSITION){
+            this.game.onSelectOlympicPosition(this.turn,pos,this.source)
+        }
+        return new EventResult(true).setData(pos)
+    }
+}
 class WaitingCardUse extends MarbleGameCycleState{
     onCreate(): void {
         throw new Error("Method not implemented.")

@@ -45,13 +45,19 @@ export class ActionStack {
 		return this.stack.length === 0
 	}
 	removeByType(type:ACTION_TYPE) {
-		this.stack=this.stack.filter((action:Action)=>{
-			return action.type !==type
+		this.stack.forEach((action)=>{
+			if(action.type ===type) action.off()
 		})
 	}
-	removeByTurn(turn:number) {
-		this.stack=this.stack.filter((action:Action)=>{
-			return action.turn !==turn
+	removeByTurn(turn:Number) {
+		this.stack.forEach((action)=>{
+			if(action.turn === turn) action.off()
+		})
+	}
+	removeByTurnExcludeType(turn:number,excludeType:ACTION_TYPE[]) {
+		this.stack.forEach((action)=>{
+			if(excludeType.includes(action.type)) return
+			if(action.turn === turn) action.off()
 		})
 	}
 	peek(): Action {

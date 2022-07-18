@@ -128,11 +128,18 @@ class Tile{
     hasOnlyLand(){
         return this.builds[0] && !this.builds[1] && !this.builds[2] && !this.builds[3] && !this.builds[4]
     }
+    clear(){
+        this.multiplier=1
+        this.toll=0
+        this.owner=-1
+        this.olympic=false
+        this.builds=[false,false,false,false,false]
+    }
 }
 class TileObject{
-    constructor(tiledata,tile){
+    constructor(tiledata,tileimage){
         this.data=tiledata
-        this.tile=tile
+        this.tile=tileimage
         this.nameIndicator
         this.type='nonbuildable'
         this.decorator
@@ -162,6 +169,7 @@ class TileObject{
     changeToll(toll){
 
     }
+    clear(){}
 }
 class BuildableTileObject extends TileObject{
     constructor(tiledata,tile){
@@ -213,7 +221,12 @@ class BuildableTileObject extends TileObject{
                 this.tollIndicator.set({text:toll,fontSize:18})
             }
         }
-            
+    }
+    clear(){
+        this.tollIndicator.set({text:""})
+        this.data.clear()
+        
+        this.buildings=[null,null,null,null,null]
     }
 }
 
@@ -252,7 +265,11 @@ export class MarbleScene extends Board{
         super(game)
         this.tileData=new Map() //number -> Tile
         this.tileObj=new Map() //number -> TileObject
-
+        this.tileHighlights=new Map() // string => TileHghlightImage[]
+        this.tileHighlights.set("red",[])
+        this.tileHighlights.set("yellow",[])
+        this.tileHighlights.set("white",[])
+        this.olympic=-1
     }
     getCoord(i){
 		return this.coordinates[i%this.mapLength()]
@@ -260,17 +277,16 @@ export class MarbleScene extends Board{
     getNameAt(pos){
         return this.tileData.get(pos).originalName
     }
-    setBoardScale(boardimg){
+    setBoardScale(){
         
         const winwidth=window.innerWidth
 		const winheight=window.innerHeight
-        this.boardInnerHeight = boardimg.naturalHeight
-        this.boardInnerWidth = boardimg.naturalWidth
+        
         this.boardScale=winheight/this.boardInnerHeight
         this.canvas.setWidth(winheight)
 		this.canvas.setHeight(winheight)
         this.canvas.setZoom(this.boardScale)
-        
+     //   this.forceRender()
     }
     drawTiles(){
         
@@ -371,6 +387,7 @@ export class MarbleScene extends Board{
         super.showObjects()
 
         for(let i=0;i<this.game.playerCount;++i){
+            console.log('addplayer')
             let img = document.getElementById("playerimg" + (this.players[i].char + 1))
 			let player = this.players[i]
 
@@ -404,23 +421,9 @@ export class MarbleScene extends Board{
         }
     //    console.log(this.players)
     }
-    getTileOf(tile_color,coord){
 
-		let tile= new fabric.Image(document.getElementById('marble_tileimg'), {
-			originX: "center",
-			originY: "center",
-			width: TILE_IMG_SIZE,
-			height: TILE_IMG_SIZE,
-			cropX: TILE_IMG_SIZE * tile_color,
-			cropY: 0,
-			objectCaching: false,
-            evented:false,
-
-			// top: coord.y,
-			// left: coord.x
-		})
-        this.lockFabricObject(tile)
-        switch(coord.rot){
+    scaleTileImage(tile,rot){
+        switch(rot){
             case 'center':
                 tile.scale(1.5)
             break
@@ -437,8 +440,50 @@ export class MarbleScene extends Board{
                 tile.set({scaleY:1.3,flipY:true})
             break
         }
+    }
+    getTileOf(tile_color,coord){
+
+		let tile= new fabric.Image(document.getElementById('marble_tileimg'), {
+			originX: "center",
+			originY: "center",
+			width: TILE_IMG_SIZE,
+			height: TILE_IMG_SIZE,
+			cropX: TILE_IMG_SIZE * tile_color,
+			cropY: 0,
+			objectCaching: false,
+            evented:false,
+
+			// top: coord.y,
+			// left: coord.x
+		})
+        this.lockFabricObject(tile)
+        this.scaleTileImage(tile,coord.rot)
         tile.set({top:coord.y,left:coord.x})
 
+        return tile
+    }
+
+    getTileHighlight(coord,color){
+        let image
+        if(color==='red')
+            image=document.getElementById('tile_highlight_red')
+        else if(color==='yellow')
+            image=document.getElementById('tile_highlight_yellow')
+        else
+            image=document.getElementById('tile_highlight_white')
+
+        let tile= new fabric.Image(image, {
+			originX: "center",
+			originY: "center",
+			width: TILE_IMG_SIZE,
+			height: TILE_IMG_SIZE,
+			objectCaching: false,
+            evented:false,
+		})
+        this.lockFabricObject(tile)
+        this.scaleTileImage(tile,coord.rot)
+        tile.set({top:coord.y,left:coord.x})
+        
         return tile
     }
     getTileTextObj(str,coord,fontsize){
@@ -557,7 +602,10 @@ export class MarbleScene extends Board{
             this.addLandFlag(pos,tileobj.data.owner)
         }
     }
-
+    removeAllHouse(pos){
+        for(let i=1;i<4;++i)
+            this.removeHouse(pos)
+    }
     addLandMark(pos,owner){
         let lm=this.getLandMark(owner)
         let coord=getLandMarkCoord(this.getCoord(pos))
@@ -574,7 +622,7 @@ export class MarbleScene extends Board{
     removeLandMark(pos){
         let tileobj=this.tileObj.get(pos)
         if(tileobj.type === 'nonbuildable') return
-        let flag=tileobj.buildings[0]
+        let flag=tileobj.buildings[4]
         if(!flag) return
         this.canvas.remove(flag)
         tileobj.setLandFlag(null)
@@ -582,6 +630,40 @@ export class MarbleScene extends Board{
         for(let i=1;i<4;++i){
             this.addHouse(pos,tileobj.data.owner,i)
         }
+    }
+
+    showTileHighlight(positions,color){
+        for(const p of positions){
+            let image=this.getTileHighlight(this.getCoord(p),color)
+            this.canvas.add(image)
+            image.bringToFront()
+            this.tileHighlights.get(color).push(image)
+        }
+        this.forceRender()
+    }
+    clearTileHighlight(color){
+        this.tileHighlights.get(color).forEach((h)=>this.canvas.remove(h))
+        this.tileHighlights.set(color,[])
+        this.forceRender()
+    }
+    tileHighlightsToFront(){
+        console.log(this.tileHighlights)
+        for(let color of this.tileHighlights.values())
+            color.forEach((h)=>h.bringToFront())
+
+        this.forceRender()
+    }
+    clearBuildings(positions){
+        for(const p of positions){
+            let tileobj=this.tileObj.get(p)
+            if(tileobj.type === 'nonbuildable') return
+            tileobj.buildings.forEach((b)=>{
+                this.canvas.remove(b)
+            })
+
+            this.tileObj.get(p).clear()
+        }
+        
     }
     /**
      * 
@@ -625,6 +707,12 @@ export class MarbleScene extends Board{
         }
         this.forceRender()
     }
+    setOlympic(pos){
+        if(this.olympic!==-1){
+            this.tileData.get(this.olympic).olympic=false
+        }
+        this.tileData.get(pos).olympic=true
+    }
     focusPlayer(player){
         for(let i=0;i<this.players.length;++i){
             if(this.players[i].retired) continue
@@ -635,58 +723,30 @@ export class MarbleScene extends Board{
         this.forceRender()
     }
     onReady(){
-        this.addLandFlag(5,0)
-        this.addLandFlag(14,1)
-        this.addLandFlag(23,2)
-        this.addLandFlag(27,3)
-
-        this.addHouse(1,0,1)
-        this.addHouse(1,0,2)
-        this.addHouse(1,0,3)
-
-        this.addHouse(10,1,1)
-        this.addHouse(10,1,2)
-        this.addHouse(10,1,3)
-
-        this.addHouse(17,2,1)
-        this.addHouse(17,2,2)
-        this.addHouse(17,2,3)
-
-        this.addHouse(25,3,1)
-        this.addHouse(25,3,2)
-        this.addHouse(25,3,3)
-
-        this.removeHouse(25,2)
-        this.removeHouse(10,1)
-        this.addLandMark(3,0)
-        this.addLandMark(15,1)
-        this.addLandMark(19,2)
-        this.addLandMark(31,3)
-        this.setToll(31,46000000,1)
-        this.setToll(19,46000000,16)
         // 
         this.startRenderInterval()
-        this.forceRender()
+    }
+    tileReset(){
+        super.tileReset()
+        this.tileHighlightsToFront()
+    }
+    onTileClick(pos,type){
+        
+        this.tileReset()
+        this.game.onTileSelect(pos,type)
+        
     }
     liftTile(index, type,size) {
 		if (this.tiles[index] === null || index >= this.tiles.length || index < 0) {
 			return
 		}
 
-        
-		if (type === "?") {
-			var select = function () {
-			// 	$("#confirm_tileselection").off()
-			// 	this.tooltip.set({ opacity: 0 })
-			// 	this.showTooltip(index)
-			// 	this.showSelectedTileSingle(index)
-
-			// 	$("#confirm_tileselection").click(
-			// 		function () {
-			// 			this.onTileClick(index, type)
-			// 		}.bind(this)
-			// 	)
-			}.bind(this)
+        let select=()=>{
+            this.onTileClick(index,type)
+        }
+        //신의손 특수지역 건설
+		if (type === 9) {
+			
 		} 
 
 		this.activateTile(index,select)

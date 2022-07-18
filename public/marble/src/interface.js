@@ -1,3 +1,4 @@
+import { GAME } from "./marble.js"
 import { moneyToString } from "./marble_board.js"
 class BuildingSelector{
     constructor(builds,buildsHave,discount,avaliableMoney){
@@ -16,6 +17,9 @@ class BuildingSelector{
         this.setState()
         this.setButtons()
     }
+    /**
+     * 창 처음 켜질때만 호출
+     */
     setState()
     {
         for(const b of this.builds){
@@ -38,6 +42,10 @@ class BuildingSelector{
             }
         }
     }
+
+    /**
+     * 건물 체크 변경시마다 호출
+     */
     setButtons(){
         let totalprice=0
         let totaltoll=0
@@ -59,13 +67,31 @@ class BuildingSelector{
         }
         $(".window-content-text1").html("건설 비용: "+moneyToString(totalprice))
         $(".window-content-text2").html("건설비용할인: "+moneyToString(totalprice * (1-this.discount)))
-        $("#window-confirm-btn-price").html(moneyToString(totalprice * this.discount))
+
+        let price=totalprice * this.discount
+        if(this.avaliableMoney < price){
+            $("#landwindow .window-confirm-btn").addClass("disabled")
+            $("#window-confirm-btn-price").html("잔액 부족")
+        }
+        else{
+            $("#landwindow .window-confirm-btn").removeClass("disabled")
+            $("#window-confirm-btn-price").html(moneyToString(price))
+        }
+        
         $(".window-content-text-nobackground").html("통행료: "+moneyToString(totaltoll))
     }
+    /**
+     * 건물 체크 변경시 호출
+     * @param {*} building 
+     */
     onClick(building){
         this.state[Number(building)] = !this.state[Number(building)]
         this.setButtons()
     }
+    /**
+     * 
+     * @returns 서버 전송용 결과 리스트
+     */
     result(){
         let list=[]
         for(let i=1;i<5;++i){
@@ -89,18 +115,82 @@ export class GameInterface
             moneyTable:$(".money-table").toArray()
         }
         Object.freeze(this.doms)
-        this.init()
+        this.onCreate()
+        this.oddeven=0
+        this.diceThrowerPos=0
     }
-    init(){
+    onCreate(){
+        $("#dialog").hide()
+
         $(".loan-window-confirm").click(()=>{
             this.onSelectLoan(true)
 
         })
         $(".loan-window-bankrupt").click(()=>{
             this.onSelectLoan(false)
-
         })
-    }  
+        $("#odd").click(()=>{
+            this.clickOdd()
+        })
+        $("#even").click(()=>{
+            this.clickEven()
+        })
+        $("#toggle_fullscreen").click(async function(){
+			console.log($(this).data("on"))
+            
+			if(!$(this).data("on")){
+			  
+			    await document.documentElement.requestFullscreen()
+			    $(this).data("on",true)
+			}
+			else {
+                await document.exitFullscreen()
+			    $(this).data("on",false)
+			}
+            GAME.scene.setBoardScale()
+		  })
+
+          $("#quit").click(()=>GAME.onQuit())
+    }
+    init(setting){
+        for(let i=0;i<setting.players.length;++i){
+            let p=setting.players[i]
+            $(this.doms.moneyTable[p.turn]).html(moneyToString(p.money))
+        }
+    }
+    largeText(text,good){
+        $("#largetext").html(text)
+		$("#largetext-container").removeClass('good')
+		$("#largetext-container").removeClass('bad')
+		if(good){
+			$("#largetext-container").addClass('good')
+		}
+		else{
+			$("#largetext-container").addClass('bad')
+		}
+		$("#largetext-container").show()
+		setTimeout(()=>$("#largetext-container").hide(),2500)
+    }
+    clickOdd(){
+        $("#dicebtn").html("홀")
+        this.oddeven=1
+        let positions=[]
+        for(let i=0;i<5;++i){
+            positions.push((this.diceThrowerPos + 3 + 2*i)%32)
+        }
+        GAME.scene.clearTileHighlight('yellow')
+        GAME.scene.showTileHighlight(positions,'yellow')
+    }
+    clickEven(){
+        $("#dicebtn").html("짝")
+        this.oddeven=2
+        let positions=[]
+        for(let i=0;i<6;++i){
+            positions.push((this.diceThrowerPos + 2 + 2*i)%32)
+        }
+        GAME.scene.clearTileHighlight('yellow')
+        GAME.scene.showTileHighlight(positions,'yellow')
+    }
     onSelectLoan(result){
         $("#overlay").hide()
         $("#loan-window").hide()
@@ -108,6 +198,20 @@ export class GameInterface
     }
     updateMoney(player,money){
         $(this.doms.moneyTable[player]).html(moneyToString(money))
+    }
+    showDiceBtn(hasOddEven,origin){
+        this.diceThrowerPos=origin
+        this.oddeven=0
+        $("#dice_container").show()
+        $("#dicebtn").html("ROLL")
+        if(hasOddEven){
+            $("#odd").removeClass("disabled")
+            $("#even").removeClass("disabled")
+        }
+        else{
+            $("#odd").addClass("disabled")
+            $("#even").addClass("disabled")
+        }
     }
     showBuildSelection(landname,builds,buildsHave,discount,avaliableMoney,onCancel){
         $("#landwindow").show()
@@ -194,6 +298,29 @@ export class GameInterface
         $(".window-content-text-nobackground").html("주의: 건설비용의 2배지불")
         
     }
+    showSelectionTitle(source){
+        //신의손 특수지역 건섷
+        if(source===9){
+            $("#selectionname").html('특수 지역')
+            $("#selectiondesc").html('건설할 땅을 선택하세요')
+        }//시작지점 건섷
+        if(source===10){
+            $("#selectionname").html('시작지점 혜택')
+            $("#selectiondesc").html('건설할 땅을 선택하세요')
+        }//세계여행
+        if(source===11){
+            $("#selectionname").html('세계여행')
+            $("#selectiondesc").html('이동할 땅을 선택하세요')
+        }//올림픽
+        if(source===13){
+            $("#selectionname").html('올림픽')
+            $("#selectiondesc").html('올림픽 개최할 땅을 선택하세요')
+        }
+        $(".selectiontitle").show()
+    }
+    hideSelectionTitle(){
+        $(".selectiontitle").hide()
+    }
     showLoanSelection(amount)
     {
         $("#overlay").show()
@@ -203,4 +330,18 @@ export class GameInterface
     onBankrupt(turn){
         $(this.doms.moneyTable[turn]).html("파산")
     }
+    showDialog(content,onconfirm,oncancel){
+		$("#dialog p").html(content)
+		$("#dialog .dialog_cancel").off()
+		$("#dialog .dialog_confirm").off()
+		$("#dialog .dialog_cancel").click(()=>{
+			if(oncancel!=null) oncancel()
+			$("#dialog").hide()
+		})
+		$("#dialog .dialog_confirm").click(()=>{
+			if(onconfirm!=null) onconfirm()
+			$("#dialog").hide()
+		})
+		$("#dialog").show()
+	}
 }

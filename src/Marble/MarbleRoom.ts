@@ -55,5 +55,10 @@ class MarbleRoom extends Room{
     onGameover(){
 
     }
+	reset(): void {
+		super.reset()
+		if (this.gameloop != null) this.gameloop.onDestroy()
+		// this.simulation = null
+	}
 }
 export {MarbleRoom}

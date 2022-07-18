@@ -396,7 +396,9 @@ export class Board{
 				objectCaching: false
 			})
 		)
-		this.setBoardScale(boardimg)
+		this.boardInnerHeight = boardimg.naturalHeight
+        this.boardInnerWidth = boardimg.naturalWidth
+		this.setBoardScale()
 		this.drawTiles()
 		
 		this.showObjects()
@@ -765,8 +767,8 @@ export class Board{
 	playersToFront() {
 		for (let i = 0; i < this.players.length; ++i) {
 			// console.log(this.findPlayerImgInGroup(i))
-			console.log(i)
-			console.log(this.players[i])
+			// console.log(i)
+			// console.log(this.players[i])
 			this.players[i].playerimg.bringToFront()
 		}
 		this.render()
