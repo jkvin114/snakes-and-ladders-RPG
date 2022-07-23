@@ -1,5 +1,6 @@
 import { Ability } from "./Abilty";
 import { Action } from "./action/Action";
+import { ActionPackage } from "./action/ActionPackage";
 import { ActionSource } from "./action/ActionSource";
 
 /**
@@ -12,6 +13,6 @@ export function abilityToAction(
 	eventSource: ActionSource | null,
 	invokingAbility: Ability | null,
 	...revokingAbility: Ability[]
-): [Action[], Action[], boolean] | null {
-	return null
+): ActionPackage {
+	return new ActionPackage()
 }

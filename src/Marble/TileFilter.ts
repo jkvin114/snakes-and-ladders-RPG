@@ -18,6 +18,7 @@ export class TileFilter{
     radius:number
     buildableOnly:boolean
     landTileOnly:boolean
+    enemyLandOnly:boolean
 
     static ALL_EXCLUDE_MY_POS=()=>new TileFilter().setExcludeMyPos()
     static MORE_BUILDABLE_MY_LAND=()=>new TileFilter().fromBuildable().setOnlyMoreBuildable().setMyLandOnly()
@@ -26,7 +27,7 @@ export class TileFilter{
     static MY_LANDMARK=()=>new TileFilter().fromBuildable().setMyLandOnly().setLandMarkOnly()
     static LANDS_CAN_BUYOUT=()=>new TileFilter().fromBuildable().setOnlyCanBuyOut()
     static EMPTY_LANDTILE=()=>new TileFilter().fromBuildable().setEmptyOnly().setLandTileOnly()
-    
+    static ENEMY_LAND=()=>new TileFilter().fromBuildable().setEnemyLandOnly()
     constructor(){
         this.owners=[]
         this.exclude=new Set<number>()
@@ -40,11 +41,11 @@ export class TileFilter{
         this.landmarkOnly=false
         this.excludeLandMark=false
         this.cornerOnly=false
-        this.exclude=new Set()
         this.excludeMyPos=false
         this.sameLine=false
         this.specialOnly=false
         this.landTileOnly=false
+        this.enemyLandOnly=false
     }
     setLandTileOnly(){
         this.landTileOnly=true
@@ -71,7 +72,10 @@ export class TileFilter{
         this.myLandOnly=true
         return this
     }
-    
+    setEnemyLandOnly(){
+        this.enemyLandOnly=true
+        return this
+    }
     setEmptyOnly(){
         this.emptyOnly=true
         return this

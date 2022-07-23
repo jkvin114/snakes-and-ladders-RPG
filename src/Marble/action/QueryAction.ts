@@ -2,6 +2,7 @@ import { Action, ACTION_TYPE } from "./Action"
 import type { ActionSource } from "./ActionSource"
 import { ServerPayloadInterface } from "./../ServerPayloadInterface"
 import { BUILDING } from "../tile/Tile"
+import { FortuneCard } from "../FortuneCard"
 
 /**
  * 유저에게 실행여부 물어봐야되는경우
@@ -51,9 +52,40 @@ export class AskLoanAction extends QueryAction {
 }
 export class TileSelectionAction extends QueryAction {
     tiles:number[]
-
-	constructor(type:ACTION_TYPE,turn: number, source:ActionSource,tiles:number[]) {
+	name:string
+	constructor(type:ACTION_TYPE,turn: number, source:ActionSource,tiles:number[],name:string) {
 		super(type,turn,source)
         this.tiles=tiles
+		this.name=name
+	}
+}
+export class ObtainCardAction extends QueryAction {
+    card:FortuneCard
+
+	constructor(turn: number,source:ActionSource, card:FortuneCard) {
+		super(ACTION_TYPE.OBTAIN_CARD,turn,source)
+        this.card=card
+	}
+}
+export class LandChangeAction extends QueryAction{
+	myLands:number[]
+	enemyLands:number[]
+	status:string
+	constructor(turn: number,source:ActionSource, myLands:number[],enemyLands:number[]) {
+		super(ACTION_TYPE.CHOOSE_LAND_CHANGE,turn,source)
+        this.myLands=myLands
+		this.enemyLands=enemyLands
+		this.status="init"
+	}
+	getTargetTiles(){
+		if(this.status==="init"){
+			this.status="choosing_my_land"
+			return this.myLands
+		}
+		if(this.status==="choosing_my_land"){
+			this.status="choosing_enemy_land"
+			return this.enemyLands
+		}
+		return []
 	}
 }

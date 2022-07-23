@@ -1,4 +1,5 @@
-import type { ActionSource } from "./ActionSource"
+import { hexId } from "../util"
+import { ActionSource, ACTION_SOURCE_TYPE } from "./ActionSource"
 
 export enum ACTION_TYPE {
 	WALK_MOVE,//0
@@ -22,7 +23,13 @@ export enum ACTION_TYPE {
     ASK_BUYOUT,//18
     BUYOUT,
 	GAMEOVER,
-	CHOOSE_OLYMPIC_POSITION
+	CHOOSE_OLYMPIC_POSITION,
+	OBTAIN_CARD,
+	CHOOSE_ATTACK_POSITION,
+	ATTACK_TILE,
+	CHOOSE_DONATE_POSITION,
+	CHOOSE_LAND_CHANGE,
+	EMPTY
 }
 
 export const ACTION_LIST=[
@@ -45,7 +52,7 @@ export const ACTION_LIST=[
     "PAY_MONEY",
     "ASK_LOAN",
     "ASK_BUYOUT",//18
-    "BUYOUT","GAMEOVER","CHOOSE_OLYMPIC_POSITION"
+    "BUYOUT","GAMEOVER","CHOOSE_OLYMPIC_POSITION","OBTAIN_CARD","CHOOSE_ATTACK_POSITION","EMPTY"
 ]
 export abstract class Action {
 	type:ACTION_TYPE
@@ -54,22 +61,33 @@ export abstract class Action {
 	priority: number
     delay:number
 	valid:boolean
+	private id:string
 	constructor( type:ACTION_TYPE,turn: number,source:ActionSource) {
 		this.type=type
 		this.source = source
         this.delay=0
         this.turn = turn
 		this.valid=true
+		this.id=hexId()
 	}
 	off(){
 		this.valid=false
 	}
+	getId(){
+		return this.id
+	}
+	
+	offIf(id:string){
+		if(this.id===id)
+		this.off()
+	}
 }
-// export class EventAction extends Action {
-// 	constructor(type:ACTION_TYPE, turn: number,source:ActionSource) {
-// 		super(type,turn,source)
-// 	}
-// }
+
+export class EmptyAction extends Action {
+	constructor() {
+		super(ACTION_TYPE.EMPTY,-1,new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP))
+	}
+}
 
 /**
  * 즉시 실행됨(상태 변화)

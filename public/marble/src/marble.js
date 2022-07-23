@@ -52,13 +52,13 @@ class Game{
         this.scene.startRenderInterval()
     }
     turnStart(player){
-        this.scene.showArrow(this.turnToPlayerNum(player))
+        this.ui.onTurnStart(player)
         this.scene.focusPlayer(this.turnToPlayerNum(player))
     }
     showDiceBtn(player,data){
-        
+        this.scene.showArrow(this.turnToPlayerNum(player))
         this.ui.showDiceBtn(data.hasOddEven,data.origin)
-        
+
     }
     diceRoll(data){
         toast(data.dice + ((data.isDouble)?"(더블)":""))
@@ -196,7 +196,18 @@ class Game{
 
     onTileSelect(pos,type){
         this.ui.hideSelectionTitle()
-        this.connection.onTileSelect(pos,type)
+        this.connection.onTileSelect(pos,type,true)
+    }
+    onTileSelectCancel(type){
+        this.ui.hideSelectionTitle()
+        this.connection.onTileSelect(-1,type,false)
+        this.scene.tileReset()
+    }
+    obtainCard(name,level,type){
+        this.ui.obtainCard(name,level,type)
+    }
+    finishObtainCard(result){
+        this.connection.finishObtainCard(result)
     }
     addPlayers(){
         

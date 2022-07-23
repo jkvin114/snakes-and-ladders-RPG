@@ -108,12 +108,31 @@ export function openConnection(isInitial){
 		console.log(pos)
 		GAME.setOlympic(pos)
 	})
+	socket.on("server:obtain_card", function (player,name,level,type) {
+        console.log("obtain_card")
+		console.log(name,level,type)
+		GAME.obtainCard(name,level,type)
+	})
 	socket.on("server:clear_buildings", function (positions) {
         console.log("clear_buildings")
 		console.log(positions)
 		GAME.scene.clearBuildings(positions)
 	})
-
+	socket.on("server:remove_building", function (pos,toremove) {
+        console.log("remove_building")
+		console.log(pos,toremove)
+		GAME.scene.removeBuildings(pos,toremove)
+	})
+	socket.on("server:tile_status_effect", function (pos,name,dur) {
+        console.log("tile_status_effect")
+		console.log(pos,name,dur)
+		GAME.scene.setTileStatusEffect(pos,name,dur)
+	})
+	socket.on("server:save_card", function (turn,name,level) {
+        console.log("save_card")
+		console.log(turn,name,level)
+		GAME.ui.setSavedCard(turn,name,level)
+	})
 	socket.on("server:monopoly_alert", function (player,type,pos) {
         console.log("monopoly_alert")
 		console.log(player,type,pos)
@@ -156,7 +175,10 @@ export function openConnection(isInitial){
 	GAME.connection.chooseLoan=function(result){
 		socket.emit(PREFIX+"select_loan",GAME.myTurn,result)
 	}
-	GAME.connection.onTileSelect=function(pos,type){
-		socket.emit(PREFIX+"select_tile",GAME.myTurn,pos,type)
+	GAME.connection.onTileSelect=function(pos,type,result){
+		socket.emit(PREFIX+"select_tile",GAME.myTurn,pos,type,result)
+	}
+	GAME.connection.finishObtainCard=function(result){
+		socket.emit(PREFIX+"obtain_card",GAME.myTurn,result)
 	}
 }

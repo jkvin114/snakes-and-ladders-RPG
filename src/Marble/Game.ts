@@ -1,5 +1,5 @@
 import { PlayerType, ProtoPlayer, shuffle } from "../core/Util"
-import { Action, ACTION_TYPE, StateChangeAction } from "./action/Action"
+import { Action, ACTION_TYPE, EmptyAction, StateChangeAction } from "./action/Action"
 import { abilityToAction } from "./ActionAbilityConverter"
 import { ActionSource, ACTION_SOURCE_TYPE } from "./action/ActionSource"
 import { ActionStack } from "./action/ActionStack"
@@ -7,12 +7,14 @@ import { DelayedAction, MoveAction, RollDiceAction } from "./action/DelayedActio
 import { DiceNumberGenerator } from "./DiceNumberGenerator"
 import { MarbleGameMap, MONOPOLY } from "./GameMap"
 import {
+	ArriveTileAction,
 	BuyoutAction,
 	ClaimBuyoutAction,
 	ClaimTollAction,
 	InstantAction,
 	PayMoneyAction,
 	TeleportAction,
+	TileAttackAction,
 } from "./action/InstantAction"
 import { MarbleClientInterface } from "./MarbleClientInterface"
 import { MarblePlayer, MarblePlayerStat } from "./Player"
@@ -20,9 +22,17 @@ import { PlayerMediator } from "./PlayerMediator"
 import { BuildableTile } from "./tile/BuildableTile"
 import { LandTile } from "./tile/LandTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
-import { backwardBy, distance, forwardBy, forwardDistance, getTilesBewteen, range } from "./util"
-import { AskBuildAction, QueryAction, TileSelectionAction } from "./action/QueryAction"
+import { backwardBy, chooseRandom, cl, distance, forwardBy, forwardDistance, getTilesBewteen, range } from "./util"
+import {
+	AskBuildAction,
+	LandChangeAction,
+	ObtainCardAction,
+	QueryAction,
+	TileSelectionAction,
+} from "./action/QueryAction"
 import { TileFilter } from "./TileFilter"
+import { ActionPackage } from "./action/ActionPackage"
+import { AttackCard, CARD_NAME, CommandCard, DefenceCard, FortuneCardRegistry } from "./FortuneCard"
 
 const DELAY_ROLL_DICE = 1000
 
@@ -111,20 +121,19 @@ class MarbleGame {
 		this.totalturn += 1
 
 		this.thisPlayer().onTurnStart()
+		this.map.onTurnStart(this.thisturn)
 		this.pushSingleAction(
 			new StateChangeAction(ACTION_TYPE.END_TURN, this.thisturn, new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP))
 		)
-		let pendingActions=this.thisPlayer().getPendingAction()
-		if(pendingActions.length===0){
+		let pendingActions = this.thisPlayer().getPendingAction()
+		if (pendingActions.length === 0) {
 			this.pushSingleAction(
 				new QueryAction(ACTION_TYPE.DICE_CHANCE, this.thisturn, new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP))
 			)
-		}
-		else{
-			this.pushActions(null,pendingActions)
+		} else {
+			this.pushActions(new ActionPackage().setMain(...pendingActions))
 			this.thisPlayer().clearPendingAction()
 		}
-		
 	}
 	throwDice(target: number, oddeven: number) {
 		let sample = this.mediator.getDiceAbilitySamples(this.thisturn)
@@ -196,7 +205,7 @@ class MarbleGame {
 		newpos = this.checkPassedTiles(pos, newpos, this.mediator.pOfTurn(turn), source)
 		newpos = this.checkPassedPlayers(pos, newpos, this.mediator.pOfTurn(turn), source)
 
-		this.pushSingleAction(new MoveAction(ACTION_TYPE.WALK_MOVE, turn, source, pos, distance(pos, newpos)))
+		this.pushSingleAction(new MoveAction(ACTION_TYPE.WALK_MOVE, turn, source, pos, dist))
 
 		// return distance(pos, newpos)
 	}
@@ -229,7 +238,8 @@ class MarbleGame {
 		let newpos = this.mediator.pOfTurn(turn).pos
 
 		this.checkPlayerMeet(turn, newpos, source)
-		this.arriveTile(newpos, turn, source)
+		this.pushSingleAction(new ArriveTileAction(turn, source, newpos))
+		// this.arriveTile(newpos, turn, source)
 	}
 	/**
 	 * 날아서 이동(3더블 무인도, 잘가북,라인이동)
@@ -242,7 +252,9 @@ class MarbleGame {
 		this.mediator.pOfTurn(turn).moveTo(pos)
 
 		this.checkPlayerMeet(turn, pos, source)
-		this.arriveTile(pos, turn, source)
+		// this.arriveTile(pos, turn, source)
+		this.pushSingleAction(new ArriveTileAction(turn, source, pos))
+		this.clientInterface.teleportPlayer(turn, pos)
 	}
 	checkPassedTiles(oldpos: number, newpos: number, mover: MarblePlayer, source: ActionSource) {
 		for (const tile of [...getTilesBewteen(oldpos, newpos), newpos]) {
@@ -264,72 +276,156 @@ class MarbleGame {
 			this.mediator.onMeetPlayer(this.mediator.pOfTurn(moverTurn), p, pos, source)
 		}
 	}
-	arriveTile(pos: number, moverTurn: number, source: ActionSource) {
+	arriveTile(action: ArriveTileAction) {
+		let pos = action.pos
+		let moverTurn = action.turn
+		let source = action.source
 		let tile = this.map.tileAt(pos)
 		if (tile instanceof BuildableTile) {
 			this.arriveBuildableTile(tile, moverTurn, source)
 		} else if (tile.type === TILE_TYPE.CARD) {
-
+			this.arriveCardTile(moverTurn, source)
 		} else if (tile.type === TILE_TYPE.TRAVEL) {
-			this.arriveTravelTile(moverTurn,source)
+			this.arriveTravelTile(moverTurn, source)
 		} else if (tile.type === TILE_TYPE.OLYMPIC) {
-			this.arriveOlympicTile(moverTurn,source)
+			this.arriveOlympicTile(moverTurn, source)
 		} else if (tile.type === TILE_TYPE.START) {
-			this.arriveStartTile(moverTurn,source)
+			this.arriveStartTile(moverTurn, source)
 		} else if (tile.type === TILE_TYPE.SPECIAL) {
 			if (this.map.name === "god_hand") {
 				this.arriveGodHandSpecialTile(tile, moverTurn, source)
 			}
+		} else if (tile.type === TILE_TYPE.ISLAND) {
+			this.arriveIslandTile(moverTurn, source)
 		}
 	}
-	forceEndTurn(turn:number){
-		this.actionStack.removeByTurnExcludeType(turn,[ACTION_TYPE.END_TURN])
+	forceEndTurn(turn: number) {
+		this.actionStack.removeByTurnExcludeType(turn, [ACTION_TYPE.END_TURN])
 	}
-	arriveOlympicTile(moverTurn:number,source:ActionSource){
-		let targetTiles = this.map.getTiles(
-			this.mediator.pOfTurn(moverTurn),
-			TileFilter.MY_LAND()
-		)
+	arriveCardTile(moverTurn: number, source: ActionSource) {
+		let card = this.mediator.pOfTurn(moverTurn).drawCard(source)
+		this.pushSingleAction(new ObtainCardAction(moverTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_CARD_TILE), card))
+	}
+	executeCardCommand(invoker: number, card: CommandCard) {
+		let source = new ActionSource(ACTION_SOURCE_TYPE.COMMAND_CARD)
+		let currpos = this.mediator.pOfTurn(invoker).pos
+		switch (card.name) {
+			case CARD_NAME.GO_START:
+				this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.start), invoker, source)
+				break
+			case CARD_NAME.GO_OLYMPIC:
+				if (this.map.olympicPos === -1) return
+				this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.olympicPos), invoker, source)
+				break
+			case CARD_NAME.OLYMPIC:
+				this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.olympic), invoker, source)
+				break
+			case CARD_NAME.GO_TRAVEL:
+				this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.travel), invoker, source)
+				break
+			case CARD_NAME.GO_ISLAND:
+				this.teleportPlayer(invoker, this.map.island, source)
+				break
+			case CARD_NAME.DONATE_LAND:
+				let myTiles = this.map.getTiles(this.mediator.pOfTurn(invoker), TileFilter.MY_LAND().setNoLandMark())
+				if(myTiles.length===0) return
+				this.pushSingleAction(
+					new TileSelectionAction(ACTION_TYPE.CHOOSE_DONATE_POSITION,invoker, new ActionSource(ACTION_SOURCE_TYPE.COMMAND_CARD), myTiles,CARD_NAME.DONATE_LAND)
+				)
+				break
+			case CARD_NAME.GO_SPECIAL:
+				let tiles = this.map.getTiles(this.mediator.pOfTurn(invoker), new TileFilter().setSpecialOnly())
+				if(tiles.length===0) return
+				this.pushSingleAction(
+					new TileSelectionAction(ACTION_TYPE.CHOOSE_MOVE_POSITION,invoker, new ActionSource(ACTION_SOURCE_TYPE.COMMAND_CARD), tiles,CARD_NAME.GO_SPECIAL)
+				)
+				break
+		}
+	}
+	useAttackCard(turn: number, card: AttackCard) {
+		if (card.name === CARD_NAME.LAND_CHANGE) {
+			let enemyTiles = this.map.getTiles(this.mediator.pOfTurn(turn), TileFilter.ENEMY_LAND().setNoLandMark())
+			let myTiles = this.map.getTiles(this.mediator.pOfTurn(turn), TileFilter.MY_LAND().setNoLandMark())
+			if (enemyTiles.length === 0 || myTiles.length === 0) return
+
+			this.pushSingleAction(
+				new LandChangeAction(turn, new ActionSource(ACTION_SOURCE_TYPE.ATTACK_CARD), myTiles, enemyTiles)
+			)
+		} else {
+			let targetTiles: number[] = []
+
+			if (card.name === CARD_NAME.EARTHQUAKE)
+				targetTiles = this.map.getTiles(
+					this.mediator.pOfTurn(turn),
+					TileFilter.ENEMY_LAND().setNoLandMark().setLandTileOnly()
+				)
+			else targetTiles = this.map.getTiles(this.mediator.pOfTurn(turn), TileFilter.ENEMY_LAND().setNoLandMark())
+
+			if (targetTiles.length === 0) return
+
+			this.pushSingleAction(
+				new TileSelectionAction(
+					ACTION_TYPE.CHOOSE_ATTACK_POSITION,
+					turn,
+					new ActionSource(ACTION_SOURCE_TYPE.ATTACK_CARD),
+					targetTiles,
+					card.name
+				)
+			)
+		}
+	}
+	saveCard(turn: number, card: DefenceCard) {
+		this.mediator.pOfTurn(turn).saveCard(card)
+		this.clientInterface.setSavedCard(turn, card.name, card.level)
+	}
+
+	arriveIslandTile(moverTurn: number, source: ActionSource) {
+		this.forceEndTurn(moverTurn)
+	}
+	arriveOlympicTile(moverTurn: number, source: ActionSource) {
+		let targetTiles = this.map.getTiles(this.mediator.pOfTurn(moverTurn), TileFilter.MY_LAND())
+		if (targetTiles.length === 0) return
+
 		this.pushSingleAction(
 			new TileSelectionAction(
 				ACTION_TYPE.CHOOSE_OLYMPIC_POSITION,
 				moverTurn,
 				new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_OLYMPIC_TILE),
-				targetTiles
+				targetTiles,
+				"olympic"
 			)
 		)
 	}
-	arriveTravelTile(moverTurn: number,source: ActionSource){
-		let targetTiles = this.map.getTiles(
-			this.mediator.pOfTurn(moverTurn),
-			TileFilter.ALL_EXCLUDE_MY_POS()
-		)
-		this.mediator.pOfTurn(moverTurn).addPendingAction(
-			new TileSelectionAction(
-				ACTION_TYPE.CHOOSE_MOVE_POSITION,
-				moverTurn,
-				new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TRAVEL_TILE),
-				targetTiles
+	arriveTravelTile(moverTurn: number, source: ActionSource) {
+		let targetTiles = this.map.getTiles(this.mediator.pOfTurn(moverTurn), TileFilter.ALL_EXCLUDE_MY_POS())
+		if (targetTiles.length === 0) return
+		this.mediator
+			.pOfTurn(moverTurn)
+			.addPendingAction(
+				new TileSelectionAction(
+					ACTION_TYPE.CHOOSE_MOVE_POSITION,
+					moverTurn,
+					new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TRAVEL_TILE),
+					targetTiles,
+					"travel"
+				)
 			)
-		)
 		this.forceEndTurn(moverTurn)
-
-		
-
 	}
-	arriveStartTile(moverTurn: number,source: ActionSource){
+	arriveStartTile(moverTurn: number, source: ActionSource) {
 		let targetTiles = this.map.getTiles(
 			this.mediator.pOfTurn(moverTurn),
 			TileFilter.MY_LANDTILE().setOnlyMoreBuildable()
 		)
-		if(targetTiles.length === 0) return
+		if (targetTiles.length === 0) return
 
 		this.pushSingleAction(
 			new TileSelectionAction(
 				ACTION_TYPE.CHOOSE_BUILD_POSITION,
 				moverTurn,
 				new ActionSource(ACTION_SOURCE_TYPE.START_TILE_BUILD),
-				targetTiles
+				targetTiles,
+				"start_build"
 			)
 		)
 	}
@@ -339,13 +435,14 @@ class MarbleGame {
 			TileFilter.EMPTY_LANDTILE().setSameLineOnly(),
 			TileFilter.MY_LANDTILE().setOnlyMoreBuildable().setSameLineOnly()
 		)
-
+		if (targetTiles.length === 0) return
 		this.pushSingleAction(
 			new TileSelectionAction(
 				ACTION_TYPE.CHOOSE_BUILD_POSITION,
 				moverTurn,
 				new ActionSource(ACTION_SOURCE_TYPE.GOD_HAND_SPECIAL_BUILD),
-				targetTiles
+				targetTiles,
+				"godhand_special_build"
 			)
 		)
 	}
@@ -364,47 +461,86 @@ class MarbleGame {
 			//this.arriveMyLand(tile, moverTurn,source)
 		}
 	}
-	onSelectBuildPosition(turn:number,pos:number,source:ActionSource){
-		let tile=this.map.tileAt(pos)
-		if(tile instanceof BuildableTile)
-			this.pushActions(null,this.getAskBuildAction(turn,tile,source))
-	}
-	onSelectMovePosition(turn:number,pos:number,source:ActionSource){
-		let oldpos=this.mediator.pOfTurn(turn).pos
-		let dist=forwardDistance(oldpos,pos)
-		if(source.eventType===ACTION_SOURCE_TYPE.ARRIVE_TRAVEL_TILE){
-			this.requestForceWalkMove(oldpos,dist,turn,new ActionSource(ACTION_SOURCE_TYPE.TRAVEL))
-		}
+	onSelectBuildPosition(turn: number, pos: number, source: ActionSource) {
+		let tile = this.map.buildableTileAt(pos)
+		if (!tile) return
 
+		this.pushActions(new ActionPackage().setMain(this.getAskBuildAction(turn, tile, source)))
 	}
-	onSelectOlympicPosition(turn:number,pos:number,source:ActionSource){
+	onSelectMovePosition(turn: number, pos: number, source: ActionSource) {
+		let oldpos = this.mediator.pOfTurn(turn).pos
+		let dist = forwardDistance(oldpos, pos)
+		if (source.eventType === ACTION_SOURCE_TYPE.ARRIVE_TRAVEL_TILE) {
+			this.requestWalkMove(oldpos, dist, turn, new ActionSource(ACTION_SOURCE_TYPE.TRAVEL))
+		}
+		if (source.eventType === ACTION_SOURCE_TYPE.COMMAND_CARD) {
+			this.requestForceWalkMove(oldpos, dist, turn, new ActionSource(ACTION_SOURCE_TYPE.COMMAND_CARD))
+		}
+	}
+	onSelectOlympicPosition(turn: number, pos: number, source: ActionSource) {
 		this.map.setOlympic(pos)
 		this.clientInterface.setOlympic(pos)
 	}
-	getAskBuildAction(playerTurn: number, tile: BuildableTile, source: ActionSource) {
-		let mainaction: Action[] | undefined = undefined
+	/**
+	 *
+	 * @param turn
+	 * @param pos
+	 * @param source
+	 * @param name
+	 * @param pos2 도시 체인지 전용(상대에게 줄 땅)
+	 * @returns
+	 */
+	onSelectAttackPosition(turn: number, pos: number, source: ActionSource, name: string, pos2?: number) {
+		let tile = this.map.buildableTileAt(pos)
+		if (!tile || !tile.owned()) return
+		let tile2: BuildableTile | undefined = undefined
+
+		if (pos2 && pos2 > -1) tile2 = this.map.buildableTileAt(pos2) //도시 체인지 전용
+
+		this.mediator.attemptAttackTile(turn, tile, source, name, tile2)
+	}
+	onSelectDonatePosition(turn:number,pos:number,source:ActionSource){
+		let tile = this.map.buildableTileAt(pos)
+		if (!tile || !tile.owned()) return
+		
+		this.setLandOwner(tile,this.mediator.getRandomEnemy(turn))
+	}
+	attackTile(action: TileAttackAction) {
+		if (action.name === CARD_NAME.SELLOFF) {
+			this.map.clearTile(action.tile)
+		}
+		if (action.name === CARD_NAME.EARTHQUAKE) {
+			this.map.removeOneBuild(action.tile)
+		}
+		if (action.name === CARD_NAME.PANDEMIC || action.name === CARD_NAME.BLACKOUT) {
+			this.map.applyStatusEffect(action.tile, action.name, 2)
+		}
+		if (action.name === CARD_NAME.LAND_CHANGE && action.landChangeTile != null) {
+			this.changeLand(action.landChangeTile, action.tile)
+		}
+	}
+	getAskBuildAction(playerTurn: number, tile: BuildableTile, source: ActionSource): Action {
+		let mainaction: Action = new EmptyAction()
 		let player = this.mediator.pOfTurn(playerTurn)
 
-		if(tile.owner !== -1 && !tile.isMoreBuildable()) return mainaction
+		if (tile.owner !== -1 && !tile.isMoreBuildable()) return mainaction
 
 		if (player.canBuildLandOfMinimumPrice(tile.getMinimumBuildPrice())) {
 			let builds = tile.getBuildingAvaliability(player.cycleLevel)
-			mainaction = [
-				new AskBuildAction(
-					playerTurn,
-					new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE),
-					tile.position,
-					builds,
-					tile.getCurrentBuilds(),
-					player.getBuildDiscount(),
-					player.money
-				),
-			]
+			mainaction = new AskBuildAction(
+				playerTurn,
+				new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE),
+				tile.position,
+				builds,
+				tile.getCurrentBuilds(),
+				player.getBuildDiscount(),
+				player.money
+			)
 		}
 		return mainaction
 	}
 
-	executeAction(action: Action) {
+	executeAction(action: InstantAction) {
 		if (action instanceof ClaimTollAction) {
 			this.mediator.claimToll(action.turn, action.tile.owner, action.tile, action.source)
 		} else if (action instanceof ClaimBuyoutAction) {
@@ -412,28 +548,50 @@ class MarbleGame {
 		} else if (action instanceof PayMoneyAction) {
 			this.mediator.payMoney(action.turn, action.receiver, action.amount, action.source)
 		} else if (action instanceof TeleportAction) {
-			this.clientInterface.teleportPlayer(action.turn, action.pos)
+			
 			this.teleportPlayer(action.turn, action.pos, action.source)
 		} else if (action instanceof BuyoutAction) {
 			this.clientInterface.buyout(action.turn, action.tile.position)
 			this.mediator.buyOut(action.turn, action.tile.owner, action.price, action.tile, action.source)
+		} else if (action instanceof ArriveTileAction) {
+			this.arriveTile(action)
+		} else if (action instanceof TileAttackAction) {
+			this.attackTile(action)
 		}
 	}
-	pushActions(actions: [Action[], Action[], boolean] | null, main?: Action[]) {
-		if (!actions) {
-			if (main != null) this.actionStack.pushAll(main)
+	pushActions(actions: ActionPackage | null) {
+		if (!actions) return
+
+		if (actions.mainOnly()) {
+			this.actionStack.pushAll(actions.main)
 			return
 		}
 
-		if (actions[1] != null) this.actionStack.pushAll(actions[1])
-		if (main != null)
-			if (actions[2]) {
-				this.onActionBlock(main)
-			} else {
-				this.actionStack.pushAll(main)
-			}
-		if (actions[0] != null) this.actionStack.pushAll(actions[0])
+		this.actionStack.pushAll(actions.after)
+		if (actions.blocksMain) {
+			this.onActionBlock(actions.main)
+		} else {
+			this.actionStack.pushAll(actions.main)
+		}
+
+		this.actionStack.pushAll(actions.before)
 	}
+
+	// pushActions(actions: [Action[], Action[], boolean] | null, main?: Action[]) {
+	// 	if (!actions) {
+	// 		if (main != null) this.actionStack.pushAll(main)
+	// 		return
+	// 	}
+
+	// 	if (actions[1] != null) this.actionStack.pushAll(actions[1])
+	// 	if (main != null)
+	// 		if (actions[2]) {
+	// 			this.onActionBlock(main)
+	// 		} else {
+	// 			this.actionStack.pushAll(main)
+	// 		}
+	// 	if (actions[0] != null) this.actionStack.pushAll(actions[0])
+	// }
 	pushSingleAction(action: Action) {
 		if (action.type === ACTION_TYPE.GAMEOVER) {
 			this.actionStack.removeByTurn(action.turn)
@@ -514,6 +672,31 @@ class MarbleGame {
 	landBuyOut(buyer: MarblePlayer, landOwner: MarblePlayer, tile: BuildableTile) {
 		this.setLandOwner(tile, buyer)
 	}
+	/**
+	 *
+	 * @param tile1 invoker`s original land
+	 * @param tile2 invoker`s desired land
+	 */
+	changeLand(tile1: BuildableTile, tile2: BuildableTile) {
+		let invoker = this.mediator.pOfTurn(tile1.owner)
+		let victim = this.mediator.pOfTurn(tile2.owner)
+
+		this.map.setLandOwner(tile2, invoker.turn)
+		this.map.setLandOwner(tile1, victim.turn)
+
+
+		victim.ownedLands.delete(tile2.position)
+		invoker.ownedLands.delete(tile1.position)
+
+		this.clientInterface.setLandOwner(tile2.position, invoker.turn)
+		this.clientInterface.setLandOwner(tile1.position, victim.turn)
+
+		victim.ownedLands.add(tile1.position)
+		invoker.ownedLands.add(tile2.position)
+
+		this.checkMonopoly(tile2, invoker)
+		this.checkMonopoly(tile1, victim)
+	}
 	setLandOwner(tile: BuildableTile, player: MarblePlayer) {
 		let originalOwner = tile.owner
 		this.map.setLandOwner(tile, player.turn)
@@ -565,12 +748,11 @@ class MarbleGame {
 		this.bankruptPlayers.push(player.turn)
 		let left = this.mediator.getNonRetiredPlayers()
 
-		let toremove=this.map.onPlayerRetire(player)
+		let toremove = this.map.onPlayerRetire(player)
 
-		this.clientInterface.clearBuildings(toremove)
+		
 
 		if (left.length === 1) this.gameoverWithBankrupt(left[0].turn)
-
 	}
 	gameoverWithBankrupt(winner: number) {
 		this.clientInterface.gameoverWithBankrupt(winner)

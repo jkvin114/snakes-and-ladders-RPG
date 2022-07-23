@@ -109,6 +109,16 @@ class MarbleGameMap{
 
         this.corners.add(this.tiles[map.start]).add(this.tiles[map.island]).add(this.tiles[map.olympic]).add(this.tiles[map.travel])
     }
+    onTurnStart(turn:number){
+        for(const tile of this.buildableTiles.values()){
+            if(tile.owner!==turn) continue
+            if(tile.cooldownStatusEffect()) 
+                this.clientInterface.setStatusEffect(tile.position,"",0)
+        }
+    }
+    buildableTileAt(pos:number){
+        return this.buildableTiles.get(pos)
+    }
     tileAt(index:number):Tile{
         return this.tiles[index%MAP_SIZE]
     }
@@ -148,6 +158,7 @@ class MarbleGameMap{
             if(filter.specialOnly && !t.isSpecial) continue
             if(filter.ownedOnly && !t.land) continue
             if(filter.emptyOnly && t.land) continue
+            if(filter.enemyLandOnly && (t.owner === source.turn || !t.owned())) continue
             if(filter.moreBuildable && !t.isMoreBuildable()) continue
             if(filter.landTileOnly && !(t instanceof LandTile)) continue
             if(filter.landmarkOnly && (!(t instanceof LandTile) || (t instanceof LandTile && !t.landMark))) continue
@@ -155,7 +166,7 @@ class MarbleGameMap{
             if(filter.canBuyOut && !t.canBuyOut()) continue
             if(filter.owners.length>0 && !filter.owners.includes(t.owner)) continue
             if(filter.myLandOnly && t.owner!==source.turn) continue
-            if(filter.ownedOnly && t.owner===-1) continue
+            if(filter.ownedOnly && !t.owned()) continue
             if(distance(t.position,source.pos) > filter.radius) continue
             if(filter.sameLine && !this.isSameLine(t.position,source.pos)) continue
             tiles.add(t.position)
@@ -176,6 +187,9 @@ class MarbleGameMap{
         return tiles
 
     }
+
+    
+
     setLandOwner(tile:BuildableTile,owner:number){
         let prevOwner=tile.owner
         this.tileOwners[tile.position]=owner
@@ -280,7 +294,29 @@ class MarbleGameMap{
         if(tile.olympic) this.olympicPos=-1
         tile.removeAll()
         this.setLandOwner(tile,-1)
+        this.clientInterface.clearBuildings([tile.position])
     }
+    removeOneBuild(tile:BuildableTile){
+        if(tile.type===TILE_TYPE.SIGHT || !(tile instanceof LandTile) ) return
+        
+        let removed=tile.removeOneHouse()
+        this.clientInterface.removeBuilding([removed],tile.position)
+    }
+    applyStatusEffect(tile:BuildableTile,name:string,dur:number){
+        if(tile.setStatusEffect(name,dur))
+            this.clientInterface.setStatusEffect(tile.position,name,dur)
+
+    }
+    onAfterClaimToll(tile:Tile){
+        this.removeStatusEffect(tile.position)
+    }
+    removeStatusEffect(pos:number){
+        let tile=this.buildableTiles.get(pos)
+        if(!tile) return
+        tile.removeStatusEffect()
+        this.clientInterface.setStatusEffect(pos,"",0)
+    }
+
     onPlayerRetire(player:MarblePlayer):number[]{
         let toremove=this.getTiles(player,TileFilter.MY_LAND())
         for(let t of toremove){

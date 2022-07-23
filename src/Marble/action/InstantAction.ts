@@ -50,3 +50,25 @@ export class BuyoutAction extends InstantAction{
 		this.tile=tile
 	}
 }
+export class ArriveTileAction extends InstantAction{
+    pos:number
+	constructor(turn: number,source:ActionSource,pos:number) {
+		super(ACTION_TYPE.ARRIVE_TILE,turn,source)
+        this.pos=pos
+	}
+}
+export class TileAttackAction extends InstantAction{
+    tile:BuildableTile
+	name:string
+	landChangeTile:BuildableTile|null
+	constructor(turn: number,source:ActionSource,tile:BuildableTile,name:string) {
+		super(ACTION_TYPE.ATTACK_TILE,turn,source)
+		this.tile=tile
+		this.name=name
+		this.landChangeTile=null
+	}
+	setLandChangeTile(tile:BuildableTile){
+		this.landChangeTile=tile
+		return this
+	}
+}

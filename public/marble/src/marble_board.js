@@ -143,6 +143,7 @@ class TileObject{
         this.nameIndicator
         this.type='nonbuildable'
         this.decorator
+        this.effectOverlay
     }
     setLandFlag(flagobj){
 
@@ -156,6 +157,8 @@ class TileObject{
             this.nameIndicator.bringToFront()
         if(this.decorator) 
             this.decorator.bringToFront()
+        if(this.effectOverlay) 
+            this.effectOverlay.bringToFront()
     }
     setNameIndicator(name){
         this.nameIndicator=name
@@ -170,6 +173,7 @@ class TileObject{
 
     }
     clear(){}
+
 }
 class BuildableTileObject extends TileObject{
     constructor(tiledata,tile){
@@ -665,6 +669,39 @@ export class MarbleScene extends Board{
         }
         
     }
+    removeBuildings(pos,toremove){
+        toremove.forEach((b)=>{
+            this.removeHouse(pos,b-1)
+        })
+        this.forceRender()
+
+    }
+    setTileStatusEffect(pos,name,dur){
+        let tileobj=this.tileObj.get(pos)
+        if(!tileobj) return
+        
+        if(name==="" && tileobj.effectOverlay!=null) {
+            this.canvas.remove(tileobj.effectOverlay)
+            tileobj.effectOverlay=null
+        }
+        if(name==="") return
+
+        let img=this.getTileHighlight(this.getCoord(pos),"red")
+
+        let color="white"
+        if(name==='pandemic') color='green'
+        if(name==='blackout') color='black'
+
+        let filter = new fabric.Image.filters.BlendColor({
+            color: color,
+            mode: "tint",
+            alpha: 0.9
+        })
+        img.filters = [filter]
+        img.applyFilters()
+        this.canvas.add(img)
+        tileobj.effectOverlay=img
+    }
     /**
      * 
      * @param {*} pos 
@@ -745,7 +782,7 @@ export class MarbleScene extends Board{
             this.onTileClick(index,type)
         }
         //신의손 특수지역 건설
-		if (type === 9) {
+		if (type === "") {
 			
 		} 
 

@@ -1,3 +1,5 @@
+
+import crypto from "crypto";
 /**
  *
  * @param end inclusive
@@ -86,4 +88,26 @@ export type ProtoPlayer = {
     team: boolean;
     champ: number;
     ready: boolean;
+}
+export function cl(...str:any){
+	console.log(str)
+}
+export function hexId(){
+	return crypto.randomBytes(8).toString("hex");
+}
+/**
+ *
+ * @param weights
+ * @returns index of weight array
+ */
+ export const chooseWeightedRandom = function (weights: number[]): number {
+	for (let i = 1; i < weights.length; ++i) {
+		weights[i] = weights[i] + weights[i - 1]
+	}
+	let rand = Math.random() * weights[weights.length - 1]
+	for (let i = 0; i < weights.length; ++i) {
+		if (weights[i] > rand) return i
+	}
+	return 0
+	//2 3 5    2 5 10
 }

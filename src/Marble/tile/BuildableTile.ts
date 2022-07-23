@@ -1,3 +1,4 @@
+import { CARD_NAME } from "../FortuneCard"
 import { ServerPayloadInterface } from "../ServerPayloadInterface"
 import { BUILDING, Tile, TILE_TYPE } from "./Tile"
 
@@ -48,14 +49,33 @@ class TilePriceMultiplier{
 
 class TileStatusEffect{
     duration:number
-    namr:string
+    readonly name:string
+    private readonly tollMultiplier:number
+    constructor(name:string,dur:number){
+        this.name=name
+        this.duration=dur
+        if(name==='pandemic')
+            this.tollMultiplier=0.5
+        else if(name==='blackout')
+            this.tollMultiplier=0
+        else 
+            this.tollMultiplier=1
+    }
+    getTollMultiplier(){
+        return this.tollMultiplier
+    }
+    cooldown(){
+        this.duration -= 1
+        if(this.duration===0) return true
+        return false
+    }
 }
 abstract class BuildableTile extends Tile{
-    multiplier:TilePriceMultiplier
+    protected multiplier:TilePriceMultiplier
     olympic:boolean
     festival:boolean
     land:boolean
-    statusEffects:Map<string,TileStatusEffect>
+    protected statusEffects:TileStatusEffect|null
     
     abstract getBaseToll():number
     abstract getBuildPrice():number
@@ -77,11 +97,34 @@ abstract class BuildableTile extends Tile{
         this.festival=false
         this.land=false
         this.multiplier=new TilePriceMultiplier()
-        this.statusEffects=new Map<string,TileStatusEffect>()
+        this.statusEffects=null
 
+    }
+    setStatusEffect(name:string,dur:number):boolean{
+        // 정전 효과 있으면 전염병 무시
+        if(name===CARD_NAME.PANDEMIC && this.statusEffects!=null && this.statusEffects.name===CARD_NAME.BLACKOUT) return false
+        this.statusEffects=new TileStatusEffect(name,dur)
+        return true
+    }
+    removeStatusEffect(){
+        this.statusEffects=null
+    }
+    /**
+     * 
+     * @returns true if status effect removed
+     */
+    cooldownStatusEffect(){
+        if(!this.statusEffects) return false
+        let removed= this.statusEffects.cooldown()
+        if(removed) this.statusEffects=null
+
+        return removed
     }
     setOwner(owner:number){
         this.owner=owner
+    }
+    owned(){
+        return this.owner!==-1
     }
     removeAll(){
         this.land=false
@@ -93,7 +136,8 @@ abstract class BuildableTile extends Tile{
         this.multiplier.addAdditional(count)
     }
     getMultiplier(){
-        return this.multiplier.total()
+        
+        return this.multiplier.total() 
     }
     stealMultiplier():number{
         let num=this.multiplier.stealAdditional()
@@ -110,7 +154,10 @@ abstract class BuildableTile extends Tile{
         this.multiplier.setOlympic(num)
     }
     getToll(){
-        return this.getBaseToll() * this.getMultiplier()
+        let mul=1
+        if(this.statusEffects!==null) mul=this.statusEffects.getTollMultiplier()
+
+        return this.getBaseToll() * this.getMultiplier() * mul
     }
     toString(): string {
         return this.name+"  "+this.position + " - owner:"+this.owner +", land:"+this.land +" \nmul: "+this.multiplier.total() +"  " 

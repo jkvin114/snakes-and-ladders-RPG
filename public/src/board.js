@@ -398,7 +398,7 @@ export class Board{
 		)
 		this.boardInnerHeight = boardimg.naturalHeight
         this.boardInnerWidth = boardimg.naturalWidth
-		this.setBoardScale()
+		this.setBoardScale(boardimg)
 		this.drawTiles()
 		
 		this.showObjects()
@@ -506,7 +506,7 @@ export class Board{
 		pos = this.getTilePos(pos)
 		//	console.log(pos)
 		this.pin.set({ top: pos.y - 20, left: pos.x, opacity: 1 }).bringToFront()
-		this.forceRender()
+	//	this.forceRender()
 	}
 	teleportPlayer(target, pos, movetype) {
 		this.hideArrow()
@@ -659,6 +659,7 @@ export class Board{
 		this.arrow.bringToFront()
 		this.players[turn].nametext.set("text", "")
 		this.players[turn].playerimg.bringToFront()
+		this.showPin(poslist[poslist.length-1])
 		for(const pos of poslist){
 			let x = this.getCoord(pos).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
 			let y = this.getCoord(pos).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
@@ -675,6 +676,7 @@ export class Board{
 			})
 			await sleep(100)
 		}
+		this.moveComplete(turn)
 		callback(turn)
 	}
 	//===========================================================================================================================
@@ -817,7 +819,7 @@ export class Board{
 		this.shadow.sendToBack()
 		if(this.tile_shadows)
 			this.tile_shadows.sendToBack()
-		this.canvas.renderAll()
+		this.forceRender()
 		this.activetiles = []
 	}
 	activateTile(index,onSelect){

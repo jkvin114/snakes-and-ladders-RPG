@@ -25,6 +25,10 @@ const SERVER_EVENTS={
     ASK_TILE_SELECTION:prefix+"tile_selection",
     CLEAR_BUILDINGS:prefix+"clear_buildings",
     UPDATE_OLYMPIC:prefix+"update_olympic",
+    OBTAIN_CARD:prefix+"obtain_card",
+    SAVE_CARD:prefix+"save_card",
+    REMOVE_BUILDNIG:prefix+"remove_building",
+    TILE_STATUS_EFFECT:prefix+"tile_status_effect",
 }
 
 export class MarbleClientInterface {
@@ -64,7 +68,7 @@ export class MarbleClientInterface {
     askBuyout(player:number,pos:number,price:number,originalPrice:number){
         this.callback(this.rname, SERVER_EVENTS.ASK_BUYOUT, player,pos,price,originalPrice)
     }
-    askTileSelection(turn:number,tiles:number[],source:number){
+    askTileSelection(turn:number,tiles:number[],source:string){
         this.callback(this.rname, SERVER_EVENTS.ASK_TILE_SELECTION, turn,tiles,source)
     }
     setLandOwner(pos:number,player:number){
@@ -78,6 +82,9 @@ export class MarbleClientInterface {
     }
     setOlympic(pos:number){
         this.callback(this.rname, SERVER_EVENTS.UPDATE_OLYMPIC, pos)
+    }
+    setSavedCard(turn:number,name:string,level:number){
+        this.callback(this.rname, SERVER_EVENTS.SAVE_CARD, turn,name,level)
     }
     /**
      * 
@@ -98,13 +105,21 @@ export class MarbleClientInterface {
     buyout(player:number,pos:number){
         this.callback(this.rname, SERVER_EVENTS.BUYOUT, player,pos)
     }
+    obtainCard(player:number,cardname:string,cardLevel:number,cardType:number){
+        this.callback(this.rname, SERVER_EVENTS.OBTAIN_CARD, player,cardname,cardLevel,cardType)
+    }
     changeMoney(player:number,money:number){
         this.callback(this.rname, SERVER_EVENTS.UPDATE_MONEY, player,money)
     }
     clearBuildings(toremove:number[]){
         this.callback(this.rname, SERVER_EVENTS.CLEAR_BUILDINGS, toremove)
     }
-
+    removeBuilding(toremove:number[],pos:number){
+        this.callback(this.rname, SERVER_EVENTS.REMOVE_BUILDNIG, pos,toremove)
+    }
+    setStatusEffect(pos:number,name:string,dur:number){
+        this.callback(this.rname, SERVER_EVENTS.TILE_STATUS_EFFECT, pos,name,dur)
+    }
     bankrupt(player:number)
     {
         this.callback(this.rname, SERVER_EVENTS.BANKRUPT, player)

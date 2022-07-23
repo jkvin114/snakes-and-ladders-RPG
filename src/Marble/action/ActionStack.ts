@@ -8,6 +8,7 @@ export class ActionStack {
 	}
 	pop(): Action | undefined {
 		console.log("pop")
+		
 		let a=this.stack.pop()
 		this.iterate()
 		return a

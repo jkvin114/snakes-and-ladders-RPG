@@ -394,7 +394,20 @@ body{
 
 }
 
-
+#selection-cancel{
+  position: absolute;
+  cursor: pointer;
+  min-width: 100px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, 0);
+  z-index: 7;
+  user-select: none;
+  border: 1px solid rgb(60, 60, 60);
+  border-radius: 2px;
+  background-color: rgba(103, 103, 103, 0.8);
+  color: white;
+}
 #dice_container{
   position: absolute;
   left: 50%;
@@ -594,7 +607,7 @@ body{
   /* left: 50%;
   top: 5%; */
   /* transform: translate(- 50%, 0); */
-  font-size: 3.5rem;
+  font-size: 4.5rem;
   color: white;
   user-select: none;
   /* z-index: 3; */
@@ -607,11 +620,11 @@ body{
   
 }
 #largetext-container{
-  top:15%;
+  top:50%;
   left: 50%;
   position: absolute;
   z-index: 10;
-  transform: translate(-50%);
+  transform: translate(-50%,-50%);
   transform-origin: 50% 50%;
   width: max-content;
   /* background: linear-gradient(to left, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.6) 20%, rgba(20, 20, 20, 0.6) 80%, rgba(20, 20, 20, 0) 100%); */
@@ -623,6 +636,121 @@ body{
 #largetext-container.bad{
   background: linear-gradient(to left, rgba(20, 20, 20, 0) 0%, rgba(255, 134, 134, 0.4) 20%, rgba(255, 134, 134, 0.4) 80%, rgba(20, 20, 20, 0) 100%);
 
+}
+.player-table.active{
+  outline: 2px solid red;
+} 
+table{
+  font-size: 15px;
+}
+#fortunecard{
+  top:50%;
+  left: 50%;
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%,-50%);
+  width: 280px;
+  height: max-content;
+  text-align: center;
+  background-color: white;
+  font-family: "cookierun";
+  border-radius: 5px;
+  box-shadow: 0 0 5px 2px black;
+  
+}
+#fortunecard.gold{
+  background-color: rgb(255, 191, 0);
+  border: 3px solid rgb(249, 215, 20);
+  outline: 4px solid rgb(171, 128, 18);
+}
+#fortunecard.silver{
+  background-color: rgb(183, 183, 183);
+  border: 3px solid rgb(102, 102, 102);
+  outline: 4px solid rgb(183, 183, 183);
+}
+#fortunecard.trash{
+  background-color: rgb(122, 116, 90);
+  border: 3px solid rgb(70, 65, 42);
+  outline: 4px solid rgb(96, 90, 62);
+}
+#fortunecard-img{
+  display: inline-block;
+  width: 250px;
+  height: 200px;
+  margin-top: 1px;
+  /* background-color: #CC9B6D; */
+  border: 2px solid white;
+  margin-bottom: 20px;
+}
+#fortunecard-button-container{
+  display: inline-block;
+  position: relative;
+  bottom: 10px;
+  background-color: #292214;
+  border:3px solid rgb(255, 187, 0);
+  border-radius: 5px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  padding: 15px;
+  max-width: 220px;
+}
+#fortunecard.gold > #fortunecard-button-container{
+  border:3px solid rgb(255, 187, 0);
+}
+#fortunecard.silver > #fortunecard-button-container{
+  border:3px solid rgb(111, 111, 111);
+}
+#fortunecard.trash > #fortunecard-button-container{
+  border:3px solid rgb(81, 73, 52);
+}
+#fortunecard-button-container > p{
+  color: #f3e7c6;
+  min-height: 50px;
+  font-size: 15px;
+}
+#fortunecard.gold > #fortunecard-title{
+  background: linear-gradient(to bottom, rgb(255, 216, 109) 0%, rgb(255, 216, 109) 50%, rgb(230, 175, 26) 50%, rgb(230, 175, 26) 100%);
+  border-top:6px solid rgb(117, 71, 39);
+  border-bottom:6px solid rgb(117, 71, 39);
+  color: #584319;
+}
+#fortunecard.silver > #fortunecard-title{
+  background: linear-gradient(to bottom, rgb(162, 162, 162) 0%, rgb(162, 162, 162) 50%, rgb(188, 188, 188) 50%, rgb(188, 188, 188) 100%);
+  border-top:6px solid rgb(93, 93, 93);
+  border-bottom:6px solid rgb(93, 93, 93);
+  color: #292929;
+}
+#fortunecard.trash > #fortunecard-title{
+  background:none;
+  color: #4d2510;
+}
+#fortunecard-title{
+  margin-top: 10px;
+  width: 100%;
+  font-size: 25px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  width: 300px;
+  position: relative;
+  left: -10px;
+  
+}
+#fortunecard-button-container > button{
+  font-size: 15px;
+  border: 2px solid rgb(118, 84, 21);
+  border-radius: 6px;
+  padding: 4px;
+  color: rgb(54, 40, 14);
+  cursor: pointer;
+  user-select: none;
+  width: 100px;
+  font-family: 'cookierun';
+}
+#fortunecard-confirm{
+  background: linear-gradient(to bottom, rgba(255, 255, 134, 1) 0%, rgb(234, 139, 14) 100%);
+}
+#fortunecard-cancel{
+  background: linear-gradient(to bottom, rgb(183, 223, 255) 0%, rgb(73, 114, 170) 100%);
 }
 </style>
 
@@ -765,7 +893,8 @@ body{
     </div>
     <h6 id=selectionname class="selectiontitle hidden">블랙홀</h6>
     <h6 id=selectiondesc class="selectiontitle hidden">화이트홀을 발생시킬 지역 선탣</h6>
-
+    <button id="selection-cancel" class="selectiontitle hidden">취소</button>
+    
     <div id="loan-window" class="hidden">
       <a class="loan-window-name">대출 선택</a><br><br>
       <a class="loan-window-amount">부족한 금액: -1000만</a><br><br>
@@ -790,28 +919,35 @@ body{
         <td>money
         </td>
       </tr>
-      <tr>
+      <tr class="player-table">
         <td style="background-color: red;">1
         </td>
         <td class="money-table">0
         </td>
+        <td class="card-table">
+        </td>
       </tr>
-      <tr>
+      <tr class="player-table">
         <td style="background-color: blue;">2
         </td>
         <td  class="money-table">0
         </td>
+        <td class="card-table">
+        </td>
       </tr>
-      <tr>
+      <tr class="player-table">
         <td style="background-color: green;">3
         </td>
         <td  class="money-table">0
         </td>
+        <td class="card-table">
+        </td>
       </tr>
-      <tr>
+      <tr class="player-table">
         <td style="background-color: yellow;">4
         </td>
         <td  class="money-table">0
+        </td><td class="card-table">
         </td>
       </tr>
     </table>
@@ -826,6 +962,15 @@ body{
     <div id="largetext-container" class="hidden">
       <a id=largetext>
       </a>
+    </div>
+    <div id="fortunecard" class=" hidden">
+      <div id="fortunecard-title">천사</div>
+      <div id="fortunecard-img"></div>
+      <div id="fortunecard-button-container">
+        <p>통행료 면제+공격방어(보관 후 원할때 사용가능)</p>
+       <button id="fortunecard-cancel">취소</button>
+       <button id="fortunecard-confirm">확인</button>
+      </div>
     </div>
     <img src="./../res/img/ui/victory.png" class=" resultimg victory hidden">
     <img src="./../res/img/ui/defeat.png" class=" resultimg defeat hidden">

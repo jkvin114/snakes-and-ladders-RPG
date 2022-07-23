@@ -316,7 +316,8 @@ html{
     border-radius: 10px;
   }
   #rname{
-    font-size: 2rem;
+    /* font-size: 2rem; */
+    font-size: 15px;
   }
   #quitbtn{
   position: absolute;

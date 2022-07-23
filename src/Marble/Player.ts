@@ -1,6 +1,7 @@
 import { Ability } from "./Abilty"
 import { Action } from "./action/Action"
 import { ActionSource } from "./action/ActionSource"
+import { DefenceCard, FortuneCard, FortuneCardRegistry } from "./FortuneCard"
 import { BuildableTile } from "./tile/BuildableTile"
 
 class MarblePlayer{
@@ -21,6 +22,7 @@ class MarblePlayer{
     cycleLevel:number
     num:number
     private pendingActions:Action[]
+    private savedFortuneCard:DefenceCard|null
     constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat){
         this.num=num
         this.turn=0
@@ -39,6 +41,7 @@ class MarblePlayer{
         this.oddeven=3
         this.cycleLevel=3 //start with 1
         this.pendingActions=[]
+        this.savedFortuneCard=null
     }
     addPendingAction(action:Action){
         this.pendingActions.push(action)
@@ -102,7 +105,25 @@ class MarblePlayer{
         this.doubles=0
     }
     getBuildDiscount(){
-        return 0.85
+        return 1 - (this.stat.buildingPriceDiscount * 0.005)
+    }
+    getTollDiscount(){
+        return 1 - (this.stat.tollDiscount * 0.005)
+    }
+    getBuyoutDiscount(){
+        return 1 - (this.stat.buyoutDiscount * 0.005)
+    }
+    getGoldFortuneChance(){
+        return (this.stat.goldenCard * 0.02)
+    }
+    drawCard(source:ActionSource){
+        return FortuneCardRegistry.draw(this.getGoldFortuneChance())
+    }
+    saveCard(card:DefenceCard){
+        this.savedFortuneCard=card
+    }
+    useCard(){
+        this.savedFortuneCard=null
     }
     onArriveEmptyLand(tile:BuildableTile, moveType:ActionSource){
         return new Ability()
@@ -158,6 +179,12 @@ class MarblePlayer{
     onEnemyPassesMe(mover:MarblePlayer,oldpos:number,newpos:number,source:ActionSource){
         return new Ability()
     }
+    tileAttackOffence(tile:BuildableTile){
+        return new Ability()
+    }
+    tileAttackDefence(tile:BuildableTile){
+        return new Ability()
+    }
     canBuildLandOfMinimumPrice(price:number){
         return price * this.getBuildDiscount() < this.money
     }
@@ -190,7 +217,7 @@ class MarblePlayerStat{
         this.buildingPriceDiscount=stats[1]
         this.buyoutDiscount=stats[2]
         this.diceControl=stats[3]
-        this.goldenCard==stats[4]
+        this.goldenCard=stats[4]
     }
 }
 export {MarblePlayer,MarblePlayerStat}
