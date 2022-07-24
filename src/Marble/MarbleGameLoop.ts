@@ -6,18 +6,17 @@ import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction, TeleportAction } from "./action/InstantAction";
 import { MarbleClientInterface } from "./MarbleClientInterface";
-import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandChangeAction } from "./action/QueryAction";
+import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandChangeAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 import { BUILDING } from "./tile/Tile";
-import e from "cors";
 import { AttackCard, CARD_NAME, CARD_TYPE, CommandCard, DefenceCard, FortuneCard } from "./FortuneCard";
 
 class EventResult
 {   
     data:any
     result:boolean
-    constructor(success:boolean){
-        this.result=success
+    constructor(goNextState:boolean){
+        this.result=goNextState
     }
     setData(data:any){
         this.data=data
@@ -48,9 +47,10 @@ class MarbleGameLoop{
     static createLoop(
 		rname: string,
 		isTeam: boolean,
+        map:number,
         playerlist:ProtoPlayer[]
 	): MarbleGameLoop {
-		return new MarbleGameLoop(rname,new MarbleGame(playerlist,this.name,isTeam),isTeam)
+		return new MarbleGameLoop(rname,new MarbleGame(playerlist,this.name,isTeam,map),isTeam)
 	}
     setClientInterface(ci:MarbleClientInterface){
         this.clientInterface=ci
@@ -143,7 +143,6 @@ class MarbleGameLoop{
             if(action.type===ACTION_TYPE.GAMEOVER){
                 this.loopRunning=false
                 this.onGameOver(action.turn)
-               
                 break
             }
             
@@ -157,7 +156,7 @@ class MarbleGameLoop{
                 continue
             }
             
-            await sleep(700)
+            await sleep(500)
             let nextstate=this.state.getNext(action)
             console.log('set state: '+GAME_CYCLE_NAME[nextstate.id])
 
@@ -178,7 +177,6 @@ class MarbleGameLoop{
                 this.loopRunning=false
                 break
             }
-            
         }
     }
 
@@ -291,6 +289,12 @@ abstract class MarbleGameCycleState {
             case ACTION_TYPE.CHOOSE_LAND_CHANGE:
                 if(action instanceof LandChangeAction)
                     return new WaitingLandChange(this.game,action.turn,action)
+                break
+            case ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE:
+            case ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE:
+                if(action instanceof AskDefenceCardAction)
+                    return new WaitingDefenceCardUse(this.game,action.turn,action)
+                break
         }
 
         console.error("no next action registered")
@@ -322,9 +326,9 @@ abstract class MarbleGameCycleState {
     onUserConfirmObtainCard(result:boolean){
         return new EventResult(false)
     }
-    onUserConfirmUseCard()
+    onUserConfirmUseCard(result:boolean,cardname:string)
     {
-
+        return new EventResult(false)
     }
     onUserSelectTile(pos:number,name:string,result:boolean){
         return new EventResult(false)
@@ -366,52 +370,6 @@ class TurnInitializer extends MarbleGameCycleState {
         this.game.onTurnStart()
         this.game.clientInterface.turnStart(this.turn)
     }
-}
-class ArriveTile extends MarbleGameCycleState{
-   
-    static id = GAME_CYCLE.ARRIVE_TILE
-    pos:number
-    turn: number
-    constructor(game:MarbleGame,pos:number,turn:number){
-        super(game,turn,TurnInitializer.id)
-        this.pos=pos
-    }
-    onCreate(): void {
-        
-    }
-}
-class ArriveBuildableTile extends ArriveTile{
-    constructor(game:MarbleGame,pos:number,turn:number){
-        super(game,pos,turn)
-    }
-}
-class ArriveSpecialTile extends ArriveTile{
-
-}
-class ArriveCardTile extends ArriveTile{
-
-}
-class ArriveCornerTile extends ArriveTile{
-
-}
-class ArriveMyLand extends ArriveBuildableTile{
-    constructor(game:MarbleGame,pos:number,turn:number){
-        super(game,pos,turn)
-    }
-}
-class ArriveBlackHole extends ArriveTile
-{
-    
-}
-class ArriveEnemyLand extends ArriveBuildableTile{
-    constructor(game:MarbleGame,pos:number,turn:number){
-        super(game,pos,turn)
-        this.onCreate()
-    }
-    onCreate(): void {
-       // this.nextAction=this.game.getNextAction(this.turn,)
-    }
-   
 }
 class WaitingDice extends MarbleGameCycleState{
 
@@ -642,11 +600,31 @@ class WaitingLandChange extends MarbleGameCycleState{
         }
     }
 }
-class PayingToll extends MarbleGameCycleState{
-    onCreate(): void {
-        throw new Error("Method not implemented.")
+class WaitingDefenceCardUse extends MarbleGameCycleState{
+    static id = GAME_CYCLE.WAITING_DEFENCE_CARD_USE
+    action:AskDefenceCardAction
+    constructor(game:MarbleGame,turn:number,action:AskDefenceCardAction){
+        super(game,turn,WaitingDefenceCardUse.id)
+        this.action=action
     }
+    onCreate(): void {
+        if(this.action instanceof AskAttackDefenceCardAction){
+            this.game.clientInterface.askAttackDefenceCard(this.turn,this.action.cardname,this.action.attackName)
+        }
+        else if(this.action instanceof AskTollDefenceCardAction){
+            this.game.clientInterface.askTollDefenceCard(this.turn,this.action.cardname,this.action.before,this.action.after)
+        }
+    }
+    onUserConfirmUseCard(result:boolean,cardname:string): EventResult {
+        if(this.action.cardname!==cardname) return new EventResult(false)
+        if(result && this.action.modifiesAction()){
+            this.game.useCard(this.turn,cardname)
+            this.game.modifyAction(this.action.modyfingActionId,this.action.onComplete)
+        }
+            
 
+        return new EventResult(true)
+    }
 }
 
 

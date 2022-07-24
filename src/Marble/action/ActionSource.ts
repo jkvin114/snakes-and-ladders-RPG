@@ -15,7 +15,8 @@ export enum ACTION_SOURCE_TYPE{
     ARRIVE_OLYMPIC_TILE=13,
     ARRIVE_CARD_TILE,
     COMMAND_CARD,
-    ATTACK_CARD
+    ATTACK_CARD,
+    USE_DEFENCE_CARD
 }
 export class ActionSource {
 	eventType: ACTION_SOURCE_TYPE //이벤트 종류(이동/통행료/인수 등 행동 분류)

@@ -71,6 +71,24 @@ function getLandNameCoord(coordinate){
     }
     return null
 }
+function getCenterCoord(coordinate){
+    if(coordinate.rot === 'right'){
+        return {x:coordinate.x+6,y:coordinate.y-5}
+    }
+    if(coordinate.rot === 'left'){
+        return {x:coordinate.x-6,y:coordinate.y-5}
+    }
+    if(coordinate.rot === 'up'){
+        return {x:coordinate.x-5,y:coordinate.y}
+    }
+    if(coordinate.rot === 'down'){
+        return {x:coordinate.x-3,y:coordinate.y+10}
+    }
+    if(coordinate.rot === 'center'){
+        return {x:coordinate.x-5,y:coordinate.y-5}
+    }
+    return null
+}
 function getLandTollCoord(coordinate){
     if(coordinate.rot === 'right'){
         return {x:coordinate.x + 25,y:coordinate.y+10}
@@ -85,6 +103,21 @@ function getLandTollCoord(coordinate){
         return {x:coordinate.x,y:coordinate.y+40}
     }
     return null
+}
+function getAngle(rot){
+    if(rot === 'right'){
+        return 270
+    }
+    if(rot === 'left'){
+        return 90
+    }
+    if(rot === 'up'){
+        return 180
+    }
+    if(rot === 'down'){
+        return 0
+    }
+    return 0
 }
 export function moneyToString(money){
     money=Math.floor(money)
@@ -168,6 +201,8 @@ class TileObject{
     }
     setDecorator(deco){
         this.decorator=deco
+        deco.bringToFront()
+        return this
     }
     changeToll(toll){
 
@@ -302,7 +337,7 @@ export class MarbleScene extends Board{
             this.tileObj.set(land.pos,obj)
             this.canvas.add(tileobj)
 
-            let name=this.getTileTextObj(land.name,getLandNameCoord(this.getCoord(land.pos)),14)
+            let name=this.getTileTextObj(land.name,getLandNameCoord(this.getCoord(land.pos)),(land.name.length>3?14:22))
             obj.setNameIndicator(name)
 
             let toll=this.getTileTextObj("",getLandTollCoord(this.getCoord(land.pos)),18)
@@ -319,7 +354,7 @@ export class MarbleScene extends Board{
             this.tileObj.set(sight.pos,obj)
             this.canvas.add(tileobj)
 
-            let name=this.getTileTextObj(sight.name,getLandNameCoord(this.getCoord(sight.pos)),15)
+            let name=this.getTileTextObj(sight.name,getLandNameCoord(this.getCoord(sight.pos)),(sight.name.length>3?14:22))
             obj.setNameIndicator(name)
             let toll=this.getTileTextObj("",getLandTollCoord(this.getCoord(sight.pos)),18)
             obj.setTollIndicator(toll)
@@ -331,25 +366,37 @@ export class MarbleScene extends Board{
             this.tileData.set(sp,tile)
 
             let tileobj=this.getTileOf(12,this.getCoord(sp))
-            this.tileObj.set(sp,new TileObject(tile,tileobj))
+            let coord=this.getCoord(sp)
+
+            let pos=getCenterCoord(coord)
+
             this.canvas.add(tileobj)
+            this.tileObj.set(sp,new TileObject(tile,tileobj).setDecorator(this.getDecorator("tile_column",pos,getAngle(coord.rot),1.1,1)))
         }
 
 
 
         for(const cn of this.Map.corners){  
             let tile
+            let deco
+            let coord=this.getCoord(cn)
+            let pos=getCenterCoord(coord)
+
             if(cn === this.Map.start){
                 tile=new Tile(this.Map.corner_names.start,cn,"corner",this.getCoord(cn))
+                deco=this.getDecorator("tile_start",pos,0,0.7,0.6)
             }
             if(cn === this.Map.island){
                 tile=new Tile(this.Map.corner_names.island,cn,"corner",this.getCoord(cn))
+                deco=this.getDecorator("tile_island",pos,0,0.7,0.6)
             }
             if(cn === this.Map.olympic){
                 tile=new Tile(this.Map.corner_names.olympic,cn,"corner",this.getCoord(cn))
+                deco=this.getDecorator("tile_olympic",pos,0,0.7,1)
             }
             if(cn === this.Map.travel){
                 tile=new Tile(this.Map.corner_names.travel,cn,"corner",this.getCoord(cn))
+                deco=this.getDecorator("tile_travel",pos,0,0.7,0.7)
             }
             if(!tile) continue
             this.tileData.set(cn,tile)
@@ -358,7 +405,10 @@ export class MarbleScene extends Board{
             this.tileObj.set(cn,obj)
             this.canvas.add(tileobj)
 
-            let name=this.getTileTextObj(tile.originalName,getLandNameCoord(this.getCoord(cn)),27)
+            if(deco!=null)
+                obj.setDecorator(deco)
+
+            let name=this.getTileTextObj(tile.originalName,getLandNameCoord(this.getCoord(cn)),27,"#404040")
             obj.setNameIndicator(name)
         }
 
@@ -367,8 +417,13 @@ export class MarbleScene extends Board{
             let tile=new Tile("포춘 카드",cd,"card",this.getCoord(cd))
             this.tileData.set(cd,tile)
             let tileobj=this.getTileOf(13,this.getCoord(cd))
-            this.tileObj.set(cd,new TileObject(tile,tileobj))
+
+            let coord=this.getCoord(cd)
+            let pos=getCenterCoord(coord)
+
             this.canvas.add(tileobj)
+            
+            this.tileObj.set(cd,new TileObject(tile,tileobj).setDecorator(this.getDecorator("tile_card",pos,getAngle(coord.rot),1.2,0.7)))
         }
         
         for(let i=0;i<this.mapLength();++i){
@@ -466,7 +521,24 @@ export class MarbleScene extends Board{
 
         return tile
     }
+    getDecorator(imageid,pos,angle,scale,opacity){
+        let deco= new fabric.Image(document.getElementById(imageid), {
+            originX: "center",
+            originY: "center",
+            objectCaching: false,
+            evented:false,
+            angle:angle,
+            opacity:opacity
+        })
 
+        this.lockFabricObject(deco)
+        
+        deco.set({top:pos.y,left:pos.x})
+        deco.scale(scale)
+        this.canvas.add(deco)
+
+        return deco
+    }
     getTileHighlight(coord,color){
         let image
         if(color==='red')
@@ -490,10 +562,11 @@ export class MarbleScene extends Board{
         
         return tile
     }
-    getTileTextObj(str,coord,fontsize){
+    getTileTextObj(str,coord,fontsize,color){
+        if(!color) color="#707070"
         let text=new fabric.Text(str, {
             fontSize: fontsize,
-            fill: "#707070",
+            fill: color,
             opacity: 1,
             fontWeight: "bold",
             evented: false,
@@ -761,6 +834,8 @@ export class MarbleScene extends Board{
     }
     onReady(){
         // 
+        // this.arrow.scale(1.2)
+        this.pin.scale(1.4)
         this.startRenderInterval()
     }
     tileReset(){

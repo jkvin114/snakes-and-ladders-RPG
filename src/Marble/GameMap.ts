@@ -10,6 +10,8 @@ import { TileFilter } from "./TileFilter"
 import { arrayOf, countIterator, countList, distance, range } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/marble/godhand_map.json")
+const WORLD_MAP = require("./../../res/marble/world_map.json")
+
 const MAP_SIZE=32
 const SAME_LINE_TILES:Set<number>[]=[0,8,16,24].map((i)=>new Set(range((i+8),i).map((i)=>i%MAP_SIZE)))
 const pos2Line=function(pos:number){
@@ -56,6 +58,13 @@ class MarbleGameMap{
             this.island=GOD_HAND_MAP.island
             this.olympic=GOD_HAND_MAP.olympic
             this.travel=GOD_HAND_MAP.travel
+        }
+        else if(map==='world'){
+            this.setMap(WORLD_MAP)
+            this.start=WORLD_MAP.start
+            this.island=WORLD_MAP.island
+            this.olympic=WORLD_MAP.olympic
+            this.travel=WORLD_MAP.travel
         }
         this.olympicPos=-1
         this.festival=new Set<number>()
@@ -305,10 +314,10 @@ class MarbleGameMap{
     applyStatusEffect(tile:BuildableTile,name:string,dur:number){
         if(tile.setStatusEffect(name,dur))
             this.clientInterface.setStatusEffect(tile.position,name,dur)
-
     }
     onAfterClaimToll(tile:Tile){
         this.removeStatusEffect(tile.position)
+        if(tile instanceof SightTile) tile.upgradeStage()
     }
     removeStatusEffect(pos:number){
         let tile=this.buildableTiles.get(pos)
@@ -334,18 +343,22 @@ class MarbleGameMap{
             if(this.sights.map((t)=>this.tileOwners[t]).every((owner)=>owner===invoker)){
                 return MONOPOLY.SIGHT
             }
-        }//트독
-        else if(changedTile.type===TILE_TYPE.LAND){
-            if(countIterator(this.colorMonopolys.values(),(m:number)=>m===invoker)>=3)
-                return MONOPOLY.TRIPLE
         }
         //라독
         let m=true
         for(const tile of SAME_LINE_TILES[pos2Line(changedTile.position)]){
             if(this.tileAt(tile) instanceof BuildableTile && this.tileOwners[tile]!==invoker) m=false
         }
-
         if(m) return MONOPOLY.LINE
+
+        //트독
+        if(changedTile.type===TILE_TYPE.LAND){
+            if(countIterator(this.colorMonopolys.values(),(m:number)=>m===invoker)>=3)
+                return MONOPOLY.TRIPLE
+        }
+        
+
+        
 
         return MONOPOLY.NONE
     }
@@ -361,8 +374,19 @@ class MarbleGameMap{
                 else pos.push(m)
             }
             if(count===this.sights.length-1) return {type:MONOPOLY.SIGHT,pos:pos}
-        }//트독
-        else if(changedTile.type===TILE_TYPE.LAND){
+        }
+
+        //라독
+        pos=[]
+        for(const tile of SAME_LINE_TILES[pos2Line(changedTile.position)]){
+            if(this.tileAt(tile) instanceof BuildableTile && this.tileOwners[tile]!==invoker){
+                pos.push(tile)
+            }
+        }
+        if(pos.length===1) return {type:MONOPOLY.LINE,pos:pos}
+        pos=[]
+        //트독
+        if(changedTile.type===TILE_TYPE.LAND){
             let count=0
             for(const [color,lands] of this.sameColors.entries()){
                 //이미 플레이어 컬러독점인 땅
@@ -376,16 +400,7 @@ class MarbleGameMap{
             }
             if(count===2 && pos.length>0) return {type:MONOPOLY.TRIPLE,pos:pos}
         }
-        //라독
-        pos=[]
-        for(const tile of SAME_LINE_TILES[pos2Line(changedTile.position)]){
-            if(this.tileAt(tile) instanceof BuildableTile && this.tileOwners[tile]!==invoker){
-                pos.push(tile)
-            }
-        }
-        if(pos.length===1) return {type:MONOPOLY.LINE,pos:pos}
-
-
+        
         return {type:MONOPOLY.NONE,pos:[]}
     }
     toString(){

@@ -9,7 +9,6 @@ import { BuildableTile } from "./../tile/BuildableTile"
 	constructor(type:ACTION_TYPE, turn: number,source:ActionSource) {
 		super(type,turn,source)
 	}
-	
 }
 export class ClaimTollAction extends InstantAction{
     tile:BuildableTile
@@ -40,6 +39,10 @@ export class PayMoneyAction extends InstantAction {
         this.amount=amount
 		this.receiver=receiver
 	}
+	applyMultiplier(mul: number): void {
+		this.amount = this.amount * mul
+		if(mul===0) this.off()
+	}
 }
 export class BuyoutAction extends InstantAction{
     price:number
@@ -48,6 +51,9 @@ export class BuyoutAction extends InstantAction{
 		super(ACTION_TYPE.BUYOUT,turn,source)
         this.price=price
 		this.tile=tile
+	}
+	applyMultiplier(mul: number): void {
+		this.price = this.price * mul
 	}
 }
 export class ArriveTileAction extends InstantAction{

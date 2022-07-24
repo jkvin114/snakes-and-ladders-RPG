@@ -355,7 +355,6 @@ class PlayerMediator {
 		let actions = abilityToAction(source, defences, offences)
 		if(name===CARD_NAME.LAND_CHANGE){
 			if(!secondTile) return
-
 			actions.setMain(new TileAttackAction(attackerTurn, source,tile,name).setLandChangeTile(secondTile))
 		}
 		else{
@@ -369,7 +368,7 @@ class PlayerMediator {
 		let offences = player.monopolyAlertOffence(spots)
 		let defences = this.getOtherPlayers(player.turn).map((p: MarblePlayer) => p.monopolyAlertDefence(spots))
 
-		let actions = abilityToAction(null, offences, ...defences)
+		let actions = abilityToAction(null, offences, defences[0])
 		this.game.pushActions(actions)
 	}
 }

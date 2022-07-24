@@ -1,4 +1,4 @@
-import { Action, ACTION_LIST, ACTION_TYPE } from "./Action"
+import { Action, ActionModifyFunction, ACTION_LIST, ACTION_TYPE } from "./Action"
 
 export class ActionStack {
 	stack: Action[]
@@ -63,6 +63,16 @@ export class ActionStack {
 	}
 	peek(): Action {
 		return this.stack[this.stack.length - 1]
+	}
+	modifyAction(actionId:string,modifier:ActionModifyFunction){
+		let modified=false
+		this.stack.forEach((action)=>{
+			if(action.getId() === actionId) {
+				modifier(action)
+				modified=true
+			}
+		})
+		return modified
 	}
 	clear() {
 		this.stack = []

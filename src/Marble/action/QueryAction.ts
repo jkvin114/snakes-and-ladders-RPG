@@ -1,16 +1,29 @@
-import { Action, ACTION_TYPE } from "./Action"
+import { Action, ActionModifyFunction, ACTION_TYPE } from "./Action"
 import type { ActionSource } from "./ActionSource"
 import { ServerPayloadInterface } from "./../ServerPayloadInterface"
 import { BUILDING } from "../tile/Tile"
 import { FortuneCard } from "../FortuneCard"
+
+
 
 /**
  * 유저에게 실행여부 물어봐야되는경우
  * (주사위,건설,인수,선택이동,카드사용,블랙홀설치 등)
  */
  export class QueryAction extends Action {
+	onComplete:ActionModifyFunction
+	modyfingActionId:string
 	constructor(type:ACTION_TYPE,turn: number, source:ActionSource) {
 		super(type,turn,source)
+		this.onComplete=(action:Action)=>{}
+		this.modyfingActionId=""
+	}
+	setOnComplete(oncomplete:ActionModifyFunction,actionId:string){
+		this.onComplete=oncomplete
+		this.modyfingActionId=actionId
+	}
+	modifiesAction(){
+		return this.modyfingActionId!==""
 	}
 }
 export class AskBuildAction extends QueryAction {
@@ -87,5 +100,29 @@ export class LandChangeAction extends QueryAction{
 			return this.enemyLands
 		}
 		return []
+	}
+}
+export class AskDefenceCardAction extends QueryAction{
+	cardname:string
+	constructor(type:ACTION_TYPE,turn: number,source:ActionSource,cardname:string) {
+		super(type,turn,source)
+		this.cardname=cardname
+	}
+}
+
+export class AskAttackDefenceCardAction extends AskDefenceCardAction{
+	attackName:string
+	constructor(turn: number,source:ActionSource,cardname:string,name:string) {
+		super(ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE,turn,source,cardname)
+		this.attackName=name
+	}
+}
+export class AskTollDefenceCardAction extends AskDefenceCardAction{
+	before:number
+	after:number
+	constructor(turn: number,source:ActionSource,cardname:string,before:number,after:number) {
+		super(ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE,turn,source,cardname)
+		this.before=before
+		this.after=after
 	}
 }

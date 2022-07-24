@@ -374,7 +374,7 @@ export class Board{
 		if (this.mapname === "casino") {
 			boardimg = document.getElementById("casino_boardimg")
 		}
-		if(this.mapname==='marble_godhand'){
+		if(this.mapname==='marble_godhand' || this.mapname==='marble_world'){
 			boardimg = document.getElementById("marble_boardimg")
 		}
 		else{

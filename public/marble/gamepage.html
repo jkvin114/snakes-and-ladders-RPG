@@ -692,7 +692,7 @@ table{
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
   padding: 15px;
-  max-width: 220px;
+  min-width: 220px;
 }
 #fortunecard.gold > #fortunecard-button-container{
   border:3px solid rgb(255, 187, 0);
@@ -726,7 +726,7 @@ table{
 }
 #fortunecard-title{
   margin-top: 10px;
-  width: 100%;
+  /* width: 100%; */
   font-size: 25px;
   padding-top: 3px;
   padding-bottom: 3px;
@@ -963,7 +963,7 @@ table{
       <a id=largetext>
       </a>
     </div>
-    <div id="fortunecard" class=" hidden">
+    <div id="fortunecard" class="hidden">
       <div id="fortunecard-title">천사</div>
       <div id="fortunecard-img"></div>
       <div id="fortunecard-button-container">
@@ -976,6 +976,14 @@ table{
     <img src="./../res/img/ui/defeat.png" class=" resultimg defeat hidden">
     <img src="res/marblemap.jpg" id="marble_boardimg" class="hidden">
     <img src="res/buildings.png" id="marble_buildingimg" class="hidden">
+
+    <img src="res/travel.png" id="tile_travel" class="hidden">
+    <img src="res/island.png" id="tile_island" class="hidden">
+    <img src="res/start.png" id="tile_start" class="hidden">
+    <img src="res/olympic.png" id="tile_olympic" class="hidden">
+
+    <img id="tile_card" src="res/card.png" class=hidden>
+    <img id="tile_column" src="res/column.png"class=hidden>
     <img src="./../res/img/board/tiles_casino_3d.png" id="marble_tileimg" class="hidden">
     <img src="./../res/img/board/tile_shadow.png" id='tile_shadow' class=" resultimg defeat hidden">
     <img class="hidden" src='./../res/img/ui/arrow.png' id="arrow">

@@ -1,3 +1,9 @@
+import { EmptyAbility } from "./Ability/Ability"
+import { ABILITY_NAME } from "./Ability/AbilityRegistry"
+import { DefenceAbility, DefenceCardAbility } from "./Ability/DefenceAbilty"
+import { EVENT_TYPE } from "./Ability/EventType"
+import { ACTION_TYPE } from "./action/Action"
+import { ACTION_SOURCE_TYPE } from "./action/ActionSource"
 import { chooseRandom, chooseWeightedRandom } from "./util"
 
 export enum CARD_TYPE{
@@ -54,6 +60,19 @@ export class DefenceCard extends FortuneCard{
     constructor(name:string,level:number){
         super(name,CARD_TYPE.DEFENCE,level)
     }
+    toAbility(){
+        if(this.name===CARD_NAME.ANGEL) {
+            return ABILITY_NAME.ANGEL_CARD
+        }
+            
+        if(this.name===CARD_NAME.DISCOUNT) 
+        return ABILITY_NAME.DISCOUNT_CARD
+
+        if(this.name===CARD_NAME.SHIELD)
+        return ABILITY_NAME.SHIELD_CARD
+
+        return ABILITY_NAME.NONE
+    }
 }
 export namespace FortuneCardRegistry{
     const SHIELD=new DefenceCard(CARD_NAME.SHIELD,1)
@@ -84,7 +103,7 @@ export namespace FortuneCardRegistry{
             if(card.level===2) return 1 + goldCardChance
             else return 1
         })
-        console.log(weights)
+        // console.log(weights)
         return LIST[chooseWeightedRandom(weights)] 
      // return chooseRandom([DONATE_LAND,GO_SPECIAL,GO_ISLAND,BLACKOUT])
     }

@@ -112,7 +112,7 @@ const TILE_SELECTIONS={
         title:"세계여행",desc:"이동할 땅을 선택하세요"
     },
     olympic:{
-        title:"올림픽 개최",desc:"올림픽을 개최할 땅을 선택하세여(통행료 증가)"
+        title:"올림픽 개최",desc:"올림픽을 개최할 땅을 선택하세요(통행료 증가)"
     },
     selloff:{
         title:"강제 매각",desc:"강제 매각할 땅을 선택하세요"
@@ -134,6 +134,10 @@ const TILE_SELECTIONS={
     ,
     land_change_1:{
         title:"도시 체인지",desc:"상대에게 줄 땅 선택"
+    }
+    ,
+    land_change_2:{
+        title:"도시 체인지",desc:"상대에게서 가져올 땅 선택"
     }
     ,
     donate_land:{

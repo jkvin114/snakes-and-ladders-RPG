@@ -311,6 +311,7 @@ function requestMap(){
         list.push( // (2)
             fetch(url).then(async function(res){
                 //map
+                console.log(res)
                 let data=await res.json()
                 if(!data.length){
                     GAME.scene.setMap(data)
@@ -328,6 +329,7 @@ function requestMap(){
         GAME.scene.setToMarble()
         GAME.scene.drawBoard()
         GAME.onReady()
+        GAME.scene.onReady()
       //  alert('all requests finished!'); // (5)
     });
 }

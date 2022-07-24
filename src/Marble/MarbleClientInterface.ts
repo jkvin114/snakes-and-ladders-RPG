@@ -71,6 +71,12 @@ export class MarbleClientInterface {
     askTileSelection(turn:number,tiles:number[],source:string){
         this.callback(this.rname, SERVER_EVENTS.ASK_TILE_SELECTION, turn,tiles,source)
     }
+    askAttackDefenceCard(turn:number,cardname:string,attackName:string){
+
+    }
+    askTollDefenceCard(turn:number,cardname:string,before:number,after:number){
+        
+    }
     setLandOwner(pos:number,player:number){
         this.callback(this.rname, SERVER_EVENTS.SET_LANDOWNER, pos,player)
     }

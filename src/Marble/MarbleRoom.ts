@@ -5,7 +5,7 @@ import { MarbleGameLoop } from "./MarbleGameLoop";
 
 class MarbleRoom extends Room{
     getMapId(): number {
-        throw new Error("Method not implemented.");
+        return this.map
     }
     user_message(turn: number, msg: string): string {
         throw new Error("Method not implemented.");
@@ -27,7 +27,7 @@ class MarbleRoom extends Room{
     user_gameReady(roomName: string) {
 		this.instant = false
 
-		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam, this.playerlist)
+		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerlist)
 		this.gameloop.setClientInterface(this.clientInterface)
 	}
 	user_requestSetting(){

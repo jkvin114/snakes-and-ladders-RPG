@@ -1,8 +1,12 @@
-import { Ability } from "./Abilty"
+import { AbilityStorage } from "./Ability/AbilityStorage"
+import { Ability, EmptyAbility } from "./Ability/Ability"
+import type { DefenceAbility, DefenceCardAbility } from "./Ability/DefenceAbilty"
+import { EVENT_TYPE } from "./Ability/EventType"
 import { Action } from "./action/Action"
 import { ActionSource } from "./action/ActionSource"
 import { DefenceCard, FortuneCard, FortuneCardRegistry } from "./FortuneCard"
 import { BuildableTile } from "./tile/BuildableTile"
+import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 
 class MarblePlayer{
     readonly name:string
@@ -22,7 +26,8 @@ class MarblePlayer{
     cycleLevel:number
     num:number
     private pendingActions:Action[]
-    private savedFortuneCard:DefenceCard|null
+    private savedDefenceCardAbility:ABILITY_NAME
+    private abilityStorage:AbilityStorage
     constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat){
         this.num=num
         this.turn=0
@@ -41,7 +46,8 @@ class MarblePlayer{
         this.oddeven=3
         this.cycleLevel=3 //start with 1
         this.pendingActions=[]
-        this.savedFortuneCard=null
+        this.savedDefenceCardAbility=ABILITY_NAME.NONE
+        this.abilityStorage=new AbilityStorage()
     }
     addPendingAction(action:Action){
         this.pendingActions.push(action)
@@ -119,71 +125,73 @@ class MarblePlayer{
     drawCard(source:ActionSource){
         return FortuneCardRegistry.draw(this.getGoldFortuneChance())
     }
-    saveCard(card:DefenceCard){
-        this.savedFortuneCard=card
+    saveCardAbility(ability:ABILITY_NAME){
+        this.savedDefenceCardAbility=ability
+        this.abilityStorage.addTemporary(ability)
     }
     useCard(){
-        this.savedFortuneCard=null
+        this.abilityStorage.removeTemporary(this.savedDefenceCardAbility)
+        this.savedDefenceCardAbility=ABILITY_NAME.NONE
     }
-    onArriveEmptyLand(tile:BuildableTile, moveType:ActionSource){
-        return new Ability()
+    onArriveEmptyLand(tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    onArriveMyLand(tile:BuildableTile, moveType:ActionSource){
-        return new Ability()
+    onArriveMyLand(tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    onArriveToEnemy(source:ActionSource){
-        return new Ability()
+    onArriveToEnemy(source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    onEnemyArriveToMe(source:ActionSource){
-        return new Ability()
+    onEnemyArriveToMe(source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    onArriveEnemyLand(tile:BuildableTile, source:ActionSource){
-        return new Ability()
+    onArriveEnemyLand(tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    onEnemyArriveMyLand(player:MarblePlayer, tile:BuildableTile, source:ActionSource){
-        return new Ability()
+    onEnemyArriveMyLand(player:MarblePlayer, tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
     getTollDefence(tile:BuildableTile, moveType:ActionSource){
-        return new Ability()
+        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.TOLL_CLAIMED)
     }
-    getTollOffence(player:MarblePlayer,tile:BuildableTile, moveType:ActionSource){
-        return new Ability()
+    getTollOffence(player:MarblePlayer,tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    buyOutPriceOffence(tile:BuildableTile){
-        return new Ability()
+    buyOutPriceOffence(tile:BuildableTile):ABILITY_NAME[]{
+        return [ ]
     }
-    buyOutPriceDefence(buyer:MarblePlayer, tile:BuildableTile){
-        return new Ability()
+    buyOutPriceDefence(buyer:MarblePlayer, tile:BuildableTile):ABILITY_NAME[]{
+        return [ ]
     }
-    buyOutOffence(source:ActionSource){
-        return new Ability()
+    buyOutOffence(source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    buyOutDefence(source:ActionSource){
-        return new Ability()
+    buyOutDefence(source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    monopolyAlertOffence(spots:number[]){
-        return new Ability()
+    monopolyAlertOffence(spots:number[]):ABILITY_NAME[]{
+        return [ ]
     }
-    monopolyAlertDefence(spots:number[]){
-        return new Ability()
+    monopolyAlertDefence(spots:number[]):ABILITY_NAME[]{
+        return [ ]
     }
-    onBuildLandMark(tile:BuildableTile, source:ActionSource){
-        return new Ability()
+    onBuildLandMark(tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    onBuild(tile:BuildableTile,source:ActionSource){
-        return new Ability()
+    onBuild(tile:BuildableTile,source:ActionSource):ABILITY_NAME[]{
+        return [ ]
     }
-    onPassEnemy(stayed:MarblePlayer,oldpos:number,newpos:number,source:ActionSource){
-        return new Ability()
+    onPassEnemy(stayed:MarblePlayer,oldpos:number,newpos:number,source:ActionSource):ABILITY_NAME[]{
+        return []
     }
-    onEnemyPassesMe(mover:MarblePlayer,oldpos:number,newpos:number,source:ActionSource){
-        return new Ability()
+    onEnemyPassesMe(mover:MarblePlayer,oldpos:number,newpos:number,source:ActionSource):ABILITY_NAME[]{
+        return []
     }
-    tileAttackOffence(tile:BuildableTile){
-        return new Ability()
+    tileAttackOffence(tile:BuildableTile):ABILITY_NAME[]{
+        return []
     }
     tileAttackDefence(tile:BuildableTile){
-        return new Ability()
+        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BEING_ATTACKED)
     }
     canBuildLandOfMinimumPrice(price:number){
         return price * this.getBuildDiscount() < this.money

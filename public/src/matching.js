@@ -480,7 +480,12 @@ class MatchInterface {
 
 	setAsMarble(){
 		$(".mapbtn").hide()
+		$(".mapbtn-marble").show()
 		$("#setting").hide()
+		$(".mapbtn-marble").click(function () {
+			MATCH.map = Number($(this).val())
+			ServerConnection.setMap(MATCH.map)
+		})
 	}
 	setAsHost(roomname) {
 		$("#Hostingpage").addClass("pending")

@@ -104,12 +104,30 @@ router.get("/string_resource", function (req:express.Request, res:express.Respon
 	})
 })
 router.get("/marble_map", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"marble/godhand_map.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting resource file"})
-		}
-		res.end(data)
-	})
+	let room = R.getMarbleRoom(req.session.roomname)
+	if (!room) {
+		res.status(500).send({err:"error while requesting resource file"})
+		return
+	}
+	if(room.getMapId()===0){
+		console.log("world_map")
+		fs.readFile(__dirname + RESOURCE_PATH+"marble/world_map.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting resource file"})
+			}
+			res.end(data)
+		})
+	}
+	else if(room.getMapId()===1){
+		console.log("godhand_map")
+		fs.readFile(__dirname + RESOURCE_PATH+"marble/godhand_map.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting resource file"})
+			}
+			res.end(data)
+		})
+	}
+	
 })
 
 router.get("/marble_map_coordinates", function (req:express.Request, res:express.Response) {

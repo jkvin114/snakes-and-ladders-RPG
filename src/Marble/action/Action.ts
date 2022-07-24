@@ -29,6 +29,8 @@ export enum ACTION_TYPE {
 	ATTACK_TILE,
 	CHOOSE_DONATE_POSITION,
 	CHOOSE_LAND_CHANGE,
+	CHOOSE_ATTACK_DEFENCE_CARD_USE,
+	CHOOSE_TOLL_DEFENCE_CARD_USE,
 	EMPTY
 }
 
@@ -52,8 +54,12 @@ export const ACTION_LIST=[
     "PAY_MONEY",
     "ASK_LOAN",
     "ASK_BUYOUT",//18
-    "BUYOUT","GAMEOVER","CHOOSE_OLYMPIC_POSITION","OBTAIN_CARD","CHOOSE_ATTACK_POSITION","EMPTY"
+    "BUYOUT","GAMEOVER","CHOOSE_OLYMPIC_POSITION","OBTAIN_CARD","CHOOSE_ATTACK_POSITION","CHOOSE_DEFENCE_CARD_USE","EMPTY"
 ]
+
+export interface ActionModifyFunction{
+	(action:Action):void
+}
 export abstract class Action {
 	type:ACTION_TYPE
     source:ActionSource
@@ -80,6 +86,9 @@ export abstract class Action {
 	offIf(id:string){
 		if(this.id===id)
 		this.off()
+	}
+	applyMultiplier(mul:number):void{
+		console.error("multiplier could not be applied")
 	}
 }
 

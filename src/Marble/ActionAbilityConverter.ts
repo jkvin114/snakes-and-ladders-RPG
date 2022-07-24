@@ -1,4 +1,6 @@
-import { Ability } from "./Abilty";
+import { Ability,ConfirmQuery } from "./Ability/Ability";
+import { ABILITY_NAME } from "./Ability/AbilityRegistry";
+import { DefenceAbility } from "./Ability/DefenceAbilty";
 import { Action } from "./action/Action";
 import { ActionPackage } from "./action/ActionPackage";
 import { ActionSource } from "./action/ActionSource";
@@ -11,8 +13,11 @@ import { ActionSource } from "./action/ActionSource";
  */
 export function abilityToAction(
 	eventSource: ActionSource | null,
-	invokingAbility: Ability | null,
-	...revokingAbility: Ability[]
+	invokingAbility: ABILITY_NAME[] | null,
+	revokingAbility?: ABILITY_NAME[]
 ): ActionPackage {
+	if(!invokingAbility) return new ActionPackage()
+
+
 	return new ActionPackage()
 }

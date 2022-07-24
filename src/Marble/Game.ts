@@ -1,5 +1,5 @@
 import { PlayerType, ProtoPlayer, shuffle } from "../core/Util"
-import { Action, ACTION_TYPE, EmptyAction, StateChangeAction } from "./action/Action"
+import { Action, ActionModifyFunction, ACTION_TYPE, EmptyAction, StateChangeAction } from "./action/Action"
 import { abilityToAction } from "./ActionAbilityConverter"
 import { ActionSource, ACTION_SOURCE_TYPE } from "./action/ActionSource"
 import { ActionStack } from "./action/ActionStack"
@@ -33,9 +33,10 @@ import {
 import { TileFilter } from "./TileFilter"
 import { ActionPackage } from "./action/ActionPackage"
 import { AttackCard, CARD_NAME, CommandCard, DefenceCard, FortuneCardRegistry } from "./FortuneCard"
+import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 
 const DELAY_ROLL_DICE = 1000
-
+const MAP=["world","god_hand"]
 class MarbleGame {
 	readonly map: MarbleGameMap
 
@@ -57,10 +58,10 @@ class MarbleGame {
 	bankruptPlayers: number[]
 	over: boolean
 	readonly rname: string
-	constructor(players: ProtoPlayer[], rname: string, isTeam: boolean) {
+	constructor(players: ProtoPlayer[], rname: string, isTeam: boolean,map:number) {
 		this.isTeam = isTeam
 		this.rname = rname
-		this.map = new MarbleGameMap("god_hand")
+		this.map = new MarbleGameMap(MAP[map%MAP.length])
 		this.mediator = new PlayerMediator(this, this.map, players, this.START_MONEY)
 		this.playerTotal = this.mediator.playerCount + this.mediator.aiCount
 		this.clientInterface = new MarbleClientInterface(rname)
@@ -375,7 +376,9 @@ class MarbleGame {
 		}
 	}
 	saveCard(turn: number, card: DefenceCard) {
-		this.mediator.pOfTurn(turn).saveCard(card)
+		let ab=card.toAbility()
+		if(ab===ABILITY_NAME.NONE) return
+		this.mediator.pOfTurn(turn).saveCardAbility(ab)
 		this.clientInterface.setSavedCard(turn, card.name, card.level)
 	}
 
@@ -513,7 +516,7 @@ class MarbleGame {
 			this.map.removeOneBuild(action.tile)
 		}
 		if (action.name === CARD_NAME.PANDEMIC || action.name === CARD_NAME.BLACKOUT) {
-			this.map.applyStatusEffect(action.tile, action.name, 2)
+			this.map.applyStatusEffect(action.tile, action.name, 5)
 		}
 		if (action.name === CARD_NAME.LAND_CHANGE && action.landChangeTile != null) {
 			this.changeLand(action.landChangeTile, action.tile)
@@ -576,7 +579,12 @@ class MarbleGame {
 
 		this.actionStack.pushAll(actions.before)
 	}
-
+	useCard(turn:number,cardname:string){
+		this.mediator.pOfTurn(turn).useCard()
+	}
+	modifyAction(actionId:string,modifier:ActionModifyFunction){
+		let succeded=this.actionStack.modifyAction(actionId,modifier)
+	}
 	// pushActions(actions: [Action[], Action[], boolean] | null, main?: Action[]) {
 	// 	if (!actions) {
 	// 		if (main != null) this.actionStack.pushAll(main)
