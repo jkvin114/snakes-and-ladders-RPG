@@ -6,7 +6,7 @@ import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction, TeleportAction } from "./action/InstantAction";
 import { MarbleClientInterface } from "./MarbleClientInterface";
-import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandChangeAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction } from "./action/QueryAction";
+import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 import { BUILDING } from "./tile/Tile";
 import { AttackCard, CARD_NAME, CARD_TYPE, CommandCard, DefenceCard, FortuneCard } from "./FortuneCard";
@@ -140,17 +140,26 @@ class MarbleGameLoop{
                 this.loopRunning=false
                 break
             }
+
             if(action.type===ACTION_TYPE.GAMEOVER){
                 this.loopRunning=false
                 this.onGameOver(action.turn)
                 break
             }
             
+            // 액션 무시
             if(!action.valid || action.type===ACTION_TYPE.EMPTY) {
                 console.log("action ignored")
                 continue
             }
 
+            //방어된 액션 처리
+            if(action.blocked){
+                this.game.handleBlockedAction(action)
+                continue
+            }
+
+            //상태 변화 없이 즉시 실행되는 액션
             if(action instanceof InstantAction){
                 this.game.executeAction(action)
                 continue
@@ -206,6 +215,9 @@ class MarbleGameLoop{
                 break
             case 'obtain_card':
                 result=this.state.onUserConfirmObtainCard(args[0])
+                break
+            case 'confirm_card_use':
+                result=this.state.onUserConfirmUseCard(args[0],args[1])
                 break
         }
         console.log(result)
@@ -287,8 +299,8 @@ abstract class MarbleGameCycleState {
                     return new WaitingCardObtain(this.game,action.turn,action.card)
                 break
             case ACTION_TYPE.CHOOSE_LAND_CHANGE:
-                if(action instanceof LandChangeAction)
-                    return new WaitingLandChange(this.game,action.turn,action)
+                if(action instanceof LandSwapAction)
+                    return new WaitingLandSwap(this.game,action.turn,action)
                 break
             case ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE:
             case ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE:
@@ -569,12 +581,12 @@ class WaitingCardObtain extends MarbleGameCycleState{
     }
 
 }
-class WaitingLandChange extends MarbleGameCycleState{
-    static id = GAME_CYCLE.WAITING_LAND_CHANGE
-    action:LandChangeAction
+class WaitingLandSwap extends MarbleGameCycleState{
+    static id = GAME_CYCLE.WAITING_LAND_SWAP
+    action:LandSwapAction
     myland:number
-    constructor(game:MarbleGame,turn:number,action:LandChangeAction){
-        super(game,turn,WaitingLandChange.id)
+    constructor(game:MarbleGame,turn:number,action:LandSwapAction){
+        super(game,turn,WaitingLandSwap.id)
         this.action=action
         this.myland=-1
     }
@@ -617,12 +629,9 @@ class WaitingDefenceCardUse extends MarbleGameCycleState{
     }
     onUserConfirmUseCard(result:boolean,cardname:string): EventResult {
         if(this.action.cardname!==cardname) return new EventResult(false)
-        if(result && this.action.modifiesAction()){
-            this.game.useCard(this.turn,cardname)
-            this.game.modifyAction(this.action.modyfingActionId,this.action.onComplete)
+        if(result){
+            this.game.useDefenceCard(this.turn,this.action)
         }
-            
-
         return new EventResult(true)
     }
 }

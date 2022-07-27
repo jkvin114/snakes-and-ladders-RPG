@@ -23,7 +23,7 @@ export class AbilityStorage {
             }
         }
     }
-    getAbilityForEvent(event:EVENT_TYPE):ABILITY_NAME[]{
+    getAbilityForEvent(event:EVENT_TYPE):Set<ABILITY_NAME>{
         let abilities:ABILITY_NAME[]=[]
         if(this.permanentAbility.has(event)){
             let actions=this.permanentAbility.get(event)
@@ -39,12 +39,12 @@ export class AbilityStorage {
             if(abi.hasEvent(event)) abilities.push(ability)
         }
 
-        let validAblities:ABILITY_NAME[]=[]
+        let validAblities=new Set<ABILITY_NAME>()
         for(const ability of abilities){
             let ab=ABILITY_REGISTRY.get(ability)
             if(!ab || !ab.sample()) continue
             
-            validAblities.push(ability)
+            validAblities.add(ability)
         }
         return validAblities
     }

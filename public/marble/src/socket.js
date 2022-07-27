@@ -133,6 +133,17 @@ export function openConnection(isInitial){
 		console.log(turn,name,level)
 		GAME.ui.setSavedCard(turn,name,level)
 	})
+	socket.on("server:ask_toll_defence_card", function (turn,cardname,before,after) {
+        console.log("ask_toll_defence_card")
+		console.log(turn,cardname,before,after)
+		GAME.ui.askTollDefenceCard(cardname,before,after)
+	})
+
+	socket.on("server:ask_attack_defence_card", function (turn,cardname,attackName) {
+        console.log("ask_attack_defence_card")
+		console.log(turn,cardname,attackName)
+		GAME.ui.askAttackDefenceCard(cardname,attackName)
+	})
 	socket.on("server:monopoly_alert", function (player,type,pos) {
         console.log("monopoly_alert")
 		console.log(player,type,pos)
@@ -180,5 +191,8 @@ export function openConnection(isInitial){
 	}
 	GAME.connection.finishObtainCard=function(result){
 		socket.emit(PREFIX+"obtain_card",GAME.myTurn,result)
+	}
+	GAME.connection.finishConfirm=function(result,cardname){
+		socket.emit(PREFIX+"confirm_card_use",GAME.myTurn,result,cardname)
 	}
 }

@@ -80,4 +80,8 @@ export class ActionStack {
 	hasType(type: ACTION_TYPE) {
 		return this.stack.some((a: Action) => a.type === type)
 	}
+	findById(id:string):Action|null{
+		for(const a of this.stack) {if(a.getId()===id) return a} 
+		return null
+	}
 }

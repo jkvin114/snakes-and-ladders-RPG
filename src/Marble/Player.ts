@@ -151,17 +151,17 @@ class MarblePlayer{
     onEnemyArriveMyLand(player:MarblePlayer, tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
         return [ ]
     }
-    getTollDefence(tile:BuildableTile, moveType:ActionSource){
+    getTollDefence(tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
         return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.TOLL_CLAIMED)
     }
-    getTollOffence(player:MarblePlayer,tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
-        return [ ]
+    getTollOffence(player:MarblePlayer,tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
+        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_TOLL)
     }
-    buyOutPriceOffence(tile:BuildableTile):ABILITY_NAME[]{
-        return [ ]
+    buyOutPriceOffence(tile:BuildableTile):Set<ABILITY_NAME>{
+        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BUYOUT_CLAIMED)
     }
-    buyOutPriceDefence(buyer:MarblePlayer, tile:BuildableTile):ABILITY_NAME[]{
-        return [ ]
+    buyOutPriceDefence(buyer:MarblePlayer, tile:BuildableTile):Set<ABILITY_NAME>{
+        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_BUYOUT)
     }
     buyOutOffence(source:ActionSource):ABILITY_NAME[]{
         return [ ]
@@ -187,10 +187,10 @@ class MarblePlayer{
     onEnemyPassesMe(mover:MarblePlayer,oldpos:number,newpos:number,source:ActionSource):ABILITY_NAME[]{
         return []
     }
-    tileAttackOffence(tile:BuildableTile):ABILITY_NAME[]{
-        return []
+    tileAttackOffence(tile:BuildableTile):Set<ABILITY_NAME>{
+        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.DO_ATTACK)
     }
-    tileAttackDefence(tile:BuildableTile){
+    tileAttackDefence(tile:BuildableTile):Set<ABILITY_NAME>{
         return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BEING_ATTACKED)
     }
     canBuildLandOfMinimumPrice(price:number){

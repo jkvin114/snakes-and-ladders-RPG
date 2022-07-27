@@ -104,8 +104,8 @@ export namespace FortuneCardRegistry{
             else return 1
         })
         // console.log(weights)
-        return LIST[chooseWeightedRandom(weights)] 
-     // return chooseRandom([DONATE_LAND,GO_SPECIAL,GO_ISLAND,BLACKOUT])
+       return LIST[chooseWeightedRandom(weights)] 
+    //   return chooseRandom([BLACKOUT,ANGEL])
     }
 }
 

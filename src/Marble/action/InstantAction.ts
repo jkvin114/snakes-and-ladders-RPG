@@ -43,6 +43,10 @@ export class PayMoneyAction extends InstantAction {
 		this.amount = this.amount * mul
 		if(mul===0) this.off()
 	}
+	setValue(val: number): void {
+		this.amount=val
+		if(val===0) this.off()
+	}
 }
 export class BuyoutAction extends InstantAction{
     price:number
@@ -76,5 +80,31 @@ export class TileAttackAction extends InstantAction{
 	setLandChangeTile(tile:BuildableTile){
 		this.landChangeTile=tile
 		return this
+	}
+}
+
+export class ActionModifier extends InstantAction{
+	static readonly TYPE_OFF=0
+	static readonly TYPE_BLOCK=1
+	static readonly TYPE_MULTIPLY_VALUE=2
+	static readonly TYPE_SET_VALUE=3	
+	readonly actionToModify:string
+	readonly value:number 
+	readonly modifyType:number
+	constructor(turn: number,source:ActionSource,actionToModify:string,type:number,value?:number){
+		super(ACTION_TYPE.MODIFY_OTHER,turn,source)
+		this.actionToModify=actionToModify
+		this.modifyType=type
+		this.value=(value===undefined ? 1 : value)
+
+	}
+	modify(action:Action){
+		if(action.getId()!==this.actionToModify) return
+
+		if(this.modifyType===ActionModifier.TYPE_BLOCK) action.block()
+		else if(this.modifyType===ActionModifier.TYPE_OFF) action.off()
+		else if(this.modifyType===ActionModifier.TYPE_MULTIPLY_VALUE) action.applyMultiplier(this.value)
+		else if(this.modifyType===ActionModifier.TYPE_SET_VALUE) action.setValue(this.value)
+		return action
 	}
 }

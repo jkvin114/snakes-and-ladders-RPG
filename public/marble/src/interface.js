@@ -171,7 +171,8 @@ const FORTUNECARD={
     },
     go_travel:{
         title:"여행 초대권",desc:"즉시 세계여행으로 이동!"
-    },donate_land:{
+    },
+    donate_land:{
         title:"도시 기부",desc:"통큰 기부! 랜덤 상대에게 내 도시 기부"
     },
     go_island:{
@@ -184,7 +185,7 @@ const FORTUNECARD={
         title:"도시 체인지",desc:"원해는 상대의 도시와 내 도시를 교환"
     },
     earthquake:{
-        title:"지진",desc:"도시에 지진을 일으켜 건물 파괴"
+        title:"지진",desc:"도시에 지진을 일으켜 건물 1단계 파괴"
     },
     pandemic:{
         title:"전염병",desc:"도시에 전염병을 퍼뜨려 통행료 하락"
@@ -252,6 +253,15 @@ export class GameInterface
             $("#fortunecard").hide()
             this.game.finishObtainCard(true)
           })
+
+          $("#confirmwindow-cancel").click(()=>{
+            $("#confirmwindow").hide()
+            this.game.onConfirmFinish(false,$("#confirmwindow").data('cardname'))
+          })
+          $("#confirmwindow-confirm").click(()=>{
+            $("#confirmwindow").hide()
+            this.game.onConfirmFinish(true,$("#confirmwindow").data('cardname'))
+        })
     }
     init(setting){
         for(let i=0;i<setting.players.length;++i){
@@ -458,7 +468,21 @@ export class GameInterface
 
     }
     setSavedCard(turn,name,level){
-        $(this.doms.cardTable[turn]).html(name)
+        $(this.doms.cardTable[turn]).html(FORTUNECARD[name].title)
+    }
+    askTollDefenceCard(cardname,before,after){
+        $("#confirmwindow .window-header-content").html(FORTUNECARD[cardname].title)
+        $("#confirmwindow").data("cardname",cardname)
+        $("#confirmwindow .selection-text").html(`통행료 ${moneyToString(before)} -> ${moneyToString(after)}`)
+        $("#confirmwindow .window-content-text-nobackground").html(FORTUNECARD[cardname].title+"카드를 사용할까요?")
+        $("#confirmwindow").show()
+    }
+    askAttackDefenceCard(cardname,attackName){
+        $("#confirmwindow .window-header-content").html(FORTUNECARD[cardname].title)
+        $("#confirmwindow").data("cardname",cardname)
+        $("#confirmwindow .selection-text").html(`${FORTUNECARD[attackName].title} 공격을 받고 있습니다.`)
+        $("#confirmwindow .window-content-text-nobackground").html(FORTUNECARD[cardname].title+"카드를 사용할까요?")
+        $("#confirmwindow").show()
     }
     showLoanSelection(amount)
     {

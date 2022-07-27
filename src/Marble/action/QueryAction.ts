@@ -11,19 +11,8 @@ import { FortuneCard } from "../FortuneCard"
  * (주사위,건설,인수,선택이동,카드사용,블랙홀설치 등)
  */
  export class QueryAction extends Action {
-	onComplete:ActionModifyFunction
-	modyfingActionId:string
 	constructor(type:ACTION_TYPE,turn: number, source:ActionSource) {
 		super(type,turn,source)
-		this.onComplete=(action:Action)=>{}
-		this.modyfingActionId=""
-	}
-	setOnComplete(oncomplete:ActionModifyFunction,actionId:string){
-		this.onComplete=oncomplete
-		this.modyfingActionId=actionId
-	}
-	modifiesAction(){
-		return this.modyfingActionId!==""
 	}
 }
 export class AskBuildAction extends QueryAction {
@@ -80,7 +69,7 @@ export class ObtainCardAction extends QueryAction {
         this.card=card
 	}
 }
-export class LandChangeAction extends QueryAction{
+export class LandSwapAction extends QueryAction{
 	myLands:number[]
 	enemyLands:number[]
 	status:string
@@ -104,9 +93,17 @@ export class LandChangeAction extends QueryAction{
 }
 export class AskDefenceCardAction extends QueryAction{
 	cardname:string
+	toBlock:string
 	constructor(type:ACTION_TYPE,turn: number,source:ActionSource,cardname:string) {
 		super(type,turn,source)
 		this.cardname=cardname
+
+		this.toBlock=""
+	}
+	setBlockActionId(id:string){
+		this.toBlock=id
+
+		return this
 	}
 }
 
@@ -124,5 +121,9 @@ export class AskTollDefenceCardAction extends AskDefenceCardAction{
 		super(ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE,turn,source,cardname)
 		this.before=before
 		this.after=after
+
+		//원래 통행료 무료면 카드 사용 안물어봄
+		if(before===0) this.off()
 	}
+	
 }

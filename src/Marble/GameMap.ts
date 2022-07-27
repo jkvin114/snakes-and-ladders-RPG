@@ -246,12 +246,12 @@ class MarbleGameMap{
             if(land.owner === -1) continue
             
             let mul=land.getMultiplier()
-            if(this.multipliers.get(pos)!== mul){
-                change.push({
-                    pos:pos,mul:mul,toll:land.getToll()
-                })
-                this.multipliers.set(pos,mul)
-            }
+            // if(this.multipliers.get(pos)!== mul){
+            change.push({
+                pos:pos,mul:mul,toll:land.getToll()
+            })
+            this.multipliers.set(pos,mul)
+            // }
         }
         this.clientInterface.updateMultipliers(change)
     }
@@ -319,11 +319,17 @@ class MarbleGameMap{
         this.removeStatusEffect(tile.position)
         if(tile instanceof SightTile) tile.upgradeStage()
     }
+    ownerArrive(tile:BuildableTile){
+        this.removeStatusEffect(tile.position)
+        if(tile instanceof SightTile) tile.upgradeStage()
+    }
     removeStatusEffect(pos:number){
         let tile=this.buildableTiles.get(pos)
         if(!tile) return
-        tile.removeStatusEffect()
+        if(tile.removeStatusEffect()) this.updateMultiplier()
+
         this.clientInterface.setStatusEffect(pos,"",0)
+
     }
 
     onPlayerRetire(player:MarblePlayer):number[]{

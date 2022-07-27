@@ -106,8 +106,10 @@ abstract class BuildableTile extends Tile{
         this.statusEffects=new TileStatusEffect(name,dur)
         return true
     }
-    removeStatusEffect(){
+    removeStatusEffect():boolean{
+        let had=(this.statusEffects!=null)
         this.statusEffects=null
+        return had
     }
     /**
      * 

@@ -14,7 +14,7 @@ import { ActionSource } from "./action/ActionSource";
 export function abilityToAction(
 	eventSource: ActionSource | null,
 	invokingAbility: ABILITY_NAME[] | null,
-	revokingAbility?: ABILITY_NAME[]
+	revokingAbility?: ABILITY_NAME[] | null
 ): ActionPackage {
 	if(!invokingAbility) return new ActionPackage()
 

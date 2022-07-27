@@ -13,6 +13,7 @@ const USER_EVENTS={
 	SELECT_LOAN:`${prefix}select_loan`,
 	SELECT_TILE:`${prefix}select_tile`,
 	OBTAIN_CARD:`${prefix}obtain_card`,
+	CONFIRM_CARD_USE:`${prefix}confirm_card_use`,
 }
 function getRoom(socket:Socket){
 	
@@ -89,5 +90,10 @@ module.exports=function(socket:Socket){
 		let rname = SocketSession.getRoomName(socket)
 		if (!R.hasMarbleRoom(rname)) return
 		R.getMarbleRoom(rname).onClientEvent("obtain_card",invoker,result)
+	})
+	socket.on(USER_EVENTS.CONFIRM_CARD_USE, function (invoker:number,result:boolean,cardname:string) {
+		let rname = SocketSession.getRoomName(socket)
+		if (!R.hasMarbleRoom(rname)) return
+		R.getMarbleRoom(rname).onClientEvent("confirm_card_use",invoker,result,cardname)
 	})
 }

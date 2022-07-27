@@ -121,6 +121,7 @@ function getAngle(rot){
 }
 export function moneyToString(money){
     money=Math.floor(money)
+    if(money===0) return "무료"
     if(money < 10000){
         return String(money)
     }

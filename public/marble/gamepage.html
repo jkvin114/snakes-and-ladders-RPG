@@ -253,6 +253,9 @@ body{
   background: linear-gradient(to bottom, rgb(183, 223, 255) 0%, rgb(48, 133, 170) 100%);
   
 }
+#confirmwindow-confirm{
+  min-width: 0px;
+}
 .disabled{
   filter: grayscale(1);
   pointer-events: none;
@@ -649,7 +652,7 @@ table{
   position: absolute;
   z-index: 2;
   transform: translate(-50%,-50%);
-  width: 280px;
+  width: 180px;
   height: max-content;
   text-align: center;
   background-color: white;
@@ -660,64 +663,64 @@ table{
 }
 #fortunecard.gold{
   background-color: rgb(255, 191, 0);
-  border: 3px solid rgb(249, 215, 20);
-  outline: 4px solid rgb(171, 128, 18);
+  border: 2px solid rgb(249, 215, 20);
+  outline: 3px solid rgb(171, 128, 18);
 }
 #fortunecard.silver{
   background-color: rgb(183, 183, 183);
-  border: 3px solid rgb(102, 102, 102);
-  outline: 4px solid rgb(183, 183, 183);
+  border: 2px solid rgb(102, 102, 102);
+  outline: 3px solid rgb(183, 183, 183);
 }
 #fortunecard.trash{
   background-color: rgb(122, 116, 90);
-  border: 3px solid rgb(70, 65, 42);
-  outline: 4px solid rgb(96, 90, 62);
+  border: 2px solid rgb(70, 65, 42);
+  outline: 3px solid rgb(96, 90, 62);
 }
 #fortunecard-img{
   display: inline-block;
-  width: 250px;
-  height: 200px;
+  width: 160px;
+  height: 120px;
   margin-top: 1px;
   /* background-color: #CC9B6D; */
   border: 2px solid white;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 #fortunecard-button-container{
   display: inline-block;
   position: relative;
-  bottom: 10px;
+  bottom: 3px;
   background-color: #292214;
   border:3px solid rgb(255, 187, 0);
   border-radius: 5px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  padding: 15px;
-  min-width: 220px;
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+  padding: 5px;
+  min-width: 150px;
 }
 #fortunecard.gold > #fortunecard-button-container{
-  border:3px solid rgb(255, 187, 0);
+  border:2px solid rgb(255, 187, 0);
 }
 #fortunecard.silver > #fortunecard-button-container{
-  border:3px solid rgb(111, 111, 111);
+  border:2px solid rgb(111, 111, 111);
 }
 #fortunecard.trash > #fortunecard-button-container{
-  border:3px solid rgb(81, 73, 52);
+  border:2px solid rgb(81, 73, 52);
 }
 #fortunecard-button-container > p{
   color: #f3e7c6;
-  min-height: 50px;
-  font-size: 15px;
+  min-height: 40px;
+  font-size: 12px;
 }
 #fortunecard.gold > #fortunecard-title{
   background: linear-gradient(to bottom, rgb(255, 216, 109) 0%, rgb(255, 216, 109) 50%, rgb(230, 175, 26) 50%, rgb(230, 175, 26) 100%);
-  border-top:6px solid rgb(117, 71, 39);
-  border-bottom:6px solid rgb(117, 71, 39);
+  border-top:4px solid rgb(117, 71, 39);
+  border-bottom:4px solid rgb(117, 71, 39);
   color: #584319;
 }
 #fortunecard.silver > #fortunecard-title{
   background: linear-gradient(to bottom, rgb(162, 162, 162) 0%, rgb(162, 162, 162) 50%, rgb(188, 188, 188) 50%, rgb(188, 188, 188) 100%);
-  border-top:6px solid rgb(93, 93, 93);
-  border-bottom:6px solid rgb(93, 93, 93);
+  border-top:4px solid rgb(93, 93, 93);
+  border-bottom:4px solid rgb(93, 93, 93);
   color: #292929;
 }
 #fortunecard.trash > #fortunecard-title{
@@ -725,25 +728,25 @@ table{
   color: #4d2510;
 }
 #fortunecard-title{
-  margin-top: 10px;
+  margin-top: 6px;
   /* width: 100%; */
-  font-size: 25px;
+  font-size: 20px;
   padding-top: 3px;
   padding-bottom: 3px;
-  width: 300px;
+  width: 200px;
   position: relative;
   left: -10px;
   
 }
 #fortunecard-button-container > button{
-  font-size: 15px;
+  font-size: 12px;
   border: 2px solid rgb(118, 84, 21);
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 4px;
   color: rgb(54, 40, 14);
   cursor: pointer;
   user-select: none;
-  width: 100px;
+  width: 65px;
   font-family: 'cookierun';
 }
 #fortunecard-confirm{
@@ -883,10 +886,10 @@ table{
           통행료 1000만 -> 무료
         </div>
         <a class="window-content-text-nobackground">천사카드를 사용할까요?</a><br>
-        <div class="window-cancel-btn">
+        <div class="window-cancel-btn" id="confirmwindow-cancel">
           취소
         </div>
-        <div class="window-confirm-btn">
+        <div class="window-confirm-btn" id="confirmwindow-confirm">
           사용
         </div>
       </div>
@@ -963,7 +966,7 @@ table{
       <a id=largetext>
       </a>
     </div>
-    <div id="fortunecard" class="hidden">
+    <div id="fortunecard" class="hidden trash">
       <div id="fortunecard-title">천사</div>
       <div id="fortunecard-img"></div>
       <div id="fortunecard-button-container">

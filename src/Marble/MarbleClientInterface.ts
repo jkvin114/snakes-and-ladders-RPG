@@ -29,6 +29,8 @@ const SERVER_EVENTS={
     SAVE_CARD:prefix+"save_card",
     REMOVE_BUILDNIG:prefix+"remove_building",
     TILE_STATUS_EFFECT:prefix+"tile_status_effect",
+    ASK_TOLL_DEFENCE_CARD:prefix+"ask_toll_defence_card",
+    ASK_ATTACK_DEFENCE_CARD:prefix+"ask_attack_defence_card",
 }
 
 export class MarbleClientInterface {
@@ -72,10 +74,10 @@ export class MarbleClientInterface {
         this.callback(this.rname, SERVER_EVENTS.ASK_TILE_SELECTION, turn,tiles,source)
     }
     askAttackDefenceCard(turn:number,cardname:string,attackName:string){
-
+        this.callback(this.rname, SERVER_EVENTS.ASK_ATTACK_DEFENCE_CARD, turn,cardname,attackName)
     }
     askTollDefenceCard(turn:number,cardname:string,before:number,after:number){
-        
+        this.callback(this.rname, SERVER_EVENTS.ASK_TOLL_DEFENCE_CARD, turn,cardname,before,after)
     }
     setLandOwner(pos:number,player:number){
         this.callback(this.rname, SERVER_EVENTS.SET_LANDOWNER, pos,player)

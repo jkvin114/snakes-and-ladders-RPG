@@ -81,7 +81,7 @@ class Game{
         this.scene.teleportPlayer(this.turnToPlayerNum(player),pos,"levitate")
     }
     payMoney(payer,receiver,amount){
-        toast("paymoney "+amount)
+        toast("paymoney "+moneyToString(amount))
     }
     chooseBuild(pos,builds,buildsHave,discount,avaliableMoney){
         let landname=this.scene.getNameAt(pos)
@@ -208,6 +208,9 @@ class Game{
     }
     finishObtainCard(result){
         this.connection.finishObtainCard(result)
+    }
+    onConfirmFinish(result,cardname){
+        this.connection.finishConfirm(result,cardname)
     }
     addPlayers(){
         
