@@ -1,5 +1,6 @@
 import { EmptyAbility } from "./Ability/Ability"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
+import type { AbilityValues } from "./Ability/AbilityValues"
 import { DefenceAbility, DefenceCardAbility } from "./Ability/DefenceAbilty"
 import { EVENT_TYPE } from "./Ability/EventType"
 import { ACTION_TYPE } from "./action/Action"
@@ -82,8 +83,8 @@ export namespace FortuneCardRegistry{
     const GO_START=new CommandCard(CARD_NAME.GO_START,1)
     const OLYMPIC=new CommandCard(CARD_NAME.OLYMPIC,1)
     const GO_OLYMPIC=new CommandCard(CARD_NAME.GO_OLYMPIC,0)
-    const GO_SPECIAL=new CommandCard(CARD_NAME.GO_SPECIAL,2)
-    const GO_TRAVEL=new CommandCard(CARD_NAME.GO_TRAVEL,1)
+    const GO_SPECIAL=new CommandCard(CARD_NAME.GO_SPECIAL,1)
+    const GO_TRAVEL=new CommandCard(CARD_NAME.GO_TRAVEL,2)
     const GO_ISLAND=new CommandCard(CARD_NAME.GO_ISLAND,0)
     const DONATE_LAND=new CommandCard(CARD_NAME.DONATE_LAND,0)
 
@@ -98,14 +99,18 @@ export namespace FortuneCardRegistry{
         GO_START,GO_TRAVEL,OLYMPIC,DONATE_LAND,SELLOFF,
         LAND_CHANGE,EARTHQUAKE,PANDEMIC,BLACKOUT
     ]
-    export function draw(goldCardChance:number){
+    export function draw(goldCardChance:number,ability:ABILITY_NAME){
+
+        if(ability===ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD) return GO_TRAVEL
+
+
         let weights=LIST.map((card)=>{
             if(card.level===2) return 1 + goldCardChance
             else return 1
         })
         // console.log(weights)
-       return LIST[chooseWeightedRandom(weights)] 
-    //   return chooseRandom([BLACKOUT,ANGEL])
+      return LIST[chooseWeightedRandom(weights)] 
+    //    return chooseRandom([DISCOUNT])
     }
 }
 

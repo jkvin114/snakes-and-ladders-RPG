@@ -1,35 +1,36 @@
 import { Action, ActionModifyFunction, ACTION_TYPE, EmptyAction } from "../action/Action"
 import { ActionSource, ACTION_SOURCE_TYPE } from "../action/ActionSource"
 import { hexId, sample } from "../util"
+import { ABILITY_NAME } from "./AbilityRegistry"
 import { EVENT_TYPE } from "./EventType"
 
-export abstract class Ability {
-    readonly name:string
-    readonly type:number//능력 종류(힐링류 잘가북류 등 능력 분류)
+export class Ability {
+    readonly name:ABILITY_NAME//능력 종류(힐링류 잘가북류 등 능력 분류)
     sourceItem:number//발동하는데 사용된 능력/행템 고유 id
-    protected probability:number
-    protected limit:number
     protected event:Set<EVENT_TYPE>
     readonly actionSourceType:ACTION_SOURCE_TYPE
     readonly id:string
     static readonly PRIORITY_BEFORE=0
     static readonly PRIORITY_AFTER=1
     readonly priority:number
+    description:string
     // readonly owner:number
-    constructor(name:string,type:number,source:ACTION_SOURCE_TYPE){
+    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
         this.name=name
         // this.owner=owner
         this.event=new Set<EVENT_TYPE>()
-        this.limit=Infinity
-        this.probability=1
         this.sourceItem=-1
-        this.type=type
         this.actionSourceType=source
         this.id=hexId()
         this.priority=Ability.PRIORITY_BEFORE
+        this.description=""
     }
     isFromItem(){
         return this.sourceItem>-1
+    }
+    desc(desc:string){
+        this.description=desc
+        return this
     }
     getEvents(){
         return this.event
@@ -39,28 +40,12 @@ export abstract class Ability {
         return this
     }
     getSource(){
-        let source=new ActionSource(this.actionSourceType)
+        let source=new ActionSource(this.actionSourceType).setAbilityName(this.name)
         if(this.isFromItem())
         {
             source.setSourceItem(this.sourceItem)
-            source.setAbilityType(this.type)
         }
         return source
-    }
-    sample(){
-        if(this.limit>0) return sample(this.probability)
-        else return false
-    }
-    use(){
-        this.limit-=1
-    }
-    setLimit(limit:number){
-        this.limit=limit
-        return this
-    }
-    setProb(p:number){
-        this.probability=p
-        return this
     }
     on(event:EVENT_TYPE){
         this.event.add(event)
@@ -76,8 +61,9 @@ export abstract class Ability {
     isAfterMain(){
         return this.priority === Ability.PRIORITY_AFTER
     }
-    getDefaultAction():Action{
-        return new EmptyAction()
+    isValidSource(source:ActionSource)
+    {
+        return true
     }
 }
 
@@ -102,10 +88,9 @@ export interface TileSelectionQuery{
  * 숫자 변환 능력
  * 월급보너스,통행료추가/할인/면제 등
  */
-class MultiplierAbility extends Ability{
-    multiplier:number
-    constructor(name:string,type:number,source:ACTION_SOURCE_TYPE){
-        super(name,type,source)
+export class ValueModifierAbility extends Ability{
+    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
+        super(name,source)
     }
 }
 /**
@@ -113,8 +98,8 @@ class MultiplierAbility extends Ability{
  */
 class MoveAbilty extends Ability{
     pos:number
-    constructor(name:string,type:number,source:ACTION_SOURCE_TYPE){
-        super(name,type,source)
+    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
+        super(name,source)
     }
 }
 /**
@@ -122,8 +107,8 @@ class MoveAbilty extends Ability{
  */
 class ForceMoveAbilty extends Ability{
     pos:number
-    constructor(name:string,type:number,source:ACTION_SOURCE_TYPE){
-        super(name,type,source)
+    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
+        super(name,source)
     }
 }
 /**
@@ -142,7 +127,23 @@ class BuildAbility extends Ability{
  * 돈 지불(반지,향수 뱃지 합의서)
  */
 class PayAbility extends Ability{
-    
+    standard:number
+    amount:number
+    static readonly BASE_RATIO=1
+    static readonly BASE_FIXED=0
+
+    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE,standard:number,amount:number){
+        super(name,source)
+        this.standard=standard
+        this.amount=amount
+    }
+
+    getAmount(base?:number){
+        if(base === undefined) return this.amount
+        if(this.standard===PayAbility.BASE_RATIO) return Math.floor(base * this.amount)
+
+        return 0
+    }
 }
 /**
  * 주사위 찬스(무탈 등)
@@ -174,6 +175,6 @@ class OtherAbility extends Ability{
 }
 export class EmptyAbility extends Ability{
     constructor(){
-        super("",-1,0)
+        super(ABILITY_NAME.NONE,0)
     }
 }

@@ -32,6 +32,7 @@ export enum ACTION_TYPE {
 	CHOOSE_ATTACK_DEFENCE_CARD_USE,
 	CHOOSE_TOLL_DEFENCE_CARD_USE,
 	MODIFY_OTHER,
+	EARN_MONEY,
 	EMPTY,
 }
 
@@ -66,6 +67,7 @@ export const ACTION_LIST = [
 	"CHOOSE_ATTACK_DEFENCE_CARD_USE",
 	"CHOOSE_TOLL_DEFENCE_CARD_USE",
 	"MODIFY_OTHER",
+	"EARN_MONEY",
 	"EMPTY",
 ]
 
@@ -81,6 +83,8 @@ export abstract class Action {
 	valid: boolean
 	blocked: boolean
 	private id: string
+	static readonly PRIORITY_NORMAL=0
+	static readonly PRIORITY_FIRST=1
 	constructor(type: ACTION_TYPE, turn: number, source: ActionSource) {
 		this.type = type
 		this.source = source
@@ -89,6 +93,7 @@ export abstract class Action {
 		this.valid = true
 		this.blocked = false
 		this.id = hexId()
+		this.priority=Action.PRIORITY_NORMAL
 	}
 	/**
 	 * off 될경우 아예 실행 안됨

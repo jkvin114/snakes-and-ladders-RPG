@@ -17,6 +17,29 @@ export function range(end: number, start?: number): number[] {
 export function chooseRandom<T>(list: T[]): T {
 	return list[Math.floor(Math.random() * list.length)]
 }
+export function chooseRandomMultiple<T>(list: T[],count:number): T[] {
+	if(count > list.length) return []
+	return shuffle(list).slice(0,count)
+}
+
+export const shuffle = function <T>(array: T[]): T[] {
+	var m = array.length,
+		t,
+		i
+
+	// While there remain elements to shuffle…
+	while (m) {
+		// Pick a remaining element…
+		i = Math.floor(Math.random() * m--)
+
+		// And swap it with the current element.
+		t = array[m]
+		array[m] = array[i]
+		array[i] = t
+	}
+
+	return array
+}
 export function sample(probability: number): boolean {
 	return Math.random() < probability
 }

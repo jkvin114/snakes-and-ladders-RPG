@@ -1,4 +1,5 @@
 import { ClientInterfaceCallback } from "../ClientInterface"
+import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { ServerPayloadInterface } from "./ServerPayloadInterface"
 import { BUILDING } from "./tile/Tile"
 const prefix="server:"
@@ -31,6 +32,7 @@ const SERVER_EVENTS={
     TILE_STATUS_EFFECT:prefix+"tile_status_effect",
     ASK_TOLL_DEFENCE_CARD:prefix+"ask_toll_defence_card",
     ASK_ATTACK_DEFENCE_CARD:prefix+"ask_attack_defence_card",
+    ABILITY:prefix+"ability",
 }
 
 export class MarbleClientInterface {
@@ -93,6 +95,9 @@ export class MarbleClientInterface {
     }
     setSavedCard(turn:number,name:string,level:number){
         this.callback(this.rname, SERVER_EVENTS.SAVE_CARD, turn,name,level)
+    }
+    ability(turn:number,name:ABILITY_NAME,itemName:string,desc:string,isblocked:boolean){
+        this.callback(this.rname, SERVER_EVENTS.ABILITY, turn,name,itemName,desc,isblocked)
     }
     /**
      * 

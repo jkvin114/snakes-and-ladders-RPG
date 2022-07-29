@@ -8,6 +8,7 @@ import { BuildableTile } from "./../tile/BuildableTile"
  export class InstantAction extends Action {
 	constructor(type:ACTION_TYPE, turn: number,source:ActionSource) {
 		super(type,turn,source)
+		
 	}
 }
 export class ClaimTollAction extends InstantAction{
@@ -31,6 +32,24 @@ export class TeleportAction extends InstantAction {
         this.pos=pos
 	}
 }
+export class EarnMoneyAction extends InstantAction {
+    amount:number
+	constructor(receiver:number, source:ActionSource,amount:number) {
+		super(ACTION_TYPE.EARN_MONEY,receiver,source)
+        this.amount=amount
+		this.priority=Action.PRIORITY_FIRST
+	}
+	applyMultiplier(mul: number): void {
+		// console.log("applyMultiplier")
+		this.amount = this.amount * mul
+		if(mul===0) this.off()
+	}
+	setValue(val: number): void {
+		this.amount=val
+		if(val===0) this.off()
+	}
+}
+
 export class PayMoneyAction extends InstantAction {
     amount:number
 	receiver:number
@@ -38,6 +57,7 @@ export class PayMoneyAction extends InstantAction {
 		super(ACTION_TYPE.PAY_MONEY,payer,source)
         this.amount=amount
 		this.receiver=receiver
+		this.priority=Action.PRIORITY_FIRST
 	}
 	applyMultiplier(mul: number): void {
 		this.amount = this.amount * mul
@@ -46,6 +66,12 @@ export class PayMoneyAction extends InstantAction {
 	setValue(val: number): void {
 		this.amount=val
 		if(val===0) this.off()
+	}
+}
+export class PayTollAction extends PayMoneyAction {
+	constructor(payer: number,receiver:number, source:ActionSource,amount:number) {
+		super(payer,receiver,source,amount)
+		this.priority=Action.PRIORITY_NORMAL
 	}
 }
 export class BuyoutAction extends InstantAction{

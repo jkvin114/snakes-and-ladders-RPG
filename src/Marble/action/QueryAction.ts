@@ -94,15 +94,20 @@ export class LandSwapAction extends QueryAction{
 export class AskDefenceCardAction extends QueryAction{
 	cardname:string
 	toBlock:string
+	attacker:number  //방어할 공격을 한 플레이어
 	constructor(type:ACTION_TYPE,turn: number,source:ActionSource,cardname:string) {
 		super(type,turn,source)
 		this.cardname=cardname
-
+		this.attacker=-1
 		this.toBlock=""
 	}
 	setBlockActionId(id:string){
 		this.toBlock=id
 
+		return this
+	}
+	setAttacker(turn:number){
+		this.attacker=turn
 		return this
 	}
 }

@@ -144,6 +144,12 @@ export function openConnection(isInitial){
 		console.log(turn,cardname,attackName)
 		GAME.ui.askAttackDefenceCard(cardname,attackName)
 	})
+	socket.on("server:ability", function (turn,name,itemName,desc,isblocked) {
+        console.log("ability")
+		console.log(turn,name,itemName,desc,isblocked)
+		GAME.indicateAbility(turn,name,itemName,desc,isblocked)
+	})
+
 	socket.on("server:monopoly_alert", function (player,type,pos) {
         console.log("monopoly_alert")
 		console.log(player,type,pos)

@@ -7,7 +7,8 @@ import { ActionSource } from "./action/ActionSource"
 import { DefenceCard, FortuneCard, FortuneCardRegistry } from "./FortuneCard"
 import { BuildableTile } from "./tile/BuildableTile"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
-
+import { AbilityValues } from "./Ability/AbilityValues"
+import { ITEM_REGISTRY } from "./ItemRegistry"
 class MarblePlayer{
     readonly name:string
     readonly char:number
@@ -59,9 +60,9 @@ class MarblePlayer{
         this.pendingActions=[]
     }
 
-    sampleAbility(ability:string){
-        return false
-    }
+    // sampleAbility(ability:string){
+    //     return false
+    // }
     setTurn(turn:number){
         this.turn=turn
     }
@@ -91,7 +92,7 @@ class MarblePlayer{
     }
     moveBy(count:number){
         this.pos+=count
-        this.pos=this.pos%32
+        this.pos=(this.pos+64)%32
     }
     onDouble(){
         this.doubles+=1
@@ -119,19 +120,39 @@ class MarblePlayer{
     getBuyoutDiscount(){
         return 1 - (this.stat.buyoutDiscount * 0.005)
     }
+    getDiceControlChance(){
+        return this.stat.diceControl * 0.008
+    }
     getGoldFortuneChance(){
         return (this.stat.goldenCard * 0.02)
     }
-    drawCard(source:ActionSource){
-        return FortuneCardRegistry.draw(this.getGoldFortuneChance())
+   
+    getSavedCard(){
+        return this.savedDefenceCardAbility
     }
     saveCardAbility(ability:ABILITY_NAME){
+        this.abilityStorage.removeTemporary(this.savedDefenceCardAbility)
         this.savedDefenceCardAbility=ability
-        this.abilityStorage.addTemporary(ability)
+        this.abilityStorage.addTemporary(ability,new AbilityValues())
     }
     useCard(){
         this.abilityStorage.removeTemporary(this.savedDefenceCardAbility)
         this.savedDefenceCardAbility=ABILITY_NAME.NONE
+    }
+    useAbility(name:ABILITY_NAME){
+        this.abilityStorage.use(name)
+    }
+    sampleAbility(event:EVENT_TYPE,source:ActionSource):Map<ABILITY_NAME,AbilityValues>{
+        return this.abilityStorage.getAbilityForEvent(event,source)
+    }
+    registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityValues][]){
+        this.abilityStorage.registerPermanent(...abilities)
+    }
+    getAbilityString(){
+        return this.abilityStorage.getAbilityString()
+    }
+    getAbilityStringOf(name:ABILITY_NAME){
+        return this.abilityStorage.getAbilityStringOf(name)
     }
     onArriveEmptyLand(tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
         return [ ]
@@ -151,18 +172,18 @@ class MarblePlayer{
     onEnemyArriveMyLand(player:MarblePlayer, tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
         return [ ]
     }
-    getTollDefence(tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
-        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.TOLL_CLAIMED)
-    }
-    getTollOffence(player:MarblePlayer,tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
-        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_TOLL)
-    }
-    buyOutPriceOffence(tile:BuildableTile):Set<ABILITY_NAME>{
-        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BUYOUT_CLAIMED)
-    }
-    buyOutPriceDefence(buyer:MarblePlayer, tile:BuildableTile):Set<ABILITY_NAME>{
-        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_BUYOUT)
-    }
+    // getTollDefence(tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
+    //   //  return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.TOLL_CLAIMED)
+    // }
+    // getTollOffence(player:MarblePlayer,tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
+    //   //  return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_TOLL)
+    // }
+    // buyOutPriceOffence(tile:BuildableTile):Set<ABILITY_NAME>{
+    //   //  return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BUYOUT_CLAIMED)
+    // }
+    // buyOutPriceDefence(buyer:MarblePlayer, tile:BuildableTile):Set<ABILITY_NAME>{
+    //  //   return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_BUYOUT)
+    // }
     buyOutOffence(source:ActionSource):ABILITY_NAME[]{
         return [ ]
     }
@@ -187,12 +208,12 @@ class MarblePlayer{
     onEnemyPassesMe(mover:MarblePlayer,oldpos:number,newpos:number,source:ActionSource):ABILITY_NAME[]{
         return []
     }
-    tileAttackOffence(tile:BuildableTile):Set<ABILITY_NAME>{
-        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.DO_ATTACK)
-    }
-    tileAttackDefence(tile:BuildableTile):Set<ABILITY_NAME>{
-        return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BEING_ATTACKED)
-    }
+    // tileAttackOffence(tile:BuildableTile):Set<ABILITY_NAME>{
+    //     return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.DO_ATTACK)
+    // }
+    // tileAttackDefence(tile:BuildableTile):Set<ABILITY_NAME>{
+    //     return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BEING_ATTACKED)
+    // }
     canBuildLandOfMinimumPrice(price:number){
         return price * this.getBuildDiscount() < this.money
     }

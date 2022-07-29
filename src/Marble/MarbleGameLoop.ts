@@ -367,7 +367,7 @@ class GameInitializer extends MarbleGameCycleState{
         this.onCreate()
 	}
     onCreate(): void {
-        
+        this.game.onGameStart()
     }
     getNext(action: Action|null): MarbleGameCycleState {
         return new TurnInitializer(this.game)

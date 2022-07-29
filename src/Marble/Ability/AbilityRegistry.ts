@@ -1,14 +1,23 @@
 import { ACTION_TYPE } from "../action/Action"
 import { ACTION_SOURCE_TYPE } from "../action/ActionSource"
-import { Ability } from "./Ability"
+import { Ability, ValueModifierAbility } from "./Ability"
 import { DefenceCardAbility } from "./DefenceAbilty"
 import { EVENT_TYPE } from "./EventType"
 
 export enum ABILITY_NAME {
-    NONE="none",
+	NONE = "none",
 	ANGEL_CARD = "angel_card",
 	SHIELD_CARD = "shield_card",
 	DISCOUNT_CARD = "discount_card",
+
+	SALARY_BONUS = "salary_bonus",
+	ADDITIONAL_TOLL = "additional_toll",
+	DICE_CONTROL_ACCURACY = "dice_control_accuracy",
+	BACK_DICE = "back_dice",
+	MOVE_DOUBLE_ON_DICE = "move_double_on_dice",
+	DICE_DOUBLE = "dice_double",
+	MONEY_ON_DICE="money_on_dice",
+	GET_TRAVEL_ON_DRAW_CARD="get_travel_on_draw_card"
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -21,18 +30,49 @@ ABILITY_REGISTRY.set(
 
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.SHIELD_CARD,
-	new DefenceCardAbility(ABILITY_NAME.SHIELD_CARD, ACTION_SOURCE_TYPE.USE_DEFENCE_CARD
-        )
-    .on(
-		EVENT_TYPE.BEING_ATTACKED
-	)
+	new DefenceCardAbility(ABILITY_NAME.SHIELD_CARD, ACTION_SOURCE_TYPE.USE_DEFENCE_CARD).on(EVENT_TYPE.BEING_ATTACKED)
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.DISCOUNT_CARD,
-	new DefenceCardAbility(ABILITY_NAME.DISCOUNT_CARD, ACTION_SOURCE_TYPE.USE_DEFENCE_CARD,
-   )
-    .on(
-		EVENT_TYPE.TOLL_CLAIMED
-	)
+	new DefenceCardAbility(ABILITY_NAME.DISCOUNT_CARD, ACTION_SOURCE_TYPE.USE_DEFENCE_CARD).on(EVENT_TYPE.TOLL_CLAIMED)
 )
-export {ABILITY_REGISTRY}
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.SALARY_BONUS,
+	new ValueModifierAbility(ABILITY_NAME.SALARY_BONUS, ACTION_SOURCE_TYPE.ABILITY).on(
+		EVENT_TYPE.RECEIVE_SALARY
+	)
+	.desc("출발지 경유시 월급 $v% 추가 획득")
+)
+
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.DICE_CONTROL_ACCURACY,
+	new Ability(ABILITY_NAME.DICE_CONTROL_ACCURACY, ACTION_SOURCE_TYPE.ABILITY).on(EVENT_TYPE.GENERATE_DICE_NUMBER)
+	.desc("주사위 컨트롤 정확도 $c% 증가")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.BACK_DICE,
+	new Ability(ABILITY_NAME.BACK_DICE, ACTION_SOURCE_TYPE.ABILITY).on(EVENT_TYPE.GENERATE_DICE_NUMBER)
+	.desc("주사위 뒤로")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MOVE_DOUBLE_ON_DICE,
+	new Ability(ABILITY_NAME.MOVE_DOUBLE_ON_DICE, ACTION_SOURCE_TYPE.ABILITY).on(EVENT_TYPE.GENERATE_DICE_NUMBER)
+	.desc("주사위 결과의 2배 이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.DICE_DOUBLE,
+	new Ability(ABILITY_NAME.DICE_DOUBLE, ACTION_SOURCE_TYPE.ABILITY).on(EVENT_TYPE.GENERATE_DICE_NUMBER)
+	.desc("주사위 더블 확률 $c% 증가")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MONEY_ON_DICE,
+	new Ability(ABILITY_NAME.MONEY_ON_DICE, ACTION_SOURCE_TYPE.ABILITY).on(EVENT_TYPE.THROW_DICE)
+	.desc("주사의를 던지면 주사위 수 x $v 만큼의 돈 획득")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD,
+	new Ability(ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD, ACTION_SOURCE_TYPE.ABILITY).on(EVENT_TYPE.DRAW_CARD)
+	.desc("포춘 카드 획득시 $c% 확률로 여행 초대권 획득")
+)
+
+export { ABILITY_REGISTRY }

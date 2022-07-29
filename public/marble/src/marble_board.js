@@ -7,6 +7,7 @@ const PLAYER_POS_DIFF = [
 	[6, -5],
 	[-12, -9]
 ] 
+export const COLORS = ["red", "blue", "green", "yellow"]
 function getFlagCoord(coordinate){
     if(coordinate.rot === 'right'){
         return {x:coordinate.x - 30,y:coordinate.y -10}
@@ -119,9 +120,12 @@ function getAngle(rot){
     }
     return 0
 }
-export function moneyToString(money){
+export function moneyToString(money,zero){
     money=Math.floor(money)
-    if(money===0) return "무료"
+    if(money===0) {
+        if(!zero) return "0"
+        else return zero
+    }
     if(money < 10000){
         return String(money)
     }
@@ -275,7 +279,7 @@ export class Player{
         
         this.pos=0
         this.turn=turn
-        this.color=color
+        this.color=COLORS[color]
         this.money=0
         this.name=name
         this.team=team
@@ -319,12 +323,12 @@ export class MarbleScene extends Board{
     }
     setBoardScale(){
         
-        const winwidth=window.innerWidth
+        const winwidth=window.innerWidth 
 		const winheight=window.innerHeight
         
-        this.boardScale=winheight/this.boardInnerHeight
-        this.canvas.setWidth(winheight)
-		this.canvas.setHeight(winheight)
+        this.boardScale=((winheight- 5)/(this.boardInnerHeight))
+        this.canvas.setWidth(winheight - 5)
+		this.canvas.setHeight(winheight- 5)
         this.canvas.setZoom(this.boardScale)
      //   this.forceRender()
     }
@@ -833,10 +837,27 @@ export class MarbleScene extends Board{
         }
         this.forceRender()
     }
+    setPlayerImgColor(player,turn){
+        let filter = new fabric.Image.filters.BlendColor({
+            color: COLORS[turn],
+            mode: "tint",
+            alpha: 0.3
+        })
+        this.players[player].playerimg.filters = [filter]
+        this.players[player].playerimg.applyFilters()
+
+        
+    }
     onReady(){
+        for(let i=0;i<this.players.length;++i){
+            this.setPlayerImgColor(i,this.players[i].turn)
+        }
         // 
         // this.arrow.scale(1.2)
         this.pin.scale(1.4)
+        // this.pin.set({angle:-45})
+        // this.arrow.set({angle:-45})
+
         this.startRenderInterval()
     }
     tileReset(){

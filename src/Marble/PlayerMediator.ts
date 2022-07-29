@@ -10,16 +10,20 @@ import {
 	ClaimTollAction,
 	InstantAction,
 	PayMoneyAction,
+	PayTollAction,
 	TileAttackAction,
 } from "./action/InstantAction"
 import { MarblePlayer, MarblePlayerStat } from "./Player"
 import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction } from "./action/QueryAction"
 import { BuildableTile } from "./tile/BuildableTile"
-import { chooseRandom, distance, getTilesBewteen, PlayerType, ProtoPlayer } from "./util"
+import { chooseRandom, chooseRandomMultiple, distance, getTilesBewteen, PlayerType, ProtoPlayer, range } from "./util"
 import { CALC_TYPE, randInt } from "../core/Util"
 import { CARD_NAME } from "./FortuneCard"
 import { ActionPackage } from "./action/ActionPackage"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
+import { EVENT_TYPE } from "./Ability/EventType"
+import { AbilityValues } from "./Ability/AbilityValues"
+import { ITEM_REGISTRY } from "./ItemRegistry"
 
 class PlayerMediator {
 	map: MarbleGameMap
@@ -44,12 +48,12 @@ class PlayerMediator {
 
 			if (p.type === PlayerType.AI) {
 				this.players.push(
-					new MarblePlayer(i, p.name, champ, p.team, true, startmoney, new MarblePlayerStat([50, 50, 50, 50, 50]))
+					new MarblePlayer(i, p.name, champ, p.team, true, startmoney, new MarblePlayerStat([50, 50, 50, 80, 50]))
 				)
 				this.aiCount += 1
 			} else if (p.type === PlayerType.PLAYER_CONNECED) {
 				this.players.push(
-					new MarblePlayer(i, p.name, champ, p.team, false, startmoney, new MarblePlayerStat([50, 50, 50, 50, 50]))
+					new MarblePlayer(i, p.name, champ, p.team, false, startmoney, new MarblePlayerStat([50, 50, 50, 80, 50]))
 				)
 				this.playerCount += 1
 			}
@@ -64,21 +68,29 @@ class PlayerMediator {
 				name: player.name,
 				char: player.char,
 				money: player.money,
+				card:player.getSavedCard(),
+				abilities:player.getAbilityString()
 			}
 		})
-	}
-	getDiceAbilitySamples(player: number): { dc: boolean; exactdc: boolean; double: boolean; backdice: boolean } {
-		return {
-			dc: true, //this.players[player].sampleAbility("dice_control"),
-			exactdc: Math.random() > 0.5, //this.players[player].sampleAbility("dice_control_accuracy"),
-			double: this.players[player].sampleAbility("double"),
-			backdice: this.players[player].sampleAbility("backdice"),
-		}
 	}
 	setPlayerTurns(turns: number[]) {
 		this.playerTurns = turns
 		this.players.forEach((p, i) => p.setTurn(turns[i]))
-		this.players.forEach((p) => p.saveCardAbility(ABILITY_NAME.ANGEL_CARD))
+		this.players.forEach((p) => {
+			p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
+			let abs:[ABILITY_NAME, AbilityValues][]=[]
+			let codes=chooseRandomMultiple(range(4),3)
+			console.log(codes)
+
+			for(const c of codes){
+				let item=ITEM_REGISTRY.get(c)
+				
+				if(!item) continue
+				abs.push(item)
+			}
+			p.registerPermanentAbilities(abs)
+		})
+
 	}
 	areEnemy(p1: number, p2: number) {
 		return p1 !== p2
@@ -225,13 +237,13 @@ class PlayerMediator {
 		let payer = this.pOfTurn(payerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
-		let defences = payer.getTollDefence(tile, moveType)
-		let offences = landOwner.getTollOffence(payer, tile, moveType)
+		let defences = payer.sampleAbility(EVENT_TYPE.TOLL_CLAIMED,moveType) 
+		let offences = landOwner.sampleAbility(EVENT_TYPE.CLAIM_TOLL,moveType) 
 		let baseToll = tile.getToll() * payer.getTollDiscount()
 		this.map.onAfterClaimToll(tile)
 		let ap = new ActionPackage()
-			.setMain(new PayMoneyAction(payerTurn, ownerTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE), baseToll))
-			.applyClaimTollAbility(payerTurn,moveType, offences, defences)
+			.setMain(new PayTollAction(payerTurn, ownerTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE), baseToll))
+			.applyClaimTollAbility(ownerTurn,moveType, offences, defences,payerTurn)
 
 		// let actions = abilityToAction(moveType, defences, offences)
 		// let toll = this.getToll(defences, offences, tile,payer.getTollDiscount())
@@ -242,8 +254,10 @@ class PlayerMediator {
 
 		this.game.pushActions(ap)
 	}
-	earnMoney(player: MarblePlayer, amount: number) {
+	earnMoney(playerTurn: number, amount: number) {
+		let player = this.pOfTurn(playerTurn)
 		player.earnMoney(amount)
+		this.game.clientInterface.payMoney(-1, playerTurn, amount)
 		this.game.clientInterface.changeMoney(player.turn, player.money)
 	}
 
@@ -269,8 +283,7 @@ class PlayerMediator {
 			if (payer.canLoan(amt))
 				this.game.pushSingleAction(new AskLoanAction(payer.turn, source, amt - payer.money, receiverturn))
 			else {
-				this.game.bankrupt(payer)
-				this.payMoneyTo(payer, receiver, amt)
+				this.playerBankrupt(payerturn,receiverturn,amt)
 			}
 		} else {
 			this.payMoneyTo(payer, receiver, amt)
@@ -279,15 +292,23 @@ class PlayerMediator {
 	onLoanConfirm(amount: number, payerturn: number, receiverturn: number) {
 		let payer = this.pOfTurn(payerturn)
 		let receiver = this.pOfTurn(receiverturn)
-		this.earnMoney(payer, amount)
+		this.earnMoney(payer.turn, amount)
 		this.payMoneyTo(payer, receiver, payer.money)
 		payer.onLoan()
 	}
+	playerBankrupt(playerTurn:number,receiverturn:number,amount:number)
+	{
+		let payer = this.pOfTurn(playerTurn)
+		let receiver = this.pOfTurn(receiverturn)
+		this.payMoneyTo(payer, receiver, amount)
+		payer.bankrupt()
+		this.playerRetire(payer.turn)
+		this.game.bankrupt(payer)
+	}
 	/**
 	 * 인수창 띄우기 직전
-	 *
-	 * @param buyer
-	 * @param landOwner
+	 * @param buyerTurn
+	 * @param ownerTurn
 	 * @param tile
 	 * @param source
 	 */
@@ -295,8 +316,8 @@ class PlayerMediator {
 		let buyer = this.pOfTurn(buyerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
-		let offences = buyer.buyOutPriceOffence(tile)
-		let defences = landOwner.buyOutPriceDefence(buyer, tile)
+		let offences = buyer.sampleAbility(EVENT_TYPE.BUYOUT_PRICE_CLAIMED,source)
+		let defences = landOwner.sampleAbility(EVENT_TYPE.CLAIM_BUYOUT_PRICE,source)
 
 		let originalPrice = tile.getBuyOutPrice()
 		let basePrice = originalPrice * buyer.getBuyoutDiscount()
@@ -358,7 +379,7 @@ class PlayerMediator {
 	 * @param tile 도시 체인지:(상대에게 받을 땅)
 	 * @param source
 	 * @param name
-	 * @param myTile 도시 체인지 전용(상대에게 줄 땅)
+	 * @param secondTile 도시 체인지 전용(상대에게 줄 땅)
 	 */
 	attemptAttackTile(
 		attackerTurn: number,
@@ -370,8 +391,8 @@ class PlayerMediator {
 		let attacker = this.pOfTurn(attackerTurn)
 		let landOwner = this.pOfTurn(tile.owner)
 
-		let offences = attacker.tileAttackOffence(tile)
-		let defences = landOwner.tileAttackDefence(tile)
+		let offences = attacker.sampleAbility(EVENT_TYPE.DO_ATTACK,source)
+		let defences = landOwner.sampleAbility(EVENT_TYPE.BEING_ATTACKED,source)
 		// let actions = abilityToAction(source, defences, offences)
 		let actions=new ActionPackage()
 		if (name === CARD_NAME.LAND_CHANGE) {
@@ -380,12 +401,15 @@ class PlayerMediator {
 		} else {
 			actions.setMain(new TileAttackAction(attackerTurn, source, tile, name))
 		}
-		actions.applyAbilityAttemptAttack(attackerTurn,source,offences,defences,name)
+		actions.applyAttemptAttackAbility(attackerTurn,source,offences,defences,name,tile.owner)
 		this.game.pushActions(actions)
 	}
+	executeAbility(turn:number,name:ABILITY_NAME){
+		this.pOfTurn(turn).useAbility(name)
+	}
 	onMonopolyAlert(player: MarblePlayer, spots: number[]) {
-		console.log("alert monopoly")
-		console.log(spots)
+		// console.log("alert monopoly")
+		// console.log(spots)
 		let offences = player.monopolyAlertOffence(spots)
 		let defences = this.getOtherPlayers(player.turn).map((p: MarblePlayer) => p.monopolyAlertDefence(spots))
 

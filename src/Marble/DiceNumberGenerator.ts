@@ -1,3 +1,5 @@
+import { ABILITY_NAME } from "./Ability/AbilityRegistry"
+import type { AbilityValues } from "./Ability/AbilityValues"
 import { chooseRandom, clamp, randDice, range } from "./util"
 
 const DICES: number[][][] = range(12).map((total) =>
@@ -11,7 +13,24 @@ export namespace DiceNumberGenerator {
 	export const ODD = 1
 	export const EVEN = 2
 	const DC_ERROR = 3
-	export function generate(num: number, isdc: boolean, isExactDc: boolean, isDouble: boolean, oddEven: number) {
+
+	/**
+	 * 
+	 * @param num 
+	 * @param oddEven 
+	 * @param modifiers 
+	 * @returns [dice1,dice2]
+	 */
+	export function generate(num: number, oddEven: number,modifiers: {
+		dc: boolean;
+		exactDc: boolean;
+		isDouble: boolean;
+		multiplier: number;
+	}) {
+		let isdc=modifiers.dc
+		let isExactDc=modifiers.exactDc
+		let isDouble=modifiers.isDouble
+
 		let dice: number[]
 		num = clamp(num, 2, 12)
 		if (isdc) {
@@ -56,9 +75,9 @@ export namespace DiceNumberGenerator {
 function gen(){
 
     for(let i=0;i<100;++i){
-        let d=DiceNumberGenerator.generate(7,true,true,false,0)
-        if(d[0]>6 || d[1]>6 || (d[0]+d[1])>12 ) console.error("error!")
-        console.log(d+"     "+(d[0]+d[1]))
+        // let d=DiceNumberGenerator.generate(7,1,true,{})
+        // if(d[0]>6 || d[1]>6 || (d[0]+d[1])>12 ) console.error("error!")
+        // console.log(d+"     "+(d[0]+d[1]))
         // console.log()
     }
     

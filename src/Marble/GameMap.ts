@@ -152,7 +152,7 @@ class MarbleGameMap{
     }
     onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionSource):boolean{
         if(this.start===tile){
-            game.receiveMoney(player,game.SALARY)
+            game.receiveSalary(player,source)
         }
         return false
     }

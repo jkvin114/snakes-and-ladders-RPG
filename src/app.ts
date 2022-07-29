@@ -183,3 +183,18 @@ function writeStat(stat: any, isSimulation: boolean) {
 		console.log("The statistics have been saved!")
 	})
 }
+
+
+// let coord = require("./../res/marble/map_coordinates.json")
+// for(let c of coord){
+//     c.x+=10
+//     c.y+=10	
+// }
+
+// fs.writeFile(__dirname + "./../res/c.json", JSON.stringify(coord), (err) => {
+//     if (err) {
+//         console.log(err)
+//         throw err
+//     }
+//     console.log("saved")
+// })

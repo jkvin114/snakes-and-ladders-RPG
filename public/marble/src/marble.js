@@ -20,6 +20,7 @@ class Game{
         this.myTurn=0
         this.ui=new GameInterface(this)
         this.isTeam=false
+        this.abilities=new Map()
     }
     turnToPlayerNum(turn){
         for(let i=0;i<this.playerCount;++i){
@@ -30,8 +31,6 @@ class Game{
     init(setting,num,turn)
     {
 
-        console.log(num,turn)
-        console.log("game init")
         this.myNum=num
         this.myTurn=turn
         this.isTeam=setting.isTeam
@@ -40,9 +39,12 @@ class Game{
         for(let i=0;i<this.playerCount;++i){
             let p=setting.players[i]
             this.players.push(new Player(p.turn,p.turn,p.char,p.name,p.team))
+            this.abilities.set(p.turn,p.abilities)
         }
         this.scene.players=this.players
-        this.ui.init(setting)
+            
+        
+        this.ui.init(setting,turn)
         console.log(setting)
         requestMap()
     }
@@ -55,13 +57,16 @@ class Game{
         this.ui.onTurnStart(player)
         this.scene.focusPlayer(this.turnToPlayerNum(player))
     }
+    getAbilities(turn){
+        return this.abilities.get(turn)
+    }
     showDiceBtn(player,data){
         this.scene.showArrow(this.turnToPlayerNum(player))
         this.ui.showDiceBtn(data.hasOddEven,data.origin)
 
     }
     diceRoll(data){
-        toast(data.dice + ((data.isDouble)?"(더블)":""))
+        toast(data.dice + ((data.isDouble)?"(더블)":"")+ ((data.dc)?"(주사위 컨트롤!)":""))
     }
     playerWalkMove(player,from,distance){
         let list=[]
@@ -71,7 +76,7 @@ class Game{
             }
         }
         else{
-            for(let i=1;i<=distance;++i){
+            for(let i=1;i<=Math.abs(distance);++i){
                 list.push(((from+320)-i)%32)
             }
         }
@@ -81,7 +86,8 @@ class Game{
         this.scene.teleportPlayer(this.turnToPlayerNum(player),pos,"levitate")
     }
     payMoney(payer,receiver,amount){
-        toast("paymoney "+moneyToString(amount))
+        if(payer===-1) toast("receivemoney "+moneyToString(amount))
+        else toast("paymoney "+moneyToString(amount))
     }
     chooseBuild(pos,builds,buildsHave,discount,avaliableMoney){
         let landname=this.scene.getNameAt(pos)
@@ -212,6 +218,10 @@ class Game{
     onConfirmFinish(result,cardname){
         this.connection.finishConfirm(result,cardname)
     }
+    indicateAbility(turn,name,itemName,desc,isblocked){
+        if(itemName==="") return
+        toast2(itemName+"<br>"+desc)
+    }
     addPlayers(){
         
     }
@@ -249,6 +259,11 @@ function toast(msg) {
     $("#toastmessage").html(msg)
     $("#toastmessage").fadeIn(500)
     setTimeout(() => $("#toastmessage").fadeOut(500), 2000)
+}
+function toast2(msg) {
+    $("#toastmessage2").html(msg)
+    $("#toastmessage2").fadeIn(500)
+    setTimeout(() => $("#toastmessage2").fadeOut(500), 2000)
 }
 
 function auth() {

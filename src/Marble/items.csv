@@ -1,0 +1,6 @@
+CODE,ITEMNAME,itemname_kor,ABILITYNAME,CHANCE,VALUE,UPGRADEVALUE,FIRSTONLY,LIMIT
+0,golden_bell,구원의 골든벨,salary_bonus,,30,,,
+1,annonymous_1,초월의 빛,money_on_dice,,200000,,1,
+2,helmet,탑 레이서의 헬멧,dice_control_accuracy,25,,,,
+3,compass,나침반,get_travel_on_draw_card,80,,,1,
+4,annonymous_2,야바위꾼의 컵사위,dice_double,20,,,,
