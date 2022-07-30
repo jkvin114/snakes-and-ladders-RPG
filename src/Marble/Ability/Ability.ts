@@ -65,6 +65,9 @@ export class Ability {
     {
         return true
     }
+    percentValueToMultiplier(value:number){
+        return 1+ 0.01*value
+    }
 }
 
 /**
@@ -126,23 +129,14 @@ class BuildAbility extends Ability{
 /**
  * 돈 지불(반지,향수 뱃지 합의서)
  */
-class PayAbility extends Ability{
+export class PayAbility extends Ability{
     standard:number
-    amount:number
     static readonly BASE_RATIO=1
     static readonly BASE_FIXED=0
 
-    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE,standard:number,amount:number){
+    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE,standard:number){
         super(name,source)
         this.standard=standard
-        this.amount=amount
-    }
-
-    getAmount(base?:number){
-        if(base === undefined) return this.amount
-        if(this.standard===PayAbility.BASE_RATIO) return Math.floor(base * this.amount)
-
-        return 0
     }
 }
 /**

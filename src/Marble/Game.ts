@@ -15,6 +15,7 @@ import {
 	EarnMoneyAction,
 	InstantAction,
 	PayMoneyAction,
+	PayPercentMoneyAction,
 	TeleportAction,
 	TileAttackAction,
 } from "./action/InstantAction"
@@ -50,6 +51,7 @@ import { ActionPackage } from "./action/ActionPackage"
 import { AttackCard, CARD_NAME, CommandCard, DefenceCard, FortuneCardRegistry } from "./FortuneCard"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { EVENT_TYPE } from "./Ability/EventType"
+import { isBlock } from "typescript"
 
 const DELAY_ROLL_DICE = 1000
 const MAP = ["world", "god_hand"]
@@ -62,7 +64,7 @@ class MarbleGame {
 	totalnum: number
 	olympicStage: number
 	readonly mediator: PlayerMediator
-	readonly SALARY = 100 * 10000
+	readonly SALARY = 150 * 10000
 	readonly START_MONEY = 1000 * 10000
 
 	totalturn: number
@@ -338,6 +340,7 @@ class MarbleGame {
 	}
 	checkPassedPlayers(oldpos: number, newpos: number, mover: MarblePlayer, source: ActionSource) {
 		for (const player of this.mediator.getPlayersBetween(oldpos, newpos)) {
+			if(mover.turn===player.turn) continue
 			let block = this.mediator.onPlayerPassOther(mover, player, oldpos, newpos, source)
 			if (block) return player.pos
 		}
@@ -346,6 +349,7 @@ class MarbleGame {
 	checkPlayerMeet(moverTurn: number, pos: number, source: ActionSource) {
 		let players = this.mediator.getPlayersInRange(this.mediator.pOfTurn(moverTurn).pos, 0)
 		for (const p of players) {
+			if(moverTurn===p.turn) continue
 			this.mediator.onMeetPlayer(this.mediator.pOfTurn(moverTurn), p, pos, source)
 		}
 	}
@@ -656,7 +660,9 @@ class MarbleGame {
 			this.mediator.claimBuyOut(action.turn, action.tile.owner, action.tile, action.source)
 		} else if (action instanceof PayMoneyAction) {
 			this.mediator.payMoney(action.turn, action.receiver, action.amount, action.source)
-		} else if (action instanceof TeleportAction) {
+		} else if (action instanceof PayPercentMoneyAction) {
+			this.mediator.payPecentMoney(action)
+		}else if (action instanceof TeleportAction) {
 			this.teleportPlayer(action.turn, action.pos, action.source)
 		} else if (action instanceof BuyoutAction) {
 			this.clientInterface.buyout(action.turn, action.tile.position)
@@ -677,8 +683,11 @@ class MarbleGame {
 			this.mediator.executeAbility(ab.turn,ab.name)
 			let data=this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
 			if(!data) continue
-			this.clientInterface.ability(ab.turn,ab.name,data.name,data.desc,false)
+			this.sendAbility(ab.turn,ab.name,data.name,data.desc,false)
 		}
+	}
+	sendAbility(turn:number,name:ABILITY_NAME,itemName:string,desc:string,isblocked:boolean){
+		this.clientInterface.ability(turn,name,itemName,desc,isblocked)
 	}
 	indicateBlockedAbility(abilities:{name:ABILITY_NAME,turn:number}[]){
 		for(const ab of abilities){
@@ -711,6 +720,8 @@ class MarbleGame {
 	}
 	useDefenceCard(turn: number, action: AskDefenceCardAction) {
 		this.mediator.pOfTurn(turn).useCard()
+		this.sendAbility(turn,action.cardname as ABILITY_NAME,"","",false)
+
 		this.clientInterface.setSavedCard(turn, "", 0)
 		if (action instanceof AskTollDefenceCardAction) {
 			this.pushSingleAction(
@@ -858,9 +869,9 @@ class MarbleGame {
 		}
 		this.checkMonopoly(tile, player)
 	}
-	onConfirmLoan(player: number, receiver: number, amount: number, result: boolean) {
-		if (result) this.mediator.onLoanConfirm(amount, player, receiver)
-		else this.mediator.playerBankrupt(player,receiver,amount)
+	onConfirmLoan(player: number, receiver: number, loanamount: number, result: boolean) {
+		if (result) this.mediator.onLoanConfirm(loanamount, player, receiver)
+		else this.mediator.playerBankrupt(player,receiver,loanamount +  this.mediator.pOfTurn(player).money)
 	}
 	checkMonopoly(tile: BuildableTile, invoker: MarblePlayer) {
 		let monopoly = this.map.checkMonopoly(tile, invoker.turn)

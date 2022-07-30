@@ -160,11 +160,11 @@ class MarblePlayer{
     onArriveMyLand(tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
         return [ ]
     }
-    onArriveToEnemy(source:ActionSource):ABILITY_NAME[]{
-        return [ ]
+    onArriveToEnemy(source:ActionSource):Map<ABILITY_NAME,AbilityValues>{
+        return this.sampleAbility(EVENT_TYPE.ARRIVE_TO_ENEMY,source)
     }
-    onEnemyArriveToMe(source:ActionSource):ABILITY_NAME[]{
-        return [ ]
+    onEnemyArriveToMe(source:ActionSource):Map<ABILITY_NAME,AbilityValues>{
+        return this.sampleAbility(EVENT_TYPE.ENEMY_ARRIVE_TO_ME,source)
     }
     onArriveEnemyLand(tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
         return [ ]

@@ -7,6 +7,8 @@ const PLAYER_POS_DIFF = [
 	[6, -5],
 	[-12, -9]
 ] 
+const sleep = (m) => new Promise((r) => setTimeout(r, m))
+
 export const COLORS = ["red", "blue", "green", "yellow"]
 function getFlagCoord(coordinate){
     if(coordinate.rot === 'right'){
@@ -142,6 +144,16 @@ export function moneyToString(money,zero){
     }else{
         return String(Math.floor(money/100000000))+"억"
     }
+}
+function getCornerPos(uiPos,boardsize){
+     //"top-left", "bottom-left", "top-right", "bottom-right"
+     console.log("uipos"+uiPos)
+     if(uiPos===-1) return {x:boardsize/2,y:0}
+     if(uiPos===0) return {x:0,y:0}
+     if(uiPos===1) return {x:0,y:boardsize}
+     if(uiPos===2) return {x:boardsize,y:0}
+     if(uiPos===3) return {x:boardsize,y:boardsize}
+     return {x:0,y:0}
 }
 export const MONOPOLY=["","트리플 독점","라인 독점","관광지 독점"]
 class Tile{
@@ -304,6 +316,53 @@ export class Player{
     }
 }
 
+class Money{
+    /**
+     * 
+     * @param {*} scene 
+     * @param {*} source 플레이어 ui 위치
+     * @param {*} dest 플레이어 ui 위치
+     */
+    constructor(scene,source,dest){
+        this.scene=scene
+        this.source=source
+        this.dest=dest
+        this.image
+    }
+    spawnImage(){
+
+        let image= new fabric.Image(document.getElementById("moneyimg"), {
+			objectCaching: false,
+            evented:false
+		})
+        this.scene.lockFabricObject(image)
+        
+        let coord=getCornerPos(this.source,this.scene.boardInnerHeight)
+        image.scale(1.3)
+        image.set({top:coord.y,left:coord.x})
+        this.scene.canvas.add(image)
+        image.bringToFront()
+        this.image=image
+    }
+    animate1(size){
+        let randRange=50
+        if(size > 7) randRange=100
+        if(!this.image) return
+        this.scene.animateX(this.image,this.scene.boardInnerHeight/2 + (Math.random() * randRange - randRange/2),200)
+        this.scene.animateY(this.image,this.scene.boardInnerHeight/2 + (Math.random() * randRange - randRange/2),200)
+    }
+    animate2(){
+        
+
+        if(!this.image) return
+        let coord=getCornerPos(this.dest,this.scene.boardInnerHeight)
+        this.scene.animateX(this.image,coord.x,200)
+        this.scene.animateY(this.image,coord.y,200)
+    }
+    remove(){
+        this.scene.canvas.remove(this.image)
+    }
+}
 export class MarbleScene extends Board{
     constructor(game){
         super(game)
@@ -314,6 +373,8 @@ export class MarbleScene extends Board{
         this.tileHighlights.set("yellow",[])
         this.tileHighlights.set("white",[])
         this.olympic=-1
+        this.moneyText
+        this.moneyTextTimeout
     }
     getCoord(i){
 		return this.coordinates[i%this.mapLength()]
@@ -483,7 +544,21 @@ export class MarbleScene extends Board{
 
             player.setObjects(p,name)
         }
-    //    console.log(this.players)
+        let text=new fabric.Text("", {
+            fontSize: 50,
+            fill: "white",
+            stroke: "black",
+			strokeWidth: 1,
+            opacity: 0,
+            fontWeight:"bold",
+            evented: false,
+            top: this.boardInnerHeight/2+120,
+            left: this.boardInnerHeight/2,
+            fontFamily: "nanumEB",
+        })
+        this.lockFabricObject(text)
+        this.canvas.add(text)
+        this.moneyText=text
     }
 
     scaleTileImage(tile,rot){
@@ -859,6 +934,50 @@ export class MarbleScene extends Board{
         // this.arrow.set({angle:-45})
 
         this.startRenderInterval()
+    }
+    payMoney(payer,receiver,amount){
+        //"top-left", "bottom-left", "top-right", "bottom-right"'
+        let count=1
+        if(amount > 50 * 10000)
+            count=2
+        if(amount>200 * 10000)
+            count=Math.min(Math.floor((amount*1.6)/1000000),13)
+        this.moneyText.set({opacity:1,text:moneyToString(amount)})
+
+        // let id=String("payment" + Math.floor(Math.random() * 10000))
+        let moneys=[]
+        for(let i=0;i<count;++i){
+            let money=new Money(this,payer,receiver)
+            moneys.push(money)
+        }
+        // this.moneyAnimations.set(id,moneys)
+        this.animateMoney(moneys)
+        clearTimeout(this.moneyTextTimeout)
+
+        this.moneyTextTimeout=setTimeout(()=>{
+            this.moneyText.set({opacity:0,text:""})
+        },1200 + 100 * count)
+    }
+
+    async animateMoney(moneys){
+        // let moneys=this.moneyAnimations.get(id)
+        // if(!moneys) return
+        for(const m of moneys){
+            m.spawnImage()
+            m.animate1(moneys.length)
+            await sleep(50)
+        }
+        await sleep(1200 + 50 * moneys.length)
+        for(const m of moneys){
+            m.animate2()
+        }
+        await sleep(600)
+        for(const m of moneys){
+            m.remove()
+        }
+        
+        this.render()
+        // this.moneyAnimations.delete(id)
     }
     tileReset(){
         super.tileReset()

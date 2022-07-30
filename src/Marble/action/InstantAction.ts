@@ -74,6 +74,19 @@ export class PayTollAction extends PayMoneyAction {
 		this.priority=Action.PRIORITY_NORMAL
 	}
 }
+export class PayPercentMoneyAction extends InstantAction {
+	percent:number
+	receiver:number
+	constructor(payer: number,receiver:number, source:ActionSource,percent:number) {
+		super(payer,receiver,source)
+		this.priority=Action.PRIORITY_FIRST
+		this.receiver=receiver
+		this.percent=percent
+	}
+	getAmount(base:number){
+		return Math.floor(base * this.percent * 0.01)
+	}
+}
 export class BuyoutAction extends InstantAction{
     price:number
 	tile:BuildableTile

@@ -10,6 +10,7 @@ import {
 	ClaimTollAction,
 	InstantAction,
 	PayMoneyAction,
+	PayPercentMoneyAction,
 	PayTollAction,
 	TileAttackAction,
 } from "./action/InstantAction"
@@ -79,8 +80,8 @@ class PlayerMediator {
 		this.players.forEach((p) => {
 			p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
 			let abs:[ABILITY_NAME, AbilityValues][]=[]
-			let codes=chooseRandomMultiple(range(4),3)
-			console.log(codes)
+			let codes=chooseRandomMultiple(range(7),5)
+			
 
 			for(const c of codes){
 				let item=ITEM_REGISTRY.get(c)
@@ -89,6 +90,7 @@ class PlayerMediator {
 				abs.push(item)
 			}
 			p.registerPermanentAbilities(abs)
+
 		})
 
 	}
@@ -148,9 +150,10 @@ class PlayerMediator {
 	 * @param source
 	 */
 	onMeetPlayer(mover: MarblePlayer, stayed: MarblePlayer, pos: number, source: ActionSource) {
-		let defences = mover.onArriveToEnemy(source)
-		let offences = stayed.onEnemyArriveToMe(source)
-		let actions = abilityToAction(source, defences, offences)
+		console.log(mover.turn+"meet"+stayed.turn)
+		let offences = mover.sampleAbility(EVENT_TYPE.ARRIVE_TO_ENEMY,source)
+		let defences = stayed.sampleAbility(EVENT_TYPE.ENEMY_ARRIVE_TO_ME,source)
+		let actions = new ActionPackage().applyAbilityArriveToPlayer(mover.turn,source,offences,defences,stayed.turn)
 		this.game.pushActions(actions)
 	}
 	/**
@@ -273,6 +276,12 @@ class PlayerMediator {
 		this.game.clientInterface.payMoney(payer.turn, -1, amount)
 		this.game.clientInterface.changeMoney(payer.turn, payer.money)
 	}
+	payPecentMoney(action:PayPercentMoneyAction){
+		let payer = this.pOfTurn(action.turn)
+		let receiver = this.pOfTurn(action.receiver)
+
+		this.payMoneyTo(payer, receiver, action.getAmount(payer.money))
+	}
 	payMoney(payerturn: number, receiverturn: number, amt: number, source: ActionSource) {
 		if (amt === 0) return
 
@@ -296,6 +305,12 @@ class PlayerMediator {
 		this.payMoneyTo(payer, receiver, payer.money)
 		payer.onLoan()
 	}
+	/**
+	 * 
+	 * @param playerTurn 
+	 * @param receiverturn 
+	 * @param amount 총 통행료
+	 */
 	playerBankrupt(playerTurn:number,receiverturn:number,amount:number)
 	{
 		let payer = this.pOfTurn(playerTurn)

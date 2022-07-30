@@ -37,6 +37,9 @@ export class ActionStack {
 		for (let i = action.length-1; i >=0; --i) {
 			this.push(action[i])
 		}
+		// for (let i = 0; i < action.length; ++i) {
+		// 	this.push(action[i])
+		// }
 	}
 	iterate() {
 		console.log("---------------")

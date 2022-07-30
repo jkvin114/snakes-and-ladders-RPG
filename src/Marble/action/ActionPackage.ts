@@ -1,10 +1,10 @@
-import { Ability } from "../Ability/Ability"
+import { Ability, PayAbility } from "../Ability/Ability"
 import { ABILITY_NAME, ABILITY_REGISTRY } from "../Ability/AbilityRegistry"
 import type { AbilityValues } from "../Ability/AbilityValues"
 import { CARD_NAME } from "../FortuneCard"
 import type { Action } from "./Action"
 import type { ActionSource } from "./ActionSource"
-import { EarnMoneyAction, PayMoneyAction, TileAttackAction } from "./InstantAction"
+import { EarnMoneyAction, PayMoneyAction, PayPercentMoneyAction, TileAttackAction } from "./InstantAction"
 import { AskAttackDefenceCardAction, AskBuyoutAction, AskTollDefenceCardAction } from "./QueryAction"
 
 class ActionPackage {
@@ -55,9 +55,16 @@ class ActionPackage {
 	mainOnly() {
 		return !this.hasAfter() && !this.hasBefore()
 	}
-	addAction(action:Action,ability:Ability|undefined){
-		if(!ability) return
-		if(ability.isAfterMain()){
+	/**
+	 * 늦게 추가하면 먼저 실행됨
+	 * @param action 
+	 * @param ability 
+	 * @returns 
+	 */
+	addAction(action:Action,ability:ABILITY_NAME){
+		let ab=ABILITY_REGISTRY.get(ability)
+		if(!ab) return
+		if(ab.isAfterMain()){
 			this.addAfter(action)
 		}
 		else{
@@ -81,7 +88,7 @@ class ActionPackage {
 		for(const [name,value] of abilities){
 			if(name===ABILITY_NAME.MONEY_ON_DICE){
 				this.addExecuted(ABILITY_NAME.MONEY_ON_DICE,invoker)
-				this.addAction(new EarnMoneyAction(invoker,source,value.getValue() * dice),ABILITY_REGISTRY.get(name))
+				this.addAction(new EarnMoneyAction(invoker,source,value.getValue() * dice),name)
 			}
 		}
 		return this
@@ -107,22 +114,36 @@ class ActionPackage {
         
 
 		if (eventSource.hasFlag("toll_free")) this.main[0].applyMultiplier(0)
+		
+		const atoll=ABILITY_NAME.ADDITIONAL_TOLL
+		const angel=ABILITY_NAME.ANGEL_CARD
+		const discount=ABILITY_NAME.DISCOUNT_CARD
 
-		if (defences.has(ABILITY_NAME.ANGEL_CARD)) {
-			let ability=ABILITY_REGISTRY.get(ABILITY_NAME.ANGEL_CARD)
+		if (offences.has(atoll)) {
+			let ability=ABILITY_REGISTRY.get(atoll)
+			let value=offences.get(atoll)
+
+			if(ability!=null && value!=null){
+				this.addExecuted(atoll,invokerTurn)
+				this.main[0].applyMultiplier(ability.percentValueToMultiplier(value.getValue()))
+			}
+		}
+
+		if (defences.has(angel)) {
+			let ability=ABILITY_REGISTRY.get(angel)
 			if(ability!=null){
-				this.addExecuted(ABILITY_NAME.ANGEL_CARD,payerTurn)
+				//this.addExecuted(angel,payerTurn)
 				this.addAction(new AskTollDefenceCardAction(payerTurn, ability.getSource(), CARD_NAME.ANGEL ,main.amount,0)
-				.setBlockActionId(main.getId()).setAttacker(invokerTurn),ability)
+				.setBlockActionId(main.getId()).setAttacker(invokerTurn),angel)
 			} 
 			
 		}
-		else if (defences.has(ABILITY_NAME.DISCOUNT_CARD)) {
-			let ability=ABILITY_REGISTRY.get(ABILITY_NAME.DISCOUNT_CARD)
+		else if (defences.has(discount)) {
+			let ability=ABILITY_REGISTRY.get(discount)
 			if(ability!=null){
-				this.addExecuted(ABILITY_NAME.DISCOUNT_CARD,payerTurn)
+				//this.addExecuted(discount,payerTurn)
 				this.addAction(new AskTollDefenceCardAction(payerTurn, ability.getSource(), CARD_NAME.DISCOUNT,main.amount,main.amount*0.5)
-				.setBlockActionId(main.getId()).setAttacker(invokerTurn),ability)
+				.setBlockActionId(main.getId()).setAttacker(invokerTurn),discount)
 			}
 		}
 
@@ -149,21 +170,24 @@ class ActionPackage {
         let main=this.main[0]
         if(!(main instanceof TileAttackAction)) return this
 
-        if (defences.has(ABILITY_NAME.ANGEL_CARD)) {
-			let ability=ABILITY_REGISTRY.get(ABILITY_NAME.ANGEL_CARD)
+		const angel=ABILITY_NAME.ANGEL_CARD
+		const shield=ABILITY_NAME.SHIELD_CARD
+        if (defences.has(angel)) {
+			let ability=ABILITY_REGISTRY.get(angel)
+			
 			if(ability!=null){
-				this.addExecuted(ABILITY_NAME.ANGEL_CARD,victim)
+			//	this.addExecuted(angel,victim)
 				this.addAction(new AskAttackDefenceCardAction(victim, ability.getSource(), CARD_NAME.ANGEL ,attackName)
-				.setBlockActionId(main.getId()).setAttacker(invokerTurn),ability)
+				.setBlockActionId(main.getId()).setAttacker(invokerTurn),angel)
 			}
 		}
 
-		else if (defences.has(ABILITY_NAME.SHIELD_CARD)) {
-			let ability=ABILITY_REGISTRY.get(ABILITY_NAME.SHIELD_CARD)
+		else if (defences.has(shield)) {
+			let ability=ABILITY_REGISTRY.get(shield)
 			if(ability!=null){
-				this.addExecuted(ABILITY_NAME.SHIELD_CARD,victim)
+			//	this.addExecuted(shield,victim)
 				this.addAction(new AskAttackDefenceCardAction(victim, ability.getSource(), CARD_NAME.SHIELD,attackName)
-            	.setBlockActionId(main.getId()).setAttacker(invokerTurn),ability)
+            	.setBlockActionId(main.getId()).setAttacker(invokerTurn),shield)
 			}
 		}
 		return this
@@ -176,11 +200,45 @@ class ActionPackage {
 		defences: Map<ABILITY_NAME,AbilityValues>,
 		moneyLimit: number
 	): ActionPackage {
-		if (!offences) return this
         let main=this.main[0]
         if(!(main instanceof AskBuyoutAction)) return this
 
         if(main.price > moneyLimit) main.off()
+
+		return this
+	}
+	applyAbilityArriveToPlayer(
+		moverTurn: number,
+		eventSource: ActionSource,
+		offences: Map<ABILITY_NAME,AbilityValues>,
+		defences: Map<ABILITY_NAME,AbilityValues>,
+		stayed: number
+	): ActionPackage {
+
+		let perfume=ABILITY_NAME.TAKE_MONEY_ON_ARRIVE_TO_PLAYER
+		let badge=ABILITY_NAME.TAKE_MONEY_ON_PLAYER_ARRIVE_TO_ME
+		
+
+		if(defences.has(badge)){
+			this.addExecuted(badge,stayed)
+
+			let value=defences.get(badge)
+			if(value!=null){
+				this.addExecuted(badge,stayed)
+				this.addAction(new PayPercentMoneyAction(moverTurn,stayed,eventSource,value.getValue()),perfume)
+			}
+		}
+		if(offences.has(perfume))
+		{
+			let value=offences.get(perfume)
+			if(value!=null){
+				this.addExecuted(perfume,moverTurn)
+				this.addAction(new PayPercentMoneyAction(stayed,moverTurn,eventSource,value.getValue()),perfume)
+			}
+			
+		}
+		
+		
 
 		return this
 	}

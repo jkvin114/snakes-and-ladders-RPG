@@ -86,8 +86,17 @@ class Game{
         this.scene.teleportPlayer(this.turnToPlayerNum(player),pos,"levitate")
     }
     payMoney(payer,receiver,amount){
-        if(payer===-1) toast("receivemoney "+moneyToString(amount))
-        else toast("paymoney "+moneyToString(amount))
+        let payerui=payer
+        if(payer!==-1) payerui=this.ui.turnToUi.get(payer)
+
+        if(receiver===-1)
+            this.scene.payMoney(payerui,-1,amount)
+        else
+            this.scene.payMoney(payerui,this.ui.turnToUi.get(receiver),amount)
+
+
+        // if(payer===-1) toast("receivemoney "+moneyToString(amount))
+        // else toast("paymoney "+moneyToString(amount))
     }
     chooseBuild(pos,builds,buildsHave,discount,avaliableMoney){
         let landname=this.scene.getNameAt(pos)
@@ -219,8 +228,8 @@ class Game{
         this.connection.finishConfirm(result,cardname)
     }
     indicateAbility(turn,name,itemName,desc,isblocked){
-        if(itemName==="") return
-        toast2(itemName+"<br>"+desc)
+    //    if(itemName==="") return
+        this.ui.indicateAbility(turn,name,itemName,desc,isblocked)
     }
     addPlayers(){
         

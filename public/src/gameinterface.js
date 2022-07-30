@@ -1371,13 +1371,14 @@ export default class GameInterface {
 				<img src='res/img/store/items.png' style='margin-left: ${-1 * item * 100}px'; >
 			</div>
 		</div>`
+
 		$("#item_notification_container").append(str)
 
 		if(window.matchMedia("(orientation: landscape)").matches){
 			let rect = document.getElementById("skillbtncontainer").getBoundingClientRect()
-			console.log(rect.top, rect.right, rect.bottom, rect.left);
+			//console.log(rect.top, rect.right, rect.bottom, rect.left);
 
-			console.log("#"+id)
+			//console.log("#"+id)
 			$("#"+id).css({bottom:"-100px",left:rect.left+"px"})
 			$("#"+id).animate({bottom:window.innerHeight- rect.top},400)
 		}

@@ -1,6 +1,6 @@
 import { ACTION_TYPE } from "../action/Action"
 import { ACTION_SOURCE_TYPE } from "../action/ActionSource"
-import { Ability, ValueModifierAbility } from "./Ability"
+import { Ability, PayAbility, ValueModifierAbility } from "./Ability"
 import { DefenceCardAbility } from "./DefenceAbilty"
 import { EVENT_TYPE } from "./EventType"
 
@@ -17,7 +17,9 @@ export enum ABILITY_NAME {
 	MOVE_DOUBLE_ON_DICE = "move_double_on_dice",
 	DICE_DOUBLE = "dice_double",
 	MONEY_ON_DICE="money_on_dice",
-	GET_TRAVEL_ON_DRAW_CARD="get_travel_on_draw_card"
+	GET_TRAVEL_ON_DRAW_CARD="get_travel_on_draw_card",
+	TAKE_MONEY_ON_ARRIVE_TO_PLAYER="perfume",
+	TAKE_MONEY_ON_PLAYER_ARRIVE_TO_ME="badge",
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -74,5 +76,22 @@ ABILITY_REGISTRY.set(
 	new Ability(ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD, ACTION_SOURCE_TYPE.ABILITY).on(EVENT_TYPE.DRAW_CARD)
 	.desc("포춘 카드 획득시 $c% 확률로 여행 초대권 획득")
 )
-
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.TAKE_MONEY_ON_ARRIVE_TO_PLAYER,
+	new PayAbility(ABILITY_NAME.TAKE_MONEY_ON_ARRIVE_TO_PLAYER, ACTION_SOURCE_TYPE.ABILITY,PayAbility.BASE_RATIO)
+	.on(EVENT_TYPE.ARRIVE_TO_ENEMY)
+	.desc("상대 말에게 도착시 보유 돈의 $v%을 빼앗음")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.TAKE_MONEY_ON_PLAYER_ARRIVE_TO_ME,
+	new PayAbility(ABILITY_NAME.TAKE_MONEY_ON_PLAYER_ARRIVE_TO_ME, ACTION_SOURCE_TYPE.ABILITY,PayAbility.BASE_RATIO)
+	.on(EVENT_TYPE.ENEMY_ARRIVE_TO_ME)
+	.desc("상대 말이 나에게 도착시 보유 돈의 $v%을 빼앗음")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.ADDITIONAL_TOLL,
+	new ValueModifierAbility(ABILITY_NAME.ADDITIONAL_TOLL, ACTION_SOURCE_TYPE.ABILITY)
+	.on(EVENT_TYPE.CLAIM_TOLL)
+	.desc("통행료 $v% 추가 징수")
+)
 export { ABILITY_REGISTRY }
