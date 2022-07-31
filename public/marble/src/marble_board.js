@@ -124,7 +124,7 @@ function getAngle(rot){
 }
 export function moneyToString(money,zero){
     money=Math.floor(money)
-    if(money===0) {
+    if(money<=0) {
         if(!zero) return "0"
         else return zero
     }
@@ -625,17 +625,21 @@ export class MarbleScene extends Board{
             image=document.getElementById('tile_highlight_red')
         else if(color==='yellow')
             image=document.getElementById('tile_highlight_yellow')
+        else if(color==="shine") 
+            image=document.getElementById('shine')
         else
             image=document.getElementById('tile_highlight_white')
 
         let tile= new fabric.Image(image, {
 			originX: "center",
 			originY: "center",
-			width: TILE_IMG_SIZE,
-			height: TILE_IMG_SIZE,
+			// width: TILE_IMG_SIZE,
+			// height: TILE_IMG_SIZE,
 			objectCaching: false,
             evented:false,
 		})
+        // if(coord.rot==="down")
+        //     tile.set({angle:180})
         this.lockFabricObject(tile)
         this.scaleTileImage(tile,coord.rot)
         tile.set({top:coord.y,left:coord.x})
@@ -864,14 +868,28 @@ export class MarbleScene extends Board{
     setToll(pos,toll,mul){
         if(this.tileObj.has(pos))
         {
-            this.tileData.get(pos).toll=toll
-
             if(mul >1){
                 this.tileObj.get(pos).changeToll("X"+String(mul))
+
+                //배수 올랐을 경우에만
+                if(this.tileData.get(pos).multiplier < mul){
+                    let shine=this.getTileHighlight(this.getCoord(pos),"shine")
+                    shine.set({opacity:0})
+
+                    this.canvas.add(shine)
+                    shine.bringToFront()
+                    this.animateOpacity(shine,1,200)
+                    setTimeout(()=>{
+                        this.canvas.remove(shine)
+                        this.render()
+                    },2000)
+                }
             }
             else{
                 this.tileObj.get(pos).changeToll(moneyToString(toll))
             }
+            this.tileData.get(pos).toll=toll
+            this.tileData.get(pos).multiplier=mul
         }
     }
     setLandOwner(pos,player){

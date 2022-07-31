@@ -78,7 +78,7 @@ export class PayPercentMoneyAction extends InstantAction {
 	percent:number
 	receiver:number
 	constructor(payer: number,receiver:number, source:ActionSource,percent:number) {
-		super(payer,receiver,source)
+		super(ACTION_TYPE.PAY_MONEY,payer,source)
 		this.priority=Action.PRIORITY_FIRST
 		this.receiver=receiver
 		this.percent=percent
@@ -145,5 +145,23 @@ export class ActionModifier extends InstantAction{
 		else if(this.modifyType===ActionModifier.TYPE_MULTIPLY_VALUE) action.applyMultiplier(this.value)
 		else if(this.modifyType===ActionModifier.TYPE_SET_VALUE) action.setValue(this.value)
 		return action
+	}
+}
+export class RequestMoveAction extends InstantAction{
+	static readonly TYPE_WALK=0
+	static readonly TYPE_FORCE_WALK=1
+	static readonly TYPE_TELEPORT=2
+	pos:number
+	moveType:number
+	forward:boolean
+	constructor(turn: number,source:ActionSource,pos:number,type:number){
+		super(ACTION_TYPE.REQUEST_MOVE,turn,source)
+		this.pos=pos
+		this.moveType=type
+		this.forward=true
+	}
+	reverseDirection(){
+		this.forward=false
+		return this
 	}
 }

@@ -14,8 +14,6 @@ class BuildingSelector {
 		}
 		this.state = [false, false, false, false, false]
 		Object.freeze(this.doms)
-		this.setState()
-		this.setButtons()
 	}
 	/**
 	 * 창 처음 켜질때만 호출
@@ -24,19 +22,44 @@ class BuildingSelector {
 		for (const b of this.builds) {
 			this.state[b.type] = true
 		}
-
+		let moneyNeeded = 0
 		//보유중인 건물 체크
 		for (let i = 0; i < 4; ++i) {
+			$(this.doms.buildingSelectionPrices[i]).html("")
+			$(this.doms.buildingSelectionDescriptions[i]).hide()
+			//보유중
 			if (this.buildsHave.includes(i + 1)) {
 				$(this.doms.buildingSelections[i]).addClass("have")
 				$(this.doms.buildingSelections[i]).off()
 				$(this.doms.buildingSelectionChecks[i]).hide()
-				//깃발
-				if (i === 0) $(this.doms.buildingSelectionDescriptions[i]).hide()
+				this.state[i + 1] = false
+				// //깃발
+				// if (i === 0) $(this.doms.buildingSelectionDescriptions[i]).hide()
 			} else {
+				//미보유
 				$(this.doms.buildingSelections[i]).removeClass("have")
-				//깃발
+
 				if (i === 0) $(this.doms.buildingSelectionDescriptions[i]).show()
+				moneyNeeded += this.builds[i].buildPrice * this.discount
+
+				//더돌아야 건설가능
+				if (this.builds[i].cycleLeft > 0) {
+					this.state[i + 1] = false
+					$(this.doms.buildingSelectionChecks[i]).hide()
+					$(this.doms.buildingSelectionDescriptions[i]).html(
+						this.builds[i].cycleLeft + "바퀴<br>더 돌아야 <br>건설가능"
+					)
+					$(this.doms.buildingSelectionDescriptions[i]).show()
+					$(this.doms.buildingSelections[i]).off()
+				}
+				//돈부족
+				else if (this.avaliableMoney < moneyNeeded) {
+					this.state[i + 1] = false
+					$(this.doms.buildingSelectionChecks[i]).hide()
+					$(this.doms.buildingSelectionDescriptions[i]).html("보유자금<br>부족")
+					$(this.doms.buildingSelectionDescriptions[i]).show()
+					$(this.doms.buildingSelections[i]).off()
+				}
 			}
 		}
 	}
@@ -51,7 +74,7 @@ class BuildingSelector {
 		for (let i = 0; i < this.builds.length; ++i) {
 			let buildType = this.builds[i].type - 1
 
-			$(this.doms.buildingSelectionPrices[buildType]).html(moneyToString(this.builds[i].buildPrice))
+			$(this.doms.buildingSelectionPrices[buildType]).html(moneyToString(this.builds[i].buildPrice, "무료"))
 
 			if (this.state[buildType + 1]) {
 				//체크됨
@@ -63,7 +86,7 @@ class BuildingSelector {
 				$(this.doms.buildingSelectionChecks[buildType]).hide()
 			}
 		}
-		$(".window-content-text1").html("건설 비용: " + moneyToString(totalprice))
+		$(".window-content-text1").html("건설 비용: " + moneyToString(totalprice, "무료"))
 		$(".window-content-text2").html("건설비용할인: " + moneyToString(totalprice * (1 - this.discount)))
 
 		let price = totalprice * this.discount
@@ -72,10 +95,10 @@ class BuildingSelector {
 			$("#window-confirm-btn-price").html("잔액 부족")
 		} else {
 			$("#landwindow .window-confirm-btn").removeClass("disabled")
-			$("#window-confirm-btn-price").html(moneyToString(price))
+			$("#window-confirm-btn-price").html(moneyToString(price, "무료"))
 		}
 
-		$(".window-content-text-nobackground").html("통행료: " + moneyToString(totaltoll))
+		$(".window-content-text-nobackground").html("통행료: " + moneyToString(totaltoll, "무료"))
 	}
 	/**
 	 * 건물 체크 변경시 호출
@@ -97,6 +120,99 @@ class BuildingSelector {
 		return list
 	}
 }
+
+class AbilityBuffer {
+	static TOP = 0
+	static BOTTOM = 1
+	//pos:top or bottom
+	constructor(pos) {
+		this.pos = pos
+		this.firstId = ""
+		this.secondId = ""
+		this.interval = null
+		this.queue = []
+	}
+	enqueue(ui, name, itemName, desc, isblocked) {
+		this.queue.push([ui, name, itemName, desc, isblocked])
+		if(ui===3) console.log(this.queue)
+		if (this.interval === null) {
+			this.dequeue()
+			this.interval = setInterval(() => this.dequeue(), 1500)
+		}
+	}
+	dequeue() {
+		if (this.queue.length === 0) {
+			clearInterval(this.interval)
+			this.interval = null
+			return
+		}
+
+		let id = String("ablilty_" + Math.floor(Math.random() * 10000))
+		const [ui, name, itemName, desc, isblocked] = this.queue.shift()
+		this.hideThird(this.secondId)
+		this.moveSecond(this.firstId)
+		this.secondId=this.firstId
+		this.firstId=id
+		this.display(id,ui, name, itemName, desc, isblocked)
+	}
+
+	display(id,ui, name, itemName, desc, isblocked){
+		// let ui = this.turnToUi.get(turn)
+		let pos = ["top-left", "bottom-left", "top-right", "bottom-right"][ui]
+
+		if (itemName === "") {
+			let img = ""
+			let text = ""
+			if (name === "angel") {
+				img = "res/angel.png"
+				text = "모두방어"
+			} else if (name === "discount") {
+				img = "res/coupon.png"
+				text = "할인"
+			} else if (name === "shield") {
+				img = "res/shield.png"
+				text = "공격방어"
+			} else return
+			$("#ability-container").append(
+				`<div class="ability-notification card ${pos}" id='${id}'>
+					<img src="${img}"><br>
+					<a>${text}</a>
+				</div>`
+			)
+		} else {
+			$("#ability-container").append(
+				`<div class="ability-notification ability ${pos}" id='${id}'>
+					<div class=ability-noti-text>
+						<b>${itemName}</b>
+						<hr>
+						<p>${desc}</p>
+					</div>
+				</div>`
+			)
+		}
+		if (ui === 0 || ui === 1) {
+			$("#" + id).animate({ left: 5 }, 400)
+		} else {
+			$("#" + id).animate({ right: 5 }, 400)
+		}
+		setTimeout(() => $("#" + id).remove(), 3000)
+	}
+	moveSecond(id)
+	{
+		if(id==="" || $("#" + id).length===0) return
+		if(this.pos===AbilityBuffer.TOP){
+			$("#" + id).animate({ top: 120 }, 200)
+		}
+		else{
+			$("#" + id).animate({ bottom: 120 }, 200)
+		}
+	}
+	hideThird(id){
+		if(id==="" || $("#" + id).length===0) return
+
+		$("#" + id).hide()
+	}
+}
 const TILE_SELECTIONS = {
 	godhand_special_build: {
 		title: "특수 지역",
@@ -112,7 +228,7 @@ const TILE_SELECTIONS = {
 	},
 	olympic: {
 		title: "올림픽 개최",
-		desc: "올림픽을 개최할 땅을 선택하세요(통행료 증가)"
+		desc: "올림픽을 개최할 땅을 선택하세요"
 	},
 	selloff: {
 		title: "강제 매각",
@@ -128,11 +244,11 @@ const TILE_SELECTIONS = {
 	},
 	pandemic: {
 		title: "전염병",
-		desc: "전염병을 일으켜 2턴간 통행료 50% 감소"
+		desc: "전염병을 일으켜 통행료 50% 감소"
 	},
 	blackout: {
 		title: "정전",
-		desc: "정전을 일으켜 2턴간 통행료 무료"
+		desc: "정전을 일으켜 통행료 무료"
 	},
 	land_change_1: {
 		title: "도시 체인지",
@@ -253,6 +369,12 @@ export class GameInterface {
 		this.diceThrowerPos = 0
 		this.canChangeFullscreen = true
 		this.turnToUi = new Map()
+		this.abilityBuffer = [
+			new AbilityBuffer(AbilityBuffer.TOP),
+			new AbilityBuffer(AbilityBuffer.BOTTOM),
+			new AbilityBuffer(AbilityBuffer.TOP),
+			new AbilityBuffer(AbilityBuffer.BOTTOM)
+		]
 	}
 	onCreate() {
 		$("#dialog").hide()
@@ -429,7 +551,6 @@ export class GameInterface {
 	showBuildSelection(landname, builds, buildsHave, discount, avaliableMoney, onCancel) {
 		$("#landwindow").show()
 		$("#landwindow .window-header-content").html(landname)
-		let selector = new BuildingSelector(builds, buildsHave, discount, avaliableMoney)
 
 		$("#landwindow .window-close").off()
 		$("#landwindow .window-close").click(function () {
@@ -473,6 +594,8 @@ export class GameInterface {
 			$("#window-confirm-btn-price").html(moneyToString(builds[0].buildPrice * discount, "무료"))
 			$(".window-content-text-nobackground").html("통행료: " + moneyToString(builds[0].toll, "무료"))
 		} else {
+			let selector = new BuildingSelector(builds, buildsHave, discount, avaliableMoney)
+
 			$("#landwindow .selection-text").hide()
 			$("#landwindow .building-selection-container").show()
 			$(".building-selection").off()
@@ -480,8 +603,11 @@ export class GameInterface {
 				let build = $(this).data("building")
 				selector.onClick(build)
 			})
-			$(this.doms.buildingSelections[0]).off()
+			selector.setState()
+			selector.setButtons()
 
+			$(this.doms.buildingSelections[0]).off()
+			
 			$("#landwindow .window-confirm-btn").click(() => {
 				$("#landwindow").hide()
 				this.game.buildChooseComplete(selector.result())
@@ -492,6 +618,8 @@ export class GameInterface {
 		$("#landwindow").show()
 		$("#landwindow .window-header-content").html(landname)
 		$("#landwindow .window-close").off()
+		$("#landwindow .window-confirm-btn").off()
+		
 		$("#landwindow .window-close").click(function () {
 			$("#landwindow").hide()
 			onCancel()
@@ -528,7 +656,10 @@ export class GameInterface {
 		$("#fortunecard").removeClass("silver")
 		$("#fortunecard-title").html(FORTUNECARD[name].title)
 		$("#fortunecard-button-container p").html(FORTUNECARD[name].desc)
+
 		if (FORTUNECARD[name].image !== "") $("#fortunecard-img img").attr("src", "res/" + FORTUNECARD[name].image)
+		else $("#fortunecard-img img").attr("src", "")
+
 		if (level === 0) $("#fortunecard").addClass("trash")
 		if (level === 1) $("#fortunecard").addClass("silver")
 		if (level === 2) $("#fortunecard").addClass("gold")
@@ -578,50 +709,8 @@ export class GameInterface {
 	}
 
 	indicateAbility(turn, name, itemName, desc, isblocked) {
-		let id = String("ablilty_" + Math.floor(Math.random() * 10000))
 		let ui = this.turnToUi.get(turn)
-		let pos = ["top-left", "bottom-left", "top-right", "bottom-right"][ui]
-
-		if (itemName === "") {
-			let img=""
-			let text=""
-			if(name==="angel"){
-				img="res/angel.png"
-				text="모두방어"
-			}
-			else if(name==="discount"){
-				img="res/coupon.png"
-				text="할인"
-			}
-			else if(name==="shield"){
-				img="res/shield.png"
-				text="공격방어"
-			}
-			else return
-			$("#ability-container").append(
-				`<div class="ability-notification card ${pos}" id='${id}'>
-					<img src="${img}"><br>
-					<a>${text}</a>
-				</div>`
-			)
-		} else {
-			$("#ability-container").append(
-				`<div class="ability-notification ability ${pos}" id='${id}'>
-					<div class=ability-noti-text>
-						<b>${itemName}</b>
-						<hr>
-						<p>${desc}</p>
-					</div>
-				</div>`
-			)
-		}
-		if (ui === 0 || ui === 1) {
-			$("#" + id).animate({ left: 5 }, 400)
-		} else {
-			$("#" + id).animate({ right: 5 }, 400)
-		}
-
-		setTimeout(() => $("#" + id).remove(), 3000)
+		this.abilityBuffer[ui].enqueue(ui,name, itemName, desc, isblocked)
 	}
 	showLoanSelection(amount) {
 		$("#overlay").show()

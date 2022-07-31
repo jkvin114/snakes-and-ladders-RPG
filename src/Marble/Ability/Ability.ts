@@ -12,7 +12,7 @@ export class Ability {
     readonly id:string
     static readonly PRIORITY_BEFORE=0
     static readonly PRIORITY_AFTER=1
-    readonly priority:number
+    protected priority:number
     description:string
     // readonly owner:number
     constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
@@ -99,10 +99,11 @@ export class ValueModifierAbility extends Ability{
 /**
  * 자신 이동(힐링,건장,라인이동 등)
  */
-class MoveAbilty extends Ability{
+export class MoveAbilty extends Ability{
     pos:number
     constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
         super(name,source)
+        this.priority=Ability.PRIORITY_AFTER
     }
 }
 /**

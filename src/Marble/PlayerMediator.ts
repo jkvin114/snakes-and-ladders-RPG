@@ -31,7 +31,7 @@ class PlayerMediator {
 	game: MarbleGame
 	players: MarblePlayer[]
 	playerTurns: number[]
-	retiredPlayers:number[]
+	retiredPlayers: Set<number>
 	playerCount: number
 	aiCount: number
 
@@ -41,7 +41,7 @@ class PlayerMediator {
 		this.playerCount = 0
 		this.aiCount = 0
 		this.players = []
-		this.retiredPlayers=[]
+		this.retiredPlayers = new Set<number>()
 
 		for (let i = 0; i < playerlist.length; ++i) {
 			const p = playerlist[i]
@@ -69,30 +69,33 @@ class PlayerMediator {
 				name: player.name,
 				char: player.char,
 				money: player.money,
-				card:player.getSavedCard(),
-				abilities:player.getAbilityString()
+				card: player.getSavedCard(),
+				abilities: player.getAbilityString(),
 			}
 		})
 	}
 	setPlayerTurns(turns: number[]) {
 		this.playerTurns = turns
-		this.players.forEach((p, i) => p.setTurn(turns[i]))
+		this.players.forEach((p, i) => {
+			p.setTurn(turns[i])
+			p.cycleLevel = this.game.map.cycleStart
+		})
+	}
+	registerAbilities() {
 		this.players.forEach((p) => {
-			p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
-			let abs:[ABILITY_NAME, AbilityValues][]=[]
-			let codes=chooseRandomMultiple(range(7),5)
-			
+			// p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
+			let abs: [ABILITY_NAME, AbilityValues][] = []
+			let codes = chooseRandomMultiple(range(11), 7)
+			//  codes=[2,6,8,9,10,11]
 
-			for(const c of codes){
-				let item=ITEM_REGISTRY.get(c)
-				
-				if(!item) continue
+			for (const c of codes) {
+				let item = ITEM_REGISTRY.get(c)
+
+				if (!item) continue
 				abs.push(item)
 			}
 			p.registerPermanentAbilities(abs)
-
 		})
-
 	}
 	areEnemy(p1: number, p2: number) {
 		return p1 !== p2
@@ -100,12 +103,13 @@ class PlayerMediator {
 	getEnemiesOf(turn: number) {
 		let list: number[] = []
 		for (let i = 0; i < this.players.length; ++i) {
+			if (this.players[i].retired) continue
 			if (this.areEnemy(i, turn)) list.push(i)
 		}
 		return list
 	}
 	getRandomEnemy(turn: number) {
-		return this.pOfTurn(chooseRandom(this.getEnemiesOf(turn).filter((turn)=>!this.retiredPlayers.includes(turn))))
+		return this.pOfTurn(chooseRandom(this.getEnemiesOf(turn).filter((turn) => !this.retiredPlayers.has(turn))))
 	}
 	getToll(defences: any, offences: any, tile: BuildableTile, discount: number): number {
 		return tile.getToll() * discount
@@ -118,7 +122,7 @@ class PlayerMediator {
 		return this.players[this.playerTurns[turn]]
 	}
 	getPlayersInRange(center: number, rad: number): MarblePlayer[] {
-		return this.players.filter((p) => distance(center, p.pos) <= rad)
+		return this.players.filter((p) => distance(center, p.pos) <= rad && !p.retired)
 	}
 	/**
 	 * 두 지점 사이의 플레이어 반환(위치 순서대로)
@@ -130,18 +134,18 @@ class PlayerMediator {
 		let tiles = getTilesBewteen(start, end)
 		let players: MarblePlayer[] = []
 		for (const pos of tiles) {
-			players.concat(this.players.filter((p) => p.pos === pos))
+			players.concat(this.players.filter((p) => p.pos === pos && !p.retired))
 		}
 		return players
 	}
 	getOtherPlayers(me: number): MarblePlayer[] {
-		return this.players.filter((p) => p.turn !== me)
+		return this.players.filter((p) => p.turn !== me && !p.retired)
 	}
 	getNonRetiredPlayers() {
 		return this.players.filter((p) => !p.retired)
 	}
-	playerRetire(turn:number){
-		this.retiredPlayers.push(turn)
+	playerRetire(turn: number) {
+		this.retiredPlayers.add(turn)
 	}
 	/**
 	 * 다른플레이어에게 도착
@@ -150,10 +154,10 @@ class PlayerMediator {
 	 * @param source
 	 */
 	onMeetPlayer(mover: MarblePlayer, stayed: MarblePlayer, pos: number, source: ActionSource) {
-		console.log(mover.turn+"meet"+stayed.turn)
-		let offences = mover.sampleAbility(EVENT_TYPE.ARRIVE_TO_ENEMY,source)
-		let defences = stayed.sampleAbility(EVENT_TYPE.ENEMY_ARRIVE_TO_ME,source)
-		let actions = new ActionPackage().applyAbilityArriveToPlayer(mover.turn,source,offences,defences,stayed.turn)
+		console.log(mover.turn + "meet" + stayed.turn)
+		let offences = mover.sampleAbility(EVENT_TYPE.ARRIVE_TO_ENEMY, source)
+		let defences = stayed.sampleAbility(EVENT_TYPE.ENEMY_ARRIVE_TO_ME, source)
+		let actions = new ActionPackage().applyAbilityArriveToPlayer(mover.turn, source, offences, defences, stayed.turn)
 		this.game.pushActions(actions)
 	}
 	/**
@@ -200,9 +204,12 @@ class PlayerMediator {
 	onArriveMyLand(playerTurn: number, tile: BuildableTile, source: ActionSource) {
 		let player = this.pOfTurn(playerTurn)
 
-		let event = player.onArriveMyLand(tile, source)
 		this.map.ownerArrive(tile)
-		this.game.pushActions(abilityToAction(source, event).setMain(this.game.getAskBuildAction(playerTurn, tile, source)))
+		this.game.pushActions(
+			new ActionPackage()
+				.setMain(this.game.getAskBuildAction(playerTurn, tile, source))
+				.applyAbilityArriveMyLand(playerTurn, source, player.sampleAbility(EVENT_TYPE.ARRIVE_MY_LAND, source), tile)
+		)
 	}
 
 	/**
@@ -217,16 +224,22 @@ class PlayerMediator {
 		let player = this.pOfTurn(playerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
-		let defences = player.onArriveEnemyLand(tile, source)
-		let offences = landOwner.onEnemyArriveMyLand(player, tile, source)
-
-		let stk: Action[] = []
-		stk.push(new ClaimTollAction(playerTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE), tile))
+		let stk=[new ClaimTollAction(playerTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE), tile)]
 
 		if (tile.canBuyOut()) {
 			stk.push(new ClaimBuyoutAction(playerTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE), tile))
 		}
-		this.game.pushActions(abilityToAction(source, defences, offences).setMain(...stk))
+		this.game.pushActions(
+			new ActionPackage()
+				.setMain(...stk)
+				.applyAbilityArriveEnemyLand(
+					playerTurn,
+					source,
+					landOwner.sampleAbility(EVENT_TYPE.ENEMY_ARRIVE_MY_LAND, source),
+					player.sampleAbility(EVENT_TYPE.ARRIVE_ENEMY_LAND, source),
+					tile
+				)
+		)
 	}
 	/**
 	 * 최종 통행료 계산/
@@ -240,13 +253,13 @@ class PlayerMediator {
 		let payer = this.pOfTurn(payerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
-		let defences = payer.sampleAbility(EVENT_TYPE.TOLL_CLAIMED,moveType) 
-		let offences = landOwner.sampleAbility(EVENT_TYPE.CLAIM_TOLL,moveType) 
+		let defences = payer.sampleAbility(EVENT_TYPE.TOLL_CLAIMED, moveType)
+		let offences = landOwner.sampleAbility(EVENT_TYPE.CLAIM_TOLL, moveType)
 		let baseToll = tile.getToll() * payer.getTollDiscount()
 		this.map.onAfterClaimToll(tile)
 		let ap = new ActionPackage()
 			.setMain(new PayTollAction(payerTurn, ownerTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE), baseToll))
-			.applyClaimTollAbility(ownerTurn,moveType, offences, defences,payerTurn)
+			.applyClaimTollAbility(ownerTurn, moveType, offences, defences, payerTurn)
 
 		// let actions = abilityToAction(moveType, defences, offences)
 		// let toll = this.getToll(defences, offences, tile,payer.getTollDiscount())
@@ -276,7 +289,7 @@ class PlayerMediator {
 		this.game.clientInterface.payMoney(payer.turn, -1, amount)
 		this.game.clientInterface.changeMoney(payer.turn, payer.money)
 	}
-	payPecentMoney(action:PayPercentMoneyAction){
+	payPecentMoney(action: PayPercentMoneyAction) {
 		let payer = this.pOfTurn(action.turn)
 		let receiver = this.pOfTurn(action.receiver)
 
@@ -292,7 +305,7 @@ class PlayerMediator {
 			if (payer.canLoan(amt))
 				this.game.pushSingleAction(new AskLoanAction(payer.turn, source, amt - payer.money, receiverturn))
 			else {
-				this.playerBankrupt(payerturn,receiverturn,amt)
+				this.playerBankrupt(payerturn, receiverturn, amt)
 			}
 		} else {
 			this.payMoneyTo(payer, receiver, amt)
@@ -301,18 +314,17 @@ class PlayerMediator {
 	onLoanConfirm(amount: number, payerturn: number, receiverturn: number) {
 		let payer = this.pOfTurn(payerturn)
 		let receiver = this.pOfTurn(receiverturn)
-		this.earnMoney(payer.turn, amount)
-		this.payMoneyTo(payer, receiver, payer.money)
+		// this.earnMoney(payer.turn, amount)
+		this.payMoneyTo(payer, receiver, payer.money + amount)
 		payer.onLoan()
 	}
 	/**
-	 * 
-	 * @param playerTurn 
-	 * @param receiverturn 
+	 *
+	 * @param playerTurn
+	 * @param receiverturn
 	 * @param amount 총 통행료
 	 */
-	playerBankrupt(playerTurn:number,receiverturn:number,amount:number)
-	{
+	playerBankrupt(playerTurn: number, receiverturn: number, amount: number) {
 		let payer = this.pOfTurn(playerTurn)
 		let receiver = this.pOfTurn(receiverturn)
 		this.payMoneyTo(payer, receiver, amount)
@@ -331,8 +343,8 @@ class PlayerMediator {
 		let buyer = this.pOfTurn(buyerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
-		let offences = buyer.sampleAbility(EVENT_TYPE.BUYOUT_PRICE_CLAIMED,source)
-		let defences = landOwner.sampleAbility(EVENT_TYPE.CLAIM_BUYOUT_PRICE,source)
+		let offences = buyer.sampleAbility(EVENT_TYPE.BUYOUT_PRICE_CLAIMED, source)
+		let defences = landOwner.sampleAbility(EVENT_TYPE.CLAIM_BUYOUT_PRICE, source)
 
 		let originalPrice = tile.getBuyOutPrice()
 		let basePrice = originalPrice * buyer.getBuyoutDiscount()
@@ -352,7 +364,7 @@ class PlayerMediator {
 						originalPrice
 					)
 				)
-				.applyAbilityClaimBuyout(buyerTurn,source, offences, defences, buyer.money)
+				.applyAbilityClaimBuyout(buyerTurn, source, offences, defences, buyer.money)
 		)
 	}
 
@@ -369,21 +381,21 @@ class PlayerMediator {
 	buyOut(buyerTurn: number, ownerTurn: number, price: number, tile: BuildableTile, source: ActionSource) {
 		let buyer = this.pOfTurn(buyerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
-
-		if (tile.isMoreBuildable()) {
-			let builds = tile.getBuildingAvaliability(buyer.cycleLevel)
-			this.game.pushSingleAction(
-				new AskBuildAction(
-					buyerTurn,
-					source,
-					tile.position,
-					builds,
-					tile.getCurrentBuilds(),
-					buyer.getBuildDiscount(),
-					buyer.money
-				)
-			)
-		}
+		this.game.pushSingleAction(this.game.getAskBuildAction(buyerTurn, tile, source))
+		// if (tile.isMoreBuildable()) {
+		// 	let builds = tile.getBuildingAvaliability(buyer.cycleLevel)
+		// 	this.game.pushSingleAction(
+		// 		new AskBuildAction(
+		// 			buyerTurn,
+		// 			source,
+		// 			tile.position,
+		// 			builds,
+		// 			tile.getCurrentBuilds(),
+		// 			buyer.getBuildDiscount(),
+		// 			buyer.money
+		// 		)
+		// 	)
+		// }
 
 		this.payMoney(buyerTurn, ownerTurn, price, new ActionSource(ACTION_SOURCE_TYPE.BUYOUT))
 		this.game.landBuyOut(buyer, landOwner, tile)
@@ -406,20 +418,20 @@ class PlayerMediator {
 		let attacker = this.pOfTurn(attackerTurn)
 		let landOwner = this.pOfTurn(tile.owner)
 
-		let offences = attacker.sampleAbility(EVENT_TYPE.DO_ATTACK,source)
-		let defences = landOwner.sampleAbility(EVENT_TYPE.BEING_ATTACKED,source)
+		let offences = attacker.sampleAbility(EVENT_TYPE.DO_ATTACK, source)
+		let defences = landOwner.sampleAbility(EVENT_TYPE.BEING_ATTACKED, source)
 		// let actions = abilityToAction(source, defences, offences)
-		let actions=new ActionPackage()
+		let actions = new ActionPackage()
 		if (name === CARD_NAME.LAND_CHANGE) {
 			if (!secondTile) return
 			actions.setMain(new TileAttackAction(attackerTurn, source, tile, name).setLandChangeTile(secondTile))
 		} else {
 			actions.setMain(new TileAttackAction(attackerTurn, source, tile, name))
 		}
-		actions.applyAttemptAttackAbility(attackerTurn,source,offences,defences,name,tile.owner)
+		actions.applyAttemptAttackAbility(attackerTurn, source, offences, defences, name, tile.owner)
 		this.game.pushActions(actions)
 	}
-	executeAbility(turn:number,name:ABILITY_NAME){
+	executeAbility(turn: number, name: ABILITY_NAME) {
 		this.pOfTurn(turn).useAbility(name)
 	}
 	onMonopolyAlert(player: MarblePlayer, spots: number[]) {

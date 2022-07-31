@@ -101,7 +101,7 @@ class Game{
     chooseBuild(pos,builds,buildsHave,discount,avaliableMoney){
         let landname=this.scene.getNameAt(pos)
         if(builds.length===0) this.buildChooseComplete([])
-
+        else
         this.ui.showBuildSelection(landname,builds,buildsHave,discount,avaliableMoney,()=>{
             this.buildChooseComplete([])
         })

@@ -176,5 +176,6 @@
         "olympic":"올림픽",
         "travel":"세계여행",
         "start":"시작"
-    }
+    },
+    "cycleStart":1
 }

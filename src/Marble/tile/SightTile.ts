@@ -36,7 +36,7 @@ class SightTile extends BuildableTile{
     getBuildingAvaliability(cycleLevel:number){
         if(this.land) return []
         return [{
-            cycleLeft:0,toll:this.baseToll,buildPrice:this.buildPrice,type:BUILDING.SIGHT
+            cycleLeft:0,toll:this.baseToll,buildPrice:this.buildPrice,type:BUILDING.SIGHT,have:false
         }]
     }
     getMinimumBuildPrice(){

@@ -1,6 +1,6 @@
 import { ACTION_TYPE } from "../action/Action"
 import { ACTION_SOURCE_TYPE } from "../action/ActionSource"
-import { Ability, PayAbility, ValueModifierAbility } from "./Ability"
+import { Ability, MoveAbilty, PayAbility, ValueModifierAbility } from "./Ability"
 import { DefenceCardAbility } from "./DefenceAbilty"
 import { EVENT_TYPE } from "./EventType"
 
@@ -20,6 +20,9 @@ export enum ABILITY_NAME {
 	GET_TRAVEL_ON_DRAW_CARD="get_travel_on_draw_card",
 	TAKE_MONEY_ON_ARRIVE_TO_PLAYER="perfume",
 	TAKE_MONEY_ON_PLAYER_ARRIVE_TO_ME="badge",
+	FREE_TOLL="free_toll",
+	TRAVEL_ON_ENEMY_LAND="healing",
+	MONEY_ON_MY_LAND="ring",
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -93,5 +96,23 @@ ABILITY_REGISTRY.set(
 	new ValueModifierAbility(ABILITY_NAME.ADDITIONAL_TOLL, ACTION_SOURCE_TYPE.ABILITY)
 	.on(EVENT_TYPE.CLAIM_TOLL)
 	.desc("통행료 $v% 추가 징수")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.FREE_TOLL,
+	new ValueModifierAbility(ABILITY_NAME.FREE_TOLL, ACTION_SOURCE_TYPE.ABILITY)
+	.on(EVENT_TYPE.CLAIM_TOLL)
+	.desc("상대 땅 도착시 통행료 면제")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.TRAVEL_ON_ENEMY_LAND,
+	new MoveAbilty(ABILITY_NAME.TRAVEL_ON_ENEMY_LAND, ACTION_SOURCE_TYPE.ABILITY)
+	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
+	.desc("상대 땅 도착시 $c% 확률로 세계여행")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MONEY_ON_MY_LAND,
+	new PayAbility(ABILITY_NAME.MONEY_ON_MY_LAND, ACTION_SOURCE_TYPE.ABILITY,PayAbility.BASE_RATIO)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("자신의 땅 도착시 건설 비용의 $v%를 지급받음")
 )
 export { ABILITY_REGISTRY }

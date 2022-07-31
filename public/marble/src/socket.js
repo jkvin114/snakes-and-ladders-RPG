@@ -65,6 +65,7 @@ export function openConnection(isInitial){
 	})
     socket.on("server:pay", function (payer,receiver,amount) {
         console.log("pay")
+		if(payer===receiver) return
 		console.log(payer,receiver,amount)
 		GAME.payMoney(payer,receiver,amount)
 	})
@@ -184,6 +185,8 @@ export function openConnection(isInitial){
 		socket.emit(PREFIX+"request_setting")
 	}
 	GAME.connection.chooseBuild=function(builds){
+		console.log("choosebuild")
+		console.log(builds)
 		socket.emit(PREFIX+"select_build",GAME.myTurn,builds)
 	}
 	GAME.connection.chooseBuyout=function(result){

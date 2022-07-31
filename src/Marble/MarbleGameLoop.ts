@@ -4,7 +4,7 @@ import { ActionSource, ACTION_SOURCE_TYPE } from "./action/ActionSource";
 import { DelayedAction, MoveAction, RollDiceAction } from "./action/DelayedAction";
 import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
-import { InstantAction, TeleportAction } from "./action/InstantAction";
+import { InstantAction } from "./action/InstantAction";
 import { MarbleClientInterface } from "./MarbleClientInterface";
 import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
@@ -279,10 +279,6 @@ abstract class MarbleGameCycleState {
                 if(action instanceof AskBuyoutAction)
                     return new WaitingBuyOut(this.game,action)
                 break
-            case ACTION_TYPE.TELEPORT:
-                if(action instanceof TeleportAction)
-                    return new TeleportMoving(this.game,action.source,action.turn,action.pos)
-                break
             case ACTION_TYPE.ASK_LOAN:
                 if(action instanceof AskLoanAction)
                     return new WaitingLoan(this.game,action)
@@ -415,10 +411,10 @@ class ThrowingDice extends MarbleGameCycleState{
     }
     afterDelay(): void {
         if(this.is3double){
-            this.game.onTripleDouble()
+           // this.game.onTripleDouble()
         }
         else{
-            this.game.requestWalkMove(this.action.pos,this.action.dice,this.turn,this.action.source)
+       //     this.game.requestWalkMove(this.action.pos,this.action.dice,this.turn,this.action.source)
         }
     }
 }
@@ -428,7 +424,8 @@ class Moving extends MarbleGameCycleState{
     movetype:ActionSource
     distance:number
     from:number
-    constructor(game:MarbleGame,sourceAction:MoveAction){
+    isForceMove:boolean
+    constructor(game:MarbleGame,sourceAction:MoveAction,){
         super(game,sourceAction.turn,Moving.id)
         this.movetype=sourceAction.source
         this.distance=sourceAction.distance
@@ -438,21 +435,6 @@ class Moving extends MarbleGameCycleState{
         this.game.clientInterface.walkMovePlayer(this.turn,this.from,this.distance)
         this.game.movePlayer(this.turn,this.distance,this.movetype)
     }
-}
-class TeleportMoving extends MarbleGameCycleState{
-    movetype:ActionSource
-    pos:number
-    static id = GAME_CYCLE.PLAYER_TELEPORTING
-    constructor(game:MarbleGame,movetype:ActionSource,turn:number,pos:number){
-        super(game,turn,TeleportMoving.id)
-        this.movetype=movetype
-        this.pos=pos
-    }
-    onCreate(): void {
-        this.game.clientInterface.teleportPlayer(this.turn,this.pos)
-        this.game.teleportPlayer(this.turn,this.pos,this.movetype)
-    }
-    
 }
 class WaitingBuild extends MarbleGameCycleState{
 

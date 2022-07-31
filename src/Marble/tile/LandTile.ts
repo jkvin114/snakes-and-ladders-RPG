@@ -222,20 +222,35 @@ class LandTile extends BuildableTile{
      */
     getBuildingAvaliability(cycleLevel:number):ServerPayloadInterface.buildAvaliability[]{
         let list:ServerPayloadInterface.buildAvaliability[]=[]
+        let buildables=this.getBuildables()
+        for(let i=1;i<6;++i){
 
-        for(const b of this.getBuildables()){
+            if(!buildables.includes(i)) {
+                if(i===BUILDING.LANDMARK) continue//랜드마크 건설 불가시 배열에 안넣음
+                
+                list.push({
+                    cycleLeft:0,toll:0,
+                    buildPrice:0,type:i,have:true
+                })
+                continue
+            }
+
             let cycleLeft=0
-            if(b===BUILDING.BUILDING){
+            if(i===BUILDING.BUILDING){
                 cycleLeft=Math.max(0,2-cycleLevel)
             }
-            if(b===BUILDING.HOTEL){
+            if(i===BUILDING.HOTEL){
                 cycleLeft=Math.max(0,3-cycleLevel)
             }
             list.push({
-                cycleLeft:cycleLeft,toll:this.baseToll.getSingle(b),
-                buildPrice:this.buildPrice.getSingle(b),type:b
+                cycleLeft:cycleLeft,toll:this.baseToll.getSingle(i),
+                buildPrice:this.buildPrice.getSingle(i),type:i,have:false
             })
         }
+
+        //랜드마크 못짓는데 모든 건물이 보유중 혹은 아직 못지으면 빈 배열 반환
+        if(list.every((b)=>b.cycleLeft>0 || b.have) && !buildables.includes(BUILDING.LANDMARK)) return []
+
         return list
     }
     /**

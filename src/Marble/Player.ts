@@ -45,11 +45,12 @@ class MarblePlayer{
         this.retired=false
         this.hadLoan=false
         this.oddeven=3
-        this.cycleLevel=3 //start with 1
+        this.cycleLevel=1 //start with 1
         this.pendingActions=[]
         this.savedDefenceCardAbility=ABILITY_NAME.NONE
         this.abilityStorage=new AbilityStorage()
     }
+    
     addPendingAction(action:Action){
         this.pendingActions.push(action)
     }
@@ -107,6 +108,9 @@ class MarblePlayer{
         return {
             hasOddEven:this.oddeven > 0,origin:this.pos
         }
+    }
+    onPassStart(){
+        this.cycleLevel+=1
     }
     onTurnStart(){
         this.doubles=0
@@ -223,6 +227,7 @@ class MarblePlayer{
     }
     onLoan(){
         this.hadLoan=true
+        this.money=0
     }
     takeMoney(amt:number){
         this.money=Math.max(0,this.money-amt)

@@ -16,6 +16,7 @@ import {
 	InstantAction,
 	PayMoneyAction,
 	PayPercentMoneyAction,
+	RequestMoveAction,
 	TeleportAction,
 	TileAttackAction,
 } from "./action/InstantAction"
@@ -66,7 +67,7 @@ class MarbleGame {
 	readonly mediator: PlayerMediator
 	readonly SALARY = 150 * 10000
 	readonly START_MONEY = 1000 * 10000
-
+	// readonly START_MONEY = 70 * 10000
 	totalturn: number
 	actionStack: ActionStack
 	playerTotal: number
@@ -123,6 +124,7 @@ class MarbleGame {
 	setTurns() {
 		let turns = range(this.playerTotal - 1)
 		this.mediator.setPlayerTurns(turns)
+		this.mediator.registerAbilities()
 	}
 	getNextTurn(): number {
 		for (let i = 1; i <= 4; ++i) {
@@ -132,17 +134,14 @@ class MarbleGame {
 		}
 		return 0
 	}
-	receiveSalary(player: MarblePlayer, source: ActionSource) {
+	onPassStart(player: MarblePlayer, source: ActionSource) {
 		let amount = this.SALARY
 		this.pushActions(
 			new ActionPackage()
 				.setMain(new EarnMoneyAction(player.turn, new ActionSource(ACTION_SOURCE_TYPE.PASS_START_TILE), amount))
-				.applyReceiveSalaryAbility(
-					player.turn,
-					source,
-					player.sampleAbility(EVENT_TYPE.RECEIVE_SALARY, source)
-				)
+				.applyReceiveSalaryAbility(player.turn, source, player.sampleAbility(EVENT_TYPE.RECEIVE_SALARY, source))
 		)
+		player.onPassStart()
 	}
 	onGameStart() {}
 	onTurnStart() {
@@ -167,49 +166,52 @@ class MarbleGame {
 
 		if (this.thisturn === 0) this.totalturn += 1
 	}
-	getDiceModifiers(source:ActionSource,oddEven:number){
-		let dc=sample(this.thisPlayer().getDiceControlChance())
-		let abilities=this.thisPlayer().sampleAbility(EVENT_TYPE.GENERATE_DICE_NUMBER,source)
-		let isExactDc=false
-		let isDouble=false
-		let multiplier=1
-		let executed:ABILITY_NAME[]=[]
-		for(const name of abilities.keys()){
-			if(name===ABILITY_NAME.DICE_CONTROL_ACCURACY && dc){
-				isExactDc=true
+	getDiceModifiers(source: ActionSource, oddEven: number) {
+		let dc = sample(this.thisPlayer().getDiceControlChance())
+		let abilities = this.thisPlayer().sampleAbility(EVENT_TYPE.GENERATE_DICE_NUMBER, source)
+		let isExactDc = false
+		let isDouble = false
+		let multiplier = 1
+		let executed: ABILITY_NAME[] = []
+		for (const name of abilities.keys()) {
+			if (name === ABILITY_NAME.DICE_CONTROL_ACCURACY && dc) {
+				isExactDc = true
 				executed.push(name)
 			}
-			if(name===ABILITY_NAME.BACK_DICE){
-				multiplier*=-1
+			if (name === ABILITY_NAME.BACK_DICE) {
+				multiplier *= -1
 				executed.push(name)
 			}
-			if(name===ABILITY_NAME.MOVE_DOUBLE_ON_DICE){
-				multiplier*=2
+			if (name === ABILITY_NAME.MOVE_DOUBLE_ON_DICE) {
+				multiplier *= 2
 				executed.push(name)
 			}
-			if(name===ABILITY_NAME.DICE_DOUBLE && oddEven!==DiceNumberGenerator.ODD) {
+			if (name === ABILITY_NAME.DICE_DOUBLE && oddEven !== DiceNumberGenerator.ODD) {
 				executed.push(name)
-				isDouble=true
+				isDouble = true
 			}
 		}
 
-		this.executeAbility(executed.map((name)=>{return {turn:this.thisturn,name:name}}))
+		this.executeAbility(
+			executed.map((name) => {
+				return { turn: this.thisturn, name: name }
+			})
+		)
 
 		return {
-			dc:dc,exactDc:isExactDc,isDouble:isDouble,multiplier:multiplier
+			dc: dc,
+			exactDc: isExactDc,
+			isDouble: isDouble,
+			multiplier: multiplier,
 		}
 	}
 	throwDice(target: number, oddeven: number) {
 		// let sample = this.mediator.getDiceAbilitySamples(this.thisturn)
-		let source=new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP)
-		let modifiers=this.getDiceModifiers(source,oddeven)
-		let multiplier=modifiers.multiplier
+		let source = new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP)
+		let modifiers = this.getDiceModifiers(source, oddeven)
+		let multiplier = modifiers.multiplier
 
-		const [dice1,dice2] = DiceNumberGenerator.generate(
-			target,
-			oddeven,
-			modifiers
-		)
+		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven, modifiers)
 
 		let isDouble = dice1 === dice2
 		if (oddeven > 0) this.thisPlayer().useOddEven()
@@ -231,24 +233,46 @@ class MarbleGame {
 		}
 		let player = this.thisPlayer()
 
-		let distance=multiplier * (dice1 + dice2)
-		this.pushActions( new ActionPackage().setMain(new RollDiceAction(
-			this.thisturn,
-			new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP),
-			player.pos,
-			distance,
-			isTripleDouble
-		)).applyThrowDiceAbility(this.thisturn,source,
-		player.sampleAbility(EVENT_TYPE.THROW_DICE,source),Math.abs(distance))
-		)
+		let distance = multiplier * (dice1 + dice2)
+		let actions = new ActionPackage()
+			.setMain(
+				new RollDiceAction(
+					this.thisturn,
+					new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP),
+					player.pos,
+					distance,
+					isTripleDouble
+				)
+			)
+			.applyThrowDiceAbility(this.thisturn, source, player.sampleAbility(EVENT_TYPE.THROW_DICE, source), dice1 + dice2)
+		
+		if (isTripleDouble) {
+			actions.addAfter(new RequestMoveAction(
+				this.thisturn,
+				new ActionSource(ACTION_SOURCE_TYPE.THREE_DOUBLES),
+				this.map.island,
+				RequestMoveAction.TYPE_TELEPORT
+			))
+			player.onTripleDouble()
+		} else {
+			actions.addAfter(new RequestMoveAction(
+				this.thisturn,
+				new ActionSource(ACTION_SOURCE_TYPE.DICE),
+				forwardBy(player.pos,distance),
+				RequestMoveAction.TYPE_WALK
+			))
+		}
+
+		this.pushActions(actions)
 
 		return {
-			dice: [dice1,dice2],
+			dice: [dice1, dice2],
 			isDouble: isDouble,
-			dc:modifiers.dc
+			dc: modifiers.dc,
 		}
 	}
-	onTripleDouble() {
+
+	private onTripleDouble() {
 		this.thisPlayer().onTripleDouble()
 
 		this.pushSingleAction(
@@ -274,13 +298,14 @@ class MarbleGame {
 	 * @param source
 	 * @returns updated distance
 	 */
-	requestWalkMove(pos: number, dist: number, turn: number, source: ActionSource) {
-		let newpos = forwardBy(pos, dist)
+	 private requestWalkMove(turn: number, newpos:number,source: ActionSource) {
+		// let newpos = forwardBy(pos, dist)
+		let pos=this.mediator.pOfTurn(turn).pos
 
 		newpos = this.checkPassedTiles(pos, newpos, this.mediator.pOfTurn(turn), source)
 		newpos = this.checkPassedPlayers(pos, newpos, this.mediator.pOfTurn(turn), source)
 
-		this.pushSingleAction(new MoveAction(ACTION_TYPE.WALK_MOVE, turn, source, pos, dist))
+		this.pushSingleAction(new MoveAction(ACTION_TYPE.WALK_MOVE, turn, source, pos, forwardDistance(pos,newpos)))
 
 		// return distance(pos, newpos)
 	}
@@ -291,13 +316,15 @@ class MarbleGame {
 	 * @param turn
 	 * @param source
 	 */
-	requestForceWalkMove(pos: number, dist: number, turn: number, source: ActionSource) {
-		let newpos = forwardBy(pos, dist)
+	private requestForceWalkMove(moverTurn: number, newpos: number, source: ActionSource) {
+		let pos = this.mediator.pOfTurn(moverTurn).pos
 
-		this.checkPassedTiles(pos, newpos, this.mediator.pOfTurn(turn), source)
-		this.checkPassedPlayers(pos, newpos, this.mediator.pOfTurn(turn), source)
+		this.checkPassedTiles(pos, newpos, this.mediator.pOfTurn(moverTurn), source)
+		this.checkPassedPlayers(pos, newpos, this.mediator.pOfTurn(moverTurn), source)
 
-		this.pushSingleAction(new MoveAction(ACTION_TYPE.WALK_MOVE, turn, source, pos, dist))
+		this.pushSingleAction(
+			new MoveAction(ACTION_TYPE.WALK_MOVE, moverTurn, source, pos, forwardDistance(pos, newpos))
+		)
 	}
 	/**
 	 * 걸어서 이동(주사위,세계여행,힐링,포춘카드)
@@ -323,7 +350,7 @@ class MarbleGame {
 	 * @param pos
 	 * @param source
 	 */
-	teleportPlayer(turn: number, pos: number, source: ActionSource) {
+	 private teleportPlayer(turn: number, pos: number, source: ActionSource) {
 		this.mediator.pOfTurn(turn).moveTo(pos)
 
 		this.checkPlayerMeet(turn, pos, source)
@@ -340,7 +367,7 @@ class MarbleGame {
 	}
 	checkPassedPlayers(oldpos: number, newpos: number, mover: MarblePlayer, source: ActionSource) {
 		for (const player of this.mediator.getPlayersBetween(oldpos, newpos)) {
-			if(mover.turn===player.turn) continue
+			if (mover.turn === player.turn) continue
 			let block = this.mediator.onPlayerPassOther(mover, player, oldpos, newpos, source)
 			if (block) return player.pos
 		}
@@ -349,7 +376,7 @@ class MarbleGame {
 	checkPlayerMeet(moverTurn: number, pos: number, source: ActionSource) {
 		let players = this.mediator.getPlayersInRange(this.mediator.pOfTurn(moverTurn).pos, 0)
 		for (const p of players) {
-			if(moverTurn===p.turn) continue
+			if (moverTurn === p.turn) continue
 			this.mediator.onMeetPlayer(this.mediator.pOfTurn(moverTurn), p, pos, source)
 		}
 	}
@@ -379,23 +406,23 @@ class MarbleGame {
 	forceEndTurn(turn: number) {
 		this.actionStack.removeByTurnExcludeType(turn, [ACTION_TYPE.END_TURN])
 	}
-	getCardModifier(player:MarblePlayer,source:ActionSource){
-		let abs=player.sampleAbility(EVENT_TYPE.DRAW_CARD,source)
-		if(abs.has(ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD)) return ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD
+	getCardModifier(player: MarblePlayer, source: ActionSource) {
+		let abs = player.sampleAbility(EVENT_TYPE.DRAW_CARD, source)
+		if (abs.has(ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD)) return ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD
 
 		return ABILITY_NAME.NONE
 	}
 
-	drawCard(turn:number,affectingAbility:ABILITY_NAME,goldFortuneChance:number){
-		this.executeAbility([{name:affectingAbility,turn:turn}])
+	drawCard(turn: number, affectingAbility: ABILITY_NAME, goldFortuneChance: number) {
+		this.executeAbility([{ name: affectingAbility, turn: turn }])
 
-        return FortuneCardRegistry.draw(goldFortuneChance,affectingAbility)
-    }
+		return FortuneCardRegistry.draw(goldFortuneChance, affectingAbility)
+	}
 
 	arriveCardTile(moverTurn: number, source: ActionSource) {
-		let player=this.mediator.pOfTurn(moverTurn)
+		let player = this.mediator.pOfTurn(moverTurn)
 
-		let card = this.drawCard(moverTurn, this.getCardModifier(player,source),player.getGoldFortuneChance())
+		let card = this.drawCard(moverTurn, this.getCardModifier(player, source), player.getGoldFortuneChance())
 		this.pushSingleAction(new ObtainCardAction(moverTurn, new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_CARD_TILE), card))
 	}
 	executeCardCommand(invoker: number, card: CommandCard) {
@@ -403,20 +430,33 @@ class MarbleGame {
 		let currpos = this.mediator.pOfTurn(invoker).pos
 		switch (card.name) {
 			case CARD_NAME.GO_START:
-				this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.start), invoker, source)
+				this.pushSingleAction(
+					new RequestMoveAction(invoker, source, this.map.start, RequestMoveAction.TYPE_FORCE_WALK)
+				)
+				// this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.start), invoker, source)
 				break
 			case CARD_NAME.GO_OLYMPIC:
 				if (this.map.olympicPos === -1) return
-				this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.olympicPos), invoker, source)
+				this.pushSingleAction(
+					new RequestMoveAction(invoker, source, this.map.olympicPos, RequestMoveAction.TYPE_FORCE_WALK)
+				)
+				// this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.olympicPos), invoker, source)
 				break
 			case CARD_NAME.OLYMPIC:
-				this.arriveOlympicTile(invoker,source)
+				this.arriveOlympicTile(invoker, source)
 				break
 			case CARD_NAME.GO_TRAVEL:
-				this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.travel), invoker, source)
+				this.pushSingleAction(
+					new RequestMoveAction(invoker, source, this.map.travel, RequestMoveAction.TYPE_FORCE_WALK)
+				)
+				// this.requestForceWalkMove(currpos, forwardDistance(currpos, this.map.travel), invoker, source)
 				break
 			case CARD_NAME.GO_ISLAND:
-				this.teleportPlayer(invoker, this.map.island, source)
+				this.pushSingleAction(
+					new RequestMoveAction(invoker, source, this.map.island, RequestMoveAction.TYPE_TELEPORT)
+				)
+
+				// this.teleportPlayer(invoker, this.map.island, source)
 				break
 			case CARD_NAME.DONATE_LAND:
 				let myTiles = this.map.getTiles(this.mediator.pOfTurn(invoker), TileFilter.MY_LAND().setNoLandMark())
@@ -575,10 +615,27 @@ class MarbleGame {
 		let oldpos = this.mediator.pOfTurn(turn).pos
 		let dist = forwardDistance(oldpos, pos)
 		if (source.eventType === ACTION_SOURCE_TYPE.ARRIVE_TRAVEL_TILE) {
-			this.requestWalkMove(oldpos, dist, turn, new ActionSource(ACTION_SOURCE_TYPE.TRAVEL))
+			this.pushSingleAction(
+				new RequestMoveAction(
+					turn,
+					new ActionSource(ACTION_SOURCE_TYPE.TRAVEL),
+					pos,
+					RequestMoveAction.TYPE_WALK
+				)
+			)
+
+			//this.requestWalkMove(oldpos, dist, turn, new ActionSource(ACTION_SOURCE_TYPE.TRAVEL))
 		}
 		if (source.eventType === ACTION_SOURCE_TYPE.COMMAND_CARD) {
-			this.requestForceWalkMove(oldpos, dist, turn, new ActionSource(ACTION_SOURCE_TYPE.COMMAND_CARD))
+			this.pushSingleAction(
+				new RequestMoveAction(
+					turn,
+					new ActionSource(ACTION_SOURCE_TYPE.COMMAND_CARD),
+					pos,
+					RequestMoveAction.TYPE_FORCE_WALK
+				)
+			)
+			// this.requestForceWalkMove(oldpos, dist, turn, new ActionSource(ACTION_SOURCE_TYPE.COMMAND_CARD))
 		}
 	}
 	onSelectOlympicPosition(turn: number, pos: number, source: ActionSource) {
@@ -631,15 +688,16 @@ class MarbleGame {
 
 		if (player.canBuildLandOfMinimumPrice(tile.getMinimumBuildPrice())) {
 			let builds = tile.getBuildingAvaliability(player.cycleLevel)
-			mainaction = new AskBuildAction(
-				playerTurn,
-				new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE),
-				tile.position,
-				builds,
-				tile.getCurrentBuilds(),
-				player.getBuildDiscount(),
-				player.money
-			)
+			if (builds.length > 0)
+				mainaction = new AskBuildAction(
+					playerTurn,
+					new ActionSource(ACTION_SOURCE_TYPE.ARRIVE_TILE),
+					tile.position,
+					builds,
+					tile.getCurrentBuilds(),
+					player.getBuildDiscount(),
+					player.money
+				)
 		}
 		return mainaction
 	}
@@ -662,8 +720,6 @@ class MarbleGame {
 			this.mediator.payMoney(action.turn, action.receiver, action.amount, action.source)
 		} else if (action instanceof PayPercentMoneyAction) {
 			this.mediator.payPecentMoney(action)
-		}else if (action instanceof TeleportAction) {
-			this.teleportPlayer(action.turn, action.pos, action.source)
 		} else if (action instanceof BuyoutAction) {
 			this.clientInterface.buyout(action.turn, action.tile.position)
 			this.mediator.buyOut(action.turn, action.tile.owner, action.price, action.tile, action.source)
@@ -675,25 +731,33 @@ class MarbleGame {
 			this.modifyActionWith(action)
 		} else if (action instanceof EarnMoneyAction) {
 			this.mediator.earnMoney(action.turn, action.amount)
+		} else if (action instanceof RequestMoveAction) {
+			if(action.moveType===RequestMoveAction.TYPE_FORCE_WALK)
+				this.requestForceWalkMove(action.turn, action.pos, action.source)
+			if(action.moveType===RequestMoveAction.TYPE_WALK)
+				this.requestWalkMove(action.turn, action.pos, action.source)
+			if(action.moveType===RequestMoveAction.TYPE_TELEPORT)
+				this.teleportPlayer(action.turn, action.pos, action.source)
 		}
 	}
 
-	executeAbility(abilities:{name:ABILITY_NAME,turn:number}[]){
-		for(const ab of abilities){
-			this.mediator.executeAbility(ab.turn,ab.name)
-			let data=this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
-			if(!data) continue
-			this.sendAbility(ab.turn,ab.name,data.name,data.desc,false)
+	executeAbility(abilities: { name: ABILITY_NAME; turn: number }[]) {
+		for (const ab of abilities) {
+			this.mediator.executeAbility(ab.turn, ab.name)
+			let data = this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
+			if (!data) continue
+			this.sendAbility(ab.turn, ab.name, data.name, data.desc, false)
 		}
 	}
-	sendAbility(turn:number,name:ABILITY_NAME,itemName:string,desc:string,isblocked:boolean){
-		this.clientInterface.ability(turn,name,itemName,desc,isblocked)
+	sendAbility(turn: number, name: ABILITY_NAME, itemName: string, desc: string, isblocked: boolean) {
+		// console.log("sendability"+itemName)
+		this.clientInterface.ability(turn, name, itemName, desc, isblocked)
 	}
-	indicateBlockedAbility(abilities:{name:ABILITY_NAME,turn:number}[]){
-		for(const ab of abilities){
-			let data=this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
-			if(!data) continue
-			this.clientInterface.ability(ab.turn,ab.name,data.name,data.desc,true)
+	indicateBlockedAbility(abilities: { name: ABILITY_NAME; turn: number }[]) {
+		for (const ab of abilities) {
+			let data = this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
+			if (!data) continue
+			this.clientInterface.ability(ab.turn, ab.name, data.name, data.desc, true)
 		}
 	}
 	pushActions(actions: ActionPackage | null) {
@@ -701,13 +765,12 @@ class MarbleGame {
 
 		console.log(actions.executedAbilities)
 		this.executeAbility(actions.executedAbilities)
-		this.indicateBlockedAbility(actions.executedAbilities)
-		
+		this.indicateBlockedAbility(actions.blockedAbilities)
+
 		if (actions.mainOnly()) {
 			this.actionStack.pushAll(actions.main)
 			return
 		}
-		
 
 		this.actionStack.pushAll(actions.after)
 		if (actions.blocksMain) {
@@ -720,7 +783,7 @@ class MarbleGame {
 	}
 	useDefenceCard(turn: number, action: AskDefenceCardAction) {
 		this.mediator.pOfTurn(turn).useCard()
-		this.sendAbility(turn,action.cardname as ABILITY_NAME,"","",false)
+		this.sendAbility(turn, action.cardname as ABILITY_NAME, "", "", false)
 
 		this.clientInterface.setSavedCard(turn, "", 0)
 		if (action instanceof AskTollDefenceCardAction) {
@@ -871,7 +934,7 @@ class MarbleGame {
 	}
 	onConfirmLoan(player: number, receiver: number, loanamount: number, result: boolean) {
 		if (result) this.mediator.onLoanConfirm(loanamount, player, receiver)
-		else this.mediator.playerBankrupt(player,receiver,loanamount +  this.mediator.pOfTurn(player).money)
+		else this.mediator.playerBankrupt(player, receiver, loanamount + this.mediator.pOfTurn(player).money)
 	}
 	checkMonopoly(tile: BuildableTile, invoker: MarblePlayer) {
 		let monopoly = this.map.checkMonopoly(tile, invoker.turn)
@@ -897,7 +960,7 @@ class MarbleGame {
 
 	bankrupt(player: MarblePlayer) {
 		// player.bankrupt()
-		
+
 		this.forceEndTurn(player.turn)
 
 		this.clientInterface.bankrupt(player.turn)

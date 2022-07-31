@@ -42,6 +42,7 @@ class MarbleGameMap{
     multipliers:Map<number,number> //position,multiplier
     clientInterface:MarbleClientInterface
     olympicStage:number
+    cycleStart:number
     constructor(map:string){ 
         this.buildableTiles=new Map<number,BuildableTile>()
         this.tiles=[]
@@ -58,6 +59,7 @@ class MarbleGameMap{
             this.island=GOD_HAND_MAP.island
             this.olympic=GOD_HAND_MAP.olympic
             this.travel=GOD_HAND_MAP.travel
+            
         }
         else if(map==='world'){
             this.setMap(WORLD_MAP)
@@ -65,7 +67,9 @@ class MarbleGameMap{
             this.island=WORLD_MAP.island
             this.olympic=WORLD_MAP.olympic
             this.travel=WORLD_MAP.travel
+            
         }
+        
         this.olympicPos=-1
         this.festival=new Set<number>()
         this.blackholeTile=-1
@@ -80,6 +84,8 @@ class MarbleGameMap{
 		this.clientInterface = ci
 	}
     setMap(map:any){
+        this.cycleStart=map.cycleStart
+
         for(let i=0;i<MAP_SIZE;++i){
             this.tiles.push(new Tile(i,TILE_TYPE.OTHER))
         }
@@ -152,7 +158,7 @@ class MarbleGameMap{
     }
     onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionSource):boolean{
         if(this.start===tile){
-            game.receiveSalary(player,source)
+            game.onPassStart(player,source)
         }
         return false
     }

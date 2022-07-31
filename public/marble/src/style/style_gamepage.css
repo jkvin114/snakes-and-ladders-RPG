@@ -183,6 +183,7 @@ html{
     color: white;
     height: 30px;
     font-size: 20px;
+    text-align: center;
    
   }
   .window-header.confirmwindow{
@@ -270,6 +271,7 @@ html{
     border-radius: 7px;
     font-size: 11px;
     user-select: none;
+    position: relative;
   }
   .building-selection-name{
     background-color: orange;
@@ -309,20 +311,21 @@ html{
   }
   .building-selection-check{
     position: absolute;
-    top:80px
+    bottom: 17px;
   }
   .building-selection-check > img{
     height: 20px;
   }
   .building-selection-desc{
     position: absolute;
-    z-index: inherit+1;
+    /* z-index: inherit+1; */
     background-color: rgba(53, 53, 53, 0.5);
     color: white;
     width: 55px;
-    transform: translate(0,-20px);
+    /* transform: translate(0,-30px); */
     padding: 3px;
     font-size: 9px;
+    bottom: 17px;
   }
   .selection-text{
     padding: 20px;
@@ -552,13 +555,14 @@ html{
   .loan-window-confirm,.loan-window-bankrupt{
     position: relative;
   
-    height: 30px;
-    font-size: 12px;
+    /* height: 30px; */
+    padding: 6px;
+    font-size: 15px;
     
-    color: white;
+    color: rgb(75, 75, 75);
     border:none;
     cursor: pointer;
-    font-family: 'CookierunBlack';
+    font-family: 'cookierun';
     box-shadow: 0 0 3px 1px black;
     border-radius: 5px;
     
@@ -568,7 +572,7 @@ html{
     transform: translate(-20px,0);
   }
   .loan-window-bankrupt{
-    margin-right:10px ;
+    /* margin-right:10px ; */
     background-color:rgb(226, 131, 53) ;
     transform: translate(20px,0);
   }
@@ -892,7 +896,7 @@ html{
   }
   .player-ui-card{
     box-shadow: 0 0 2px 1px black;
-    line-height: 35px;
+    line-height: 30px;
     position: absolute;
     z-index: 6;
     left:0;
