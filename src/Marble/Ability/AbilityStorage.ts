@@ -1,4 +1,4 @@
-import { ActionSource } from "../action/ActionSource";
+import { ActionTrace } from "../action/ActionTrace";
 import { sample } from "../util";
 import { Ability } from "./Ability";
 import { ABILITY_NAME, ABILITY_REGISTRY } from "./AbilityRegistry";
@@ -36,7 +36,7 @@ export class AbilityStorage {
         }
         console.log(this.permanentAbility)
     }
-    getAbilityForEvent(event:EVENT_TYPE,source:ActionSource):Map<ABILITY_NAME,AbilityValues>{
+    getAbilityForEvent(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValues>{
         let abilities:ABILITY_NAME[]=[]
 
         if(this.permanentAbility.has(event)){

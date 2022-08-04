@@ -1,4 +1,5 @@
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
+import { ACTION_LIST, ACTION_TYPE } from "./Action"
 
 export enum ACTION_SOURCE_TYPE{
     MOVE,//0
@@ -22,20 +23,22 @@ export enum ACTION_SOURCE_TYPE{
     PASS_START_TILE,
     DEFAULT
 }
-export class ActionSource {
+export class ActionTrace {
 	eventType: ACTION_SOURCE_TYPE //이벤트 종류(이동/통행료/인수 등 행동 분류)
 	abilityType: number //능력 종류(힐링류 잘가북류 등 능력 분류)
     abilityName:ABILITY_NAME
 	sourceItem: number //발동하는데 사용된 능력/행템 고유 id
     name:string
-    flags:Set<string>
-    private prev:ActionSource|null
-    constructor(){
+    private tags:Set<string>
+    actionType:ACTION_TYPE
+    private prev:ActionTrace|null
+    constructor(actionType:ACTION_TYPE){
+        this.actionType=actionType
         this.eventType=ACTION_SOURCE_TYPE.DEFAULT
         this.sourceItem=-1
         this.name=""
         this.abilityType=-1
-        this.flags=new Set<string>()
+        this.tags=new Set<string>()
         this.abilityName=ABILITY_NAME.NONE
         this.prev=null
     }
@@ -55,23 +58,37 @@ export class ActionSource {
         this.abilityType=abilityType
         return this
     }
-    addFlag(flag:string){
-        this.flags.add(flag)
+    addTag(tag:string){
+        this.tags.add(tag)
         return this
     }
-    hasFlag(flag:string){
+    hasTag(tag:string):boolean{
         if(!this.prev)
-            return this.flags.has(flag)
+            return this.tags.has(tag)
         else
-            return this.prev.hasFlag(flag)
+            return this.prev.hasTag(tag)
     }
-    
-    setPrev(source:ActionSource){
+    hasActionAndAbility(action:ACTION_TYPE,ability:ABILITY_NAME):boolean{
+        if(this.actionType===action && this.abilityName===ability) return true
+
+        if(!this.prev)
+            return false
+        
+        return this.prev.hasActionAndAbility(action,ability)
+    }
+    setPrev(source:ActionTrace){
         this.prev=source
         return this
     }
-    toString(){
-        if(!this.prev) return `[type:${this.eventType},abilityname:${this.abilityName}]`
-        return this.prev.toString() + `-> [type:${this.eventType},abilityname:${this.abilityName}]`
+    reset(){
+        this.prev=null
+        return this
+    }
+    toString(depth:number):string{
+        if(depth===0) return ""
+        // let str=`[type:${ACTION_LIST[this.actionType]},abilityname:${this.abilityName}]`
+        let str=ACTION_LIST[this.actionType]
+        if(!this.prev) return str
+        return this.prev.toString(depth-1) + `-> [${str} ${this.name===""?'':this.name}]`
     }
 }

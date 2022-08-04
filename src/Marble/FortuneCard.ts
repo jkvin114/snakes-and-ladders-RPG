@@ -4,7 +4,7 @@ import type { AbilityValues } from "./Ability/AbilityValues"
 import { DefenceAbility, DefenceCardAbility } from "./Ability/DefenceAbilty"
 import { EVENT_TYPE } from "./Ability/EventType"
 import { ACTION_TYPE } from "./action/Action"
-import { ACTION_SOURCE_TYPE } from "./action/ActionSource"
+import { ACTION_SOURCE_TYPE } from "./action/ActionTrace"
 import { chooseRandom, chooseWeightedRandom } from "./util"
 
 export enum CARD_TYPE{

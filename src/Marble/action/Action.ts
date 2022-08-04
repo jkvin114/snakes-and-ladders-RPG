@@ -1,6 +1,6 @@
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
-import { hexId } from "../util"
-import { ActionSource, ACTION_SOURCE_TYPE } from "./ActionSource"
+import { cl, hexId } from "../util"
+import { ActionTrace, ACTION_SOURCE_TYPE } from "./ActionTrace"
 
 export enum ACTION_TYPE {
 	WALK_MOVE, //0
@@ -37,6 +37,8 @@ export enum ACTION_TYPE {
 	REQUEST_MOVE,
 	CHOOSE_GODHAND_SPECIAL,
 	CHOOSE_GODHAND_TILE_LIFT,
+	EXECUTE_PENDING_ACTION,
+	TURN_START,
 	EMPTY,
 }
 
@@ -75,6 +77,8 @@ export const ACTION_LIST = [
 	"REQUEST_MOVE",
 	"CHOOSE_GODHAND_SPECIAL",
 	"CHOOSE_GODHAND_TILE_LIFT",
+	"EXECUTE_PENDING_ACTION",
+	"TURN_START",
 	"EMPTY",
 ]
 
@@ -86,7 +90,7 @@ export interface ActionModifyFunction {
 }
 export abstract class Action {
 	type: ACTION_TYPE
-	source: ActionSource
+	source: ActionTrace
 	turn: number
 	priority: number
 	delay: number
@@ -98,7 +102,7 @@ export abstract class Action {
 	static readonly PRIORITY_FIRST=1
 	constructor(type: ACTION_TYPE, turn: number) {
 		this.type = type
-		this.source = new ActionSource()
+		this.source = new ActionTrace(this.type)
 		this.delay = 0
 		this.turn = turn
 		this.valid = true
@@ -107,8 +111,18 @@ export abstract class Action {
 		this.priority=Action.PRIORITY_NORMAL
 		this.indicateAbilityOnPop=false
 	}
-	setSource(source:ActionSource){
+	setSource(source:ActionTrace){
 		this.source=source
+		return this
+	}
+	setPrevActionTrace(source:ActionTrace){
+		if(this.source === source) return
+		this.source.setPrev(source)
+		cl(this.source.toString(10))
+		return this
+	}
+	addFlagToActionTrace(flag:string){
+		this.source.addTag(flag)
 		return this
 	}
 	/**

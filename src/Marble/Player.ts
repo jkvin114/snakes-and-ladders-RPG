@@ -1,14 +1,9 @@
 import { AbilityStorage } from "./Ability/AbilityStorage"
-import { Ability, EmptyAbility } from "./Ability/Ability"
-import type { DefenceAbility, DefenceCardAbility } from "./Ability/DefenceAbilty"
 import { EVENT_TYPE } from "./Ability/EventType"
 import { Action } from "./action/Action"
-import { ActionSource } from "./action/ActionSource"
-import { DefenceCard, FortuneCard, FortuneCardRegistry } from "./FortuneCard"
-import { BuildableTile } from "./tile/BuildableTile"
+import { ActionTrace } from "./action/ActionTrace"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { AbilityValues } from "./Ability/AbilityValues"
-import { ITEM_REGISTRY } from "./ItemRegistry"
 class MarblePlayer{
     readonly name:string
     readonly char:number
@@ -25,7 +20,7 @@ class MarblePlayer{
     hadLoan:boolean
     oddeven:number
     cycleLevel:number
-    num:number
+    num:number  //index of this player in player array
     private pendingActions:Action[]
     private savedDefenceCardAbility:ABILITY_NAME
     private abilityStorage:AbilityStorage
@@ -146,7 +141,7 @@ class MarblePlayer{
     useAbility(name:ABILITY_NAME){
         this.abilityStorage.use(name)
     }
-    sampleAbility(event:EVENT_TYPE,source:ActionSource):Map<ABILITY_NAME,AbilityValues>{
+    sampleAbility(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValues>{
         return this.abilityStorage.getAbilityForEvent(event,source)
     }
     registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityValues][]){

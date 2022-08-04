@@ -1,5 +1,5 @@
 import { Action, ActionModifyFunction, ACTION_TYPE, MOVETYPE } from "./Action"
-import type { ActionSource } from "./ActionSource"
+import type { ActionTrace } from "./ActionTrace"
 import { ServerPayloadInterface } from "./../ServerPayloadInterface"
 import { BUILDING } from "../tile/Tile"
 import { FortuneCard } from "../FortuneCard"

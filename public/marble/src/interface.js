@@ -760,9 +760,17 @@ export class GameInterface {
 		$("#selectiondesc").html(TILE_SELECTIONS[source].desc)
 		$(".selectiontitle").show()
 		$("#selection-cancel").off()
-		$("#selection-cancel").click(() => {
-			this.game.onTileSelectCancel(source)
-		})
+
+		//도시 기부는 취소 불가
+		if(source==="donate_land"){
+			$("#selection-cancel").hide()
+		}
+		else{
+			$("#selection-cancel").show()
+			$("#selection-cancel").click(() => {
+				this.game.onTileSelectCancel(source)
+			})
+		}		
 	}
 	hideSelectionTitle() {
 		$(".selectiontitle").hide()

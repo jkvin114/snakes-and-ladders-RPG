@@ -1,5 +1,5 @@
 import { MOVETYPE } from "./action/Action"
-import { ActionSource } from "./action/ActionSource"
+import { ActionTrace } from "./action/ActionTrace"
 import type { MarbleGame } from "./Game"
 import { MarbleClientInterface } from "./MarbleClientInterface"
 import type { MarblePlayer } from "./Player"
@@ -161,7 +161,7 @@ class MarbleGameMap{
         }
         return Array.from(result)
     }
-    onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionSource,type:MOVETYPE):boolean{
+    onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionTrace,type:MOVETYPE):boolean{
         if(this.blockingTiles.has(tile) && type===MOVETYPE.WALK){
             this.onHitBlockingTile(tile)
             return true

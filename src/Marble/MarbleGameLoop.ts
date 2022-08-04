@@ -1,6 +1,6 @@
 import { sleep,ProtoPlayer,PlayerType } from "../core/Util";
-import { Action,ACTION_TYPE } from "./action/Action";
-import { ActionSource, ACTION_SOURCE_TYPE } from "./action/ActionSource";
+import { Action,ACTION_TYPE, EmptyAction } from "./action/Action";
+import { ActionTrace, ACTION_SOURCE_TYPE } from "./action/ActionTrace";
 import { DelayedAction, MoveAction, RollDiceAction } from "./action/DelayedAction";
 import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
@@ -133,8 +133,7 @@ class MarbleGameLoop{
         }
 
         this.loopRunning=true
-        let repeat=true
-        while(repeat){
+        while(true){
             let action=this.game.nextAction()
             if(!action || this.gameover) {
                 this.loopRunning=false
@@ -238,10 +237,11 @@ abstract class MarbleGameCycleState {
 	readonly id: number
 	gameover: boolean
     game:MarbleGame
-    nextAction:any
-	constructor(game:MarbleGame ,turn:number,id: number) {
+    sourceAction:Action
+	constructor(game:MarbleGame ,turn:number,id: number,sourceAction:Action) {
         this.game=game
 		this.id = id
+        this.sourceAction=sourceAction
 		this.gameover = false
 		// this.idleTimeout = null
         this.turn=turn
@@ -263,9 +263,10 @@ abstract class MarbleGameCycleState {
         if(!action) return new ErrorState(this.game)
         switch(action.type){
             case ACTION_TYPE.END_TURN:
-                return new TurnInitializer(this.game)
+                return new TurnInitializer(this.game,action)
             case ACTION_TYPE.DICE_CHANCE:
-                return new WaitingDice(this.game)
+            case ACTION_TYPE.DICE_CHANCE_NO_DOUBLE:
+                return new WaitingDice(this.game,action)
             case ACTION_TYPE.ROLLING_DICE:
                 if(action instanceof RollDiceAction)
                     return new ThrowingDice(this.game,action)
@@ -303,16 +304,16 @@ abstract class MarbleGameCycleState {
                 break
             case ACTION_TYPE.OBTAIN_CARD:
                 if(action instanceof ObtainCardAction)
-                    return new WaitingCardObtain(this.game,action.turn,action.card)
+                    return new WaitingCardObtain(this.game,action)
                 break
             case ACTION_TYPE.CHOOSE_LAND_CHANGE:
                 if(action instanceof LandSwapAction)
-                    return new WaitingLandSwap(this.game,action.turn,action)
+                    return new WaitingLandSwap(this.game,action)
                 break
             case ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE:
             case ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE:
                 if(action instanceof AskDefenceCardAction)
-                    return new WaitingDefenceCardUse(this.game,action.turn,action)
+                    return new WaitingDefenceCardUse(this.game,action)
                 break
         }
 
@@ -363,7 +364,7 @@ abstract class MarbleGameCycleState {
 class ErrorState extends MarbleGameCycleState{
     static id=ERROR_STATE
     constructor(game: MarbleGame) {
-		super(game,0, ErrorState.id)
+		super(game,0, ErrorState.id,new EmptyAction())
         this.onCreate()
 	}
     onCreate(): void {
@@ -373,20 +374,20 @@ class ErrorState extends MarbleGameCycleState{
 class GameInitializer extends MarbleGameCycleState{
     static id=-1
     constructor(game: MarbleGame) {
-		super(game,0, GameInitializer.id)
+		super(game,0, GameInitializer.id,new EmptyAction())
         this.onCreate()
 	}
     onCreate(): void {
         this.game.onGameStart()
     }
     getNext(action: Action|null): MarbleGameCycleState {
-        return new TurnInitializer(this.game)
+        return new TurnInitializer(this.game,new EmptyAction())
     }
 }
 class TurnInitializer extends MarbleGameCycleState {
 	static id = GAME_CYCLE.START_TURN
-	constructor(game: MarbleGame) {
-		super(game,game.getNextTurn(), TurnInitializer.id)
+	constructor(game: MarbleGame,sourceAction:Action) {
+		super(game,game.getNextTurn(), TurnInitializer.id,sourceAction)
 	}
 	onCreate(): void {
         this.game.onTurnStart()
@@ -396,17 +397,19 @@ class TurnInitializer extends MarbleGameCycleState {
 class WaitingDice extends MarbleGameCycleState{
 
     static id = GAME_CYCLE.WAITING_DICE
-    dice:number[]
-    constructor(game:MarbleGame){
-        super(game,game.thisturn,WaitingDice.id)
+ //   dice:number[]
+    hasDoubleEffect:boolean
+    constructor(game:MarbleGame,sourceAction:Action){
+        super(game,game.thisturn,WaitingDice.id,sourceAction)
+        this.hasDoubleEffect=true
     }
     onCreate(): void {
         this.game.clientInterface.showDiceBtn(this.turn,this.game.getDiceData(this.turn))
     }
     onUserPressDice(target:number,oddeven:number):EventResult{
-        let data=this.game.throwDice(target,oddeven)
+        let data=this.game.throwDice(target,oddeven,this.sourceAction.source)
         this.game.clientInterface.throwDice(this.turn,data)
-        this.dice=data.dice
+  //      this.dice=data.dice
         return new EventResult(true).setData(data)
     }
 }
@@ -416,7 +419,7 @@ class ThrowingDice extends MarbleGameCycleState{
     action:RollDiceAction
     is3double:boolean
     constructor(game:MarbleGame,action:RollDiceAction){
-        super(game,game.thisturn,ThrowingDice.id)
+        super(game,game.thisturn,ThrowingDice.id,action)
         this.action=action
         this.is3double=action.is3double
     }
@@ -424,23 +427,24 @@ class ThrowingDice extends MarbleGameCycleState{
         //this.game.afterDice(this.dice[0]+this.dice[1])
     }
     afterDelay(): void {
-        if(this.is3double){
-           // this.game.onTripleDouble()
-        }
-        else{
-       //     this.game.requestWalkMove(this.action.pos,this.action.dice,this.turn,this.action.source)
-        }
+    //     if(this.is3double){
+    //        // this.game.onTripleDouble()
+    //     }
+    //     else{
+    //    //     this.game.requestWalkMove(this.action.pos,this.action.dice,this.turn,this.action.source)
+    //     }
+    // }
     }
 }
 class Moving extends MarbleGameCycleState{
 
     static id = GAME_CYCLE.PLAYER_WALKING
-    movetype:ActionSource
+    movetype:ActionTrace
     distance:number
     from:number
     isForceMove:boolean
     constructor(game:MarbleGame,sourceAction:MoveAction,){
-        super(game,sourceAction.turn,Moving.id)
+        super(game,sourceAction.turn,Moving.id,sourceAction)
         this.movetype=sourceAction.source
         this.distance=sourceAction.distance
         this.from=sourceAction.from
@@ -459,7 +463,7 @@ class WaitingBuild extends MarbleGameCycleState{
     availableMoney:number
     buildsHave:BUILDING[]
     constructor(game:MarbleGame,sourceAction:AskBuildAction){
-        super(game,sourceAction.turn,WaitingBuild.id)
+        super(game,sourceAction.turn,WaitingBuild.id,sourceAction)
         this.builds=sourceAction.builds
         this.pos=sourceAction.pos
         this.discount=sourceAction.discount
@@ -470,7 +474,7 @@ class WaitingBuild extends MarbleGameCycleState{
         this.game.clientInterface.chooseBuild(this.turn,this.pos,this.builds,this.buildsHave,this.discount,this.availableMoney)
     }
     onUserSelectBuild(builds: BUILDING[]): EventResult {
-        this.game.directBuild(this.turn,builds,this.pos,this.discount)
+        this.game.directBuild(this.turn,builds,this.pos,this.discount,this.sourceAction.source)
         return new EventResult(true).setData(builds)
     }
 }
@@ -480,7 +484,7 @@ class WaitingLoan extends MarbleGameCycleState{
     amount:number
     receiver:number
     constructor(game:MarbleGame,action:AskLoanAction){
-        super(game,action.turn,WaitingLoan.id)
+        super(game,action.turn,WaitingLoan.id,action)
         this.amount=action.amount
         this.receiver=action.receiver
     }
@@ -494,61 +498,63 @@ class WaitingLoan extends MarbleGameCycleState{
 }
 class WaitingBuyOut extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_BUYOUT
-    pos:number
-    price:number
-    originalPrice:number
+    // pos:number
+    // price:number
+    // originalPrice:number
+    sourceAction:AskBuyoutAction
     constructor(game:MarbleGame,sourceAction:AskBuyoutAction){
-        super(game,sourceAction.turn,WaitingBuyOut.id)
-        this.pos=sourceAction.pos
-        this.price=sourceAction.price
-        this.originalPrice=sourceAction.originalPrice
+        super(game,sourceAction.turn,WaitingBuyOut.id,sourceAction)
+        // this.pos=sourceAction.pos
+        // this.price=sourceAction.price
+        // this.originalPrice=sourceAction.originalPrice
     }
     getInvoker(): number {
         return this.turn
     }
     onCreate(): void {
-        this.game.clientInterface.askBuyout(this.turn,this.pos,this.price,this.originalPrice)
+        this.game.clientInterface.askBuyout(this.turn,this.sourceAction.pos,this.sourceAction.price,this.sourceAction.originalPrice)
     }
     onUserBuyOut(result:boolean): EventResult {
         if(result)
-            this.game.attemptDirectBuyout(this.turn,this.pos,this.price)
+            this.game.attemptDirectBuyout(this.turn,this.sourceAction.pos,this.sourceAction.price,this.sourceAction.source)
         return new EventResult(true)
     }
 }
 class WaitingTileSelection extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_TILE_SELECTION
-    tiles:number[]
-    type:ACTION_TYPE
-    name:string
-    source:ActionSource
+    // tiles:number[]
+    // type:ACTION_TYPE
+    // name:string
+    // source:ActionTrace
+    sourceAction:TileSelectionAction
     constructor(game:MarbleGame,sourceAction:TileSelectionAction){
-        super(game,sourceAction.turn,WaitingTileSelection.id)
-        this.tiles=sourceAction.tiles
-        this.type=sourceAction.type
-        this.name=sourceAction.name
-        this.source=sourceAction.source
+        super(game,sourceAction.turn,WaitingTileSelection.id,sourceAction)
+        // this.tiles=sourceAction.tiles
+        // this.type=sourceAction.type
+        // this.name=sourceAction.name
+        // this.source=sourceAction.source
     }
     onCreate(): void {
-        this.game.clientInterface.askTileSelection(this.turn,this.tiles,this.name)
+        this.game.clientInterface.askTileSelection(this.turn,this.sourceAction.tiles,this.sourceAction.name)
     }
     onUserSelectTile(pos: number,name:string,result:boolean): EventResult {
-        if(name !== this.name) return new EventResult(false)
+        if(name !== this.sourceAction.name) return new EventResult(false)
         if(!result) return new EventResult(true)
 
-        if(this.type === ACTION_TYPE.CHOOSE_BUILD_POSITION){
-            this.game.onSelectBuildPosition(this.turn,pos,this.source)
+        if(this.sourceAction.type === ACTION_TYPE.CHOOSE_BUILD_POSITION){
+            this.game.onSelectBuildPosition(this.turn,pos,this.sourceAction.source)
         }
-        else if(this.type===ACTION_TYPE.CHOOSE_OLYMPIC_POSITION){
-            this.game.onSelectOlympicPosition(this.turn,pos,this.source)
+        else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_OLYMPIC_POSITION){
+            this.game.onSelectOlympicPosition(this.turn,pos,this.sourceAction.source)
         }
-        else if(this.type===ACTION_TYPE.CHOOSE_ATTACK_POSITION){
-            this.game.onSelectAttackPosition(this.turn,pos,this.source,name)
+        else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_ATTACK_POSITION){
+            this.game.onSelectAttackPosition(this.turn,pos,this.sourceAction.source,name)
         }
-        else if(this.type===ACTION_TYPE.CHOOSE_DONATE_POSITION){
-            this.game.onSelectDonatePosition(this.turn,pos,this.source)
+        else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_DONATE_POSITION){
+            this.game.onSelectDonatePosition(this.turn,pos,this.sourceAction.source)
         }
-        else if(this.type===ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT){
-            this.game.onSelectTileLiftPosition(this.turn,pos,this.source)
+        else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT){
+            this.game.onSelectTileLiftPosition(this.turn,pos,this.sourceAction.source)
         }
         return new EventResult(true).setData(pos)
     }
@@ -560,31 +566,31 @@ class WaitingMoveTileSelection extends WaitingTileSelection{
         this.movetype=sourceAction.moveType
     }
     onUserSelectTile(pos: number,name:string,result:boolean): EventResult {
-        if(name !== this.name) return new EventResult(false)
+        if(name !== this.sourceAction.name) return new EventResult(false)
         if(!result) return new EventResult(true)
-        this.game.onSelectMovePosition(this.turn,pos,this.movetype)
+        this.game.onSelectMovePosition(this.turn,pos,this.movetype,this.sourceAction.source)
         return new EventResult(true).setData(pos)
     }
 }
 class WaitingCardObtain extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_CARD_OBTAIN
     card:FortuneCard
-    constructor(game:MarbleGame,turn:number,card:FortuneCard){
-        super(game,turn,WaitingCardObtain.id)
-        this.card=card
+    constructor(game:MarbleGame,action:ObtainCardAction){
+        super(game,action.turn,WaitingCardObtain.id,action)
+        this.card=action.card
     }
     onCreate(): void {
         this.game.clientInterface.obtainCard(this.turn,this.card.name,this.card.level,this.card.type)
     }
     onUserConfirmObtainCard(result:boolean): EventResult {
         if(this.card instanceof AttackCard){
-                this.game.useAttackCard(this.turn,this.card)
+            this.game.useAttackCard(this.turn,this.card,this.sourceAction.source)
         }
         else if(this.card instanceof DefenceCard){
              if(result) this.game.saveCard(this.turn,this.card)
         }
         else if(this.card instanceof CommandCard){
-            this.game.executeCardCommand(this.turn,this.card)
+            this.game.executeCardCommand(this.turn,this.card,this.sourceAction.source)
         }
         return new EventResult(true).setData(result)
     }
@@ -592,15 +598,15 @@ class WaitingCardObtain extends MarbleGameCycleState{
 }
 class WaitingLandSwap extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_LAND_SWAP
-    private action:LandSwapAction
+    sourceAction: LandSwapAction
     private myland:number
-    constructor(game:MarbleGame,turn:number,action:LandSwapAction){
-        super(game,turn,WaitingLandSwap.id)
-        this.action=action
+    constructor(game:MarbleGame,action:LandSwapAction){
+        super(game,action.turn,WaitingLandSwap.id,action)
+        // this.action=action
         this.myland=-1
     }
     onCreate(): void {
-        this.game.clientInterface.askTileSelection(this.turn,this.action.getTargetTiles(),"land_change_1")
+        this.game.clientInterface.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_1")
     }
     onUserSelectTile(pos: number,name:string,result:boolean){
         if(name !== "land_change_1" && name!=="land_change_2") return new EventResult(false)
@@ -610,36 +616,36 @@ class WaitingLandSwap extends MarbleGameCycleState{
         if(name==="land_change_1"){
             this.myland=pos
             setTimeout(()=>{
-                this.game.clientInterface.askTileSelection(this.turn,this.action.getTargetTiles(),"land_change_2")
+                this.game.clientInterface.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_2")
             },500)
             
             return new EventResult(false)
         }//두번째 도시 선택
         else{
-            this.game.onSelectAttackPosition(this.turn,pos,this.action.source,CARD_NAME.LAND_CHANGE,this.myland)
+            this.game.onSelectAttackPosition(this.turn,pos,this.sourceAction.source,CARD_NAME.LAND_CHANGE,this.myland)
             return new EventResult(true).setData([this.myland,pos])
         }
     }
 }
 class WaitingDefenceCardUse extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_DEFENCE_CARD_USE
-    private action:AskDefenceCardAction
-    constructor(game:MarbleGame,turn:number,action:AskDefenceCardAction){
-        super(game,turn,WaitingDefenceCardUse.id)
-        this.action=action
+    sourceAction:AskDefenceCardAction
+    constructor(game:MarbleGame,action:AskDefenceCardAction){
+        super(game,action.turn,WaitingDefenceCardUse.id,action)
+        // this.action=action
     }
     onCreate(): void {
-        if(this.action instanceof AskAttackDefenceCardAction){
-            this.game.clientInterface.askAttackDefenceCard(this.turn,this.action.cardname,this.action.attackName)
+        if(this.sourceAction instanceof AskAttackDefenceCardAction){
+            this.game.clientInterface.askAttackDefenceCard(this.turn,this.sourceAction.cardname,this.sourceAction.attackName)
         }
-        else if(this.action instanceof AskTollDefenceCardAction){
-            this.game.clientInterface.askTollDefenceCard(this.turn,this.action.cardname,this.action.before,this.action.after)
+        else if(this.sourceAction instanceof AskTollDefenceCardAction){
+            this.game.clientInterface.askTollDefenceCard(this.turn,this.sourceAction.cardname,this.sourceAction.before,this.sourceAction.after)
         }
     }
     onUserConfirmUseCard(result:boolean,cardname:string): EventResult {
-        if(this.action.cardname!==cardname) return new EventResult(false)
+        if(this.sourceAction.cardname!==cardname) return new EventResult(false)
         if(result){
-            this.game.useDefenceCard(this.turn,this.action)
+            this.game.useDefenceCard(this.turn,this.sourceAction)
         }
         return new EventResult(true)
     }
@@ -648,19 +654,19 @@ class WaitingDefenceCardUse extends MarbleGameCycleState{
 class WaitingGodHandSpecial extends MarbleGameCycleState{
     
     static id = GAME_CYCLE.WAITING_GODHAND_SPECIAL
-    private action:AskGodHandSpecialAction
+    sourceAction:AskGodHandSpecialAction
     constructor(game:MarbleGame,action:AskGodHandSpecialAction){
-        super(game,action.turn,WaitingGodHandSpecial.id)
-        this.action=action
+        super(game,action.turn,WaitingGodHandSpecial.id,action)
+        // this.action=action
     }
     onCreate(): void {
-        this.game.clientInterface.askGodHandSpecial(this.turn,this.action.canLiftTile)
+        this.game.clientInterface.askGodHandSpecial(this.turn,this.sourceAction.canLiftTile)
     }
     onUserSelectGodHandSpecial(isBuild:boolean){
         if(isBuild)
-            this.game.chooseGodHandSpecialBuild(this.turn)
+            this.game.chooseGodHandSpecialBuild(this.turn,this.sourceAction.source)
         else
-            this.game.chooseGodHandSpecialLiftTile(this.turn)
+            this.game.chooseGodHandSpecialLiftTile(this.turn,this.sourceAction.source)
         return new EventResult(true)
     }
 }

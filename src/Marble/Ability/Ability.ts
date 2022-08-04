@@ -1,5 +1,5 @@
 import { Action, ActionModifyFunction, ACTION_TYPE, EmptyAction } from "../action/Action"
-import { ActionSource, ACTION_SOURCE_TYPE } from "../action/ActionSource"
+import { ActionTrace, ACTION_SOURCE_TYPE } from "../action/ActionTrace"
 import { hexId, sample } from "../util"
 import { ABILITY_NAME } from "./AbilityRegistry"
 import { EVENT_TYPE } from "./EventType"
@@ -40,7 +40,7 @@ export class Ability {
         return this
     }
     getSource(){
-        let source=new ActionSource().setAbilityName(this.name)
+        let source=new ActionTrace(ACTION_TYPE.EMPTY).setAbilityName(this.name)
         if(this.isFromItem())
         {
             source.setSourceItem(this.sourceItem)
@@ -61,7 +61,7 @@ export class Ability {
     isAfterMain(){
         return this.priority === Ability.PRIORITY_AFTER
     }
-    isValidSource(source:ActionSource)
+    isValidSource(source:ActionTrace)
     {
         return true
     }
@@ -143,8 +143,12 @@ export class PayAbility extends Ability{
 /**
  * 주사위 찬스(무탈 등)
  */
-class DiceChanceAbility extends Ability{
-    
+export class DiceChanceAbility extends Ability{
+    pos:number
+    constructor(name:ABILITY_NAME){
+        super(name)
+        this.priority=Ability.PRIORITY_AFTER
+    }
 }
 /**
  * 게임루프에 영향주는 능력(프리패스 등)

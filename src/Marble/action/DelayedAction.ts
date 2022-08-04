@@ -1,5 +1,5 @@
 import { Action, ACTION_TYPE } from "./Action"
-import type { ActionSource } from "./ActionSource"
+import type { ActionTrace } from "./ActionTrace"
 
 /**
  * 실행하는데 일정 딜레이 필요, 딜레이 이후 자동으로 다음으로

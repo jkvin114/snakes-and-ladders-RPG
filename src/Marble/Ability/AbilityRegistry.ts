@@ -1,6 +1,6 @@
 import { ACTION_TYPE } from "../action/Action"
-import { ACTION_SOURCE_TYPE } from "../action/ActionSource"
-import { Ability, MoveAbilty, PayAbility, ValueModifierAbility } from "./Ability"
+import { ACTION_SOURCE_TYPE } from "../action/ActionTrace"
+import { Ability, DiceChanceAbility, MoveAbilty, PayAbility, ValueModifierAbility } from "./Ability"
 import { DefenceCardAbility } from "./DefenceAbilty"
 import { EVENT_TYPE } from "./EventType"
 
@@ -161,10 +161,22 @@ ABILITY_REGISTRY.set(
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.ONE_MORE_DICE_AFTER_TRAVEL,
 	new Ability(ABILITY_NAME.ONE_MORE_DICE_AFTER_TRAVEL)
-	.on(EVENT_TYPE.DO_ATTACK)
-	.desc("$c% 확률로 건물 3개 건설시 시작지점 이동")
+	.on(EVENT_TYPE.ARRIVE_TILE)
+	.desc("세계여행에서 도착 시 $c% 확률로 주사위 한번 더")
 )
 
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND,
+	new MoveAbilty(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND)
+	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
+	.desc("상대 땅 도착시 통행료 면제 후 $c% 확률로 세계여행")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.ONE_MORE_DICE_ON_MONOPOLY_CHANCE,
+	new DiceChanceAbility(ABILITY_NAME.ONE_MORE_DICE_ON_MONOPOLY_CHANCE)
+	.on(EVENT_TYPE.MONOPOLY_CHANCE)
+	.desc("독점 찬스시 $c% 확률로 주사위 한번더")
+)
 
 
 export { ABILITY_REGISTRY }

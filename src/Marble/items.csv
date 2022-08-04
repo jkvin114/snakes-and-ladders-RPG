@@ -1,7 +1,7 @@
 CODE,ITEMNAME,itemname_kor,ABILITYNAME,CHANCE,VALUE,UPGRADEVALUE,FIRSTONLY,LIMIT
 0,golden_bell,구원의 골든벨,salary_bonus,,50,,,
 1,annonymous_1,초월의 빛,money_on_dice,,700000,,1,
-2,helmet,탑 레이서의 헬멧,dice_control_accuracy,30,,,,
+2,helmet,탑 레이서의 헬멧,dice_control_accuracy,100,,,,
 3,compass,황금 나침반,get_travel_on_draw_card,80,,,1,
 4,annonymous_2,야바위꾼의 컵사위,dice_double,20,,,,
 5,perfume,매혹의 향수,perfume,,17,,,
@@ -15,3 +15,6 @@ CODE,ITEMNAME,itemname_kor,ABILITYNAME,CHANCE,VALUE,UPGRADEVALUE,FIRSTONLY,LIMIT
 13,construction_tool,대가의 건설장비,construction,33,,,,
 14,agreement,궁극의 합의서,agreement,70,9,,,
 15,reverse_agreement,반격의 합의서,reverse_agreement,70,8,,,
+16,boss_healing,사장님의 힐링 여행권,boss_healing,20,,,,
+17,taxi,공항 택시,taxi,100,,,,
+18,speaker,승리의 확성기,speaker,100,,,,
