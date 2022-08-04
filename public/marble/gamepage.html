@@ -10,7 +10,9 @@
 
 <script src="./../lib/fabric.min.js"></script>
 <script src="./../lib/howler.min.js"></script>
-<script src="./../lib/socket.io.min.js"></script>
+<!-- <script src="./../lib/socket.io.min.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+
 <head>
     <meta charset="utf-8"/>
 </head>
@@ -364,8 +366,9 @@
       </div>
       <div id="fortunecard-button-container">
         <p>통행료 면제+공격방어(보관 후 원할때 사용가능)</p>
-       <button id="fortunecard-cancel">취소</button>
-       <button id="fortunecard-confirm">확인</button>
+       <button id="fortunecard-cancel" class="fortunecard-button">취소</button>
+       <button id="fortunecard-confirm" class="fortunecard-button">확인</button>
+       <button id="fortunecard-check" class="fortunecard-button hidden">확인</button>
       </div>
     </div>
     <div id="ability-container">
@@ -373,6 +376,104 @@
         <img src="res/angel.png"><br>
         <a>모두방어</a>
       </div> -->
+    </div>
+    <div id=select class='hidden'>
+      <h3>Select between two</h3>
+      <div>
+        <div class='selectbutton first' id=selecttruebutton>
+        <a></a>
+        <img src="res/house.png"></div>
+        <div class='selectbutton second' id=selectfalsebutton>
+        <a></a><img src="res/column.png"></div>
+      </div>
+
+    </div>
+
+
+    <div id="dice-container">
+      <div class="dice-wrapper" id='dice-wrapper1'>
+        <div id='dice1' class="dice dice-one">
+          <div id="dice-one-side-one" class='side one'>
+            <div class="dot one-1"></div>
+          </div>
+          <div id="dice-one-side-two" class='side two'>
+            <div class="dot two-1"></div>
+            <div class="dot two-2"></div>
+          </div>
+          <div id="dice-one-side-three" class='side three'>
+            <div class="dot three-1"></div>
+            <div class="dot three-2"></div>
+            <div class="dot three-3"></div>
+          </div>
+          <div id="dice-one-side-four" class='side four'>
+            <div class="dot four-1"></div>
+            <div class="dot four-2"></div>
+            <div class="dot four-3"></div>
+            <div class="dot four-4"></div>
+          </div>
+          <div id="dice-one-side-five" class='side five'>
+            <div class="dot five-1"></div>
+            <div class="dot five-2"></div>
+            <div class="dot five-3"></div>
+            <div class="dot five-4"></div>
+            <div class="dot five-5"></div>
+          </div>
+          <div id="dice-one-side-six" class='side six'>
+            <div class="dot six-1"></div>
+            <div class="dot six-2"></div>
+            <div class="dot six-3"></div>
+            <div class="dot six-4"></div>
+            <div class="dot six-5"></div>
+            <div class="dot six-6"></div>
+          </div>
+        </div>
+    
+      </div>
+      <div class="dice-wrapper" id='dice-wrapper2'>
+        <div id='dice2' class="dice dice-two">
+          <div id="dice-two-side-one" class='side one'>
+            <div class="dot one-1"></div>
+          </div>
+          <div id="dice-two-side-two" class='side two'>
+            <div class="dot two-1"></div>
+            <div class="dot two-2"></div>
+          </div>
+          <div id="dice-two-side-three" class='side three'>
+            <div class="dot three-1"></div>
+            <div class="dot three-2"></div>
+            <div class="dot three-3"></div>
+          </div>
+          <div id="dice-two-side-four" class='side four'>
+            <div class="dot four-1"></div>
+            <div class="dot four-2"></div>
+            <div class="dot four-3"></div>
+            <div class="dot four-4"></div>
+          </div>
+          <div id="dice-two-side-five" class='side five'>
+            <div class="dot five-1"></div>
+            <div class="dot five-2"></div>
+            <div class="dot five-3"></div>
+            <div class="dot five-4"></div>
+            <div class="dot five-5"></div>
+          </div>
+          <div id="dice-two-side-six" class='side six'>
+            <div class="dot six-1"></div>
+            <div class="dot six-2"></div>
+            <div class="dot six-3"></div>
+            <div class="dot six-4"></div>
+            <div class="dot six-5"></div>
+            <div class="dot six-6"></div>
+          </div>
+        </div> 
+    
+      </div>
+      
+   
+    </div>  
+    <div id="dice-number-container" class="hidden">
+      <div id="dice-double">X더블</div><br>
+      <div id="dice-number">12</div><br>
+      <div id="dice-control"><a>주사위 컨트롤!</a></div>
     </div>
     <img src="./../res/img/ui/victory.png" class=" resultimg victory hidden">
     <img src="./../res/img/ui/defeat.png" class=" resultimg defeat hidden">
@@ -396,6 +497,7 @@
     <img class="hidden" src='res/money1.png' id="moneyimg">
     <img class="hidden" src='res/shine-fliped.png' id="shine-fliped">
     <img class="hidden" src='res/shine.png' id="shine">
+    <img class="hidden" src='res/blocktile.png' id="tile_blocker">
 
     <img class="hidden" src='./../res/img/character/reaper.png' id="playerimg1" >
     <img class="hidden" src='./../res/img/character/elephant.png' id="playerimg2">
@@ -409,6 +511,7 @@
 
     <img src="res/column.png" id="marble_img_column" class="hidden">
     <button id="quit">&times;</button>
+    <button id="rolldice">roll dice</button>
 </body>
 <script type="module" src="src/marble.js"></script>
 

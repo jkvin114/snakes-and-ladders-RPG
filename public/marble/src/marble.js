@@ -2,6 +2,7 @@ import { MarbleScene,moneyToString,MONOPOLY,Player } from "./marble_board.js"
 import { openConnection } from "./socket.js"
 import { GameInterface } from "./interface.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
+export const SOLOPLAY=true
 
 export var GAME
 class Game{
@@ -61,12 +62,14 @@ class Game{
         return this.abilities.get(turn)
     }
     showDiceBtn(player,data){
+      //  if(this.myTurn!==player) return
         this.scene.showArrow(this.turnToPlayerNum(player))
         this.ui.showDiceBtn(data.hasOddEven,data.origin)
 
     }
-    diceRoll(data){
-        toast(data.dice + ((data.isDouble)?"(더블)":"")+ ((data.dc)?"(주사위 컨트롤!)":""))
+    diceRoll(turn,data){
+        this.ui.rollDice(data.dice[0],data.dice[1],turn,data.dc)
+        // toast(data.dice + ((data.isDouble)?"(더블)":"")+ ((data.dc)?"(주사위 컨트롤!)":""))
     }
     playerWalkMove(player,from,distance){
         let list=[]
@@ -148,7 +151,7 @@ class Game{
         this.scene.setToll(pos,toll,mul)
     }
     setLandOwner(pos,player){
-        this.scene.setLandOwner(pos,this.turnToPlayerNum(player))
+        this.scene.setLandOwner(pos,player)
     }
     setOlympic(pos){
         this.scene.setOlympic(pos)
@@ -218,8 +221,8 @@ class Game{
         this.connection.onTileSelect(-1,type,false)
         this.scene.tileReset()
     }
-    obtainCard(name,level,type){
-        this.ui.obtainCard(name,level,type)
+    obtainCard(player,name,level,type){
+        this.ui.obtainCard(name,level,type,this.myTurn===player)
     }
     finishObtainCard(result){
         this.connection.finishObtainCard(result)
@@ -263,6 +266,11 @@ class Game{
 			}
 		)
     }
+    
+    selectGodHandSpecial(result){
+        $("#select").hide()
+        this.connection.selectGodHandSpecial(result)
+    }
 }
 function toast(msg) {
     $("#toastmessage").html(msg)
@@ -294,6 +302,47 @@ function auth() {
 		})
 }
 
+function extendJqueryEasing() {
+	var baseEasings = {}
+
+	$.each(["Quad", "Cubic", "Quart", "Quint", "Expo"], function (i, name) {
+		baseEasings[name] = function (p) {
+			return Math.pow(p, i + 2)
+		}
+	})
+
+	$.extend(baseEasings, {
+		Sine: function (p) {
+			return 1 - Math.cos((p * Math.PI) / 2)
+		},
+		Circ: function (p) {
+			return 1 - Math.sqrt(1 - p * p)
+		},
+		Elastic: function (p) {
+			return p === 0 || p === 1 ? p : -Math.pow(2, 8 * (p - 1)) * Math.sin((((p - 1) * 80 - 7.5) * Math.PI) / 15)
+		},
+		Back: function (p) {
+			return p * p * (3 * p - 2)
+		},
+		Bounce: function (p) {
+			var pow2,
+				bounce = 4
+            pow2=2
+			while (p < ((pow2 = Math.pow(2, --bounce)) - 1) / 11) {}
+			return 1 / Math.pow(4, 3 - bounce) - 5.5625 * Math.pow((pow2 * 3 - 2) / 22 - p, 2)
+		}
+	})
+
+	$.each(baseEasings, function (name, easeIn) {
+		$.easing["easeIn" + name] = easeIn
+		$.easing["easeOut" + name] = function (p) {
+			return 1 - easeIn(1 - p)
+		}
+		$.easing["easeInOut" + name] = function (p) {
+			return p < 0.5 ? easeIn(p * 2) / 2 : 1 - easeIn(p * -2 + 2) / 2
+		}
+	})
+}
 
 $(document).ready(function(){
     //auth()
@@ -306,6 +355,7 @@ $(document).ready(function(){
 		})
 		return true
 	}
+    extendJqueryEasing()
 })
 $(window).on("load", function (e) {
 	console.log("window onload")

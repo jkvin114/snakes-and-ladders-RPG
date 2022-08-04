@@ -1,4 +1,4 @@
-import { GAME } from "./marble.js"
+import { GAME, SOLOPLAY } from "./marble.js"
 import { moneyToString, COLORS } from "./marble_board.js"
 class BuildingSelector {
 	constructor(builds, buildsHave, discount, avaliableMoney) {
@@ -131,10 +131,15 @@ class AbilityBuffer {
 		this.secondId = ""
 		this.interval = null
 		this.queue = []
+		this.prevAbility=""  //능력 중복알림 방지용 저장
 	}
 	enqueue(ui, name, itemName, desc, isblocked) {
+		if(name===this.prevAbility) return
+
+		this.prevAbility=name
+
 		this.queue.push([ui, name, itemName, desc, isblocked])
-		if(ui===3) console.log(this.queue)
+		//if(ui===3) console.log(this.queue)
 		if (this.interval === null) {
 			this.dequeue()
 			this.interval = setInterval(() => this.dequeue(), 1500)
@@ -144,6 +149,7 @@ class AbilityBuffer {
 		if (this.queue.length === 0) {
 			clearInterval(this.interval)
 			this.interval = null
+			this.prevAbility=""
 			return
 		}
 
@@ -265,6 +271,10 @@ const TILE_SELECTIONS = {
 	go_special: {
 		title: "특수지역 이동",
 		desc: "이동할 특수지역을 선택하세요"
+	},
+	godhand_special_tile_lift:{
+		title: "블록 상승",
+		desc: "상승시킬 블록 선택"
 	}
 }
 const FORTUNECARD = {
@@ -344,6 +354,7 @@ const FORTUNECARD = {
 		image: ""
 	}
 }
+const dices=[0,1,6,4,5,2,3]
 export class GameInterface {
 	constructor(game) {
 		this.game = game
@@ -415,14 +426,17 @@ export class GameInterface {
 		})
 
 		$("#quit").click(() => GAME.onQuit())
+
 		$("#fortunecard-cancel").click(() => {
-			$("#fortunecard").hide()
 			this.game.finishObtainCard(false)
 		})
-		$("#fortunecard-confirm").click(() => {
+		$(".fortunecard-button").click(()=>{
 			$("#fortunecard").hide()
+		})
+		$("#fortunecard-confirm").click(() => {
 			this.game.finishObtainCard(true)
 		})
+
 
 		$("#confirmwindow-cancel").click(() => {
 			$("#confirmwindow").hide()
@@ -431,6 +445,11 @@ export class GameInterface {
 		$("#confirmwindow-confirm").click(() => {
 			$("#confirmwindow").hide()
 			this.game.onConfirmFinish(true, $("#confirmwindow").data("cardname"))
+		})
+		$("#selecttruebutton").click(() => this.game.selectGodHandSpecial(true))
+		$("#selectfalsebutton").click(() => this.game.selectGodHandSpecial(false))
+		$("#rolldice").click(()=>{
+			
 		})
 	}
 	init(setting, myturn) {
@@ -526,6 +545,104 @@ export class GameInterface {
 		}
 		GAME.scene.clearTileHighlight("yellow")
 		GAME.scene.showTileHighlight(positions, "yellow")
+	}
+	rollDice(d1,d2,turn,dc){
+		//1->1, 2->5, 3->6, 4->3,5->4, 6->2
+		
+		this.beforeRolldice(d1,d2,turn)
+		setTimeout(()=>this.animateDice(d1,d2,dc),300)
+	}
+	beforeRolldice(dice1,dice2,thrower){
+		$("#dice-container").css({opacity:1})
+		let ui=this.turnToUi.get(thrower)
+		let pos={top:0,left:0}
+		if(ui===0)
+			pos={top:"100%",left:0}
+		if(ui===2)
+			pos={top:0,left:"100%"}
+		if(ui===3)
+			pos={top:"100%",left:"100%"}
+
+		$(".dice").addClass("no-animate")
+		const elDiceOne = document.getElementById('dice1');
+		const elDiceTwo = document.getElementById('dice2');
+
+		dice1=dices[dice1]
+		dice2=dices[dice2]
+
+		let other=(dice1+3 + Math.floor(Math.random()*2))%6
+		let other2=(dice2+3+ Math.floor(Math.random()*2))%6
+
+		for (let i = 1; i <= 6; i++) {
+			elDiceOne.classList.remove('show-' + i);
+			if (other === i) {
+				elDiceOne.classList.add('show-' + i);
+			}
+		}
+		for (let k = 1; k <= 6; k++) {
+			elDiceTwo.classList.remove('show-' + k);
+			if (other2 === k) {
+				elDiceTwo.classList.add('show-' + k);
+			}
+		}
+		$("#dice-wrapper1").css(pos)
+		$("#dice-wrapper2").css(pos)
+	}
+	animateDice(diceOne,dice2,dc){
+		$(".dice").removeClass("no-animate")
+		const elDiceOne = document.getElementById('dice1');
+			// let diceOne   = Math.floor(Math.random()*6)+1
+			// let other=(diceOne+1)%6
+			for (let i = 1; i <= 6; i++) {
+				elDiceOne.classList.remove('show-' + i);
+				if (dices[diceOne] === i) {
+				elDiceOne.classList.add('show-' + i);
+				}
+			}
+		let mul1=Math.floor(Math.random()*6)-2
+		let mul2=Math.floor(Math.random()*6)-2
+		
+		setTimeout(()=>this.animateDice2(diceOne,dice2,mul1,mul2,dc),200)
+		if((mul1<=1 && mul1 >=-1) && (mul2<=1 && mul2 >=-1))
+			$("#dice-wrapper1").animate({top:window.innerHeight/2-80,left:window.innerWidth/2-80},1000,"easeOutBounce")
+		else
+			$("#dice-wrapper1").animate({top:window.innerHeight/2,left:window.innerWidth/2},1000,"easeOutBounce")
+	}
+	animateDice2(diceOne,diceTwo,mul1,mul2,dc){
+		// let diceTwo   = Math.floor(Math.random()*6)+1
+		const elDiceTwo = document.getElementById('dice2');
+		// let other=(diceTwo+1)%6
+		for (let k = 1; k <= 6; k++) {
+				elDiceTwo.classList.remove('show-' + k);
+			if (dices[diceTwo] === k) {
+				elDiceTwo.classList.add('show-' + k);
+			}
+		}
+
+		$("#dice-wrapper2").animate({top:window.innerHeight/2-35*mul1,left:window.innerWidth/2-35*mul2},1000,"easeOutBounce")
+		setTimeout(()=>{
+			this.diceRollComplete(diceOne,diceTwo,dc)
+			
+		},1000)
+	}
+	diceRollComplete(d1,d2,dc){
+		console.log(d1,d2,dc)
+		$("#dice-container").animate({opacity:0},1000)
+
+		$("#dice-number-container").removeClass("double")
+		$("#dice-number-container").removeClass("gold")
+		
+
+		if(dc)	$("#dice-number-container").addClass("gold")
+		if(d1===d2)	$("#dice-number-container").addClass("double")
+
+		$("#dice-number").html(String(d1+d2))
+		$("#dice-number-container").show()
+		$("#dice-number").toggleClass("shown")
+		setTimeout(()=>{
+			$("#dice-number-container").hide()
+			$("#dice-number").removeClass("shown")
+		},1300)
 	}
 	onSelectLoan(result) {
 		$("#overlay").hide()
@@ -650,12 +767,13 @@ export class GameInterface {
 	hideSelectionTitle() {
 		$(".selectiontitle").hide()
 	}
-	obtainCard(name, level, type) {
+	obtainCard(name, level, type,isMyCard) {
 		$("#fortunecard").removeClass("gold")
 		$("#fortunecard").removeClass("trash")
 		$("#fortunecard").removeClass("silver")
 		$("#fortunecard-title").html(FORTUNECARD[name].title)
 		$("#fortunecard-button-container p").html(FORTUNECARD[name].desc)
+		$(".fortunecard-button").hide()
 
 		if (FORTUNECARD[name].image !== "") $("#fortunecard-img img").attr("src", "res/" + FORTUNECARD[name].image)
 		else $("#fortunecard-img img").attr("src", "")
@@ -664,16 +782,23 @@ export class GameInterface {
 		if (level === 1) $("#fortunecard").addClass("silver")
 		if (level === 2) $("#fortunecard").addClass("gold")
 
-		//공격, 명령
-		if (type === 0 || type === 2) {
-			$("#fortunecard-cancel").hide()
-			$("#fortunecard-confirm").html("확인")
+		if(isMyCard || SOLOPLAY){
+			//공격, 명령
+			if (type === 0 || type === 2) {
+				$("#fortunecard-confirm").html("확인")
+			}
+			if (type === 1) {
+				$("#fortunecard-cancel").html("버리기")
+				$("#fortunecard-confirm").html("보관하기")
+				$("#fortunecard-cancel").show()
+			}
+			$("#fortunecard-confirm").show()
+
 		}
-		if (type === 1) {
-			$("#fortunecard-cancel").show()
-			$("#fortunecard-cancel").html("버리기")
-			$("#fortunecard-confirm").html("보관하기")
+		else{
+			$("#fortunecard-check").show()
 		}
+		
 		$("#fortunecard").show()
 	}
 	setSavedCard(turn, name, level) {
@@ -706,6 +831,16 @@ export class GameInterface {
 		$("#confirmwindow .selection-text").html(`${FORTUNECARD[attackName].title} 공격을 받고 있습니다.`)
 		$("#confirmwindow .window-content-text-nobackground").html(FORTUNECARD[cardname].title + "카드를 사용할까요?")
 		$("#confirmwindow").show()
+	}
+	showGodHandSpecial(canlift){
+		$("#select h3").html("특수 지역")
+		$("#selecttruebutton a").html("건설")
+		$("#selectfalsebutton a").html("블록 상승")
+		$("#selectfalsebutton").show()
+
+		if(!canlift) $("#selectfalsebutton").hide()
+		
+		$("#select").show()
 	}
 
 	indicateAbility(turn, name, itemName, desc, isblocked) {

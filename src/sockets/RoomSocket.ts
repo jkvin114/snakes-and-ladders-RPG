@@ -195,4 +195,8 @@ module.exports=function(socket:Socket){
 		console.log("reconnect"+rname)
 		R.getRPGRoom(rname).gameloop.user_reconnect(turn)
 	})
+	
+	socket.on("disconnect", function () {
+		console.log("disconnected")
+	})
 }

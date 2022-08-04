@@ -98,7 +98,12 @@ router.post('/join',async function(req:express.Request,res:express.Response){
         }//guest 
         else if(req.session.turn===1){
             let list=""
-            for (let r of R.all()) {
+            for (let r of R.allRPG()) {
+                if (r.hosting > 0) {
+                    list += r.name + "||"
+                }
+            }
+            for (let r of R.allMarble()) {
                 if (r.hosting > 0) {
                     list += r.name + "||"
                 }

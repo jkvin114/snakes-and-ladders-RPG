@@ -34,8 +34,11 @@ export namespace R{
 	export function hasRoom(name:string){
 		return (ROOMS.has(name) || MARBLE_ROOMS.has(name))
 	}
-	export function all():IterableIterator<RPGRoom>{
+	export function allRPG():IterableIterator<Room>{
 		return ROOMS.values()
+	}
+	export function allMarble():IterableIterator<Room>{
+		return MARBLE_ROOMS.values()
 	}
 	export function remove(name:string){
 		if(ROOMS.has(name)) ROOMS.delete(name)

@@ -35,7 +35,7 @@ abstract class AiAgent {
 
 			let randTree=shuffle(CORE_ITEMS)
 
-			this.itemtree.items=randTree
+		//	this.itemtree.items=randTree
 		}
 	}
 	static simulationAiSkill(player:Player){

@@ -19,7 +19,7 @@ export class AbilityStorage {
         this.abilityValues=new Map<ABILITY_NAME, AbilityValues>()
     }
     registerPermanent(...abilities:[ABILITY_NAME,AbilityValues][]){
-        
+
         for(const ability of abilities){
             if(!ability) continue
 

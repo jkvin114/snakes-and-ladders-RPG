@@ -109,7 +109,7 @@ class MarblePlayer{
             hasOddEven:this.oddeven > 0,origin:this.pos
         }
     }
-    onPassStart(){
+    onPassStartTile(){
         this.cycleLevel+=1
     }
     onTurnStart(){
@@ -158,66 +158,6 @@ class MarblePlayer{
     getAbilityStringOf(name:ABILITY_NAME){
         return this.abilityStorage.getAbilityStringOf(name)
     }
-    onArriveEmptyLand(tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    onArriveMyLand(tile:BuildableTile, moveType:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    onArriveToEnemy(source:ActionSource):Map<ABILITY_NAME,AbilityValues>{
-        return this.sampleAbility(EVENT_TYPE.ARRIVE_TO_ENEMY,source)
-    }
-    onEnemyArriveToMe(source:ActionSource):Map<ABILITY_NAME,AbilityValues>{
-        return this.sampleAbility(EVENT_TYPE.ENEMY_ARRIVE_TO_ME,source)
-    }
-    onArriveEnemyLand(tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    onEnemyArriveMyLand(player:MarblePlayer, tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    // getTollDefence(tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
-    //   //  return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.TOLL_CLAIMED)
-    // }
-    // getTollOffence(player:MarblePlayer,tile:BuildableTile, moveType:ActionSource):Set<ABILITY_NAME>{
-    //   //  return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_TOLL)
-    // }
-    // buyOutPriceOffence(tile:BuildableTile):Set<ABILITY_NAME>{
-    //   //  return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BUYOUT_CLAIMED)
-    // }
-    // buyOutPriceDefence(buyer:MarblePlayer, tile:BuildableTile):Set<ABILITY_NAME>{
-    //  //   return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.CLAIM_BUYOUT)
-    // }
-    buyOutOffence(source:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    buyOutDefence(source:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    monopolyAlertOffence(spots:number[]):ABILITY_NAME[]{
-        return [ ]
-    }
-    monopolyAlertDefence(spots:number[]):ABILITY_NAME[]{
-        return [ ]
-    }
-    onBuildLandMark(tile:BuildableTile, source:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    onBuild(tile:BuildableTile,source:ActionSource):ABILITY_NAME[]{
-        return [ ]
-    }
-    onPassEnemy(stayed:MarblePlayer,oldpos:number,newpos:number,source:ActionSource):ABILITY_NAME[]{
-        return []
-    }
-    onEnemyPassesMe(mover:MarblePlayer,oldpos:number,newpos:number,source:ActionSource):ABILITY_NAME[]{
-        return []
-    }
-    // tileAttackOffence(tile:BuildableTile):Set<ABILITY_NAME>{
-    //     return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.DO_ATTACK)
-    // }
-    // tileAttackDefence(tile:BuildableTile):Set<ABILITY_NAME>{
-    //     return this.abilityStorage.getAbilityForEvent(EVENT_TYPE.BEING_ATTACKED)
-    // }
     canBuildLandOfMinimumPrice(price:number){
         return price * this.getBuildDiscount() < this.money
     }

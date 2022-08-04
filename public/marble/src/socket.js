@@ -1,4 +1,4 @@
-import { GAME } from "./marble.js"
+import { GAME, SOLOPLAY } from "./marble.js"
 export class Socket{
     constructor(){
         this.requestSetting
@@ -9,6 +9,10 @@ export class Socket{
     }
 }
 const PREFIX="marble:user:"
+function checkTurn(turn){
+	if(SOLOPLAY) return true
+	return GAME.myTurn===turn
+}
 export function openConnection(isInitial){
     const socket = io("http://" + sessionStorage.ip_address)
 	GAME.connection = new Socket()
@@ -36,13 +40,14 @@ export function openConnection(isInitial){
 		GAME.turnStart(turn)
 	})
     socket.on("server:show_dice", function (turn,data) {
+		if(!checkTurn(turn)) return
 		GAME.showDiceBtn(turn,data)
 		console.log(data)
 	})
     socket.on("server:throwdice", function (turn,data) {
         console.log("throwdice")
 		console.log(turn,data)
-		GAME.diceRoll(data)
+		GAME.diceRoll(turn,data)
 	})
     socket.on("server:walk_move", function (player,from,distance) {
         console.log("walk_move")
@@ -54,12 +59,14 @@ export function openConnection(isInitial){
 		GAME.playerTeleport(player,pos)
 	})
     socket.on("server:choose_build", function (pos,player,builds,buildsHave,discount,avaliableMoney) {
+		if(!checkTurn(player)) return
         console.log("choose_build")
 		console.log(player,pos,discount)
         console.log(builds)
 		GAME.chooseBuild(pos,builds,buildsHave,discount,avaliableMoney)
 	})
     socket.on("server:ask_buyout", function (player,pos,price,originalPrice) {
+		if(!checkTurn(player)) return
 		console.log(player,pos,price,originalPrice)
 		GAME.chooseBuyout(player,pos,price,originalPrice)
 	})
@@ -90,11 +97,13 @@ export function openConnection(isInitial){
 		GAME.updateMultipliers(changes)
 	})
 	socket.on("server:ask_loan", function (player,amount) {
+		if(!checkTurn(player)) return
         console.log("ask_loan")
 		console.log(player,amount)
 		GAME.askLoan(amount)
 	})
 	socket.on("server:tile_selection", function (player,tiles,source) {
+		if(!checkTurn(player)) return
         console.log("tile_selection")
 		console.log(player,tiles,source)
 		GAME.askTileSelection(tiles,source)
@@ -112,7 +121,7 @@ export function openConnection(isInitial){
 	socket.on("server:obtain_card", function (player,name,level,type) {
         console.log("obtain_card")
 		console.log(name,level,type)
-		GAME.obtainCard(name,level,type)
+		GAME.obtainCard(player,name,level,type)
 	})
 	socket.on("server:clear_buildings", function (positions) {
         console.log("clear_buildings")
@@ -135,22 +144,35 @@ export function openConnection(isInitial){
 		GAME.ui.setSavedCard(turn,name,level)
 	})
 	socket.on("server:ask_toll_defence_card", function (turn,cardname,before,after) {
+		if(!checkTurn(turn)) return
         console.log("ask_toll_defence_card")
 		console.log(turn,cardname,before,after)
 		GAME.ui.askTollDefenceCard(cardname,before,after)
 	})
 
 	socket.on("server:ask_attack_defence_card", function (turn,cardname,attackName) {
+		if(!checkTurn(turn)) return
         console.log("ask_attack_defence_card")
 		console.log(turn,cardname,attackName)
 		GAME.ui.askAttackDefenceCard(cardname,attackName)
+	})
+	socket.on("server:ask_godhand_special", function (turn,canlift) {
+		if(!checkTurn(turn)) return
+        console.log("ask_godhand_special")
+		console.log(turn,canlift)
+		GAME.ui.showGodHandSpecial(canlift)
 	})
 	socket.on("server:ability", function (turn,name,itemName,desc,isblocked) {
         console.log("ability")
 		console.log(turn,name,itemName,desc,isblocked)
 		GAME.indicateAbility(turn,name,itemName,desc,isblocked)
 	})
-
+	
+	socket.on("server:tile_state_update", function (change) {
+        console.log("tile_state_update")
+		console.log(change)
+		GAME.scene.setTileState(change)
+	})
 	socket.on("server:monopoly_alert", function (player,type,pos) {
         console.log("monopoly_alert")
 		console.log(player,type,pos)
@@ -203,5 +225,8 @@ export function openConnection(isInitial){
 	}
 	GAME.connection.finishConfirm=function(result,cardname){
 		socket.emit(PREFIX+"confirm_card_use",GAME.myTurn,result,cardname)
+	}
+	GAME.connection.selectGodHandSpecial=function(result){
+		socket.emit(PREFIX+"select_godhand_special",GAME.myTurn,result)
 	}
 }

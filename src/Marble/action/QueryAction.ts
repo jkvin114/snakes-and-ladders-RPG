@@ -1,4 +1,4 @@
-import { Action, ActionModifyFunction, ACTION_TYPE } from "./Action"
+import { Action, ActionModifyFunction, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionSource } from "./ActionSource"
 import { ServerPayloadInterface } from "./../ServerPayloadInterface"
 import { BUILDING } from "../tile/Tile"
@@ -11,8 +11,8 @@ import { FortuneCard } from "../FortuneCard"
  * (주사위,건설,인수,선택이동,카드사용,블랙홀설치 등)
  */
  export class QueryAction extends Action {
-	constructor(type:ACTION_TYPE,turn: number, source:ActionSource) {
-		super(type,turn,source)
+	constructor(type:ACTION_TYPE,turn: number) {
+		super(type,turn)
 	}
 }
 export class AskBuildAction extends QueryAction {
@@ -21,8 +21,8 @@ export class AskBuildAction extends QueryAction {
 	discount:number
 	availableMoney:number
 	buildsHave:BUILDING[]
-	constructor(turn: number, source:ActionSource,pos:number,avaliableBuilds:ServerPayloadInterface.buildAvaliability[],buildsHave:BUILDING[],discount:number,availableMoney:number) {
-		super(ACTION_TYPE.CHOOSE_BUILD,turn,source)
+	constructor(turn: number,pos:number,avaliableBuilds:ServerPayloadInterface.buildAvaliability[],buildsHave:BUILDING[],discount:number,availableMoney:number) {
+		super(ACTION_TYPE.CHOOSE_BUILD,turn)
         this.builds=avaliableBuilds
 		this.pos=pos
 		this.discount=discount
@@ -35,8 +35,8 @@ export class AskBuyoutAction extends QueryAction {
     pos:number
     price:number
     originalPrice:number
-	constructor(turn: number, source:ActionSource,pos:number,price:number,originalPrice:number) {
-		super(ACTION_TYPE.ASK_BUYOUT,turn,source)
+	constructor(turn: number,pos:number,price:number,originalPrice:number) {
+		super(ACTION_TYPE.ASK_BUYOUT,turn)
         this.pos=pos
         this.price=price
         this.originalPrice=originalPrice
@@ -46,8 +46,8 @@ export class AskBuyoutAction extends QueryAction {
 export class AskLoanAction extends QueryAction {
     amount:number
 	receiver:number
-	constructor(turn: number, source:ActionSource,amount:number,receiver:number) {
-		super(ACTION_TYPE.ASK_LOAN,turn,source)
+	constructor(turn: number,amount:number,receiver:number) {
+		super(ACTION_TYPE.ASK_LOAN,turn)
         this.amount=amount
 		this.receiver=receiver
 	}
@@ -55,17 +55,24 @@ export class AskLoanAction extends QueryAction {
 export class TileSelectionAction extends QueryAction {
     tiles:number[]
 	name:string
-	constructor(type:ACTION_TYPE,turn: number, source:ActionSource,tiles:number[],name:string) {
-		super(type,turn,source)
+	constructor(type:ACTION_TYPE,turn: number,tiles:number[],name:string) {
+		super(type,turn)
         this.tiles=tiles
 		this.name=name
+	}
+}
+export class MoveTileSelectionAction extends TileSelectionAction{
+	moveType:MOVETYPE
+	constructor(turn: number,tiles:number[],name:string,moveType:MOVETYPE){
+		super(ACTION_TYPE.CHOOSE_MOVE_POSITION,turn,tiles,name)
+		this.moveType=moveType
 	}
 }
 export class ObtainCardAction extends QueryAction {
     card:FortuneCard
 
-	constructor(turn: number,source:ActionSource, card:FortuneCard) {
-		super(ACTION_TYPE.OBTAIN_CARD,turn,source)
+	constructor(turn: number, card:FortuneCard) {
+		super(ACTION_TYPE.OBTAIN_CARD,turn)
         this.card=card
 	}
 }
@@ -73,8 +80,8 @@ export class LandSwapAction extends QueryAction{
 	myLands:number[]
 	enemyLands:number[]
 	status:string
-	constructor(turn: number,source:ActionSource, myLands:number[],enemyLands:number[]) {
-		super(ACTION_TYPE.CHOOSE_LAND_CHANGE,turn,source)
+	constructor(turn: number, myLands:number[],enemyLands:number[]) {
+		super(ACTION_TYPE.CHOOSE_LAND_CHANGE,turn)
         this.myLands=myLands
 		this.enemyLands=enemyLands
 		this.status="init"
@@ -95,8 +102,8 @@ export class AskDefenceCardAction extends QueryAction{
 	cardname:string
 	toBlock:string
 	attacker:number  //방어할 공격을 한 플레이어
-	constructor(type:ACTION_TYPE,turn: number,source:ActionSource,cardname:string) {
-		super(type,turn,source)
+	constructor(type:ACTION_TYPE,turn: number,cardname:string) {
+		super(type,turn)
 		this.cardname=cardname
 		this.attacker=-1
 		this.toBlock=""
@@ -114,16 +121,16 @@ export class AskDefenceCardAction extends QueryAction{
 
 export class AskAttackDefenceCardAction extends AskDefenceCardAction{
 	attackName:string
-	constructor(turn: number,source:ActionSource,cardname:string,name:string) {
-		super(ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE,turn,source,cardname)
+	constructor(turn: number,cardname:string,name:string) {
+		super(ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE,turn,cardname)
 		this.attackName=name
 	}
 }
 export class AskTollDefenceCardAction extends AskDefenceCardAction{
 	before:number
 	after:number
-	constructor(turn: number,source:ActionSource,cardname:string,before:number,after:number) {
-		super(ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE,turn,source,cardname)
+	constructor(turn: number,cardname:string,before:number,after:number) {
+		super(ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE,turn,cardname)
 		this.before=before
 		this.after=after
 
@@ -131,4 +138,12 @@ export class AskTollDefenceCardAction extends AskDefenceCardAction{
 		if(before===0) this.off()
 	}
 	
+}
+
+export class AskGodHandSpecialAction extends QueryAction{
+	canLiftTile:boolean
+	constructor(turn: number,canLiftTile:boolean) {
+		super(ACTION_TYPE.CHOOSE_GODHAND_SPECIAL,turn)
+		this.canLiftTile=canLiftTile
+	}
 }

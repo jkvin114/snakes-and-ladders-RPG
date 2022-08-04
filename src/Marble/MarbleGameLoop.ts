@@ -6,13 +6,13 @@ import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction } from "./action/InstantAction";
 import { MarbleClientInterface } from "./MarbleClientInterface";
-import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction } from "./action/QueryAction";
+import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction, AskGodHandSpecialAction, MoveTileSelectionAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 import { BUILDING } from "./tile/Tile";
 import { AttackCard, CARD_NAME, CARD_TYPE, CommandCard, DefenceCard, FortuneCard } from "./FortuneCard";
 
 class EventResult
-{   
+{
     data:any
     result:boolean
     constructor(goNextState:boolean){
@@ -219,6 +219,9 @@ class MarbleGameLoop{
             case 'confirm_card_use':
                 result=this.state.onUserConfirmUseCard(args[0],args[1])
                 break
+            case 'select_godhand_special':
+                result=this.state.onUserSelectGodHandSpecial(args[0])
+                break
         }
         console.log(result)
 
@@ -275,6 +278,10 @@ abstract class MarbleGameCycleState {
                 if(action instanceof AskBuildAction)
                     return new WaitingBuild(this.game,action)
                 break
+            case ACTION_TYPE.CHOOSE_GODHAND_SPECIAL:
+                if(action instanceof AskGodHandSpecialAction)
+                    return new WaitingGodHandSpecial(this.game,action)
+                break
             case ACTION_TYPE.ASK_BUYOUT:
                 if(action instanceof AskBuyoutAction)
                     return new WaitingBuyOut(this.game,action)
@@ -282,11 +289,15 @@ abstract class MarbleGameCycleState {
             case ACTION_TYPE.ASK_LOAN:
                 if(action instanceof AskLoanAction)
                     return new WaitingLoan(this.game,action)
-            case ACTION_TYPE.CHOOSE_BUILD_POSITION:
             case ACTION_TYPE.CHOOSE_MOVE_POSITION:
+                if(action instanceof MoveTileSelectionAction)
+                    return new WaitingMoveTileSelection(this.game,action)
+                 break
+            case ACTION_TYPE.CHOOSE_BUILD_POSITION:
             case ACTION_TYPE.CHOOSE_OLYMPIC_POSITION:
             case ACTION_TYPE.CHOOSE_ATTACK_POSITION:
             case ACTION_TYPE.CHOOSE_DONATE_POSITION:
+            case ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT:
                 if(action instanceof TileSelectionAction)
                     return new WaitingTileSelection(this.game,action)
                 break
@@ -343,6 +354,9 @@ abstract class MarbleGameCycleState {
     }
     onUserSelectPlayer(){
 
+    }
+    onUserSelectGodHandSpecial(isBuild:boolean){
+        return new EventResult(false)
     }
 	
 }
@@ -524,9 +538,6 @@ class WaitingTileSelection extends MarbleGameCycleState{
         if(this.type === ACTION_TYPE.CHOOSE_BUILD_POSITION){
             this.game.onSelectBuildPosition(this.turn,pos,this.source)
         }
-        else if(this.type===ACTION_TYPE.CHOOSE_MOVE_POSITION){
-            this.game.onSelectMovePosition(this.turn,pos,this.source)
-        }
         else if(this.type===ACTION_TYPE.CHOOSE_OLYMPIC_POSITION){
             this.game.onSelectOlympicPosition(this.turn,pos,this.source)
         }
@@ -536,6 +547,22 @@ class WaitingTileSelection extends MarbleGameCycleState{
         else if(this.type===ACTION_TYPE.CHOOSE_DONATE_POSITION){
             this.game.onSelectDonatePosition(this.turn,pos,this.source)
         }
+        else if(this.type===ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT){
+            this.game.onSelectTileLiftPosition(this.turn,pos,this.source)
+        }
+        return new EventResult(true).setData(pos)
+    }
+}
+class WaitingMoveTileSelection extends WaitingTileSelection{
+    movetype:number
+    constructor(game:MarbleGame,sourceAction:MoveTileSelectionAction){
+        super(game,sourceAction)
+        this.movetype=sourceAction.moveType
+    }
+    onUserSelectTile(pos: number,name:string,result:boolean): EventResult {
+        if(name !== this.name) return new EventResult(false)
+        if(!result) return new EventResult(true)
+        this.game.onSelectMovePosition(this.turn,pos,this.movetype)
         return new EventResult(true).setData(pos)
     }
 }
@@ -565,8 +592,8 @@ class WaitingCardObtain extends MarbleGameCycleState{
 }
 class WaitingLandSwap extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_LAND_SWAP
-    action:LandSwapAction
-    myland:number
+    private action:LandSwapAction
+    private myland:number
     constructor(game:MarbleGame,turn:number,action:LandSwapAction){
         super(game,turn,WaitingLandSwap.id)
         this.action=action
@@ -596,7 +623,7 @@ class WaitingLandSwap extends MarbleGameCycleState{
 }
 class WaitingDefenceCardUse extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_DEFENCE_CARD_USE
-    action:AskDefenceCardAction
+    private action:AskDefenceCardAction
     constructor(game:MarbleGame,turn:number,action:AskDefenceCardAction){
         super(game,turn,WaitingDefenceCardUse.id)
         this.action=action
@@ -618,6 +645,24 @@ class WaitingDefenceCardUse extends MarbleGameCycleState{
     }
 }
 
-
+class WaitingGodHandSpecial extends MarbleGameCycleState{
+    
+    static id = GAME_CYCLE.WAITING_GODHAND_SPECIAL
+    private action:AskGodHandSpecialAction
+    constructor(game:MarbleGame,action:AskGodHandSpecialAction){
+        super(game,action.turn,WaitingGodHandSpecial.id)
+        this.action=action
+    }
+    onCreate(): void {
+        this.game.clientInterface.askGodHandSpecial(this.turn,this.action.canLiftTile)
+    }
+    onUserSelectGodHandSpecial(isBuild:boolean){
+        if(isBuild)
+            this.game.chooseGodHandSpecialBuild(this.turn)
+        else
+            this.game.chooseGodHandSpecialLiftTile(this.turn)
+        return new EventResult(true)
+    }
+}
 
 export {MarbleGameLoop}

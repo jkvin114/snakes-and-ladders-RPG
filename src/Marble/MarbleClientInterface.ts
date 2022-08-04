@@ -33,6 +33,8 @@ const SERVER_EVENTS={
     ASK_TOLL_DEFENCE_CARD:prefix+"ask_toll_defence_card",
     ASK_ATTACK_DEFENCE_CARD:prefix+"ask_attack_defence_card",
     ABILITY:prefix+"ability",
+    TILE_STATE_UPDATE:prefix+"tile_state_update",
+    ASK_GODHAND_SPECIAL:prefix+"ask_godhand_special",
 }
 
 export class MarbleClientInterface {
@@ -80,6 +82,9 @@ export class MarbleClientInterface {
     }
     askTollDefenceCard(turn:number,cardname:string,before:number,after:number){
         this.callback(this.rname, SERVER_EVENTS.ASK_TOLL_DEFENCE_CARD, turn,cardname,before,after)
+    }
+    askGodHandSpecial(turn:number,canLiftTile:boolean){
+        this.callback(this.rname,SERVER_EVENTS.ASK_GODHAND_SPECIAL,turn,canLiftTile)
     }
     setLandOwner(pos:number,player:number){
         this.callback(this.rname, SERVER_EVENTS.SET_LANDOWNER, pos,player)
@@ -132,6 +137,9 @@ export class MarbleClientInterface {
     }
     setStatusEffect(pos:number,name:string,dur:number){
         this.callback(this.rname, SERVER_EVENTS.TILE_STATUS_EFFECT, pos,name,dur)
+    }
+    setTileState(change:ServerPayloadInterface.tileStateChange){
+        this.callback(this.rname, SERVER_EVENTS.TILE_STATE_UPDATE, change)
     }
     bankrupt(player:number)
     {

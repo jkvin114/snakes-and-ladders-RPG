@@ -1372,6 +1372,7 @@ $(document).ready(function () {
 	// GAME = new Game()
 
 	window.onbeforeunload = function (e) {
+		return ''
 		sessionStorage.roomName = null
 		// GAME.connection.resetGame()
 		$.ajax({

@@ -371,10 +371,10 @@ export class Board{
 		if (this.mapname === "ocean") {
 			boardimg = document.getElementById("ocean_boardimg")
 		}
-		if (this.mapname === "casino") {
+		else if (this.mapname === "casino") {
 			boardimg = document.getElementById("casino_boardimg")
 		}
-		if(this.mapname==='marble_godhand' || this.mapname==='marble_world'){
+		else if(this.mapname==='marble_godhand' || this.mapname==='marble_world'){
 			boardimg = document.getElementById("marble_boardimg")
 		}
 		else{
@@ -655,6 +655,11 @@ export class Board{
 		this.moveForward(distance, count, pos, turn)
 	}
 	async movePlayerThrough(poslist,turn,callback){
+		if(poslist.length===0) {
+			this.moveComplete(turn)
+			callback(turn)
+			return
+		}
 		this.arrow.set({ opacity: 0 })
 		this.arrow.bringToFront()
 		this.players[turn].nametext.set("text", "")

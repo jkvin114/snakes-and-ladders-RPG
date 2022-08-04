@@ -1,41 +1,43 @@
-import { Action, ACTION_TYPE } from "./Action"
+import { Action, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionSource } from "./ActionSource"
 import { BuildableTile } from "./../tile/BuildableTile"
+import type { MarbleGame } from "../Game"
 
 /**
  * 즉시 실행됨(통행료지불,배수변화,자동건설,디버프,향수 등)
  */
- export class InstantAction extends Action {
-	constructor(type:ACTION_TYPE, turn: number,source:ActionSource) {
-		super(type,turn,source)
-		
+ export abstract class InstantAction extends Action {
+	abstract execute(game:MarbleGame):void
+	constructor(type:ACTION_TYPE, turn: number) {
+		super(type,turn)
 	}
 }
 export class ClaimTollAction extends InstantAction{
+	
     tile:BuildableTile
-	constructor(turn: number,source:ActionSource,tile:BuildableTile) {
-		super(ACTION_TYPE.CLAIM_TOLL,turn,source)
+	constructor(turn: number,tile:BuildableTile) {
+		super(ACTION_TYPE.CLAIM_TOLL,turn)
         this.tile=tile
+	}
+	execute(game: MarbleGame): void {
+		game.mediator.claimToll(this.turn, this.tile.owner, this.tile, this.source)
 	}
 }
 export class ClaimBuyoutAction extends InstantAction{
     tile:BuildableTile
-	constructor(turn: number,source:ActionSource,tile:BuildableTile) {
-		super(ACTION_TYPE.CLAIM_BUYOUT,turn,source)
+	constructor(turn: number,tile:BuildableTile) {
+		super(ACTION_TYPE.CLAIM_BUYOUT,turn)
         this.tile=tile
 	}
-}
-export class TeleportAction extends InstantAction {
-    pos:number
-	constructor(type:ACTION_TYPE,turn: number, source:ActionSource,pos:number) {
-		super(type,turn,source)
-        this.pos=pos
+	execute(game: MarbleGame): void {
+		game.mediator.claimBuyOut(this.turn, this.tile.owner, this.tile, this.source)
 	}
+
 }
 export class EarnMoneyAction extends InstantAction {
     amount:number
-	constructor(receiver:number, source:ActionSource,amount:number) {
-		super(ACTION_TYPE.EARN_MONEY,receiver,source)
+	constructor(receiver:number,amount:number) {
+		super(ACTION_TYPE.EARN_MONEY,receiver)
         this.amount=amount
 		this.priority=Action.PRIORITY_FIRST
 	}
@@ -48,13 +50,16 @@ export class EarnMoneyAction extends InstantAction {
 		this.amount=val
 		if(val===0) this.off()
 	}
+	execute(game: MarbleGame): void {
+		game.mediator.earnMoney(this.turn, this.amount)
+	}
 }
 
 export class PayMoneyAction extends InstantAction {
     amount:number
 	receiver:number
-	constructor(payer: number,receiver:number, source:ActionSource,amount:number) {
-		super(ACTION_TYPE.PAY_MONEY,payer,source)
+	constructor(payer: number,receiver:number,amount:number) {
+		super(ACTION_TYPE.PAY_MONEY,payer)
         this.amount=amount
 		this.receiver=receiver
 		this.priority=Action.PRIORITY_FIRST
@@ -67,18 +72,22 @@ export class PayMoneyAction extends InstantAction {
 		this.amount=val
 		if(val===0) this.off()
 	}
-}
-export class PayTollAction extends PayMoneyAction {
-	constructor(payer: number,receiver:number, source:ActionSource,amount:number) {
-		super(payer,receiver,source,amount)
-		this.priority=Action.PRIORITY_NORMAL
+	execute(game: MarbleGame): void {
+		game.mediator.payMoney(this.turn, this.receiver, this.amount, this.source)
 	}
 }
+export class PayTollAction extends PayMoneyAction {
+	constructor(payer: number,receiver:number,amount:number) {
+		super(payer,receiver,amount)
+		this.priority=Action.PRIORITY_NORMAL
+	}
+	
+}
 export class PayPercentMoneyAction extends InstantAction {
-	percent:number
+	private percent:number
 	receiver:number
-	constructor(payer: number,receiver:number, source:ActionSource,percent:number) {
-		super(ACTION_TYPE.PAY_MONEY,payer,source)
+	constructor(payer: number,receiver:number,percent:number) {
+		super(ACTION_TYPE.PAY_MONEY,payer)
 		this.priority=Action.PRIORITY_FIRST
 		this.receiver=receiver
 		this.percent=percent
@@ -86,32 +95,41 @@ export class PayPercentMoneyAction extends InstantAction {
 	getAmount(base:number){
 		return Math.floor(base * this.percent * 0.01)
 	}
+	execute(game: MarbleGame): void {
+		game.mediator.payPecentMoney(this)
+	}
 }
 export class BuyoutAction extends InstantAction{
-    price:number
-	tile:BuildableTile
-	constructor(turn: number,source:ActionSource,tile:BuildableTile,price:number) {
-		super(ACTION_TYPE.BUYOUT,turn,source)
+    private price:number
+	private tile:BuildableTile
+	constructor(turn: number,tile:BuildableTile,price:number) {
+		super(ACTION_TYPE.BUYOUT,turn)
         this.price=price
 		this.tile=tile
 	}
 	applyMultiplier(mul: number): void {
 		this.price = this.price * mul
 	}
+	execute(game: MarbleGame): void {
+		game.mediator.buyOut(this.turn, this.tile.owner, this.price, this.tile, this.source)
+	}
 }
 export class ArriveTileAction extends InstantAction{
     pos:number
-	constructor(turn: number,source:ActionSource,pos:number) {
-		super(ACTION_TYPE.ARRIVE_TILE,turn,source)
+	constructor(turn: number,pos:number) {
+		super(ACTION_TYPE.ARRIVE_TILE,turn)
         this.pos=pos
+	}
+	execute(game: MarbleGame): void {
+		game.arriveTile(this)
 	}
 }
 export class TileAttackAction extends InstantAction{
     tile:BuildableTile
 	name:string
 	landChangeTile:BuildableTile|null
-	constructor(turn: number,source:ActionSource,tile:BuildableTile,name:string) {
-		super(ACTION_TYPE.ATTACK_TILE,turn,source)
+	constructor(turn: number,tile:BuildableTile,name:string) {
+		super(ACTION_TYPE.ATTACK_TILE,turn)
 		this.tile=tile
 		this.name=name
 		this.landChangeTile=null
@@ -119,6 +137,9 @@ export class TileAttackAction extends InstantAction{
 	setLandChangeTile(tile:BuildableTile){
 		this.landChangeTile=tile
 		return this
+	}
+	execute(game: MarbleGame): void {
+		game.attackTile(this)
 	}
 }
 
@@ -130,8 +151,8 @@ export class ActionModifier extends InstantAction{
 	readonly actionToModify:string
 	readonly value:number 
 	readonly modifyType:number
-	constructor(turn: number,source:ActionSource,actionToModify:string,type:number,value?:number){
-		super(ACTION_TYPE.MODIFY_OTHER,turn,source)
+	constructor(turn: number,actionToModify:string,type:number,value?:number){
+		super(ACTION_TYPE.MODIFY_OTHER,turn)
 		this.actionToModify=actionToModify
 		this.modifyType=type
 		this.value=(value===undefined ? 1 : value)
@@ -146,16 +167,17 @@ export class ActionModifier extends InstantAction{
 		else if(this.modifyType===ActionModifier.TYPE_SET_VALUE) action.setValue(this.value)
 		return action
 	}
+	execute(game: MarbleGame): void {
+		game.modifyActionWith(this)
+	}
 }
 export class RequestMoveAction extends InstantAction{
-	static readonly TYPE_WALK=0
-	static readonly TYPE_FORCE_WALK=1
-	static readonly TYPE_TELEPORT=2
+	
 	pos:number
-	moveType:number
+	moveType:MOVETYPE
 	forward:boolean
-	constructor(turn: number,source:ActionSource,pos:number,type:number){
-		super(ACTION_TYPE.REQUEST_MOVE,turn,source)
+	constructor(turn: number,pos:number,type:MOVETYPE){
+		super(ACTION_TYPE.REQUEST_MOVE,turn)
 		this.pos=pos
 		this.moveType=type
 		this.forward=true
@@ -163,5 +185,13 @@ export class RequestMoveAction extends InstantAction{
 	reverseDirection(){
 		this.forward=false
 		return this
+	}
+	execute(game: MarbleGame): void {
+		if(this.moveType===MOVETYPE.FORCE_WALK)
+			game.requestForceWalkMove(this.turn, this.pos, this.source)
+		if(this.moveType===MOVETYPE.WALK)
+			game.requestWalkMove(this.turn, this.pos, this.source)
+		if(this.moveType===MOVETYPE.TELEPORT)
+			game.teleportPlayer(this.turn, this.pos, this.source)
 	}
 }

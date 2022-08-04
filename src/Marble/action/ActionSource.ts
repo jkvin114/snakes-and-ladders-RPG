@@ -19,7 +19,8 @@ export enum ACTION_SOURCE_TYPE{
     COMMAND_CARD,
     ATTACK_CARD,ABILITY,
     USE_DEFENCE_CARD,
-    PASS_START_TILE
+    PASS_START_TILE,
+    DEFAULT
 }
 export class ActionSource {
 	eventType: ACTION_SOURCE_TYPE //이벤트 종류(이동/통행료/인수 등 행동 분류)
@@ -28,12 +29,15 @@ export class ActionSource {
 	sourceItem: number //발동하는데 사용된 능력/행템 고유 id
     name:string
     flags:Set<string>
-    constructor(type:ACTION_SOURCE_TYPE){
-        this.eventType=type
+    private prev:ActionSource|null
+    constructor(){
+        this.eventType=ACTION_SOURCE_TYPE.DEFAULT
         this.sourceItem=-1
         this.name=""
         this.abilityType=-1
         this.flags=new Set<string>()
+        this.abilityName=ABILITY_NAME.NONE
+        this.prev=null
     }
     setName(name:string){
         this.name=name
@@ -56,6 +60,18 @@ export class ActionSource {
         return this
     }
     hasFlag(flag:string){
-        return this.flags.has(flag)
+        if(!this.prev)
+            return this.flags.has(flag)
+        else
+            return this.prev.hasFlag(flag)
+    }
+    
+    setPrev(source:ActionSource){
+        this.prev=source
+        return this
+    }
+    toString(){
+        if(!this.prev) return `[type:${this.eventType},abilityname:${this.abilityName}]`
+        return this.prev.toString() + `-> [type:${this.eventType},abilityname:${this.abilityName}]`
     }
 }

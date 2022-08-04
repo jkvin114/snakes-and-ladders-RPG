@@ -1,3 +1,4 @@
+import { MOVETYPE } from "./action/Action"
 import { ActionSource } from "./action/ActionSource"
 import type { MarbleGame } from "./Game"
 import { MarbleClientInterface } from "./MarbleClientInterface"
@@ -43,6 +44,8 @@ class MarbleGameMap{
     clientInterface:MarbleClientInterface
     olympicStage:number
     cycleStart:number
+    blockingTiles:Set<number>
+    liftedTile:number
     constructor(map:string){ 
         this.buildableTiles=new Map<number,BuildableTile>()
         this.tiles=[]
@@ -79,6 +82,8 @@ class MarbleGameMap{
         this.multipliers=new Map<number,number>()
         this.clientInterface = new MarbleClientInterface("")
         this.olympicStage=1
+        this.blockingTiles=new Set<number>()
+        this.liftedTile=-1
     }
     setClientInterface(ci: MarbleClientInterface) {
 		this.clientInterface = ci
@@ -156,13 +161,38 @@ class MarbleGameMap{
         }
         return Array.from(result)
     }
-    onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionSource):boolean{
+    onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionSource,type:MOVETYPE):boolean{
+        if(this.blockingTiles.has(tile) && type===MOVETYPE.WALK){
+            this.onHitBlockingTile(tile)
+            return true
+        }
         if(this.start===tile){
-            game.onPassStart(player,source)
+            game.onPassStartTile(player,source)
         }
         return false
     }
+    onHitBlockingTile(pos:number){
+        if(this.name==="god_hand"){
+            this.tileAt(pos).unlift()
+            this.blockingTiles.delete(pos)
+            this.sendTileState("unlift",pos)
+            this.liftedTile=-1
+        }
+    }
 
+    liftTile(pos:number){
+        if(this.name==="god_hand"){
+            if(this.liftedTile!==-1){
+                this.tileAt(this.liftedTile).unlift()
+                this.blockingTiles.delete(this.liftedTile)
+                this.sendTileState("unlift",this.liftedTile)
+            }
+            this.tileAt(pos).lift()
+            this.blockingTiles.add(pos)
+            this.sendTileState("lift",pos)
+            this.liftedTile=pos
+        }
+    }
 
     private filterFromBuildable(filter:TileFilter,source:MarblePlayer):Set<number>{
         let tiles=new Set<number>()
@@ -219,7 +249,7 @@ class MarbleGameMap{
         let price=tile.build(builds)
 
         this.clientInterface.build(tile.position,builds,player)
-        this.clientInterface.updateToll(tile.position,tile.getToll(),tile.getMultiplier())
+        this.clientInterface.updateToll(tile.position,tile.getDisplayedToll(),tile.getMultiplier())
 
         return price
     }
@@ -254,7 +284,7 @@ class MarbleGameMap{
             let mul=land.getMultiplier()
             // if(this.multipliers.get(pos)!== mul){
             change.push({
-                pos:pos,mul:mul,toll:land.getToll()
+                pos:pos,mul:mul,toll:land.getDisplayedToll()
             })
             this.multipliers.set(pos,mul)
             // }
@@ -269,11 +299,13 @@ class MarbleGameMap{
         if(this.olympicPos!==-1){
             let o=this.buildableTiles.get(this.olympicPos)
             if(o) o.setOlympic(0)
+            this.sendTileState("remove_olympic",this.olympicPos)
         }
         let o=this.buildableTiles.get(pos)
         if(o) o.setOlympic(this.olympicStage)
         this.olympicPos=pos
         this.olympicStage+=1
+        this.sendTileState("olympic",pos)
         this.updateMultiplier()
     }
     setFestival(pos:number,takeFrom?:number){
@@ -285,12 +317,14 @@ class MarbleGameMap{
             let f=this.buildableTiles.get(takeFrom)
             if(f) f.setFestival(false)
             this.festival.delete(takeFrom)
+            this.sendTileState("remove_festival",pos)
         }
         this.festival.add(pos)
         
         let f=this.buildableTiles.get(pos)
         if(f) f.setFestival(true)
         else console.error("invalid festival position")
+        this.sendTileState("festival",pos)
         this.updateMultiplier()
     }
 
@@ -319,7 +353,8 @@ class MarbleGameMap{
     }
     applyStatusEffect(tile:BuildableTile,name:string,dur:number){
         if(tile.setStatusEffect(name,dur))
-            this.clientInterface.setStatusEffect(tile.position,name,dur)
+            this.clientInterface.setTileState({state:name,pos:tile.position,duration:dur})
+            // this.clientInterface.setStatusEffect(tile.position,name,dur)
     }
     onAfterClaimToll(tile:Tile){
         this.removeStatusEffect(tile.position)
@@ -332,11 +367,13 @@ class MarbleGameMap{
     removeStatusEffect(pos:number){
         let tile=this.buildableTiles.get(pos)
         if(!tile) return
-        if(tile.removeStatusEffect()) this.updateMultiplier()
-
-        this.clientInterface.setStatusEffect(pos,"",0)
-
+        if(tile.removeStatusEffect())
+            this.clientInterface.setTileState({state:"remove_effect",pos:pos})
     }
+    sendTileState(state:string,pos:number){
+        this.clientInterface.setTileState({state:state,pos:pos})
+    }
+
 
     onPlayerRetire(player:MarblePlayer):number[]{
         let toremove=this.getTiles(player,TileFilter.MY_LAND())

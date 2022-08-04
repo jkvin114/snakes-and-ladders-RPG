@@ -8,19 +8,19 @@ export class Ability {
     readonly name:ABILITY_NAME//능력 종류(힐링류 잘가북류 등 능력 분류)
     sourceItem:number//발동하는데 사용된 능력/행템 고유 id
     protected event:Set<EVENT_TYPE>
-    readonly actionSourceType:ACTION_SOURCE_TYPE
+    readonly actionSourceType:number
     readonly id:string
     static readonly PRIORITY_BEFORE=0
     static readonly PRIORITY_AFTER=1
     protected priority:number
     description:string
     // readonly owner:number
-    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
+    constructor(name:ABILITY_NAME){
         this.name=name
         // this.owner=owner
         this.event=new Set<EVENT_TYPE>()
         this.sourceItem=-1
-        this.actionSourceType=source
+        this.actionSourceType=17
         this.id=hexId()
         this.priority=Ability.PRIORITY_BEFORE
         this.description=""
@@ -40,7 +40,7 @@ export class Ability {
         return this
     }
     getSource(){
-        let source=new ActionSource(this.actionSourceType).setAbilityName(this.name)
+        let source=new ActionSource().setAbilityName(this.name)
         if(this.isFromItem())
         {
             source.setSourceItem(this.sourceItem)
@@ -92,8 +92,8 @@ export interface TileSelectionQuery{
  * 월급보너스,통행료추가/할인/면제 등
  */
 export class ValueModifierAbility extends Ability{
-    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
-        super(name,source)
+    constructor(name:ABILITY_NAME){
+        super(name)
     }
 }
 /**
@@ -101,8 +101,8 @@ export class ValueModifierAbility extends Ability{
  */
 export class MoveAbilty extends Ability{
     pos:number
-    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
-        super(name,source)
+    constructor(name:ABILITY_NAME){
+        super(name)
         this.priority=Ability.PRIORITY_AFTER
     }
 }
@@ -111,8 +111,8 @@ export class MoveAbilty extends Ability{
  */
 class ForceMoveAbilty extends Ability{
     pos:number
-    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE){
-        super(name,source)
+    constructor(name:ABILITY_NAME){
+        super(name)
     }
 }
 /**
@@ -135,8 +135,8 @@ export class PayAbility extends Ability{
     static readonly BASE_RATIO=1
     static readonly BASE_FIXED=0
 
-    constructor(name:ABILITY_NAME,source:ACTION_SOURCE_TYPE,standard:number){
-        super(name,source)
+    constructor(name:ABILITY_NAME,standard:number){
+        super(name)
         this.standard=standard
     }
 }
@@ -170,6 +170,6 @@ class OtherAbility extends Ability{
 }
 export class EmptyAbility extends Ability{
     constructor(){
-        super(ABILITY_NAME.NONE,0)
+        super(ABILITY_NAME.NONE)
     }
 }

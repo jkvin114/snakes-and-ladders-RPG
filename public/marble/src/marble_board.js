@@ -178,12 +178,18 @@ class Tile{
     hasOnlyLand(){
         return this.builds[0] && !this.builds[1] && !this.builds[2] && !this.builds[3] && !this.builds[4]
     }
+    hasLandMark(){
+        return this.builds[4]
+    }
     clear(){
         this.multiplier=1
         this.toll=0
         this.owner=-1
         this.olympic=false
         this.builds=[false,false,false,false,false]
+    }
+    setOwner(owner){
+        this.owner=owner
     }
 }
 class TileObject{
@@ -194,6 +200,7 @@ class TileObject{
         this.type='nonbuildable'
         this.decorator
         this.effectOverlay
+        this.blocker
     }
     setLandFlag(flagobj){
 
@@ -209,6 +216,11 @@ class TileObject{
             this.decorator.bringToFront()
         if(this.effectOverlay) 
             this.effectOverlay.bringToFront()
+        if(this.blocker) 
+            this.blocker.bringToFront()
+    }
+    setOwner(owner){
+        this.data.owner=owner
     }
     setNameIndicator(name){
         this.nameIndicator=name
@@ -221,7 +233,15 @@ class TileObject{
         deco.bringToFront()
         return this
     }
+    addBlocker(blocker){
+        this.blocker=blocker
+        blocker.bringToFront()
+    }
+    removeBlocker(){
+        this.blocker=null
+    }
     changeToll(toll){
+
 
     }
     clear(){}
@@ -245,15 +265,20 @@ class BuildableTileObject extends TileObject{
         this.buildings[level]=houseobj
         if(!houseobj)
             this.data.builds[level]=false
-        else
+        else{
+            this.data.builds[0]=true
             this.data.builds[level]=true
+        }
     }
     setLandMark(landmarkObj){
         this.buildings[4]=landmarkObj
         if(!landmarkObj)
             this.data.builds[4]=false
-        else
-            this.data.builds[4]=true
+        else{
+            for(let i=0;i<this.data.builds.length;++i){
+                this.data.builds[i]=true
+            }
+        }
     }
     setTollIndicator(toll){
         this.tollIndicator=toll
@@ -619,27 +644,25 @@ export class MarbleScene extends Board{
 
         return deco
     }
-    getTileHighlight(coord,color){
+    getTileOverlay(coord,type){
         let image
-        if(color==='red')
+        if(type==='red')
             image=document.getElementById('tile_highlight_red')
-        else if(color==='yellow')
+        else if(type==='yellow')
             image=document.getElementById('tile_highlight_yellow')
-        else if(color==="shine") 
+        else if(type==="shine") 
             image=document.getElementById('shine')
-        else
+        else if(type==='blocker')
+            image=document.getElementById('tile_blocker')
+        else 
             image=document.getElementById('tile_highlight_white')
 
         let tile= new fabric.Image(image, {
 			originX: "center",
 			originY: "center",
-			// width: TILE_IMG_SIZE,
-			// height: TILE_IMG_SIZE,
 			objectCaching: false,
             evented:false,
 		})
-        // if(coord.rot==="down")
-        //     tile.set({angle:180})
         this.lockFabricObject(tile)
         this.scaleTileImage(tile,coord.rot)
         tile.set({top:coord.y,left:coord.x})
@@ -795,7 +818,7 @@ export class MarbleScene extends Board{
 
     showTileHighlight(positions,color){
         for(const p of positions){
-            let image=this.getTileHighlight(this.getCoord(p),color)
+            let image=this.getTileOverlay(this.getCoord(p),color)
             this.canvas.add(image)
             image.bringToFront()
             this.tileHighlights.get(color).push(image)
@@ -817,6 +840,7 @@ export class MarbleScene extends Board{
     clearBuildings(positions){
         for(const p of positions){
             let tileobj=this.tileObj.get(p)
+            tileobj.setOwner(-1)
             if(tileobj.type === 'nonbuildable') return
             tileobj.buildings.forEach((b)=>{
                 this.canvas.remove(b)
@@ -824,13 +848,12 @@ export class MarbleScene extends Board{
 
             this.tileObj.get(p).clear()
         }
-        
     }
     removeBuildings(pos,toremove){
         toremove.forEach((b)=>{
             this.removeHouse(pos,b-1)
         })
-        this.forceRender()
+        this.render()
 
     }
     setTileStatusEffect(pos,name,dur){
@@ -843,7 +866,7 @@ export class MarbleScene extends Board{
         }
         if(name==="") return
 
-        let img=this.getTileHighlight(this.getCoord(pos),"red")
+        let img=this.getTileOverlay(this.getCoord(pos),"red")
 
         let color="white"
         if(name==='pandemic') color='green'
@@ -859,6 +882,30 @@ export class MarbleScene extends Board{
         this.canvas.add(img)
         tileobj.effectOverlay=img
     }
+
+
+    setTileState(change){
+        let tile=this.tileObj.get(change.pos)
+        if(!tile) return
+
+        if(change.state==="pandemic" || change.state==="blackout"){
+            this.setTileStatusEffect(change.pos,change.state,change.duration)
+        }
+        else if(change.state==="remove_effect" ){
+            this.setTileStatusEffect(change.pos,"",0)
+        }
+        else if(change.state==="lift" ){
+            let img=this.getTileOverlay(this.getCoord(change.pos),"blocker")
+            this.canvas.add(img)
+            tile.addBlocker(img)
+        }
+        else if(change.state==="unlift" ){
+            let b=tile.blocker
+            this.canvas.remove(b)
+            tile.removeBlocker()
+        }
+        this.render()
+    }
     /**
      * 
      * @param {*} pos 
@@ -873,7 +920,7 @@ export class MarbleScene extends Board{
 
                 //배수 올랐을 경우에만
                 if(this.tileData.get(pos).multiplier < mul){
-                    let shine=this.getTileHighlight(this.getCoord(pos),"shine")
+                    let shine=this.getTileOverlay(this.getCoord(pos),"shine")
                     shine.set({opacity:0})
 
                     this.canvas.add(shine)
@@ -892,15 +939,18 @@ export class MarbleScene extends Board{
             this.tileData.get(pos).multiplier=mul
         }
     }
+    /**
+     * player:player turn
+     */
     setLandOwner(pos,player){
-        if(!this.tileData.has(pos)) return
-
+        if(!this.tileData.has(pos) || this.tileData.get(pos).owner===player) return
+        this.tileData.get(pos).setOwner(player)
         let currentbuilds=this.tileData.get(pos).builds
-
+        let tiledata=this.tileData.get(pos)
         for(let i=0;i<currentbuilds.length;++i){
             if(!currentbuilds[i]) continue
 
-            if(i===0){
+            if(i===0 && tiledata.hasOnlyLand()){
                 this.removeLandFlag(pos)
                 this.addLandFlag(pos,player)
             }
@@ -908,12 +958,12 @@ export class MarbleScene extends Board{
                 this.removeLandMark(pos)
                 this.addLandMark(pos,player)
             }
-            else{
+            else if(!tiledata.hasLandMark()){
                 this.removeHouse(pos,i)
                 this.addHouse(pos,player,i)
             }
         }
-        this.forceRender()
+        this.render()
     }
     setOlympic(pos){
         if(this.olympic!==-1){

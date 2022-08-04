@@ -161,6 +161,9 @@ abstract class BuildableTile extends Tile{
 
         return this.getBaseToll() * this.getMultiplier() * mul
     }
+    getDisplayedToll(){
+        return this.getBaseToll() * this.getMultiplier()
+    }
     toString(): string {
         return this.name+"  "+this.position + " - owner:"+this.owner +", land:"+this.land +" \nmul: "+this.multiplier.total() +"  " 
     }

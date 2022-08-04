@@ -1,5 +1,4 @@
 import SETTINGS = require("../res/globalsettings.json")
-const { GameRecord, SimulationRecord } = require("./mongodb/DBHandler")
 
 import { createServer } from "http"
 import {  Server, Socket } from "socket.io"
@@ -7,11 +6,7 @@ import express = require("express")
 import fs = require("fs")
 import cors = require("cors")
 import os = require("os")
-import { ClientPayloadInterface, ServerPayloadInterface } from "./data/PayloadInterface"
-import { RPGRoom } from "./RPGRoom"
-import { MarbleRoom } from "./Marble/MarbleRoom"
 import { R } from "./RoomStorage"
-import { SocketSession } from "./SocketSession"
 const session = require("express-session")({
 	key: "sid", //세션의 키 값
 	secret: "salr", //세션의 비밀 키, 쿠키값의 변조를 막기 위해서 이 값을 통해 세션을 암호화 하여 저장
@@ -92,9 +87,7 @@ io.on("error", function (e: any) {
 	console.log(e)
 })
 
-io.on("disconnect", function (socket: Socket) {
-	console.log("disconnected")
-})
+
 
 io.on("connection", function (socket: Socket) {
 	//console.log(`${socket.id} is connected`)

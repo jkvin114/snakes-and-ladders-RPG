@@ -1,13 +1,23 @@
+import e from "cors"
 import { Ability, PayAbility } from "../Ability/Ability"
 import { ABILITY_NAME, ABILITY_REGISTRY } from "../Ability/AbilityRegistry"
 import type { AbilityValues } from "../Ability/AbilityValues"
 import { CARD_NAME } from "../FortuneCard"
+import type { MarblePlayer } from "../Player"
 import type { BuildableTile } from "../tile/BuildableTile"
+import { LandTile } from "../tile/LandTile"
+import { BUILDING } from "../tile/Tile"
 import { forwardDistance } from "../util"
-import { Action, ACTION_TYPE } from "./Action"
+import { Action, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionSource } from "./ActionSource"
 import { MoveAction } from "./DelayedAction"
-import { EarnMoneyAction, PayMoneyAction, PayPercentMoneyAction, RequestMoveAction, TileAttackAction } from "./InstantAction"
+import {
+	EarnMoneyAction,
+	PayMoneyAction,
+	PayPercentMoneyAction,
+	RequestMoveAction,
+	TileAttackAction,
+} from "./InstantAction"
 import { AskAttackDefenceCardAction, AskBuyoutAction, AskTollDefenceCardAction } from "./QueryAction"
 
 class ActionPackage {
@@ -17,13 +27,17 @@ class ActionPackage {
 	blocksMain: boolean
 	blockedAbilities: { name: ABILITY_NAME; turn: number }[]
 	executedAbilities: { name: ABILITY_NAME; turn: number }[]
-	constructor() {
+	shouldPutMainToPending:boolean
+	private readonly thisturn:number
+	constructor(thisturn:number) {
+		this.thisturn=thisturn
 		this.main = []
 		this.before = []
 		this.after = []
 		this.blockedAbilities = []
 		this.executedAbilities = []
 		this.blocksMain = false
+		this.shouldPutMainToPending=false
 	}
 	setMain(...main: Action[]) {
 		this.main = main
@@ -36,6 +50,13 @@ class ActionPackage {
 	addAfter(a: Action) {
 		this.after.push(a)
 		return this
+	}
+	setMainToPendingAction(){
+		this.shouldPutMainToPending=true
+		return this
+	}
+	isTurnOf(turn:number){
+		return this.thisturn===turn
 	}
 	addBlocked(a: ABILITY_NAME, turn: number) {
 		this.blockedAbilities.push({ name: a, turn: turn })
@@ -94,7 +115,7 @@ class ActionPackage {
 		for (const [name, value] of abilities) {
 			if (name === ABILITY_NAME.MONEY_ON_DICE) {
 				this.addExecuted(ABILITY_NAME.MONEY_ON_DICE, invoker)
-				this.addAction(new EarnMoneyAction(invoker, source, value.getValue() * dice), name)
+				this.addAction(new EarnMoneyAction(invoker,  value.getValue() * dice), name)
 			}
 		}
 		return this
@@ -125,14 +146,7 @@ class ActionPackage {
 		const discount = ABILITY_NAME.DISCOUNT_CARD
 		const free = ABILITY_NAME.FREE_TOLL
 
-		if (offences.has(free)) {
-			let ability = ABILITY_REGISTRY.get(free)
-
-			if (ability != null) {
-				this.addExecuted(free, payerTurn)
-				main.applyMultiplier(0)
-			}
-		}
+		
 
 		if (offences.has(atoll)) {
 			let ability = ABILITY_REGISTRY.get(atoll)
@@ -144,14 +158,21 @@ class ActionPackage {
 			}
 		}
 
-		if(main.amount===0) return this
-		
-		if (defences.has(angel)) {
+
+		if (offences.has(free)) {
+			let ability = ABILITY_REGISTRY.get(free)
+
+			if (ability != null) {
+				this.addExecuted(free, payerTurn)
+				main.applyMultiplier(0)
+			}
+		}
+		else if (defences.has(angel)) {
 			let ability = ABILITY_REGISTRY.get(angel)
 			if (ability != null) {
-				//this.addExecuted(angel,payerTurn)
 				this.addAction(
-					new AskTollDefenceCardAction(payerTurn, ability.getSource(), CARD_NAME.ANGEL, main.amount, 0)
+					new AskTollDefenceCardAction(payerTurn, CARD_NAME.ANGEL, main.amount, 0)
+					.setSource(ability.getSource())
 						.setBlockActionId(main.getId())
 						.setAttacker(invokerTurn),
 					angel
@@ -160,15 +181,13 @@ class ActionPackage {
 		} else if (defences.has(discount)) {
 			let ability = ABILITY_REGISTRY.get(discount)
 			if (ability != null) {
-				//this.addExecuted(discount,payerTurn)
 				this.addAction(
 					new AskTollDefenceCardAction(
 						payerTurn,
-						ability.getSource(),
 						CARD_NAME.DISCOUNT,
 						main.amount,
 						main.amount * 0.5
-					)
+					).setSource(ability.getSource())
 						.setBlockActionId(main.getId())
 						.setAttacker(invokerTurn),
 					discount
@@ -205,9 +224,9 @@ class ActionPackage {
 			let ability = ABILITY_REGISTRY.get(angel)
 
 			if (ability != null) {
-				//	this.addExecuted(angel,victim)
 				this.addAction(
-					new AskAttackDefenceCardAction(victim, ability.getSource(), CARD_NAME.ANGEL, attackName)
+					new AskAttackDefenceCardAction(victim, CARD_NAME.ANGEL, attackName)
+					.setSource(ability.getSource())
 						.setBlockActionId(main.getId())
 						.setAttacker(invokerTurn),
 					angel
@@ -216,9 +235,9 @@ class ActionPackage {
 		} else if (defences.has(shield)) {
 			let ability = ABILITY_REGISTRY.get(shield)
 			if (ability != null) {
-				//	this.addExecuted(shield,victim)
 				this.addAction(
-					new AskAttackDefenceCardAction(victim, ability.getSource(), CARD_NAME.SHIELD, attackName)
+					new AskAttackDefenceCardAction(victim, CARD_NAME.SHIELD, attackName)
+					.setSource(ability.getSource())
 						.setBlockActionId(main.getId())
 						.setAttacker(invokerTurn),
 					shield
@@ -242,7 +261,60 @@ class ActionPackage {
 
 		return this
 	}
+	applyAbilityBuyout(
+		buyer: MarblePlayer,
+		landOwner: MarblePlayer,
+		offences: Map<ABILITY_NAME, AbilityValues>,
+		defences: Map<ABILITY_NAME, AbilityValues>,
+		tile: BuildableTile,
+		source: ActionSource
+	) {
+		return this
+	}
+	applyAbilityOnBuild(
+		invokerTurn: number,
+		tile: BuildableTile,
+		abilities: Map<ABILITY_NAME, AbilityValues>,
+		eventSource: ActionSource
+	) {
 
+		const construction=ABILITY_NAME.GO_START_ON_THREE_HOUSE
+		let value=abilities.get(construction)
+		let ab=ABILITY_REGISTRY.get(construction)
+		if(value!=null && ab!=null && tile.getNextBuild()===BUILDING.LANDMARK){
+			this.addExecuted(construction,invokerTurn)
+			this.addAction(new RequestMoveAction(invokerTurn, 0, MOVETYPE.FORCE_WALK).setSource(ab.getSource()), construction)
+		}
+
+		return this
+	}
+	applyAbilityPassOther(
+		mover: MarblePlayer,
+		stayed: MarblePlayer,
+		offences: Map<ABILITY_NAME, AbilityValues>,
+		defences: Map<ABILITY_NAME, AbilityValues>,
+		oldpos: number,
+		newpos: number,
+		source: ActionSource
+	) {
+		const agreement = ABILITY_NAME.TAKE_MONEY_ON_PASS_ENEMY
+		const inverse_agreement = ABILITY_NAME.TAKE_MONEY_ON_ENEMY_PASS_ME
+		if (defences.has(inverse_agreement)) {
+			let value = defences.get(inverse_agreement)
+			if (value != null) {
+				this.addExecuted(inverse_agreement, stayed.turn)
+				this.addAction(new PayPercentMoneyAction(mover.turn, stayed.turn, value.getValue()), inverse_agreement)
+			}
+		}
+		if (offences.has(agreement)) {
+			let value = offences.get(agreement)
+			if (value != null) {
+				this.addExecuted(agreement, mover.turn)
+				this.addAction(new PayPercentMoneyAction(stayed.turn, mover.turn, value.getValue()),agreement)
+			}
+		}
+		return this
+	}
 	applyAbilityArriveToPlayer(
 		moverTurn: number,
 		eventSource: ActionSource,
@@ -257,14 +329,14 @@ class ActionPackage {
 			let value = defences.get(badge)
 			if (value != null) {
 				this.addExecuted(badge, stayed)
-				this.addAction(new PayPercentMoneyAction(moverTurn, stayed, eventSource, value.getValue()), badge)
+				this.addAction(new PayPercentMoneyAction(moverTurn, stayed, value.getValue()), badge)
 			}
 		}
 		if (offences.has(perfume)) {
 			let value = offences.get(perfume)
 			if (value != null) {
 				this.addExecuted(perfume, moverTurn)
-				this.addAction(new PayPercentMoneyAction(stayed, moverTurn, eventSource, value.getValue()), perfume)
+				this.addAction(new PayPercentMoneyAction(stayed, moverTurn, value.getValue()), perfume)
 			}
 		}
 
@@ -282,11 +354,19 @@ class ActionPackage {
 			if (value != null) {
 				this.addExecuted(ring, moverTurn)
 				this.addAction(
-					new EarnMoneyAction(moverTurn, source, Math.floor(tile.getBuildPrice() * value.getValue() * 0.01)),
+					new EarnMoneyAction(moverTurn, Math.floor(tile.getBuildPrice() * value.getValue() * 0.01)),
 					ring
 				)
 			}
 		}
+		return this
+	}
+	applyAbilityArriveEmptyLand(
+		moverTurn: number,
+		source: ActionSource,
+		abilities: Map<ABILITY_NAME, AbilityValues>,
+		tile: BuildableTile
+	) {
 		return this
 	}
 	applyAbilityArriveEnemyLand(
@@ -300,14 +380,30 @@ class ActionPackage {
 
 		if (defences.has(healing)) {
 			let value = defences.get(healing)
-			if (value != null) {
+			let ab=ABILITY_REGISTRY.get(healing)
+			if (value != null && ab!=null) {
 				this.addExecuted(healing, moverTurn)
-				this.addAction(
-					new RequestMoveAction(moverTurn,source,24,RequestMoveAction.TYPE_FORCE_WALK),
-					healing
-				)
+				this.addAction(new RequestMoveAction(moverTurn, 24, MOVETYPE.FORCE_WALK).setSource(ab.getSource()), healing)
 			}
 		}
+		return this
+	}
+	applyAbilityMonopolyChance(
+		player:MarblePlayer,offences: Map<ABILITY_NAME, AbilityValues>,defences: Map<ABILITY_NAME, AbilityValues>,spots:number[]
+	){
+		return this
+	}
+	applyAbilityArriveTravel(player:MarblePlayer,abilities: Map<ABILITY_NAME, AbilityValues>,source:ActionSource){
+
+		const freepass=ABILITY_NAME.INSTANT_TRAVEL
+		let value=abilities.get(freepass)
+		if(value!=null && this.isTurnOf(player.turn)){
+			this.addExecuted(freepass, player.turn)
+		}
+		else{
+			this.setMainToPendingAction()
+		}
+
 		return this
 	}
 }

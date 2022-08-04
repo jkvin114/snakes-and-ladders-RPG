@@ -1,3 +1,4 @@
+import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 import { hexId } from "../util"
 import { ActionSource, ACTION_SOURCE_TYPE } from "./ActionSource"
 
@@ -34,6 +35,8 @@ export enum ACTION_TYPE {
 	MODIFY_OTHER,
 	EARN_MONEY,
 	REQUEST_MOVE,
+	CHOOSE_GODHAND_SPECIAL,
+	CHOOSE_GODHAND_TILE_LIFT,
 	EMPTY,
 }
 
@@ -69,9 +72,15 @@ export const ACTION_LIST = [
 	"CHOOSE_TOLL_DEFENCE_CARD_USE",
 	"MODIFY_OTHER",
 	"EARN_MONEY",
+	"REQUEST_MOVE",
+	"CHOOSE_GODHAND_SPECIAL",
+	"CHOOSE_GODHAND_TILE_LIFT",
 	"EMPTY",
 ]
 
+export enum MOVETYPE{
+	WALK,FORCE_WALK,TELEPORT
+}
 export interface ActionModifyFunction {
 	(action: Action): void
 }
@@ -83,18 +92,24 @@ export abstract class Action {
 	delay: number
 	valid: boolean
 	blocked: boolean
+	indicateAbilityOnPop:boolean
 	private id: string
 	static readonly PRIORITY_NORMAL=0
 	static readonly PRIORITY_FIRST=1
-	constructor(type: ACTION_TYPE, turn: number, source: ActionSource) {
+	constructor(type: ACTION_TYPE, turn: number) {
 		this.type = type
-		this.source = source
+		this.source = new ActionSource()
 		this.delay = 0
 		this.turn = turn
 		this.valid = true
 		this.blocked = false
 		this.id = hexId()
 		this.priority=Action.PRIORITY_NORMAL
+		this.indicateAbilityOnPop=false
+	}
+	setSource(source:ActionSource){
+		this.source=source
+		return this
 	}
 	/**
 	 * off 될경우 아예 실행 안됨
@@ -121,11 +136,17 @@ export abstract class Action {
 	setValue(val: number) {
 		console.error(" could not set the value")
 	}
+	/**
+	 * action이 실행될띠 ability 알림 표시(아이템으로 인한 action만 적용)
+	 */
+	reserveAbilityIndicatorOnPop(){
+		this.indicateAbilityOnPop=true
+	}
 }
 
 export class EmptyAction extends Action {
 	constructor() {
-		super(ACTION_TYPE.EMPTY, -1, new ActionSource(ACTION_SOURCE_TYPE.GAMELOOP))
+		super(ACTION_TYPE.EMPTY, -1)
 	}
 }
 
@@ -133,7 +154,9 @@ export class EmptyAction extends Action {
  * 즉시 실행됨(상태 변화)
  */
 export class StateChangeAction extends Action {
-	constructor(type: ACTION_TYPE, turn: number, source: ActionSource) {
-		super(type, turn, source)
+	constructor(type: ACTION_TYPE, turn: number) {
+		super(type, turn)
+		if(type===ACTION_TYPE.GAMEOVER)
+			this.priority=Action.PRIORITY_FIRST
 	}
 }
