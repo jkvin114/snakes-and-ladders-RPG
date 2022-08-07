@@ -1,7 +1,7 @@
 import { ACTION_TYPE } from "../action/Action"
 import { ACTION_SOURCE_TYPE } from "../action/ActionTrace"
-import { Ability, DiceChanceAbility, MoveAbilty, PayAbility, ValueModifierAbility } from "./Ability"
-import { DefenceCardAbility } from "./DefenceAbilty"
+import { Ability, DiceChanceAbility, ForceMoveAbilty, MoveAbilty, PayAbility, ValueModifierAbility } from "./Ability"
+import { DefenceAbility, DefenceCardAbility } from "./DefenceAbilty"
 import { EVENT_TYPE } from "./EventType"
 
 export enum ABILITY_NAME {
@@ -10,6 +10,7 @@ export enum ABILITY_NAME {
 	ANGEL_CARD = "angel_card",
 	SHIELD_CARD = "shield_card",
 	DISCOUNT_CARD = "discount_card",
+	FIRST_TURN_DOUBLE="first_turn_double",
 
 	//phase 1
 	SALARY_BONUS = "salary_bonus",
@@ -41,7 +42,21 @@ export enum ABILITY_NAME {
 	FOLLOW_ON_ENEMY_HEALING="follow_on_enemy_healing",
 	ONE_MORE_DICE_ON_MONOPOLY_CHANCE="speaker",
 	GO_START_ON_THREE_HOUSE="construction",
-	BUILD_ON_PASSED_LAND="build_on_passed_land"
+	BUILD_ON_PASSED_LAND="build_on_passed_land",
+	LANDMARK_ON_AFTER_TRAVEL="flag",
+	IGNORE_ANGEL="ignore_angel",
+
+	//phase3
+	RANGE_PULL_ON_ARRIVE_LANDMARK="range_pull_on_arrive_landmark",
+	RANGE_PULL_ON_BUILD_LANDMARK="range_pull_on_build_landmark",
+	LINE_PULL_ON_ARRIVE_AND_BUILD_LANDMARK="line_pull",
+	OLYMPIC_LANDMARK_AND_PULL="iaan",
+	ROOT_ON_ENEMY_ARRIVE_MY_LANDMARK="bubble",
+	CALL_PLAYERS_ON_TRAVEL="boss_call",
+	ADD_MULTIPLIER_ON_BUILD_LANDMARK="apply_multiplier_on_build_landmark",
+	ADD_MULTIPLIER_ON_ARRIVE_MY_LAND="monument",
+	ADD_MULTIPLIER_ON_PASS_START="inheritance_document",
+
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -54,11 +69,13 @@ ABILITY_REGISTRY.set(
 
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.SHIELD_CARD,
-	new DefenceCardAbility(ABILITY_NAME.SHIELD_CARD).on(EVENT_TYPE.BEING_ATTACKED)
+	new DefenceCardAbility(ABILITY_NAME.SHIELD_CARD)
+	.on(EVENT_TYPE.BEING_ATTACKED)
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.DISCOUNT_CARD,
-	new DefenceCardAbility(ABILITY_NAME.DISCOUNT_CARD).on(EVENT_TYPE.TOLL_CLAIMED)
+	new DefenceCardAbility(ABILITY_NAME.DISCOUNT_CARD)
+	.on(EVENT_TYPE.TOLL_CLAIMED)
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.SALARY_BONUS,
@@ -87,6 +104,12 @@ ABILITY_REGISTRY.set(
 	ABILITY_NAME.DICE_DOUBLE,
 	new Ability(ABILITY_NAME.DICE_DOUBLE).on(EVENT_TYPE.GENERATE_DICE_NUMBER)
 	.desc("주사위 더블 확률 $c% 증가")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.FIRST_TURN_DOUBLE,
+	new Ability(ABILITY_NAME.FIRST_TURN_DOUBLE)
+	.on(EVENT_TYPE.GENERATE_DICE_NUMBER)
+	.desc("첫 주사위 더블")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.MONEY_ON_DICE,
@@ -161,22 +184,97 @@ ABILITY_REGISTRY.set(
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.ONE_MORE_DICE_AFTER_TRAVEL,
 	new Ability(ABILITY_NAME.ONE_MORE_DICE_AFTER_TRAVEL)
-	.on(EVENT_TYPE.ARRIVE_TILE)
-	.desc("세계여행에서 도착 시 $c% 확률로 주사위 한번 더")
+	.on(EVENT_TYPE.ARRIVE_TRAVEL)
+	.desc("세계여행에서 도착 시 $c% 확률로 주사위 한번 더!")
 )
 
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND,
 	new MoveAbilty(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND)
 	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
-	.desc("상대 땅 도착시 통행료 면제 후 $c% 확률로 세계여행")
+	.desc("상대 땅 도착시 $c% 확률로 통행료 면제 후 세계여행")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.ONE_MORE_DICE_ON_MONOPOLY_CHANCE,
 	new DiceChanceAbility(ABILITY_NAME.ONE_MORE_DICE_ON_MONOPOLY_CHANCE)
 	.on(EVENT_TYPE.MONOPOLY_CHANCE)
-	.desc("독점 찬스시 $c% 확률로 주사위 한번더")
+	.desc("독점 찬스시 $c% 확률로 주사위 한번더!")
 )
 
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING,
+	new DiceChanceAbility(ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING)
+	.on(EVENT_TYPE.ENEMY_ARRIVE_MY_LAND)
+	.desc("상대가 내 땅에서 힐링 여행권 발동시 $c% 확률로 따라감")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE,
+	new DiceChanceAbility(ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE)
+	.on(EVENT_TYPE.THREE_DOUBLE)
+	.desc("$c% 확률로 더블 3회시 세계여행")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL,
+	new DiceChanceAbility(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL)
+	.on(EVENT_TYPE.TRAVEL_START)
+	.desc("세계여행 도착시 $c% 확률로 즉시 랜드마크 건설 가능")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.DEFEND_ATTACK,
+	new DefenceAbility(ABILITY_NAME.DEFEND_ATTACK)
+	.on(EVENT_TYPE.BEING_ATTACKED)
+	.on(EVENT_TYPE.BEING_PULLED)
+	.desc("$c% 확률로 상대 공격/끌어당김 방어")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.IGNORE_ATTACK_DEFEND,
+	new DefenceAbility(ABILITY_NAME.IGNORE_ATTACK_DEFEND)
+	.on(EVENT_TYPE.DO_ATTACK)
+	.on(EVENT_TYPE.PULL_ENEMY)
+	.desc("$c% 확률로 상대 방어 무력화")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.IGNORE_ANGEL,
+	new DefenceAbility(ABILITY_NAME.IGNORE_ANGEL)
+	.on(EVENT_TYPE.CLAIM_TOLL)
+	.desc("$c% 확률로 상대가 내 랜드마크에서 사용한 천사카드 무력화")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.RANGE_PULL_ON_ARRIVE_LANDMARK,
+	new ForceMoveAbilty(ABILITY_NAME.RANGE_PULL_ON_ARRIVE_LANDMARK)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("$c% 확률로 내 랜드마크 도착 시 4칸이내 상대 끌어당김")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.LINE_PULL_ON_ARRIVE_AND_BUILD_LANDMARK,
+	new ForceMoveAbilty(ABILITY_NAME.LINE_PULL_ON_ARRIVE_AND_BUILD_LANDMARK)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
+	.desc("$c% 확률로 내 랜드마크 도착/건설 시 같은 라인의 상대 끌어당김")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.RANGE_PULL_ON_BUILD_LANDMARK,
+	new ForceMoveAbilty(ABILITY_NAME.RANGE_PULL_ON_BUILD_LANDMARK)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
+	.desc("$c% 확률로 랜드마크 건설 시 4칸이내 상대 끌어당김")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL,
+	new ForceMoveAbilty(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL)
+	.on(EVENT_TYPE.ARRIVE_OLYMPIC)
+	.desc("올림픽 지역 도착 시 $c% 확률로 개최지 랜드마크로 업그레이드 후 4칸이내 상대 끌어당김")
+)
 
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.ADD_MULTIPLIER_ON_ARRIVE_MY_LAND,
+	new Ability(ABILITY_NAME.ADD_MULTIPLIER_ON_ARRIVE_MY_LAND)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("내 땅 도착시 $c% 확률로 통행료 2배")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.ADD_MULTIPLIER_ON_BUILD_LANDMARK,
+	new Ability(ABILITY_NAME.ADD_MULTIPLIER_ON_BUILD_LANDMARK)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
+	.desc("랜드마크 건설시 $c% 확률로 통행료 2,4,8배중 랜덤적용")
+)
 export { ABILITY_REGISTRY }

@@ -39,6 +39,10 @@ export enum ACTION_TYPE {
 	CHOOSE_GODHAND_TILE_LIFT,
 	EXECUTE_PENDING_ACTION,
 	TURN_START,
+	PREPARE_TRAVEL,
+	PULL,
+	AUTO_BUILD,
+	ADD_MULTIPLIER,
 	EMPTY,
 }
 
@@ -79,11 +83,14 @@ export const ACTION_LIST = [
 	"CHOOSE_GODHAND_TILE_LIFT",
 	"EXECUTE_PENDING_ACTION",
 	"TURN_START",
+	"PREPARE_TRAVEL",
+	"PULL"	,
+	"ADD_MULTIPLIER",
 	"EMPTY",
 ]
 
 export enum MOVETYPE{
-	WALK,FORCE_WALK,TELEPORT
+	WALK,FORCE_WALK,TELEPORT,PULL
 }
 export interface ActionModifyFunction {
 	(action: Action): void
@@ -97,6 +104,8 @@ export abstract class Action {
 	valid: boolean
 	blocked: boolean
 	indicateAbilityOnPop:boolean
+	duplicateAllowed:boolean // 같은종류 액션 두개 동시에 스택에 존재 가능한지()
+	private reservedAbility:{name: ABILITY_NAME, turn: number }
 	private id: string
 	static readonly PRIORITY_NORMAL=0
 	static readonly PRIORITY_FIRST=1
@@ -110,6 +119,8 @@ export abstract class Action {
 		this.id = hexId()
 		this.priority=Action.PRIORITY_NORMAL
 		this.indicateAbilityOnPop=false
+		this.reservedAbility={ name: ABILITY_NAME.NONE, turn: -1 }
+		this.duplicateAllowed=true
 	}
 	setSource(source:ActionTrace){
 		this.source=source
@@ -153,8 +164,14 @@ export abstract class Action {
 	/**
 	 * action이 실행될띠 ability 알림 표시(아이템으로 인한 action만 적용)
 	 */
-	reserveAbilityIndicatorOnPop(){
+	reserveAbilityIndicatorOnPop(ability:ABILITY_NAME,turn:number){
+		this.reservedAbility.name=ability
+		this.reservedAbility.turn=turn
 		this.indicateAbilityOnPop=true
+		return this
+	}
+	getReservedAbility(){
+		return this.reservedAbility
 	}
 }
 

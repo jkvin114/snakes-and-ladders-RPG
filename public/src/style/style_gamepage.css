@@ -1705,18 +1705,42 @@ b {
   position: absolute;
   width: 250px;
   height: 80px;
-  background: linear-gradient(to top, rgb(17, 17, 17, 0.7) 0%, rgba(95, 95, 95, 0.7) 100%);
+  /* background: linear-gradient(to top, rgb(17, 17, 17, 0.7) 0%, rgba(95, 95, 95, 0.7) 100%); */
+  /* background: linear-gradient(to top, rgba(252, 252, 252, 0.7) rgba(181, 181, 181, 0.7) 100%); */
+  background-color: rgba(255, 255, 255, 0.9);
   left: -400px;
   bottom: 4px;
-  color: white;
+  color: black;
   display: grid;
-  grid-template-columns: auto 80px;
-  border-radius: 10px;
-  border: 3px solid rgb(36, 36, 36);
+  grid-template-columns: 10px 80px auto ;
+  border-radius: 3px;
+  /* border: 2px solid rgb(64, 189, 36); */
+  box-shadow: 0 0 6px 2px rgba(46, 46, 46,0.5);
   text-align: center;
   user-select: none;
 }
+.obs_notification .obs_color{
+  border-radius: 3px;
+  margin: 6px;
+  width: 2px;
+  background-color: gray;
+  border: 1px solid gray;
+}
+.obs_notification.good .obs_color{
 
+  background-color: rgb(31, 167, 121);
+  border: 1px solid rgb(31, 167, 121);
+}
+.obs_notification.bad .obs_color{
+  background-color: #ea4e2c;
+  border: 1px solid #ea4e2c;
+}
+.obs_notification.bad{
+  background-color: #fce2db;
+}
+.obs_notification.good{
+  background-color: #ddffe7;
+}
 .obs_notification #obs_img {
   width: 65px;
   height: 65px;
@@ -1725,12 +1749,19 @@ b {
   background-color: rgb(255, 255, 255, 0.8);
   border: solid 3px rgb(87, 87, 87);
 }
-
+.obs_notification .obs_text{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: left;
+}
 .obs_notification p {
   margin-top: 1px;
 
   font-size: 12px;
-  color: rgb(219, 218, 218);
+  /* color: rgb(219, 218, 218); */
+  color: gray;
+
   vertical-align: middle;
   word-break: keep-all;
   font-family: "nanumB";
@@ -1745,20 +1776,27 @@ b {
 }
 
 .obs_notification b {
-  font-size: 14px;
-  color: greenyellow;
+  font-size: 17px;
+  /* color: greenyellow; */
+  font-family: "nanumEB";
+
+  color: black;
   margin-left: 5px;
 }
 
 .toast_obsimg{
-  margin: 35px;
+  margin: -35px;
   width: 50px;
   overflow: hidden;
   height: 50px;
   display: inline-block;
   transform: scale(1.3);
 }
-
+.obs_img{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 #obs_notification {
   position: absolute;
 }

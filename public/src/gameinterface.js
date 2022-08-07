@@ -668,7 +668,8 @@ export default class GameInterface {
 			{
 				width: "100%"
 			},
-			time
+			time,
+			"linear"
 		)
 	}
 	timeoutStop() {
@@ -1724,28 +1725,28 @@ class ObsNotification {
 		}
 		$(".obs_notification" + num + " p").html(obstacle.desc)
 		$(".obs_notification" + num + " b").html(obstacle.name)
+		$(".obs_notification" + num).removeClass("good")
+		$(".obs_notification" + num).removeClass("bad")
 		if (obstacle.val > 0) {
-			$(".obs_notification" + num + " b").css({ color: "greenyellow" })
+			$(".obs_notification" + num).addClass("good")
 		} else if (obstacle.val < 0) {
-			$(".obs_notification" + num + " b").css({ color: "pink" })
-		} else {
-			$(".obs_notification" + num + " b").css({ color: "white" })
+			$(".obs_notification" + num).addClass("bad")
 		}
 
-		$(".obs_notification" + num + " #obs_img").html(
+		$(".obs_notification" + num + " .obs_img").html(
 			"<div class=toast_obsimg><img src='res/img/board/obstacles.png' style='margin-left: " +
 				-1 * obs * 50 +
 				"px'; > </div>"
 		)
 
-		$(".toast_obsimg").css({
-			margin: "-35px",
-			width: "50px",
-			overflow: "hidden",
-			height: "50px",
-			display: "inline-block",
-			transform: "scale(1.3)"
-		})
+		// $(".toast_obsimg").css({
+		// 	margin: "-35px",
+		// 	width: "50px",
+		// 	overflow: "hidden",
+		// 	height: "50px",
+		// 	display: "inline-block",
+		// 	transform: "scale(1.3)"
+		// })
 	}
 }
 

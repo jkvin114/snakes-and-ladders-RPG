@@ -22,6 +22,10 @@ const HEALTHBAR_OFFSET_Y = 48
 const HEALTHBAR_OFFSET_X = 78
 const HEALTHBAR_FRAME_OFFSET_Y = 50
 const HEALTHBAR_FRAME_OFFSET_X = 80
+
+const HPBAR_OFFSET_Y = 30
+const HPBAR_OFFSET_X = 30
+
 const HEALTHBAR_LOST_DISAPPEAR_DELAY = 600
 const HEALTHBAR_FRAME_DISAPPEAR_DELAY = 1300
 const ATTACK_EFFECT_INTERVAL = 100
@@ -1288,7 +1292,7 @@ export class Scene extends Board{
 				top: 302,
 				width: 200,
 				height: 16,
-				fill: "white",
+				fill: "black",
 				lockMovementX: true,
 				lockMovementY: true,
 				visible: false,
@@ -1314,7 +1318,52 @@ export class Scene extends Board{
 				frame: hp_frame,
 				bg: hp_bg
 			}
+			//hp bar=================================================================
+			let hpbar_frame = new fabric.Rect({
+				left: 300,
+				top: 300,
+				width: 50,
+				height: 5,
+				fill: "black",
+				visible: false,
+				evented:false
+			})
+			this.lockFabricObjectNoOrigin(hpbar_frame)
+			let hpbar_hp = new fabric.Rect({
+				left: 301,
+				top: 301,
+				width: 48,
+				height: 3,
+				fill: COLOR_LIST[i],
+				visible: false,
+				evented: false,
+			})
+			this.lockFabricObjectNoOrigin(hpbar_hp)
 
+			let hpbar_shield = new fabric.Rect({
+				left: 301,
+				top: 301,
+				width: 0,
+				height: 3,
+				fill: "#CCCCCC",
+				visible: false,
+				evented: false,
+			})
+			this.lockFabricObjectNoOrigin(hpbar_shield)
+
+			this.canvas.add(hpbar_frame)
+			this.canvas.add(hpbar_hp)
+			this.canvas.add(hpbar_shield)
+			// hp_frame.bringToFront()
+			// hp_bg.bringToFront()
+			// hp_remain.bringToFront()
+			// hp_lost.bringToFront()
+
+			player.hpbar = {
+				shield: hpbar_shield,
+				hp: hpbar_hp,
+				frame: hpbar_frame
+			}
 			//이름=================================================================
 
 			if (this.game.isTeam) {
@@ -2277,15 +2326,34 @@ export class Scene extends Board{
 
 	setHp(data) {
 		let target = data.turn
-		let hp = data.currhp
+		let hp = Math.max(0,data.currhp)
 		let maxhp = data.currmaxhp
+		let shield=data.currshield
 		let change = data.change
 
 		if (target === this.game.myturn) {
 			this.game.ui.lostHP(hp, change)
 		}
 		let ui = this.game.turn2ui(target)
-		this.players[ui].nametext.set("text", "(" + String(target + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
+
+		let hpbar_hp = this.players[target].hpbar.hp
+		let hpbar_frame = this.players[target].hpbar.frame
+		let hpbar_shield = this.players[target].hpbar.shield
+
+		let pos1 = this.getPlayerPos(target)
+		let healthPixels= Math.floor((hp/maxhp) * 48)
+
+		hpbar_frame.set({ visible: true, left: pos1.x - HPBAR_OFFSET_X, top: pos1.y - HPBAR_OFFSET_Y })
+		hpbar_hp.set({
+			visible: true,
+			left: pos1.x - HPBAR_OFFSET_X + 1,
+			top: pos1.y - HPBAR_OFFSET_Y + 1,
+			width: healthPixels
+		})
+
+		// hpbar_frame.bringToFront()
+		// hpbar_hp.bringToFront()
+		// this.players[target].nametext.set("text", "(" + String(target + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
 	}
 	animateHP(data) {
 		let target = data.turn
@@ -2446,6 +2514,35 @@ export class Scene extends Board{
 		}
 	}
 	//===========================================================================================================================
+	hideNameText(turn) {
+		this.players[turn].hpbar.frame.set({visible:false})
+		this.players[turn].hpbar.hp.set({visible:false})
+		this.players[turn].hpbar.shield.set({visible:false})
+
+		super.hideNameText(turn)
+	}
+	updateNameText(turn)
+	{
+		let pos1 = this.getPlayerPos(turn)	
+
+		console.log(this.players[turn].hpbar)
+		this.players[turn].hpbar.frame.set({ visible: true, left: pos1.x - HPBAR_OFFSET_X, top: pos1.y - HPBAR_OFFSET_Y })
+		this.players[turn].hpbar.hp.set({
+			visible: true,
+			left: pos1.x - HPBAR_OFFSET_X + 1,
+			top: pos1.y - HPBAR_OFFSET_Y + 1
+		})
+		this.players[turn].hpbar.shield.set({
+			visible: true,
+			left: pos1.x - HPBAR_OFFSET_X  + 1,
+			top: pos1.y - HPBAR_OFFSET_Y + 1
+		})
+
+		this.players[turn].hpbar.frame.bringToFront()
+		this.players[turn].hpbar.hp.bringToFront()
+		this.players[turn].hpbar.shield.bringToFront()
+		super.updateNameText(turn)
+	}
 
 	indicateMoney(target, money) {
 		if (money < 10 && money >= 0) {
@@ -3013,7 +3110,7 @@ export class Scene extends Board{
 				visible: true
 			})
 			this.players[tr].targetimg.bringToFront()
-			this.nameTextsToFront()
+			// this.nameTextsToFront()
 
 			this.players[tr].targetimg.animate("scaleY", 0.6, {
 				onChange: this.render.bind(this),
@@ -3086,8 +3183,8 @@ export class Scene extends Board{
 	moveComplete(turn){
 		this.game.moveComplete()
 		let ui = this.game.turn2ui(turn)
-		this.players[turn].nametext.set("text", "(" + String(turn + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
-		this.updateNameText(turn)
+		// this.players[turn].nametext.set("text", "(" + String(turn + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
+		// this.updateNameText(turn)
 		super.moveComplete(turn)
 		
 	}
@@ -3216,7 +3313,7 @@ export class Scene extends Board{
 			top: this.Map.coordinates[respawnpos].y + BOARD_MARGIN,
 			left: this.Map.coordinates[respawnpos].x + BOARD_MARGIN
 		})
-		this.players[target].nametext.set("stroke", "red")
+		// this.players[target].nametext.set("stroke", "red")
 		this.render()
 	}
 	//===========================================================================================================================
@@ -3229,7 +3326,7 @@ export class Scene extends Board{
 			left: this.Map.coordinates[respawnpos].x + BOARD_MARGIN
 		})
 		this.game.removeAllEffects(turn)
-		this.players[turn].nametext.set("stroke", "red")
+		// this.players[turn].nametext.set("stroke", "red")
 		this.render()
 	}
 	//===========================================================================================================================

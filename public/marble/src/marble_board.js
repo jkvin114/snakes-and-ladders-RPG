@@ -815,7 +815,10 @@ export class MarbleScene extends Board{
             this.addHouse(pos,tileobj.data.owner,i)
         }
     }
-
+    indicatePull(positions){
+        this.showTileHighlight(positions,"white")
+        setTimeout(()=>this.clearTileHighlight("white"),1500)
+    }
     showTileHighlight(positions,color){
         for(const p of positions){
             let image=this.getTileOverlay(this.getCoord(p),color)

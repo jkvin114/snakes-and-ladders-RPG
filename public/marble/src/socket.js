@@ -58,6 +58,11 @@ export function openConnection(isInitial){
 		console.log(player,pos)
 		GAME.playerTeleport(player,pos)
 	})
+	socket.on("server:pull", function (tiles) {
+        console.log("pull")
+		console.log(tiles)
+		GAME.scene.indicatePull(tiles)
+	})
     socket.on("server:choose_build", function (pos,player,builds,buildsHave,discount,avaliableMoney) {
 		if(!checkTurn(player)) return
         console.log("choose_build")

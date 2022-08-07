@@ -38,7 +38,7 @@ const { isMainThread } = require('worker_threads')
 
 const testSetting = {
 	lvl: 1,
-	pos: 0,
+	pos: 50,
 	money: 0
 }
 // if (args["l"]) testSetting.lvl = args["l"]
@@ -635,7 +635,8 @@ abstract class Player extends Entity {
 				change: hp,
 				currhp: this.HP,
 				currmaxhp: this.MaxHP,
-				source: data.source
+				source: data.source,
+				currshield:this.shield
 			}
 			this.game.clientInterface.changeHP_damage(hpChangeData)
 		}
@@ -672,7 +673,8 @@ abstract class Player extends Entity {
 				change: hp,
 				currhp: this.HP,
 				currmaxhp: this.MaxHP,
-				type: type
+				type: type,
+				currshield:this.shield
 			}
 			this.game.clientInterface.changeHP_heal(changeData)
 		}

@@ -2,6 +2,7 @@ import { Action, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionTrace } from "./ActionTrace"
 import { BuildableTile } from "./../tile/BuildableTile"
 import type { MarbleGame } from "../Game"
+import { BUILDING } from "../tile/Tile"
 
 /**
  * 즉시 실행됨(통행료지불,배수변화,자동건설,디버프,향수 등)
@@ -83,6 +84,33 @@ export class PayTollAction extends PayMoneyAction {
 	}
 	
 }
+export class AddMultiplierAction extends InstantAction {
+	
+	pos:number
+	count:number
+	constructor(turn:number,pos:number,count:number) {
+		super(ACTION_TYPE.ADD_MULTIPLIER,turn)
+		this.priority=Action.PRIORITY_FIRST
+		this.pos=pos
+		this.count=count
+	}
+	execute(game: MarbleGame): void {
+		game.addMultiplierToTile(this.pos,this.count)
+	}
+}
+export class AutoBuildAction extends InstantAction {
+	builds:BUILDING[]
+	pos:number
+	constructor(turn: number,pos:number,builds:BUILDING[]) {
+		super(ACTION_TYPE.AUTO_BUILD,turn)
+		this.priority=Action.PRIORITY_FIRST
+		this.pos=pos
+		this.builds=builds
+	}
+	execute(game: MarbleGame): void {
+		game.autoBuild(this.turn,this.pos,this.builds,this.source)
+	}
+}
 export class PayPercentMoneyAction extends InstantAction {
 	private percent:number
 	receiver:number
@@ -142,7 +170,14 @@ export class TileAttackAction extends InstantAction{
 		game.attackTile(this)
 	}
 }
-
+export class PrepareTravelAction extends InstantAction{
+	constructor(turn: number) {
+		super(ACTION_TYPE.PREPARE_TRAVEL,turn)
+	}
+	execute(game: MarbleGame): void {
+		game.requestTravel(this)
+	}
+}
 export class ActionModifier extends InstantAction{
 	static readonly TYPE_OFF=0
 	static readonly TYPE_BLOCK=1
@@ -171,6 +206,7 @@ export class ActionModifier extends InstantAction{
 		game.modifyActionWith(this)
 	}
 }
+
 export class RequestMoveAction extends InstantAction{
 	
 	pos:number
@@ -193,5 +229,7 @@ export class RequestMoveAction extends InstantAction{
 			game.requestWalkMove(this.turn, this.pos, this.source)
 		if(this.moveType===MOVETYPE.TELEPORT)
 			game.teleportPlayer(this.turn, this.pos, this.source)
+		if(this.moveType===MOVETYPE.PULL)
+			game.requestPullMove(this.turn, this.pos, this.source)
 	}
 }

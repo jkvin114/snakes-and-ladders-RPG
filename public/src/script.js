@@ -48,6 +48,7 @@ class Player {
 		this.hpIndicatorLostTimeout = setTimeout(() => {}, 0)
 		this.isHpIndicatorVisible = false
 		this.effect_status = new Set()
+		this.hpbar
 	}
 	clearhpIndicatorTimeout() {
 		// console.log(this.hpIndicatorLostTimeout)

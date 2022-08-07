@@ -3,10 +3,12 @@ import * as csvParse from 'csv-parse';
 import fs from 'fs';
 import { ABILITY_NAME, ABILITY_REGISTRY } from './Ability/AbilityRegistry';
 import { AbilityValues } from './Ability/AbilityValues';
-const headers=["code","name","name_kor","ability","chance","value","upgradevalue","firstonly","limit"]
+const headers=["code","name","name_kor","ability","chance","value","upgradevalue","firstonly","limit","cost"]
 
 interface itemData{
-    limit:string,code:string,name:string,ability:string,name_kor:string,chance:string,value:string,upgradevalue:string,firstonly:string
+    limit:string,code:string,name:string,ability:string
+    ,name_kor:string,chance:string,value:string,upgradevalue:string
+    ,firstonly:string,cost:number
 }
 
 const myParser = csvParse.parse({delimiter: ',',columns: headers,

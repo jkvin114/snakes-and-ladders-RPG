@@ -3,6 +3,7 @@ import type { ActionTrace } from "./ActionTrace"
 import { ServerPayloadInterface } from "./../ServerPayloadInterface"
 import { BUILDING } from "../tile/Tile"
 import { FortuneCard } from "../FortuneCard"
+import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 
 
 
@@ -15,6 +16,13 @@ import { FortuneCard } from "../FortuneCard"
 		super(type,turn)
 	}
 }
+export class DiceChanceAction extends QueryAction {
+	constructor(turn: number,nodouble?:boolean) {
+		super(nodouble?ACTION_TYPE.DICE_CHANCE_NO_DOUBLE:ACTION_TYPE.DICE_CHANCE,turn)
+		this.duplicateAllowed=false
+	}
+}
+
 export class AskBuildAction extends QueryAction {
     builds:ServerPayloadInterface.buildAvaliability[]
 	pos:number
@@ -102,11 +110,15 @@ export class AskDefenceCardAction extends QueryAction{
 	cardname:string
 	toBlock:string
 	attacker:number  //방어할 공격을 한 플레이어
+	willIgnored:boolean
+	ignoredBy:ABILITY_NAME
 	constructor(type:ACTION_TYPE,turn: number,cardname:string) {
 		super(type,turn)
 		this.cardname=cardname
 		this.attacker=-1
 		this.toBlock=""
+		this.willIgnored=false
+		this.ignoredBy=ABILITY_NAME.NONE
 	}
 	setBlockActionId(id:string){
 		this.toBlock=id
@@ -115,6 +127,11 @@ export class AskDefenceCardAction extends QueryAction{
 	}
 	setAttacker(turn:number){
 		this.attacker=turn
+		return this
+	}
+	setIgnore(ignore:boolean,by:ABILITY_NAME) {
+		this.willIgnored=ignore
+		if(ignore) this.ignoredBy=by
 		return this
 	}
 }

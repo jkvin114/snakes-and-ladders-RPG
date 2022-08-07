@@ -8,16 +8,13 @@ import { LandTile } from "./tile/LandTile"
 import { SightTile } from "./tile/SightTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
 import { TileFilter } from "./TileFilter"
-import { arrayOf, countIterator, countList, distance, range } from "./util"
+import { arrayOf, countIterator, countList, distance, MAP_SIZE, pos2Line, range, SAME_LINE_TILES } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/marble/godhand_map.json")
 const WORLD_MAP = require("./../../res/marble/world_map.json")
 
-const MAP_SIZE=32
-const SAME_LINE_TILES:Set<number>[]=[0,8,16,24].map((i)=>new Set(range((i+8),i).map((i)=>i%MAP_SIZE)))
-const pos2Line=function(pos:number){
-    return Math.floor((pos%MAP_SIZE)/8)
-}
+
+
 export enum MONOPOLY{
     NONE,TRIPLE,LINE,SIGHT
 }
@@ -274,6 +271,15 @@ class MarbleGameMap{
                 tiles.forEach((land)=>land.setColorMonopoly())
             change[0]=color
         }
+    }
+    addSingleMultiplier(pos:number,count:number){
+        let tile=this.buildableTileAt(pos)
+        if(!tile) return
+        tile.addMultiplier(count)
+        
+        this.clientInterface.updateMultipliers([{
+            pos:pos,mul:tile.getMultiplier(),toll:tile.getDisplayedToll()
+        }])
     }
     updateMultiplier()
     {

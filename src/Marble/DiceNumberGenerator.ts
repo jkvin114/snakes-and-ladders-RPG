@@ -40,7 +40,6 @@ export namespace DiceNumberGenerator {
 				let min = clamp(num - DC_ERROR, 2, 12)
 				let max = clamp(num + DC_ERROR, 2, 12)
 				dice = chooseRandom(([] as number[][]).concat(...range(max, min).map((t) => DICES[t])))
-				// dice=chooseRandom(DICES[num])
 			}
 		} else {
 			dice = [randDice(), randDice()]

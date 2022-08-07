@@ -35,6 +35,7 @@ const SERVER_EVENTS={
     ABILITY:prefix+"ability",
     TILE_STATE_UPDATE:prefix+"tile_state_update",
     ASK_GODHAND_SPECIAL:prefix+"ask_godhand_special",
+    PULL:prefix+"pull",
 }
 
 export class MarbleClientInterface {
@@ -103,6 +104,9 @@ export class MarbleClientInterface {
     }
     ability(turn:number,name:ABILITY_NAME,itemName:string,desc:string,isblocked:boolean){
         this.callback(this.rname, SERVER_EVENTS.ABILITY, turn,name,itemName,desc,isblocked)
+    }
+    indicatePull(tiles:number[]){
+        this.callback(this.rname, SERVER_EVENTS.PULL, tiles)
     }
     /**
      * 

@@ -1,4 +1,5 @@
-import { Action, ACTION_TYPE } from "./Action"
+import { backwardBy, forwardBy, pos2Line, SAME_LINE_TILES } from "../util"
+import { Action, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionTrace } from "./ActionTrace"
 
 /**
@@ -16,10 +17,12 @@ export class MoveAction extends DelayedAction {
     static DELAY_PER_TILE=100
     distance:number
 	from:number
-	constructor(type:ACTION_TYPE,turn: number,from:number,distance:number) {
+	moveType:MOVETYPE
+	constructor(type:ACTION_TYPE,turn: number,from:number,distance:number,moveType:MOVETYPE) {
 		super(type,turn,Math.abs(distance) * MoveAction.DELAY_PER_TILE)
         this.distance=distance
 		this.from=from
+		this.moveType=moveType
 	}
 }
 export class RollDiceAction extends DelayedAction {
@@ -32,5 +35,31 @@ export class RollDiceAction extends DelayedAction {
         this.pos=pos
 		this.dice=dice
 		this.is3double=is3double
+	}
+}
+export abstract class PullAction extends DelayedAction {
+    static DELAY=1000
+    pos:number
+	targetTiles:number[]
+	constructor(turn: number,pos:number) {
+		super(ACTION_TYPE.PULL,turn,PullAction.DELAY)
+        this.pos=pos
+		this.targetTiles=[]
+	}
+}
+export class RangePullAction extends PullAction {
+	radius:number
+	constructor(turn: number,pos:number,radius:number) {
+		super(turn,pos)
+		this.radius=radius
+		for(let i=1;i<=radius;++i){
+			this.targetTiles.push(forwardBy(pos,i),backwardBy(pos,i))
+		}
+	}
+}
+export class LinePullAction extends PullAction {
+	constructor(turn: number,pos:number) {
+		super(turn,pos)
+		this.targetTiles.push(...SAME_LINE_TILES[pos2Line(pos)])
 	}
 }

@@ -347,12 +347,12 @@ function extendJqueryEasing() {
 $(document).ready(function(){
     //auth()
     window.onbeforeunload = function (e) {
-		sessionStorage.roomName = null
-		// GAME.connection.resetGame()
-		$.ajax({
-			method: "POST",
-			url: "/reset_game"
-		})
+		// sessionStorage.roomName = null
+		// // GAME.connection.resetGame()
+		// $.ajax({
+		// 	method: "POST",
+		// 	url: "/reset_game"
+		// })
 		return true
 	}
     extendJqueryEasing()

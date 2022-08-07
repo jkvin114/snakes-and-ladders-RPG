@@ -546,7 +546,7 @@ export class Board{
 	}
 	
 	moveComplete(turn){
-		
+		this.updateNameText(turn)
 		this.pin.set({opacity:0})
 	}
 	/**
@@ -643,7 +643,7 @@ export class Board{
 			this.game.moveComplete(false)
 			return
 		}
-		this.players[turn].nametext.set("text", "")
+		this.hideNameText(turn)
 		if (distance < 0) {
 			if (-1 * distance > pos) {
 				distance = -1 * pos
@@ -654,6 +654,10 @@ export class Board{
 
 		this.moveForward(distance, count, pos, turn)
 	}
+	hideNameText(turn){
+		
+		this.players[turn].nametext.set("text", "")
+	}
 	async movePlayerThrough(poslist,turn,callback){
 		if(poslist.length===0) {
 			this.moveComplete(turn)
@@ -662,7 +666,8 @@ export class Board{
 		}
 		this.arrow.set({ opacity: 0 })
 		this.arrow.bringToFront()
-		this.players[turn].nametext.set("text", "")
+		this.hideNameText(turn)
+		// this.players[turn].nametext.set("text", "")
 		this.players[turn].playerimg.bringToFront()
 		this.showPin(poslist[poslist.length-1])
 		for(const pos of poslist){

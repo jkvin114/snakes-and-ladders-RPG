@@ -1,24 +1,25 @@
-import e from "cors"
 import { Ability, PayAbility } from "../Ability/Ability"
 import { ABILITY_NAME, ABILITY_REGISTRY } from "../Ability/AbilityRegistry"
 import type { AbilityValues } from "../Ability/AbilityValues"
+import { EVENT_TYPE } from "../Ability/EventType"
 import { CARD_NAME } from "../FortuneCard"
+import type { MarbleGame } from "../Game"
 import type { MarblePlayer } from "../Player"
 import type { BuildableTile } from "../tile/BuildableTile"
-import { LandTile } from "../tile/LandTile"
 import { BUILDING } from "../tile/Tile"
-import { forwardDistance } from "../util"
+import { chooseRandom, forwardBy, forwardDistance, percentValueToMultiplier } from "../util"
 import { Action, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionTrace } from "./ActionTrace"
-import { MoveAction } from "./DelayedAction"
+import { LinePullAction, MoveAction, RangePullAction } from "./DelayedAction"
 import {
+	AddMultiplierAction,
 	EarnMoneyAction,
 	PayMoneyAction,
 	PayPercentMoneyAction,
 	RequestMoveAction,
 	TileAttackAction,
 } from "./InstantAction"
-import { AskAttackDefenceCardAction, AskBuyoutAction, AskTollDefenceCardAction, QueryAction } from "./QueryAction"
+import { AskAttackDefenceCardAction, AskBuyoutAction, AskTollDefenceCardAction, DiceChanceAction, QueryAction } from "./QueryAction"
 
 class ActionPackage {
 	before: Action[]
@@ -30,9 +31,10 @@ class ActionPackage {
 	shouldPutMainToPending:boolean
 	trace:ActionTrace
 	private readonly thisturn:number
-	constructor(thisturn:number,trace:ActionTrace) {
+	private readonly game:MarbleGame
+	constructor(game:MarbleGame,trace:ActionTrace) {
 		this.trace=trace
-		this.thisturn=thisturn
+		this.game=game
 		this.main = []
 		this.before = []
 		this.after = []
@@ -99,6 +101,18 @@ class ActionPackage {
 			this.addBefore(action)
 		}
 	}
+	applyAbilityTurnStart(invoker:MarblePlayer){
+		let pendingActions = invoker.getPendingAction()
+		if (pendingActions.length === 0) {
+			let abilities=invoker.sampleAbility(EVENT_TYPE.TURN_START,this.trace)
+			this.addMain(new QueryAction(ACTION_TYPE.DICE_CHANCE, this.thisturn))
+		} else {
+			for(const p of pendingActions){
+				this.addMain(p)
+			}
+		}
+		return this
+	}
 	applyReceiveSalaryAbility(receiver: number, abilities: Map<ABILITY_NAME, AbilityValues>) {
 		let main = this.main[0]
 
@@ -124,6 +138,27 @@ class ActionPackage {
 		}
 		return this
 	}
+	applyAfterDiceAbility(invoker: MarblePlayer,
+		is3double:boolean,
+		onThreeDoubleAbility: Map<ABILITY_NAME, AbilityValues>,
+		distance: number){
+			if (is3double) {
+				const invitation=ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE
+				let val=onThreeDoubleAbility.get(invitation)
+				//뜻초
+				if(val!=null){
+					this.addExecuted(invitation, invoker.turn)
+					this.addAction(new RequestMoveAction(invoker.turn, 24, MOVETYPE.FORCE_WALK)
+					, invitation)
+				}
+				else{
+					this.addAfter(new RequestMoveAction(this.thisturn, 8, MOVETYPE.TELEPORT))
+				}
+			} else {
+				this.addAfter(new RequestMoveAction(this.thisturn, forwardBy(invoker.pos, distance), MOVETYPE.WALK))
+			}
+		return this
+	}
 	/**
 	 *
 	 * @param invokerTurn 통행료 징수하는 플레이어
@@ -137,55 +172,53 @@ class ActionPackage {
 		invokerTurn: number,
 		offences: Map<ABILITY_NAME, AbilityValues>,
 		defences: Map<ABILITY_NAME, AbilityValues>,
-		payerTurn: number
+		payerTurn: number,
+		tile:BuildableTile
 	): ActionPackage {
 		let main = this.main[0]
 		if (!(main instanceof PayMoneyAction)) return this
 
-		if (this.trace.hasTag("toll_free")) main.applyMultiplier(0)
+	//	if (this.trace.hasTag("toll_free")) main.applyMultiplier(0)
 
 		if(this.trace.hasActionAndAbility(ACTION_TYPE.ARRIVE_TILE,ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND)) 
 			main.applyMultiplier(0)
+
+		if(main.amount===0) return this
 
 		const atoll = ABILITY_NAME.ADDITIONAL_TOLL
 		const angel = ABILITY_NAME.ANGEL_CARD
 		const discount = ABILITY_NAME.DISCOUNT_CARD
 		const free = ABILITY_NAME.FREE_TOLL
-
+		const ignore_angel = ABILITY_NAME.IGNORE_ANGEL
 		
 
 		if (offences.has(atoll)) {
-			let ability = ABILITY_REGISTRY.get(atoll)
 			let value = offences.get(atoll)
 
-			if (ability != null && value != null) {
+			if (value != null) {
 				this.addExecuted(atoll, invokerTurn)
-				main.applyMultiplier(ability.percentValueToMultiplier(value.getValue()))
+				main.applyMultiplier(percentValueToMultiplier(value.getValue()))
 			}
 		}
 
 
 		if (offences.has(free)) {
-			let ability = ABILITY_REGISTRY.get(free)
-
-			if (ability != null) {
-				this.addExecuted(free, payerTurn)
-				main.applyMultiplier(0)
-			}
+			this.addExecuted(free, payerTurn)
+			main.applyMultiplier(0)
 		}
 		else if (defences.has(angel)) {
-			let ability = ABILITY_REGISTRY.get(angel)
-			if (ability != null) {
-				this.addAction(
-					new AskTollDefenceCardAction(payerTurn, CARD_NAME.ANGEL, main.amount, 0)
-						.setBlockActionId(main.getId())
-						.setAttacker(invokerTurn),
-					angel
-				)
-			}
+			let blocked=false
+			if(offences.has(ignore_angel) && tile.isLandMark()) 
+				blocked=true
+
+			this.addAction(
+				new AskTollDefenceCardAction(payerTurn, CARD_NAME.ANGEL, main.amount, 0)
+					.setBlockActionId(main.getId())
+					.setAttacker(invokerTurn)
+					.setIgnore(blocked,ignore_angel),
+				angel
+			)
 		} else if (defences.has(discount)) {
-			let ability = ABILITY_REGISTRY.get(discount)
-			if (ability != null) {
 				this.addAction(
 					new AskTollDefenceCardAction(
 						payerTurn,
@@ -197,7 +230,7 @@ class ActionPackage {
 						.setAttacker(invokerTurn),
 					discount
 				)
-			}
+			
 		}
 
 		return this
@@ -224,27 +257,36 @@ class ActionPackage {
 
 		const angel = ABILITY_NAME.ANGEL_CARD
 		const shield = ABILITY_NAME.SHIELD_CARD
-		if (defences.has(angel)) {
-			let ability = ABILITY_REGISTRY.get(angel)
+		const defence = ABILITY_NAME.DEFEND_ATTACK
+		const ignore_defence = ABILITY_NAME.IGNORE_ATTACK_DEFEND
+		let ignored=offences.has(ignore_defence)
 
-			if (ability != null) {
-				this.addAction(
-					new AskAttackDefenceCardAction(victim, CARD_NAME.ANGEL, attackName)
-						.setBlockActionId(main.getId())
-						.setAttacker(invokerTurn),
-					angel
-				)
+		if(defences.has(defence)){
+			if(ignored){
+				this.addBlocked(defence,victim)
+				this.addExecuted(ignore_defence,invokerTurn)
 			}
+			else{
+				this.addExecuted(defence,victim)
+				this.blockMain()
+			}
+		}
+		else if (defences.has(angel)) {
+			this.addAction(
+				new AskAttackDefenceCardAction(victim, CARD_NAME.ANGEL, attackName)
+					.setBlockActionId(main.getId())
+					.setAttacker(invokerTurn)
+					.setIgnore(ignored,ignore_defence),
+				angel
+			)
 		} else if (defences.has(shield)) {
-			let ability = ABILITY_REGISTRY.get(shield)
-			if (ability != null) {
-				this.addAction(
-					new AskAttackDefenceCardAction(victim, CARD_NAME.SHIELD, attackName)
-						.setBlockActionId(main.getId())
-						.setAttacker(invokerTurn),
-					shield
-				)
-			}
+			this.addAction(
+				new AskAttackDefenceCardAction(victim, CARD_NAME.SHIELD, attackName)
+					.setBlockActionId(main.getId())
+					.setAttacker(invokerTurn)
+					.setIgnore(ignored,ignore_defence),
+				shield
+			)
 		}
 		return this
 	}
@@ -274,17 +316,53 @@ class ActionPackage {
 	applyAbilityOnBuild(
 		invokerTurn: number,
 		tile: BuildableTile,
-		abilities: Map<ABILITY_NAME, AbilityValues>
+		abilities: Map<ABILITY_NAME, AbilityValues>,
+		isAuto:boolean
 	) {
 
 		const construction=ABILITY_NAME.GO_START_ON_THREE_HOUSE
+		const line_mg=ABILITY_NAME.LINE_PULL_ON_ARRIVE_AND_BUILD_LANDMARK
+		const mf=ABILITY_NAME.RANGE_PULL_ON_BUILD_LANDMARK
+		const mul=ABILITY_NAME.ADD_MULTIPLIER_ON_BUILD_LANDMARK
 		let value=abilities.get(construction)
-		let ab=ABILITY_REGISTRY.get(construction)
-		if(value!=null && ab!=null && tile.getNextBuild()===BUILDING.LANDMARK){
+		if(value!=null && tile.getNextBuild()===BUILDING.LANDMARK){
 			this.addExecuted(construction,invokerTurn)
 			this.addAction(new RequestMoveAction(invokerTurn, 0, MOVETYPE.FORCE_WALK), construction)
 		}
 
+		if(!isAuto && tile.isLandMark()){
+			let mf_value=abilities.get(mf)
+			let lime_mg_value=abilities.get(line_mg)
+
+			if(lime_mg_value!=null){
+				this.addExecuted(line_mg,invokerTurn)
+				this.addAction(
+					new LinePullAction(invokerTurn,tile.position),
+					line_mg
+				)
+			}
+			else if(mf_value!=null){
+				this.addExecuted(mf,invokerTurn)
+				this.addAction(
+					new RangePullAction(invokerTurn,tile.position,4),
+					mf
+				)
+			}
+		}
+
+		if(isAuto && this.trace.hasActionAndAbility(ACTION_TYPE.ARRIVE_TILE,ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL))
+		{
+			this.addExecuted(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL,invokerTurn)
+			this.addAction(
+				new RangePullAction(invokerTurn,tile.position,4),
+				ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL
+			)
+		}
+		let val=abilities.get(mul)
+		if(tile.isLandMark() && val!=null){
+			this.addExecuted(mul,invokerTurn)
+			this.addAction(new AddMultiplierAction(invokerTurn,tile.position,chooseRandom([2,4,8])),mul)
+		}
 		return this
 	}
 	applyAbilityPassOther(
@@ -317,19 +395,20 @@ class ActionPackage {
 		moverTurn: number,
 		offences: Map<ABILITY_NAME, AbilityValues>,
 		defences: Map<ABILITY_NAME, AbilityValues>,
-		stayed: number
+		stayed: number,
+		movetype:MOVETYPE
 	): ActionPackage {
 		const perfume = ABILITY_NAME.TAKE_MONEY_ON_ARRIVE_TO_PLAYER
 		const badge = ABILITY_NAME.TAKE_MONEY_ON_PLAYER_ARRIVE_TO_ME
 
-		if (defences.has(badge)) {
+		if (defences.has(badge) && movetype!==MOVETYPE.TELEPORT) {
 			let value = defences.get(badge)
 			if (value != null) {
 				this.addExecuted(badge, stayed)
 				this.addAction(new PayPercentMoneyAction(moverTurn, stayed, value.getValue()), badge)
 			}
 		}
-		if (offences.has(perfume)) {
+		if (offences.has(perfume) && movetype!==MOVETYPE.PULL && movetype!==MOVETYPE.TELEPORT) {
 			let value = offences.get(perfume)
 			if (value != null) {
 				this.addExecuted(perfume, moverTurn)
@@ -345,6 +424,10 @@ class ActionPackage {
 		tile: BuildableTile
 	) {
 		const ring = ABILITY_NAME.MONEY_ON_MY_LAND
+		const magnetic=ABILITY_NAME.RANGE_PULL_ON_ARRIVE_LANDMARK
+		const line_magnetic=ABILITY_NAME.LINE_PULL_ON_ARRIVE_AND_BUILD_LANDMARK
+		const monument=ABILITY_NAME.ADD_MULTIPLIER_ON_ARRIVE_MY_LAND
+		const PULL_RANGE=4
 		if (abilities.has(ring)) {
 			let value = abilities.get(ring)
 			if (value != null) {
@@ -355,6 +438,44 @@ class ActionPackage {
 				)
 			}
 		}
+		let val=abilities.get(monument)
+		if(val!=null){
+			this.addExecuted(monument,moverTurn)
+			this.addAction(new AddMultiplierAction(moverTurn,tile.position,2),monument)
+		}
+		
+		if(tile.isLandMark()){
+			let mg=abilities.get(magnetic)
+			let linemg=abilities.get(line_magnetic)
+			if(linemg!=null){
+				this.addExecuted(line_magnetic,moverTurn)
+				this.addAction(
+					new LinePullAction(moverTurn,tile.position),
+					line_magnetic
+				)
+			}
+			else if(mg!=null){
+				this.addExecuted(magnetic,moverTurn)
+				this.addAction(
+					new RangePullAction(moverTurn,tile.position,PULL_RANGE),
+					magnetic
+				)
+			}
+		}
+
+		return this
+	}
+	applyAbilityPull(invoker:MarblePlayer,victim:MarblePlayer){
+		let defences=victim.sampleAbility(EVENT_TYPE.BEING_PULLED,this.trace)
+		let offences=invoker.sampleAbility(EVENT_TYPE.PULL_ENEMY,this.trace)
+
+		const defence = ABILITY_NAME.DEFEND_ATTACK
+		let val=defences.get(defence)
+		if(val!=null){
+			this.addExecuted(defence,victim.turn)
+			this.blockMain()
+		}
+
 		return this
 	}
 	applyAbilityArriveEmptyLand(
@@ -372,26 +493,33 @@ class ActionPackage {
 	) {
 		const healing = ABILITY_NAME.TRAVEL_ON_ENEMY_LAND
 		const bhealing=ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND
-
+		const follow_healing=ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING
+		let healing_invoked=false
 		
 		if (defences.has(bhealing)) {
 			let value = defences.get(bhealing)
-			let ab=ABILITY_REGISTRY.get(bhealing)
-			if (value != null && ab!=null) {
+			if (value != null) {
 				this.addExecuted(bhealing, moverTurn)
-				this.addAction(new RequestMoveAction(moverTurn, 24, MOVETYPE.FORCE_WALK), bhealing)
+				this.addAction(new RequestMoveAction(moverTurn, 24, MOVETYPE.FORCE_WALK)
+				, bhealing)
+				healing_invoked=true
 			}
 			this.trace.setAbilityName(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND).setName("사힐링")
+			
 		}
 		else if (defences.has(healing)) {
 			let value = defences.get(healing)
-			let ab=ABILITY_REGISTRY.get(healing)
-			if (value != null && ab!=null) {
+			if (value != null) {
 				this.addExecuted(healing, moverTurn)
 				this.addAction(new RequestMoveAction(moverTurn, 24, MOVETYPE.FORCE_WALK), healing)
+				healing_invoked=true
 			}
 		}
-
+		let val=offences.get(follow_healing)
+		if(healing_invoked && val!=null){
+			this.addExecuted(follow_healing,tile.owner)
+			this.addAction(new RequestMoveAction(tile.owner, 24, MOVETYPE.FORCE_WALK), follow_healing)
+		}
 		return this
 	}
 	applyAbilityMonopolyChance(
@@ -411,6 +539,8 @@ class ActionPackage {
 	applyAbilityArriveTravel(player:MarblePlayer,abilities: Map<ABILITY_NAME, AbilityValues>){
 
 		const freepass=ABILITY_NAME.INSTANT_TRAVEL
+		const taxi=ABILITY_NAME.ONE_MORE_DICE_AFTER_TRAVEL
+
 		let value=abilities.get(freepass)
 		if(value!=null && this.isTurnOf(player.turn)){
 			this.addExecuted(freepass, player.turn)
@@ -419,6 +549,32 @@ class ActionPackage {
 			this.setMainToPendingAction()
 		}
 
+		value=abilities.get(taxi)
+		if(value!=null){
+			this.addMain(new DiceChanceAction(player.turn).reserveAbilityIndicatorOnPop(taxi,player.turn))
+		}
+
+		return this
+	}
+	applyAbilityarriveOlympic(player:MarblePlayer){
+		let val=player.sampleAbility(EVENT_TYPE.ARRIVE_OLYMPIC,this.trace)
+		.get(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL)
+		if(val!=null){
+			this.addExecuted(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL,player.turn)
+			this.trace.setAbilityName(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL).setName('올림픽끌당')
+		}
+		return this
+	}
+
+	applyAbilityPrepareTravel(player:MarblePlayer){
+		let abilities=player.sampleAbility(EVENT_TYPE.TRAVEL_START,this.trace)
+		const flag=ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL
+		let val=abilities.get(flag)
+		if(val!=null)
+		{
+			this.trace.setAbilityName(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL).setName("대지주의깃발")
+			this.addExecuted(flag,player.turn)
+		}
 		return this
 	}
 }

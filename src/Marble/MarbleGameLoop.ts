@@ -1,7 +1,7 @@
 import { sleep,ProtoPlayer,PlayerType } from "../core/Util";
 import { Action,ACTION_TYPE, EmptyAction } from "./action/Action";
 import { ActionTrace, ACTION_SOURCE_TYPE } from "./action/ActionTrace";
-import { DelayedAction, MoveAction, RollDiceAction } from "./action/DelayedAction";
+import { DelayedAction, MoveAction, PullAction, RollDiceAction } from "./action/DelayedAction";
 import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction } from "./action/InstantAction";
@@ -256,9 +256,6 @@ abstract class MarbleGameCycleState {
     afterDelay(){
 
     }
-    getInvoker(){
-        return this.turn
-    }
     getNext(action:Action|null): MarbleGameCycleState {
         if(!action) return new ErrorState(this.game)
         switch(action.type){
@@ -272,6 +269,7 @@ abstract class MarbleGameCycleState {
                     return new ThrowingDice(this.game,action)
                 break
             case ACTION_TYPE.WALK_MOVE:
+            case ACTION_TYPE.FORCE_WALK_MOVE:
                 if(action instanceof MoveAction)
                     return new Moving(this.game,action)
                 break
@@ -314,6 +312,10 @@ abstract class MarbleGameCycleState {
             case ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE:
                 if(action instanceof AskDefenceCardAction)
                     return new WaitingDefenceCardUse(this.game,action)
+                break
+            case ACTION_TYPE.PULL:
+                if(action instanceof PullAction)
+                    return new Pulling(this.game,action)
                 break
         }
 
@@ -443,7 +445,8 @@ class Moving extends MarbleGameCycleState{
     distance:number
     from:number
     isForceMove:boolean
-    constructor(game:MarbleGame,sourceAction:MoveAction,){
+    sourceAction:MoveAction
+    constructor(game:MarbleGame,sourceAction:MoveAction){
         super(game,sourceAction.turn,Moving.id,sourceAction)
         this.movetype=sourceAction.source
         this.distance=sourceAction.distance
@@ -451,7 +454,7 @@ class Moving extends MarbleGameCycleState{
     }
     onCreate(): void {
         this.game.clientInterface.walkMovePlayer(this.turn,this.from,this.distance)
-        this.game.movePlayer(this.turn,this.distance,this.movetype)
+        this.game.movePlayer(this.turn,this.distance,this.sourceAction.source,this.sourceAction.moveType)
     }
 }
 class WaitingBuild extends MarbleGameCycleState{
@@ -498,19 +501,11 @@ class WaitingLoan extends MarbleGameCycleState{
 }
 class WaitingBuyOut extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_BUYOUT
-    // pos:number
-    // price:number
-    // originalPrice:number
     sourceAction:AskBuyoutAction
     constructor(game:MarbleGame,sourceAction:AskBuyoutAction){
         super(game,sourceAction.turn,WaitingBuyOut.id,sourceAction)
-        // this.pos=sourceAction.pos
-        // this.price=sourceAction.price
-        // this.originalPrice=sourceAction.originalPrice
     }
-    getInvoker(): number {
-        return this.turn
-    }
+    
     onCreate(): void {
         this.game.clientInterface.askBuyout(this.turn,this.sourceAction.pos,this.sourceAction.price,this.sourceAction.originalPrice)
     }
@@ -668,6 +663,18 @@ class WaitingGodHandSpecial extends MarbleGameCycleState{
         else
             this.game.chooseGodHandSpecialLiftTile(this.turn,this.sourceAction.source)
         return new EventResult(true)
+    }
+}
+class Pulling extends MarbleGameCycleState{
+    
+    static id = GAME_CYCLE.PULLING
+    sourceAction:PullAction
+    constructor(game:MarbleGame,action:PullAction){
+        super(game,action.turn,Pulling.id,action)
+    }
+    onCreate(): void {
+        this.game.clientInterface.indicatePull(this.sourceAction.targetTiles)
+        this.game.pullPlayers(this.turn,this.sourceAction)
     }
 }
 

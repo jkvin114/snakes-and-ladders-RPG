@@ -1,8 +1,7 @@
 import { ProtoPlayer,PlayerType } from "../../core/Util";
-import { ActionSource } from "../action/ActionSource";
 import { MarbleGame } from "../Game";
 import { BuildableTile } from "../tile/BuildableTile";
-import { backwardBy, backwardDistance, distance, forwardBy, forwardDistance, getTilesBewteen } from "../util";
+import { backwardBy, backwardDistance, cl, distance, forwardBy, forwardDistance, getTilesBewteen, signedShortestDistance } from "../util";
 
 let players:ProtoPlayer[]=[
     {
@@ -17,33 +16,18 @@ let players:ProtoPlayer[]=[
 
 
 
-let game=new MarbleGame(players,"",false)
-game.setTurns()
+let game=new MarbleGame(players,"",false,0)
 
-game.build(game.mediator.players[1],game.map.tileAt(1) as BuildableTile,[1,2,4],new ActionSource(0))
-game.build(game.thisPlayer(),game.map.tileAt(3) as BuildableTile,[5],new ActionSource(0))
-game.build(game.mediator.players[1],game.map.tileAt(10) as BuildableTile,[5],new ActionSource(0))
-game.build(game.mediator.players[1],game.map.tileAt(11) as BuildableTile,[5],new ActionSource(0))
-game.build(game.mediator.players[1],game.map.tileAt(17) as BuildableTile,[5],new ActionSource(0))
-// game.build(game.mediator.players[1],game.map.tileAt(19) as BuildableTile,[5],new ActionSource(0))
-game.build(game.mediator.players[1],game.map.tileAt(25) as BuildableTile,[3],new ActionSource(0))
+game.setTurns();
 
 
-game.landBuyOut(game.mediator.players[1],game.thisPlayer(),game.map.tileAt(3) as BuildableTile)
-game.landBuyOut(game.mediator.players[0],game.mediator.players[1],game.map.tileAt(25) as BuildableTile)
-game.build(game.mediator.players[0],game.map.tileAt(25) as BuildableTile,[5],new ActionSource(0));
 
-game.build(game.mediator.players[1],game.map.tileAt(15) as BuildableTile,[4],new ActionSource(0));
-
-
-(game.map.tileAt(25) as BuildableTile).addMultiplier(16)
-game.map.setOlympic(25,2)
-game.map.setFestival(25)
-console.log((game.map.tileAt(25) as BuildableTile).toString())
-
-console.log((game.map.tileAt(25) as BuildableTile).getToll())
 
 // game.map.toString()
+cl(signedShortestDistance(31,1))
+cl(signedShortestDistance(1,31))
+cl(signedShortestDistance(1,6))
+cl(signedShortestDistance(6,1))
 
 
 
@@ -57,7 +41,7 @@ function testFestival(){
     game.map.setFestival(5,3)
     console.log(game.map.tileAt(3).toString())
     console.log(game.map.tileAt(5).toString())
-    game.map.setOlympic(5,10)
+    game.map.setOlympic(5)
     console.log(game.map.tileAt(5).toString())
     
 }

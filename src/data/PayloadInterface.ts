@@ -135,10 +135,8 @@ export namespace ServerPayloadInterface {
 		change: number
 		currhp: number
 		currmaxhp: number
+		currshield:number
 	}
-	// export interface MaxHPChange extends TurnPayloadInterface{
-	// 	currmaxhp:number
-	// }
 	export interface Heal extends HPChange {
 		type: string
 	}

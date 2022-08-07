@@ -90,7 +90,7 @@ abstract class BuildableTile extends Tile{
     abstract isMoreBuildable():boolean
     abstract isEmpty():boolean
     abstract canBuyOut():boolean
-    
+    abstract isLandMark():boolean
     constructor(position:number,type: TILE_TYPE, name: string){
         super(position,type,name)
         this.olympic=false
@@ -161,6 +161,10 @@ abstract class BuildableTile extends Tile{
 
         return this.getBaseToll() * this.getMultiplier() * mul
     }
+    /**
+     * 
+     * @returns 기본통행료 x 배수
+     */
     getDisplayedToll(){
         return this.getBaseToll() * this.getMultiplier()
     }

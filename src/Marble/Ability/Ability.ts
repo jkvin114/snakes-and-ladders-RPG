@@ -65,9 +65,7 @@ export class Ability {
     {
         return true
     }
-    percentValueToMultiplier(value:number){
-        return 1+ 0.01*value
-    }
+    
 }
 
 /**
@@ -109,7 +107,7 @@ export class MoveAbilty extends Ability{
 /**
  * 상대 이동(잘가북 등)
  */
-class ForceMoveAbilty extends Ability{
+export class ForceMoveAbilty extends Ability{
     pos:number
     constructor(name:ABILITY_NAME){
         super(name)

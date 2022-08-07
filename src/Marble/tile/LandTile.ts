@@ -253,6 +253,15 @@ class LandTile extends BuildableTile{
 
         return list
     }
+    isLandMark(): boolean {
+        return this.landMark
+    }
+    getLandMarkBuildData(isFree:boolean){
+        return [{
+            cycleLeft:0,toll:this.baseToll.getSingle(BUILDING.LANDMARK),
+            buildPrice:isFree?0:this.buildPrice.getSingle(BUILDING.LANDMARK),type:BUILDING.LANDMARK,have:false
+        }]
+    }
     /**
      * 건물 한단계 다운그레이드
      * @returns 

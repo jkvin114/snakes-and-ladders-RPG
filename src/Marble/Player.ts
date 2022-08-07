@@ -4,6 +4,7 @@ import { Action } from "./action/Action"
 import { ActionTrace } from "./action/ActionTrace"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { AbilityValues } from "./Ability/AbilityValues"
+import { cl } from "./util"
 class MarblePlayer{
     readonly name:string
     readonly char:number
@@ -94,6 +95,9 @@ class MarblePlayer{
         this.doubles+=1
     }
     onTripleDouble(){
+        this.doubles=0
+    }
+    resetDoubleCount(){
         this.doubles=0
     }
     useOddEven(){

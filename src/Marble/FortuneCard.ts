@@ -110,7 +110,7 @@ export namespace FortuneCardRegistry{
         })
         // console.log(weights)
       return LIST[chooseWeightedRandom(weights)] 
-        //return chooseRandom([EARTHQUAKE])
+       // return chooseRandom([EARTHQUAKE])
     }
 }
 

@@ -110,7 +110,7 @@ import { sample } from "../util"
             prefix+="(최초 1회)"
         }
         else if(this.limit !==Infinity){
-            base+=`(${this.limitLeft - this.limit}/${this.limit})`
+            base+=`(${this.limitLeft}/${this.limit})`
         }
 
         if(chanceRegex.test(base)){

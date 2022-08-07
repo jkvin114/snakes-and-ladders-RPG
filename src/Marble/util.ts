@@ -1,5 +1,4 @@
-
-import crypto from "crypto";
+import {randomBytes} from "crypto";
 /**
  *
  * @param end inclusive
@@ -21,7 +20,9 @@ export function chooseRandomMultiple<T>(list: T[],count:number): T[] {
 	if(count > list.length) return []
 	return shuffle(list).slice(0,count)
 }
-
+export function percentValueToMultiplier(value:number){
+	return 1+ 0.01*value
+}
 export const shuffle = function <T>(array: T[]): T[] {
 	var m = array.length,
 		t,
@@ -50,20 +51,32 @@ export function clamp(num: number, min: number, max: number) {
 	return Math.max(Math.min(num, max), min)
 }
 export function distance(pos1: number, pos2: number) {
-	return Math.min(Math.abs(pos1 - pos2), 32 - Math.abs(pos1 - pos2))
+	return Math.min(Math.abs(pos1 - pos2), MAP_SIZE - Math.abs(pos1 - pos2))
+}
+export function signedShortestDistance(pos1: number, pos2: number) {
+	let forward=forwardDistance(pos1,pos2)
+	let backward=backwardDistance(pos1,pos2)
+
+	if(forward < backward) return distance(pos1,pos2)
+	else return -distance(pos1,pos2)
+}
+export const MAP_SIZE=32
+export const SAME_LINE_TILES:Set<number>[]=[0,8,16,24].map((i)=>new Set(range((i+8),i).map((i)=>i%MAP_SIZE)))
+export const pos2Line=function(pos:number){
+    return Math.floor((pos%MAP_SIZE)/8)
 }
 export function forwardDistance(start: number, dest: number): number {
-	return start <= dest ? dest - start : 32 - (start - dest)
+	return start <= dest ? dest - start : MAP_SIZE - (start - dest)
 }
 export function backwardDistance(start: number, dest: number): number {
-	return start <= dest ? 32 - (dest - start) : start - dest
+	return start <= dest ? MAP_SIZE - (dest - start) : start - dest
 }
 export function forwardBy(pos: number, dist: number) {
-	return (pos + dist) % 32
+	return (pos + dist) % MAP_SIZE
 }
 export function backwardBy(pos: number, dist: number) {
 	if (pos - dist >= 0) return pos - dist
-	else return 32 + (pos - dist)
+	else return MAP_SIZE + (pos - dist)
 }
 /**
  * 시작,끝지점 사이 타일 인덱스 반환
@@ -116,7 +129,7 @@ export function cl(...str:any){
 	console.log(str)
 }
 export function hexId(){
-	return crypto.randomBytes(8).toString("hex");
+	return randomBytes(8).toString("hex");
 }
 /**
  *
