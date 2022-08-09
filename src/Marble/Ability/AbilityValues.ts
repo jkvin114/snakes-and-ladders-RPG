@@ -119,7 +119,8 @@ import { sample } from "../util"
         else if(this.baseChance < 100){
             prefix+=String(this.baseChance)+"% 확률로 "
         }
-
+        if(this.upgradeValue>0)
+            base+="(6턴이후 "+this.upgradeValue+")"
         return prefix+base
     }
     

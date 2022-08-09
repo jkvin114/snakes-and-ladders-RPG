@@ -1,8 +1,9 @@
 import { Action, ActionModifyFunction, ACTION_LIST, ACTION_TYPE } from "./Action"
+import { InstantAction } from "./InstantAction"
 
 export class ActionStack {
 	stack: Action[]
-	priorityStack: Action[] //우선순의 스택
+	priorityStack: InstantAction[] //우선순의 스택
 	constructor() {
 		this.stack = []
 		this.priorityStack = []
@@ -29,7 +30,7 @@ export class ActionStack {
 	push(action: Action | undefined) {
 		if (!action) return
 		console.log("push")
-		if (action.priority === 1) this.priorityStack.push(action)
+		if (action.priority === 1 && action instanceof InstantAction) this.priorityStack.push(action)
 		else this.stack.push(action)
 		this.iterate()
 	}
@@ -98,7 +99,15 @@ export class ActionStack {
 		})
 	}
 	peek(): Action {
+		if(this.priorityStack.length>0)
+			return this.priorityStack[this.priorityStack.length-1]
+
 		return this.stack[this.stack.length - 1]
+	}
+	popPriorityActions():InstantAction[]{
+		let list=Array.from(this.priorityStack)
+		this.priorityStack=[]
+		return list
 	}
 	clear() {
 		this.stack = []

@@ -9,6 +9,12 @@ const PLAYER_POS_DIFF = [
 ] 
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
+const ZINDEX={
+    playerEffect:11,
+    player:10,
+    tilefeature:9,
+
+}
 export const COLORS = ["red", "blue", "green", "yellow"]
 function getFlagCoord(coordinate){
     if(coordinate.rot === 'right'){
@@ -271,6 +277,7 @@ class BuildableTileObject extends TileObject{
         }
     }
     setLandMark(landmarkObj){
+
         this.buildings[4]=landmarkObj
         if(!landmarkObj)
             this.data.builds[4]=false
@@ -326,6 +333,10 @@ export class Player{
         this.playerimg
         this.nametext
         this.retired=false
+        this.bubble=null
+    }
+    setBubble(img){
+        this.bubble=img
     }
     setObjects(player,name){
         this.playerimg=player
@@ -388,6 +399,20 @@ class Money{
         this.scene.canvas.remove(this.image)
     }
 }
+
+class MapFeature{
+    constructor(name){
+        this.name=name
+        this.image=null
+        this.pos=-1
+    }
+    liftIfLocatedAt(pos){
+        if(this.pos===pos &&  this.image!=null){
+            this.image.bringToFront()
+        }
+    }
+}
+
 export class MarbleScene extends Board{
     constructor(game){
         super(game)
@@ -400,6 +425,9 @@ export class MarbleScene extends Board{
         this.olympic=-1
         this.moneyText
         this.moneyTextTimeout
+        this.blackhole=new MapFeature("blackhole")
+        this.whitehole=new MapFeature("whitehole")
+        this.lock=new MapFeature("lock")
     }
     getCoord(i){
 		return this.coordinates[i%this.mapLength()]
@@ -584,6 +612,39 @@ export class MarbleScene extends Board{
         this.lockFabricObject(text)
         this.canvas.add(text)
         this.moneyText=text
+
+        let blackhole= new fabric.Image(document.getElementById("blackholeimg"), {
+            objectCaching: false,
+            evented:false,
+            opacity:0.8,
+            visible:false,
+            
+        })
+        blackhole.scale(0.85)
+        this.lockFabricObject(blackhole)
+        this.canvas.add(blackhole)
+        this.blackhole.image=blackhole
+
+        let whitehole= new fabric.Image(document.getElementById("whiteholeimg"), {
+            objectCaching: false,
+            evented:false,
+            opacity:0.8,
+            visible:false
+        })
+        whitehole.scale(0.85)
+        this.lockFabricObject(whitehole)
+        this.canvas.add(whitehole)
+        this.whitehole.image=whitehole
+
+        let lock= new fabric.Image(document.getElementById("lockimg"), {
+            objectCaching: false,
+            evented:false,
+            visible:false
+        })
+        lock.scale(0.8)
+        this.lockFabricObject(lock)
+        this.canvas.add(lock)
+        this.lock.image=lock
     }
 
     scaleTileImage(tile,rot){
@@ -797,6 +858,9 @@ export class MarbleScene extends Board{
 
         lm.set({top:coord.y,left:coord.x})
         lm.bringToFront()
+        if(this.tileObj.get(pos).buildings[4]!=null) 
+            this.canvas.remove(this.tileObj.get(pos).buildings[4])
+            
         this.tileObj.get(pos).setLandMark(lm)
         for(let i=1;i<4;++i){
             this.removeHouse(pos,i)
@@ -819,6 +883,30 @@ export class MarbleScene extends Board{
         this.showTileHighlight(positions,"white")
         setTimeout(()=>this.clearTileHighlight("white"),1500)
     }
+    playerEffect(p,effect,status){
+        if(effect==="bubble_root" || effect==="all"){
+            if(status) this.showBubble(p)
+            else if(this.players[p].bubble!==null){
+                this.canvas.remove(this.players[p].bubble)
+                this.players[p].setBubble(null)
+            }
+        }
+    }
+    showBubble(player){
+        let pos=this.getPlayerPos(player)
+        let bubble=new fabric.Image(document.getElementById('bubbleimg'), {
+			objectCaching: false,
+            evented:false,
+            top:pos.y,
+            left:pos.x
+		})
+        bubble.scale(1.2)
+        this.lockFabricObject(bubble)
+        this.canvas.add(bubble)
+        bubble.bringToFront()
+        this.players[player].bubble=bubble
+        this.render()
+    }
     showTileHighlight(positions,color){
         for(const p of positions){
             let image=this.getTileOverlay(this.getCoord(p),color)
@@ -826,19 +914,19 @@ export class MarbleScene extends Board{
             image.bringToFront()
             this.tileHighlights.get(color).push(image)
         }
-        this.forceRender()
+        this.render()
     }
     clearTileHighlight(color){
         this.tileHighlights.get(color).forEach((h)=>this.canvas.remove(h))
         this.tileHighlights.set(color,[])
-        this.forceRender()
+        this.render()
     }
     tileHighlightsToFront(){
         console.log(this.tileHighlights)
         for(let color of this.tileHighlights.values())
             color.forEach((h)=>h.bringToFront())
 
-        this.forceRender()
+        this.render()
     }
     clearBuildings(positions){
         for(const p of positions){
@@ -974,6 +1062,36 @@ export class MarbleScene extends Board{
         }
         this.tileData.get(pos).olympic=true
     }
+    setBlackhole(blackpos,whitepos){
+        let b=this.getCoord(blackpos)
+        let w=this.getCoord(whitepos)
+        this.blackhole.image.set({left:b.x,top:b.y,visible:true})
+        this.whitehole.image.set({left:w.x,top:w.y,visible:true})
+        this.blackhole.image.bringToFront()
+        this.whitehole.image.bringToFront()
+        this.blackhole.pos=blackpos
+        this.whitehole.pos=whitepos
+        this.render()
+    }
+    removeBlackHole(){
+        this.blackhole.pos=-1
+        this.whitehole.pos=-1
+        this.blackhole.image.set({visible:false})
+        this.whitehole.image.set({visible:false})
+        this.render()
+    }
+    modifyLand(pos,type,val){
+        if(type==="lock"){
+            let b=getLandMarkCoord(this.getCoord(pos))
+            this.lock.image.set({left:b.x,top:b.y-40,visible:true})
+            this.lock.image.bringToFront()
+            this.lock.pos=pos
+        }
+        if(type==="unlock"){
+            this.lock.image.set({visible:false})
+            this.lock.pos=-1
+        }
+    }
     focusPlayer(player){
         for(let i=0;i<this.players.length;++i){
             if(this.players[i].retired) continue
@@ -981,7 +1099,7 @@ export class MarbleScene extends Board{
             if(i===player) this.players[i].playerimg.set({ opacity:1 })
             else this.players[i].playerimg.set({ opacity:0.3 })
         }
-        this.forceRender()
+        this.render()
     }
     setPlayerImgColor(player,turn){
         let filter = new fabric.Image.filters.BlendColor({
@@ -1076,6 +1194,11 @@ export class MarbleScene extends Board{
 		this.activateTile(index,select)
 		this.tileObj.get(index).onTileLift()
 
+        this.blackhole.liftIfLocatedAt(index)
+        this.whitehole.liftIfLocatedAt(index)
+        this.lock.liftIfLocatedAt(index)
+
+
 		//this.tiles[t].set({'top':"-=10"})
 		// this.tiles[index].animate('top','-=10',{
 		//   onChange: this.canvas.renderAll.bind(this.canvas),
@@ -1083,9 +1206,26 @@ export class MarbleScene extends Board{
 		//   easing: fabric.util.ease.easeOutCubic
 		// });
 	}
+    async playerBlackholeMove(player,dest){
+        this.focusPlayer(player)
+        this.players[player].playerimg.scale(1.5)
+        this.render()
+        await sleep(300)
+        this.animateScaleX(this.players[player].playerimg,0,700)
+        this.animateScaleY(this.players[player].playerimg,0,700)
+        await sleep(1000)
+        let coord=this.getCoord(dest)
+        this.players[player].playerimg
+        .set({left:coord.x + PLAYER_POS_DIFF[player][0],top:coord.y + PLAYER_POS_DIFF[player][1] + 50})
+        this.animateScaleX(this.players[player].playerimg,0.5,500)
+        this.animateScaleY(this.players[player].playerimg,0.5,500)
+        this.animateY(this.players[player].playerimg,coord.y + PLAYER_POS_DIFF[player][1],500)
+        this.removeBlackHole()
+    }
     removePlayer(player){
         this.players[player].retired=true
         this.players[player].playerimg.set({opacity:0})
+        this.playerEffect(player,"all",false)
     }
     test(){
        this.showRangeTilesByList([0,1,4,5,7,11,20,32], "", 1)

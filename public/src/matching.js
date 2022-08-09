@@ -433,7 +433,17 @@ class MatchStatus {
 		} else {
 
 			window.onbeforeunload = function () {}
-			ServerConnection.finalSubmit(this.setting.getSummary(),this.gametype)
+			if(this.gametype==="rpg"){
+
+				ServerConnection.finalSubmit(this.setting.getSummary(),this.gametype)
+			}
+			else if(this.gametype==="marble"){
+				ServerConnection.finalSubmit({
+					randomCount:Number($("#marble-item-random-count").val()),
+					items:this.ui.marbleItemState
+				},this.gametype)
+			}
+			// ServerConnection.finalSubmit(this.setting.getSummary(),this.gametype)
 		}
 	}
 
@@ -472,6 +482,7 @@ class MatchInterface {
 		this.aiCharacterListOwner = 0
 		this.aiCharacterListShown = false
 
+		this.marbleItemState=[]
 		if (MatchInterface._instance) {
 			return MatchInterface._instance
 		}
@@ -486,6 +497,51 @@ class MatchInterface {
 			MATCH.map = Number($(this).val())
 			ServerConnection.setMap(MATCH.map)
 		})
+		$("#marble-item").show()
+		fetch("/resource/marble_items").then((response) =>{
+			response.json().then((result)=>{
+				let str=""
+				for(const item of result){
+					this.marbleItemState.push({
+						selected:false,locked:false,code:item.code
+					})
+					str+=`
+					<div class="marble-item" data-cost=${item.cost} data-code=${item.code}>
+						<div class="marble-item-header">
+						<div class='marble-item-name ${item.name.length>7?"small":""}'>${item.name}</div>
+
+							<div class="marble-item-status">
+								<img src="res/img/ui/confirm.png" class="marble-item-select">
+								<img src="res/img/ui/lock.png" class="marble-item-lock">
+							</div>
+						</div>
+						<div class=marble-item-text>
+							${item.desc}
+						</div>
+					</div>`
+				}
+				$("#marble-item-page-content").html(str)
+
+				$(".marble-item").click(function(){
+					let code=$(this).data("code")
+					if(!MATCH.ui.marbleItemState[code].selected && !MATCH.ui.marbleItemState[code].locked){
+						$(this).addClass("selected")
+						MATCH.ui.marbleItemState[code].selected=true
+					}
+					else if(MATCH.ui.marbleItemState[code].selected && !MATCH.ui.marbleItemState[code].locked){
+						$(this).removeClass("selected")
+						$(this).addClass("locked")
+						MATCH.ui.marbleItemState[code].locked=true
+						MATCH.ui.marbleItemState[code].selected=false
+					}
+					else{
+						$(this).removeClass("locked")
+						MATCH.ui.marbleItemState[code].locked=false
+					}
+				})
+
+			})}
+		);
 	}
 	setAsHost(roomname) {
 		$("#Hostingpage").addClass("pending")
@@ -655,7 +711,18 @@ class TeamSelector {
 			} else if (this.check_status.every((c) => c) || this.check_status.every((c) => !c)) {
 				alert("You must divide teams!!")
 			} else {
-				ServerConnection.finalSubmit(this.match.setting.getSummary(),this.match.gametype)
+				console.log(this.match.gametype)
+				if(this.match.gametype==="rpg"){
+
+					ServerConnection.finalSubmit(this.match.setting.getSummary(),this.match.gametype)
+				}
+				else if(this.match.gametype==="marble"){
+					ServerConnection.finalSubmit({
+						randomCount:Number($("#marble-item-random-count").val()),
+						items:this.match.marbleItemState
+					},this.match.gametype)
+				}
+					
 			}
 		}
 	}
@@ -887,6 +954,18 @@ $(document).ready(function () {
 		$("#TeamSelectpage").hide()
 		$("#Hostingpage").show()
 	})
+
+
+	$("#marble-item-close").click(function () {
+		$("#marble-item-page").hide()
+		// console.log(MATCH.setting.getSummary())
+	})
+	$("#marble-item").click(function () {
+		$("#marble-item-page").show()
+	})
+
+	
+
 })
 
 // 게스트 표시(방장만)

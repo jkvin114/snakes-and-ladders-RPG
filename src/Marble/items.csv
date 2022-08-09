@@ -24,14 +24,20 @@ CODE,ITEMNAME,itemname_kor,ABILITYNAME,CHANCE,VALUE,UPGRADEVALUE,FIRSTONLY,LIMIT
 22,flag_of_landowner,대지주의 깃발,flag,75,,,,,4
 23,annonymous_3,사장님의 방패,defend_attack,50,,,,,3
 24,annonymous_4,사장님의 창,ignore_attack_defend,50,,,,,2
-25,annonymous_5,신비한 원석,ignore_angel,65,,,,,2
+25,annonymous_5,신비한 원석,ignore_angel,65,,,,,4
 26,magnetic core,마그네틱 코어,range_pull_on_arrive_landmark,90,,,,,5
-27,magnetic field,전자기장 발생기,range_pull_on_build_landmark,85,,,,,5
+27,magnetic field,전자기장 발생기,range_pull_on_build_landmark,90,,,,,5
 28,remote magnetic core,원격 마그네틱 코어,iaan,100,,,,,5
 29,dual magnetic core,듀얼 마그네틱 코어,line_pull,85,,,,,8
 30,bubble,비눗방울 장난감,bubble,65,,,,,6
 31,boss call,사장님의 긴급 호출,boss_call,95,,,,,5
 32,annonymous_6,풍요신의 문장,apply_multiplier_on_build_landmark,85,,,,,4
 33,monument,왕가의 기념비,monument,,,,,,4
-34,inheritance_document,재벌가의 상속문서,inheritance_document,,,,,,4
+34,inheritance_document,재벌가의 상속문서,inheritance_document,75,,,,,4
 35,bear2,각성 도깨비 곰돌이,additional_toll,,75,100,,,6
+36,blackhole_build,블랙홀 추진기,blackhole_on_build_landmark,90,,,,,5
+37,blackhole_arrive,블랙홀 발생기,blackhole_on_arrive_landmark,90,,,,,5
+38,guidebook,잘못된 가이드북,wrong_guidebook,70,,,,,5
+39,blackhole_multiplier,블랙홀 증폭기,add_multiplier_on_blackhole,80,,,,,4
+40,blueprint,위조된 설계 도면,blueprint,75,,,,,6
+41,blueprint_lock,봉인된 설계 도면,blueprint_and_lock,75,,,,,9

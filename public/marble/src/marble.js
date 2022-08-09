@@ -43,7 +43,7 @@ class Game{
             this.abilities.set(p.turn,p.abilities)
         }
         this.scene.players=this.players
-            
+        
         
         this.ui.init(setting,turn)
         console.log(setting)
@@ -83,10 +83,18 @@ class Game{
                 list.push(((from+320)-i)%32)
             }
         }
+        this.scene.focusPlayer(this.turnToPlayerNum(player))
         this.scene.movePlayerThrough(list, this.turnToPlayerNum(player),(turn)=>this.moveComplete(turn))
     }
-    playerTeleport(player,pos){
-        this.scene.teleportPlayer(this.turnToPlayerNum(player),pos,"levitate")
+    playerTeleport(player,pos,movetype){
+        this.scene.focusPlayer(this.turnToPlayerNum(player))
+        if(movetype===4)
+            this.scene.playerBlackholeMove(this.turnToPlayerNum(player),pos)
+        else
+            this.scene.teleportPlayer(this.turnToPlayerNum(player),pos,"levitate")
+    }
+    playerEffect(turn,effect,status){
+        this.scene.playerEffect(this.turnToPlayerNum(turn),effect,status)
     }
     payMoney(payer,receiver,amount){
         let payerui=payer

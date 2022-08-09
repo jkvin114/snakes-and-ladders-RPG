@@ -187,8 +187,7 @@ class ServerConnection{
 			window.location.href = "gamepage.html"
 		}
 		else if(gametype==='marble'){
-			socket.emit("marble:user:gameready")
-
+			socket.emit("marble:user:gameready",setting)
 			window.location.href = "/marble/gamepage.html"
 		}
 		

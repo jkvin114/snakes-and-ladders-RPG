@@ -25,6 +25,7 @@ class MarblePlayer{
     private pendingActions:Action[]
     private savedDefenceCardAbility:ABILITY_NAME
     private abilityStorage:AbilityStorage
+    private statusEffect:Set<string>
     constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat){
         this.num=num
         this.turn=0
@@ -45,6 +46,7 @@ class MarblePlayer{
         this.pendingActions=[]
         this.savedDefenceCardAbility=ABILITY_NAME.NONE
         this.abilityStorage=new AbilityStorage()
+        this.statusEffect=new Set<string>()
     }
     
     addPendingAction(action:Action){
@@ -157,10 +159,22 @@ class MarblePlayer{
     getAbilityStringOf(name:ABILITY_NAME){
         return this.abilityStorage.getAbilityStringOf(name)
     }
+    upgradeAbility(){
+        return this.abilityStorage.upgradeAbility()
+    }
     canBuildLandOfMinimumPrice(price:number){
         return price * this.getBuildDiscount() < this.money
     }
-        
+    applyEffect(effect:string){
+        this.statusEffect.add(effect)
+    }
+    hasEffect(effect:string){
+        return this.statusEffect.has(effect)
+    }
+    clearEffect(effect:string){
+        return this.statusEffect.delete(effect)
+    }
+
     canLoan(amt:number){
         return !this.hadLoan
     }

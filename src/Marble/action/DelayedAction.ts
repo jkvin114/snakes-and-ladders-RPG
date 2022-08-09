@@ -24,6 +24,18 @@ export class MoveAction extends DelayedAction {
 		this.from=from
 		this.moveType=moveType
 	}
+	setDistanceDelay(d:number){
+		this.delay=Math.abs(d) * MoveAction.DELAY_PER_TILE
+	}
+}
+export class TeleportAction extends DelayedAction {
+	pos:number
+	movetype:MOVETYPE
+	constructor(turn: number,pos:number,movetype:MOVETYPE) {
+		super(ACTION_TYPE.TELEPORT,turn,1200)
+		this.pos=pos
+		this.movetype=movetype
+	}
 }
 export class RollDiceAction extends DelayedAction {
     static DELAY=1000
@@ -60,6 +72,6 @@ export class RangePullAction extends PullAction {
 export class LinePullAction extends PullAction {
 	constructor(turn: number,pos:number) {
 		super(turn,pos)
-		this.targetTiles.push(...SAME_LINE_TILES[pos2Line(pos)])
+		this.targetTiles=Array.from(SAME_LINE_TILES[pos2Line(pos)]).filter((pos)=>pos!==this.pos)
 	}
 }

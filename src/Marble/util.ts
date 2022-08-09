@@ -72,7 +72,7 @@ export function backwardDistance(start: number, dest: number): number {
 	return start <= dest ? MAP_SIZE - (dest - start) : start - dest
 }
 export function forwardBy(pos: number, dist: number) {
-	return (pos + dist) % MAP_SIZE
+	return (pos + dist + MAP_SIZE) % MAP_SIZE
 }
 export function backwardBy(pos: number, dist: number) {
 	if (pos - dist >= 0) return pos - dist
@@ -86,6 +86,7 @@ export function backwardBy(pos: number, dist: number) {
  * @returns
  */
 export function getTilesBewteen(start: number, dest: number): number[] {
+	if(start===dest) return []
 	if (start < dest) {
 		return range(dest - 1, start + 1)
 	} else {

@@ -2,6 +2,7 @@ import express = require('express');
 import { R } from '../RoomStorage';
 import { MAP_TYPE } from '../data/enum';
 import fs = require("fs")
+import { ITEM_REGISTRY } from '../Marble/ItemRegistry';
 const RESOURCE_PATH="/../../res/"
 const router = express.Router()
 
@@ -137,6 +138,11 @@ router.get("/marble_map_coordinates", function (req:express.Request, res:express
 		}
 		res.end(data)
 	})
+})
+
+router.get("/marble_items", function (req:express.Request, res:express.Response) {
+	let data=ITEM_REGISTRY.getAllDescriptions()
+	res.end(JSON.stringify(data))
 })
 
 

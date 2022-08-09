@@ -1,12 +1,12 @@
 import { sleep,ProtoPlayer,PlayerType } from "../core/Util";
 import { Action,ACTION_TYPE, EmptyAction } from "./action/Action";
 import { ActionTrace, ACTION_SOURCE_TYPE } from "./action/ActionTrace";
-import { DelayedAction, MoveAction, PullAction, RollDiceAction } from "./action/DelayedAction";
+import { DelayedAction, MoveAction, PullAction, RollDiceAction, TeleportAction } from "./action/DelayedAction";
 import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction } from "./action/InstantAction";
 import { MarbleClientInterface } from "./MarbleClientInterface";
-import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction, AskGodHandSpecialAction, MoveTileSelectionAction } from "./action/QueryAction";
+import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction, AskGodHandSpecialAction, MoveTileSelectionAction, BlackholeTileSelectionAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 import { BUILDING } from "./tile/Tile";
 import { AttackCard, CARD_NAME, CARD_TYPE, CommandCard, DefenceCard, FortuneCard } from "./FortuneCard";
@@ -35,12 +35,13 @@ class MarbleGameLoop{
 	idleTimeoutTurn: number
     loopRunning:boolean
     gameover:boolean
-    constructor(rname:string,game:MarbleGame,isTeam:boolean){
+    constructor(rname:string,game:MarbleGame,isTeam:boolean,itemSetting:ServerPayloadInterface.ItemSetting){
         this.rname=rname
         this.game=game
         this.isTeam=isTeam
         this.clientInterface=new MarbleClientInterface(rname)
         this.game.setTurns()
+        this.game.setItems(itemSetting)
         this.loopRunning=false
         this.gameover=false
     }
@@ -48,9 +49,10 @@ class MarbleGameLoop{
 		rname: string,
 		isTeam: boolean,
         map:number,
-        playerlist:ProtoPlayer[]
+        playerlist:ProtoPlayer[],
+        itemSetting:ServerPayloadInterface.ItemSetting
 	): MarbleGameLoop {
-		return new MarbleGameLoop(rname,new MarbleGame(playerlist,this.name,isTeam,map),isTeam)
+		return new MarbleGameLoop(rname,new MarbleGame(playerlist,this.name,isTeam,map),isTeam,itemSetting)
 	}
     setClientInterface(ci:MarbleClientInterface){
         this.clientInterface=ci
@@ -72,38 +74,6 @@ class MarbleGameLoop{
     onDestroy(){
         this.gameover=true
     }
-    // /**
-	//  * 
-	//  * @param cycle 
-	//  * @returns should pass
-	//  */
-	// setGameCycle(cycle: MarbleGameCycleState): boolean {
-	// 	if(!this.game) return false
-	// 	if (this.state != null) {
-	// 		this.state.onDestroy()
-	// 		if (this.state.shouldStopTimeoutOnDestroy()) this.stopTimeout()
-	// 	}
-	// 	this.state = cycle
-	// 	if (this.state.shouldPass()) {
-	// 		setTimeout(this.startNextTurn.bind(this), 1000)
-	// 		return true
-	// 	}
-	// 	if (this.state.shouldStartTimeoutOnCreate()) {
-	// 		this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
-	// 	}
-
-	// //	console.log("thisgamecycle " + this.state.id)
-	// 	return false
-	// }
-    // async startNextTurn(isTimeout: boolean) {
-	// 	if (!this.game) return
-	// 	this.stopTimeout()
-	// 	this.setGameCycle(this.state.getTurnTerminator())
-	// 	await sleep(1000)
-	// 	if(!this.game) return
-	// 	this.setGameCycle(this.state.getTurnInitializer())
-	// 	this.nextGameCycle()
-	// }
     stopTimeout(){
         if (this.idleTimeout != null && this.state != null && this.idleTimeoutTurn === this.state.turn) {
 			//this.clientInterface.stopTimeout(this.game.thisCryptTurn())
@@ -125,6 +95,35 @@ class MarbleGameLoop{
 		return this.game.thisturn
 	}
 
+    clearPriorityActions(){
+        for(const action of this.game.getPriorityActions())
+        {
+            // let action=this.game.nextAction()
+            if(!action) break
+
+            if(action.type===ACTION_TYPE.GAMEOVER){
+                this.loopRunning=false
+                this.onGameOver(action.turn)
+                return
+            }
+
+            // 액션 무시
+            if(!action.valid || action.type===ACTION_TYPE.EMPTY) {
+                console.log("action ignored")
+                continue
+            }
+
+            //방어된 액션 처리
+            if(action.blocked){
+                this.game.handleBlockedAction(action)
+                continue
+            }
+
+            this.game.executeAction(action)
+            
+
+        }
+    }
     async loop(){
         if(this.loopRunning || this.gameover) 
         {
@@ -133,18 +132,16 @@ class MarbleGameLoop{
         }
 
         this.loopRunning=true
-        while(true){
+        while(!this.gameover){
+            this.clearPriorityActions()
+            
             let action=this.game.nextAction()
             if(!action || this.gameover) {
                 this.loopRunning=false
                 break
             }
 
-            if(action.type===ACTION_TYPE.GAMEOVER){
-                this.loopRunning=false
-                this.onGameOver(action.turn)
-                break
-            }
+            
             
             // 액션 무시
             if(!action.valid || action.type===ACTION_TYPE.EMPTY) {
@@ -177,11 +174,13 @@ class MarbleGameLoop{
             nextstate.onCreate()
             this.state=nextstate
             if(action instanceof DelayedAction){
+                this.clearPriorityActions()
                 await sleep(action.delay)
                 this.state.afterDelay()
             }
             else if(action instanceof QueryAction){
                 // this.startTimeOut(()=>{})
+                this.clearPriorityActions()
                 this.loopRunning=false
                 break
             }
@@ -268,6 +267,10 @@ abstract class MarbleGameCycleState {
                 if(action instanceof RollDiceAction)
                     return new ThrowingDice(this.game,action)
                 break
+            case ACTION_TYPE.TELEPORT:
+                if(action instanceof TeleportAction)
+                    return new Teleporting(this.game,action)
+                break
             case ACTION_TYPE.WALK_MOVE:
             case ACTION_TYPE.FORCE_WALK_MOVE:
                 if(action instanceof MoveAction)
@@ -297,6 +300,7 @@ abstract class MarbleGameCycleState {
             case ACTION_TYPE.CHOOSE_ATTACK_POSITION:
             case ACTION_TYPE.CHOOSE_DONATE_POSITION:
             case ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT:
+            case ACTION_TYPE.CHOOSE_BLACKHOLE:
                 if(action instanceof TileSelectionAction)
                     return new WaitingTileSelection(this.game,action)
                 break
@@ -438,6 +442,17 @@ class ThrowingDice extends MarbleGameCycleState{
     // }
     }
 }
+class Teleporting extends MarbleGameCycleState{
+   
+    
+    sourceAction:TeleportAction
+    constructor(game:MarbleGame,sourceAction:TeleportAction){
+        super(game,sourceAction.turn,GAME_CYCLE.PLAYER_TELEPORTING,sourceAction)
+    }
+    onCreate(): void {
+        this.game.teleportPlayer(this.turn,this.sourceAction.pos,this.sourceAction.source,this.sourceAction.movetype)
+    }
+}
 class Moving extends MarbleGameCycleState{
 
     static id = GAME_CYCLE.PLAYER_WALKING
@@ -453,8 +468,8 @@ class Moving extends MarbleGameCycleState{
         this.from=sourceAction.from
     }
     onCreate(): void {
-        this.game.clientInterface.walkMovePlayer(this.turn,this.from,this.distance)
-        this.game.movePlayer(this.turn,this.distance,this.sourceAction.source,this.sourceAction.moveType)
+        this.distance=this.game.walkMovePlayer(this.turn,this.from,this.distance,this.sourceAction.source,this.sourceAction.moveType)
+        this.sourceAction.setDistanceDelay(this.distance)
     }
 }
 class WaitingBuild extends MarbleGameCycleState{
@@ -550,6 +565,9 @@ class WaitingTileSelection extends MarbleGameCycleState{
         }
         else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT){
             this.game.onSelectTileLiftPosition(this.turn,pos,this.sourceAction.source)
+        }
+        else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_BLACKHOLE){
+            this.game.onSelectBlackholePosition(this.turn,pos,this.sourceAction)
         }
         return new EventResult(true).setData(pos)
     }

@@ -63,14 +63,29 @@ export class ActionTrace {
         return this
     }
     hasTag(tag:string):boolean{
+        if(this.tags.has(tag)) return true
+
         if(!this.prev)
             return this.tags.has(tag)
         else
             return this.prev.hasTag(tag)
     }
+    useActionAndAbility(action:ACTION_TYPE,ability:ABILITY_NAME):boolean{
+        if(this.actionType===action && this.abilityName===ability) {
+            this.abilityName=ABILITY_NAME.NONE
+            return true
+        }
+        
+        if(!this.prev)
+            return false
+        
+        return this.prev.useActionAndAbility(action,ability)
+    }
     hasActionAndAbility(action:ACTION_TYPE,ability:ABILITY_NAME):boolean{
-        if(this.actionType===action && this.abilityName===ability) return true
-
+        if(this.actionType===action && this.abilityName===ability) {
+            return true
+        }
+        
         if(!this.prev)
             return false
         

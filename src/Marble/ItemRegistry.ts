@@ -22,7 +22,7 @@ fs.createReadStream(__dirname+'/items.csv',{encoding:"utf-8"}).pipe(myParser).on
 
 
 export namespace ITEM_REGISTRY{
-    export function get(code:number):[ABILITY_NAME,AbilityValues]|null{
+    export function get(code:number):[ABILITY_NAME,AbilityValues,number]|null{
         if(code >= ITEMS.length) code = 0
         const item=ITEMS[code]
 
@@ -37,11 +37,25 @@ export namespace ITEM_REGISTRY{
         
         if(item.firstonly==="1") value.setFirstOnly()
         else if(item.limit!=="") value.setLimit(Number(item.limit))
-        let ability=ABILITY_REGISTRY.get(item.ability as ABILITY_NAME)
-        if(ability!=null)
-            console.log(value.getDescription(ability.description))
+        
 
-        return [item.ability as ABILITY_NAME,value]
+        return [item.ability as ABILITY_NAME,value,Number(item.cost)]
 
+    }
+    export function getAllDescriptions():{code:number,name:string,desc:string,cost:number}[]{
+        let list:{code:number,name:string,desc:string,cost:number}[]=[]
+        for(let i=0;i<ITEMS.length;++i){
+            let item=get(i)
+            if(!item) continue
+            let desc=""
+            let ability=ABILITY_REGISTRY.get(item[0])
+            if(ability!=null)
+                desc=item[1].getDescription(ability.description)
+
+            list.push({
+                code:i,name:item[1].getItemKorName(),desc:desc,cost:item[2]
+            })
+        }
+        return list
     }
 }

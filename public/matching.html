@@ -3,8 +3,8 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
   <script src="lib/jquery-3.6.0.min.js"></script>
-  <!-- <script src="lib/socket.io.min.js"></script> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script src="lib/socket.io.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
   <script src="src/client.js"></script>
 <script src="src/matching.js"></script>
 <script src="src/gamesetting.js"></script>
@@ -172,6 +172,7 @@
         Choose Team
       </button>
       <img id="setting" src="./res/img/ui/setting.png">
+      <img id="marble-item" src="./res/img/ui/setting.png" class="hidden">
       <button id=readybtn class="mainbtn hidden">
         Ready
       </button>
@@ -287,6 +288,30 @@
       </div>
     </div>
   </div>
+</div>
+
+<div id="marble-item-page" class="hidden">
+  <button id="marble-item-close"> &times; </button>
+
+  랜덤아이템 갯수:<input type="number" value="1" id="marble-item-random-count">
+  <div id="marble-item-page-content">
+
+    <div class="marble-item locked selected">
+      <div class="marble-item-header">
+        <div class=marble-item-name>신비한 원석</div>
+        <div class="marble-item-status">
+          <img src="res/img/ui/confirm.png" class="marble-item-select">
+          <img src="res/img/ui/lock.png" class="marble-item-lock">
+        </div>
+        
+      </div>
+      <div class=marble-item-text>
+        올림픽 지역 도착 시 $c% 확률로 개최지 랜드마크로 업그레이드 후 4칸이내 상대 끌어당김
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 </body>

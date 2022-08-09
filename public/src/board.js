@@ -47,12 +47,14 @@ export class Board{
 			return Board._instance
 		}
 		Board._instance = this
-
+		this.shouldRender=false
 	}
 	startRenderInterval() {
 		this.renderInterval = setInterval(
 			function () {
-				this.canRender = true
+				// this.canRender = true
+				if(this.shouldRender)
+					this.canvas.renderAll()
 			}.bind(this),
 			FRAME
 		)
@@ -68,6 +70,8 @@ export class Board{
 		this.canvas.renderAll()
 	}
 	render() {
+		this.shouldRender=true
+		return
 		//	this.canvas.renderAll.bind(this.canvas)
 		if (this.canRender) {
 			this.canvas.renderAll()

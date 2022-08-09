@@ -5,4 +5,7 @@ export namespace ServerPayloadInterface{
     export interface tileStateChange{
         state:string,pos:number,duration?:number
     }
+    export interface ItemSetting{
+        randomCount:number,items:{code:number,locked:boolean,selected:boolean}[]
+    }
 }

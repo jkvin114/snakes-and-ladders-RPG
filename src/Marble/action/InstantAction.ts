@@ -13,11 +13,20 @@ import { BUILDING } from "../tile/Tile"
 		super(type,turn)
 	}
 }
+export class GameOverAction extends InstantAction{
+	constructor(winner:number){
+		super(ACTION_TYPE.GAMEOVER,winner)
+		this.priority=Action.PRIORITY_FIRST
+	}
+	execute(game: MarbleGame): void {
+		
+	}
+}
 export class ClaimTollAction extends InstantAction{
 	
     tile:BuildableTile
-	constructor(turn: number,tile:BuildableTile) {
-		super(ACTION_TYPE.CLAIM_TOLL,turn)
+	constructor(payer: number,tile:BuildableTile) {
+		super(ACTION_TYPE.CLAIM_TOLL,payer)
         this.tile=tile
 	}
 	execute(game: MarbleGame): void {
@@ -26,8 +35,8 @@ export class ClaimTollAction extends InstantAction{
 }
 export class ClaimBuyoutAction extends InstantAction{
     tile:BuildableTile
-	constructor(turn: number,tile:BuildableTile) {
-		super(ACTION_TYPE.CLAIM_BUYOUT,turn)
+	constructor(payer: number,tile:BuildableTile) {
+		super(ACTION_TYPE.CLAIM_BUYOUT,payer)
         this.tile=tile
 	}
 	execute(game: MarbleGame): void {
@@ -96,6 +105,38 @@ export class AddMultiplierAction extends InstantAction {
 	}
 	execute(game: MarbleGame): void {
 		game.addMultiplierToTile(this.pos,this.count)
+	}
+}
+export class LandModifierAction extends InstantAction {
+	
+	val:number
+	modifierType:string
+	pos:number
+	constructor(turn:number,pos:number,type:string,val?:number) {
+		super(ACTION_TYPE.ADD_MULTIPLIER,turn)
+		this.priority=Action.PRIORITY_FIRST
+		this.modifierType=type
+		this.pos=pos
+
+		if(val)
+			this.val=val
+	}
+	execute(game: MarbleGame): void {
+		game.modifyLand(this.pos,this.modifierType,this.val)
+	}
+}
+export class StealMultiplierAction extends InstantAction {
+	dest:number
+	from:number
+	constructor(turn:number,from:number,dest:number) {
+		super(ACTION_TYPE.STEAL_MULTIPLIER,turn)
+		this.priority=Action.PRIORITY_FIRST
+		this.from=from
+		this.dest=dest
+	}
+	execute(game: MarbleGame): void {
+		game.stealMultiplier(this.turn,this.from,this.dest)
+		// game.addMultiplierToTile(this.pos,this.count)
 	}
 }
 export class AutoBuildAction extends InstantAction {
@@ -178,6 +219,30 @@ export class PrepareTravelAction extends InstantAction{
 		game.requestTravel(this)
 	}
 }
+export class ApplyPlayerEffectAction extends InstantAction{
+	effect:string
+	constructor(turn: number,effect:string) {
+		super(ACTION_TYPE.APPLY_PLAYER_EFFECT,turn)
+		this.effect=effect
+	}
+	execute(game: MarbleGame): void {
+		game.applyPlayerEffect(this.turn,this.effect)
+	}
+}
+export class CreateBlackholeAction extends InstantAction{
+	blackpos:number
+	whitepos:number
+	constructor(turn: number,blackpos:number,whitepos:number) {
+		super(ACTION_TYPE.CREATE_BLACKHOLE,turn)
+		this.blackpos=blackpos
+		this.whitepos=whitepos
+		this.priority=Action.PRIORITY_FIRST
+	}
+	execute(game: MarbleGame): void {
+		game.createBlackHole(this.blackpos,this.whitepos)
+	}
+}
+
 export class ActionModifier extends InstantAction{
 	static readonly TYPE_OFF=0
 	static readonly TYPE_BLOCK=1
@@ -223,13 +288,7 @@ export class RequestMoveAction extends InstantAction{
 		return this
 	}
 	execute(game: MarbleGame): void {
-		if(this.moveType===MOVETYPE.FORCE_WALK)
-			game.requestForceWalkMove(this.turn, this.pos, this.source)
-		if(this.moveType===MOVETYPE.WALK)
-			game.requestWalkMove(this.turn, this.pos, this.source)
-		if(this.moveType===MOVETYPE.TELEPORT)
-			game.teleportPlayer(this.turn, this.pos, this.source)
-		if(this.moveType===MOVETYPE.PULL)
-			game.requestPullMove(this.turn, this.pos, this.source)
+		game.requestMove(this.turn,this.pos,this.source,this.moveType)
+		
 	}
 }

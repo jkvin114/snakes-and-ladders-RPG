@@ -468,9 +468,7 @@ html{
         vertical-align: middle;
         font-family: "Do Hyeon";
       }
-
-
-#setting{
+#setting,#marble-item{
     background-color: white;
     border: 3px solid lightgray;
     width: 35px;
@@ -483,6 +481,7 @@ html{
     vertical-align: middle;
 
   }
+
   #setting:hover{
     transform: scale(1.1);
   }
@@ -702,4 +701,102 @@ input:checked + .slider {
   .name{
     font-size: 2rem;
   }
+}
+
+#marble-item-page{
+
+  position: absolute;
+  z-index: 3;
+  width: 90%;
+  height: 90%;
+  top:50px;
+  left:50%;
+  transform: translate(-50%, 0);
+  background:rgb(50, 50, 50);
+  border: 2px solid rgb(97, 97, 97);
+  overflow: auto;
+  word-break: keep-all;
+  display: block;
+}
+#marble-item-close{
+
+  width:50px;
+  height:50px;
+  margin:0;
+  right: 0;
+  border:none;
+  font-size:45px;
+  line-height: 50px;
+  /* background-color: rgb(34, 34, 34); */
+  background: none;
+  color: white;
+  position: absolute;
+  z-index: inherit+1;
+  cursor: pointer;
+
+}
+#marble-item-page-content{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  flex-wrap: wrap;
+}
+.marble-item{
+  border: 2px solid white;
+  border-radius: 6px;
+  margin: 5px;
+  padding: 5px;
+
+  height: 100px;
+  word-break: keep-all;
+  width: 150px;
+  position: relative;
+  user-select: none;
+  cursor: pointer;
+  transition: all 1s;
+  /* flex-grow: 1; */
+}
+.marble-item:hover{
+  filter: brightness(0.9);
+}
+.marble-item-lock,.marble-item-select{
+  position: absolute;
+  visibility: collapse;
+  top:0px;
+  right:5px;
+  width: 25px;
+  display: inline;
+  vertical-align: middle;
+}
+.marble-item.selected{
+  background-color: #e11900;
+}
+.marble-item.locked{
+  background-color: #7200bf;
+}
+.marble-item.locked .marble-item-lock{
+  visibility: visible;
+}
+.marble-item.selected .marble-item-select{
+  visibility: visible;
+}
+.marble-item-header{
+  display: grid;
+  grid-template-columns: auto 25px;
+  height: 25px;
+}
+.marble-item-name{
+  font-size: 15px;
+  font-family: "cookierun";
+  text-align: left;
+}
+.marble-item-name.small{
+  font-size: 13px;
+}
+.marble-item-text{
+  font-size: 10px;
+  font-family: "nanumB";
+  text-align: left;
 }

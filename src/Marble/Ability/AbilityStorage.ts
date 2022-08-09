@@ -84,6 +84,14 @@ export class AbilityStorage {
     use(name:ABILITY_NAME){
         this.abilityValues.get(name)?.use()
     }
+    upgradeAbility(){
+        let list:ABILITY_NAME[]=[]
+        for(const [name,value] of this.abilityValues.entries()){
+            value.upgrade()
+            list.push(name)
+        }
+        return list
+    }
     getAbilityString(){
         let arr:{name:string,desc:string}[]=[]
         for(const [name,value] of this.abilityValues.entries()){

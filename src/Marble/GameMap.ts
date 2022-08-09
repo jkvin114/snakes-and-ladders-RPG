@@ -8,7 +8,7 @@ import { LandTile } from "./tile/LandTile"
 import { SightTile } from "./tile/SightTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
 import { TileFilter } from "./TileFilter"
-import { arrayOf, countIterator, countList, distance, MAP_SIZE, pos2Line, range, SAME_LINE_TILES } from "./util"
+import { arrayOf, cl, countIterator, countList, distance, MAP_SIZE, pos2Line, range, SAME_LINE_TILES } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/marble/godhand_map.json")
 const WORLD_MAP = require("./../../res/marble/world_map.json")
@@ -43,6 +43,7 @@ class MarbleGameMap{
     cycleStart:number
     blockingTiles:Set<number>
     liftedTile:number
+    lockedTile:number
     constructor(map:string){ 
         this.buildableTiles=new Map<number,BuildableTile>()
         this.tiles=[]
@@ -81,6 +82,7 @@ class MarbleGameMap{
         this.olympicStage=1
         this.blockingTiles=new Set<number>()
         this.liftedTile=-1
+        this.lockedTile=-1
     }
     setClientInterface(ci: MarbleClientInterface) {
 		this.clientInterface = ci
@@ -137,7 +139,7 @@ class MarbleGameMap{
         return this.buildableTiles.get(pos)
     }
     tileAt(index:number):Tile{
-        return this.tiles[index%MAP_SIZE]
+        return this.tiles[(index+MAP_SIZE)%MAP_SIZE]
     }
 
     isSameLine(pos1:number,pos2:number){
@@ -163,7 +165,7 @@ class MarbleGameMap{
             this.onHitBlockingTile(tile)
             return true
         }
-        if(this.start===tile){
+        if(this.start===tile && type!==MOVETYPE.PULL){
             game.onPassStartTile(player,source)
         }
         return false
@@ -211,6 +213,7 @@ class MarbleGameMap{
             if(filter.ownedOnly && !t.owned()) continue
             if(distance(t.position,source.pos) > filter.radius) continue
             if(filter.sameLine && !this.isSameLine(t.position,source.pos)) continue
+            if(!filter.condition(t)) continue
             tiles.add(t.position)
         }
         return tiles
@@ -224,6 +227,7 @@ class MarbleGameMap{
             if(filter.cornerOnly && !t.isCorner) continue
             if(filter.specialOnly && !t.isSpecial) continue
             if(filter.sameLine && !this.isSameLine(t.position,source.pos)) continue
+            if(!filter.condition(t)) continue
             tiles.add(t.position)
         }
         return tiles
@@ -236,6 +240,9 @@ class MarbleGameMap{
         let prevOwner=tile.owner
         this.tileOwners[tile.position]=owner
         tile.owner=owner
+
+        this.removeMultiplierLock(tile.position)
+
         if(tile instanceof LandTile)
             this.updateColorMonopoly(tile,owner,prevOwner)
         
@@ -272,7 +279,22 @@ class MarbleGameMap{
             change[0]=color
         }
     }
-    addSingleMultiplier(pos:number,count:number){
+    setMultiplierLock(pos:number){
+        if(this.lockedTile > -1)
+            this.buildableTileAt(this.lockedTile)?.setMultiplierLock(false)
+            this.lockedTile=pos
+
+        if(pos!==-1)        
+            this.buildableTileAt(pos)?.setMultiplierLock(true)
+    }
+    removeMultiplierLock(pos:number){
+        if(this.lockedTile === pos){
+            this.buildableTileAt(this.lockedTile)?.setMultiplierLock(false)
+            this.lockedTile=-1
+            this.clientInterface.modifyLand(pos,"unlock",0)
+        }
+    }
+    addSingleTileMultiplier(pos:number,count:number){
         let tile=this.buildableTileAt(pos)
         if(!tile) return
         tile.addMultiplier(count)
@@ -280,6 +302,29 @@ class MarbleGameMap{
         this.clientInterface.updateMultipliers([{
             pos:pos,mul:tile.getMultiplier(),toll:tile.getDisplayedToll()
         }])
+    }
+    getLandToMoveMultiplier(invoker:MarblePlayer){
+        return this.getMostExpensiveIn(invoker,TileFilter.MY_LAND()
+			.setCondition((tile:Tile)=>{
+				return tile instanceof BuildableTile && tile.canAddMoreMultiplier()
+		}))
+    }
+    stealMultiplier(invoker:MarblePlayer,pos:number,dest:number){
+        
+        let tile=this.buildableTileAt(pos)
+        if(!tile || dest===-1) return
+        if(this.olympicPos===pos)
+            this.setOlympic(dest)
+        if(this.festival.has(pos))
+            this.setFestival(dest,pos)
+
+        let mul = tile.stealMultiplier()
+        // cl("stealMultiplier"+mul)
+        this.clientInterface.updateMultipliers([{
+            pos:pos,mul:tile.getMultiplier(),toll:tile.getDisplayedToll()
+        }])
+
+        this.addSingleTileMultiplier(dest,mul)
     }
     updateMultiplier()
     {
@@ -379,8 +424,28 @@ class MarbleGameMap{
     sendTileState(state:string,pos:number){
         this.clientInterface.setTileState({state:state,pos:pos})
     }
+    getMostExpensiveIn(owner:MarblePlayer,filter:TileFilter){
+        let landmarks=this.getTiles(owner,filter)
+        if(landmarks.length===0) return -1
 
+        return landmarks.sort((a:number,b:number)=>{
+            let t1=this.buildableTileAt(a)?.getToll()
+            let t2=this.buildableTileAt(b)?.getToll()
+            if(!t1 || !t2) return -1
+           return t2 - t1
+        })[0]
+    }
+    getLeastExpensiveIn(owner:MarblePlayer,filter:TileFilter){
+        let landmarks=this.getTiles(owner,filter)
+        if(landmarks.length===0) return -1
 
+        return landmarks.sort((a:number,b:number)=>{
+            let t1=this.buildableTileAt(a)?.getToll()
+            let t2=this.buildableTileAt(b)?.getToll()
+            if(!t1 || !t2) return -1
+           return t1 - t2
+        })[0]
+    }
     onPlayerRetire(player:MarblePlayer):number[]{
         let toremove=this.getTiles(player,TileFilter.MY_LAND())
         for(let t of toremove){

@@ -121,6 +121,7 @@ class BuildingSelector {
 	}
 }
 
+const NO_DUPLICATE_ABILITIES=["perfume","badge","agreement","reverse_agreement"]//두번연속 알림 안뜨는 능력들
 class AbilityBuffer {
 	static TOP = 0
 	static BOTTOM = 1
@@ -134,7 +135,7 @@ class AbilityBuffer {
 		this.prevAbility=""  //능력 중복알림 방지용 저장
 	}
 	enqueue(ui, name, itemName, desc, isblocked) {
-		if(name===this.prevAbility) return
+		if(name===this.prevAbility && NO_DUPLICATE_ABILITIES.includes(name)) return
 
 		this.prevAbility=name
 
@@ -275,6 +276,10 @@ const TILE_SELECTIONS = {
 	godhand_special_tile_lift:{
 		title: "블록 상승",
 		desc: "상승시킬 블록 선택"
+	},
+	blackhole:{
+		title: "블랙홀 발생",
+		desc: "블랙홀을 발생시킬 곳 선택"
 	}
 }
 const FORTUNECARD = {

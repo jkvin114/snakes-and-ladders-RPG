@@ -36,6 +36,10 @@ const SERVER_EVENTS={
     TILE_STATE_UPDATE:prefix+"tile_state_update",
     ASK_GODHAND_SPECIAL:prefix+"ask_godhand_special",
     PULL:prefix+"pull",
+    PLAYER_EFFECT:prefix+"player_effect",
+    BLACKHOLE:prefix+"blackhole",
+    MODIFY_LAND:prefix+"modify_land"
+
 }
 
 export class MarbleClientInterface {
@@ -63,8 +67,8 @@ export class MarbleClientInterface {
     walkMovePlayer(player:number,from:number,distance:number){
         this.callback(this.rname, SERVER_EVENTS.WALK_MOVE, player,from,distance)
     }
-    teleportPlayer(player:number,pos:number){
-        this.callback(this.rname, SERVER_EVENTS.TELEPORT, player,pos)
+    teleportPlayer(player:number,pos:number,movetype:number){
+        this.callback(this.rname, SERVER_EVENTS.TELEPORT, player,pos,movetype)
     }
     chooseBuild(pos:number,player:number,builds:ServerPayloadInterface.buildAvaliability[],buildsHave:BUILDING[],discount:number,money:number){
         this.callback(this.rname, SERVER_EVENTS.CHOOSE_BUILD,player,pos,builds,buildsHave,discount,money)
@@ -107,6 +111,15 @@ export class MarbleClientInterface {
     }
     indicatePull(tiles:number[]){
         this.callback(this.rname, SERVER_EVENTS.PULL, tiles)
+    }
+    setPlayerEffect(turn:number,effect:string,status:boolean){
+        this.callback(this.rname,SERVER_EVENTS.PLAYER_EFFECT,turn,effect,status)
+    }
+    createBlackHole(blackpos:number,whitepos:number){
+        this.callback(this.rname,SERVER_EVENTS.BLACKHOLE,blackpos,whitepos)
+    }
+    modifyLand(pos:number,type:string,val:number){
+        this.callback(this.rname,SERVER_EVENTS.MODIFY_LAND,pos,type,val)
     }
     /**
      * 

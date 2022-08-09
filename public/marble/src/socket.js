@@ -54,14 +54,19 @@ export function openConnection(isInitial){
 		console.log(player,distance)
 		GAME.playerWalkMove(player,from,distance)
 	})
-    socket.on("server:teleport", function (player,pos) {
-		console.log(player,pos)
-		GAME.playerTeleport(player,pos)
+    socket.on("server:teleport", function (player,pos,movetype) {
+		console.log(player,pos,movetype)
+		GAME.playerTeleport(player,pos,movetype)
 	})
 	socket.on("server:pull", function (tiles) {
         console.log("pull")
 		console.log(tiles)
 		GAME.scene.indicatePull(tiles)
+	})
+	socket.on("server:player_effect", function (turn,effect,status) {
+        console.log("player_effect")
+		console.log(turn,effect,status)
+		GAME.playerEffect(turn,effect,status)
 	})
     socket.on("server:choose_build", function (pos,player,builds,buildsHave,discount,avaliableMoney) {
 		if(!checkTurn(player)) return
@@ -172,7 +177,16 @@ export function openConnection(isInitial){
 		console.log(turn,name,itemName,desc,isblocked)
 		GAME.indicateAbility(turn,name,itemName,desc,isblocked)
 	})
-	
+	socket.on("server:blackhole", function (black,white) {
+        console.log("blackhole")
+		console.log(black,white)
+		GAME.scene.setBlackhole(black,white)
+	})
+	socket.on("server:modify_land", function (pos,type,val) {
+        console.log("modify_land")
+		console.log(pos,type,val)
+		GAME.scene.modifyLand(pos,type,val)
+	})
 	socket.on("server:tile_state_update", function (change) {
         console.log("tile_state_update")
 		console.log(change)

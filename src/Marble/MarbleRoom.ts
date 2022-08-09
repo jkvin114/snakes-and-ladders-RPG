@@ -2,6 +2,7 @@ import { ClientInterfaceCallback } from "../ClientInterface";
 import { Room } from "../room";
 import { MarbleClientInterface } from "./MarbleClientInterface";
 import { MarbleGameLoop } from "./MarbleGameLoop";
+import { ServerPayloadInterface } from "./ServerPayloadInterface";
 
 class MarbleRoom extends Room{
     getMapId(): number {
@@ -24,10 +25,10 @@ class MarbleRoom extends Room{
 	registerSimulationClientInterface(callback:ClientInterfaceCallback){
 		return this
 	}
-    user_gameReady(roomName: string) {
+    user_gameReady(roomName: string,itemSetting:ServerPayloadInterface.ItemSetting) {
 		this.instant = false
 
-		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerlist)
+		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerlist,itemSetting)
 		this.gameloop.setClientInterface(this.clientInterface)
 	}
 	user_requestSetting(){

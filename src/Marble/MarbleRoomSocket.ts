@@ -1,6 +1,7 @@
 import type { Socket } from "socket.io";
 import { R } from "../RoomStorage";
 import { SocketSession } from "../SocketSession";
+import { ServerPayloadInterface } from "./ServerPayloadInterface";
 
 const prefix="marble:user:"
 const USER_EVENTS={
@@ -23,12 +24,12 @@ function getRoom(socket:Socket){
 module.exports=function(socket:Socket){
 
 
-    socket.on(USER_EVENTS.GAMEREADY, function () {
+    socket.on(USER_EVENTS.GAMEREADY, function (itemsetting:ServerPayloadInterface.ItemSetting) {
 		let rname = SocketSession.getRoomName(socket)
-
+		console.log(itemsetting)
 		if (!R.hasMarbleRoom(rname)) return
 
-		R.getMarbleRoom(rname).user_gameReady(rname)
+		R.getMarbleRoom(rname).user_gameReady(rname,itemsetting)
 
 		//게스트 페이지 바꾸기
 		socket.to(rname).emit("server:to_marble_gamepage")

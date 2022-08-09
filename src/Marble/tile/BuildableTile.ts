@@ -26,8 +26,9 @@ class TilePriceMultiplier{
     }
     stealAdditional():number{
         if(this.locked) return 1
-        this.additional=0
-        return Math.round(this.total()/this.baseTotal())
+        let amount= Math.round(this.total()/this.baseTotal())
+        this.additional=1
+        return amount
     }
     baseTotal():number{
         return 2 **(Number(this.festival)+Number(this.monopoly)) * this.olympic
@@ -100,6 +101,15 @@ abstract class BuildableTile extends Tile{
         this.statusEffects=null
 
     }
+    setMultiplierLock(lock:boolean){
+        this.multiplier.locked=lock
+    }
+    canStealMultiplier(){
+        return !this.multiplier.locked && (this.multiplier.additional > 1 || this.olympic || this.festival)
+    }
+    canAddMoreMultiplier(){
+        return this.getMultiplier() < TilePriceMultiplier.UPPER_BOUND
+    }
     setStatusEffect(name:string,dur:number):boolean{
         // 정전 효과 있으면 전염병 무시
         if(name===CARD_NAME.PANDEMIC && this.statusEffects!=null && this.statusEffects.name===CARD_NAME.BLACKOUT) return false
@@ -143,9 +153,9 @@ abstract class BuildableTile extends Tile{
     }
     stealMultiplier():number{
         let num=this.multiplier.stealAdditional()
-        this.multiplier.olympic=1
-        this.multiplier.festival=false
-        this.olympic=false
+        // this.multiplier.olympic=1
+        // this.multiplier.festival=false
+        // this.olympic=false
         return num
     }
     setFestival(f:boolean){

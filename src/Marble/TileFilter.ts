@@ -19,6 +19,7 @@ export class TileFilter{
     buildableOnly:boolean
     landTileOnly:boolean
     enemyLandOnly:boolean
+    condition:Function
 
     static ALL_EXCLUDE_MY_POS=()=>new TileFilter().setExcludeMyPos()
     static MORE_BUILDABLE_MY_LAND=()=>new TileFilter().fromBuildable().setOnlyMoreBuildable().setMyLandOnly()
@@ -46,9 +47,14 @@ export class TileFilter{
         this.specialOnly=false
         this.landTileOnly=false
         this.enemyLandOnly=false
+        this.condition=(tile:any)=>true
     }
     setLandTileOnly(){
         this.landTileOnly=true
+        return this
+    }
+    setCondition(condition:Function){
+        this.condition=condition
         return this
     }
 
