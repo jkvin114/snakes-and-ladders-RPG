@@ -1,4 +1,4 @@
-import { ProtoPlayer, shuffle } from "../core/Util"
+import { ProtoPlayer, randInt, shuffle } from "../core/Util"
 import { Action, ACTION_TYPE, EmptyAction, MOVETYPE, StateChangeAction } from "./action/Action"
 import { ActionTrace, ACTION_SOURCE_TYPE } from "./action/ActionTrace"
 import { ActionStack } from "./action/ActionStack"
@@ -9,6 +9,7 @@ import {
 	ActionModifier,
 	ArriveTileAction,
 	AutoBuildAction,
+	ClaimBuyoutAction,
 	CreateBlackholeAction,
 	EarnMoneyAction,
 	GameOverAction,
@@ -40,6 +41,7 @@ import {
 	AskBuildAction,
 	AskDefenceCardAction,
 	AskGodHandSpecialAction,
+	AskIslandAction,
 	AskTollDefenceCardAction,
 	BlackholeTileSelectionAction,
 	LandSwapAction,
@@ -48,13 +50,23 @@ import {
 	QueryAction,
 	TileSelectionAction,
 } from "./action/QueryAction"
-import { TileFilter } from "./TileFilter"
+import { TileFilter } from "./tile/TileFilter"
 import { ActionPackage } from "./action/ActionPackage"
-import {ArriveBlackholeActionBuilder, ArriveOlympicActionBuilder, ArriveTravelActionBuilder, CreateBlackholeActionBuilder, MeetPlayerActionBuilder, OnBuildActionBuilder, PrepareTravelActionBuilder, PullActionBuilder, ReceiveSalaryActionBuilder, ThrowDiceActionBuilder, TurnStartActionBuilder} from "./action/ActionPackageBuilder"
 import { AttackCard, CARD_NAME, CommandCard, DefenceCard, FortuneCardRegistry } from "./FortuneCard"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { EVENT_TYPE } from "./Ability/EventType"
 import type { ServerPayloadInterface } from "./ServerPayloadInterface"
+import { ArriveBlackholeActionBuilder } from "./action/PackageBuilder/ArriveBlackholeActionBuilder"
+import { ArriveIslandActionBuilder } from "./action/PackageBuilder/ArriveIslandActionBuilder"
+import { ArriveOlympicActionBuilder } from "./action/PackageBuilder/ArriveOlympicActionBuilder"
+import { ArriveTravelActionBuilder } from "./action/PackageBuilder/ArriveTravelActionBuilder"
+import { CreateBlackholeActionBuilder } from "./action/PackageBuilder/CreateBlackholeActionBuilder"
+import { OnBuildActionBuilder } from "./action/PackageBuilder/OnBuildActionBuilder"
+import { PrepareTravelActionBuilder } from "./action/PackageBuilder/PrepareTravelActionBuilder"
+import { PullActionBuilder } from "./action/PackageBuilder/PullActionBuilder"
+import { ReceiveSalaryActionBuilder } from "./action/PackageBuilder/ReceiveSalaryActionBuilder"
+import { ThrowDiceActionBuilder } from "./action/PackageBuilder/ThrowDiceActionBuilder"
+import { TurnStartActionBuilder } from "./action/PackageBuilder/TurnStartActionBuilder"
 
 const DELAY_ROLL_DICE = 1000
 const MAP = ["world", "god_hand"]
@@ -69,6 +81,8 @@ class MarbleGame {
 	readonly mediator: PlayerMediator
 	readonly SALARY = 150 * 10000
 	readonly START_MONEY = 1000 * 10000
+	readonly ISLAND_ESCAPE_MONEY = 100 * 10000
+
 	// readonly START_MONEY = 70 * 10000
 	totalturn: number
 	actionStack: ActionStack
@@ -114,10 +128,10 @@ class MarbleGame {
 		}
 		return action
 	}
-	hasPriorityAction():boolean{
-		return this.actionStack.priorityStack.length>0
+	hasPriorityAction(): boolean {
+		return this.actionStack.priorityStack.length > 0
 	}
-	getPriorityActions():InstantAction[]{
+	getPriorityActions(): InstantAction[] {
 		return this.actionStack.popPriorityActions()
 	}
 	canStart() {
@@ -134,11 +148,10 @@ class MarbleGame {
 			isTeam: this.isTeam,
 		}
 	}
-	setItems(itemSetting:ServerPayloadInterface.ItemSetting){
-		try{
+	setItems(itemSetting: ServerPayloadInterface.ItemSetting) {
+		try {
 			this.mediator.registerAbilities(itemSetting)
-		}
-		catch(e){
+		} catch (e) {
 			console.error(e)
 		}
 	}
@@ -175,7 +188,7 @@ class MarbleGame {
 			new ActionTrace(ACTION_TYPE.TURN_START)
 		)
 
-		let pkg =new TurnStartActionBuilder(this,new ActionTrace(ACTION_TYPE.TURN_START),this.thisPlayer()).build()
+		let pkg = new TurnStartActionBuilder(this, new ActionTrace(ACTION_TYPE.TURN_START), this.thisPlayer()).build()
 		//  new ActionPackage(this, new ActionTrace(ACTION_TYPE.TURN_START))
 		// .applyAbilityTurnStart(
 		// 	this.thisPlayer()
@@ -186,7 +199,7 @@ class MarbleGame {
 
 		if (this.thisturn === 0) {
 			this.totalturn += 1
-			if(this.totalturn===6) this.mediator.upgradePlayerAbility()
+			if (this.totalturn === 6) this.mediator.upgradePlayerAbility()
 		}
 	}
 	getDiceModifiers(source: ActionTrace, oddEven: number) {
@@ -195,26 +208,26 @@ class MarbleGame {
 		let isExactDc = false
 		let isDouble = false
 		let multiplier = 1
-		let executed: ABILITY_NAME[] = [ABILITY_NAME.NONE,ABILITY_NAME.NONE,ABILITY_NAME.NONE,ABILITY_NAME.NONE]
+		let executed: ABILITY_NAME[] = [ABILITY_NAME.NONE, ABILITY_NAME.NONE, ABILITY_NAME.NONE, ABILITY_NAME.NONE]
 		for (const name of abilities.keys()) {
 			if (name === ABILITY_NAME.DICE_CONTROL_ACCURACY && dc) {
 				isExactDc = true
-				executed[0]=name
+				executed[0] = name
 			}
 			if (name === ABILITY_NAME.BACK_DICE) {
 				multiplier *= -1
-				executed[1]=name
+				executed[1] = name
 			}
 			if (name === ABILITY_NAME.MOVE_DOUBLE_ON_DICE) {
 				multiplier *= 2
-				executed[2]=name
+				executed[2] = name
 			} //더블능력 두개중 하나만 발동함
 			if (
 				(name === ABILITY_NAME.DICE_DOUBLE || name === ABILITY_NAME.FIRST_TURN_DOUBLE) &&
 				oddEven !== DiceNumberGenerator.ODD &&
 				!isDouble
 			) {
-				executed[3]=name
+				executed[3] = name
 				isDouble = true
 			}
 		}
@@ -257,7 +270,18 @@ class MarbleGame {
 		}
 
 		let distance = multiplier * (dice1 + dice2)
-		let actions = new ThrowDiceActionBuilder(this,source,this.thisPlayer(),dice1+dice2,distance,isTripleDouble).build()
+		let actions = new ThrowDiceActionBuilder(
+			this,
+			source,
+			this.thisPlayer(),
+			{
+				dice: [dice1, dice2],
+				isDouble: isDouble,
+				dc: modifiers.dc,
+			},
+			distance,
+			isTripleDouble
+		).build()
 
 		// new ActionPackage(this, source)
 		// 	.addMain(new RollDiceAction(this.thisturn, player.pos, distance, isTripleDouble))
@@ -265,7 +289,6 @@ class MarbleGame {
 		// 	.applyAfterDiceAbility(player, isTripleDouble, player.sampleAbility(EVENT_TYPE.THREE_DOUBLE, source), distance)
 
 		this.pushActions(actions)
-
 		return {
 			dice: [dice1, dice2],
 			isDouble: isDouble,
@@ -290,23 +313,20 @@ class MarbleGame {
 	// 	//this.onWalkMove(player.pos, dice, player.turn, new ActionSource(ACTION_SOURCE_TYPE.DICE))
 	// }
 
-	requestMove(turn:number,pos:number,source:ActionTrace,moveType:MOVETYPE){
-		let player=this.mediator.pOfTurn(turn)
+	requestMove(turn: number, pos: number, source: ActionTrace, moveType: MOVETYPE) {
+		let player = this.mediator.pOfTurn(turn)
 
 		// source.reset()
-		if(moveType===MOVETYPE.FORCE_WALK)
-			this.requestForceWalkMove(turn, pos, source)
-		if(moveType===MOVETYPE.WALK)
-			this.requestWalkMove(turn, pos, source)
-		if(moveType===MOVETYPE.TELEPORT || moveType===MOVETYPE.BLACKHOLE)
-			this.pushSingleAction(new TeleportAction(turn,pos,moveType),source)
-		if(moveType===MOVETYPE.PULL)
-			this.requestPullMove(turn, pos, source)
+		if (moveType === MOVETYPE.FORCE_WALK) this.requestForceWalkMove(turn, pos, source)
+		if (moveType === MOVETYPE.WALK) this.requestWalkMove(turn, pos, source)
+		if (moveType === MOVETYPE.TELEPORT || moveType === MOVETYPE.BLACKHOLE)
+			this.pushSingleAction(new TeleportAction(turn, pos, moveType), source)
+		if (moveType === MOVETYPE.PULL) this.requestPullMove(turn, pos, source)
 	}
-	createBlackHole(blackpos:number,whitepos:number){
-		this.clientInterface.createBlackHole(blackpos,whitepos)
+	createBlackHole(blackpos: number, whitepos: number) {
+		this.clientInterface.createBlackHole(blackpos, whitepos)
 		this.map.removeBlackHole()
-		this.map.setBlackHole(blackpos,whitepos)
+		this.map.setBlackHole(blackpos, whitepos)
 	}
 	/**
 	 * 중간에 다른 영향으로 멈출수 있음(주사위,세계여행)
@@ -359,43 +379,42 @@ class MarbleGame {
 	requestPullMove(moverTurn: number, newpos: number, source: ActionTrace) {
 		let pos = this.mediator.pOfTurn(moverTurn).pos
 		if (this.thisturn !== moverTurn) this.mediator.pOfTurn(moverTurn).clearPendingAction()
-	
+
 		source.reset().setName("pull")
 		this.pushSingleAction(
 			new MoveAction(ACTION_TYPE.FORCE_WALK_MOVE, moverTurn, pos, signedShortestDistance(pos, newpos), MOVETYPE.PULL),
 			source
 		)
 	}
-	checkWalkMoveBlock(newpos:number,player:MarblePlayer,source:ActionTrace,moveType:MOVETYPE):[number,boolean]{
-		let override=false
-		if(player.hasEffect("bubble_root")){
+	checkWalkMoveBlock(newpos: number, player: MarblePlayer, source: ActionTrace, moveType: MOVETYPE): number{
+		let override = false
+		if (player.hasEffect("bubble_root")) {
 			source.addTag("bubble_root")
-			this.clearPlayerEffect(player.turn,"bubble_root")
-			newpos= player.pos
+			this.clearPlayerEffect(player.turn, "bubble_root")
+			newpos = player.pos
 		}
 
 		newpos = this.checkPassedTiles(player.pos, newpos, player, source, moveType)
 		newpos = this.checkPassedPlayers(player.pos, newpos, player, source, moveType)
-		
-		override=this.checkBlackHole(player,newpos,source)
 
-		return [newpos,override]
+		//override = this.checkBlackHole(player, newpos, source)
+
+		return newpos
 	}
-	checkTeleportBlock(player:MarblePlayer,pos:number,source:ActionTrace):[number,boolean]{
-		let override=false
-		if(player.hasEffect("bubble_root")){
-			this.clearPlayerEffect(player.turn,"bubble_root")
+	checkTeleportBlock(player: MarblePlayer, pos: number, source: ActionTrace): number {
+		let override = false
+		if (player.hasEffect("bubble_root")) {
+			this.clearPlayerEffect(player.turn, "bubble_root")
 			source.addTag("bubble_root")
-			pos=player.pos
+			pos = player.pos
 		}
-		override=this.checkBlackHole(player,pos,source)
 
-		return [pos,override]
+		return pos
 	}
-	checkBlackHole(player:MarblePlayer,pos:number,source:ActionTrace):boolean{
-		if(this.map.blackholeTile!==pos) return false
+	checkBlackHole(player: MarblePlayer, pos: number, source: ActionTrace): boolean {
+		if (this.map.blackholeTile !== pos) return false
 
-		this.pushActions(new ArriveBlackholeActionBuilder(this,source,player,pos,this.map.whiteholeTile).build())
+		this.pushActions(new ArriveBlackholeActionBuilder(this, source, player, pos, this.map.whiteholeTile).build())
 		this.map.removeBlackHole()
 		return true
 	}
@@ -405,21 +424,17 @@ class MarbleGame {
 	 * @param distance
 	 * @param source
 	 */
-	walkMovePlayer(turn: number,from:number, distance: number, source: ActionTrace, movetype: MOVETYPE) {
-		let player=this.mediator.pOfTurn(turn)
-		
-		const [newpos,overrideArrivalEvent]=this.checkWalkMoveBlock(forwardBy(from,distance),player,source,movetype)
-		if(movetype===MOVETYPE.PULL)
-			distance=signedShortestDistance(from,newpos)
-		else
-			distance=forwardDistance(from,newpos)
+	walkMovePlayer(turn: number, from: number, distance: number, source: ActionTrace, movetype: MOVETYPE) {
+		let player = this.mediator.pOfTurn(turn)
 
-		this.clientInterface.walkMovePlayer(turn,from,distance)
+		const newpos= this.checkWalkMoveBlock(forwardBy(from, distance), player, source, movetype)
+		if (movetype === MOVETYPE.PULL) distance = signedShortestDistance(from, newpos)
+		else distance = forwardDistance(from, newpos)
+
+		this.clientInterface.walkMovePlayer(turn, from, distance)
 		player.moveBy(distance)
-		
-		if(!overrideArrivalEvent)
-			this.onPlayerMove(turn, newpos, source, movetype)
-		
+
+		this.onPlayerMove(player, newpos, source, movetype)
 
 		return distance
 		// this.arriveTile(newpos, turn, source)
@@ -431,35 +446,68 @@ class MarbleGame {
 	 * @param pos
 	 * @param source
 	 */
-	teleportPlayer(turn: number, pos: number, source: ActionTrace,movetype:MOVETYPE) {
-		let player=this.mediator.pOfTurn(turn)
-		const [newpos,overrideArrivalEvent]=this.checkTeleportBlock(player,pos,source)
+	teleportPlayer(turn: number, pos: number, source: ActionTrace, movetype: MOVETYPE) {
+		let player = this.mediator.pOfTurn(turn)
+		const newpos = this.checkTeleportBlock(player, pos, source)
 
 		player.moveTo(newpos)
 
 		if (this.thisturn !== turn) player.clearPendingAction()
-		this.clientInterface.teleportPlayer(turn, newpos,movetype)
+		this.clientInterface.teleportPlayer(turn, newpos, movetype)
 
-		if(!overrideArrivalEvent)
-			this.onPlayerMove(turn, newpos, source, movetype)
+		this.onPlayerMove(player, newpos, source, movetype)
 	}
 
-	onPlayerMove(turn:number, newpos:number, source:ActionTrace, movetype:MOVETYPE){
-		if(!this.mediator.checkPlayerMeet(turn, newpos, source, movetype))
-			this.pushSingleAction(new ArriveTileAction(turn, newpos), source)
-	}
+	onPlayerMove(player: MarblePlayer, newpos: number, source: ActionTrace, movetype: MOVETYPE) {
+		let action=new ArriveTileAction(player.turn, newpos)
+		this.pushSingleAction(action, source)
 
-	applyPlayerEffect(turn:number,effect:string){
+		//도착 안하면 arrivatileaction 취소
+		if (this.mediator.checkPlayerMeet(player.turn, newpos, source, movetype) || this.checkBlackHole(player, newpos, source))
+		{
+			this.actionStack.findById(action.getId())?.off()
+		}
+	}
+	attemptIslandEscape(paid: boolean, turn: number, source: ActionTrace, price: number) {
+		let dice1 = randInt(6) + 1
+		let dice2 = randInt(6) + 1
+		let player = this.mediator.pOfTurn(turn)
+		source.reset()
+		let data = {
+			dice: [dice1, dice2],
+			dc: false,
+			isDouble: dice1 === dice2,
+		}
+		if (paid) {
+			this.mediator.payMoneyToBank(player, price)
+		}
+		if (paid || dice1 === dice2) {
+			this.pushActions(new ThrowDiceActionBuilder(this, source, player, data, dice1 + dice2, false).build())
+			player.escapeIsland()
+		} else {
+			this.pushSingleAction(new RollDiceAction(turn, data), source)
+			player.stayOnIsland()
+			if (player.shouldEscapeIsland()) {
+				player.escapeIsland()
+			} else {
+				player.addPendingAction(
+					new AskIslandAction(turn, player.money > this.ISLAND_ESCAPE_MONEY, this.ISLAND_ESCAPE_MONEY)
+				)
+			}
+		}
+
+		this.clientInterface.throwDice(turn, data)
+	}
+	applyPlayerEffect(turn: number, effect: string) {
 		this.mediator.pOfTurn(turn).applyEffect(effect)
-		this.clientInterface.setPlayerEffect(turn,effect,true)
+		this.clientInterface.setPlayerEffect(turn, effect,this.mediator.pOfTurn(turn).pos, true)
 	}
-	clearPlayerEffect(turn:number,effect:string){
+	clearPlayerEffect(turn: number, effect: string) {
 		this.mediator.pOfTurn(turn).clearEffect(effect)
-		this.clientInterface.setPlayerEffect(turn,effect,false)
+		this.clientInterface.setPlayerEffect(turn, effect,0, false)
 	}
 	onPassStartTile(player: MarblePlayer, source: ActionTrace) {
-		this.pushActions(new ReceiveSalaryActionBuilder(this,source,player,this.SALARY).build()
-		)
+		this.pushActions(new ReceiveSalaryActionBuilder(this, source, player, this.SALARY).build())
 		player.onPassStartTile()
 	}
 
@@ -474,7 +522,7 @@ class MarbleGame {
 		for (const player of this.mediator.getPlayersBetween(oldpos, newpos)) {
 			console.log(mover.turn + "pass" + player.turn)
 			if (mover.turn === player.turn) continue
-			let block = this.mediator.onPlayerPassOther(mover, player, oldpos, newpos, source)
+			let block = this.mediator.onPlayerPassOther(mover, player, oldpos, newpos, source, movetype)
 			if (block) return player.pos
 		}
 		return newpos
@@ -603,26 +651,22 @@ class MarbleGame {
 
 	arriveIslandTile(moverTurn: number, source: ActionTrace) {
 		this.cancelDiceChances(moverTurn)
+		this.pushActions(new ArriveIslandActionBuilder(this, source, this.mediator.pOfTurn(moverTurn)).build())
 	}
 	arriveOlympicTile(moverTurn: number, source: ActionTrace) {
 		let targetTiles = this.map.getTiles(this.mediator.pOfTurn(moverTurn), TileFilter.MY_LAND())
 		if (targetTiles.length === 0) return
-		this.pushActions(new ArriveOlympicActionBuilder(this,source,this.mediator.pOfTurn(moverTurn),targetTiles).build()
+		this.pushActions(
+			new ArriveOlympicActionBuilder(this, source, this.mediator.pOfTurn(moverTurn), targetTiles).build()
 		)
 	}
 	arriveTravelTile(moverTurn: number, source: ActionTrace) {
 		this.cancelDiceChances(moverTurn)
 
 		let player = this.mediator.pOfTurn(moverTurn)
-		let abilities = player.sampleAbility(EVENT_TYPE.ARRIVE_TRAVEL, source)
-
 		source = source.reset().addTag("travel")
 
-		// let action = new ActionPackage(this, source)
-		// 	.addMain(new PrepareTravelAction(moverTurn))
-		// 	.applyAbilityArriveTravel(player, abilities)
-
-		this.pushActions(new ArriveTravelActionBuilder(this,source,player).build())
+		this.pushActions(new ArriveTravelActionBuilder(this, source, player).build())
 	}
 	requestTravel(action: PrepareTravelAction) {
 		let moverTurn = action.turn
@@ -636,7 +680,7 @@ class MarbleGame {
 		// 	.addMain(new MoveTileSelectionAction(moverTurn, targetTiles, "travel", MOVETYPE.WALK))
 		// 	.applyAbilityPrepareTravel(player)
 
-		this.pushActions(new PrepareTravelActionBuilder(this,source,player,targetTiles).build())
+		this.pushActions(new PrepareTravelActionBuilder(this, source, player, targetTiles).build())
 	}
 	arriveStartTile(moverTurn: number, source: ActionTrace) {
 		let targetTiles = this.map.getTiles(
@@ -710,9 +754,14 @@ class MarbleGame {
 	}
 	onSelectOlympicPosition(turn: number, pos: number, source: ActionTrace) {
 		this.map.setOlympic(pos)
-		if(source.useActionAndAbility(ACTION_TYPE.ARRIVE_TILE,ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL)){
-			this.pushSingleAction(new AutoBuildAction(turn,pos,[BUILDING.LANDMARK]),
-			source.setAbilityName(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL))
+		if (
+			source.useActionAndAbility(ACTION_TYPE.ARRIVE_TILE, ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL) &&
+			this.map.tileAt(pos) instanceof LandTile
+		) {
+			this.pushSingleAction(
+				new AutoBuildAction(turn, pos, [BUILDING.LANDMARK]),
+				source.setAbilityName(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL)
+			)
 		}
 	}
 
@@ -743,10 +792,23 @@ class MarbleGame {
 
 		this.setLandOwner(tile, this.mediator.getRandomEnemy(turn))
 	}
-	onSelectBlackholePosition(turn:number,pos:number,action:TileSelectionAction){
-		if(action instanceof BlackholeTileSelectionAction) 
-			this.pushActions(new CreateBlackholeActionBuilder(this,action.source,this.mediator.pOfTurn(turn),pos,action.whitehole).build())
-			// this.pushSingleAction(new CreateBlackholeAction(turn,pos,action.whitehole),action.source)
+	onSelectBlackholePosition(turn: number, pos: number, action: TileSelectionAction) {
+		if (action instanceof BlackholeTileSelectionAction)
+			this.pushActions(
+				new CreateBlackholeActionBuilder(
+					this,
+					action.source,
+					this.mediator.pOfTurn(turn),
+					pos,
+					action.whitehole
+				).build()
+			)
+		// this.pushSingleAction(new CreateBlackholeAction(turn,pos,action.whitehole),action.source)
+	}
+	onSelectBuyoutPosition(turn: number, pos: number, action: TileSelectionAction) {
+		let tile = this.map.buildableTileAt(pos)
+		if (!tile) return
+		this.mediator.claimBuyOut(turn,tile,action.source)
 	}
 	attackTile(action: TileAttackAction) {
 		if (action.name === CARD_NAME.SELLOFF) {
@@ -793,7 +855,7 @@ class MarbleGame {
 			if (p.turn === invoker) continue
 
 			this.pushActions(
-				new PullActionBuilder(this,action.source,this.mediator.pOfTurn(invoker),action.pos).setDefender(p).build()
+				new PullActionBuilder(this, action.source, this.mediator.pOfTurn(invoker), action.pos).setDefender(p).build()
 			)
 		}
 	}
@@ -812,7 +874,7 @@ class MarbleGame {
 
 	executeAbility(abilities: { name: ABILITY_NAME; turn: number }[]) {
 		for (const ab of abilities) {
-			if(ab.name===ABILITY_NAME.NONE) continue
+			if (ab.name === ABILITY_NAME.NONE) continue
 			this.mediator.executeAbility(ab.turn, ab.name)
 			let data = this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
 			if (!data) continue
@@ -918,8 +980,8 @@ class MarbleGame {
 	 * @param source
 	 * @returns
 	 */
-	autoBuild(turn:number, pos: number, buildings: BUILDING[], source: ActionTrace) {
-		let player=this.mediator.pOfTurn(turn)
+	autoBuild(turn: number, pos: number, buildings: BUILDING[], source: ActionTrace) {
+		let player = this.mediator.pOfTurn(turn)
 
 		if (buildings.length === 0) return
 		let tile = this.map.tileAt(pos)
@@ -932,18 +994,22 @@ class MarbleGame {
 	}
 
 	onBuild(player: MarblePlayer, tile: BuildableTile, builds: BUILDING[], source: ActionTrace, isAuto: boolean) {
-		this.pushActions(new OnBuildActionBuilder(this,source,player,tile,builds,isAuto).build())
+		let action=new OnBuildActionBuilder(this, source, player, tile, builds, isAuto)
+		this.pushActions(action.build())
+		if(!action.indicateMainBuild) return
+		this.clientInterface.build(tile.position,builds,player.turn)
+        this.clientInterface.updateToll(tile.position,tile.getDisplayedToll(),tile.getMultiplier())
 	}
-	addMultiplierToTile(pos:number,count:number){
-		this.map.addSingleTileMultiplier(pos,count)
+	addMultiplierToTile(pos: number, count: number) {
+		this.map.addSingleTileMultiplier(pos, count)
 	}
-	stealMultiplier(invoker:number,pos:number,dest:number){
-		this.map.stealMultiplier(this.mediator.pOfTurn(invoker),pos,dest)
+	stealMultiplier(invoker: number, pos: number, dest: number) {
+		this.map.stealMultiplier(this.mediator.pOfTurn(invoker), pos, dest)
 	}
-	modifyLand(pos:number,type:string,val:number){
-		if(type==="lock"){
+	modifyLand(pos: number, type: string, val: number) {
+		if (type === "lock") {
 			this.map.setMultiplierLock(pos)
-			this.clientInterface.modifyLand(pos,type,val)
+			this.clientInterface.modifyLand(pos, type, val)
 		}
 	}
 	attemptDirectBuyout(buyer: number, pos: number, price: number, source: ActionTrace) {
@@ -956,6 +1022,9 @@ class MarbleGame {
 	// }
 	landBuyOut(buyer: MarblePlayer, landOwner: MarblePlayer, tile: BuildableTile) {
 		this.setLandOwner(tile, buyer)
+	}
+	getOtherPlayerPositions(invoker:MarblePlayer):number[]{
+		return this.mediator.getOtherPlayers(invoker.turn).map(p=>p.pos)
 	}
 	/**
 	 *

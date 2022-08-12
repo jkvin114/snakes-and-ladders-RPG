@@ -241,7 +241,7 @@ html{
     vertical-align: bottom;
     
   }
-  .window-content-text1,.window-content-text2,.window-content-text-nobackground{
+  .window-content-text1,.window-content-text2,.window-content-text-nobackground,.island-window-content-text-nobackground{
     display: inline-block;
     color:  rgb(82, 57, 9);
     font-size: 12px;
@@ -250,6 +250,35 @@ html{
     padding-right: 13px;
     margin: 5px;
     border-radius: 7px
+  }
+  .island-window-option{
+    user-select: none;
+    cursor: pointer;
+    display: inline-block;
+    box-shadow: 0 0 3px 1px black;
+    background: linear-gradient(225deg,#f6de7b,#edc058);
+    border: 4px solid #a46d04;
+    border-radius: 6px;
+    color:#7c5913;
+    position: relative;
+    padding: 5px;
+    margin: 10px;
+  }
+  .island-window-option.disabled{
+    filter: brightness(0.4);
+  }
+  .island-window-option > img{
+    width: 50px;
+  }
+  #island-window-escape-desc{
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    font-size: 12px;
+    position: absolute;
+    bottom: 20px;
+    width: 50px;
+    
   }
   .window-content-text1{
     background-color: #e9d49a;

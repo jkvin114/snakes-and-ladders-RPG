@@ -468,6 +468,7 @@ class MatchInterface {
 		this.match = match
 		this.gametype=gametype
 		if(this.gametype==='marble') this.setAsMarble()
+		else $("#marble-item").hide()
 		this.switch_player = $(".toplayer").toArray()
 		this.switch_ai = $(".toai").toArray()
 		this.playercard = $(".connected").toArray()
@@ -505,18 +506,25 @@ class MatchInterface {
 					this.marbleItemState.push({
 						selected:false,locked:false,code:item.code
 					})
-					str+=`
-					<div class="marble-item" data-cost=${item.cost} data-code=${item.code}>
-						<div class="marble-item-header">
-						<div class='marble-item-name ${item.name.length>7?"small":""}'>${item.name}</div>
+					let level="common"
+					if(item.cost>1) level="rare"
+					if(item.cost>3) level="epic"
+					if(item.cost>=5) level="legendary"
+					if(item.cost>7) level="ancient"
 
-							<div class="marble-item-status">
-								<img src="res/img/ui/confirm.png" class="marble-item-select">
-								<img src="res/img/ui/lock.png" class="marble-item-lock">
+					str+=`
+					<div class="marble-item ${level}" data-cost=${item.cost} data-code=${item.code}>
+						<div>
+							<div class="marble-item-header">
+								<div class='marble-item-name ${item.name.length>7?"small":""}'>${item.name}</div>
+								<div class="marble-item-status">
+									<img src="res/img/ui/confirm.png" class="marble-item-select">
+									<img src="res/img/ui/lock.png" class="marble-item-lock">
+								</div>
 							</div>
-						</div>
-						<div class=marble-item-text>
-							${item.desc}
+							<div class=marble-item-text>
+								${item.desc}
+							</div>
 						</div>
 					</div>`
 				}
@@ -524,19 +532,20 @@ class MatchInterface {
 
 				$(".marble-item").click(function(){
 					let code=$(this).data("code")
-					if(!MATCH.ui.marbleItemState[code].selected && !MATCH.ui.marbleItemState[code].locked){
+					let state=MATCH.ui.marbleItemState[code]
+					if(!state.selected && !state.locked){
 						$(this).addClass("selected")
-						MATCH.ui.marbleItemState[code].selected=true
+						state.selected=true
 					}
-					else if(MATCH.ui.marbleItemState[code].selected && !MATCH.ui.marbleItemState[code].locked){
+					else if(state.selected && !state.locked){
 						$(this).removeClass("selected")
 						$(this).addClass("locked")
-						MATCH.ui.marbleItemState[code].locked=true
-						MATCH.ui.marbleItemState[code].selected=false
+						state.locked=true
+						state.selected=false
 					}
 					else{
 						$(this).removeClass("locked")
-						MATCH.ui.marbleItemState[code].locked=false
+						state.locked=false
 					}
 				})
 
@@ -948,12 +957,14 @@ $(document).ready(function () {
 		$("#settingpage").show()
 	})
 	$("#settingpage").hide()
-
+	$("#settingpage").hide()
 	$("#back").click(function () {
 		ServerConnection.hideTeamToGuest()
 		$("#TeamSelectpage").hide()
 		$("#Hostingpage").show()
 	})
+	$("#marble-item-page").hide()	
+	// $("#marble-item").hide()
 
 
 	$("#marble-item-close").click(function () {

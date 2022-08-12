@@ -63,7 +63,24 @@ export enum ABILITY_NAME {
 	THROW_TO_LANDMARK_ON_ENEMY_ARRIVE_TO_ME="wrong_guidebook",
 	ADD_MULTIPLIER_ON_CREATE_BLACKHOLE="add_multiplier_on_blackhole",
 	STEAL_MULTIPLIER="blueprint",
-	STEAL_MULTIPLIER_AND_LOCK="blueprint_and_lock"
+	STEAL_MULTIPLIER_AND_LOCK="blueprint_and_lock",
+	FREE_AND_TRAVEL_ON_ENEMY_AND_MY_LAND="healing_everywhere",
+	STOP_ENEMY_ON_MY_LANDMARK="police_car",
+
+	//phase5
+	INSTANT_ESCAPE_ISLAND="instant_escape_island",
+	LINE_BUYOUT_ON_BUILD="red_sticker",
+	LINE_LANDMARK_ON_BUILD="newtown",
+
+	LINE_MOVE_ON_ARRIVE_MY_LAND="line_trampoline",
+	MY_LAND_MOVE_ON_ARRIVE_MY_LAND="my_land_trampoline",
+	MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND="enemy_land_trampoline",
+	MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND="ninja_scroll",
+	UPGRADE_LAND_AND_MULTIPLIER_ON_BUILD="upgrade_construction_tool",
+	MOVE_IN_PLACE_ON_BUILD="in_place_construction_tool",
+	DICE_CHANCE_ON_BUILD_LANDMARK="dice_chance_on_build_landmark",
+	MY_LAND_MOVE_ON_BUILD_LANDMARK="my_land_move_on_build_landmark",
+	LINE_MOVE_ON_TRIPLE_DOUBLE="teleport_invitation",
 
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
@@ -211,19 +228,19 @@ ABILITY_REGISTRY.set(
 
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING,
-	new DiceChanceAbility(ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING)
+	new Ability(ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING)
 	.on(EVENT_TYPE.ENEMY_ARRIVE_MY_LAND)
 	.desc("상대가 내 땅에서 힐링 여행권 발동시 $c% 확률로 따라감")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE,
-	new DiceChanceAbility(ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE)
+	new Ability(ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE)
 	.on(EVENT_TYPE.THREE_DOUBLE)
 	.desc("$c% 확률로 더블 3회시 세계여행")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL,
-	new DiceChanceAbility(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL)
+	new Ability(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL)
 	.on(EVENT_TYPE.TRAVEL_START)
 	.desc("세계여행 도착시 $c% 확률로 즉시 랜드마크 건설 가능")
 )
@@ -239,7 +256,7 @@ ABILITY_REGISTRY.set(
 	new DefenceAbility(ABILITY_NAME.IGNORE_ATTACK_DEFEND)
 	.on(EVENT_TYPE.DO_ATTACK)
 	.on(EVENT_TYPE.PULL_ENEMY)
-	.desc("$c% 확률로 상대 방어 무력화")
+	.desc("$c% 확률로 상대 공격/끌어당김 방어 무력화")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.IGNORE_ANGEL,
@@ -338,5 +355,66 @@ ABILITY_REGISTRY.set(
 	new Ability(ABILITY_NAME.STEAL_MULTIPLIER_AND_LOCK)
 	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
 	.desc("상대지역 도착시 $c% 확률료 배수를 내 땅으로 이전 후 배수잠금 (기본통행료만 지불)")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_AND_MY_LAND,
+	new MoveAbilty(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_AND_MY_LAND)
+	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("내 땅 혹은 상대 땅 도착시 $c% 확률로 통행료 면제 후 세계여행")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK,
+	new Ability(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK)
+	.on(EVENT_TYPE.ENEMY_PASS_ME)
+	.desc("내 랜드마크에 서있을시 $c% 확률로 지나가는 상대를 붙잡음")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.INSTANT_ESCAPE_ISLAND,
+	new DiceChanceAbility(ABILITY_NAME.INSTANT_ESCAPE_ISLAND)
+	.on(EVENT_TYPE.ARRIVE_ISLAND)
+	.desc("무인도 도착시 $c% 확률로 즉시 주사위 굴려 무인도 탈출 (더블효과 없음)")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.LINE_BUYOUT_ON_BUILD,
+	new Ability(ABILITY_NAME.LINE_BUYOUT_ON_BUILD)
+	.on(EVENT_TYPE.BUILD)
+	.desc("건설시 $c% 확률로 같은 라인의 땅 인수가능")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.LINE_LANDMARK_ON_BUILD,
+	new Ability(ABILITY_NAME.LINE_LANDMARK_ON_BUILD)
+	.on(EVENT_TYPE.BUILD)
+	.desc("건설시(관광지제외) $c% 확률로 같은 라인의 내 땅 모두 랜드마크로 업그레이드")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.LINE_MOVE_ON_ARRIVE_MY_LAND,
+	new MoveAbilty(ABILITY_NAME.LINE_MOVE_ON_ARRIVE_MY_LAND)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("내 땅 도착시 $c% 확률로 라인이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MY_LAND_MOVE_ON_ARRIVE_MY_LAND,
+	new MoveAbilty(ABILITY_NAME.MY_LAND_MOVE_ON_ARRIVE_MY_LAND)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("내 땅 도착시 $c% 확률로 내 땅 이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND,
+	new MoveAbilty(ABILITY_NAME.MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND)
+	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
+	.desc("상대 땅 도착시 $c% 확률로 통행료 면제 후 내 땅 이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND,
+	new MoveAbilty(ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("내 땅 도착시 $c% 확률로 원하는 상대에게 이동 후 보유돈 $v% 강탈/공격카드(정전,매각,체인지) 발동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.LINE_MOVE_ON_TRIPLE_DOUBLE,
+	new MoveAbilty(ABILITY_NAME.LINE_MOVE_ON_TRIPLE_DOUBLE)
+	.on(EVENT_TYPE.THREE_DOUBLE)
+	.desc("더블 3회시 $c% 확률로 라인이동")
 )
 export { ABILITY_REGISTRY }

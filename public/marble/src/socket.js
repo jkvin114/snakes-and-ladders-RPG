@@ -63,10 +63,14 @@ export function openConnection(isInitial){
 		console.log(tiles)
 		GAME.scene.indicatePull(tiles)
 	})
-	socket.on("server:player_effect", function (turn,effect,status) {
+	socket.on("server:buyout", function () {
+        console.log("buyout")
+		GAME.playsound("buyout")
+	})
+	socket.on("server:player_effect", function (turn,effect,pos,status) {
         console.log("player_effect")
-		console.log(turn,effect,status)
-		GAME.playerEffect(turn,effect,status)
+		console.log(turn,effect,pos,status)
+		GAME.playerEffect(turn,effect,pos,status)
 	})
     socket.on("server:choose_build", function (pos,player,builds,buildsHave,discount,avaliableMoney) {
 		if(!checkTurn(player)) return
@@ -76,15 +80,21 @@ export function openConnection(isInitial){
 		GAME.chooseBuild(pos,builds,buildsHave,discount,avaliableMoney)
 	})
     socket.on("server:ask_buyout", function (player,pos,price,originalPrice) {
-		if(!checkTurn(player)) return
+		
 		console.log(player,pos,price,originalPrice)
 		GAME.chooseBuyout(player,pos,price,originalPrice)
 	})
-    socket.on("server:pay", function (payer,receiver,amount) {
+	socket.on("server:ask_island", function (turn,canEscape,escapePrice) {
+		if(!checkTurn(turn)) return
+
+		console.log(turn,canEscape,escapePrice)
+		GAME.ui.askIsland(turn,canEscape,escapePrice)
+	})
+    socket.on("server:pay", function (payer,receiver,amount,type) {
         console.log("pay")
 		if(payer===receiver) return
-		console.log(payer,receiver,amount)
-		GAME.payMoney(payer,receiver,amount)
+		console.log(payer,receiver,amount,type)
+		GAME.payMoney(payer,receiver,amount,type)
 	})
     socket.on("server:build", function (pos,builds,player) {
         console.log("build")
@@ -247,5 +257,8 @@ export function openConnection(isInitial){
 	}
 	GAME.connection.selectGodHandSpecial=function(result){
 		socket.emit(PREFIX+"select_godhand_special",GAME.myTurn,result)
+	}
+	GAME.connection.islandChooseComplete=function(isescape){
+		socket.emit(PREFIX+"select_island",GAME.myTurn,isescape)
 	}
 }

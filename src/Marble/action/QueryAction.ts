@@ -171,3 +171,12 @@ export class AskGodHandSpecialAction extends QueryAction{
 		this.canLiftTile=canLiftTile
 	}
 }
+export class AskIslandAction extends QueryAction{
+	canEscape:boolean
+	escapePrice:number
+	constructor(turn: number,canEscape:boolean,escapePrice:number) {
+		super(ACTION_TYPE.CHOOSE_ISLAND,turn)
+		this.canEscape=canEscape
+		this.escapePrice=escapePrice
+	}
+}

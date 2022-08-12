@@ -22,6 +22,7 @@ class MarblePlayer{
     oddeven:number
     cycleLevel:number
     num:number  //index of this player in player array
+    private turnsOnIsland:number
     private pendingActions:Action[]
     private savedDefenceCardAbility:ABILITY_NAME
     private abilityStorage:AbilityStorage
@@ -47,6 +48,7 @@ class MarblePlayer{
         this.savedDefenceCardAbility=ABILITY_NAME.NONE
         this.abilityStorage=new AbilityStorage()
         this.statusEffect=new Set<string>()
+        this.turnsOnIsland=0
     }
     
     addPendingAction(action:Action){
@@ -99,6 +101,15 @@ class MarblePlayer{
     onTripleDouble(){
         this.doubles=0
     }
+    stayOnIsland(){
+        this.turnsOnIsland+=1
+    }
+    escapeIsland(){
+        this.turnsOnIsland=0
+    }
+    shouldEscapeIsland(){
+        return this.turnsOnIsland >=2
+    }
     resetDoubleCount(){
         this.doubles=0
     }
@@ -149,6 +160,9 @@ class MarblePlayer{
     }
     sampleAbility(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValues>{
         return this.abilityStorage.getAbilityForEvent(event,source)
+    }
+    getAbilityValueAmount(ability:ABILITY_NAME){
+        return this.abilityStorage.getAbilityValueAmount(ability)
     }
     registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityValues][]){
         this.abilityStorage.registerPermanent(...abilities)

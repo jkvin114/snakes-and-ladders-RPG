@@ -81,6 +81,15 @@ export class ActionTrace {
         
         return this.prev.useActionAndAbility(action,ability)
     }
+    hasAction(action:ACTION_TYPE):boolean{
+        if(this.actionType===action) {
+            return true
+        }
+        if(!this.prev)
+            return false
+
+        return this.prev.hasAction(action)
+    }
     hasActionAndAbility(action:ACTION_TYPE,ability:ABILITY_NAME):boolean{
         if(this.actionType===action && this.abilityName===ability) {
             return true

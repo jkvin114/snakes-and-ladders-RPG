@@ -253,6 +253,7 @@ class LandTile extends BuildableTile{
 
         return list
     }
+    
     isLandMark(): boolean {
         return this.landMark
     }

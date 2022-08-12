@@ -9,7 +9,7 @@ html{
       background-color: rgb(36, 36, 36);
       color: white;
         text-align: center;
-
+    overflow: hidden;
   }
   html,body{
     height:99%;
@@ -730,7 +730,7 @@ input:checked + .slider {
   /* background-color: rgb(34, 34, 34); */
   background: none;
   color: white;
-  position: absolute;
+  position: fixed;
   z-index: inherit+1;
   cursor: pointer;
 
@@ -739,27 +739,34 @@ input:checked + .slider {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: center;
+  align-items:baseline;
   padding: 10px;
   flex-wrap: wrap;
 }
 .marble-item{
-  border: 2px solid white;
-  border-radius: 6px;
-  margin: 5px;
-  padding: 5px;
+  /* outline: 4px solid white; */
+  border-radius: 15px;
+  margin: 10px;
+  padding: 6px;
 
-  height: 100px;
+  /* height: 100px; */
   word-break: keep-all;
   width: 150px;
   position: relative;
   user-select: none;
   cursor: pointer;
-  transition: all 1s;
+  transition: all 0.3s;
   /* flex-grow: 1; */
+  box-shadow: 0 0 3px 1px rgb(54, 54, 54);
+}
+.marble-item > div{
+  border-radius: 10px;
+  padding: 5px;    
+  height: max-content;
+  box-shadow: inset 0 0 3px 1px rgb(54, 54, 54);
 }
 .marble-item:hover{
-  filter: brightness(0.9);
+  /* filter: brightness(0.7); */
 }
 .marble-item-lock,.marble-item-select{
   position: absolute;
@@ -769,13 +776,55 @@ input:checked + .slider {
   width: 25px;
   display: inline;
   vertical-align: middle;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
 }
 .marble-item.selected{
-  background-color: #e11900;
+  /* outline: 4px solid #e11900; */
+  outline: 3px solid white;
 }
 .marble-item.locked{
-  background-color: #7200bf;
+  /* outline: 3px solid #7200bf; */
+  outline: 3px solid yellow;
 }
+.marble-item.common{
+  background: linear-gradient(45deg,#eaeaea, #d2d2d2);
+  color: black;
+}
+.marble-item.rare{
+  background: linear-gradient( 45deg,  rgba(123,216,96,1) 39.2%, rgba(255,255,255,1) 156.2% );
+  color: black;
+
+}
+.marble-item.epic{
+  background-image: linear-gradient( 45deg,rgba(17,130,193,1) 0%, rgba(67,166,238,1) 49%, rgba(126,203,244,1) 100% );
+  color: black;
+
+}
+.marble-item.legendary{
+  background-image: linear-gradient( 45deg,  rgba(116,18,203,1), rgb(193, 46, 230));
+}
+.marble-item.ancient{
+  background: linear-gradient(45deg,#fbfceb 0%,#f7c109 40%,#f9ec6a 100%);;
+  color: black;
+
+}
+.marble-item.common > div{
+  background: linear-gradient(225deg,#ffffff, #e2e2e2);
+}
+.marble-item.rare > div{
+  background: linear-gradient( 225deg,  rgba(123,216,96,1) 39.2%, rgba(255,255,255,1) 156.2% );
+}
+.marble-item.epic > div{
+  background-image: linear-gradient( 225deg,rgba(17,130,193,1) 0%, rgba(67,166,238,1) 49%, rgba(126,203,244,1) 100% );
+}
+.marble-item.legendary > div{
+  background-image: linear-gradient( 225deg,  rgba(116,18,203,1), rgb(193, 46, 230));
+}
+.marble-item.ancient > div{
+  background: linear-gradient(225deg,#fbfceb 0%,#f7c109 40%,#f9ec6a 100%);;
+}
+
 .marble-item.locked .marble-item-lock{
   visibility: visible;
 }
@@ -789,11 +838,19 @@ input:checked + .slider {
 }
 .marble-item-name{
   font-size: 15px;
-  font-family: "cookierun";
+  font-family: "Cookierun Black";
   text-align: left;
+  -webkit-text-stroke: 1px #000;
+
+  /* text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;   */
+    color: white;
 }
 .marble-item-name.small{
-  font-size: 13px;
+  font-size: 12px;
 }
 .marble-item-text{
   font-size: 10px;

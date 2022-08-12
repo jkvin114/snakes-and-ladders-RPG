@@ -69,7 +69,12 @@ export class AbilityStorage {
         // console.log(validAblities)
         return validAblities
     }
+    getAbilityValueAmount(ability:ABILITY_NAME):number{
+        let ab=this.abilityValues.get(ability)
+        if(ab!=null) return ab.getValue()
 
+        return 0
+    }
     addTemporary(ability:ABILITY_NAME,value:AbilityValues){
         if(ability===ABILITY_NAME.NONE) return
 

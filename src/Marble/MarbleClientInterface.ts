@@ -38,7 +38,8 @@ const SERVER_EVENTS={
     PULL:prefix+"pull",
     PLAYER_EFFECT:prefix+"player_effect",
     BLACKHOLE:prefix+"blackhole",
-    MODIFY_LAND:prefix+"modify_land"
+    MODIFY_LAND:prefix+"modify_land",
+    ASK_ISLAND:prefix+"ask_island",
 
 }
 
@@ -61,7 +62,7 @@ export class MarbleClientInterface {
     showDiceBtn(player:number,data:any){
         this.callback(this.rname, SERVER_EVENTS.SHOW_DICE, player,data)
     }
-    throwDice(player:number,data:any){
+    throwDice(player:number,data:ServerPayloadInterface.ThrowDiceData){
         this.callback(this.rname,SERVER_EVENTS.THROW_DICE, player,data)
     }
     walkMovePlayer(player:number,from:number,distance:number){
@@ -91,6 +92,9 @@ export class MarbleClientInterface {
     askGodHandSpecial(turn:number,canLiftTile:boolean){
         this.callback(this.rname,SERVER_EVENTS.ASK_GODHAND_SPECIAL,turn,canLiftTile)
     }
+    askIsland(turn:number,canEscape:boolean,escapePrice:number){
+        this.callback(this.rname,SERVER_EVENTS.ASK_ISLAND,turn,canEscape,escapePrice)
+    }
     setLandOwner(pos:number,player:number){
         this.callback(this.rname, SERVER_EVENTS.SET_LANDOWNER, pos,player)
     }
@@ -112,8 +116,8 @@ export class MarbleClientInterface {
     indicatePull(tiles:number[]){
         this.callback(this.rname, SERVER_EVENTS.PULL, tiles)
     }
-    setPlayerEffect(turn:number,effect:string,status:boolean){
-        this.callback(this.rname,SERVER_EVENTS.PLAYER_EFFECT,turn,effect,status)
+    setPlayerEffect(turn:number,effect:string,pos:number,status:boolean){
+        this.callback(this.rname,SERVER_EVENTS.PLAYER_EFFECT,turn,effect,pos,status)
     }
     createBlackHole(blackpos:number,whitepos:number){
         this.callback(this.rname,SERVER_EVENTS.BLACKHOLE,blackpos,whitepos)
@@ -127,9 +131,9 @@ export class MarbleClientInterface {
      * @param receiver -1 if it pays to the bank
      * @param amount 
      */
-    payMoney(payer:number,receiver:number,amount:number)
+    payMoney(payer:number,receiver:number,amount:number,type:string)
     {
-        this.callback(this.rname, SERVER_EVENTS.PAY, payer,receiver,amount)
+        this.callback(this.rname, SERVER_EVENTS.PAY, payer,receiver,amount,type)
     }
     build(pos:number,builds:BUILDING[],player:number){
         this.callback(this.rname, SERVER_EVENTS.BUILD, pos,builds,player)
@@ -158,6 +162,7 @@ export class MarbleClientInterface {
     setTileState(change:ServerPayloadInterface.tileStateChange){
         this.callback(this.rname, SERVER_EVENTS.TILE_STATE_UPDATE, change)
     }
+    
     bankrupt(player:number)
     {
         this.callback(this.rname, SERVER_EVENTS.BANKRUPT, player)

@@ -3,7 +3,7 @@ import { openConnection } from "./socket.js"
 import { GameInterface } from "./interface.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 export const SOLOPLAY=true
-
+const BGM=true
 export var GAME
 class Game{
     constructor(){
@@ -22,6 +22,11 @@ class Game{
         this.ui=new GameInterface(this)
         this.isTeam=false
         this.abilities=new Map()
+        this.sounds = new Map()
+        if (Game._instance) {
+			return Game._instance
+		}
+		Game._instance = this
     }
     turnToPlayerNum(turn){
         for(let i=0;i<this.playerCount;++i){
@@ -48,13 +53,39 @@ class Game{
         this.ui.init(setting,turn)
         console.log(setting)
         requestMap()
+        const sounds = [
+            "ability","buildwindow","card","double","finish","landmark","multiplier","myturn","pull","step","teleport","toll","dice",
+            "monopolyalert","background","money","defencecard","buyout"
+        ]
+    
+        for (const sound of sounds) {
+            this.sounds.set(
+                sound,
+                new Howl({
+                    src: ["res/sound/" + sound + ".mp3"]
+                })
+            )
+        }
     }
     onReady(){
         console.log("game ready")
         this.connection.gameReady()
         this.scene.startRenderInterval()
+        if(BGM){
+            document.getElementById("bgm").loop=true
+            document.getElementById("bgm").load()
+            document.getElementById("bgm").play()
+        }
+    }
+    playsound(sound){
+        let s=this.sounds.get(sound)
+        // console.log(s)
+        if(!s) return
+        s.play()
+        
     }
     turnStart(player){
+        if(SOLOPLAY || this.myTurn===player) this.playsound("myturn")
         this.ui.onTurnStart(player)
         this.scene.focusPlayer(this.turnToPlayerNum(player))
     }
@@ -87,16 +118,18 @@ class Game{
         this.scene.movePlayerThrough(list, this.turnToPlayerNum(player),(turn)=>this.moveComplete(turn))
     }
     playerTeleport(player,pos,movetype){
+        this.playsound("teleport")
         this.scene.focusPlayer(this.turnToPlayerNum(player))
         if(movetype===4)
             this.scene.playerBlackholeMove(this.turnToPlayerNum(player),pos)
         else
             this.scene.teleportPlayer(this.turnToPlayerNum(player),pos,"levitate")
     }
-    playerEffect(turn,effect,status){
-        this.scene.playerEffect(this.turnToPlayerNum(turn),effect,status)
+    playerEffect(turn,effect,pos,status){
+        this.scene.playerEffect(this.turnToPlayerNum(turn),effect,pos,status)
     }
-    payMoney(payer,receiver,amount){
+    payMoney(payer,receiver,amount,type){
+        if(type==="toll" && amount > 200*10000) this.playsound("toll")
         let payerui=payer
         if(payer!==-1) payerui=this.ui.turnToUi.get(payer)
 
@@ -111,11 +144,15 @@ class Game{
     }
     chooseBuild(pos,builds,buildsHave,discount,avaliableMoney){
         let landname=this.scene.getNameAt(pos)
+        
         if(builds.length===0) this.buildChooseComplete([])
-        else
-        this.ui.showBuildSelection(landname,builds,buildsHave,discount,avaliableMoney,()=>{
-            this.buildChooseComplete([])
-        })
+        else{
+            this.playsound("buildwindow")
+            this.ui.showBuildSelection(landname,builds,buildsHave,discount,avaliableMoney,()=>{
+                this.buildChooseComplete([])
+            })
+        }
+        
     }
     askLoan(amount){
         this.ui.showLoanSelection(amount)
@@ -124,12 +161,16 @@ class Game{
         // console.log(builds)
         this.connection.chooseBuild(builds)
     }
+    islandChooseComplete(isescape){
+        this.connection.islandChooseComplete(isescape)
+    }
     async build(pos,builds,player){
         for(const b of builds){
             if((b===1 && builds.length===1)||b===6){
                 this.scene.addLandFlag(pos,player)
             }
             else if(b===5){
+                this.playsound("landmark")
                 this.scene.addLandMark(pos,player)
             }
             else{
@@ -159,6 +200,7 @@ class Game{
         this.scene.setToll(pos,toll,mul)
     }
     setLandOwner(pos,player){
+        // this.playsound("buyout")
         this.scene.setLandOwner(pos,player)
     }
     setOlympic(pos){
@@ -230,6 +272,7 @@ class Game{
         this.scene.tileReset()
     }
     obtainCard(player,name,level,type){
+        this.playsound("card")
         this.ui.obtainCard(name,level,type,this.myTurn===player)
     }
     finishObtainCard(result){
@@ -240,6 +283,7 @@ class Game{
     }
     indicateAbility(turn,name,itemName,desc,isblocked){
     //    if(itemName==="") return
+        
         this.ui.indicateAbility(turn,name,itemName,desc,isblocked)
     }
     addPlayers(){
@@ -248,6 +292,7 @@ class Game{
     moveComplete(turn){
     }
     alertMonopoly(player,type,pos){
+        this.playsound("monopolyalert")
         this.ui.largeText(MONOPOLY[type]+" 경고!",false)
         this.scene.showTileHighlight(pos,'red')
         setTimeout(()=>{
@@ -259,9 +304,11 @@ class Game{
         this.ui.onBankrupt(turn)
     }
     gameoverBankrupt(winner){   
+        this.playsound("finish")
         this.ui.largeText((winner+1)+"P 파산 승리",false)
     }
     gameoverMonopoly(winner,monopoly){
+        this.playsound("finish")
         this.ui.largeText((winner+1)+"P "+MONOPOLY[monopoly]+"으로 승리",false)
 	}
     onQuit(){
@@ -419,3 +466,7 @@ function requestMap(){
     });
 }
 
+function registerSounds() {
+	// Howler.volume(VOLUME)
+	
+}

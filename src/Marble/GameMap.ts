@@ -7,7 +7,7 @@ import { BuildableTile } from "./tile/BuildableTile"
 import { LandTile } from "./tile/LandTile"
 import { SightTile } from "./tile/SightTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
-import { TileFilter } from "./TileFilter"
+import { TileFilter } from "./tile/TileFilter"
 import { arrayOf, cl, countIterator, countList, distance, MAP_SIZE, pos2Line, range, SAME_LINE_TILES } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/marble/godhand_map.json")
@@ -207,7 +207,7 @@ class MarbleGameMap{
             if(filter.landTileOnly && !(t instanceof LandTile)) continue
             if(filter.landmarkOnly && (!(t instanceof LandTile) || (t instanceof LandTile && !t.landMark))) continue
             if(filter.excludeLandMark && (t instanceof LandTile && t.landMark)) continue
-            if(filter.canBuyOut && !t.canBuyOut()) continue
+            if(filter.canBuyOut && (!t.canBuyOut())) continue
             if(filter.owners.length>0 && !filter.owners.includes(t.owner)) continue
             if(filter.myLandOnly && t.owner!==source.turn) continue
             if(filter.ownedOnly && !t.owned()) continue
@@ -252,9 +252,7 @@ class MarbleGameMap{
     buildAt(tile:BuildableTile,builds:BUILDING[],player:number){
         let price=tile.build(builds)
 
-        this.clientInterface.build(tile.position,builds,player)
-        this.clientInterface.updateToll(tile.position,tile.getDisplayedToll(),tile.getMultiplier())
-
+    
         return price
     }
     updateColorMonopoly(tile:LandTile,newOwner:number,prevOwner:number){

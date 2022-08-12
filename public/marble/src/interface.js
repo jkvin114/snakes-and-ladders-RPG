@@ -122,6 +122,9 @@ class BuildingSelector {
 }
 
 const NO_DUPLICATE_ABILITIES=["perfume","badge","agreement","reverse_agreement"]//두번연속 알림 안뜨는 능력들
+const abilitySound=new Howl({
+	src: ["res/sound/ability.mp3"]
+})
 class AbilityBuffer {
 	static TOP = 0
 	static BOTTOM = 1
@@ -133,6 +136,7 @@ class AbilityBuffer {
 		this.interval = null
 		this.queue = []
 		this.prevAbility=""  //능력 중복알림 방지용 저장
+		
 	}
 	enqueue(ui, name, itemName, desc, isblocked) {
 		if(name===this.prevAbility && NO_DUPLICATE_ABILITIES.includes(name)) return
@@ -143,7 +147,7 @@ class AbilityBuffer {
 		//if(ui===3) console.log(this.queue)
 		if (this.interval === null) {
 			this.dequeue()
-			this.interval = setInterval(() => this.dequeue(), 1500)
+			this.interval = setInterval(() => this.dequeue(), 1200)
 		}
 	}
 	dequeue() {
@@ -153,13 +157,14 @@ class AbilityBuffer {
 			this.prevAbility=""
 			return
 		}
-
+		abilitySound.play()
 		let id = String("ablilty_" + Math.floor(Math.random() * 10000))
 		const [ui, name, itemName, desc, isblocked] = this.queue.shift()
 		this.hideThird(this.secondId)
 		this.moveSecond(this.firstId)
 		this.secondId=this.firstId
 		this.firstId=id
+
 		this.display(id,ui, name, itemName, desc, isblocked)
 	}
 
@@ -280,6 +285,15 @@ const TILE_SELECTIONS = {
 	blackhole:{
 		title: "블랙홀 발생",
 		desc: "블랙홀을 발생시킬 곳 선택"
+	}
+	,
+	buyout:{
+		title: "인수하기",
+		desc: "인수할 땅을 선택하세요"
+	},
+	free_move:{
+		title: "이동하기",
+		desc: "이동할 땅을 선택하세요"
 	}
 }
 const FORTUNECARD = {
@@ -456,6 +470,11 @@ export class GameInterface {
 		$("#rolldice").click(()=>{
 			
 		})
+		$(".island-window-option").click(function(){
+			let option=$(this).data("option")
+			GAME.islandChooseComplete(option==="pay")
+			$("#islandwindow").hide()
+		})
 	}
 	init(setting, myturn) {
 		//
@@ -532,23 +551,35 @@ export class GameInterface {
 		setTimeout(() => $("#largetext-container").hide(), 2500)
 	}
 	clickOdd() {
+		GAME.scene.clearTileHighlight("yellow")
+		if(this.oddeven===1){
+			$("#dicebtn").html("ROLL")
+			this.oddeven = 0
+			return
+		}
 		$("#dicebtn").html("홀")
 		this.oddeven = 1
 		let positions = []
 		for (let i = 0; i < 5; ++i) {
 			positions.push((this.diceThrowerPos + 3 + 2 * i) % 32)
 		}
-		GAME.scene.clearTileHighlight("yellow")
+		
 		GAME.scene.showTileHighlight(positions, "yellow")
 	}
 	clickEven() {
+		GAME.scene.clearTileHighlight("yellow")
+		if(this.oddeven===2){
+			$("#dicebtn").html("ROLL")
+			this.oddeven = 0
+			return
+		}
+		
 		$("#dicebtn").html("짝")
 		this.oddeven = 2
 		let positions = []
 		for (let i = 0; i < 6; ++i) {
 			positions.push((this.diceThrowerPos + 2 + 2 * i) % 32)
 		}
-		GAME.scene.clearTileHighlight("yellow")
 		GAME.scene.showTileHighlight(positions, "yellow")
 	}
 	rollDice(d1,d2,turn,dc){
@@ -556,6 +587,17 @@ export class GameInterface {
 		
 		this.beforeRolldice(d1,d2,turn)
 		setTimeout(()=>this.animateDice(d1,d2,dc),300)
+	}
+	askIsland(turn,canEscape,escapePrice){
+		if(canEscape){
+			$("#island-window-escape").removeClass("disabled")
+			$("#island-window-escape-desc").html(moneyToString(escapePrice))
+		}
+		else{
+			$("#island-window-escape").addClass("disabled")
+			$("#island-window-escape-desc").html("비용부족")
+		}
+		$("#islandwindow").show()
 	}
 	beforeRolldice(dice1,dice2,thrower){
 		$("#dice-container").css({opacity:1})
@@ -594,6 +636,7 @@ export class GameInterface {
 		$("#dice-wrapper2").css(pos)
 	}
 	animateDice(diceOne,dice2,dc){
+		this.game.playsound("dice")
 		$(".dice").removeClass("no-animate")
 		const elDiceOne = document.getElementById('dice1');
 			// let diceOne   = Math.floor(Math.random()*6)+1
@@ -614,6 +657,7 @@ export class GameInterface {
 			$("#dice-wrapper1").animate({top:window.innerHeight/2,left:window.innerWidth/2},1000,"easeOutBounce")
 	}
 	animateDice2(diceOne,diceTwo,mul1,mul2,dc){
+		this.game.playsound("dice")
 		// let diceTwo   = Math.floor(Math.random()*6)+1
 		const elDiceTwo = document.getElementById('dice2');
 		// let other=(diceTwo+1)%6
@@ -830,6 +874,7 @@ export class GameInterface {
 		}
 	}
 	askTollDefenceCard(cardname, before, after) {
+		this.game.playsound("defencecard")
 		$("#confirmwindow .window-header-content").html(FORTUNECARD[cardname].title)
 		$("#confirmwindow").data("cardname", cardname)
 		$("#confirmwindow .selection-text").html(
@@ -839,6 +884,7 @@ export class GameInterface {
 		$("#confirmwindow").show()
 	}
 	askAttackDefenceCard(cardname, attackName) {
+		this.game.playsound("defencecard")
 		$("#confirmwindow .window-header-content").html(FORTUNECARD[cardname].title)
 		$("#confirmwindow").data("cardname", cardname)
 		$("#confirmwindow .selection-text").html(`${FORTUNECARD[attackName].title} 공격을 받고 있습니다.`)

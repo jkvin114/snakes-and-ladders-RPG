@@ -1,3 +1,4 @@
+import { ServerPayloadInterface } from "../ServerPayloadInterface"
 import { backwardBy, forwardBy, pos2Line, SAME_LINE_TILES } from "../util"
 import { Action, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionTrace } from "./ActionTrace"
@@ -39,14 +40,10 @@ export class TeleportAction extends DelayedAction {
 }
 export class RollDiceAction extends DelayedAction {
     static DELAY=1000
-    pos:number
-	dice:number
-	is3double:boolean
-	constructor(turn: number,pos:number,dice:number,is3double:boolean) {
+	data:ServerPayloadInterface.ThrowDiceData
+	constructor(turn: number,data:ServerPayloadInterface.ThrowDiceData) {
 		super(ACTION_TYPE.ROLLING_DICE,turn,RollDiceAction.DELAY)
-        this.pos=pos
-		this.dice=dice
-		this.is3double=is3double
+		this.data=data
 	}
 }
 export abstract class PullAction extends DelayedAction {

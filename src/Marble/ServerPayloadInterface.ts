@@ -8,4 +8,9 @@ export namespace ServerPayloadInterface{
     export interface ItemSetting{
         randomCount:number,items:{code:number,locked:boolean,selected:boolean}[]
     }
+    export interface ThrowDiceData{
+        dice: number[];
+        isDouble: boolean;
+        dc: boolean;
+    }
 }

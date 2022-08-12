@@ -38,6 +38,9 @@ class Tile{
     isLifted(){
         return this.lifted
     }
+    isLandMark(){
+        return false
+    }
     toString(){
         return this.name+"  "+this.position + " - non-buildable"
     }

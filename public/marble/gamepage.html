@@ -38,7 +38,9 @@
 
 </style>
 
-
+<audio id="bgm">
+  <source src="res/sound/background.mp3" type="audio/mp3">
+</audio>
 <body>
     <img id="toggle_fullscreen" src="./../res/img/svg/maximize.svg" value="off">
 
@@ -286,6 +288,26 @@
       </div>
     </div>
 
+    <div class="window hidden" id="islandwindow">
+      <div class="window-header">
+        <a class="window-header-content">
+          무인도 탈출
+        </a>
+      </div>
+      <div class="window-content">
+        <div class="island-window-option" data-option="dice">
+          <img src="res/dice.png"><br>
+          <a>주사위더블</a>
+          </div>
+        <div class="island-window-option disabled" id="island-window-escape" data-option="pay">
+          <img src="res/money1.png"><br>
+          <a>탈출비용지불</a>
+          <div id="island-window-escape-desc">100만</div>
+        </div>
+        <br>
+        <a class="island-window-content-text-nobackground">탈출 방법을 선택하세요</a>
+      </div>
+    </div>
     <h6 id=selectionname class="selectiontitle hidden">블랙홀</h6>
     <h6 id=selectiondesc class="selectiontitle hidden">화이트홀을 발생시킬 지역 선탣</h6>
     <button id="selection-cancel" class="selectiontitle hidden">취소</button>

@@ -40,7 +40,7 @@ export class ClaimBuyoutAction extends InstantAction{
         this.tile=tile
 	}
 	execute(game: MarbleGame): void {
-		game.mediator.claimBuyOut(this.turn, this.tile.owner, this.tile, this.source)
+		game.mediator.claimBuyOut(this.turn,this.tile, this.source)
 	}
 
 }
@@ -83,7 +83,7 @@ export class PayMoneyAction extends InstantAction {
 		if(val===0) this.off()
 	}
 	execute(game: MarbleGame): void {
-		game.mediator.payMoney(this.turn, this.receiver, this.amount, this.source)
+		game.mediator.payMoney(this.turn, this.receiver, this.amount, this.source,"pay")
 	}
 }
 export class PayTollAction extends PayMoneyAction {
@@ -91,7 +91,9 @@ export class PayTollAction extends PayMoneyAction {
 		super(payer,receiver,amount)
 		this.priority=Action.PRIORITY_NORMAL
 	}
-	
+	execute(game: MarbleGame): void {
+		game.mediator.payMoney(this.turn, this.receiver, this.amount, this.source,"toll")
+	}
 }
 export class AddMultiplierAction extends InstantAction {
 	

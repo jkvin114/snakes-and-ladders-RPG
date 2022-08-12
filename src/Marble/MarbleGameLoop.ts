@@ -6,7 +6,7 @@ import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction } from "./action/InstantAction";
 import { MarbleClientInterface } from "./MarbleClientInterface";
-import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction, AskGodHandSpecialAction, MoveTileSelectionAction, BlackholeTileSelectionAction } from "./action/QueryAction";
+import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction, AskGodHandSpecialAction, MoveTileSelectionAction, BlackholeTileSelectionAction, AskIslandAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 import { BUILDING } from "./tile/Tile";
 import { AttackCard, CARD_NAME, CARD_TYPE, CommandCard, DefenceCard, FortuneCard } from "./FortuneCard";
@@ -220,6 +220,9 @@ class MarbleGameLoop{
             case 'select_godhand_special':
                 result=this.state.onUserSelectGodHandSpecial(args[0])
                 break
+            case 'select_island':
+                result=this.state.onUserSelectIsland(args[0])
+                break
         }
         console.log(result)
 
@@ -246,9 +249,6 @@ abstract class MarbleGameCycleState {
         this.turn=turn
 		//console.log("gamecycle" + id)
 	}
-    init(){
-
-    }
 	onDestroy() {
 		//	console.log("gamecycle ondestroy" + this.id)
 	}
@@ -301,6 +301,7 @@ abstract class MarbleGameCycleState {
             case ACTION_TYPE.CHOOSE_DONATE_POSITION:
             case ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT:
             case ACTION_TYPE.CHOOSE_BLACKHOLE:
+            case ACTION_TYPE.CHOOSE_BUYOUT_POSITION:
                 if(action instanceof TileSelectionAction)
                     return new WaitingTileSelection(this.game,action)
                 break
@@ -317,6 +318,10 @@ abstract class MarbleGameCycleState {
                 if(action instanceof AskDefenceCardAction)
                     return new WaitingDefenceCardUse(this.game,action)
                 break
+            case ACTION_TYPE.CHOOSE_ISLAND:
+                if(action instanceof AskIslandAction)
+                    return new WaitingIsland(this.game,action)
+                break
             case ACTION_TYPE.PULL:
                 if(action instanceof PullAction)
                     return new Pulling(this.game,action)
@@ -327,15 +332,6 @@ abstract class MarbleGameCycleState {
 
         return new ErrorState(this.game)
     }
-	shouldStopTimeoutOnDestroy() {
-		return false
-	}
-	shouldStartTimeoutOnCreate() {
-		return false
-	}
-	shouldPass() {
-		return false
-	}
     onUserPressDice(target:number,oddeven:number):EventResult{
         return new EventResult(false)
     }
@@ -361,6 +357,9 @@ abstract class MarbleGameCycleState {
     }
     onUserSelectPlayer(){
 
+    }
+    onUserSelectIsland(escape:boolean){
+        return new EventResult(false)
     }
     onUserSelectGodHandSpecial(isBuild:boolean){
         return new EventResult(false)
@@ -422,14 +421,12 @@ class WaitingDice extends MarbleGameCycleState{
 class ThrowingDice extends MarbleGameCycleState{
 
     static id = GAME_CYCLE.THROWING_DICE
-    action:RollDiceAction
-    is3double:boolean
+    sourceAction:RollDiceAction
     constructor(game:MarbleGame,action:RollDiceAction){
         super(game,game.thisturn,ThrowingDice.id,action)
-        this.action=action
-        this.is3double=action.is3double
     }
     onCreate(): void {
+        
         //this.game.afterDice(this.dice[0]+this.dice[1])
     }
     afterDelay(): void {
@@ -569,6 +566,9 @@ class WaitingTileSelection extends MarbleGameCycleState{
         else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_BLACKHOLE){
             this.game.onSelectBlackholePosition(this.turn,pos,this.sourceAction)
         }
+        else if(this.sourceAction.type===ACTION_TYPE.CHOOSE_BUYOUT_POSITION){
+            this.game.onSelectBuyoutPosition(this.turn,pos,this.sourceAction)
+        }
         return new EventResult(true).setData(pos)
     }
 }
@@ -680,6 +680,25 @@ class WaitingGodHandSpecial extends MarbleGameCycleState{
             this.game.chooseGodHandSpecialBuild(this.turn,this.sourceAction.source)
         else
             this.game.chooseGodHandSpecialLiftTile(this.turn,this.sourceAction.source)
+        return new EventResult(true)
+    }
+}
+class WaitingIsland extends MarbleGameCycleState{
+    
+    static id = GAME_CYCLE.WAITING_ISLAND
+    sourceAction: AskIslandAction;
+    constructor(game:MarbleGame,action:AskIslandAction){
+        super(game,action.turn,WaitingIsland.id,action)
+    }
+    onCreate(): void {
+        this.game.clientInterface.askIsland(this.turn,this.sourceAction.canEscape,this.sourceAction.escapePrice)
+    }
+    onUserSelectIsland(paid:boolean){
+        this.game.attemptIslandEscape(paid,this.turn,this.sourceAction.source,this.sourceAction.escapePrice)
+        // if(isEscape)
+        //     // this.game.chooseGodHandSpecialBuild(this.turn,this.sourceAction.source)
+        // else
+            // this.game.chooseGodHandSpecialLiftTile(this.turn,this.sourceAction.source)
         return new EventResult(true)
     }
 }

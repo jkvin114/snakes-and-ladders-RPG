@@ -15,7 +15,8 @@ const USER_EVENTS={
 	SELECT_TILE:`${prefix}select_tile`,
 	OBTAIN_CARD:`${prefix}obtain_card`,
 	CONFIRM_CARD_USE:`${prefix}confirm_card_use`,
-	SELECT_GODHAND_SPECIAL:`${prefix}select_godhand_special`
+	SELECT_GODHAND_SPECIAL:`${prefix}select_godhand_special`,
+	SELECT_ISLAND:`${prefix}select_island`,
 }
 function getRoom(socket:Socket){
 	
@@ -102,5 +103,10 @@ module.exports=function(socket:Socket){
 		let rname = SocketSession.getRoomName(socket)
 		if (!R.hasMarbleRoom(rname)) return
 		R.getMarbleRoom(rname).onClientEvent("select_godhand_special",invoker,result)
+	})
+	socket.on(USER_EVENTS.SELECT_ISLAND, function (invoker:number,result:boolean) {
+		let rname = SocketSession.getRoomName(socket)
+		if (!R.hasMarbleRoom(rname)) return
+		R.getMarbleRoom(rname).onClientEvent("select_island",invoker,result)
 	})
 }

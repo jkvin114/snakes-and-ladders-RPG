@@ -99,6 +99,9 @@ export namespace FortuneCardRegistry{
         GO_START,GO_TRAVEL,OLYMPIC,DONATE_LAND,SELLOFF,
         LAND_CHANGE,EARTHQUAKE,PANDEMIC,BLACKOUT
     ]
+    export function drawAmong(list:CARD_NAME[]){
+        return chooseRandom(LIST.filter((card)=>list.includes(card.name as CARD_NAME)))
+    }
     export function draw(goldCardChance:number,ability:ABILITY_NAME){
 
         if(ability===ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD) return GO_TRAVEL

@@ -688,6 +688,7 @@ export class Board{
 				duration: 100,
 				easing: fabric.util.ease.easeOutCubic
 			})
+			this.onstep()
 			await sleep(100)
 		}
 		this.moveComplete(turn)

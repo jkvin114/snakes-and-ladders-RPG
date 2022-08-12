@@ -880,25 +880,26 @@ export class MarbleScene extends Board{
         }
     }
     indicatePull(positions){
+        this.game.playsound("pull")
         this.showTileHighlight(positions,"white")
         setTimeout(()=>this.clearTileHighlight("white"),1500)
     }
-    playerEffect(p,effect,status){
+    playerEffect(p,effect,pos,status){
         if(effect==="bubble_root" || effect==="all"){
-            if(status) this.showBubble(p)
+            if(status) this.showBubble(p,pos)
             else if(this.players[p].bubble!==null){
                 this.canvas.remove(this.players[p].bubble)
                 this.players[p].setBubble(null)
             }
         }
     }
-    showBubble(player){
-        let pos=this.getPlayerPos(player)
+    showBubble(player,pos){
+        let pos=this.getCoord(pos)
         let bubble=new fabric.Image(document.getElementById('bubbleimg'), {
 			objectCaching: false,
             evented:false,
-            top:pos.y,
-            left:pos.x
+            top:pos.y + PLAYER_POS_DIFF[player][1],
+            left:pos.x + PLAYER_POS_DIFF[player][0]
 		})
         bubble.scale(1.2)
         this.lockFabricObject(bubble)
@@ -1011,6 +1012,7 @@ export class MarbleScene extends Board{
 
                 //배수 올랐을 경우에만
                 if(this.tileData.get(pos).multiplier < mul){
+                    this.game.playsound("multiplier")
                     let shine=this.getTileOverlay(this.getCoord(pos),"shine")
                     shine.set({opacity:0})
 
@@ -1124,6 +1126,9 @@ export class MarbleScene extends Board{
 
         this.startRenderInterval()
     }
+    onstep(){
+        this.game.playsound("step")
+    }
     payMoney(payer,receiver,amount){
         //"top-left", "bottom-left", "top-right", "bottom-right"'
         let count=1
@@ -1154,6 +1159,7 @@ export class MarbleScene extends Board{
         for(const m of moneys){
             m.spawnImage()
             m.animate1(moneys.length)
+            this.game.playsound("money")
             await sleep(50)
         }
         await sleep(1200 + 50 * moneys.length)
