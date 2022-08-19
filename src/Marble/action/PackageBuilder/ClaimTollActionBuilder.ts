@@ -49,6 +49,16 @@ export class ClaimTollActionBuilder extends ActionPackageBuilder {
 			main.applyMultiplier(percentValueToMultiplier(value.getValue()))
 		}
 
+		if(this.trace.thisMoveHasAbility(ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME)){
+			pkg.addExecuted(ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME,this.invoker.turn)
+			main.applyMultiplier(2)
+		}
+		
+		if(this.trace.thisMoveHasAbility(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK)){
+			pkg.addExecuted(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK,this.invoker.turn)
+			main.applyMultiplier(2)
+		}
+
 		if (this.defences.has(free)) {
 			pkg.addExecuted(free, this.defender.turn)
 			main.applyMultiplier(0)

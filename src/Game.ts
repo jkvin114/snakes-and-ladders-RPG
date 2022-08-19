@@ -7,7 +7,7 @@ import { ObstacleHelper } from "./core/helpers"
 import { AiAgent } from "./AiAgents/AiAgent"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./entity/Entity"
-import { ClientPayloadInterface, ServerPayloadInterface } from "./data/PayloadInterface"
+import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
 import {MAP} from "./MapHandlers/MapStorage"
 import { EntityMediator } from "./entity/EntityMediator"
 import { Player } from "./player/player"
@@ -24,7 +24,7 @@ import { Bird } from "./characters/Bird"
 import { Tree } from "./characters/Tree"
 import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
-import { ClientInterface } from "./ClientInterface"
+import { GameEventObserver } from "./GameEventObserver"
 import { GameRecord } from "./TrainHelper"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
@@ -128,7 +128,8 @@ class Game {
 	cycle:number
 	arriveSquareCallback:Function
 	arriveSquareTimeout:NodeJS.Timeout
-	clientInterface:ClientInterface
+	eventEmitter:GameEventObserver
+	tempFinish:number
 
 	private static readonly PLAYER_ID_SUFFIX = "P"
 
@@ -183,9 +184,9 @@ class Game {
 		this.arriveSquareTimeout=null
 		this.arriveSquareCallback=null
 
-		this.clientInterface=new ClientInterface(this.rname)
+		this.eventEmitter=new GameEventObserver(this.rname)
 		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
-		
+		this.tempFinish=-1
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -259,8 +260,8 @@ class Game {
 		this.totalnum += 1
 	}
 
-	getInitialSetting():ServerPayloadInterface.initialSetting {
-		let setting = []
+	getInitialSetting():ServerGameEventInterface.initialSetting {
+		let setting= []
 		for (let p of this.entityMediator.allPlayer()) {
 			setting.push({
 				turn: p.turn,
@@ -270,7 +271,8 @@ class Game {
 				name: p.name,
 				champ: p.champ,
 				champ_name: p.champ_name,
-				recommendedItem: p.AiAgent.itemtree.items
+				recommendedItem: p.AiAgent.itemtree.items,
+				skillScale:p.getSkillScale()
 			})
 		}
 		return {
@@ -448,7 +450,7 @@ class Game {
 
 		entity = entity.summon(summoner, lifespan, pos, id)
 		// this.summonedEntityList.set(id, entity)
-		this.clientInterface.summonEntity(entity.getTransferData())
+		this.eventEmitter.summonEntity(entity.getTransferData())
 		// this.entityMediator.sendToClient(PlayerClientInterface.summonEntity, )
 		return entity
 	}
@@ -457,7 +459,7 @@ class Game {
 		// if (!this.summonedEntityList.has(entityId)) return
 		this.entityMediator.withdraw(entityId)
 		// this.summonedEntityList.delete(entityId)
-		this.clientInterface.deleteEntity(entityId, iskilled)
+		this.eventEmitter.deleteEntity(entityId, iskilled)
 	}
 	getEnemyEntityInRange(attacker: Player, rad: number): Entity[] {
 		return this.entityMediator.selectAllFrom(EntityFilter.ALL_ENEMY(attacker).inRadius(rad))
@@ -478,8 +480,22 @@ class Game {
 		this.summonDicecontrolItemOnkill(p.turn)
 		p.adice = 0
 	}
-
-	goNextTurn():ServerPayloadInterface.TurnStart {
+	onPlayerChangePos(turn:number){
+		let secondLevel=this.entityMediator.getSecondPlayerLevel()
+		// console.log("onPlayerChangePos"+secondLevel)
+		if(this.setting.winByDecision){
+			let respawns=MAP.getRespawn(this.mapId)
+			if(secondLevel+1 > respawns.length) {
+				this.tempFinish=-1
+				return
+			}
+			let finishpos=respawns[secondLevel+1]
+			if(this.tempFinish!==finishpos)
+				this.eventEmitter.update("finish_pos",turn,finishpos)
+			this.tempFinish=finishpos
+		}
+	}
+	goNextTurn():ServerGameEventInterface.TurnStart {
 		if (this.gameover) {
 			return null
 		}
@@ -591,8 +607,8 @@ class Game {
 	}
 
 	//called when start of every 1p`s turn
-	getPlayerVisibilitySyncData():ServerPayloadInterface.PlayerPosSync[] {
-		let data:ServerPayloadInterface.PlayerPosSync[] = []
+	getPlayerVisibilitySyncData():ServerGameEventInterface.PlayerPosSync[] {
+		let data:ServerGameEventInterface.PlayerPosSync[] = []
 
 		this.entityMediator.forAllPlayer()(function () {
 			data.push({
@@ -632,7 +648,7 @@ class Game {
 		if (this.setting.killRecord) this.killRecord.push({ killer: killer, dead: dead, pos: pos, turn: this.totalturn })
 	}
 
-	rollDice(dicenum: number):ServerPayloadInterface.DiceRoll {
+	rollDice(dicenum: number):ServerGameEventInterface.DiceRoll {
 		let p: Player = this.thisp()
 
 		// //return if stun
@@ -1004,7 +1020,7 @@ class Game {
 
 	//	return this.getSkillStatus()
 	}
-	onSelectSkill(skill:ENUM.SKILL):ServerPayloadInterface.SkillInit{
+	onSelectSkill(skill:ENUM.SKILL):ServerGameEventInterface.SkillInit{
 		return this.thisp().initSkill(skill)
 	}
 	//========================================================================================================
@@ -1013,7 +1029,7 @@ class Game {
 	 *
 	 * @returns turn,issilent,cooltile,duration,level,isdead
 	 */
-	getSkillStatus():ServerPayloadInterface.SkillStatus {
+	getSkillStatus():ServerGameEventInterface.SkillStatus {
 		return this.thisp().getSkillStatus()
 	}
 
@@ -1074,10 +1090,10 @@ class Game {
 
 		if (proj instanceof PassProjectile) {
 			this.passProjectiles.set(id, proj)
-			this.clientInterface.placePassProj( proj.getTransferData())
+			this.eventEmitter.placePassProj( proj.getTransferData())
 		} else if (proj instanceof RangeProjectile) {
 			this.rangeProjectiles.set(id, proj)
-			this.clientInterface.placeProj(proj.getTransferData())
+			this.eventEmitter.placeProj(proj.getTransferData())
 		}
 		return id
 	}
@@ -1087,7 +1103,7 @@ class Game {
 
 		this.rangeProjectiles.get(UPID).remove()
 		this.rangeProjectiles.delete(UPID)
-		this.clientInterface.removeProj(UPID)
+		this.eventEmitter.removeProj(UPID)
 	}
 //========================================================================================================
 	removePassProjectileById(UPID: string) {
@@ -1095,7 +1111,7 @@ class Game {
 
 		this.passProjectiles.get(UPID).remove()
 		this.passProjectiles.delete(UPID)
-		this.clientInterface.removeProj(UPID)
+		this.eventEmitter.removeProj(UPID)
 	}
 //========================================================================================================
 	getGodHandTarget():number[] {
@@ -1112,7 +1128,7 @@ class Game {
 	 * 선택 장애물 대기중일 경우 바로 스킬로 안넘어가고 선택지 전송
 	 * @returns null if no pending obs,  or return {name,arg}
 	 */
-	checkPendingObs(): ServerPayloadInterface.PendingObstacle {
+	checkPendingObs(): ServerGameEventInterface.PendingObstacle {
 		if (this.pendingObs === 0 || this.thisp().dead) return null
 
 		let name = ""
@@ -1159,7 +1175,7 @@ class Game {
 	}
 
 	//========================================================================================================
-	processPendingObs(info: ClientPayloadInterface.PendingObstacle,delay?:number) {
+	processPendingObs(info: ClientInputEventInterface.PendingObstacle,delay?:number) {
 		
 		this.arriveSquareCallback=null
 
@@ -1168,8 +1184,7 @@ class Game {
 		if(!this.instant)
 			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
 		
-		//타임아웃될 경우
-		if(!info.complete) return
+		
 		//console.log("onPendingObsComplete"+this.pendingObs)
 		//console.log(info)
 		if (!info) {
@@ -1178,7 +1193,8 @@ class Game {
 			this.resetPendingObs()
 			return
 		}
-
+		//타임아웃될 경우
+		if(!info || !info.complete) return
 		if (this.pendingObs === 0) {
 			return
 		}
@@ -1200,7 +1216,7 @@ class Game {
 	}
 	//========================================================================================================
 
-	processPendingAction(info: ClientPayloadInterface.PendingAction,delay?:number) {
+	processPendingAction(info: ClientInputEventInterface.PendingAction,delay?:number) {
 		//console.log(info)
 
 		
@@ -1243,12 +1259,12 @@ class Game {
 		this.roullete_result = -1
 	}
 
-	userCompleteStore(data: ClientPayloadInterface.ItemBought){
+	userCompleteStore(data: ClientInputEventInterface.ItemBought){
 		this.pOfTurn(data.turn).inven.playerBuyItem(data)
 	}
 	//========================================================================================================
 
-	getStoreData(turn: number):ServerPayloadInterface.EnterStore {
+	getStoreData(turn: number):ServerGameEventInterface.EnterStore {
 		let p = this.pOfTurn(turn)
 		return p.inven.getStoreData(1)
 	}

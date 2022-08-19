@@ -1,13 +1,10 @@
 
-import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
-import type { AbilityValues } from "../../Ability/AbilityValues"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
-import { ACTION_TYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
-import { QueryAction } from "../QueryAction"
+import { DiceChanceAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
 
@@ -20,7 +17,7 @@ export class TurnStartActionBuilder extends ActionPackageBuilder {
 
 		let pendingActions = this.invoker.getPendingAction()
 		if (pendingActions.length === 0) {
-			pkg.addMain(new QueryAction(ACTION_TYPE.DICE_CHANCE, this.invoker.turn))
+			pkg.addMain(new DiceChanceAction(this.invoker.turn))
 		} else {
 			for (const p of pendingActions) {
 				pkg.addMain(p)

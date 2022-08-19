@@ -216,6 +216,7 @@ export class TileAttackAction extends InstantAction{
 export class PrepareTravelAction extends InstantAction{
 	constructor(turn: number) {
 		super(ACTION_TYPE.PREPARE_TRAVEL,turn)
+		this.duplicateAllowed=false
 	}
 	execute(game: MarbleGame): void {
 		game.requestTravel(this)
@@ -242,6 +243,19 @@ export class CreateBlackholeAction extends InstantAction{
 	}
 	execute(game: MarbleGame): void {
 		game.createBlackHole(this.blackpos,this.whitepos)
+	}
+}
+export class ChangeLandOwnerAction extends InstantAction{
+	pos:number
+	owner:number
+	constructor(turn: number,pos:number,owner:number) {
+		super(ACTION_TYPE.CREATE_BLACKHOLE,turn)
+		this.pos=pos
+		this.owner=owner
+		this.priority=Action.PRIORITY_FIRST
+	}
+	execute(game: MarbleGame): void {
+		game.setPositionOwner(this.pos,this.owner)
 	}
 }
 

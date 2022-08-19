@@ -41,6 +41,11 @@
 			"desc": "Shuffle Obstacle Positions",
 			"desc_kor": "장애물 위치 무작위배치",
 			"default": true
+		},
+		"winByDecision": {
+			"desc": "Enable win by decision",
+			"desc_kor": "판정승 사용",
+			"default": true
 		}
 	},
 	"statisticSetting": {

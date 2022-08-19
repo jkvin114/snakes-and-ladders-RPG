@@ -1,7 +1,7 @@
 import { MOVETYPE } from "./action/Action"
 import { ActionTrace } from "./action/ActionTrace"
 import type { MarbleGame } from "./Game"
-import { MarbleClientInterface } from "./MarbleClientInterface"
+import { MarbleGameEventObserver } from "./MarbleGameEventObserver"
 import type { MarblePlayer } from "./Player"
 import { BuildableTile } from "./tile/BuildableTile"
 import { LandTile } from "./tile/LandTile"
@@ -38,7 +38,7 @@ class MarbleGameMap{
     colorMonopolys:Map<number,number> //color,owner
     tileOwners:number[]
     multipliers:Map<number,number> //position,multiplier
-    clientInterface:MarbleClientInterface
+    eventEmitter:MarbleGameEventObserver
     olympicStage:number
     cycleStart:number
     blockingTiles:Set<number>
@@ -78,14 +78,14 @@ class MarbleGameMap{
         this.tileOwners=arrayOf(MAP_SIZE,-1)
         this.colorMonopolys=new Map<number,number>()
         this.multipliers=new Map<number,number>()
-        this.clientInterface = new MarbleClientInterface("")
+        this.eventEmitter = new MarbleGameEventObserver("")
         this.olympicStage=1
         this.blockingTiles=new Set<number>()
         this.liftedTile=-1
         this.lockedTile=-1
     }
-    setClientInterface(ci: MarbleClientInterface) {
-		this.clientInterface = ci
+    setClientInterface(ci: MarbleGameEventObserver) {
+		this.eventEmitter = ci
 	}
     setMap(map:any){
         this.cycleStart=map.cycleStart
@@ -132,7 +132,7 @@ class MarbleGameMap{
         for(const tile of this.buildableTiles.values()){
             if(tile.owner!==turn) continue
             if(tile.cooldownStatusEffect()) 
-                this.clientInterface.setStatusEffect(tile.position,"",0)
+                this.eventEmitter.setStatusEffect(tile.position,"",0)
         }
     }
     buildableTileAt(pos:number){
@@ -160,13 +160,22 @@ class MarbleGameMap{
         }
         return Array.from(result)
     }
-    onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionTrace,type:MOVETYPE):boolean{
-        if(this.blockingTiles.has(tile) && type===MOVETYPE.WALK){
+    getCornerPositions(){
+        return [this.island,this.travel,this.start,this.olympic]
+    }
+    getSpecialPositions(){
+        return [...this.specials].map((tile)=>tile.position)
+    }
+    onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionTrace,type:MOVETYPE,isArrived:boolean):boolean{
+        if(this.blockingTiles.has(tile) && (type===MOVETYPE.WALK || type===MOVETYPE.TRAVEL)){
             this.onHitBlockingTile(tile)
             return true
         }
         if(this.start===tile && type!==MOVETYPE.PULL){
-            game.onPassStartTile(player,source)
+            game.onPassOrArriveStartTile(player,source)
+        }
+        if(this.travel===tile && type===MOVETYPE.WALK && !isArrived){
+            game.onPassTravelTile(player,source)
         }
         return false
     }
@@ -257,14 +266,15 @@ class MarbleGameMap{
     }
     updateColorMonopoly(tile:LandTile,newOwner:number,prevOwner:number){
         let color=tile.color
-        let change=[-1,-1]  //add,remove
-
+        // let change=[-1,-1]  //add,remove
+        cl("updateColorMonopoly"+prevOwner)
         //remove color monopoly
         if(this.colorMonopolys.get(color)===prevOwner){
+            cl("remove monopoly"+tile.position)
             let t=this.sameColors.get(color)
             if(t) t.forEach((land)=>land.removeColorMonopoly())
             this.colorMonopolys.delete(color)
-            change[1]=color
+            // change[1]=color
         }
 
         let colors=this.sameColors.get(color)
@@ -274,7 +284,7 @@ class MarbleGameMap{
             let tiles=this.sameColors.get(color)
             if(tiles)
                 tiles.forEach((land)=>land.setColorMonopoly())
-            change[0]=color
+            // change[0]=color
         }
     }
     setMultiplierLock(pos:number){
@@ -289,7 +299,7 @@ class MarbleGameMap{
         if(this.lockedTile === pos){
             this.buildableTileAt(this.lockedTile)?.setMultiplierLock(false)
             this.lockedTile=-1
-            this.clientInterface.modifyLand(pos,"unlock",0)
+            this.eventEmitter.modifyLand(pos,"unlock",0)
         }
     }
     addSingleTileMultiplier(pos:number,count:number){
@@ -297,7 +307,7 @@ class MarbleGameMap{
         if(!tile) return
         tile.addMultiplier(count)
         
-        this.clientInterface.updateMultipliers([{
+        this.eventEmitter.updateMultipliers([{
             pos:pos,mul:tile.getMultiplier(),toll:tile.getDisplayedToll()
         }])
     }
@@ -318,7 +328,7 @@ class MarbleGameMap{
 
         let mul = tile.stealMultiplier()
         // cl("stealMultiplier"+mul)
-        this.clientInterface.updateMultipliers([{
+        this.eventEmitter.updateMultipliers([{
             pos:pos,mul:tile.getMultiplier(),toll:tile.getDisplayedToll()
         }])
 
@@ -338,7 +348,7 @@ class MarbleGameMap{
             this.multipliers.set(pos,mul)
             // }
         }
-        this.clientInterface.updateMultipliers(change)
+        this.eventEmitter.updateMultipliers(change)
     }
     setOlympic(pos:number){
         if(!this.buildableTiles.has(pos)){
@@ -390,19 +400,19 @@ class MarbleGameMap{
     clearTile(tile:BuildableTile)
     {
         if(tile.olympic) this.olympicPos=-1
-        tile.removeAll()
         this.setLandOwner(tile,-1)
-        this.clientInterface.clearBuildings([tile.position])
+        tile.removeAll()
+        this.eventEmitter.clearBuildings([tile.position])
     }
     removeOneBuild(tile:BuildableTile){
         if(tile.type===TILE_TYPE.SIGHT || !(tile instanceof LandTile) ) return
         
         let removed=tile.removeOneHouse()
-        this.clientInterface.removeBuilding([removed],tile.position)
+        this.eventEmitter.removeBuilding([removed],tile.position)
     }
     applyStatusEffect(tile:BuildableTile,name:string,dur:number){
         if(tile.setStatusEffect(name,dur))
-            this.clientInterface.setTileState({state:name,pos:tile.position,duration:dur})
+            this.eventEmitter.setTileState({state:name,pos:tile.position,duration:dur})
             // this.clientInterface.setStatusEffect(tile.position,name,dur)
     }
     onAfterClaimToll(tile:Tile){
@@ -417,10 +427,10 @@ class MarbleGameMap{
         let tile=this.buildableTiles.get(pos)
         if(!tile) return
         if(tile.removeStatusEffect())
-            this.clientInterface.setTileState({state:"remove_effect",pos:pos})
+            this.eventEmitter.setTileState({state:"remove_effect",pos:pos})
     }
     sendTileState(state:string,pos:number){
-        this.clientInterface.setTileState({state:state,pos:pos})
+        this.eventEmitter.setTileState({state:state,pos:pos})
     }
     getMostExpensiveIn(owner:MarblePlayer,filter:TileFilter){
         let landmarks=this.getTiles(owner,filter)
@@ -508,7 +518,7 @@ class MarbleGameMap{
             let count=0
             for(const [color,lands] of this.sameColors.entries()){
                 //이미 플레이어 컬러독점인 땅
-                if(this.colorMonopolys.has(color) && this.colorMonopolys.get(color)===invoker){
+                if(this.colorMonopolys.get(color)===invoker){
                     count+=1
                 }
                 else{

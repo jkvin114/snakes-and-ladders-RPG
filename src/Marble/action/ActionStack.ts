@@ -1,4 +1,4 @@
-import { Action, ActionModifyFunction, ACTION_LIST, ACTION_TYPE } from "./Action"
+import { Action,  ACTION_LIST, ACTION_TYPE } from "./Action"
 import { InstantAction } from "./InstantAction"
 
 export class ActionStack {
@@ -9,7 +9,7 @@ export class ActionStack {
 		this.priorityStack = []
 	}
 	pop(): Action | undefined {
-		console.log("pop")
+		 console.log("pop")
 
 		if (this.priorityStack.length > 0) {
 			return this.priorityStack.pop()
@@ -27,35 +27,39 @@ export class ActionStack {
 		this.stack.pop()
 		return this.stack.length !== 0
 	}
-	push(action: Action | undefined) {
+	private push(action: Action | undefined) {
 		if (!action) return
-		console.log("push")
+		 console.log("push")
 		if (action.priority === 1 && action instanceof InstantAction) this.priorityStack.push(action)
 		else this.stack.push(action)
-		this.iterate()
 	}
-	pushAll(action: Action[]) {
+	pushAll(...action: Action[]) {
 		for (let i = action.length - 1; i >= 0; --i) {
 
-			if(!action[i].duplicateAllowed && this.hasValidType(action[i].type)) continue
+			if(!action[i].duplicateAllowed && this.hasValidTypeAndTurn(action[i].type,action[i].turn)) continue
 
-			this.push(action[i])
+			let skip=false
+			for(const incompatiable of action[i].incompatiableWith){
+				if(this.hasValidTypeAndTurn(incompatiable,action[i].turn)) skip=true
+			}
+			for(const tocancel of action[i].cancels){
+				// console.log("cancel"+ACTION_LIST[tocancel] )
+				this.removeByTurnAndType(action[i].turn,tocancel)
+			}
+			if(!skip)
+				this.push(action[i])
 		}
-		// for (let i = 0; i < action.length; ++i) {
-		// 	this.push(action[i])
-		// }
 	}
 	iterate() {
 		console.log("---------------")
 		for (let i = this.priorityStack.length - 1; i >= 0; --i) {
+			if(!this.priorityStack[i].valid) continue
 			console.log(ACTION_LIST[this.priorityStack[i].type] + " turn:" + this.priorityStack[i].turn)
-			//console.log(this.stack[i])
-			// console.log(this.stack[i].id + ", source:" + this.stack[i].source.eventType)
 		}
 		for (let i = this.stack.length - 1; i >= 0; --i) {
+			if(!this.stack[i].valid) continue
+
 			console.log(ACTION_LIST[this.stack[i].type] + " turn:" + this.stack[i].turn)
-			//console.log(this.stack[i])
-			// console.log(this.stack[i].id + ", source:" + this.stack[i].source.eventType)
 		}
 		console.log("---------------")
 	}
@@ -104,7 +108,7 @@ export class ActionStack {
 
 		return this.stack[this.stack.length - 1]
 	}
-	popPriorityActions():InstantAction[]{
+	popAllPriorityActions():InstantAction[]{
 		let list=Array.from(this.priorityStack)
 		this.priorityStack=[]
 		return list
@@ -113,8 +117,14 @@ export class ActionStack {
 		this.stack = []
 		this.priorityStack = []
 	}
-	hasValidType(type: ACTION_TYPE) {
-		return this.stack.some((a: Action) => a.type === type && a.valid)
+	/**
+	 * 해당 타입과 턴의 유효한 액션이 존재하는지
+	 * @param type 
+	 * @param turn 
+	 * @returns 
+	 */
+	hasValidTypeAndTurn(type: ACTION_TYPE,turn:number) {
+		return this.stack.some((a: Action) => a.type === type && a.valid && a.turn===turn)
 	}
 	findById(id: string): Action | null {
 		for (const a of this.priorityStack) {

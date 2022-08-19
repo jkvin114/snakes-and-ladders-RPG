@@ -662,12 +662,13 @@ export class Board{
 		
 		this.players[turn].nametext.set("text", "")
 	}
-	async movePlayerThrough(poslist,turn,callback){
+	async movePlayerThrough(poslist,turn,movetype,callback){
 		if(poslist.length===0) {
 			this.moveComplete(turn)
 			callback(turn)
 			return
 		}
+		const speed=movetype==="travel"?40:100
 		this.arrow.set({ opacity: 0 })
 		this.arrow.bringToFront()
 		this.hideNameText(turn)
@@ -680,16 +681,16 @@ export class Board{
 
 			this.players[turn].playerimg.animate("left", x, {
 				onChange: this.render.bind(this),
-				duration: 100,
+				duration: speed,
 				easing: fabric.util.ease.easeOutCubic
 			})
 			this.players[turn].playerimg.animate("top", y, {
 				onChange: this.render.bind(this),
-				duration: 100,
+				duration: speed,
 				easing: fabric.util.ease.easeOutCubic
 			})
 			this.onstep()
-			await sleep(100)
+			await sleep(speed)
 		}
 		this.moveComplete(turn)
 		callback(turn)

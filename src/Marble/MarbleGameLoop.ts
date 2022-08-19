@@ -5,7 +5,7 @@ import { DelayedAction, MoveAction, PullAction, RollDiceAction, TeleportAction }
 import {MarbleGame } from "./Game"
 import { GAME_CYCLE, GAME_CYCLE_NAME } from "./gamecycleEnum"
 import { InstantAction } from "./action/InstantAction";
-import { MarbleClientInterface } from "./MarbleClientInterface";
+import { MarbleGameEventObserver } from "./MarbleGameEventObserver";
 import { AskLoanAction, AskBuildAction, AskBuyoutAction, QueryAction, TileSelectionAction, ObtainCardAction,  LandSwapAction,AskDefenceCardAction, AskAttackDefenceCardAction, AskTollDefenceCardAction, AskGodHandSpecialAction, MoveTileSelectionAction, BlackholeTileSelectionAction, AskIslandAction } from "./action/QueryAction";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 import { BUILDING } from "./tile/Tile";
@@ -31,19 +31,33 @@ class MarbleGameLoop{
     gameOverCallBack:Function
     state:MarbleGameCycleState
     idleTimeout: NodeJS.Timeout
-    clientInterface:MarbleClientInterface
+    clientInterface:MarbleGameEventObserver
 	idleTimeoutTurn: number
     loopRunning:boolean
     gameover:boolean
+    resetTimeout:NodeJS.Timeout|null
+    onReset:Function
     constructor(rname:string,game:MarbleGame,isTeam:boolean,itemSetting:ServerPayloadInterface.ItemSetting){
         this.rname=rname
         this.game=game
         this.isTeam=isTeam
-        this.clientInterface=new MarbleClientInterface(rname)
+        this.clientInterface=new MarbleGameEventObserver(rname)
         this.game.setTurns()
         this.game.setItems(itemSetting)
         this.loopRunning=false
         this.gameover=false
+        this.restartResetTimeout()
+    }
+
+	restartResetTimeout(){
+		if(this.resetTimeout!=null)
+			clearTimeout(this.resetTimeout)
+		this.resetTimeout=setTimeout(()=>{
+			this.reset()
+		},120*1000)
+	}
+    reset(){
+        if(this.onReset) this.onReset()
     }
     static createLoop(
 		rname: string,
@@ -54,7 +68,7 @@ class MarbleGameLoop{
 	): MarbleGameLoop {
 		return new MarbleGameLoop(rname,new MarbleGame(playerlist,this.name,isTeam,map),isTeam,itemSetting)
 	}
-    setClientInterface(ci:MarbleClientInterface){
+    setClientInterface(ci:MarbleGameEventObserver){
         this.clientInterface=ci
         this.game.setClientInterface(ci)
     }
@@ -62,6 +76,9 @@ class MarbleGameLoop{
 		this.gameOverCallBack = gameOverCallBack
 		return this
 	}
+    setOnReset(onReset:Function){
+        this.onReset=onReset
+    }
     startTurn(){
         this.state=new GameInitializer(this.game).getNext(null)
         this.state.onCreate()
@@ -69,6 +86,8 @@ class MarbleGameLoop{
     }
     onGameOver(winner:number){
         this.gameover=true
+        if(this.resetTimeout)
+            clearTimeout(this.resetTimeout)
         this.gameOverCallBack(winner)
     }
     onDestroy(){
@@ -188,6 +207,8 @@ class MarbleGameLoop{
     }
 
     onClientEvent(event:string,invoker:number,...args:any[]){
+        this.restartResetTimeout()
+
         if(this.gameover) return
         let result=new EventResult(false)
         // if(invoker !== this.state.getInvoker()) return
@@ -396,7 +417,7 @@ class TurnInitializer extends MarbleGameCycleState {
 	}
 	onCreate(): void {
         this.game.onTurnStart()
-        this.game.clientInterface.turnStart(this.turn)
+        this.game.eventEmitter.turnStart(this.turn)
     }
 }
 class WaitingDice extends MarbleGameCycleState{
@@ -409,11 +430,11 @@ class WaitingDice extends MarbleGameCycleState{
         this.hasDoubleEffect=true
     }
     onCreate(): void {
-        this.game.clientInterface.showDiceBtn(this.turn,this.game.getDiceData(this.turn))
+        this.game.eventEmitter.showDiceBtn(this.turn,this.game.getDiceData(this.turn))
     }
     onUserPressDice(target:number,oddeven:number):EventResult{
-        let data=this.game.throwDice(target,oddeven,this.sourceAction.source)
-        this.game.clientInterface.throwDice(this.turn,data)
+        let data=this.game.throwDice(target,oddeven,this.sourceAction)
+        this.game.eventEmitter.throwDice(this.turn,data)
   //      this.dice=data.dice
         return new EventResult(true).setData(data)
     }
@@ -486,7 +507,7 @@ class WaitingBuild extends MarbleGameCycleState{
         this.buildsHave=sourceAction.buildsHave
     }
     onCreate(): void {
-        this.game.clientInterface.chooseBuild(this.turn,this.pos,this.builds,this.buildsHave,this.discount,this.availableMoney)
+        this.game.eventEmitter.chooseBuild(this.turn,this.pos,this.builds,this.buildsHave,this.discount,this.availableMoney)
     }
     onUserSelectBuild(builds: BUILDING[]): EventResult {
         this.game.directBuild(this.turn,builds,this.pos,this.discount,this.sourceAction.source)
@@ -504,7 +525,7 @@ class WaitingLoan extends MarbleGameCycleState{
         this.receiver=action.receiver
     }
     onCreate(): void {
-        this.game.clientInterface.askLoan(this.turn,this.amount)
+        this.game.eventEmitter.askLoan(this.turn,this.amount)
     }
     onUserConfirmLoan(result: boolean): EventResult {
         this.game.onConfirmLoan(this.turn,this.receiver,this.amount,result)
@@ -519,7 +540,7 @@ class WaitingBuyOut extends MarbleGameCycleState{
     }
     
     onCreate(): void {
-        this.game.clientInterface.askBuyout(this.turn,this.sourceAction.pos,this.sourceAction.price,this.sourceAction.originalPrice)
+        this.game.eventEmitter.askBuyout(this.turn,this.sourceAction.pos,this.sourceAction.price,this.sourceAction.originalPrice)
     }
     onUserBuyOut(result:boolean): EventResult {
         if(result)
@@ -529,20 +550,12 @@ class WaitingBuyOut extends MarbleGameCycleState{
 }
 class WaitingTileSelection extends MarbleGameCycleState{
     static id = GAME_CYCLE.WAITING_TILE_SELECTION
-    // tiles:number[]
-    // type:ACTION_TYPE
-    // name:string
-    // source:ActionTrace
     sourceAction:TileSelectionAction
     constructor(game:MarbleGame,sourceAction:TileSelectionAction){
         super(game,sourceAction.turn,WaitingTileSelection.id,sourceAction)
-        // this.tiles=sourceAction.tiles
-        // this.type=sourceAction.type
-        // this.name=sourceAction.name
-        // this.source=sourceAction.source
     }
     onCreate(): void {
-        this.game.clientInterface.askTileSelection(this.turn,this.sourceAction.tiles,this.sourceAction.name)
+        this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.tiles,this.sourceAction.name)
     }
     onUserSelectTile(pos: number,name:string,result:boolean): EventResult {
         if(name !== this.sourceAction.name) return new EventResult(false)
@@ -573,15 +586,20 @@ class WaitingTileSelection extends MarbleGameCycleState{
     }
 }
 class WaitingMoveTileSelection extends WaitingTileSelection{
-    movetype:number
+    movetype:string
+    sourceAction:MoveTileSelectionAction
     constructor(game:MarbleGame,sourceAction:MoveTileSelectionAction){
         super(game,sourceAction)
         this.movetype=sourceAction.moveType
     }
+    onCreate(): void {
+        this.game.setMovableTiles(this.sourceAction)
+        super.onCreate()
+    }
     onUserSelectTile(pos: number,name:string,result:boolean): EventResult {
         if(name !== this.sourceAction.name) return new EventResult(false)
         if(!result) return new EventResult(true)
-        this.game.onSelectMovePosition(this.turn,pos,this.movetype,this.sourceAction.source)
+        this.game.onSelectMovePosition(this.turn,pos,this.sourceAction)
         return new EventResult(true).setData(pos)
     }
 }
@@ -593,7 +611,7 @@ class WaitingCardObtain extends MarbleGameCycleState{
         this.card=action.card
     }
     onCreate(): void {
-        this.game.clientInterface.obtainCard(this.turn,this.card.name,this.card.level,this.card.type)
+        this.game.eventEmitter.obtainCard(this.turn,this.card.name,this.card.level,this.card.type)
     }
     onUserConfirmObtainCard(result:boolean): EventResult {
         if(this.card instanceof AttackCard){
@@ -619,7 +637,7 @@ class WaitingLandSwap extends MarbleGameCycleState{
         this.myland=-1
     }
     onCreate(): void {
-        this.game.clientInterface.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_1")
+        this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_1")
     }
     onUserSelectTile(pos: number,name:string,result:boolean){
         if(name !== "land_change_1" && name!=="land_change_2") return new EventResult(false)
@@ -629,7 +647,7 @@ class WaitingLandSwap extends MarbleGameCycleState{
         if(name==="land_change_1"){
             this.myland=pos
             setTimeout(()=>{
-                this.game.clientInterface.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_2")
+                this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_2")
             },500)
             
             return new EventResult(false)
@@ -649,10 +667,10 @@ class WaitingDefenceCardUse extends MarbleGameCycleState{
     }
     onCreate(): void {
         if(this.sourceAction instanceof AskAttackDefenceCardAction){
-            this.game.clientInterface.askAttackDefenceCard(this.turn,this.sourceAction.cardname,this.sourceAction.attackName)
+            this.game.eventEmitter.askAttackDefenceCard(this.turn,this.sourceAction.cardname,this.sourceAction.attackName)
         }
         else if(this.sourceAction instanceof AskTollDefenceCardAction){
-            this.game.clientInterface.askTollDefenceCard(this.turn,this.sourceAction.cardname,this.sourceAction.before,this.sourceAction.after)
+            this.game.eventEmitter.askTollDefenceCard(this.turn,this.sourceAction.cardname,this.sourceAction.before,this.sourceAction.after)
         }
     }
     onUserConfirmUseCard(result:boolean,cardname:string): EventResult {
@@ -673,7 +691,7 @@ class WaitingGodHandSpecial extends MarbleGameCycleState{
         // this.action=action
     }
     onCreate(): void {
-        this.game.clientInterface.askGodHandSpecial(this.turn,this.sourceAction.canLiftTile)
+        this.game.eventEmitter.askGodHandSpecial(this.turn,this.sourceAction.canLiftTile)
     }
     onUserSelectGodHandSpecial(isBuild:boolean){
         if(isBuild)
@@ -691,7 +709,7 @@ class WaitingIsland extends MarbleGameCycleState{
         super(game,action.turn,WaitingIsland.id,action)
     }
     onCreate(): void {
-        this.game.clientInterface.askIsland(this.turn,this.sourceAction.canEscape,this.sourceAction.escapePrice)
+        this.game.eventEmitter.askIsland(this.turn,this.sourceAction.canEscape,this.sourceAction.escapePrice)
     }
     onUserSelectIsland(paid:boolean){
         this.game.attemptIslandEscape(paid,this.turn,this.sourceAction.source,this.sourceAction.escapePrice)
@@ -710,7 +728,7 @@ class Pulling extends MarbleGameCycleState{
         super(game,action.turn,Pulling.id,action)
     }
     onCreate(): void {
-        this.game.clientInterface.indicatePull(this.sourceAction.targetTiles)
+        this.game.eventEmitter.indicatePull(this.sourceAction.targetTiles)
         this.game.pullPlayers(this.turn,this.sourceAction)
     }
 }

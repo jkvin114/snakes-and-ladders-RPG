@@ -285,15 +285,14 @@ const TILE_SELECTIONS = {
 	blackhole:{
 		title: "블랙홀 발생",
 		desc: "블랙홀을 발생시킬 곳 선택"
-	}
-	,
+	},
 	buyout:{
 		title: "인수하기",
 		desc: "인수할 땅을 선택하세요"
 	},
 	free_move:{
 		title: "이동하기",
-		desc: "이동할 땅을 선택하세요"
+		desc: "이동할 곳을 선택하세요"
 	}
 }
 const FORTUNECARD = {
@@ -354,7 +353,7 @@ const FORTUNECARD = {
 	},
 	land_change: {
 		title: "도시 체인지",
-		desc: "원해는 상대의 도시와 내 도시를 교환",
+		desc: "원하는 상대의 도시와 내 도시를 교환",
 		image: ""
 	},
 	earthquake: {
@@ -671,11 +670,10 @@ export class GameInterface {
 		$("#dice-wrapper2").animate({top:window.innerHeight/2-35*mul1,left:window.innerWidth/2-35*mul2},1000,"easeOutBounce")
 		setTimeout(()=>{
 			this.diceRollComplete(diceOne,diceTwo,dc)
-			
+
 		},1000)
 	}
 	diceRollComplete(d1,d2,dc){
-		console.log(d1,d2,dc)
 		$("#dice-container").animate({opacity:0},1000)
 
 		$("#dice-number-container").removeClass("double")

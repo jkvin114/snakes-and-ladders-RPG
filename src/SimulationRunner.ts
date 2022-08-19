@@ -5,14 +5,14 @@ import { GameSetting } from "./GameSetting"
 //import cliProgress = require("cli-progress")
 import SETTINGS = require("../res/globalsettings.json")
 import { shuffle, pickRandom, PlayerType } from "./core/Util"
-import { ClientPayloadInterface } from "./data/PayloadInterface"
+import { ClientInputEventInterface } from "./data/PayloadInterface"
 import { TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../res/train_setting.json")
 
 const { workerData, parentPort, isMainThread } = require("worker_threads")
 
 interface SimulationInit {
-	setting: ClientPayloadInterface.SimulationSetting
+	setting: ClientInputEventInterface.SimulationSetting
 	count: number
 	isTeam: boolean
 	runnerId: string
@@ -71,7 +71,7 @@ class SimulationSetting {
 	]
 
 	isTrain:boolean
-	constructor(isTeam: boolean, setting: ClientPayloadInterface.SimulationSetting) {
+	constructor(isTeam: boolean, setting: ClientInputEventInterface.SimulationSetting) {
 		this.gameSetting = new GameSetting(setting.gameSetting, true, isTeam)
 		this.gameSetting.setSimulationSettings(setting)
 		this.summaryOnly = setting.summaryOnly
@@ -352,7 +352,7 @@ class Simulation {
 			playerlist
 		)
 			.startSimulation()
-			.state.getTurnInitializer() //turninitializer
+			.getTurnInitializer() //turninitializer
 	}
 
 	getCount() {

@@ -4,7 +4,7 @@ import { MAP ,singleMap} from "./MapStorage"
 import * as ENUM from "../data/enum"
 import { CALC_TYPE, Damage, randomBoolean} from "../core/Util"
 import { ObstacleHelper } from "../core/helpers"
-import { ClientPayloadInterface, ServerPayloadInterface } from "../data/PayloadInterface"
+import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
 
 interface TwoWayMap {
 	onMainWay: boolean //갈림길 체크시 샤용
@@ -43,7 +43,7 @@ abstract class PlayerMapHandler {
 		return damage
 	}
 	applyObstacle(obs: number) {}
-	onPendingActionComplete(info:ClientPayloadInterface.PendingAction){
+	onPendingActionComplete(info:ClientInputEventInterface.PendingAction){
 
 	}
 	onRollDice(moveDistance:number):{type:string,args?:any[]}{
@@ -60,13 +60,13 @@ abstract class PlayerMapHandler {
 			ObstacleHelper.kidnap(this.player, randomBoolean())
 		} 
 	}
-	onPendingObsComplete(info:ClientPayloadInterface.PendingObstacle){
+	onPendingObsComplete(info:ClientInputEventInterface.PendingObstacle){
 
 		if (info.type === "kidnap" && info.booleanResult!=null) {
 			ObstacleHelper.kidnap(this.player,info.booleanResult)
 		} 
 	}
-	getPendingObs(pendingObs:number):ServerPayloadInterface.PendingObstacle{
+	getPendingObs(pendingObs:number):ServerGameEventInterface.PendingObstacle{
 		return null
 	}
 	shouldStunDice(){
@@ -151,7 +151,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 		super.onForceMove(pos)
 	}
 
-	onPendingActionComplete(info:ClientPayloadInterface.PendingAction): void {
+	onPendingActionComplete(info:ClientInputEventInterface.PendingAction): void {
 		if (info.type === "submarine" && info.complete && typeof info.result==='number') {
 			this.player.game.setPendingObs(this.player.game.getObstacleAt(info.result))
 			this.player.game.playerForceMove(this.player, info.result, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
@@ -181,7 +181,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 	goWay2() {
 		this.player.pos = this.gamemap.way2_range.way_start
 		this.onMainWay = false
-		this.player.game.clientInterface.update("way", this.player.turn, false)
+		this.player.game.eventEmitter.update("way", this.player.turn, false)
 	}
 
 	exitWay2(dice: number) {
@@ -189,7 +189,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 
 		this.player.pos = this.gamemap.way2_range.end - dice
 
-		this.player.game.clientInterface.update("way", this.player.turn, true)
+		this.player.game.eventEmitter.update("way", this.player.turn, true)
 	}
 
 	checkWay2OnForceMove(pos: number) {
@@ -251,24 +251,24 @@ class CasinoMapHandler extends PlayerMapHandler {
 		}
 		super.onPendingObsTimeout(pendingObs)
 	}
-	onPendingObsComplete(info: ClientPayloadInterface.PendingObstacle): void {
+	onPendingObsComplete(info: ClientInputEventInterface.PendingObstacle): void {
 	//	console.log("onPendingObsComplete"+info)
 		if (info.type === "threaten" && info.booleanResult!==null) {
 			ObstacleHelper.threaten(this.player,info.booleanResult)
 		} else if (info.type === "sell_token") {
-			let result=(info.objectResult as ClientPayloadInterface.TokenStoreResult)
+			let result=(info.objectResult as ClientInputEventInterface.TokenStoreResult)
 			if (result.token > 0) {
 				this.player.inven.sellToken(result.token,result.money)
 			}
 		} else if (info.type === "subway"){
-			let result=(info.objectResult as ClientPayloadInterface.SubwayResult)
+			let result=(info.objectResult as ClientInputEventInterface.SubwayResult)
 
 			this.selectSubway(result.type, result.price)
 		}
 		super.onPendingObsComplete(info)
 	}
 
-	getPendingObs(pendingObs: number): ServerPayloadInterface.PendingObstacle {
+	getPendingObs(pendingObs: number): ServerGameEventInterface.PendingObstacle {
 		if (pendingObs === 63) {
 			return {name:"server:pending_obs:threaten",argument:0}
 		}
@@ -308,8 +308,8 @@ class CasinoMapHandler extends PlayerMapHandler {
 		let effect=CasinoMapHandler.SUBWAY_EXPRESS
 		if(this.subwayTicket===SUBWAY_TICKET.RAPID) effect=CasinoMapHandler.SUBWAY_RAPID
 		if(this.subwayTicket===SUBWAY_TICKET.LOCAL) effect=CasinoMapHandler.SUBWAY_LOCAL
-		this.player.game.clientInterface.visualEffect(this.player.pos,effect,-1)
-		this.player.game.clientInterface.smoothTeleport(this.player.turn,this.player.pos,dist)
+		this.player.game.eventEmitter.visualEffect(this.player.pos,effect,-1)
+		this.player.game.eventEmitter.smoothTeleport(this.player.turn,this.player.pos,dist)
 		this.player.moveByDice(dist)
 	}
 
@@ -317,7 +317,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 	private removeSubwayTicket() {
 		this.subwayTicket = SUBWAY_TICKET.NONE
 		this.isInSubway = false
-		this.player.game.clientInterface.update("isInSubway", this.player.turn, false)
+		this.player.game.eventEmitter.update("isInSubway", this.player.turn, false)
 	}
 	onBasicAttack(damage: Damage) {
 		if(this.isInSubway)
@@ -341,8 +341,8 @@ class CasinoMapHandler extends PlayerMapHandler {
 		//console.log("exitsubway" + this.player.turn)
 		//단순 지하철구간에서 빠져나온 경우
 		this.isInSubway = false
-		this.player.game.clientInterface.update("subwayTicket", this.player.turn, -1)
-		this.player.game.clientInterface.update("isInSubway", this.player.turn, false)
+		this.player.game.eventEmitter.update("subwayTicket", this.player.turn, -1)
+		this.player.game.eventEmitter.update("isInSubway", this.player.turn, false)
 	}
 	private enterSubwayWithoutSelection() {
 	//	console.log("enterSubwayWithoutSelection"+this.player.turn)
@@ -352,7 +352,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 			//처음 아니면 기존티켓 사용
 			this.subwayTicket = SUBWAY_TICKET.LOCAL 
 		}
-		this.player.game.clientInterface.update("isInSubway", this.player.turn, true)
+		this.player.game.eventEmitter.update("isInSubway", this.player.turn, true)
 	}
 	//지하철 선택칸 도착
 	private enterSubwayNormal() {
@@ -364,7 +364,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		if (this.player.AI) {
 			this.aiSubwaySelection()
 		}
-		this.player.game.clientInterface.update("isInSubway", this.player.turn, true)
+		this.player.game.eventEmitter.update("isInSubway", this.player.turn, true)
 	}
 	private aiSubwaySelection() {
 		let prices = this.getSubwayPrices()

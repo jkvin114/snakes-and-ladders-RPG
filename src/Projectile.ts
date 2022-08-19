@@ -1,7 +1,7 @@
 import { Player } from "./player/player"
 import type { Game } from "./Game";
 
-import { ServerPayloadInterface } from "./data/PayloadInterface"
+import { ServerGameEventInterface } from "./data/PayloadInterface"
 import { Damage, decrement } from "./core/Util"
 
 abstract class Projectile {
@@ -104,7 +104,7 @@ class RangeProjectile extends Projectile {
 		this.scope = this.game.getPlaceableCoordinates(this.pos, this.size)
 	}
 
-	getTransferData() :ServerPayloadInterface.RangeProjectile {
+	getTransferData() :ServerGameEventInterface.RangeProjectile {
 		return {
 			scope: this.scope,
 			UPID: this.UPID,
@@ -120,7 +120,7 @@ class PassProjectile extends Projectile {
 		this.size = 1
 	}
 
-	getTransferData():ServerPayloadInterface.PassProjectile {
+	getTransferData():ServerGameEventInterface.PassProjectile {
 		return {
 			name: this.name,
 			scope: [this.pos],

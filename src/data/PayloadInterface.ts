@@ -4,7 +4,7 @@ interface TurnPayloadInterface {
 interface CryptedPayloadInterface extends TurnPayloadInterface {
 	crypt_turn: string
 }
-export namespace ServerPayloadInterface {
+export namespace ServerGameEventInterface {
 	export interface initialSetting {
 		playerSettings: {
 			turn: number
@@ -14,7 +14,8 @@ export namespace ServerPayloadInterface {
 			name: string
 			champ: number
 			champ_name: string
-			recommendedItem: number[]
+			recommendedItem: number[],
+			skillScale:object
 		}[]
 		isTeam: boolean
 		gameSettings: Object
@@ -157,7 +158,7 @@ export namespace ServerPayloadInterface {
 	}
 }
 
-export namespace ClientPayloadInterface {
+export namespace ClientInputEventInterface {
 	export interface GameSetting {
 		itemLimit: number
 		extraResistanceAmount: number
@@ -166,6 +167,7 @@ export namespace ClientPayloadInterface {
 		legacyAA:boolean
 		diceControlItemFrequency: number
 		shuffleObstacle: boolean
+		winByDecision:boolean
 
 		killRecord: boolean
 		itemRecord: boolean

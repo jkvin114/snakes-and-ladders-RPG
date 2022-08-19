@@ -1,6 +1,6 @@
 import SETTINGS = require("../res/globalsettings.json")
 import { PlayerType, ProtoPlayer } from "./core/Util"
-import { ClientInterfaceCallback } from "./ClientInterface";
+import { GameEventEmitter } from "./GameEventObserver";
 
 
 abstract class Room {
@@ -21,11 +21,11 @@ abstract class Room {
 	connectionTimeout: NodeJS.Timeout
 	connectionTimeoutTurn: number
 	idleTimeoutTurn: number
-
+	resetCallback:Function
 	abstract user_message(turn:number,msg:string):string
 	abstract getMapId():number
-	abstract registerClientInterface(callback:ClientInterfaceCallback):Room
-	abstract registerSimulationClientInterface(callback:ClientInterfaceCallback):Room
+	abstract registerClientInterface(callback:GameEventEmitter):Room
+	abstract registerSimulationClientInterface(callback:GameEventEmitter):Room
 	constructor(name: string) {
 		//	this.simulation_total_count = 1
 		this.simulation_count = 1
@@ -43,6 +43,10 @@ abstract class Room {
 		this.idleTimeoutTurn = -1
 		this.connectionTimeout = null
 		this.connectionTimeoutTurn = -1
+	}
+	registerResetCallback(onreset:Function){
+		this.resetCallback=onreset
+		return this
 	}
 	
 	
@@ -198,6 +202,8 @@ abstract class Room {
 		this.playerlist = null
 		this.instant = false
 		this.map = 0
+		if(this.resetCallback!=null)
+			this.resetCallback()
 	}
 }
 

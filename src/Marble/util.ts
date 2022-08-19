@@ -47,6 +47,14 @@ export function sample(probability: number): boolean {
 export function randDice() {
 	return Math.ceil(Math.random() * 6)
 }
+/**
+ * 
+ * @param num 
+ * @returns [0,num)
+ */
+export function randInt(num:number) {
+	return Math.floor(Math.random() * num)
+}
 export function clamp(num: number, min: number, max: number) {
 	return Math.max(Math.min(num, max), min)
 }

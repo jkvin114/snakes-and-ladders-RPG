@@ -140,7 +140,7 @@ class MarblePlayer{
         return this.stat.diceControl * 0.008
     }
     getGoldFortuneChance(){
-        return (this.stat.goldenCard * 0.02)
+        return (this.stat.goldenCard * 0.013)
     }
    
     getSavedCard(){

@@ -1,5 +1,4 @@
-import { Action, ActionModifyFunction, ACTION_TYPE, MOVETYPE } from "./Action"
-import type { ActionTrace } from "./ActionTrace"
+import { Action,  ACTION_TYPE, MOVETYPE } from "./Action"
 import { ServerPayloadInterface } from "./../ServerPayloadInterface"
 import { BUILDING } from "../tile/Tile"
 import { FortuneCard } from "../FortuneCard"
@@ -20,6 +19,10 @@ export class DiceChanceAction extends QueryAction {
 	constructor(turn: number,nodouble?:boolean) {
 		super(nodouble?ACTION_TYPE.DICE_CHANCE_NO_DOUBLE:ACTION_TYPE.DICE_CHANCE,turn)
 		this.duplicateAllowed=false
+		if(nodouble){
+			this.incompatiableWith.add(ACTION_TYPE.CHOOSE_MOVE_POSITION)
+			this.cancels.add(ACTION_TYPE.REQUEST_MOVE)
+		}
 	}
 }
 
@@ -67,6 +70,11 @@ export class TileSelectionAction extends QueryAction {
 		super(type,turn)
         this.tiles=tiles
 		this.name=name
+		this.duplicateAllowed=false
+	}
+	setPositions(tiles:number[]){
+		this.tiles=tiles
+		return this
 	}
 }
 export class BlackholeTileSelectionAction extends TileSelectionAction {
@@ -78,9 +86,21 @@ export class BlackholeTileSelectionAction extends TileSelectionAction {
 }
 export class MoveTileSelectionAction extends TileSelectionAction{
 	moveType:MOVETYPE
-	constructor(turn: number,tiles:number[],name:string,moveType:MOVETYPE){
+	constructor(turn: number,tiles:number[],moveType:MOVETYPE,name?:string){
+		if(!name) name="free_move"
 		super(ACTION_TYPE.CHOOSE_MOVE_POSITION,turn,tiles,name)
 		this.moveType=moveType
+		this.duplicateAllowed=false
+		
+		this.cancels.add(ACTION_TYPE.REQUEST_MOVE)
+	}
+}
+export class MoveToPlayerSelectionAction extends MoveTileSelectionAction{
+	moveType:MOVETYPE
+	targetPlayers:number[]
+	constructor(turn: number,moveType:MOVETYPE,targetPlayers:number[]){
+		super(turn,[],moveType)
+		this.targetPlayers=targetPlayers
 	}
 }
 export class ObtainCardAction extends QueryAction {

@@ -1,6 +1,6 @@
 {
-    "train":false,
-    "random_item":true,
+    "train":true,
+    "random_item":false,
     "random_item_exclude_character":[],
     "random_item_allow_duplicate":false,
     "save_indicator_text":true,

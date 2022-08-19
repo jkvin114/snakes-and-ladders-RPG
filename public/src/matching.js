@@ -151,6 +151,8 @@ function onReceiveRoomList(roomlist) {
 	}
 }
 
+
+
 class ProtoPlayer {
 	constructor(turn) {
 		this.type = "none"
@@ -201,8 +203,8 @@ class MatchStatus {
 
 		
 
-		MATCH.playerlist[0].name = sessionStorage.nickName
-		MATCH.myturn = 0
+		this.playerlist[0].name = sessionStorage.nickName
+		this.myturn = 0
 		let request = new XMLHttpRequest()
 		request.open("GET", ip + "/resource/gamesetting")
 
@@ -219,13 +221,13 @@ class MatchStatus {
 
 		this.ui.setAsHost(roomname)
 
-		window.onbeforeunload = function () {
+		window.onbeforeunload =  () =>{
 			$.ajax({
 				method: 'POST',
 				url: '/reset_game'
 			})
 			// ServerConnection.resetGame()
-			MATCH.quitted = true
+			this.quitted = true
 			return "The room will be reset"
 		}
 	}
@@ -247,10 +249,10 @@ class MatchStatus {
 		this.ui.setAsGuest()
 		this.teamSelector.setAsGuest()
 
-		window.onbeforeunload = function () {
+		window.onbeforeunload =  () =>{
 			
-			MATCH.setType("none", MATCH.myturn)
-			MATCH.quitted = true
+			this.setType("none", this.myturn)
+			this.quitted = true
 			ServerConnection.guestQuit()
 			return true
 		}
@@ -484,6 +486,7 @@ class MatchInterface {
 		this.aiCharacterListShown = false
 
 		this.marbleItemState=[]
+		this.marbleItemPresets=[]
 		if (MatchInterface._instance) {
 			return MatchInterface._instance
 		}
@@ -513,7 +516,7 @@ class MatchInterface {
 					if(item.cost>7) level="ancient"
 
 					str+=`
-					<div class="marble-item ${level}" data-cost=${item.cost} data-code=${item.code}>
+					<div id="marble-item-${item.code}" class="marble-item ${level}" data-cost=${item.cost} data-code=${item.code}>
 						<div>
 							<div class="marble-item-header">
 								<div class='marble-item-name ${item.name.length>7?"small":""}'>${item.name}</div>
@@ -534,23 +537,103 @@ class MatchInterface {
 					let code=$(this).data("code")
 					let state=MATCH.ui.marbleItemState[code]
 					if(!state.selected && !state.locked){
-						$(this).addClass("selected")
-						state.selected=true
+						MATCH.ui.setMarbleItemStatus(code,1)
 					}
 					else if(state.selected && !state.locked){
-						$(this).removeClass("selected")
-						$(this).addClass("locked")
-						state.locked=true
-						state.selected=false
+						MATCH.ui.setMarbleItemStatus(code,2)
 					}
 					else{
-						$(this).removeClass("locked")
-						state.locked=false
+						MATCH.ui.setMarbleItemStatus(code,0)
 					}
 				})
 
-			})}
-		);
+			})});
+
+			fetch("/resource/marble_item_presets").then(response=>{
+				response.json().then(result=>{
+					let str=""
+					console.log(result)
+					for(const [i,preset] of result.entries())
+					{
+						let locked=preset.items.reduce((prev,curr)=>curr===2?prev+1:prev)
+						let selected=preset.items.reduce((prev,curr)=>curr===1?prev+1:prev)
+
+						this.marbleItemPresets.push(preset)
+						str+=`<option value="${i}">${preset.name}[고정:${locked},선택:${preset.randomCount}/${selected}]</option>`
+					}
+					$("#marble-item-preset").append(str)
+					$("#marble-item-preset").change(function(){
+						let index=$(this).val()
+						
+						MATCH.ui.onPresetChange(index)
+					})
+				})
+			})
+
+			$("#save-preset").click(()=>{
+				this.saveMarbleItemPreset()
+			})
+	}
+
+	saveMarbleItemPreset(){
+		let name=$("#save-preset-name").val()
+		let items=[]
+		let randcount=Number($("#marble-item-random-count").val())
+
+		if(this.marbleItemPresets.some((preset)=>preset.name===name)){
+			alert("프리셋 이름 중복!")
+			return
+		}
+
+		for(const item of this.marbleItemState){
+			if(item.selected) items.push(1)
+			else if(item.locked) items.push(2)
+			else items.push(0)
+		}
+		console.log(items)
+
+		$.ajax({
+			method: 'POST',
+			url: '/resource/marble_item_presets',
+			data:{
+				name:name,items:items,randcount:randcount
+			}
+		})
+	}
+	onPresetChange(idx){
+		if(idx==="empty")
+		{
+			for(let i=0;i<this.marbleItemState.length;++i){
+				this.setMarbleItemStatus(i,0)
+			}
+			return
+		}
+		let count=this.marbleItemPresets[idx].randomCount
+		$("#marble-item-random-count").val(count)
+		for(const [i,itemstatus] of this.marbleItemPresets[idx].items.entries()){
+			this.setMarbleItemStatus(i,itemstatus)
+		}
+	}
+	/**
+	 * 
+	 * @param {*} status 0:none, 1:selected, 2:locked
+	 */
+	setMarbleItemStatus(itemcode,status){
+		let state=this.marbleItemState[itemcode]
+		let elem=$("#marble-item-"+itemcode)
+		state.selected=false
+		state.locked=false
+		$("#marble-item-"+itemcode).removeClass("selected")
+		$("#marble-item-"+itemcode).removeClass("locked")
+
+		if(status===1){
+			state.selected=true
+			$("#marble-item-"+itemcode).addClass("selected")
+		}
+		else if(status===2){
+			$("#marble-item-"+itemcode).addClass("locked")
+			state.locked=true
+		}
 	}
 	setAsHost(roomname) {
 		$("#Hostingpage").addClass("pending")

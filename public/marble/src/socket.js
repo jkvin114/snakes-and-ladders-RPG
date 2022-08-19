@@ -49,10 +49,10 @@ export function openConnection(isInitial){
 		console.log(turn,data)
 		GAME.diceRoll(turn,data)
 	})
-    socket.on("server:walk_move", function (player,from,distance) {
+    socket.on("server:walk_move", function (player,from,distance,movetype) {
         console.log("walk_move")
-		console.log(player,distance)
-		GAME.playerWalkMove(player,from,distance)
+		console.log(player,distance,movetype)
+		GAME.playerWalkMove(player,from,distance,movetype)
 	})
     socket.on("server:teleport", function (player,pos,movetype) {
 		console.log(player,pos,movetype)
@@ -191,6 +191,9 @@ export function openConnection(isInitial){
         console.log("blackhole")
 		console.log(black,white)
 		GAME.scene.setBlackhole(black,white)
+	})
+	socket.on("server:remove_blackhole", function () {
+		GAME.scene.removeBlackHole()
 	})
 	socket.on("server:modify_land", function (pos,type,val) {
         console.log("modify_land")

@@ -1,11 +1,11 @@
 import { GameLoop } from "./GameCycle/RPGGameCycleState"
 import { Room } from "./room"
-import { ClientPayloadInterface, ServerPayloadInterface } from "./data/PayloadInterface"
+import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
 
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./mongodb/DBHandler")
 import { hasProp } from "./core/Util"
 import { Worker, isMainThread } from "worker_threads"
-import { ClientInterface, ClientInterfaceCallback } from "./ClientInterface"
+import { GameEventObserver, GameEventEmitter } from "./GameEventObserver"
 const path = require("path")
 
 function workerTs(data: unknown) {
@@ -14,22 +14,22 @@ function workerTs(data: unknown) {
 
 class RPGRoom extends Room {
 
-	gameloop: GameLoop
-	clientInterface:ClientInterface
+	private gameloop: GameLoop
+	protected eventObserver:GameEventObserver
 
 	// simulation: Simulation
 	constructor(name: string) {
 		super(name)
 		this.gameloop
-		this.clientInterface=new ClientInterface(name)
+		this.eventObserver=new GameEventObserver(name)
 		// this.simulation = null
 	}
-	registerClientInterface(callback:ClientInterfaceCallback){
-		this.clientInterface.registerCallback(callback)
+	registerClientInterface(callback:GameEventEmitter){
+		this.eventObserver.subscribeEventEmitter(callback)
 		return this
 	}
-	registerSimulationClientInterface(callback:ClientInterfaceCallback){
-		this.clientInterface.registerSimulationCallback(callback)
+	registerSimulationClientInterface(callback:GameEventEmitter){
+		this.eventObserver.subscribeSimulationEventEmitter(callback)
 		return this
 	}
 	cryptTurn(turn: number) {
@@ -48,21 +48,29 @@ class RPGRoom extends Room {
 		return this.gameloop.game.mapId
 	}
 
-	user_gameReady(setting: ClientPayloadInterface.GameSetting, roomName: string) {
+	user_gameReady(setting: ClientInputEventInterface.GameSetting, roomName: string) {
 		this.instant = false
 
 		// room.aichamplist=aichamplist
 		// room.map=map
 		this.gameloop = GameLoop.create(this.map, roomName, setting, false, this.isTeam, this.playerlist)
-		this.gameloop.setClientInterface(this.clientInterface)
+		this.gameloop.setClientInterface(this.eventObserver)
 	//	console.log("team" + this.isTeam)
 	}
-	user_requestSetting(): ServerPayloadInterface.initialSetting {
+	user_requestSetting(): ServerGameEventInterface.initialSetting {
 		let setting = this.gameloop.game.getInitialSetting()
 		//	setting.simulation = this.simulation
 		return setting
 	}
-
+	user_reconnect(turn:number){
+		this.gameloop.user_reconnect(turn)
+	}
+	hasGameLoop(){
+		return this.gameloop!=null
+	}
+	getGameLoop(){
+		return this.gameloop
+	}
 	/**
 	 *
 	 * @returns test if all players are connected
@@ -74,7 +82,11 @@ class RPGRoom extends Room {
 		return true
 	}
 
-	onGameover() {
+	onGameover(isNormal:boolean) {
+		if(!isNormal){
+			this.reset()
+			return
+		}
 		let stat = this.gameloop.game.getFinalStatistics()
 		let winner = this.gameloop.game.thisturn
 
@@ -84,14 +96,14 @@ class RPGRoom extends Room {
 		GameRecord.create(stat)
 			.then((resolvedData: any) => {
 				console.log("stat saved successfully")
-				this.clientInterface.gameStatReady(resolvedData.id)
+				this.eventObserver.gameStatReady(resolvedData.id)
 			})
 			.catch((e: any) => console.error(e))
 
-		this.clientInterface.gameOver(winner)
+		this.eventObserver.gameOver(winner)
 	}
 	user_simulationStart(
-		simulationsetting: ClientPayloadInterface.SimulationSetting,
+		simulationsetting: ClientInputEventInterface.SimulationSetting,
 		simulation_count: number,
 		isTeam: boolean,
 		runnerId: string
@@ -109,7 +121,7 @@ class RPGRoom extends Room {
 			})
 	}
 	doInstantSimulation(
-		simulationsetting: ClientPayloadInterface.SimulationSetting,
+		simulationsetting: ClientInputEventInterface.SimulationSetting,
 		simulation_count: number,
 		isTeam: boolean,
 		runnerId: string,
@@ -130,7 +142,7 @@ class RPGRoom extends Room {
 				if (hasProp(data, "type") && hasProp(data, "value")) {
 					if (data.type === "progress") {
 						//console.log("progress " + isMainThread)
-						this.clientInterface.simulationProgress(data.value)
+						this.eventObserver.simulationProgress(data.value)
 					} else if (data.type === "end") {
 						resolve(data.value)
 					} else reject(data.value)
@@ -156,7 +168,7 @@ class RPGRoom extends Room {
 			if (!stat) {
 				if (!simple_stat) {
 					console.log("simulation complete")
-					this.clientInterface.simulationOver("no_stat")
+					this.eventObserver.simulationOver("no_stat")
 					return
 				}
 
@@ -166,10 +178,10 @@ class RPGRoom extends Room {
 					})
 					.catch((e: any) => {
 						console.error(e)
-						this.clientInterface.simulationStatReady("error",e.toString())
+						this.eventObserver.simulationStatReady("error",e.toString())
 					})
 
-					this.clientInterface.simulationStatReady("none","")
+					this.eventObserver.simulationStatReady("none","")
 			} else {
 				SimulationRecord.create(stat)
 					.then((resolvedData: any) => {
@@ -184,21 +196,21 @@ class RPGRoom extends Room {
 							})
 							.catch((e: any) => {
 								console.error(e)
-								this.clientInterface.simulationStatReady("error",e.toString())
+								this.eventObserver.simulationStatReady("error",e.toString())
 							})
 
-						this.clientInterface.simulationStatReady(resolvedData.id,"")
+						this.eventObserver.simulationStatReady(resolvedData.id,"")
 					})
 					.catch((e: any) => {
 								console.error(e)
-								this.clientInterface.simulationStatReady("error",e.toString())
+								this.eventObserver.simulationStatReady("error",e.toString())
 					})
 			}
 
-			this.clientInterface.simulationOver("success")
+			this.eventObserver.simulationOver("success")
 		} else {
 			//error
-			this.clientInterface.simulationOver("error " + resultStat)
+			this.eventObserver.simulationOver("error " + resultStat)
 		}
 	}
 	reset(): void {

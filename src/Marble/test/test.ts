@@ -16,10 +16,9 @@ let players:ProtoPlayer[]=[
 
 
 
-let game=new MarbleGame(players,"",false,0)
+const game=new MarbleGame(players,"",false,0)
 
 game.setTurns();
-
 
 
 
@@ -30,6 +29,14 @@ cl(signedShortestDistance(1,6))
 cl(signedShortestDistance(6,1))
 
 
+
+function testSellOff(){
+    game.map.setLandOwner(game.map.tileAt(1) as BuildableTile,1)
+    game.map.setLandOwner(game.map.tileAt(3) as BuildableTile,1)
+    cl(game.map.toString())
+    game.map.clearTile(game.map.tileAt(1) as BuildableTile)
+    cl(game.map.toString())
+}
 
 
 function testFestival(){

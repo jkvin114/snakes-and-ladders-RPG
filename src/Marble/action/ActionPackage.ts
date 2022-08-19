@@ -70,6 +70,7 @@ class ActionPackage {
 	addAction(action: Action, ability: ABILITY_NAME) {
 		let ab = ABILITY_REGISTRY.get(ability)
 		if (!ab) return
+		action.addAbilityToActionTrace(ability)
 		if (ab.isAfterMain()) {
 			this.addAfter(action)
 		} else {

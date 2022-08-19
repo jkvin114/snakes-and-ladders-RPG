@@ -893,8 +893,8 @@ export class MarbleScene extends Board{
             }
         }
     }
-    showBubble(player,pos){
-        let pos=this.getCoord(pos)
+    showBubble(player,playerpos){
+        let pos=this.getCoord(playerpos)
         let bubble=new fabric.Image(document.getElementById('bubbleimg'), {
 			objectCaching: false,
             evented:false,

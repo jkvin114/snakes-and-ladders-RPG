@@ -92,6 +92,7 @@ abstract class BuildableTile extends Tile{
     abstract isEmpty():boolean
     abstract canBuyOut():boolean
     abstract isLandMark():boolean
+    abstract hasBuild(b:BUILDING):boolean
     constructor(position:number,type: TILE_TYPE, name: string){
         super(position,type,name)
         this.olympic=false

@@ -1,4 +1,4 @@
-import { Action, ActionModifyFunction, ACTION_TYPE, EmptyAction } from "../action/Action"
+import { Action,  ACTION_TYPE, EmptyAction } from "../action/Action"
 import { ActionTrace, ACTION_SOURCE_TYPE } from "../action/ActionTrace"
 import { hexId, sample } from "../util"
 import { ABILITY_NAME } from "./AbilityRegistry"
@@ -73,7 +73,6 @@ export class Ability {
  */
 export interface ConfirmQuery{
     modifiableActions:ACTION_TYPE[]
-    onConfirm():ActionModifyFunction
     onCancel(actionToModify:Action):void
 }
 /**

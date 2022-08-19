@@ -1,5 +1,5 @@
 import GameInterface from "./gameinterface.js"
-import { Scene } from "./canvas_control.js"
+import { Scene, sleep } from "./canvas_control.js"
 import { GameClient, openConnection } from "./gameclient.js"
 import { StoreStatus, StoreInstance, StoreInterface } from "./store.js"
 
@@ -110,9 +110,10 @@ class Game {
 		this.shuffledObstacles
 		this.sounds = new Map()
 		this.begun = false
+		this.skillScale={}
 	}
 	onCreate() {
-		this.ui = new GameInterface()
+		this.ui = new GameInterface(this)
 		this.ui.onCreate()
 		this.storeStatus = new StoreStatus()
 		this.store = new StoreInstance(this.storeStatus)
@@ -147,8 +148,8 @@ class Game {
 	onQuit() {
 		this.ui.showDialog(
 			GAME.chooseLang(
-				"Are you sure you want to quit? (Game will reset if you leave)",
-				"정말 게임을 떠나시겠습니까?(나가면 게임이 초기화됩니다)"
+				"Are you sure you want to quit?",
+				"정말 게임을 떠나시겠습니까?"
 			),
 			() => {
 				document.onbeforeunload = () => {}
@@ -226,6 +227,8 @@ class Game {
 					setting.playerSettings[i].name
 				)
 			)
+			if(i===this.myturn) this.skillScale=setting.playerSettings[i].skillScale
+
 		}
 
 		this.ui.init(setting.playerSettings)
@@ -389,8 +392,8 @@ class Game {
 			// 	}, 950)
 			// }, 1000)
 		} else {
-			$("#smalldicebtn").attr("src", "res/img/dice/roll6.png")
-			$("#smalldicebtn").show()
+			// $("#smalldicebtn").attr("src", "res/img/dice/roll6.png")
+			// $("#smalldicebtn").show()
 		}
 	}
 
@@ -412,7 +415,7 @@ class Game {
 
 	rollDice(dice) {
 		// this.onIndicateItem(dice.turn,20)
-	//	this.ui.showMultiKillImg(dice.turn,dice.dice,"펜타킬")
+		//	this.ui.showMultiKillImg(dice.turn,dice.dice,"펜타킬")
 		console.log(dice)
 
 		if (dice.turn === 0) {
@@ -449,8 +452,9 @@ class Game {
 		if (this.simulation) {
 			//	this.scene.movePlayer(dice.actualdice, 1, dice.currpos, dice.turn)
 		} else {
-			this.diceAnimation(dice)
-			this.playSound("dice")
+			// this.diceAnimation(dice)
+			this.animateDice(dice)
+			// this.playSound("dice")
 		}
 		if (dice.dcused) {
 			this.android_toast(this.chooseLang("Dice Control!", "주사위 컨트롤!"))
@@ -479,6 +483,52 @@ class Game {
 	// 		}, 1000)
 	// 	}
 	// }
+
+	async animateDice(dice) {
+		$("#dice-container").css({ opacity: 1 })
+		// let ui = this.turn2ui[dice.turn]
+		let pos = { top: 0, left: 0 }
+		if (dice.turn===this.myturn) pos = { top: "100%", left: "100%" }
+		$(".dice").addClass("no-animate")
+
+		const elDiceOne = document.getElementById("dice1")
+		const dices = [0, 1, 6, 4, 5, 2, 3]
+
+		// let dice1 = dices[dice.dice]
+		let other = (dice.dice + 3 + Math.floor(Math.random() * 2)) % 6
+
+		for (let i = 1; i <= 6; i++) {
+			elDiceOne.classList.remove("show-" + i)
+			if (other === i) {
+				elDiceOne.classList.add("show-" + i)
+			}
+		}
+		$("#dice-wrapper1").css(pos)
+
+		let mul1 = Math.floor(Math.random() * 6) - 2
+		let mul2 = Math.floor(Math.random() * 6) - 2
+
+		await sleep(100)
+
+		this.playSound("dice")
+		$(".dice").removeClass("no-animate")
+		for (let i = 1; i <= 6; i++) {
+			elDiceOne.classList.remove("show-" + i)
+			if (dices[dice.dice] === i) {
+				elDiceOne.classList.add("show-" + i)
+			}
+		}
+
+		$("#dice-wrapper1").animate(
+			{ top: window.innerHeight / 2 - 15 * mul1, left: window.innerWidth / 2 - 15 * mul2 },
+			1000,
+			"easeOutBounce"
+		)
+		await sleep(1000)
+		$("#dice-container").animate({ opacity: 0 }, 500)
+		await sleep(400)
+		this.afterDice(dice)
+	}
 	/**
 	 * dica animation and move player
 	 * @param {} dice
@@ -531,7 +581,7 @@ class Game {
 	}
 
 	afterDice(dice) {
-		this.setDice(dice.dice)
+		// this.setDice(dice.dice)
 		this.players[dice.turn].pos = dice.currpos + dice.actualdice
 		//	console.log("after dice thrown")
 		this.scene.showPin(dice.currpos + dice.actualdice)
@@ -599,8 +649,6 @@ class Game {
 			this.ui.showSkillBtn(this.skillstatus)
 		} else if (result.type === 2 || result.type === 7) {
 			this.android_toast(this.chooseLang("Skill activated", "스킬 발동!"))
-			// android_toast(this.chooseLang("no targets in range", "범위내에 적이 없음"))
-			//	this.ui.showSkillBtn(result.skillstatus)
 		} else if (result.type === 3) {
 			this.android_toast(this.chooseLang("no targets in range", "범위내에 적이 없음"))
 			this.ui.showSkillBtn(this.skillstatus)
@@ -651,6 +699,9 @@ class Game {
 		}
 		if (type === "waiting_revival") {
 			this.scene.showSoul(turn)
+		}
+		if (type === "finish_pos") {
+			this.scene.setFinish(data)
 		}
 		if (this.myturn !== turn) {
 			return
@@ -1373,7 +1424,7 @@ $(document).ready(function () {
 	// GAME = new Game()
 
 	window.onbeforeunload = function (e) {
-		return ''
+		return ""
 		sessionStorage.roomName = null
 		// GAME.connection.resetGame()
 		$.ajax({
@@ -1451,7 +1502,7 @@ function requestMap() {
 			console.log("onMapRequestComplete")
 			GAME.onMapRequestComplete()
 			GAME.scene.setMap(JSON.parse(data))
-			
+
 			new Promise((resolve) => GAME.scene.drawboard(resolve))
 				.then(() => {
 					GAME.boardReady()

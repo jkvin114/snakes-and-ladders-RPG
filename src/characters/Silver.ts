@@ -89,7 +89,7 @@ class Silver extends Player {
 		if(skill===ENUM.SKILL.ULT) this.useUlt()
 	}
 
-	useUlt() {
+	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
 		this.startDuration(ENUM.SKILL.ULT)
 

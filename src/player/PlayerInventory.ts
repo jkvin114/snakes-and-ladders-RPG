@@ -5,7 +5,7 @@ import { ITEM } from "../data/enum"
 import { items as ItemList } from "../../res/item.json"
 // import {  PlayerClientInterface, testSetting } from "../app"
 import type { Player } from "./player"
-import { ClientPayloadInterface, ServerPayloadInterface } from "../data/PayloadInterface"
+import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
 
 class PlayerInventory {
 	// player:Player
@@ -67,21 +67,21 @@ class PlayerInventory {
 		switch (type) {
 			case ENUM.CHANGE_MONEY_TYPE.EARN: //money earned
 				this.player.statistics.add(ENUM.STAT.MONEY_EARNED, m)
-				this.player.game.clientInterface.changeMoney(this.player.turn, m, this.money)
+				this.player.game.eventEmitter.changeMoney(this.player.turn, m, this.money)
 				break
 			case ENUM.CHANGE_MONEY_TYPE.EVERY_TURN: //money earned
 				this.player.statistics.add(ENUM.STAT.MONEY_EARNED, m)
-				this.player.game.clientInterface.changeMoney(this.player.turn, 0, this.money)
+				this.player.game.eventEmitter.changeMoney(this.player.turn, 0, this.money)
 				break
 			case ENUM.CHANGE_MONEY_TYPE.SPEND: //money spend
 				this.player.statistics.add(ENUM.STAT.MONEY_SPENT, -m)
-				this.player.game.clientInterface.changeMoney(this.player.turn, 0, this.money)
+				this.player.game.eventEmitter.changeMoney(this.player.turn, 0, this.money)
 				//0일 경우 indicator 는 표시안됨
 
 				break
 			case ENUM.CHANGE_MONEY_TYPE.TAKEN: //money taken
 				this.player.statistics.add(ENUM.STAT.MONEY_TAKEN, -m)
-				this.player.game.clientInterface.changeMoney(this.player.turn, m, this.money)
+				this.player.game.eventEmitter.changeMoney(this.player.turn, m, this.money)
 				break
 		}
 	}
@@ -89,7 +89,7 @@ class PlayerInventory {
 
 	changeToken(token: number) {
 		this.token += token
-		this.player.game.clientInterface.update("token", this.player.turn, this.token)
+		this.player.game.eventEmitter.update("token", this.player.turn, this.token)
 	}
 	sellToken(token:number,moneyspent:number) {
 		this.changeToken(-1 * token)
@@ -100,7 +100,7 @@ class PlayerInventory {
 
 	changeLife(life: number) {
 		this.life = Math.max(this.life + life, 0)
-		this.player.game.clientInterface.update("life", this.player.turn, this.life)
+		this.player.game.eventEmitter.update("life", this.player.turn, this.life)
 	}
 
 	giveTurnMoney(m: number) {
@@ -169,7 +169,7 @@ class PlayerInventory {
 			this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
 
 			if (PlayerInventory.indicateList.includes(item_id)) {
-				this.player.game.clientInterface.indicateItem(this.player.turn, item_id)
+				this.player.game.eventEmitter.indicateItem(this.player.turn, item_id)
 				this.sendActiveItemStatus()
 			}
 		}
@@ -182,9 +182,9 @@ class PlayerInventory {
 				return { id: item.id, cool: item.cooltime, coolRatio: 1 - item.cooltime / item.resetVal }
 			})
 		//	console.log(data)
-		this.player.game.clientInterface.update("activeItem", this.player.turn, data)
+		this.player.game.eventEmitter.update("activeItem", this.player.turn, data)
 	}
-	getStoreData(priceMultiplier: number):ServerPayloadInterface.EnterStore {
+	getStoreData(priceMultiplier: number):ServerGameEventInterface.EnterStore {
 		return {
 			item: this.itemSlots,
 			money: this.money,
@@ -258,7 +258,7 @@ class PlayerInventory {
 	 * moneyspend:int
 	 * }
 	 */
-	playerBuyItem(data: ClientPayloadInterface.ItemBought) {
+	playerBuyItem(data: ClientInputEventInterface.ItemBought) {
 		//	console.log("updateitem " + data.item)
 		//	console.log("updatetoken " + data.token)
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
@@ -279,7 +279,7 @@ class PlayerInventory {
 		}
 		this.player.ability.flushChange()
 		//	this.item = data.storedata.item
-		this.player.game.clientInterface.update("item", this.player.turn, this.itemSlots)
+		this.player.game.eventEmitter.update("item", this.player.turn, this.itemSlots)
 	}
 	thief(){
 		let itemhave = []
@@ -296,7 +296,7 @@ class PlayerInventory {
 		this.player.message(this.player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
 		this.player.inven.changeOneItem(thiefitem, -1)
 		this.player.inven.itemSlots = this.player.inven.convertCountToItemSlots(this.player.inven.item)
-		this.player.game.clientInterface.update("item", this.player.turn, this.player.inven.itemSlots)
+		this.player.game.eventEmitter.update("item", this.player.turn, this.player.inven.itemSlots)
 		this.player.ability.flushChange()
 	}
 	/**
@@ -322,7 +322,7 @@ class PlayerInventory {
 		}
 		this.itemSlots = this.convertCountToItemSlots(this.item)
 		this.player.ability.flushChange()
-		this.player.game.clientInterface.update("item", this.player.turn, this.itemSlots)
+		this.player.game.eventEmitter.update("item", this.player.turn, this.itemSlots)
 	}
 	/**
 	 * 첫번째 상점에선 2등급이상아이템 구입불가

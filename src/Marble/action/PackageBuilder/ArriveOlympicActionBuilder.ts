@@ -8,9 +8,9 @@ import { ACTION_TYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import {  TileSelectionAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ArriveCornerTileActionBuilder } from "./ArriveCornerTileActionBuilder"
 
-export class ArriveOlympicActionBuilder extends ActionPackageBuilder {
+export class ArriveOlympicActionBuilder extends ArriveCornerTileActionBuilder {
 	mylands: number[]
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, mylands: number[]) {
 		super(game, trace, invoker, EVENT_TYPE.ARRIVE_OLYMPIC)
@@ -19,13 +19,14 @@ export class ArriveOlympicActionBuilder extends ActionPackageBuilder {
 	build(): ActionPackage {
 		let pkg = super
 			.build()
-			.addMain(new TileSelectionAction(ACTION_TYPE.CHOOSE_OLYMPIC_POSITION, this.invoker.turn, this.mylands, "olympic"))
-
+		let main=new TileSelectionAction(ACTION_TYPE.CHOOSE_OLYMPIC_POSITION, this.invoker.turn, this.mylands, "olympic")
 		let val = this.offences.get(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL)
 		if (val != null) {
 			pkg.addExecuted(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL, this.invoker.turn)
-			pkg.trace.setAbilityName(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL).setName("올림픽끌당")
+			main.addAbilityToActionTrace(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL)
+			// this.trace.setAbilityName(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL).setName("올림픽끌당")
 		}
-		return pkg
+		this.applyMoveOverrideAbility(pkg)
+		return pkg.addMain(main)
 	}
 }

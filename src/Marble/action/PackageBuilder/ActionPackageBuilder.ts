@@ -13,11 +13,13 @@ export abstract class ActionPackageBuilder {
 	protected offences: Map<ABILITY_NAME, AbilityValues>
 	protected defender: MarblePlayer
 	protected defences: Map<ABILITY_NAME, AbilityValues>
+	protected invokerEvent:EVENT_TYPE
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, invokerEvent: EVENT_TYPE) {
 		this.game = game
 		this.trace = trace
 		this.invoker = invoker
 		this.offences = invoker.sampleAbility(invokerEvent, this.trace)
+		this.invokerEvent=invokerEvent
 	}
 	protected isTurnOf(turn: number) {
 		return this.game.thisturn === turn

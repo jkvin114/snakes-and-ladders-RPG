@@ -6,7 +6,7 @@ import { EVENT_TYPE } from "./EventType"
 
 export enum ABILITY_NAME {
 	
-	NONE = "none",
+	NONE = "",
 	ANGEL_CARD = "angel_card",
 	SHIELD_CARD = "shield_card",
 	DISCOUNT_CARD = "discount_card",
@@ -71,7 +71,6 @@ export enum ABILITY_NAME {
 	INSTANT_ESCAPE_ISLAND="instant_escape_island",
 	LINE_BUYOUT_ON_BUILD="red_sticker",
 	LINE_LANDMARK_ON_BUILD="newtown",
-
 	LINE_MOVE_ON_ARRIVE_MY_LAND="line_trampoline",
 	MY_LAND_MOVE_ON_ARRIVE_MY_LAND="my_land_trampoline",
 	MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND="enemy_land_trampoline",
@@ -81,7 +80,13 @@ export enum ABILITY_NAME {
 	DICE_CHANCE_ON_BUILD_LANDMARK="dice_chance_on_build_landmark",
 	MY_LAND_MOVE_ON_BUILD_LANDMARK="my_land_move_on_build_landmark",
 	LINE_MOVE_ON_TRIPLE_DOUBLE="teleport_invitation",
-
+	MY_LAND_MOVE_ON_BLACKHOLE="my_land_move_on_blackhole",
+	CORNER_SPECIAL_MOVE_ON_ARRIVE_CORNER="corner_special_move_on_arrive_corner",
+	BLOCK_BUYOUT="block_buyout",
+	TRAVEL_ON_PASS_TRAVEL_AND_DICE_CHANCE="sophie",
+	ADDITIONAL_LANDMARK_ON_BUILD="additional_landmark_on_build",
+	MOVE_IN_DICE_RANGE_AFTER_DICE="move_in_dice_range_after_dice",
+	THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME="donate_guidebook"
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -112,7 +117,8 @@ ABILITY_REGISTRY.set(
 
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.DICE_CONTROL_ACCURACY,
-	new Ability(ABILITY_NAME.DICE_CONTROL_ACCURACY).on(EVENT_TYPE.GENERATE_DICE_NUMBER)
+	new Ability(ABILITY_NAME.DICE_CONTROL_ACCURACY)
+	.on(EVENT_TYPE.GENERATE_DICE_NUMBER)
 	.desc("주사위 컨트롤 정확도 $c% 증가")
 )
 ABILITY_REGISTRY.set(
@@ -367,7 +373,7 @@ ABILITY_REGISTRY.set(
 	ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK,
 	new Ability(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK)
 	.on(EVENT_TYPE.ENEMY_PASS_ME)
-	.desc("내 랜드마크에 서있을시 $c% 확률로 지나가는 상대를 붙잡음")
+	.desc("내 랜드마크에 서있을시 $c% 확률로 지나가는 상대를 붙잡고 통행료 2배 징수")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.INSTANT_ESCAPE_ISLAND,
@@ -379,6 +385,7 @@ ABILITY_REGISTRY.set(
 	ABILITY_NAME.LINE_BUYOUT_ON_BUILD,
 	new Ability(ABILITY_NAME.LINE_BUYOUT_ON_BUILD)
 	.on(EVENT_TYPE.BUILD)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
 	.desc("건설시 $c% 확률로 같은 라인의 땅 인수가능")
 )
 ABILITY_REGISTRY.set(
@@ -416,5 +423,80 @@ ABILITY_REGISTRY.set(
 	new MoveAbilty(ABILITY_NAME.LINE_MOVE_ON_TRIPLE_DOUBLE)
 	.on(EVENT_TYPE.THREE_DOUBLE)
 	.desc("더블 3회시 $c% 확률로 라인이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MY_LAND_MOVE_ON_BUILD_LANDMARK,
+	new MoveAbilty(ABILITY_NAME.MY_LAND_MOVE_ON_BUILD_LANDMARK)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
+	.desc("랜드마크 건설시 $c% 확률로 자신의 땅 선택이동")
+)
+
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.DICE_CHANCE_ON_BUILD_LANDMARK,
+	new DiceChanceAbility(ABILITY_NAME.DICE_CHANCE_ON_BUILD_LANDMARK)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
+	.desc("랜드마크 건설시 $c% 확률로 주사위 한번더(더블 효과 없음)")
+)
+
+
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.UPGRADE_LAND_AND_MULTIPLIER_ON_BUILD,
+	new Ability(ABILITY_NAME.UPGRADE_LAND_AND_MULTIPLIER_ON_BUILD)
+	.on(EVENT_TYPE.BUILD)
+	.desc("건설시 $c% 확률로 건물 1단계 업그레이드 후 통행료 2배")
+)
+
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MOVE_IN_PLACE_ON_BUILD,
+	new MoveAbilty(ABILITY_NAME.MOVE_IN_PLACE_ON_BUILD)
+	.on(EVENT_TYPE.BUILD)
+	.desc("3건물 건설시 $c% 확률로 제자리 이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MY_LAND_MOVE_ON_BLACKHOLE,
+	new MoveAbilty(ABILITY_NAME.MY_LAND_MOVE_ON_BLACKHOLE)
+	.on(EVENT_TYPE.ARRIVE_BLACKHOLE)
+	.desc("$c% 확률로 블랙홀 도착시 내 땅 선택 이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.CORNER_SPECIAL_MOVE_ON_ARRIVE_CORNER,
+	new MoveAbilty(ABILITY_NAME.CORNER_SPECIAL_MOVE_ON_ARRIVE_CORNER)
+	.on(EVENT_TYPE.ARRIVE_ISLAND)
+	.on(EVENT_TYPE.ARRIVE_TRAVEL)
+	.on(EVENT_TYPE.ARRIVE_START)
+	.on(EVENT_TYPE.ARRIVE_OLYMPIC)
+	.desc("$c% 확률로 모서리 지역 도착시 모서리 지역 혹은 특수지역 이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.BLOCK_BUYOUT,
+	new Ability(ABILITY_NAME.BLOCK_BUYOUT)
+	.on(EVENT_TYPE.BEING_BUYOUT)
+	.desc("$c% 확률로 인수 방어")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.TRAVEL_ON_PASS_TRAVEL_AND_DICE_CHANCE,
+	new MoveAbilty(ABILITY_NAME.TRAVEL_ON_PASS_TRAVEL_AND_DICE_CHANCE)
+	.on(EVENT_TYPE.PASS_TRAVEL)
+	.on(EVENT_TYPE.ARRIVE_TRAVEL)
+	.desc("세계여행에 도착하거나 지나칠 때 50% 확률로 즉시 세계여행 발동/이동후 주사위 한번 더!")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.ADDITIONAL_LANDMARK_ON_BUILD,
+	new Ability(ABILITY_NAME.ADDITIONAL_LANDMARK_ON_BUILD)
+	.on(EVENT_TYPE.BUILD)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
+	.desc("건설시 $c% 확률로 다른곳에 랜드마크 추가생성(내 땅 우선)")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MOVE_IN_DICE_RANGE_AFTER_DICE,
+	new MoveAbilty(ABILITY_NAME.MOVE_IN_DICE_RANGE_AFTER_DICE)
+	.on(EVENT_TYPE.THROW_DICE)
+	.desc("주사위를 굴린 후 $c% 확률로 이동 범위내 선택이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME,
+	new Ability(ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME)
+	.on(EVENT_TYPE.ENEMY_ARRIVE_TO_ME)
+	.desc("상대가 나에게 도착하면 $c% 확률로 가장비싼지역 기부받고 내 랜드마크로 날려보냄(통행료 2배)")
 )
 export { ABILITY_REGISTRY }

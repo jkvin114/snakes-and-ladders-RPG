@@ -6,16 +6,16 @@ import { Entity } from "./Entity"
 import { EFFECT, ENTITY_TYPE,  STAT } from "../data/enum"
 import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize, sleep, CALC_TYPE } from "../core/Util"
 import { MAP } from "../MapHandlers/MapStorage"
-import { ServerPayloadInterface } from "../data/PayloadInterface"
+import { ServerGameEventInterface } from "../data/PayloadInterface"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
-import { ClientInterface } from "../ClientInterface"
+import { GameEventObserver } from "../GameEventObserver"
 
 
 
 class AttackHandler{
 	static basicAttacks(from:Player,targets:Entity[],damage:Damage):boolean{
 		let died=false
-		let data:ServerPayloadInterface.Attack={
+		let data:ServerGameEventInterface.Attack={
 			targets:[],source:from.turn,visualeffect:from.getBasicAttackName(),sourcePos:from.pos
 		}
 		for(let t of targets){
@@ -24,7 +24,7 @@ class AttackHandler{
 			died=died||(v.flags.includes("died"))
 		}
 		
-		from.game.clientInterface.attack(data)
+		from.game.eventEmitter.attack(data)
 		return died
 	}
 
@@ -33,17 +33,17 @@ class AttackHandler{
 		let delay=from.getSkillTrajectorySpeed(from.getSkillName(skillattack.skill))
 		if(delay>0 && !from.game.instant){
 			delay=MAP.getCoordinateDistance(from.mapId,from.pos,targets[0].pos) * delay / trajectorySpeedRatio
-			let data:ServerPayloadInterface.skillTrajectory={
+			let data:ServerGameEventInterface.skillTrajectory={
 				from:from.pos,
 				to:targets[0].pos,
 				type:from.getSkillName(skillattack.skill),
 				delay:delay
 			}
-			from.game.clientInterface.skillTrajectory(data)
+			from.game.eventEmitter.skillTrajectory(data)
 			await sleep(delay)
 		}
 
-		let data:ServerPayloadInterface.Attack={
+		let data:ServerGameEventInterface.Attack={
 			targets:[],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
 		}
 
@@ -52,10 +52,10 @@ class AttackHandler{
 			data.targets.push(v)
 		}
 
-		from.game.clientInterface.attack(data)
+		from.game.eventEmitter.attack(data)
 	}
 
-	static basicAttack(from:Player,target:Entity,dmg:Damage):ServerPayloadInterface.Victim{
+	static basicAttack(from:Player,target:Entity,dmg:Damage):ServerGameEventInterface.Victim{
 		
 		let damage=dmg.clone()
 
@@ -65,7 +65,7 @@ class AttackHandler{
 
 			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}
-		let victimData:ServerPayloadInterface.Victim={
+		let victimData:ServerGameEventInterface.Victim={
 			pos:target.pos,flags:[],damage:damage.getTotalDmg()
 		}
 	//("-----------basicattack"+damage.getTotalDmg())
@@ -78,15 +78,15 @@ class AttackHandler{
 
 	static skillAttackAuto(from:Player,target:Entity,skillattack:SkillAttack):boolean{
 		let v=this.skillAttack(from,target,skillattack)
-		let data:ServerPayloadInterface.Attack={
+		let data:ServerGameEventInterface.Attack={
 			targets:[v],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
 		}
-		from.game.clientInterface.attack(data)
+		from.game.eventEmitter.attack(data)
 		return (v.flags.includes("died"))
 	}
 
-	static skillAttack(from:Player,target:Entity,skillattack:SkillAttack):ServerPayloadInterface.Victim{
-		let victimData:ServerPayloadInterface.Victim={
+	static skillAttack(from:Player,target:Entity,skillattack:SkillAttack):ServerGameEventInterface.Victim{
+		let victimData:ServerGameEventInterface.Victim={
 			pos:target.pos,flags:[],damage:0
 		}
 		let damage=skillattack.damage.clone()
@@ -137,13 +137,13 @@ class AttackHandler{
 	static plainAttack(from:Entity,target:Entity,dmg:Damage,effectname:string):boolean{
 		let damage=dmg.clone()
 
-		let data:ServerPayloadInterface.Attack={
+		let data:ServerGameEventInterface.Attack={
 			targets:[{
 				pos:target.pos,flags:[],damage:damage.getTotalDmg()
 			}],source:-1,visualeffect:effectname,sourcePos:0
 		}
 
-		from.game.clientInterface.attack(data)
+		from.game.eventEmitter.attack(data)
 
 		return AttackHandler.doDamage(from,target,damage,effectname,false,[HPChangeData.FLAG_PLAINDMG])
 	}
@@ -199,12 +199,12 @@ class EntityMediator {
 	readonly isTeam: boolean
 	readonly instant: boolean
 	readonly rname: string
-	clientInterface:ClientInterface
+	eventEmitter:GameEventObserver
 	constructor(isTeam: boolean, instant: boolean, rname: string) {
 		this.isTeam = isTeam
 		this.instant = instant
 		this.rname = rname
-		this.clientInterface=new ClientInterface(this.rname)
+		this.eventEmitter=new GameEventObserver(this.rname)
 		this.storage = new EntityStorage()
 	}
 	sendToClient(sender: Function, ...args: any[]) {
@@ -257,7 +257,7 @@ class EntityMediator {
 
 		entity.forceMove(pos)
 		if (entity instanceof SummonedEntity) {
-			this.clientInterface.update( "move_entity", entity.summoner.turn, {
+			this.eventEmitter.update( "move_entity", entity.summoner.turn, {
 				UEID: entity.UEID,
 				pos: entity.pos
 			})
@@ -268,7 +268,7 @@ class EntityMediator {
 		let player = this.getPlayer(id)
 		if (!(player instanceof Player)) return
 
-		this.clientInterface.playerForceMove(player.turn, pos, movetype)
+		this.eventEmitter.playerForceMove(player.turn, pos, movetype)
 
 		player.forceMove(pos)
 
@@ -282,7 +282,7 @@ class EntityMediator {
 		let player = this.getPlayer(id)
 		if (!(player instanceof Player)) return
 
-		this.clientInterface.playerForceMove(player.turn, pos, movetype)
+		this.eventEmitter.playerForceMove(player.turn, pos, movetype)
 
 		player.forceMove(pos)
 
@@ -291,6 +291,17 @@ class EntityMediator {
 		} else {
 			player.game.requestForceMove(player,movetype,false)
 		}
+	}
+	getSecondPlayerLevel():number{
+		let sortedByPos=this.allPlayer().sort((a,b)=>b.pos-a.pos)
+		let first=sortedByPos[0]
+		if(!this.isTeam)
+			return sortedByPos[1].level
+		else if(sortedByPos.length>2 && sortedByPos[1].team===first.team)
+			return sortedByPos[2].level
+
+
+		return sortedByPos[1].level
 	}
 
 

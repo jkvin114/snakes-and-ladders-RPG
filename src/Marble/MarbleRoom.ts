@@ -1,6 +1,6 @@
-import { ClientInterfaceCallback } from "../ClientInterface";
+import { GameEventEmitter } from "../GameEventObserver";
 import { Room } from "../room";
-import { MarbleClientInterface } from "./MarbleClientInterface";
+import { MarbleGameEventObserver } from "./MarbleGameEventObserver";
 import { MarbleGameLoop } from "./MarbleGameLoop";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 
@@ -9,20 +9,23 @@ class MarbleRoom extends Room{
         return this.map
     }
     user_message(turn: number, msg: string): string {
-        throw new Error("Method not implemented.");
+        console.error("Method not implemented.");
+		return ""
     }
     gameloop:MarbleGameLoop
-	clientInterface:MarbleClientInterface
+	clientInterface:MarbleGameEventObserver
+	
+
     constructor(name:string){
         super(name)
         this.gameloop
-		this.clientInterface=new MarbleClientInterface(name)
+		this.clientInterface=new MarbleGameEventObserver(name)
     }
-	registerClientInterface(callback:ClientInterfaceCallback){
+	registerClientInterface(callback:GameEventEmitter){
 		this.clientInterface.registerCallback(callback)
 		return this
 	}
-	registerSimulationClientInterface(callback:ClientInterfaceCallback){
+	registerSimulationClientInterface(callback:GameEventEmitter){
 		return this
 	}
     user_gameReady(roomName: string,itemSetting:ServerPayloadInterface.ItemSetting) {
@@ -30,6 +33,7 @@ class MarbleRoom extends Room{
 
 		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerlist,itemSetting)
 		this.gameloop.setClientInterface(this.clientInterface)
+		this.gameloop.setOnReset(()=>this.reset())
 	}
 	user_requestSetting(){
 		return this.gameloop.game.getInitialSetting()
@@ -50,11 +54,11 @@ class MarbleRoom extends Room{
 		return true
 	}
 	onClientEvent(event:string,invoker:number,...args:any[])
-	{
+	{	
 		this.gameloop.onClientEvent(event,invoker,args)
 	}
     onGameover(){
-
+		this.reset()
     }
 	reset(): void {
 		super.reset()

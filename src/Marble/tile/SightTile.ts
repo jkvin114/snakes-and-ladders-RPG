@@ -39,6 +39,9 @@ class SightTile extends BuildableTile{
             cycleLeft:0,toll:this.baseToll,buildPrice:this.buildPrice,type:BUILDING.SIGHT,have:false
         }]
     }
+    hasBuild(b:BUILDING):boolean{
+        return (b===BUILDING.SIGHT && this.land)
+    }
     isLandMark(): boolean {
         return false
     }

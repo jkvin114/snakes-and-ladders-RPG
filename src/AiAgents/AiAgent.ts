@@ -1,6 +1,6 @@
 import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
-import { ServerPayloadInterface } from "../data/PayloadInterface"
+import { ServerGameEventInterface } from "../data/PayloadInterface"
 import { copyElementsOnly, pickRandom, shuffle, SkillTargetSelector, sleep } from "../core/Util"
 import { items as ItemList } from "../../res/item.json"
 import PlayerInventory from "../player/PlayerInventory"
@@ -189,7 +189,7 @@ abstract class AiAgent {
 		return true
 	}
 
-	selectTarget(skill: SKILL, targets: ServerPayloadInterface.PlayerTargetSelector): Player {
+	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player {
 		let players = targets.targets
 		if (players.length === 1) {
 			return this.player.game.pOfTurn(players[0])
@@ -204,7 +204,7 @@ abstract class AiAgent {
 		})
 		return ps[players[0]]
 	}
-	getProjectilePos(skill: SKILL, selector: ServerPayloadInterface.LocationTargetSelector): number {
+	getProjectilePos(skill: SKILL, selector: ServerGameEventInterface.LocationTargetSelector): number {
 		let me = this.player
 		let goal = null
 		let targets = me.mediator
@@ -247,7 +247,7 @@ abstract class AiAgent {
 		}
 		return Math.floor(Math.min(me.game.pOfTurn(goal).pos + 7 - selector.size, me.pos + selector.range / 2))
 	}
-	getAreaPos(skill: SKILL, selector: ServerPayloadInterface.LocationTargetSelector): number {
+	getAreaPos(skill: SKILL, selector: ServerGameEventInterface.LocationTargetSelector): number {
 		let me = this.player
 
 		let goal = null

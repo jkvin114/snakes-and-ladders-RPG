@@ -6,21 +6,21 @@ import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import { BUILDING, TILE_TYPE } from "../../tile/Tile"
 import { TileFilter } from "../../tile/TileFilter"
-import { chooseRandom } from "../../util"
+import { chooseRandom, cl } from "../../util"
 import { ACTION_TYPE, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
-import type { ActionTrace } from "../ActionTrace"
+import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import { LinePullAction, RangePullAction } from "../DelayedAction"
 import { AddMultiplierAction, AutoBuildAction, BuyoutAction, RequestMoveAction } from "../InstantAction"
-import { BlackholeTileSelectionAction, TileSelectionAction } from "../QueryAction"
+import { BlackholeTileSelectionAction, DiceChanceAction, MoveTileSelectionAction, TileSelectionAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
 
 export class OnBuildActionBuilder extends ActionPackageBuilder {
-	builds: BUILDING[]
-	isAuto: boolean
-	tile: BuildableTile
-	isDirectBuild: boolean
+	readonly builds: BUILDING[]
+	readonly isAuto: boolean
+	readonly tile: BuildableTile
+	readonly isDirectBuild: boolean
 	indicateMainBuild: boolean //기본 건설 클라이언트에 표시하는지 여부(즉시 업그레이드시 표시안함)
 	constructor(
 		game: MarbleGame,
@@ -39,12 +39,24 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 	}
 	private constructionTool(pkg: ActionPackage) {
 		const construction = ABILITY_NAME.GO_START_ON_THREE_HOUSE
-		let value = this.offences.get(construction)
-		if (!value || this.tile.getNextBuild() !== BUILDING.LANDMARK) return false
+		const inplace_construction = ABILITY_NAME.MOVE_IN_PLACE_ON_BUILD
+		let nextbuild=this.tile.getNextBuild()
 
-		pkg.addExecuted(construction, this.invoker.turn)
-		pkg.addAction(new RequestMoveAction(this.invoker.turn, 0, MOVETYPE.FORCE_WALK), construction)
-		return true
+		if (nextbuild !== BUILDING.LANDMARK) return false
+
+		if(this.offences.has(inplace_construction)){
+			pkg.addAction(new RequestMoveAction(this.invoker.turn, this.invoker.pos, MOVETYPE.FORCE_WALK)
+			.reserveAbilityIndicatorOnPop(inplace_construction, this.invoker.turn), inplace_construction)
+			return true
+		}
+		else if(this.offences.has(construction)){
+
+			// pkg.addExecuted(construction, this.invoker.turn)
+			pkg.addAction(new RequestMoveAction(this.invoker.turn, 0, MOVETYPE.FORCE_WALK)
+			.reserveAbilityIndicatorOnPop(construction, this.invoker.turn), construction)
+			return true
+		}
+		return false
 	}
 	private blackhole(pkg: ActionPackage) {
 		const blackhole = ABILITY_NAME.BLACKHOLE_ON_BUILD_LANDMARK
@@ -98,7 +110,7 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 	}
 	private olympicPull(pkg: ActionPackage) {
 		if (
-			this.trace.useActionAndAbility(ACTION_TYPE.CHOOSE_OLYMPIC_POSITION, ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL) &&
+			this.trace.useActionAndAbility(ACTION_TYPE.AUTO_BUILD, ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL) &&
 			this.tile.isLandMark()
 		) {
 			pkg.addExecuted(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL, this.invoker.turn)
@@ -112,12 +124,13 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 	}
 	private redSticker(pkg: ActionPackage) {
 		const redsticker = ABILITY_NAME.LINE_BUYOUT_ON_BUILD
-		if (!this.offences.has(redsticker) || this.trace.hasAction(ACTION_TYPE.BUYOUT)) return false
+		if (!this.offences.has(redsticker) 
+		|| this.trace.useActionAndAbility(ACTION_TYPE.CHOOSE_BUYOUT_POSITION,redsticker)) return false
 
 		let tiles = this.game.map.getTiles(this.invoker, TileFilter.LANDS_CAN_BUYOUT().setSameLineOnly().setEnemyLandOnly())
 		if (tiles.length === 0) return false
 
-		this.trace.setAbilityName(redsticker).setName("빨간딱지")
+		this.trace.setAbilityName(redsticker).setName("빨간딱지").addTag(ActionTraceTag.IGNORE_BLOCK_BUYOUT)
 
 		pkg.addExecuted(redsticker, this.invoker.turn)
 		pkg.addAction(
@@ -126,32 +139,84 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 		)
 		return true
 	}
-	private newtown(pkg: ActionPackage) {
+	private buildUpgrades(pkg: ActionPackage) {
 		const newtown = ABILITY_NAME.LINE_LANDMARK_ON_BUILD
-		if (!this.offences.has(newtown) || this.tile.type === TILE_TYPE.SIGHT || this.invoker.pos === 0) return false
+		const auto_upgrade = ABILITY_NAME.UPGRADE_LAND_AND_MULTIPLIER_ON_BUILD
+		if(this.tile.type === TILE_TYPE.SIGHT) return false
 
-		let tiles = this.game.map.getTiles(this.invoker, TileFilter.LANDS_CAN_BUYOUT().setSameLineOnly().setMyLandOnly())
-		if (tiles.length === 0) return false
-		this.indicateMainBuild = false
-		pkg.addExecuted(newtown, this.invoker.turn)
-		for (const tile of tiles) {
-			pkg.addAction(new AutoBuildAction(this.invoker.turn, tile, [BUILDING.LANDMARK]), newtown)
+		if(this.offences.has(newtown) && this.invoker.pos !== 0)
+		{
+			let tiles = this.game.map.getTiles(this.invoker, TileFilter.LANDS_CAN_BUYOUT().setSameLineOnly().setMyLandOnly())
+			if (tiles.length === 0) return false
+			this.indicateMainBuild = false
+			pkg.addExecuted(newtown, this.invoker.turn)
+			for (const tile of tiles) {
+				pkg.addAction(new AutoBuildAction(this.invoker.turn, tile, [BUILDING.LANDMARK]), newtown)
+			}
+			return true
 		}
+		else if(this.offences.has(auto_upgrade)){
+			pkg.addExecuted(auto_upgrade, this.invoker.turn)
+			pkg.addAction(new AutoBuildAction(this.invoker.turn,this.tile.position,[this.tile.getNextBuild()]),auto_upgrade)
+			pkg.addAction(new AddMultiplierAction(this.invoker.turn,this.tile.position,2),auto_upgrade)
 
-		return true
+			if(this.tile.getNextBuild()===BUILDING.LANDMARK
+			||this.tile.getNextBuild()===BUILDING.VILLA) this.indicateMainBuild = false
+
+			return true
+		}
+		return false
+	}
+	private additionalBuild(pkg:ActionPackage){
+		const nirvana=ABILITY_NAME.ADDITIONAL_LANDMARK_ON_BUILD
+		if(this.offences.has(nirvana)){
+			let tiles = this.game.map.getTiles(this.invoker, TileFilter.MY_LANDTILE().setNoLandMark().setExclude([this.tile.position]))
+			if(tiles.length===0)
+				tiles = this.game.map.getTiles(this.invoker, TileFilter.EMPTY_LANDTILE())
+
+			if(tiles.length===0) return false
+			let pos=chooseRandom(tiles)
+			pkg.addAction(new AutoBuildAction(this.invoker.turn,pos,[BUILDING.LANDMARK]),nirvana)
+			pkg.addExecuted(nirvana,this.invoker.turn)
+			if(pos===this.tile.position) this.indicateMainBuild=false
+			return true
+		}
+		return false
+	}
+	private buildLandmarkEvent(pkg:ActionPackage){
+		const adice=ABILITY_NAME.DICE_CHANCE_ON_BUILD_LANDMARK
+		const move=ABILITY_NAME.MY_LAND_MOVE_ON_BUILD_LANDMARK
+
+		if(this.offences.has(move)){
+			let tiles = this.game.map.getTiles(this.invoker, TileFilter.MY_LAND().setExcludeMyPos())
+			if(tiles.length===0) return false
+			pkg.addAction(
+				new MoveTileSelectionAction(this.invoker.turn, tiles,MOVETYPE.TELEPORT)
+				.reserveAbilityIndicatorOnPop(move,this.invoker.turn),
+				move
+			)
+			return true
+		}
+		else if((this.offences.has(adice))){
+			pkg.addAction(new DiceChanceAction(this.invoker.turn,true).reserveAbilityIndicatorOnPop(adice,this.invoker.turn),adice)
+			return true
+		}
+		return false
 	}
 	build(): ActionPackage {
 		let pkg = super.build()
-
+		
 		if (!this.isAuto) {
-			this.constructionTool(pkg)
-			this.newtown(pkg)
-
+			this.buildUpgrades(pkg)
+			this.additionalBuild(pkg)
 			if (this.tile.isLandMark()) {
 				this.multiplier(pkg)
 				this.blackhole(pkg)
 
 				if (this.isDirectBuild) this.pull(pkg)
+			}
+			else{
+				this.constructionTool(pkg)
 			}
 
 			if (this.isDirectBuild) {
@@ -160,7 +225,9 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 		} else {
 			this.olympicPull(pkg)
 		}
-
+		if(this.tile.isLandMark()){
+			this.buildLandmarkEvent(pkg)
+		}
 		return pkg
 	}
 }

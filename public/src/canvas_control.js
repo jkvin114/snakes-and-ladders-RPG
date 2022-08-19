@@ -13,7 +13,7 @@ const FRAME = 30 //milisecond
 const TILE_SHADOW_THICKNESS_RIGHT = 5
 const TILE_SHADOW_THICKNESS_BOTTOM = 10
 const VISUAL_EFFECT_SPRITE_SIZE=128
-const sleep = (m) => new Promise((r) => setTimeout(r, m))
+export const sleep = (m) => new Promise((r) => setTimeout(r, m))
 export const COLOR_LIST_BG = ["#a6c8ff", "#ff7070", "#95ff80", "#fdff80"] //플레이어별 연한 색상
 
 const BIGGER_OBSTACLES=[9,12,13,14,17,38,46,58,74]
@@ -461,6 +461,7 @@ export class Scene extends Board{
 		
 		this.dcItemIndicator = null
 		this.subwayTrain = null
+		this.tempFinish=null
 		//this.hpChanger = new HpChangeHelper(this)
 	}
 
@@ -1410,6 +1411,17 @@ export class Scene extends Board{
 			this.overlapSelectorImgs.push(overlayimg)
 		}
 		this.tile_shadows.sendToBack()
+
+		let finish = new fabric.Image(document.getElementById("finish"), {
+			objectCaching: false,
+			visible:false,
+			evented:false
+		})
+		finish.scale(0.6)
+		this.canvas.add(finish)
+		this.lockFabricObject(finish)
+		this.tempFinish=finish
+		finish.bringToFront()
 	}
 	//===========================================================================================================================
 
@@ -3335,7 +3347,16 @@ export class Scene extends Board{
 		// this.game.removeAllEffects(target)
 		this.showPlayer(target, pos)
 	}
+	setFinish(pos){
+		if(pos===-1) return
 
+		this.tempFinish.set({
+			visible:true,
+			top: this.Map.coordinates[pos].y + BOARD_MARGIN,
+			left: this.Map.coordinates[pos].x + BOARD_MARGIN
+		})
+		this.render()
+	}
 	//===========================================================================================================================
 
 	

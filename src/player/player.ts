@@ -15,7 +15,7 @@ import { ObstacleHelper, SkillInfoFactory } from "../core/helpers"
 import { Entity } from "../entity/Entity"
 import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
 import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
-import { ServerPayloadInterface } from "../data/PayloadInterface"
+import { ServerGameEventInterface } from "../data/PayloadInterface"
 import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../res/character_ability.json")
 import { Indicator } from "../TrainHelper"
@@ -38,7 +38,7 @@ const { isMainThread } = require('worker_threads')
 
 const testSetting = {
 	lvl: 1,
-	pos: 50,
+	pos: 0,
 	money: 0
 }
 // if (args["l"]) testSetting.lvl = args["l"]
@@ -116,7 +116,7 @@ abstract class Player extends Entity {
 	abstract getSkillTargetSelector(skill: number): Util.SkillTargetSelector
 	abstract getSkillProjectile(projpos: number): Projectile
 	abstract getSkillDamage(target: number): Util.SkillAttack
-
+	abstract getSkillScale():any
 	abstract passive(): void
 	abstract getSkillName(skill: number): string
 	abstract onSkillDurationCount(): void
@@ -188,7 +188,7 @@ abstract class Player extends Entity {
 		return this
 	}
 	message(text: string) {
-		this.game.clientInterface.message(text)
+		this.game.eventEmitter.message(text)
 	}
 	getSkillInfoKor() {
 		return this.skillInfoKor.get()
@@ -312,7 +312,7 @@ abstract class Player extends Entity {
 
 	//========================================================================================================
 	showEffect(type: string, source: number) {
-		this.game.clientInterface.visualEffect(this.pos, type, source)
+		this.game.eventEmitter.visualEffect(this.pos, type, source)
 	}
 	//========================================================================================================
 	onMyTurnStart() {
@@ -328,10 +328,10 @@ abstract class Player extends Entity {
 		this.passive()
 		this.cooltime = this.cooltime.map(Util.decrement)
 
-		this.game.clientInterface.update( "skillstatus", this.turn, this.getSkillStatus())
+		this.game.eventEmitter.update( "skillstatus", this.turn, this.getSkillStatus())
 	}
 
-	getSkillStatus(): ServerPayloadInterface.SkillStatus {
+	getSkillStatus(): ServerGameEventInterface.SkillStatus {
 		return {
 			turn: this.game.thisturn,
 			cooltime: this.cooltime,
@@ -457,12 +457,12 @@ abstract class Player extends Entity {
 	giveDiceControl() {
 		this.diceControlCool = 3
 		this.diceControl = true
-		this.game.clientInterface.update("dc_item", this.turn, 1)
+		this.game.eventEmitter.update("dc_item", this.turn, 1)
 	}
 	useDiceControl() {
 		this.diceControlCool = 0
 		this.diceControl = false
-		this.game.clientInterface.update("dc_item", this.turn, -1)
+		this.game.eventEmitter.update("dc_item", this.turn, -1)
 	}
 	diceControlCooldown() {
 		this.diceControlCool = Math.max(this.diceControlCool - 1, 0)
@@ -488,7 +488,7 @@ abstract class Player extends Entity {
 
 		this.pos = Util.clamp(pos, 0, MAP.getLimit(this.mapId))
 		this.lvlup()
-
+		this.game.onPlayerChangePos(this.turn)
 		return false
 	}
 
@@ -560,7 +560,7 @@ abstract class Player extends Entity {
 		let str = this.kill + "/" + this.death + "/" + this.assist
 
 		// if (this.game.instant) return
-		this.game.clientInterface.update("kda", this.turn, str)
+		this.game.eventEmitter.update("kda", this.turn, str)
 	}
 
 	/**
@@ -569,7 +569,7 @@ abstract class Player extends Entity {
 	 * set to default if name===""
 	 */
 	changeApperance(name: string) {
-		this.game.clientInterface.update("appearance", this.turn, name)
+		this.game.eventEmitter.update("appearance", this.turn, name)
 		//	console.log("changeApperance"+name)
 	}
 	resetApperance() {
@@ -581,7 +581,7 @@ abstract class Player extends Entity {
 	 * set to default if name===""
 	 */
 	changeSkillImage(name: string, skill: ENUM.SKILL) {
-		this.game.clientInterface.update("skillImg", this.turn, {
+		this.game.eventEmitter.update("skillImg", this.turn, {
 			champ: this.champ,
 			skill: skill,
 			skill_name: name
@@ -630,7 +630,7 @@ abstract class Player extends Entity {
 		// let isblocked = data.hasFlag(Util.HPChangeData.FLAG_SHIELD)
 
 		if (hp <= 0) {
-			let hpChangeData: ServerPayloadInterface.Damage = {
+			let hpChangeData: ServerGameEventInterface.Damage = {
 				turn: this.turn,
 				change: hp,
 				currhp: this.HP,
@@ -638,7 +638,7 @@ abstract class Player extends Entity {
 				source: data.source,
 				currshield:this.shield
 			}
-			this.game.clientInterface.changeHP_damage(hpChangeData)
+			this.game.eventEmitter.changeHP_damage(hpChangeData)
 		}
 	}
 
@@ -668,7 +668,7 @@ abstract class Player extends Entity {
 		}
 
 		if (hp > 0) {
-			let changeData: ServerPayloadInterface.Heal = {
+			let changeData: ServerGameEventInterface.Heal = {
 				turn: this.turn,
 				change: hp,
 				currhp: this.HP,
@@ -676,7 +676,7 @@ abstract class Player extends Entity {
 				type: type,
 				currshield:this.shield
 			}
-			this.game.clientInterface.changeHP_heal(changeData)
+			this.game.eventEmitter.changeHP_heal(changeData)
 		}
 	}
 
@@ -747,6 +747,11 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	//========================================================================================================
+	isFinished(pos:number){
+		if(!this.mapHandler.isOnMainWay()) return false
+		if(this.game.tempFinish!==-1 && pos >= this.game.tempFinish) return true
+		return this.pos >= MAP.getFinish(this.mapId)
+	}
 
 	arriveAtSquare(isForceMoved: boolean): number {
 		if (this.dead) {
@@ -759,7 +764,7 @@ abstract class Player extends Entity {
 		//	console.log("arriveAtSquare" + this.turn)
 		this.mapHandler.onArriveSquare(this.pos)
 
-		if (this.pos >= MAP.getFinish(this.mapId) && this.mapHandler.isOnMainWay()) {
+		if (this.isFinished(this.pos)) {
 			if (this.effects.has(ENUM.EFFECT.SLAVE)) {
 				this.pos = MAP.getFinish(this.mapId) - 1
 				this.killplayer()
@@ -830,7 +835,7 @@ abstract class Player extends Entity {
 			this.AiAgent.store()
 		}
 		else{
-			this.game.clientInterface.goStore(this.turn, this.inven.getStoreData(priceMultiplier))
+			this.game.eventEmitter.goStore(this.turn, this.inven.getStoreData(priceMultiplier))
 		}
 		
 	}
@@ -899,7 +904,7 @@ abstract class Player extends Entity {
 	}
 
 	obstacleEffect(type: string) {
-		this.game.clientInterface.visualEffect(this.pos,type,-1)
+		this.game.eventEmitter.visualEffect(this.pos,type,-1)
 	}
 
 	/**
@@ -922,7 +927,7 @@ abstract class Player extends Entity {
 		//	console.log("updateshield" + change)
 		this.shield += Math.floor(change)
 		if (change === 0) return
-		this.game.clientInterface.changeShield( {
+		this.game.eventEmitter.changeShield( {
 			turn: this.turn,
 			shield: this.shield,
 			change: change,
@@ -1007,12 +1012,12 @@ abstract class Player extends Entity {
 	}
 
 	prepareRevive(reviveType: string) {
-		this.game.clientInterface.update("waiting_revival", this.turn,"")
+		this.game.eventEmitter.update("waiting_revival", this.turn,"")
 
 		if (reviveType === "life") this.inven.changeLife(-1)
 
 		if (reviveType === "guardian_angel") {
-			this.game.clientInterface.indicateItem(this.turn, ENUM.ITEM.GUARDIAN_ANGEL)
+			this.game.eventEmitter.indicateItem(this.turn, ENUM.ITEM.GUARDIAN_ANGEL)
 			this.inven.useActiveItem(ENUM.ITEM.GUARDIAN_ANGEL)
 		}
 		this.waitingRevival = true
@@ -1028,7 +1033,7 @@ abstract class Player extends Entity {
 		// 	this.transfer(PlayerClientInterface.goStore, this.turn, this.inven.getStoreData(1))
 		// }
 
-		let killData: ServerPayloadInterface.Death = {
+		let killData: ServerGameEventInterface.Death = {
 			killer: killer,
 			turn: this.turn,
 			location: this.pos,
@@ -1046,7 +1051,7 @@ abstract class Player extends Entity {
 			killData.isShutDown = isShutDown
 			killData.killerMultiKillCount = killerMultiKillCount
 		}
-		this.game.clientInterface.die(killData)
+		this.game.eventEmitter.die(killData)
 	}
 
 	/**
@@ -1117,7 +1122,7 @@ abstract class Player extends Entity {
 		this.dead = false
 		this.invulnerable=false
 		//	console.log("revive" + this.HP)
-		this.game.clientInterface.respawn(this.turn, this.pos, this.waitingRevival)
+		this.game.eventEmitter.respawn(this.turn, this.pos, this.waitingRevival)
 
 		this.waitingRevival = false
 	}
@@ -1152,10 +1157,10 @@ abstract class Player extends Entity {
 	 * check skill avalibility, get avaliable targets or locations from skilltargetselector
 	 * @param {*} skill
 	 */
-	initSkill(skill: number): ServerPayloadInterface.SkillInit {
+	initSkill(skill: number): ServerGameEventInterface.SkillInit {
 		this.pendingSkill = skill
 
-		let payload: ServerPayloadInterface.SkillInit = {
+		let payload: ServerGameEventInterface.SkillInit = {
 			turn: this.turn,
 			crypt_turn: this.game.cryptTurn(this.turn),
 			type: ENUM.INIT_SKILL_RESULT.NON_TARGET,

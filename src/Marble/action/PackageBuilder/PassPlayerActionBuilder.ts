@@ -34,7 +34,7 @@ export class PassPlayerActionBuilder extends ActionPackageBuilder {
 		return this
 	}
 	blockingAbilities(pkg: ActionPackage) {
-		if (this.movetype !== MOVETYPE.WALK) return false
+		if (this.movetype !== MOVETYPE.WALK && this.movetype !== MOVETYPE.TRAVEL) return false
 
 		const police_car = ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK
 		let value = this.defences.get(police_car)
@@ -44,6 +44,7 @@ export class PassPlayerActionBuilder extends ActionPackageBuilder {
 			if (!tile || !tile.isLandMark() || tile.owner !== this.defender.turn) return false
 
 			pkg.addExecuted(police_car, this.defender.turn)
+			this.trace.setAbilityName(police_car)
 			this.stopMover = true
 			return true
 		}

@@ -5,12 +5,12 @@ import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import { TileFilter } from "../../tile/TileFilter"
-import { Action,  MOVETYPE } from "../Action"
+import { Action,  ACTION_TYPE,  MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import { LinePullAction, RangePullAction } from "../DelayedAction"
 import { AddMultiplierAction, EarnMoneyAction, RequestMoveAction } from "../InstantAction"
-import { BlackholeTileSelectionAction, MoveTileSelectionAction } from "../QueryAction"
+import { BlackholeTileSelectionAction, MoveTileSelectionAction, MoveToPlayerSelectionAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
 
@@ -32,25 +32,32 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 		const players = ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND
 		let tiles: number[] = []
 		let selectedability = ABILITY_NAME.NONE
-		if (this.offences.has(players)) {
-			selectedability = players
+		if (this.offences.has(players) && !this.trace.hasActionAndAbility(ACTION_TYPE.CHOOSE_MOVE_POSITION,players)) {
 			tiles = this.game.getOtherPlayerPositions(this.invoker)
             .filter((pos)=>pos!==this.invoker.pos)
 
-			this.trace.setAbilityName(players).setName("인술서")
-		} else if (this.offences.has(myland)) {
+			// this.trace.setAbilityName(players).setName("인술서")
+			pkg.addExecuted(players, this.invoker.turn)
+			pkg.addAction(new MoveToPlayerSelectionAction(this.invoker.turn,MOVETYPE.TELEPORT,this.game.mediator.getEnemiesOf(this.invoker.turn)),players)
+			return true
+			
+		} else if (this.offences.has(myland) && !this.trace.hasActionAndAbility(ACTION_TYPE.CHOOSE_MOVE_POSITION,myland)) {
 			selectedability = myland
 			tiles = this.game.map.getTiles(this.invoker, TileFilter.MY_LAND().setExcludeMyPos())
-		} else if (this.offences.has(line)) {
+			// this.trace.setAbilityName(myland).setName("곡트램")
+
+		} else if (this.offences.has(line) && !this.trace.hasActionAndAbility(ACTION_TYPE.CHOOSE_MOVE_POSITION,line)) {
 			selectedability = line
 			tiles = this.game.map.getTiles(this.invoker, TileFilter.ALL_EXCLUDE_MY_POS().setSameLineOnly())
+			// this.trace.setAbilityName(line).setName("행트램")
+
 		}
 
 		if (tiles.length > 0) {
             pkg.addExecuted(selectedability, this.invoker.turn)
 
 			pkg.addAction(
-				new MoveTileSelectionAction(this.invoker.turn, tiles, "free_move", MOVETYPE.TELEPORT),
+				new MoveTileSelectionAction(this.invoker.turn, tiles,MOVETYPE.TELEPORT),
 				selectedability
 			)
 			return true
@@ -99,7 +106,7 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 		this.ring(pkg)
 		this.monument(pkg)
 
-		if (this.tile.isLandMark()) {
+		if (this.tile.isLandMark() && this.isInvokersTurn()) {
 			let mg = this.offences.get(magnetic)
 			let linemg = this.offences.get(line_magnetic)
 			let bosscall = this.offences.get(call)

@@ -293,8 +293,21 @@
 <div id="marble-item-page" class="hidden">
  
 
-  랜덤아이템 갯수:<input type="number" value="1" id="marble-item-random-count">
   <button id="marble-item-close"> &times; </button>
+  랜덤아이템 갯수:<input type="number" value="1" id="marble-item-random-count">
+  <div>
+    프리셋:
+    <select name="marble-item-preset" id="marble-item-preset">
+      <option value="empty" selected>없음</option>
+      <!-- <option value="new">파산</option>
+      <option value="new">[독넞 ㅇㅁ누염냐ㅜ] 잠금:1,선택:3/10</option> -->
+    </select>
+    <br>
+    <input id="save-preset-name">
+    <button id="save-preset">프리셋 저장</button>
+  </div>
+
+
   <div id="marble-item-page-content">
 
     <div class="marble-item locked selected">

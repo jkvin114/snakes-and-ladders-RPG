@@ -5,6 +5,7 @@ import fs = require("fs")
 import { ITEM_REGISTRY } from '../Marble/ItemRegistry';
 const RESOURCE_PATH="/../../res/"
 const router = express.Router()
+const{MarbleItemPreset} = require("../mongodb/DBHandler")
 
 router.get("/gamesetting", function (req:express.Request, res:express.Response) {
 	fs.readFile(__dirname + RESOURCE_PATH+"gamesetting.json", "utf8", function (err, data) {
@@ -144,7 +145,20 @@ router.get("/marble_items", function (req:express.Request, res:express.Response)
 	let data=ITEM_REGISTRY.getAllDescriptions()
 	res.end(JSON.stringify(data))
 })
+router.get("/marble_item_presets", async function (req:express.Request, res:express.Response) {
+	let data=await MarbleItemPreset.findAll()
 
+	res.end(JSON.stringify(data))
+})
+
+router.post("/marble_item_presets", async function (req:express.Request, res:express.Response) {
+	if(!req.body) return
+	await MarbleItemPreset.create({
+		name:req.body.name,
+		items:req.body.items,
+		randomCount:req.body.randcount
+	})
+})
 
 
 module.exports=router

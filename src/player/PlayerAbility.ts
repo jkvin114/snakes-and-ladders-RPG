@@ -265,8 +265,8 @@ class PlayerAbility {
 		let info_eng = this.player.getSkillInfoEng()
 
 		if (this.player.game.instant) return
-		this.player.game.clientInterface.update("stat", this.player.turn, this.getAll())
-		this.player.game.clientInterface.updateSkillInfo(this.player.turn, info_kor, info_eng)
+		this.player.game.eventEmitter.update("stat", this.player.turn, this.getAll())
+		this.player.game.eventEmitter.updateSkillInfo(this.player.turn, info_kor, info_eng)
 	}
 
 	onLevelUp(playercount: number) {

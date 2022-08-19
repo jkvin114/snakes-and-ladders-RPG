@@ -132,11 +132,24 @@ const testschema=new mongoose.Schema({
     turn:Number,
     sub:testSubSchema
 })
+const marbleItemPresetSchema=new mongoose.Schema({
+    name:{ type: String, required: true },
+    items:[{ type: Number, required: true }],
+    randomCount:{ type: Number, required: true }
+},{timestamps:true})
+
+
 //=============================================================================================
 testschema.statics.create=function(data){
     return (new Test(data)).save()
 }
-
+//=============================================================================================
+marbleItemPresetSchema.statics.create=function(data){
+    return (new MarbleItemPreset(data)).save()
+}
+marbleItemPresetSchema.statics.findAll = function() {
+    return this.find({}).sort({createdAt:"desc"})
+};
 //====================================================================================================
 simulationRecordSchema.statics.create=function(data){
     return (new SimulationRecord(data)).save()
@@ -219,10 +232,12 @@ userSchema.statics.setBoardData = function(id,boardData) {
 
 //=============================================================================================
 const Test=mongoose.model('Test',testschema)
+const MarbleItemPreset=mongoose.model('MarbleItemPreset',marbleItemPresetSchema)
+
 const GameRecord=mongoose.model('GameRecord',gameRecordSchema)
 const SimulationRecord=mongoose.model('SimulationRecord',simulationRecordSchema)
 const SimpleSimulationRecord=mongoose.model('SimpleSimulationRecord',simpleSimulationRecordSchema)
 const User=mongoose.model('User',userSchema)
 
-export {GameRecord,Test,SimulationRecord,User,SimpleSimulationRecord}
+export {GameRecord,Test,SimulationRecord,User,SimpleSimulationRecord,MarbleItemPreset}
 

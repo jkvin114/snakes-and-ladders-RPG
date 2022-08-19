@@ -7,7 +7,7 @@ import type { BuildableTile } from "../../tile/BuildableTile"
 import { TileFilter } from "../../tile/TileFilter"
 import {  Action, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
-import type { ActionTrace } from "../ActionTrace"
+import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import {  ApplyPlayerEffectAction, ClaimBuyoutAction, ClaimTollAction, LandModifierAction,  RequestMoveAction, StealMultiplierAction } from "../InstantAction"
 import { MoveTileSelectionAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
@@ -92,7 +92,7 @@ export class ArriveEnemyLandActionBuilder extends ActionPackageBuilder {
             ab=trampoline
         }
         if(tiles.length>0){
-            pkg.addAction(new MoveTileSelectionAction(this.invoker.turn,tiles,"free_move",MOVETYPE.TELEPORT),ab)
+            pkg.addAction(new MoveTileSelectionAction(this.invoker.turn,tiles,MOVETYPE.TELEPORT),ab)
             return true
         }
         return false
@@ -107,7 +107,7 @@ export class ArriveEnemyLandActionBuilder extends ActionPackageBuilder {
 		//defence:땅주인 능력
 		let healing_invoked = false
 		let value = this.defences.get(bubble)
-		if (value != null && this.tile.isLandMark() && !this.trace.hasTag("bubble_root")) {
+		if (value != null && this.tile.isLandMark() && !this.trace.hasTag(ActionTraceTag.BUBBLE_ROOT)) {
 			pkg.addExecuted(bubble, this.defender.turn)
 			pkg.addAction(new ApplyPlayerEffectAction(this.invoker.turn, "bubble_root"), bubble)
 		}

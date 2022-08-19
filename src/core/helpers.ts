@@ -362,12 +362,12 @@ class ObstacleHelper {
 
 		//not ai, not pending obs and forcemoved, not arrive at none
 		if (!player.AI && !(pendingObsList.includes(obs) && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
-			player.game.clientInterface.indicateObstacle({turn:player.turn,obs:obs})
+			player.game.eventEmitter.indicateObstacle({turn:player.turn,obs:obs})
 		}
 
 		//console.log(others)
 		for (let pid of others) {
-			player.game.clientInterface.indicateObstacle({turn:player.game.id2Turn(pid),obs:obs})
+			player.game.eventEmitter.indicateObstacle({turn:player.game.id2Turn(pid),obs:obs})
 		}
 
 		return obs
@@ -884,122 +884,125 @@ class SkillInfoFactory {
 	get(){
 		return [this.getQ(),this.getW(),this.getUlt()]
 	}
-	hotkey(s: number) {
+	private hotkey(s: number) {
 		return SkillInfoFactory.HOTKEY[s]
 	}
-	active() {
+	private active() {
 		return "<br>" + this.chooseLang("[Active]", "[사용시]") + ": "
 	}
-	passive() {
+	private passive() {
 		return this.chooseLang("[Passive]", "[기본 지속 효과]") + ": "
 	}
-	chooseLang<T>(eng: T, kor: T): T {
+	private chooseLang<T>(eng: T, kor: T): T {
 		return this.lang === SkillInfoFactory.LANG_KOR ? kor : eng
 	}
 
-	nameTitle(s: number) {
+	private nameTitle(s: number) {
 		return `[${this.hotkey(s)}] {${this.names[s]}}  <cool>
 		${this.plyr.cooltime_list[s]}${this.chooseLang(" turns", "턴")}</>${this.range(s)}<br>`
 	}
-	cooltime() {
+	private cooltime() {
 		return `<cool>${this.chooseLang("cooltime", "쿨타임")}</>`
 	}
-	nameDesc(s: number) {
+	private nameDesc(s: number) {
 		return `<skill><skillimg${this.char + 1}-${s + 1}>${this.names[s]}</>`
 	}
-	lowerbound(str: string) {
+	private lowerbound(str: string) {
 		return `<lowerbound>${str}</>`
 	}
-	upperbound(str: string) {
+	private upperbound(str: string) {
 		return `<upperbound>${str}</>`
 	}
-	up(str: string) {
+	private up(str: string) {
 		return `<up>${str}</>`
 	}
-	down(str: string) {
+	private down(str: string) {
 		return `<down>${str}</>`
 	}
-	stat(str: string) {
+	private stat(str: string) {
 		return `<stat>${str}</>`
 	}
-	range(s: number) {
+	private range(s: number) {
 		if (this.plyr.skill_ranges[s] === 0) return ""
 		return this.rangeNum(this.plyr.skill_ranges[s])
 	}
-	currHp() {
+	private currHp() {
 		return `<currHP>${this.chooseLang(" current HP", " 현재체력")}</>`
 	}
-	maxHP() {
+	private maxHP() {
 		return `<maxHP>${this.chooseLang(" maximum HP", " 최대체력")}</>`
 	}
-	missingHp() {
+	private missingHp() {
 		return `<missingHP>${this.chooseLang(" missing HP", " 잃은체력")}</>`
 	}
-	rangeNum(r: number) {
+	private rangeNum(r: number) {
 		return `<range>${this.chooseLang("Range: ", "사정거리: ")}${r} ${this.chooseLang("", "칸 ")}</>`
 	}
-	rangeStr() {
+	private rangeStr() {
 		return `<range>${this.chooseLang("Range", "사정거리")}</>`
 	}
-	area(s: number) {
+	private area(s: number) {
 		return `<area>${this.chooseLang(`Select ${s} Squares`, s + "칸 범위를 선택")}</>`
 	}
-	mDmg(d: number | string, scaleType?: string) {
+	private mDmg(d: number | string, scaleType?: string) {
 		if (scaleType == null) {
 			return `<mdmg>${d}${this.chooseLang(" magic damage", "의 마법 피해")}</>`
 		}
-		return `<mdmg><scale${scaleType}>${d}</>${this.chooseLang(" magic damage", "의 마법 피해")}</>`
+		return `<mdmg>${this.scaledValue(d,scaleType)}${this.chooseLang(" magic damage", "의 마법 피해")}</>`
 	}
-	pDmg(d: number | string, scaleType?: string) {
+	private scaledValue(d: number | string,scale:string){
+		return `<scale${scale}>${d}</>`
+	}
+	private pDmg(d: number | string, scaleType?: string) {
 		if (scaleType == null) {
 			return `<pdmg>${d}${this.chooseLang(" attack damage", "의 물리 피해")}</>`
 		}
-		return `<pdmg><scale${scaleType}>${d}</>${this.chooseLang(" attack damage", "의 물리 피해")}</>`
+		return `<pdmg>${this.scaledValue(d,scaleType)}${this.chooseLang(" attack damage", "의 물리 피해")}</>`
 	}
-	tDmg(d: number | string, scaleType?: string) {
+	private tDmg(d: number | string, scaleType?: string) {
 		if (scaleType == null) {
 			return `<tdmg>${d}${this.chooseLang(" fixed damage", "의 고정 피해")}</>`
 		}
-		return `<tdmg><scale${scaleType}>${d}</>${this.chooseLang(" fixed damage", "의 고정 피해")}</>`
+		return `<tdmg>${this.scaledValue(d,scaleType)}${this.chooseLang(" fixed damage", "의 고정 피해")}</>`
 	}
 
-	baseDmg(s: number) {
+	private baseDmg(s: number) {
 		return this.plyr.getSkillBaseDamage(s)
 	}
-	heal(amt: number, scaleCode?: string) {
-		if (scaleCode == null) {
+	private heal(amt: number, scaleType?: string) {
+		if (scaleType == null) {
 			let txt = `<heal>${amt}</>`
 			return this.chooseLang("heals " + txt + " HP", txt + "의 체력을 회복")
 		}
 
-		let txt = `<heal><scale${scaleCode}>${amt}</></>`
+		let txt = `<heal>${this.scaledValue(amt,scaleType)}</>`
 		return this.chooseLang(`heals ${txt} HP`, `${txt}의 체력을 회복`)
 	}
-	money(amt: number) {
+	private money(amt: number) {
 		return `<money>${amt + this.chooseLang("$", "원")}</>`
 	}
-	shield(amt: number, scale?: string) {
-		if (scale == null) {
+	private shield(amt: number, scaleType?: string) {
+		if (scaleType == null) {
 			let txt = `<shield>${amt}</>`
 			return this.chooseLang("gains " + txt + " shield", txt + "의 보호막 획득")
 		}
-		let txt = `<shield><scale${scale}>${amt}</></>`
+		let txt = `<shield>${this.scaledValue(amt,scaleType)}</>`
 
 		return this.chooseLang(`gains ${txt} shield`, `${txt}의 보호막 획득`)
 	}
-	skillAmt(key: string): number {
+	private skillAmt(key: string): number {
 		return this.plyr.getSkillAmount(key)
 	}
-	proj(name: string) {
+	private proj(name: string) {
 		return this.chooseLang(`<proj>Places </> a ${name}`, `${name} <proj>설치</>`)
 	}
-	projsize(size: number) {
+	private projsize(size: number) {
 		return `<projsize>${this.chooseLang(` size ${size}`, `${size}칸 크기 `)}</>`
 	}
 	// projsizeStr(size:number){
 	// 	return `<projsize>${this.chooseLang("Size of","")}${size}${this.chooseLang("","칸 크기")} </>`
 	// }
-	getEffectHeader(e: number) {
+	private getEffectHeader(e: number) {
 		let str = this.chooseLang(statuseffect[e], statuseffect_kor[e])
 		try {
 			if (str[0] === "{") {
@@ -1015,37 +1018,37 @@ class SkillInfoFactory {
 			return ""
 		}
 	}
-	effectNoDur(e: number) {
+	private effectNoDur(e: number) {
 		return this.getEffectHeader(e) + "</>"
 	}
-	effect(e: number, dur: number) {
+	private effect(e: number, dur: number) {
 		return this.chooseLang(this.effectEng(e, dur), this.effectKor(e, dur))
 	}
-	effectEng(e: number, dur: number) {
+	private effectEng(e: number, dur: number) {
 		return `${this.getEffectHeader(e)} ${dur} ${dur > 1 ? "turns" : "turn"} </>`
 	}
-	effectKor(e: number, dur: number) {
+	private effectKor(e: number, dur: number) {
 		return `${this.getEffectHeader(e)} ${dur} 턴</>`
 	}
-	duration(d: number) {
+	private duration(d: number) {
 		return `<duration>${d}${this.chooseLang(d > 1 ? " turns" : " turn", "턴")}</>`
 	}
-	radius(r: number) {
+	private radius(r: number) {
 		return `<radius>${this.chooseLang(`within ${r} squares`, `반경 ${r}칸 이내`)}</>`
 	}
-	radiusStr(r: string) {
+	private radiusStr(r: string) {
 		return `<radius>${this.chooseLang(`within ${r} squares`, `반경 ${r}칸 이내`)}</>`
 	}
-	basicattack() {
+	private basicattack() {
 		return `<basicattack>${this.chooseLang(`basic attack`, `기본 공격`)}</>`
 	}
-	target() {
+	private target() {
 		return `<target>${this.chooseLang(`target`, `대상`)}</>`
 	}
-	emp(s: string) {
+	private emp(s: string) {
 		return `<emp>` + s + "</>"
 	}
-	getQ() {
+	private getQ() {
 		if (this.lang === SkillInfoFactory.LANG_KOR) return this.getQKor()
 
 		let str
@@ -1118,7 +1121,7 @@ class SkillInfoFactory {
 		}
 		return str
 	}
-	getQKor() {
+	private getQKor() {
 		let str
 		const s = 0
 		const hotkey = this.hotkey(s)
@@ -1198,7 +1201,7 @@ class SkillInfoFactory {
 		}
 		return str
 	}
-	getW() {
+	private getW() {
 		if (this.lang === SkillInfoFactory.LANG_KOR) return this.getWKor()
 		let str
 		const s = 1
@@ -1249,7 +1252,7 @@ class SkillInfoFactory {
 				 Applies ${this.effect(
 						ENUM.EFFECT.IGNITE,
 						2
-					)} if you use ${this.nameDesc(0)}. It damages targets by ${this.emp(this.baseDmg(1)+"%")} of ${this.maxHP()} as ${this.tDmg("")} for every player turn,`
+					)} if you use ${this.nameDesc(0)}. It damages targets by ${this.scaledValue(this.emp(String(this.baseDmg(1)))+"%",hotkey)} of ${this.maxHP()} as ${this.tDmg("")} for every player turn,`
 				break
 			case 6:
 				str =
@@ -1279,7 +1282,7 @@ class SkillInfoFactory {
 		}
 		return str
 	}
-	getWKor() {
+	private getWKor() {
 		let str
 		const s = 1
 		const hotkey = this.hotkey(s)
@@ -1329,7 +1332,7 @@ class SkillInfoFactory {
 				${this.nameDesc(0)} 사용시 적중한 적에게 ${this.effect(
 						ENUM.EFFECT.IGNITE,
 						2
-					)}을 부여해 매 플레이어 턴마다 ${this.maxHP()}의 ${this.tDmg(this.baseDmg(1)+"%")} 를 입힘`
+					)}을 부여해 매 플레이어 턴마다 ${this.maxHP()}의 ${this.tDmg(this.scaledValue(this.baseDmg(1),hotkey)+"%")} 를 입힘`
 				break
 			case 6:
 				str =
@@ -1360,7 +1363,7 @@ class SkillInfoFactory {
 		}
 		return str
 	}
-	getUlt() {
+	private getUlt() {
 		if (this.lang === SkillInfoFactory.LANG_KOR) return this.getUltKor()
 		let str
 		const s = 2
@@ -1444,7 +1447,7 @@ class SkillInfoFactory {
 		}
 		return str
 	}
-	getUltKor() {
+	private getUltKor() {
 		let str
 		const s = 2
 		const hotkey = this.hotkey(s)

@@ -8,8 +8,8 @@ import type { MarblePlayer } from "../../Player"
 import { TileFilter } from "../../tile/TileFilter"
 import { ACTION_TYPE, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
-import type { ActionTrace } from "../ActionTrace"
-import {  PayPercentMoneyAction, RequestMoveAction } from "../InstantAction"
+import { ActionTrace, ActionTraceTag } from "../ActionTrace"
+import {  ChangeLandOwnerAction, PayPercentMoneyAction, RequestMoveAction } from "../InstantAction"
 import { ObtainCardAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
@@ -32,6 +32,7 @@ export class MeetPlayerActionBuilder extends ActionPackageBuilder {
 		const perfume = ABILITY_NAME.TAKE_MONEY_ON_ARRIVE_TO_PLAYER
 		let value = this.offences.get(perfume)
 		if (!value || [MOVETYPE.PULL, MOVETYPE.TELEPORT, MOVETYPE.BLACKHOLE].includes(this.movetype)) return false
+		if(this.trace.thisMoveHasAbility(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK)) return false
 
 		pkg.addExecuted(perfume, this.invoker.turn)
 		pkg.addAction(new PayPercentMoneyAction(stayed.turn, this.invoker.turn, value.getValue()), perfume)
@@ -47,23 +48,43 @@ export class MeetPlayerActionBuilder extends ActionPackageBuilder {
 	}
 	private guidebook(pkg: ActionPackage, defences: Map<ABILITY_NAME, AbilityValues>, stayed: MarblePlayer) {
 		const guidebook = ABILITY_NAME.THROW_TO_LANDMARK_ON_ENEMY_ARRIVE_TO_ME
-		let value = defences.get(guidebook)
-		if (!value || this.trace.hasTag("guidebook")) return false
+		const donate_guidebook=ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME
+
 		let pos = this.game.map.getMostExpensiveIn(stayed, TileFilter.MY_LANDMARK())
 		if (pos === -1) return false
-		pkg.addAction(
-			new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT).reserveAbilityIndicatorOnPop(
-				guidebook,
-				stayed.turn
-			),
-			guidebook
-		)
-		this.trace.addTag("guidebook")
-		return true
+		if(defences.get(donate_guidebook) && !this.trace.hasActionAndAbility(ACTION_TYPE.REQUEST_MOVE,donate_guidebook)){
+			pkg.addAction(
+				new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT).reserveAbilityIndicatorOnPop(
+					donate_guidebook,
+					stayed.turn
+				),
+				donate_guidebook
+			)
+			let donatePos=this.game.map.getMostExpensiveIn(this.invoker, TileFilter.MY_LAND().setNoLandMark())
+			if(donatePos!==-1){
+				pkg.addAction(new ChangeLandOwnerAction(stayed.turn,donatePos,stayed.turn),donate_guidebook)
+			}
+			this.trace.addTag(ActionTraceTag.GUIDEBOOK).setName("지옥가북")
+			return true
+		}
+		else if(defences.get(guidebook) && !this.trace.hasActionAndAbility(ACTION_TYPE.REQUEST_MOVE,guidebook)){
+			pkg.addAction(
+				new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT).reserveAbilityIndicatorOnPop(
+					guidebook,
+					stayed.turn
+				),
+				guidebook
+			)
+			this.trace.addTag(ActionTraceTag.GUIDEBOOK)
+			return true
+		}
+		
+		return false
+		
 	}
     private newPerfume(pkg:ActionPackage,stayed: MarblePlayer){
         const ninjascroll=ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND
-        if(this.trace.useActionAndAbility(ACTION_TYPE.ARRIVE_TILE,ninjascroll))
+        if(this.trace.thisMoveHasAbility(ninjascroll))
         {
             let value = this.invoker.getAbilityValueAmount(ninjascroll)
             pkg.addExecuted(ninjascroll, this.invoker.turn)

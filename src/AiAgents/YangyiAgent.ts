@@ -1,6 +1,6 @@
 import { Yangyi } from "../characters/Yangyi";
 import { EFFECT, ITEM, SKILL } from "../data/enum";
-import { ServerPayloadInterface } from "../data/PayloadInterface";
+import { ServerGameEventInterface } from "../data/PayloadInterface";
 import { Player } from "../player/player";
 import { AiAgent } from "./AiAgent";
 
@@ -43,7 +43,7 @@ class YangyiAgent extends AiAgent{
 		}
 		return -1
 	}
-	selectTarget(skill: SKILL, targets: ServerPayloadInterface.PlayerTargetSelector): Player {
+	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player {
 		if(skill===SKILL.ULT){
 			return this.getUltTarget(targets.targets)
 		}

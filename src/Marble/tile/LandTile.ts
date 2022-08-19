@@ -147,6 +147,9 @@ class LandTile extends BuildableTile{
         }
         return price
     }
+    hasBuild(b:BUILDING):boolean{
+        return this.getCurrentBuilds().includes(b)
+    }
     /**
      * 랜드마크 건설
      */

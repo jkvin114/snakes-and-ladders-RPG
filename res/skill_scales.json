@@ -162,7 +162,7 @@
 			"base": 60,
 			"scales": [
 				{
-					"ability": "AD",
+					"ability": "AP",
 					"val": 0.4
 				}
 			]

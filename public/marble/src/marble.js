@@ -72,9 +72,16 @@ class Game{
         this.connection.gameReady()
         this.scene.startRenderInterval()
         if(BGM){
-            document.getElementById("bgm").loop=true
-            document.getElementById("bgm").load()
-            document.getElementById("bgm").play()
+            let elem
+            if(Math.random()>0){
+                elem=document.getElementById("bgm2")
+            }
+            else{
+                elem=document.getElementById("bgm1")
+            }
+            elem.loop=true
+            elem.load()
+            elem.play()
         }
     }
     playsound(sound){
@@ -102,7 +109,7 @@ class Game{
         this.ui.rollDice(data.dice[0],data.dice[1],turn,data.dc)
         // toast(data.dice + ((data.isDouble)?"(더블)":"")+ ((data.dc)?"(주사위 컨트롤!)":""))
     }
-    playerWalkMove(player,from,distance){
+    playerWalkMove(player,from,distance,movetype){
         let list=[]
         if(distance >0){
             for(let i=1;i<=distance;++i){
@@ -115,12 +122,12 @@ class Game{
             }
         }
         this.scene.focusPlayer(this.turnToPlayerNum(player))
-        this.scene.movePlayerThrough(list, this.turnToPlayerNum(player),(turn)=>this.moveComplete(turn))
+        this.scene.movePlayerThrough(list, this.turnToPlayerNum(player),movetype,(turn)=>this.moveComplete(turn))
     }
     playerTeleport(player,pos,movetype){
         this.playsound("teleport")
         this.scene.focusPlayer(this.turnToPlayerNum(player))
-        if(movetype===4)
+        if(movetype==="blackhole")
             this.scene.playerBlackholeMove(this.turnToPlayerNum(player),pos)
         else
             this.scene.teleportPlayer(this.turnToPlayerNum(player),pos,"levitate")
@@ -313,7 +320,7 @@ class Game{
 	}
     onQuit(){
         this.ui.showDialog(
-				"정말 게임을 떠나시겠습니까?(나가면 게임이 초기화됩니다)"
+				"정말 게임을 떠나시겠습니까?"
 			,
 			() => {
 				document.onbeforeunload = () => {}

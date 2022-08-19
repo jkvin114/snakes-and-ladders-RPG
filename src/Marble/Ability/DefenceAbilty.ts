@@ -1,6 +1,5 @@
-import { Action, ActionModifyFunction, ACTION_TYPE } from "../action/Action";
-import { ACTION_SOURCE_TYPE } from "../action/ActionTrace";
-import { Ability, ConfirmQuery } from "./Ability";
+
+import { Ability } from "./Ability";
 import { ABILITY_NAME } from "./AbilityRegistry";
 
 /**

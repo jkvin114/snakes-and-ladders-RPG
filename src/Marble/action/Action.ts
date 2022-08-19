@@ -1,6 +1,6 @@
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 import { cl, hexId } from "../util"
-import { ActionTrace, ACTION_SOURCE_TYPE } from "./ActionTrace"
+import { ActionTrace, ActionTraceTag, ACTION_SOURCE_TYPE } from "./ActionTrace"
 
 export enum ACTION_TYPE {
 	WALK_MOVE, //0
@@ -48,7 +48,8 @@ export enum ACTION_TYPE {
 	STEAL_MULTIPLIER,
 	EMPTY,
 	CHOOSE_ISLAND,
-	CHOOSE_BUYOUT_POSITION
+	CHOOSE_BUYOUT_POSITION,
+	CHANGE_LAND_OWNER
 }
 
 export const ACTION_LIST = [
@@ -90,20 +91,19 @@ export const ACTION_LIST = [
 	"TURN_START",
 	"PREPARE_TRAVEL",
 	"PULL"	,
+	"AUTO_BUILD",
 	"ADD_MULTIPLIER",
 	"APPLY_PLAYER_EFFECT",
 	"CREATE_BLACKHOLE",
 	"STEAL_MULTIPLIER",
 	"EMPTY",
 	"CHOOSE_ISLAND",
-	"CHOOSE_BUYOUT_POSITION"
+	"CHOOSE_BUYOUT_POSITION",
+	"CHANGE_LAND_OWNER"
 ]
 
 export enum MOVETYPE{
-	WALK,FORCE_WALK,TELEPORT,PULL,BLACKHOLE
-}
-export interface ActionModifyFunction {
-	(action: Action): void
+	WALK="walk",FORCE_WALK="force_walk",TELEPORT="tp",PULL="pull",BLACKHOLE="blackhole",TRAVEL="travel"
 }
 export abstract class Action {
 	type: ACTION_TYPE
@@ -114,7 +114,9 @@ export abstract class Action {
 	valid: boolean
 	blocked: boolean
 	indicateAbilityOnPop:boolean
-	duplicateAllowed:boolean // 같은종류 액션 두개 동시에 스택에 존재 가능한지()
+	duplicateAllowed:boolean // 같은플레이어의 같은종류 액션 두개 동시에 스택에 존재 가능한지
+	incompatiableWith:Set<ACTION_TYPE> //호환 안되는 능력들 (같은 플레이어의 해당 능력이 이미 스택에 있으면 이 능력은 무시됨)
+	cancels:Set<ACTION_TYPE>// 이 능력이 발동하면 stack에 있는 해당 능력들 취소됨
 	private reservedAbility:{name: ABILITY_NAME, turn: number }
 	private id: string
 	static readonly PRIORITY_NORMAL=0
@@ -131,19 +133,26 @@ export abstract class Action {
 		this.indicateAbilityOnPop=false
 		this.reservedAbility={ name: ABILITY_NAME.NONE, turn: -1 }
 		this.duplicateAllowed=true
+		this.incompatiableWith=new Set<ACTION_TYPE>()
+		this.cancels=new Set<ACTION_TYPE>()
+
 	}
 	setSource(source:ActionTrace){
 		this.source=source
 		return this
 	}
 	setPrevActionTrace(source:ActionTrace){
-		if(this.source === source) return
+		if(this.source === source) return this
 		this.source.setPrev(source)
-		cl(this.source.toString(10))
+		cl(this.source.toString(20))
 		return this
 	}
-	addFlagToActionTrace(flag:string){
+	addFlagToActionTrace(flag:ActionTraceTag){
 		this.source.addTag(flag)
+		return this
+	}
+	addAbilityToActionTrace(ability:ABILITY_NAME){
+		this.source.setAbilityName(ability)
 		return this
 	}
 	/**

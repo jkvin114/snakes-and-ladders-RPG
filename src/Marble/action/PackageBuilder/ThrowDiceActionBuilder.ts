@@ -44,12 +44,26 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 				pkg.addAfter(new RequestMoveAction(this.invoker.turn, this.game.map.island, MOVETYPE.TELEPORT))
 			}
 		} else {
-			pkg.addAfter(new RequestMoveAction(this.invoker.turn, forwardBy(this.invoker.pos, this.distance), MOVETYPE.WALK))
+			if(!this.diceOverrider(pkg)){
+				pkg.addAfter(new RequestMoveAction(this.invoker.turn, forwardBy(this.invoker.pos, this.distance), MOVETYPE.WALK))
+			}
 		}
-
 		return pkg.addMain(this.main)
 	}
-	tripleDoubleOverrider(pkg: ActionPackage) {
+	private diceOverrider(pkg:ActionPackage){
+		const levataine=ABILITY_NAME.MOVE_IN_DICE_RANGE_AFTER_DICE
+		if(this.offences.has(levataine)){
+			let range:number[]=[]
+			for(let i=1;i<=this.totaldice;++i){
+				range.push(forwardBy(this.invoker.pos,i))
+			}
+			pkg.addExecuted(levataine,this.invoker.turn)
+			pkg.addAction(new MoveTileSelectionAction(this.invoker.turn,range,MOVETYPE.TELEPORT),levataine)
+			return true
+		}
+		return false
+	}
+	private tripleDoubleOverrider(pkg: ActionPackage) {
 		let onThreeDoubleAbility = this.invoker.sampleAbility(EVENT_TYPE.THREE_DOUBLE, this.trace)
 		const invitation = ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE
 		const teleport = ABILITY_NAME.LINE_MOVE_ON_TRIPLE_DOUBLE
@@ -60,7 +74,6 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 				new MoveTileSelectionAction(
 					this.invoker.turn,
 					this.game.map.getTiles(this.invoker, TileFilter.ALL_EXCLUDE_MY_POS().setSameLineOnly()),
-					"free_move",
 					MOVETYPE.TELEPORT
 				),
 				teleport
@@ -74,7 +87,7 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 		}
         return false
 	}
-	diceMoney(pkg: ActionPackage): boolean {
+	private diceMoney(pkg: ActionPackage): boolean {
 		const name = ABILITY_NAME.MONEY_ON_DICE
 		let val = this.offences.get(name)
 		if (!val) return false

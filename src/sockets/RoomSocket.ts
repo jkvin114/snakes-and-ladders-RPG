@@ -193,7 +193,7 @@ module.exports=function(socket:Socket){
 		let turn = SocketSession.getTurn(socket)
 		if (!R.hasRPGRoom(rname)) return
 		console.log("reconnect"+rname)
-		R.getRPGRoom(rname).gameloop.user_reconnect(turn)
+		R.getRPGRoom(rname).user_reconnect(turn)
 	})
 	
 	socket.on("disconnect", function () {

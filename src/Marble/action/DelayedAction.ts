@@ -16,17 +16,19 @@ import type { ActionTrace } from "./ActionTrace"
 
 export class MoveAction extends DelayedAction {
     static DELAY_PER_TILE=100
+	static DELAY_PER_TILE_TRAVEL=40
+
     distance:number
 	from:number
 	moveType:MOVETYPE
 	constructor(type:ACTION_TYPE,turn: number,from:number,distance:number,moveType:MOVETYPE) {
-		super(type,turn,Math.abs(distance) * MoveAction.DELAY_PER_TILE)
+		super(type,turn,Math.abs(distance) * (moveType===MOVETYPE.TRAVEL?MoveAction.DELAY_PER_TILE_TRAVEL:MoveAction.DELAY_PER_TILE))
         this.distance=distance
 		this.from=from
 		this.moveType=moveType
 	}
 	setDistanceDelay(d:number){
-		this.delay=Math.abs(d) * MoveAction.DELAY_PER_TILE
+		this.delay=Math.abs(d) * (this.moveType===MOVETYPE.TRAVEL?MoveAction.DELAY_PER_TILE_TRAVEL:MoveAction.DELAY_PER_TILE)
 	}
 }
 export class TeleportAction extends DelayedAction {

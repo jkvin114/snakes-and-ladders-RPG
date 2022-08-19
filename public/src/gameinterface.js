@@ -3,7 +3,7 @@ import { COLOR_LIST_BG } from "./canvas_control.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
 export default class GameInterface {
-	constructor() {
+	constructor(game) {
 		if (GameInterface._instance) {
 			return GameInterface._instance
 		}
@@ -13,6 +13,7 @@ export default class GameInterface {
 		this.winwidth = window.innerWidth
 		this.winheight = window.innerHeight
 
+		this.game=game
 		this.nextTurnBtnShown = false
 		this.skillBtnShown = false
 		this.messageBtnShown = false
@@ -147,7 +148,6 @@ export default class GameInterface {
 			else{
 				$(this).addClass("otherui_hidden")
 			}
-			
 		})
 		$("#sendmessage").click(function () {
 			GAME.sendMessage()
@@ -171,7 +171,7 @@ export default class GameInterface {
 		$("#largedicebtn").bind("click", function () {
 			//clearInterval(GAME.diceHighlightInterval)
 			$("#largedicebtn").hide()
-			$("#largedicebtnimg").show()
+			// $("#largedicebtnimg").show()
 			$("#largedicebtn_pressed").show()
 			setTimeout(()=>$("#largedicebtn_pressed").hide(),500)
 			GAME.onDiceBtnClick(-1)
@@ -864,6 +864,44 @@ export default class GameInterface {
 				(i===0?"":"<hr>")+SkillInfoParser.parse(GAME.chooseLang(info_eng[i], info_kor[i])))
 		}
 		this.addEffectTooltipEvent()
+		this.addSkillScaleTooltipEvent()
+	}
+	addSkillScaleTooltipEvent(){
+
+		$(".scaled_value").off()
+		$(".scaled_value").mouseenter(function (e) {
+			$(".skill_scale_tooltip")
+				.css({
+					visibility: "visible"
+				})
+				.css($(this).offset())
+
+			GAME.ui.setSkillScaleTooltip($(this).attr("value"))
+		})
+		$(".scaled_value").mouseleave(function (e) {
+			$(".skill_scale_tooltip").css("visibility", "hidden")
+		})
+		$(".scaled_value").on("touchstart", function (e) {
+			$(".skill_scale_tooltip")
+				.css({
+					visibility: "visible"
+				})
+				.css($(this).offset())
+			GAME.ui.setSkillScaleTooltip($(this).attr("value"))
+		})
+	}
+	setSkillScaleTooltip(name){
+		let scale=GAME.skillScale[name]
+
+		if(!scale){
+			$(".skill_scale_tooltip p").html("ERROR!")
+			return
+		}  
+		let str=`${scale.base}`
+		for(const s of scale.scales){
+			str+=`<a class=${s.ability}>(+${s.val}${s.ability})</a>`
+		}
+		$(".skill_scale_tooltip p").html(str)
 	}
 	showBasicAttackBtn(count,isAvailable){
 		$(".basicattackbtn").show()

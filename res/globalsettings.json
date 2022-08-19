@@ -29,7 +29,7 @@
     "trajectorySpeedRatio":300,
     "idleTimeout": 20000,
     "connectionTimeout": 10000,
-    "delay_on_dice":1300,
+    "delay_on_dice":2000,
     "delay_per_dice":100,
     "delay_on_silent":1000,
     "delay_initial_arrive_square":600,

@@ -1,6 +1,6 @@
 import GAMESETTINGS = require("../res/gamesetting.json")
 
-import { ClientPayloadInterface, ServerPayloadInterface } from "./data/PayloadInterface"
+import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
 import * as Util from "./core/Util"
 
 class GameSetting {
@@ -19,12 +19,13 @@ class GameSetting {
 	autoNextTurnOnSilent: boolean
 	diceControlItemFrequency: number
 	shuffleObstacle: boolean
+	winByDecision: boolean
 
 	killRecord: boolean
 	itemRecord: boolean
 	positionRecord: boolean
 	moneyRecord: boolean
-	constructor(setting: ClientPayloadInterface.GameSetting, instant: boolean, isTeam: boolean) {
+	constructor(setting: ClientInputEventInterface.GameSetting, instant: boolean, isTeam: boolean) {
 		this.instant = instant
 		this.isTeam = isTeam
 		if (setting === null) {
@@ -54,6 +55,9 @@ class GameSetting {
 		this.itemRecord = setting.itemRecord
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
+		this.winByDecision=setting.winByDecision
+		if(this.winByDecision)
+			this.additionalDiceAmount=1
 	}
 
 	randomize() {
@@ -64,10 +68,13 @@ class GameSetting {
 	//	this.AAcounterAttackStrength = Util.randInt(GAMESETTINGS.gameplaySetting.AAcounterAttackStrength.options.length)
 		this.diceControlItemFrequency = Util.randInt(GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length)
 		this.shuffleObstacle = Util.randomBoolean()
+		this.winByDecision=Util.randomBoolean()
+		if(this.winByDecision)
+			this.additionalDiceAmount=1
 		return this
 	}
 
-	setSimulationSettings(setting: ClientPayloadInterface.SimulationSetting) {
+	setSimulationSettings(setting: ClientInputEventInterface.SimulationSetting) {
 		this.killRecord = setting.killRecord
 		this.itemRecord = setting.itemRecord
 		this.positionRecord = setting.positionRecord
@@ -99,6 +106,8 @@ class GameSetting {
 				value: GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options[this.diceControlItemFrequency]
 			},
 			{ name: "shuffleObstacle", value: this.shuffleObstacle }
+			,
+			{ name: "coldGame", value: this.winByDecision }
 		]
 	}
 }

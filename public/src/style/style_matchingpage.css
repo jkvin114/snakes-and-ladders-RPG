@@ -718,21 +718,26 @@ input:checked + .slider {
   word-break: keep-all;
   display: block;
 }
+#marble-item-preset{
+  width: 150px;
+}
 #marble-item-close{
-
-  width:50px;
-  height:50px;
-  margin:0;
+  width: 30px;
+  height: 30px;
+  margin: 0;
   right: 0;
-  border:none;
-  font-size:45px;
+  top: 0;
+  border: none;
+  font-size: 25px;
   line-height: 50px;
   /* background-color: rgb(34, 34, 34); */
   background: none;
   color: white;
-  position: fixed;
-  z-index: inherit+1;
+  position: sticky;
+  z-index: inherit;
   cursor: pointer;
+  /* display: block; */
+  float: right;
 
 }
 #marble-item-page-content{

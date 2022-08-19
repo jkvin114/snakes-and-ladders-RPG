@@ -23,7 +23,9 @@ router.post('/create_rpg',function(req:express.Request,res:express.Response){
         return
     }
     console.log(rname)
-    R.setRPGRoom(rname,new RPGRoom(rname))
+    R.setRPGRoom(rname,new RPGRoom(rname).registerResetCallback(()=>{
+        R.remove(rname)
+    }))
 
     if(req.session){
         if(!req.session.username){
@@ -52,7 +54,9 @@ router.post('/create_marble',function(req:express.Request,res:express.Response){
         return
     }
     console.log(rname)
-    R.setMarbleRoom(rname,new MarbleRoom(rname))
+    R.setMarbleRoom(rname,new MarbleRoom(rname).registerResetCallback(()=>{
+        R.remove(rname)
+    }))
 
     if(req.session){
         if(!req.session.username){

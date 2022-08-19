@@ -4,10 +4,9 @@ import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
-import {  ACTION_TYPE, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
-import { QueryAction } from "../QueryAction"
+import { DiceChanceAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
 export class MonopolyChanceActionBuilder extends ActionPackageBuilder {
@@ -27,8 +26,7 @@ export class MonopolyChanceActionBuilder extends ActionPackageBuilder {
 
 		let val = this.offences.get(speaker)
 		if (val != null) {
-			pkg.addExecuted(speaker, this.invoker.turn)
-			pkg.addAction(new QueryAction(ACTION_TYPE.DICE_CHANCE, this.invoker.turn), speaker)
+			pkg.addAction(new DiceChanceAction(this.invoker.turn).reserveAbilityIndicatorOnPop(speaker, this.invoker.turn), speaker)
 		}
 		return pkg
 	}

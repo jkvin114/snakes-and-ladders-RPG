@@ -4,22 +4,23 @@ import SETTINGS = require("../../res/globalsettings.json")
 import { Game } from "../Game"
 import { GameSetting } from "../GameSetting"
 import { GAME_CYCLE } from "./StateEnum"
-import { ClientPayloadInterface, ServerPayloadInterface } from "../data/PayloadInterface"
+import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
 import { ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../data/enum"
 import { PlayerType, ProtoPlayer, randInt, sleep } from "../core/Util"
-import { ClientInterface } from "../ClientInterface"
+import { GameEventObserver } from "../GameEventObserver"
 
 
 
 class GameLoop {
-	idleTimeout: NodeJS.Timeout
+	private idleTimeout: NodeJS.Timeout
 	game: Game
-	state: GameCycleState
+	private state: GameCycleState
 	gameover: boolean
 	readonly rname: string
-	idleTimeoutTurn: number
-	gameOverCallBack: Function
-	clientInterface:ClientInterface
+	private idleTimeoutTurn: number
+	private gameOverCallBack: Function
+	private eventEmitter:GameEventObserver
+	private resetTimeout:NodeJS.Timeout|null
 
 	constructor(game: Game) {
 		this.game = game
@@ -27,12 +28,22 @@ class GameLoop {
 		this.rname = this.game.rname
 		this.gameOverCallBack
 		this.idleTimeoutTurn = -1
-		this.clientInterface=new ClientInterface(this.rname)
+		this.eventEmitter=new GameEventObserver(this.rname)
+		this.restartResetTimeout()
 	}
 	setOnGameOver(gameOverCallBack: Function) {
 		this.gameOverCallBack = gameOverCallBack
 		return this
 	}
+	
+	restartResetTimeout(){
+			if(this.resetTimeout!=null)
+				clearTimeout(this.resetTimeout)
+			this.resetTimeout=setTimeout(()=>{
+			this.onGameover(false)
+		},120*1000)
+	}
+
 	startTurn() {
 		this.setGameCycle(new GameInitializer(this.game))
 		this.startNextTurn(false)
@@ -71,7 +82,7 @@ class GameLoop {
 	static create(
 		mapid: number,
 		rname: string,
-		setting: ClientPayloadInterface.GameSetting,
+		setting: ClientInputEventInterface.GameSetting,
 		instant: boolean,
 		isTeam: boolean,
 		playerlist: ProtoPlayer[]
@@ -98,16 +109,16 @@ class GameLoop {
 		}
 		return new GameLoop(game)
 	}
-	setClientInterface(ci:ClientInterface){
-		this.game.clientInterface=ci
-		this.game.entityMediator.clientInterface=ci
-		this.clientInterface=ci
+	setClientInterface(ci:GameEventObserver){
+		this.game.eventEmitter=ci
+		this.game.entityMediator.eventEmitter=ci
+		this.eventEmitter=ci
 	}
 	user_update<T>(turn:number,type:string,data:T){
 		this.game.user_update(turn,type,data)
 		//console.log("user_update"+type)
 	}
-	user_storeComplete(data: ClientPayloadInterface.ItemBought) {
+	user_storeComplete(data: ClientInputEventInterface.ItemBought) {
 		if (!this.game) return
 		this.game.userCompleteStore(data)
 	}
@@ -121,18 +132,18 @@ class GameLoop {
 	getOnTimeout() {
 		return (() => {
 			if (!this.game) return
-			this.clientInterface.forceNextturn(this.state.crypt_turn)
+			this.eventEmitter.forceNextturn(this.state.crypt_turn)
 			this.startNextTurn(true)
 		}).bind(this)
 	}
 	startTimeOut(additional: Function): number {
 		if (!this.idleTimeout) {
 		//	console.log("starttimeout" + this.state.turn)
-			this.clientInterface.startTimeout(this.game.thisCryptTurn(), SETTINGS.idleTimeout)
+			this.eventEmitter.startTimeout(this.game.thisCryptTurn(), SETTINGS.idleTimeout)
 
 			this.idleTimeout = setTimeout(() => {
 				if (!this.game) return
-				this.clientInterface.forceNextturn(this.state.crypt_turn)
+				this.eventEmitter.forceNextturn(this.state.crypt_turn)
 				this.startNextTurn(true)
 				if (additional != null) additional()
 			}, SETTINGS.idleTimeout)
@@ -142,7 +153,7 @@ class GameLoop {
 	stopTimeout() {
 		//console.log("stoptimeout" + this.state.turn)
 		if (this.idleTimeout != null && this.state != null && this.idleTimeoutTurn === this.state.turn) {
-			this.clientInterface.stopTimeout(this.game.thisCryptTurn())
+			this.eventEmitter.stopTimeout(this.game.thisCryptTurn())
 			clearTimeout(this.idleTimeout)
 			this.idleTimeout = null
 		}
@@ -159,18 +170,19 @@ class GameLoop {
 		if (this.state.id === GAME_CYCLE.BEFORE_OBS.ROOTED) {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
-			let data: ServerPayloadInterface.DiceRoll = this.state.getData()
-			this.clientInterface.rollDice(data)
+			let data: ServerGameEventInterface.DiceRoll = this.state.getData()
+			this.eventEmitter.rollDice(data)
 			this.afterDice(data.actualdice)
 		}
 	}
-	user_pressDice(dicenum: number, crypt_turn: string): ServerPayloadInterface.DiceRoll {
+	user_pressDice(dicenum: number, crypt_turn: string): ServerGameEventInterface.DiceRoll {
 	//	console.log("user_pressDice")
+		this.restartResetTimeout()
 		if (this.state.crypt_turn !== crypt_turn) return
 
 		this.setGameCycle(this.state.onUserPressDice(dicenum))
 		//this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
-		let diceRoll: ServerPayloadInterface.DiceRoll = this.state.getData()
+		let diceRoll: ServerGameEventInterface.DiceRoll = this.state.getData()
 		this.afterDice(diceRoll.actualdice)
 		return diceRoll
 	}
@@ -180,7 +192,7 @@ class GameLoop {
 		if(!this.game) return
 		this.nextGameCycle()
 		if (this.state.gameover) {
-			this.onGameover()
+			this.onGameover(true)
 			return
 		}
 	//	console.log("afterDice2")
@@ -210,7 +222,7 @@ class GameLoop {
 			this.startNextTurn(false)
 		}
 	}
-	async user_completePendingObs(info: ClientPayloadInterface.PendingObstacle, crypt_turn: string) {
+	async user_completePendingObs(info: ClientInputEventInterface.PendingObstacle, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if(this.state.id===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE){
 			this.setGameCycle(this.state.onUserCompletePendingObs(info))
@@ -220,7 +232,7 @@ class GameLoop {
 			console.error("invalid game cycle state, should be PendingObstacle but received" + this.state.id)
 		}
 	}
-	async user_completePendingAction(info: ClientPayloadInterface.PendingAction, crypt_turn: string) {
+	async user_completePendingAction(info: ClientInputEventInterface.PendingAction, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if(this.state.id===GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION){
 			this.setGameCycle(this.state.onUserCompletePendingAction(info))
@@ -234,8 +246,9 @@ class GameLoop {
 	}
 
 	user_clickSkill(s: number, crypt_turn: string) {
+		this.restartResetTimeout()
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
-		let result: ServerPayloadInterface.SkillInit = this.state.onUserClickSkill(s)
+		let result: ServerGameEventInterface.SkillInit = this.state.onUserClickSkill(s)
 		if (
 			!(
 				result.type === INIT_SKILL_RESULT.NO_COOL ||
@@ -249,6 +262,7 @@ class GameLoop {
 		return result
 	}
 	user_basicAttack(crypt_turn: string) {
+		this.restartResetTimeout()
 		if (this.state.crypt_turn !== crypt_turn) return
 		this.setGameCycle(this.state.onUserBasicAttack())
 	}
@@ -267,8 +281,9 @@ class GameLoop {
 		this.setGameCycle(this.state.onUserChooseAreaSkillLocation(location))
 	}
 	user_message(turn: number, message: string) {
+		
 		if (!this.game) return
-
+		this.restartResetTimeout()
 		return (
 			this.game.pOfTurn(Number(turn)).name +
 				"(" +
@@ -277,9 +292,13 @@ class GameLoop {
 			message
 		)
 	}
-	onGameover() {
+	getTurnInitializer(){
+		return this.state.getTurnInitializer()
+	}
+	onGameover(isNormal:boolean) {
 	//	console.log("gameover")
-		this.gameOverCallBack()
+		this.gameOverCallBack(isNormal)
+		clearTimeout(this.resetTimeout)
 	}
 	onDestroy() {
 		if(this.game!=null)
@@ -329,7 +348,7 @@ abstract class GameCycleState {
 		console.error("invalid request, id:" + this.id)
 		return this
 	}
-	onUserClickSkill(skill: number): ServerPayloadInterface.SkillInit {
+	onUserClickSkill(skill: number): ServerGameEventInterface.SkillInit {
 		console.error("invalid request, id:" + this.id)
 
 		return null
@@ -355,12 +374,12 @@ abstract class GameCycleState {
 		return this
 	}
 
-	onUserCompletePendingObs(info: ClientPayloadInterface.PendingObstacle):  GameCycleState {
+	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle):  GameCycleState {
 		console.error("invalid request, state id:" + this.id)
 
 		return null
 	}
-	onUserCompletePendingAction(info: ClientPayloadInterface.PendingObstacle): GameCycleState {
+	onUserCompletePendingAction(info: ClientInputEventInterface.PendingObstacle): GameCycleState {
 		console.error("invalid request, state id:" + this.id)
 
 		return null
@@ -411,16 +430,16 @@ class GameInitializer extends GameCycleState {
 
 class TurnInitializer extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.INITIALIZE
-	turnUpdateData: ServerPayloadInterface.TurnStart
+	turnUpdateData: ServerGameEventInterface.TurnStart
 	constructor(game: Game) {
 		let turnUpdateData = game.goNextTurn()
 		super(game, TurnInitializer.id)
 		this.turnUpdateData = turnUpdateData
-		this.game.clientInterface.updateNextTurn(turnUpdateData)
+		this.game.eventEmitter.updateNextTurn(turnUpdateData)
 	}
 	onCreate(): void {
 		if (this.game.thisturn === 0) {
-			this.game.clientInterface.syncVisibility(this.game.getPlayerVisibilitySyncData())
+			this.game.eventEmitter.syncVisibility(this.game.getPlayerVisibilitySyncData())
 		}
 		// if(!this.turnUpdateData) return
 	}
@@ -470,8 +489,8 @@ class WaitingDice extends GameCycleState {
 }
 class ThrowDice extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.THROW_DICE
-	diceData: ServerPayloadInterface.DiceRoll
-	constructor(game: Game, diceData: ServerPayloadInterface.DiceRoll) {
+	diceData: ServerGameEventInterface.DiceRoll
+	constructor(game: Game, diceData: ServerGameEventInterface.DiceRoll) {
 		super(game, ThrowDice.id)
 		this.diceData = diceData
 	}
@@ -532,7 +551,7 @@ class ArriveSquare extends GameCycleState {
 }
 class AiThrowDice extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE
-	dice: ServerPayloadInterface.DiceRoll
+	dice: ServerGameEventInterface.DiceRoll
 	constructor(game: Game) {
 		super(game, AiThrowDice.id)
 	}
@@ -584,12 +603,12 @@ class AiSimulationSkill extends GameCycleState {
 
 class PendingObstacle extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE
-	obs: ServerPayloadInterface.PendingObstacle
-	result:ClientPayloadInterface.PendingObstacle
-	constructor(game: Game, obs: ServerPayloadInterface.PendingObstacle) {
+	obs: ServerGameEventInterface.PendingObstacle
+	result:ClientInputEventInterface.PendingObstacle
+	constructor(game: Game, obs: ServerGameEventInterface.PendingObstacle) {
 		super(game, PendingObstacle.id)
 		this.obs = obs
-		this.game.clientInterface.sendPendingObs(this.obs)
+		this.game.eventEmitter.sendPendingObs(this.obs)
 	}
 	shouldStopTimeoutOnDestroy() {
 		return true
@@ -601,7 +620,7 @@ class PendingObstacle extends GameCycleState {
 	getOnTimeout(): () => void {
 		return () => this.game.processPendingObs(null)
 	}
-	onUserCompletePendingObs(info: ClientPayloadInterface.PendingObstacle): GameCycleState {
+	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle): GameCycleState {
 		this.result=info
 		return this.getNext()
 	}
@@ -612,8 +631,8 @@ class PendingObstacle extends GameCycleState {
 class PendingObstacleProgress extends GameCycleState{
 	
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS
-	result: ClientPayloadInterface.PendingObstacle
-	constructor(game: Game, result: ClientPayloadInterface.PendingObstacle) {
+	result: ClientInputEventInterface.PendingObstacle
+	constructor(game: Game, result: ClientInputEventInterface.PendingObstacle) {
 		super(game, PendingObstacleProgress.id)
 		this.result = result
 		this.process()
@@ -645,7 +664,7 @@ class PendingObstacleProgress extends GameCycleState{
 class PendingAction extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION
 	action: string
-	result:ClientPayloadInterface.PendingAction
+	result:ClientInputEventInterface.PendingAction
 	constructor(game: Game, action: string) {
 		super(game, PendingAction.id)
 		this.action = action
@@ -663,13 +682,13 @@ class PendingAction extends GameCycleState {
 	onCreate(): void {}
 	send() {
 		if (this.action === "submarine") {
-			this.game.clientInterface.sendPendingAction("server:pending_action:submarine", this.game.thisp().pos)
+			this.game.eventEmitter.sendPendingAction("server:pending_action:submarine", this.game.thisp().pos)
 		}
 		if (this.action === "ask_way2") {
-			this.game.clientInterface.sendPendingAction("server:pending_action:ask_way2", 0)
+			this.game.eventEmitter.sendPendingAction("server:pending_action:ask_way2", 0)
 		}
 	}
-	onUserCompletePendingAction(info: ClientPayloadInterface.PendingAction): GameCycleState {
+	onUserCompletePendingAction(info: ClientInputEventInterface.PendingAction): GameCycleState {
 		this.result=info
 		return this.getNext()
 	}
@@ -682,8 +701,8 @@ class PendingAction extends GameCycleState {
 class PendingActionProgress extends GameCycleState{
 	
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS
-	result: ClientPayloadInterface.PendingAction
-	constructor(game: Game, result: ClientPayloadInterface.PendingAction) {
+	result: ClientInputEventInterface.PendingAction
+	constructor(game: Game, result: ClientInputEventInterface.PendingAction) {
 		super(game, PendingActionProgress.id)
 		this.result = result
 		this.process()
@@ -718,7 +737,7 @@ export class WaitingSkill extends GameCycleState {
 	static id = GAME_CYCLE.SKILL.WAITING_SKILL
 	canUseSkill: boolean
 	canUseBasicAttack: boolean
-	skillInit: ServerPayloadInterface.SkillInit
+	skillInit: ServerGameEventInterface.SkillInit
 	constructor(game: Game) {
 		super(game, WaitingSkill.id)
 	}
@@ -733,13 +752,13 @@ export class WaitingSkill extends GameCycleState {
 		this.canUseSkill = status.canUseSkill
 		this.canUseBasicAttack = status.canBasicAttack
 
-		if (!this.shouldPass()) this.game.clientInterface.setSkillReady(status)
+		if (!this.shouldPass()) this.game.eventEmitter.setSkillReady(status)
 	}
 	shouldPass() {
 	//	console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)
 		return !this.canUseSkill && !this.canUseBasicAttack
 	}
-	onUserClickSkill(skill: number): ServerPayloadInterface.SkillInit {
+	onUserClickSkill(skill: number): ServerGameEventInterface.SkillInit {
 		this.skillInit = this.game.onSelectSkill(skill - 1)
 		return this.skillInit
 	}
@@ -775,8 +794,8 @@ export class WaitingSkill extends GameCycleState {
 	}
 }
 abstract class WaitingSkillResult extends GameCycleState {
-	initSkillResult: ServerPayloadInterface.SkillInit
-	constructor(game: Game, id: number, result: ServerPayloadInterface.SkillInit) {
+	initSkillResult: ServerGameEventInterface.SkillInit
+	constructor(game: Game, id: number, result: ServerGameEventInterface.SkillInit) {
 		super(game, id)
 		this.initSkillResult = result
 	}
@@ -791,7 +810,7 @@ abstract class WaitingSkillResult extends GameCycleState {
 class WaitingTarget extends WaitingSkillResult {
 	static id = GAME_CYCLE.SKILL.WAITING_TARGET
 
-	constructor(game: Game, result: ServerPayloadInterface.SkillInit) {
+	constructor(game: Game, result: ServerGameEventInterface.SkillInit) {
 		super(game, WaitingTarget.id, result)
 	}
 	onCreate(): void {}
@@ -806,7 +825,7 @@ class WaitingTarget extends WaitingSkillResult {
 class WaitingLocation extends WaitingSkillResult {
 	static id = GAME_CYCLE.SKILL.WAITING_LOCATION
 
-	constructor(game: Game, result: ServerPayloadInterface.SkillInit) {
+	constructor(game: Game, result: ServerGameEventInterface.SkillInit) {
 		super(game, WaitingLocation.id, result)
 	}
 	onCreate(): void {}
@@ -821,7 +840,7 @@ class WaitingLocation extends WaitingSkillResult {
 class WaitingAreaTarget extends WaitingSkillResult {
 	static id = GAME_CYCLE.SKILL.WAITING_AREA_TARGET
 
-	constructor(game: Game, result: ServerPayloadInterface.SkillInit) {
+	constructor(game: Game, result: ServerGameEventInterface.SkillInit) {
 		super(game, WaitingAreaTarget.id, result)
 	}
 	onCreate(): void {}

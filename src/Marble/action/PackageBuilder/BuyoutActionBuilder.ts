@@ -1,10 +1,10 @@
-
+import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
-import type { ActionTrace } from "../ActionTrace"
+import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import { BuyoutAction } from "../InstantAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
@@ -23,6 +23,12 @@ export class BuyoutActionBuilder extends ActionPackageBuilder {
 		return this
 	}
 	build(): ActionPackage {
-		return super.build().addMain(this.main)
+		let pkg= super.build().addMain(this.main)
+		const cloe=ABILITY_NAME.BLOCK_BUYOUT
+		if(this.defences.has(cloe) && !this.trace.useTag(ActionTraceTag.IGNORE_BLOCK_BUYOUT)){
+			pkg.blockMain()
+			pkg.addExecuted(cloe,this.defender.turn)
+		}
+		return pkg
 	}
 }

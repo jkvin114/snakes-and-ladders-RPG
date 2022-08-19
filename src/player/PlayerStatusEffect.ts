@@ -142,7 +142,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 
 		if (data != null) {
 		//	console.log(this.getEffectSourcePlayerName(effect.source))
-			this.player.game.clientInterface.giveSpecialEffect(
+			this.player.game.eventEmitter.giveSpecialEffect(
 				this.player.turn,
 				effect.name,
 				data,
@@ -182,7 +182,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		let num = this.player.game.onEffectApply()
 
 		//	console.log("giveeffect" + effect)
-		this.player.game.clientInterface.giveEffect({
+		this.player.game.eventEmitter.giveEffect({
 			turn: this.player.turn,
 			effect: effect, 
 			num:num
@@ -230,9 +230,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.category[effectType].delete(key)
 		this.storage.delete(key)
 		if (key < 30) {
-			this.player.game.clientInterface.update("removeEffect", this.player.turn, key)
+			this.player.game.eventEmitter.update("removeEffect", this.player.turn, key)
 		} else {
-			this.player.game.clientInterface.update("removeSpecialEffect", this.player.turn, effect.name)
+			this.player.game.eventEmitter.update("removeSpecialEffect", this.player.turn, effect.name)
 		}
 	}
 	getKeyByName(name: string) {
