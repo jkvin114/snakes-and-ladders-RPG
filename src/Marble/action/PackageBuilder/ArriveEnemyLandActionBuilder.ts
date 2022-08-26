@@ -10,15 +10,16 @@ import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import {  ApplyPlayerEffectAction, ClaimBuyoutAction, ClaimTollAction, LandModifierAction,  RequestMoveAction, StealMultiplierAction } from "../InstantAction"
 import { MoveTileSelectionAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
-export class ArriveEnemyLandActionBuilder extends ActionPackageBuilder {
+export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
 	tile: BuildableTile
-
+	tollFree:boolean
 	constructor(game: MarbleGame, trace: ActionTrace, mover: MarblePlayer, tile: BuildableTile) {
 		super(game, trace, mover, EVENT_TYPE.ARRIVE_ENEMY_LAND)
 		this.tile = tile
+		this.tollFree=false
 		//
 	}
 	/**
@@ -50,11 +51,12 @@ export class ArriveEnemyLandActionBuilder extends ActionPackageBuilder {
 
 		if (this.offences.has(ehealing)) {
 			this.addHealing(pkg, ehealing)
-			this.trace.setAbilityName(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND).setName("어힐링")
+			this.tollFree=true
+			// this.trace.setAbilityName(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND).setName("어힐링")
 		} else if (this.offences.has(bhealing)) {
 			this.addHealing(pkg, bhealing)
-
-			this.trace.setAbilityName(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND).setName("사힐링")
+			this.tollFree=true
+			// this.trace.setAbilityName(ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND).setName("사힐링")
 			return true
 		} else if (this.offences.has(healing)) {
 			this.addHealing(pkg, healing)
@@ -83,16 +85,26 @@ export class ArriveEnemyLandActionBuilder extends ActionPackageBuilder {
     teleportAbility(pkg:ActionPackage){
         if(!this.isInvokersTurn()) return false
         const trampoline=ABILITY_NAME.MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND
+		const free_trampoline=ABILITY_NAME.FREE_MOVE_ON_ARRIVE_ENEMY_LAND
+
         let tiles:number[]=[]
         let ab=ABILITY_NAME.NONE
         if(this.offences.has(trampoline)){
-            pkg.addExecuted(trampoline,this.invoker.turn)
             tiles=this.game.map.getTiles(this.invoker,TileFilter.MY_LAND().setExcludeMyPos())
-            this.trace.setAbilityName(trampoline).setName("반트램")
+            // this.trace.setAbilityName(trampoline).setName("반트램")
             ab=trampoline
+			this.tollFree=true
+        }
+		else if(this.offences.has(free_trampoline)){
+            
+            tiles=this.game.map.getTiles(this.invoker,TileFilter.ALL_EXCLUDE_MY_POS())
+            // this.trace.setAbilityName(free_trampoline).setName("울드트램")
+			
+            ab=free_trampoline
         }
         if(tiles.length>0){
             pkg.addAction(new MoveTileSelectionAction(this.invoker.turn,tiles,MOVETYPE.TELEPORT),ab)
+			pkg.addExecuted(ab,this.invoker.turn)
             return true
         }
         return false
@@ -122,7 +134,9 @@ export class ArriveEnemyLandActionBuilder extends ActionPackageBuilder {
 			pkg.addAction(new RequestMoveAction(this.defender.turn, this.game.map.travel, MOVETYPE.FORCE_WALK), follow_healing)
 		}
 
-		pkg.addMain(new ClaimTollAction(this.invoker.turn, this.tile))
+		if(!this.tollFree)
+			pkg.addMain(new ClaimTollAction(this.invoker.turn, this.tile))
+
 		if (this.tile.canBuyOut()) pkg.addMain(new ClaimBuyoutAction(this.invoker.turn, this.tile))
 		return pkg
 	}

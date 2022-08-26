@@ -1,5 +1,5 @@
 {
-    "train":true,
+    "train":false,
     "random_item":false,
     "random_item_exclude_character":[],
     "random_item_allow_duplicate":false,

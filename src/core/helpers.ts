@@ -1383,7 +1383,7 @@ class SkillInfoFactory {
 					`${this.stat("Attack and magic resistance")} ${this.up("increases by 0~60")} based on your ${this.missingHp()} 
 				${this.active()} For ${this.duration(4)},  ${this.stat("Attack and magic resistance")} ${this.up(
 						"increases by " + this.skillAmt("r_resistance")
-					)}, ${this.shield(this.skillAmt("rshield"))},and heal amount of ${this.nameDesc(ENUM.SKILL.Q)} ${this.up("doubles")}`
+					)}, ${this.shield(this.skillAmt("rshield"),"rshield")},and heal amount of ${this.nameDesc(ENUM.SKILL.Q)} ${this.up("doubles")}`
 				break
 			case 2:
 				str =
@@ -1467,7 +1467,7 @@ class SkillInfoFactory {
 				${this.active()} ${this.duration(4)}간  ${this.stat("방어력과 마법저항력")}이 ${this.up(
 						"+" + this.skillAmt("r_resistance")
 					)},
-				${this.shield(this.skillAmt("rshield"))}, ${this.nameDesc(ENUM.SKILL.Q)} ${this.up("회복량 2배")}`
+				${this.shield(this.skillAmt("rshield"),"rshield")}, ${this.nameDesc(ENUM.SKILL.Q)} ${this.up("회복량 2배")}`
 				break
 			case 2:
 				str =
@@ -1538,4 +1538,4 @@ class SkillInfoFactory {
 	}
 }
 
-export { ObstacleHelper, PlayerSelector,  SkillInfoFactory }
+export { ObstacleHelper,   SkillInfoFactory }

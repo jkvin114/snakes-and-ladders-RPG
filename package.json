@@ -2,7 +2,7 @@
   "name": "server-ts",
   "version": "1.0.0",
   "description": "",
-  "main": "app.ts",
+  "main": "src/app.ts",
   "scripts": {
     "test": "jest --forceExit "
   },

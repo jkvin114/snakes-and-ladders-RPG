@@ -1,5 +1,4 @@
-import { ABILITY_NAME } from "./Ability/AbilityRegistry"
-import type { AbilityValues } from "./Ability/AbilityValues"
+
 import { chooseRandom, clamp, randDice, range } from "./util"
 
 const DICES: number[][][] = range(12).map((total) =>

@@ -111,22 +111,29 @@ function onReceiveSimulationSummary(data) {
 
 		str += '<div class="summary_item"><div class="summary_characters">'
 		if (s.setting.length > 0) {
-			for (let c of getSetting(s, "characterPool")) {
-				str +=
-					'<div class="summary_char_icon ' +
-					getlockedTeam(c, teamlock) +
-					'"><img src="' +
-					getCharImgUrl(c) +
-					'"></div>  '
+			let charpools=getSetting(s, "characterPool")
+			if(charpools!=null){
+				for (let c of getSetting(s, "characterPool")) {
+					str +=
+						'<div class="summary_char_icon ' +
+						getlockedTeam(c, teamlock) +
+						'"><img src="' +
+						getCharImgUrl(c) +
+						'"></div>  '
+				}
 			}
-			for (let c of getSetting(s, "lockedCharacters")) {
-				str +=
-					'<div class="summary_char_icon locked ' +
-					getlockedTeam(c, teamlock) +
-					'"><img src="' +
-					getCharImgUrl(c) +
-					'"></div>  '
+			let lockedCharacters=getSetting(s, "lockedCharacters")
+			if(lockedCharacters!=null){
+				for (let c of getSetting(s, "lockedCharacters")) {
+					str +=
+						'<div class="summary_char_icon locked ' +
+						getlockedTeam(c, teamlock) +
+						'"><img src="' +
+						getCharImgUrl(c) +
+						'"></div>  '
+				}
 			}
+			
 
 			str +=
 				'</div><div class="summary_detail"><img src="res/img/svg/chart.svg" value="' +
@@ -602,7 +609,7 @@ function getSetting(game, setting) {
 	if (!game || game.setting.length === 0 || !game.setting[0].name) return null
 	let s = game.setting.filter((s) => s.name === setting)
 	if (s && s.length > 0) return s[0].value
-	return []
+	return null
 }
 
 function drawSimulationGraph(winRateList, avgDamageList) {
@@ -874,8 +881,11 @@ function showStat(data) {
 					'<img src="res/img/svg/shopping-cart.svg" class="icon" title="item limit">:' +
 					getSetting(statData[i], "itemLimit") +
 					"<br>"
-				if (getSetting(statData[i], "shuffleObstacle")) {
-					string += '<img src="res/img/svg/shuffle.svg" class="icon" title="shuffled obstacles">'
+				// if (getSetting(statData[i], "shuffleObstacle")) {
+				// 	string += '<img src="res/img/svg/shuffle.svg" class="icon" title="shuffled obstacles">'
+				// }
+				if (getSetting(statData[i], "coldGame")) {
+					string += '<img src="res/img/ui/finish-flag.png" class="icon" title="use decision by win">'
 				}
 				if (getSetting(statData[i], "useAdditionalLife")) {
 					string += '<img src="res/img/svg/heart.svg" class="icon" title="additional life avaliable">'

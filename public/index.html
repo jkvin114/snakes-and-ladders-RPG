@@ -350,10 +350,10 @@ button.navbtn{
 
 <script>
 const names=['Trump','Obama','Bush','Biden','Annonymous','Illuminati','Challenger','Iron','Grandmaster',
-,'Goinmul','NoobMaster','Newbie','Hacker','Luke','Leia','Anakin','Rey','Finn','Harry','Hermione','HanSolo','Chewbacca','Windu','Palpatine','Grogu'
+,'Goinmul','NoobMaster','Newbie','Hacker','Luke','Leia','Anakin','Rey','Finn','Harry',"Obi-Wan",'Hermione','HanSolo','Chewbacca','Windu','Palpatine','Grogu'
 ,'Ron','Malfoy','Voldemote','Dumbledore','Hagrid','Hedwig','Snape','Gandalf','Saruman','Frodo','Sam','Marry','Pippin','Legolas','Gimli'
 ,'Bormir','Sauron','Stark','Steve','Peter','Natasha','Clint','Bruce','Gamora','Drax','Groot','Thanos','Thor','Loki','Valkyrie','Wanda','Odin'
-,'Yangyi','Gorae','Creed','Silver','Jean','Timo','Jellice','Emiya','Muljomdao',"Faker","Undefined","Null","NAN","/(?![^<>]+>)(\d+)/"]
+,'Yangyi','Gorae','Creed','Silver','Jean','Timo','Jellice','Emiya','Muljomdao',"Faker","Undefined","Null","NAN","/(?![^<>]+>)"]
 
 $("document").ready(function(){
 
@@ -657,8 +657,12 @@ function createroom(isMarble){
     .done(function(data, statusText, xhr){
       let status = xhr.status;
       console.log(status)
+
       if(status==201){
         window.location.href="matching.html?gametype="+(isMarble?"marble":"rpg")
+      }
+      if(status==304){
+        window.location.href="gamepage.html"
       }
     })
     .fail(function(data, statusText, xhr){
@@ -715,9 +719,12 @@ function join(){
       if(status==200){
         window.location.href="matching.html"
       }
+      if(status==304){
+        window.location.href="gamepage.html"
+      }
     })
     .fail(function(data, statusText, xhr){
-
+      
         console.error("error")
       
     })

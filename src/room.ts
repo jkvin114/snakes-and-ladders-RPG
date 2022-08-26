@@ -189,7 +189,12 @@ abstract class Room {
 		this.teams = teams
 		teams.forEach((t,i)=>this.playerlist[i].team=t)
 	}
-	
+	user_reconnect(turn:number){
+
+	}
+	user_disconnect(turn:number){
+		
+	}
 	reset() {
 		// this.stopConnectionTimeout()
 		// this.stopIdleTimeout()

@@ -8,10 +8,9 @@ import { MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import { RequestMoveAction } from "../InstantAction"
-import {  MoveTileSelectionAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import {  DefendableActionBuilder } from "./ActionPackageBuilder"
 
-export class PullActionBuilder extends ActionPackageBuilder {
+export class PullActionBuilder extends DefendableActionBuilder {
 	pos: number
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, pos: number) {
 		super(game, trace, invoker, EVENT_TYPE.PULL_ENEMY)

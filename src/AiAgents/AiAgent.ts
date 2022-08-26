@@ -1,7 +1,7 @@
 import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventInterface } from "../data/PayloadInterface"
-import { copyElementsOnly, pickRandom, shuffle, SkillTargetSelector, sleep } from "../core/Util"
+import { copyElementsOnly, pickRandom, ListSet, shuffle, SkillTargetSelector, sleep, Stack } from "../core/Util"
 import { items as ItemList } from "../../res/item.json"
 import PlayerInventory from "../player/PlayerInventory"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
@@ -12,6 +12,7 @@ import SETTINGS = require("./../../res/globalsettings.json")
 import TRAIN_SETTINGS = require("./../../res/train_setting.json")
 
 const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)
+const ITEMS=ItemList
 
 abstract class AiAgent {
 	player: Player
@@ -319,7 +320,7 @@ class AIStoreInstance {
 		items: number[]
 		final: number
 	}
-	resultItems: number[]
+	resultItems: ListSet<number>
 	inven: PlayerInventory
 	totalMoneySpend: number
 	itemLimit: number
@@ -327,7 +328,18 @@ class AIStoreInstance {
 		this.inven = inven
 		this.build = build
 		this.totalMoneySpend = 0
-		this.resultItems = inven.item.map((x) => x)
+		this.resultItems = new ListSet(inven.itemSlots)
+	}
+	getChildItemCounts(target:number,itemlist:number[]):Map<number,number>{
+		let counts=new Map<number,number>()
+		let stk=[target]
+		while(stk.length>0){
+			for(const child of ITEMS[stk.pop()].children){
+				stk.push(child)
+				if(!counts.has(child)) counts.set(child,itemlist[child])
+			}
+		}
+		return counts
 	}
 	setItemLimit(limit: number) {
 		this.itemLimit = limit
@@ -338,6 +350,7 @@ class AIStoreInstance {
 	}
 
 	run() {
+		let attemptedCoreItems=new Set<number>()
 		while (this.hasEnoughMoney()) {
 			if (this.build.level >= this.itemLimit) {
 				this.buyLife()
@@ -351,12 +364,12 @@ class AIStoreInstance {
 			} else {
 				tobuy = this.build.items[this.build.level]
 			}
-			
 
-			if (this.aiAttemptItemBuy(tobuy) == 0) break
+			if (attemptedCoreItems.has(tobuy) || this.aiAttemptItemBuy(tobuy) == 0) break
+			attemptedCoreItems.add(tobuy)
 		}
 
-		this.inven.aiUpdateItem(this.resultItems, this.totalMoneySpend)
+		this.inven.aiUpdateItem(this.resultItems.toArray(), this.totalMoneySpend)
 	}
 	buyLife() {
 		let lifeprice = 150 * Math.pow(2, this.inven.lifeBought)
@@ -369,12 +382,34 @@ class AIStoreInstance {
 		}
 	}
 
-	isItemLimitExceeded(temp_itemlist: number[]) {
-		let count = temp_itemlist.reduce((total, curr) => total + curr, 0)
-
-		return count >= this.itemLimit
+	isFull(temp_itemlist: ListSet<number>) {
+		return !temp_itemlist.has(-1)
+	}
+	copyCurrentItems(){
+		return this.resultItems.copy()
 	}
 	//========================================================================================================
+
+	/**
+	 * 아이템 레벨이 부족해서 못사는 경우에는 그 아이템의 모든 하위아이템 중 레벨 되는 것들은 모두 구매 시도함
+	 * @param tobuy 
+	 * @returns 
+	 */
+	aiAttemptItemBuyLevelNotMet(tobuy: number):number{
+		let childItemsThatMeetsLevel=[]
+		let stk=new Stack<number>().push(tobuy)
+		while(stk.size>0){
+			for(const c of ITEMS[stk.pop()].children){
+				if(this.inven.checkStoreLevel(ITEMS[c])) childItemsThatMeetsLevel.push(c)
+				else stk.push(c)
+			}
+		}
+		let moneyspend=0
+		for(let item of childItemsThatMeetsLevel){
+			moneyspend += this.aiAttemptItemBuy(item)
+		}
+		return moneyspend
+	}
 
 	/**
 	 *
@@ -382,42 +417,50 @@ class AIStoreInstance {
 	 *@returns money spent by trying to buy this item
 	 */
 	aiAttemptItemBuy(tobuy: number): number {
-		let item = ItemList[tobuy]
-		let temp_itemlist = this.resultItems.map((x) => x) //이 아이템을 샀을 경우의 아이템리스트
+		const item = ITEMS[tobuy]
+		let temp_itemlist = this.copyCurrentItems() //이 아이템을 샀을 경우의 아이템리스트
 		let price = item.price - this.calcDiscount(tobuy, temp_itemlist)
-
-		//구매가능
-		if (this.canbuy(price) && !this.isItemLimitExceeded(temp_itemlist) && this.inven.checkStoreLevel(item)) {
-			this.totalMoneySpend += price
-			copyElementsOnly(this.resultItems, temp_itemlist)
-			this.resultItems[tobuy] += 1
-			if (item.itemlevel === 3) {
-				this.build.level += 1
-			}
-			return price
-
-			//불가
-		} else {
+		
+		//구매불가
+		if(!this.canbuy(price) || this.isFull(temp_itemlist) || !this.inven.checkStoreLevel(item)){
+			let moneyspent = 0
+			//레벨때문에 구매불가
+			
+			
 			if (item.children.length === 0) {
 				return 0
 			}
+			
+			if(!this.inven.checkStoreLevel(item)){
+				moneyspent += this.aiAttemptItemBuyLevelNotMet(tobuy)
+				return moneyspent
+			}
 
-			temp_itemlist = this.resultItems.map((x) => x)
-
-			let moneyspent = 0
+			temp_itemlist = this.copyCurrentItems()
 			for (let i = 0; i < item.children.length; ++i) {
-				let child = item.children[i]
+
+				const child = item.children[i]
 
 				//이미 보유중인 하위템은 또 안사도록
-				if (temp_itemlist[child] > 0) {
-					temp_itemlist[child] -= 1
+				if (temp_itemlist.has(child)) {
+					this.removeItem(temp_itemlist,child)
 					continue
 				}
 
 				moneyspent += this.aiAttemptItemBuy(child)
 			}
 			return moneyspent
+		}//구매가능
+		else{
+			this.totalMoneySpend += price
+			this.resultItems=temp_itemlist.copy()
+			this.addItem(tobuy)
+			if (item.itemlevel === 3) {
+				this.build.level += 1
+			}
+			return price
 		}
+
 	}
 
 	//========================================================================================================
@@ -436,28 +479,40 @@ class AIStoreInstance {
 	 * @param {*} tobuy int
 	 * @param {*} temp_itemlist copy of player`s item list
 	 */
-	calcDiscount(tobuy: number, temp_itemlist: number[]): number {
-		let thisitem = ItemList[tobuy]
+	calcDiscount(tobuy: number, itemslots: ListSet<number>): number {
+		const thisitem = ITEMS[tobuy]
 
-		if (thisitem.children.length === 0) {
-			return 0
-		}
+		// if (thisitem.children.length === 0) {
+		// 	return 0
+		// }
 		let discount = 0
-		//c:number   start with 1
-		for (let c of thisitem.children) {
-			if (temp_itemlist[c] === 0) {
-				discount += this.calcDiscount(c, temp_itemlist)
+		//c:number
+		for (const c of thisitem.children) {
+			if (!itemslots.has(c)) {
+				discount += this.calcDiscount(c, itemslots)
 			} else {
-				discount += ItemList[c].price
-				temp_itemlist[c] -= 1
+				discount += ITEMS[c].price
+				this.removeItem(itemslots,c)
 			}
 		}
 		return discount
 	}
+
+	removeItem(itemslots:ListSet<number>, item:number) {
+		if (!itemslots.has(item)) return
+
+		itemslots.delete(item).add(-1)
+		return itemslots
+	}
+	addItem(item:number){
+		if (!this.resultItems.has(-1)) return
+
+		this.resultItems.add(item).delete(-1)
+	}
 	//========================================================================================================
 
 	getItemNames(): string[] {
-		return ItemList.map((i: any) => i.name)
+		return ITEMS.map((i: any) => i.name)
 	}
 }
 

@@ -74,6 +74,8 @@ export enum ABILITY_NAME {
 	LINE_MOVE_ON_ARRIVE_MY_LAND="line_trampoline",
 	MY_LAND_MOVE_ON_ARRIVE_MY_LAND="my_land_trampoline",
 	MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND="enemy_land_trampoline",
+	FREE_MOVE_ON_ARRIVE_ENEMY_LAND="enemy_land_trampoline_freemove",
+
 	MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND="ninja_scroll",
 	UPGRADE_LAND_AND_MULTIPLIER_ON_BUILD="upgrade_construction_tool",
 	MOVE_IN_PLACE_ON_BUILD="in_place_construction_tool",
@@ -411,6 +413,12 @@ ABILITY_REGISTRY.set(
 	new MoveAbilty(ABILITY_NAME.MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND)
 	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
 	.desc("상대 땅 도착시 $c% 확률로 통행료 면제 후 내 땅 이동")
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.FREE_MOVE_ON_ARRIVE_ENEMY_LAND,
+	new MoveAbilty(ABILITY_NAME.FREE_MOVE_ON_ARRIVE_ENEMY_LAND)
+	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
+	.desc("상대 땅 도착시 $c% 확률로 통행료 지불 후 원하는 땅 이동")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND,

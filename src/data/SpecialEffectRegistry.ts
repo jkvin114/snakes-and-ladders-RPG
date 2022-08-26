@@ -69,7 +69,7 @@ export namespace SpecialEffect {
 			desc_kor: "매 플레이어 턴마다 최대체력의 3% 의 고정 피해"
 		},
         DINOSAUR_W_HEAL: {
-			isgood:false,
+			isgood:true,
             src:"skill/4-2.jpg",
 			name: "dinosaur_w",
 			desc: "Heals for 3 turns",

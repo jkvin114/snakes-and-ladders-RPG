@@ -66,11 +66,13 @@ import { CreateBlackholeActionBuilder } from "./action/PackageBuilder/CreateBlac
 import { OnBuildActionBuilder } from "./action/PackageBuilder/OnBuildActionBuilder"
 import { PrepareTravelActionBuilder } from "./action/PackageBuilder/PrepareTravelActionBuilder"
 import { PullActionBuilder } from "./action/PackageBuilder/PullActionBuilder"
-import { ReceiveSalaryActionBuilder } from "./action/PackageBuilder/ReceiveSalaryActionBuilder"
+import { PassOrArriveStartActionBuilder } from "./action/PackageBuilder/ReceiveSalaryActionBuilder"
 import { ThrowDiceActionBuilder } from "./action/PackageBuilder/ThrowDiceActionBuilder"
 import { TurnStartActionBuilder } from "./action/PackageBuilder/TurnStartActionBuilder"
 import { ArriveStartActionBuilder } from "./action/PackageBuilder/ArriveStartActionBuilder"
 import { PassTravelActionBuilder } from "./action/PackageBuilder/PassTravelActionBuilder"
+import { SelectOlympicActionBuilder } from "./action/PackageBuilder/SelectOlympicActionBuilder"
+import { run } from "jest"
 
 const DELAY_ROLL_DICE = 1000
 const MAP = ["world", "god_hand"]
@@ -481,7 +483,7 @@ class MarbleGame {
 		this.eventEmitter.setPlayerEffect(turn, effect,0, false)
 	}
 	onPassOrArriveStartTile(player: MarblePlayer, source: ActionTrace) {
-		this.pushActions(new ReceiveSalaryActionBuilder(this, source, player, this.SALARY).build())
+		this.pushActions(new PassOrArriveStartActionBuilder(this, source, player, this.SALARY).build())
 		player.onPassStartTile()
 	}
 	onPassTravelTile(player: MarblePlayer, source: ActionTrace){
@@ -726,17 +728,11 @@ class MarbleGame {
 		}
 	}
 	onSelectOlympicPosition(turn: number, pos: number, source: ActionTrace) {
+		let tile=this.map.buildableTileAt(pos)
+		if(!tile) return
 		this.map.setOlympic(pos)
-		if (
-			source.useActionAndAbility(ACTION_TYPE.CHOOSE_OLYMPIC_POSITION, ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL) &&
-			this.map.tileAt(pos) instanceof LandTile
-		) {
-			this.pushSingleAction(
-				new AutoBuildAction(turn, pos, [BUILDING.LANDMARK])
-				.addAbilityToActionTrace(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL),
-				source
-			)
-		}
+		this.pushActions(new SelectOlympicActionBuilder(this,source,this.mediator.pOfTurn(turn),tile).build())
+		
 	}
 
 	onSelectTileLiftPosition(turn: number, pos: number, source: ActionTrace) {
@@ -907,7 +903,7 @@ class MarbleGame {
 				this.pushSingleAction(new ActionModifier(turn, action.toBlock, ActionModifier.TYPE_BLOCK), action.source)
 			}
 		}
-		this.actionStack.iterate()
+		// this.actionStack.iterate()
 	}
 
 	pushSingleAction(action: Action, trace: ActionTrace) {

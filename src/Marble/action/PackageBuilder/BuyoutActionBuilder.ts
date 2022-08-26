@@ -6,10 +6,10 @@ import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import { BuyoutAction } from "../InstantAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
-export class BuyoutActionBuilder extends ActionPackageBuilder {
+export class BuyoutActionBuilder extends DefendableActionBuilder {
 	tile: BuildableTile
 	main: BuyoutAction
 

@@ -108,20 +108,7 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 		pkg.addExecuted(mul, this.invoker.turn)
 		pkg.addAction(new AddMultiplierAction(this.invoker.turn, this.tile.position, chooseRandom([2, 4, 8])), mul)
 	}
-	private olympicPull(pkg: ActionPackage) {
-		if (
-			this.trace.useActionAndAbility(ACTION_TYPE.AUTO_BUILD, ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL) &&
-			this.tile.isLandMark()
-		) {
-			pkg.addExecuted(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL, this.invoker.turn)
-			pkg.addAction(
-				new RangePullAction(this.invoker.turn, this.tile.position, 4),
-				ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL
-			)
-			return true
-		}
-		return false
-	}
+	
 	private redSticker(pkg: ActionPackage) {
 		const redsticker = ABILITY_NAME.LINE_BUYOUT_ON_BUILD
 		if (!this.offences.has(redsticker) 
@@ -223,7 +210,7 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 				this.redSticker(pkg)
 			}
 		} else {
-			this.olympicPull(pkg)
+			// this.olympicPull(pkg)
 		}
 		if(this.tile.isLandMark()){
 			this.buildLandmarkEvent(pkg)

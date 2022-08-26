@@ -349,6 +349,7 @@ export function openConnection(isInitial) {
 	// }
 	GAME.connection.setupComplete = function () {
 		socket.emit("user:start_game")
+		socket.emit("user:reconnect")
 	}
 	GAME.connection.update = function (type,data) {
 		socket.emit("user:update",type,data)
@@ -435,5 +436,8 @@ export function openConnection(isInitial) {
 	}
 	GAME.connection.extendTimeout = function () {
 		socket.emit("user:extend_timeout")
+	}
+	GAME.connection.reconnect = function () {
+		socket.emit("user:reconnect")
 	}
 }

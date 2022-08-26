@@ -279,7 +279,7 @@ class PlayerInventory {
 		}
 		this.player.ability.flushChange()
 		//	this.item = data.storedata.item
-		this.player.game.eventEmitter.update("item", this.player.turn, this.itemSlots)
+		this.player.game.eventEmitter.update("item", this.player.turn, this.sortedItemSlot())
 	}
 	thief(){
 		let itemhave = []
@@ -294,9 +294,9 @@ class PlayerInventory {
 		let thiefitem = Util.pickRandom(itemhave) 
 
 		this.player.message(this.player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
-		this.player.inven.changeOneItem(thiefitem, -1)
-		this.player.inven.itemSlots = this.player.inven.convertCountToItemSlots(this.player.inven.item)
-		this.player.game.eventEmitter.update("item", this.player.turn, this.player.inven.itemSlots)
+		this.changeOneItem(thiefitem, -1)
+		this.itemSlots = this.convertCountToItemSlots(this.item)
+		this.player.game.eventEmitter.update("item", this.player.turn, this.sortedItemSlot())
 		this.player.ability.flushChange()
 	}
 	/**
@@ -306,12 +306,13 @@ class PlayerInventory {
 	 * moneyspend:int
 	 * }
 	 */
-	aiUpdateItem(item: number[], moneyspend: number) {
+	aiUpdateItem(slots: number[], moneyspend: number) {
 		this.changemoney(-1 * moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		// this.inven.changeToken(data.tokenbought)
 		// this.inven.changeLife(data.life)
 		// this.inven.lifeBought += data.life
-
+		let item=this.convertItemSlotsToCount(slots)
+		
 		for (let i = 0; i < ItemList.length; ++i) {
 			let diff = item[i] - this.item[i]
 
@@ -320,9 +321,17 @@ class PlayerInventory {
 			}
 			this.changeOneItem(i, diff)
 		}
-		this.itemSlots = this.convertCountToItemSlots(this.item)
+		// this.itemSlots = this.convertCountToItemSlots(this.item)
+		this.itemSlots=slots
 		this.player.ability.flushChange()
-		this.player.game.eventEmitter.update("item", this.player.turn, this.itemSlots)
+		this.player.game.eventEmitter.update("item", this.player.turn, this.sortedItemSlot())
+	}
+	/**
+	 * 빈칸만 맨 뒤로 정렬
+	 * @returns 
+	 */
+	sortedItemSlot(){
+		return this.itemSlots.sort((a,b)=>-a)
 	}
 	/**
 	 * 첫번째 상점에선 2등급이상아이템 구입불가

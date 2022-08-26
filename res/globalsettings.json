@@ -1,5 +1,5 @@
 {
-    "version": "3.3.0",
+    "version": "3.4.1",
     "submarine_cooltime": 1,
     "pendingObsList": [
         6,
@@ -29,7 +29,7 @@
     "trajectorySpeedRatio":300,
     "idleTimeout": 20000,
     "connectionTimeout": 10000,
-    "delay_on_dice":2000,
+    "delay_on_dice":1600,
     "delay_per_dice":100,
     "delay_on_silent":1000,
     "delay_initial_arrive_square":600,
@@ -41,49 +41,55 @@
     "delay_next_turn":700,
     "characters": [
         {
-            "name": "Reaper",
+            "name": "크리드",
             "imgdir": "reaper.png",
             "bgcolor": "#7e0000"
         },
         {
-            "name": "Elephant",
+            "name": "실버",
             "imgdir": "elephant.png",
             "bgcolor": "#086300"
         },
         {
-            "name": "Ghost",
+            "name": "티모",
             "imgdir": "ghost.png",
             "bgcolor": "#001381"
         },
         {
-            "name": "Dinosaur",
+            "name": "양이",
             "imgdir": "dinosaur.png",
             "bgcolor": "#3d5700"
         },
         {
-            "name": "Sniper",
+            "name": "진",
             "imgdir": "sniper.png",
             "bgcolor": "#581c00"
         },
         {
-            "name": "Magician",
+            "name": "젤리스",
             "imgdir": "magician.png",
             "bgcolor": "#680051"
         },
         {
-            "name": "Kraken",
+            "name": "고래",
             "imgdir": "kraken.png",
             "bgcolor": "#006a72"
         },
         {
-            "name": "Bird",
+            "name": "버드",
             "imgdir": "bird.png",
             "bgcolor": "#ff8420"
         },
         {
-            "name": "Tree",
+            "name": "나무",
             "imgdir": "tree.png",
             "bgcolor": "#d1a400"
         }
-    ]
+    ],
+    "dev_settings":{
+        "enabled":false,
+        "player":{
+            "level":1,"pos":15,"money":150
+        }
+    }
 }

@@ -22,6 +22,11 @@ router.post('/create_rpg',function(req:express.Request,res:express.Response){
         res.status(400).end("room name exists")
         return
     }
+    if(req.session.roomname!=null && R.hasRPGRoom(req.session.roomname)){
+        res.status(304).end("previous room exists")
+        return
+    }
+
     console.log(rname)
     R.setRPGRoom(rname,new RPGRoom(rname).registerResetCallback(()=>{
         R.remove(rname)
@@ -74,6 +79,11 @@ router.post('/create_marble',function(req:express.Request,res:express.Response){
  */
 router.post('/join',async function(req:express.Request,res:express.Response){
     let body = req.body;
+
+    if(req.session.roomname!=null && R.hasRPGRoom(req.session.roomname)){
+        res.status(304).end("previous room exists")
+        return
+    }
 
     if(req.session){
         if(!req.session.username){

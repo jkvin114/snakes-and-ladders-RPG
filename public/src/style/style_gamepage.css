@@ -2819,7 +2819,7 @@ b {
   z-index: 7;
 }
 .skill_scale_tooltip{
-  height: 20px;
+  height: fit-content;
   max-width: 400px;
   transform: translate(0, 100%);
 }
@@ -3557,4 +3557,12 @@ b {
 }
 #dice-number-container.double #dice-double{
   display: inline;
+}
+::-webkit-scrollbar{
+  width:10px;
+}
+::-webkit-scrollbar-thumb {
+  background: gray;
+    /* width: 10px; */
+    /* height: 10px; */
 }

@@ -7,10 +7,10 @@ import { MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import { BuyoutAction, PayPercentMoneyAction } from "../InstantAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
-export class PassPlayerActionBuilder extends ActionPackageBuilder {
+export class PassPlayerActionBuilder extends DefendableActionBuilder {
 	oldpos: number
 	newpos: number
 	stopMover: boolean

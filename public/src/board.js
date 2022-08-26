@@ -53,8 +53,10 @@ export class Board{
 		this.renderInterval = setInterval(
 			function () {
 				// this.canRender = true
-				if(this.shouldRender)
+				if(this.shouldRender){
 					this.canvas.renderAll()
+					this.shouldRender=false
+				}
 			}.bind(this),
 			FRAME
 		)

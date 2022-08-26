@@ -9,10 +9,10 @@ import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import {    TileAttackAction } from "../InstantAction"
 import { AskAttackDefenceCardAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
-export class AttemptAttackActionBuilder extends ActionPackageBuilder {
+export class AttemptAttackActionBuilder extends DefendableActionBuilder {
 	private main: TileAttackAction
 	private attackName: string
 	private tile: BuildableTile

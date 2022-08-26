@@ -73,11 +73,11 @@ class Game{
         this.scene.startRenderInterval()
         if(BGM){
             let elem
-            if(Math.random()>0){
+            if(Math.random()>0.5){
                 elem=document.getElementById("bgm2")
             }
             else{
-                elem=document.getElementById("bgm1")
+                elem=document.getElementById("bgm")
             }
             elem.loop=true
             elem.load()

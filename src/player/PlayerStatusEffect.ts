@@ -198,6 +198,8 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 
 		this.storage.set(effect, statusEffect)
 		this.category[statusEffect.effectType].set(effect, statusEffect)
+
+		
 		//이펙트 부여하자마자 바로 쿨다운 하기 때문에 지속시간 +1 해줌
 		// if (type === "obs") {
 		// 	this.effects.obs[effect] = Math.max(dur, this.effects.obs[effect])

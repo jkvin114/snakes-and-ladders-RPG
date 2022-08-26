@@ -36,7 +36,11 @@ const { isMainThread } = require('worker_threads')
 // 	args=require("minimist")(process.argv.slice(2))
 // }
 
-const testSetting = {
+const initialSetting = SETTINGS.dev_settings.enabled?{
+	lvl: SETTINGS.dev_settings.player.level,
+	pos: SETTINGS.dev_settings.player.pos,
+	money: SETTINGS.dev_settings.player.money
+}:{
 	lvl: 1,
 	pos: 0,
 	money: 0
@@ -45,7 +49,7 @@ const testSetting = {
 // if (args["p"]) testSetting.pos = args["p"]
 // if (args["m"]) testSetting.money = args["m"]
 
-console.log(testSetting)
+console.log(initialSetting)
 export interface ValueScale {
 	base: number
 	scales: { ability: string; val: number }[]
@@ -124,7 +128,7 @@ abstract class Player extends Entity {
 	// abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
 	abstract getSkillBaseDamage(skill: number): number
 	constructor(turn: number, team: boolean, game: Game, ai: boolean, char: number, name: string) {
-		super(game, ABILITY[char].initial.HP, testSetting.pos, ENUM.ENTITY_TYPE.PLAYER)
+		super(game, ABILITY[char].initial.HP, initialSetting.pos, ENUM.ENTITY_TYPE.PLAYER)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
@@ -133,7 +137,7 @@ abstract class Player extends Entity {
 		this.team = team //0:readteam  1:blue
 		this.lastpos = 0 //이전위치
 		this.dead = false
-		this.level = testSetting.lvl //레벨, 1에서시작
+		this.level = initialSetting.lvl //레벨, 1에서시작
 
 		this.UEID = this.game.turn2Id(this.turn)
 
@@ -155,7 +159,7 @@ abstract class Player extends Entity {
 		// this.MaxHP = basic_stats[0]
 		this.ability = new PlayerAbility(this)
 		this.statistics = new PlayerStatistics(this)
-		this.inven = new PlayerInventory(this,testSetting.money)
+		this.inven = new PlayerInventory(this,initialSetting.money)
 		this.effects = new PlayerStatusEffects(this)
 		this.mapHandler = PlayerMapHandler.create(this, this.mapId)
 		this.AiAgent = new DefaultAgent(this)

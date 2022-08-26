@@ -11,10 +11,10 @@ import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import {   PayTollAction } from "../InstantAction"
 import { AskTollDefenceCardAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
-export class ClaimTollActionBuilder extends ActionPackageBuilder {
+export class ClaimTollActionBuilder extends DefendableActionBuilder {
 	private tile: BuildableTile
 	private toll: number
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, tile: BuildableTile, baseToll: number) {
@@ -30,9 +30,9 @@ export class ClaimTollActionBuilder extends ActionPackageBuilder {
 		let main = new PayTollAction(this.defender.turn, this.invoker.turn, this.toll)
 		let pkg = super.build()
 
-		if (this.trace.useActionAndAbility(ACTION_TYPE.ARRIVE_TILE, ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND)||
-        this.trace.useActionAndAbility(ACTION_TYPE.ARRIVE_TILE, ABILITY_NAME.MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND))
-			main.applyMultiplier(0)
+		// if (this.trace.useActionAndAbility(ACTION_TYPE.ARRIVE_TILE, ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND)||
+        // this.trace.useActionAndAbility(ACTION_TYPE.ARRIVE_TILE, ABILITY_NAME.MY_LAND_MOVE_AND_FREE_ON_ARRIVE_ENEMY_LAND))
+		// 	main.applyMultiplier(0)
 
 		if (main.amount === 0) return pkg
 

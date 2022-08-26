@@ -11,9 +11,9 @@ import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import {  ChangeLandOwnerAction, PayPercentMoneyAction, RequestMoveAction } from "../InstantAction"
 import { ObtainCardAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import {  DefendableActionBuilder } from "./ActionPackageBuilder"
 
-export class MeetPlayerActionBuilder extends ActionPackageBuilder {
+export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 	private pos: number
 	private movetype: MOVETYPE
 	private stayed: MarblePlayer[]
@@ -24,6 +24,9 @@ export class MeetPlayerActionBuilder extends ActionPackageBuilder {
 		this.movetype = movetype
 		this.stayed = []
 		this.overrideArrival = false
+	}
+	setDefender(p: MarblePlayer): this {
+		return this
 	}
 	addStayed(p: MarblePlayer) {
 		this.stayed.push(p)

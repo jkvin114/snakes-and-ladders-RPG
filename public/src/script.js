@@ -29,7 +29,8 @@ class Player {
 		this.alive = true
 		this.team = team
 		this.turn = turn
-		this.name = this.isInSubway = false
+		this.name = name
+		this.isInSubway = false
 
 		//fabric objects
 		this.dmgindicator
@@ -272,12 +273,12 @@ class Game {
 	boardReady() {
 		console.log("boardready")
 		setTimeout(() => $(".progress").hide(), 500)
-		if (!this.simulation) {
-			$("#loadingtext").html("")
-			$("#loadingoverlay").hide()
-			this.connection.setupComplete()
+		$("#loadingtext").html("")
+		$("#loadingoverlay").hide()
+		this.connection.setupComplete()
+
 			//	console.log("simu" + this.simulation)
-		}
+		
 		this.ui.onGameReady()
 		$(".start").show()
 		this.scene.startRenderInterval()
@@ -495,7 +496,7 @@ class Game {
 		const dices = [0, 1, 6, 4, 5, 2, 3]
 
 		// let dice1 = dices[dice.dice]
-		let other = (dice.dice + 3 + Math.floor(Math.random() * 2)) % 6
+		let other = (dices[dice.dice] + 3 + Math.floor(Math.random() * 2)) % 6
 
 		for (let i = 1; i <= 6; i++) {
 			elDiceOne.classList.remove("show-" + i)
@@ -585,7 +586,7 @@ class Game {
 		this.players[dice.turn].pos = dice.currpos + dice.actualdice
 		//	console.log("after dice thrown")
 		this.scene.showPin(dice.currpos + dice.actualdice)
-		setTimeout(() => this.scene.movePlayer(dice.actualdice, 1, dice.currpos, dice.turn), 500)
+		this.scene.movePlayer(dice.actualdice, 1, dice.currpos, dice.turn)
 	}
 	smoothTeleport(turn, pos, distance) {
 		this.players[turn].pos = pos
@@ -702,6 +703,12 @@ class Game {
 		}
 		if (type === "finish_pos") {
 			this.scene.setFinish(data)
+		}
+		if (type === "reconnect") {
+			this.ui.playerReconnect(turn,this.players[turn].name)
+		}
+		if (type === "disconnect") {
+			this.ui.playerDisconnect(turn,this.players[turn].name)
 		}
 		if (this.myturn !== turn) {
 			return

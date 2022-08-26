@@ -1335,7 +1335,7 @@ export class Scene extends Board{
 				top: 301,
 				width: 48,
 				height: 3,
-				fill: COLOR_LIST[i],
+				fill: COLOR_LIST_BG[i],
 				visible: false,
 				evented: false,
 			})
@@ -2715,7 +2715,7 @@ export class Scene extends Board{
 			playerimg.filters = []
 			playerimg.applyFilters()
 		}
-		console.log("togglepoison" + isStart)
+		// console.log("togglepoison" + isStart)
 	}
 	/**	//===========================================================================================================================
 
@@ -3016,27 +3016,28 @@ export class Scene extends Board{
 	}
 	//===========================================================================================================================
 
-	animateTrain(type, who) {
+	animateTrain(type, position) {
 		// if (this.subwayTrain != null) {
 		// 	this.canvas.remove(this.subwayTrain)
 		// 	this.subwayTrain = null
 		// }
 
-		let pos = this.getPlayerPos(who)
+		let pos = this.getCoord(position)
 		let speed = 1600
+		let image
 		if (type === "subway_local") {
 			this.game.playSound("subway-rapid")
-			//trainimg = document.getElementById("subway_local")
+			image = "subway_local"
 		} else if (type === "subway_rapid") {
 			this.game.playSound("subway-rapid")
-		//	trainimg = document.getElementById("subway_rapid")
+			image = "subway_rapid"
 			speed = 1200
 		} else if (type === "subway_express") {
 			this.game.playSound("subway-express")
-		//	trainimg = document.getElementById("subway_express")
+			image = "subway_express"
 			speed = 900
 		}
-		let train=this.createCroppedEffectImage('revive')
+		let train=this.createCroppedEffectImage(image)
 		this.setEffectImageAttr(train,pos.x,pos.y+10,1.5,1.5,1,0)
 		this.animateX(train,pos.x+600,speed)
 		this.removeImageAfter(train,3000)

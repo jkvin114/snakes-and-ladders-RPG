@@ -123,11 +123,21 @@ class GameLoop {
 		this.game.userCompleteStore(data)
 	}
 	user_reconnect(turn: number) {
+		if(!this.game || !this.game.begun) return
 		//console.log("reconnect" + turn)
+		if(this.game.disconnectedPlayers.has(turn)){
+			this.eventEmitter.update("reconnect",turn,0)
+			this.game.disconnectedPlayers.delete(turn)
+		}
 		if (turn === this.idleTimeoutTurn) {
 			//this.stopTimeout()
 		//	console.log("----------------------reconnect" + turn)
 		}
+	}
+	user_disconnect(turn: number) {
+		if(!this.game || !this.game.begun) return
+		this.game.disconnectedPlayers.add(turn)
+		this.eventEmitter.update("disconnect",turn,0)
 	}
 	getOnTimeout() {
 		return (() => {
@@ -178,7 +188,7 @@ class GameLoop {
 	user_pressDice(dicenum: number, crypt_turn: string): ServerGameEventInterface.DiceRoll {
 	//	console.log("user_pressDice")
 		this.restartResetTimeout()
-		if (this.state.crypt_turn !== crypt_turn) return
+		if (this.state.crypt_turn !== crypt_turn) return null
 
 		this.setGameCycle(this.state.onUserPressDice(dicenum))
 		//this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())

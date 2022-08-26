@@ -1509,7 +1509,10 @@ export default class GameInterface {
 
 	getChampImgofTurn(turn) {
 		if (turn === -1) return "res/img/ui/obstacle.png"
-		return this.getCharImgUrl(GAME.players[turn].champ)
+
+		let player=GAME.players[turn]
+		if(!player) return ""
+		return this.getCharImgUrl(player.champ)
 	}
 	indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount) {
 		console.log("indicatePlayerDeath" + turn)
@@ -1744,6 +1747,12 @@ export default class GameInterface {
 		$("#kill_text").show()
 		clearTimeout(this.killTextTimeout)
 		this.killTextTimeout=setTimeout(()=>$("#kill_text").hide(),2500)
+	}
+	playerReconnect(turn,name){
+		this.showKillText(turn,10,GAME.chooseLang(name+" has reconnected",name+"님이 다시 연결되었습니다"))
+	}
+	playerDisconnect(turn,name){
+		this.showKillText(turn,10,GAME.chooseLang(name+" has left the game",name+"님이 게임을 종료했습니다"))
 	}
 }
 

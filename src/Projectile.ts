@@ -27,7 +27,6 @@ abstract class Projectile {
 	duration: number
 	flags: Set<number>
 	target: number
-
 	constructor(builder: ProjectileBuilder) {
 		this.sourceTurn = builder.sourceTurn
 		this.size = builder.size

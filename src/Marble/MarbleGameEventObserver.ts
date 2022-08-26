@@ -46,12 +46,12 @@ const SERVER_EVENTS={
 
 export class MarbleGameEventObserver {
 	private eventEmitter: GameEventEmitter
-    private simulationEventEmitter:GameEventEmitter
+    // private simulationEventEmitter:GameEventEmitter
 	private rname: string
 	constructor(rname: string) {
 		this.rname = rname
 		this.eventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}
-        this.simulationEventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}
+        // this.simulationEventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}
 	}
     registerCallback(callback: GameEventEmitter) {
         //    console.log("registerCallback")

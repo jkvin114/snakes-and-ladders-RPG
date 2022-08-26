@@ -25,8 +25,8 @@ export class CreateBlackholeActionBuilder extends ActionPackageBuilder {
 	build(): ActionPackage {
 		let pkg = super.build().addMain(this.main)
 		const blackhole_mul = ABILITY_NAME.ADD_MULTIPLIER_ON_CREATE_BLACKHOLE
-		let val = this.offences.get(blackhole_mul)
-		if (val != null) {
+		// let val = this.offences.get(blackhole_mul)
+		if (this.offences.has(blackhole_mul)) {
 			pkg.addExecuted(blackhole_mul, this.invoker.turn)
 			pkg.addAction(
 				new AddMultiplierAction(this.invoker.turn, this.whiteholepos, chooseRandom([2, 4, 8])),

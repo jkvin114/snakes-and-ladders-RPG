@@ -130,7 +130,7 @@ class Game {
 	arriveSquareTimeout:NodeJS.Timeout
 	eventEmitter:GameEventObserver
 	tempFinish:number
-
+	disconnectedPlayers:Set<number>
 	private static readonly PLAYER_ID_SUFFIX = "P"
 
 	constructor(mapid: number, rname: string, setting: GameSetting) {
@@ -187,6 +187,7 @@ class Game {
 		this.eventEmitter=new GameEventObserver(this.rname)
 		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
 		this.tempFinish=-1
+		this.disconnectedPlayers=new Set<number>()
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -485,7 +486,10 @@ class Game {
 		// console.log("onPlayerChangePos"+secondLevel)
 		if(this.setting.winByDecision){
 			let respawns=MAP.getRespawn(this.mapId)
-			if(secondLevel+1 > respawns.length) {
+			if(secondLevel+1 >= respawns.length) {
+				if(this.tempFinish!==-1)
+					this.eventEmitter.update("finish_pos",turn,MAP.getFinish(this.mapId))
+
 				this.tempFinish=-1
 				return
 			}
@@ -494,6 +498,9 @@ class Game {
 				this.eventEmitter.update("finish_pos",turn,finishpos)
 			this.tempFinish=finishpos
 		}
+	}
+	getNextTurn(){
+		return (this.thisturn+1) % this.totalnum
 	}
 	goNextTurn():ServerGameEventInterface.TurnStart {
 		if (this.gameover) {
@@ -513,12 +520,27 @@ class Game {
 		}
 		//다음턴 넘어감
 		else {
+			const lastturn=this.thisturn
 			if(this.begun){
 				//this.onTurnEnd()
 				// this.thisturn += 1
-				this.thisturn =(this.thisturn+1) % this.totalnum
+				if(this.disconnectedPlayers.size < this.PNUM){
+					let nextturn=this.getNextTurn()
+
+					for(let i=1;i<this.totalnum;++i){
+						if(!this.disconnectedPlayers.has(nextturn)) break
+						nextturn =(nextturn+i) % this.totalnum
+					}
+
+					this.thisturn=nextturn
+				}
+				else if(p.AI){
+					this.thisturn=this.getNextTurn()
+				}
+				else{
+					//모든 플레이어가 연결끊김 상태이면 턴 안넘어감
+				}
 			}
-				
 			this.begun=true
 			
 			
@@ -527,7 +549,7 @@ class Game {
 			this.summonDicecontrolItem()
 			this.projectileCooldown()
 
-			if (this.thisturn === 0) {
+			if (this.thisturn <= lastturn) {
 			//	console.log(`turn ${this.totalturn}===========================================================================`)
 
 				this.totalturn += 1
@@ -1273,6 +1295,7 @@ class Game {
 	}
 	//========================================================================================================
 	getFinalStatistics() {
+		this.recordStat()
 		//console.log(setting)
 		let data = {
 			players: new Array<any>(),
@@ -1312,7 +1335,7 @@ class Game {
 				turn: p.turn,
 				stats: p.statistics.stats,
 				kda: [p.kill, p.death, p.assist],
-				items: p.inven.itemSlots,
+				items: p.inven.sortedItemSlot(),
 				bestMultiKill: p.bestMultiKill,
 				positionRecord: p.statistics.positionRecord,
 				moneyRecord: p.statistics.moneyRecord,

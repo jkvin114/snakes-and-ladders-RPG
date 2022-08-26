@@ -7,9 +7,9 @@ import type { MarblePlayer } from "../../Player"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import { DiceChanceAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
-export class MonopolyChanceActionBuilder extends ActionPackageBuilder {
+export class MonopolyChanceActionBuilder extends DefendableActionBuilder {
 	spots: number[]
 
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, spots: number[]) {

@@ -66,3 +66,4 @@ CODE,ITEMNAME,itemname_kor,ABILITYNAME,CHANCE,VALUE,UPGRADEVALUE,FIRSTONLY,LIMIT
 63,nirvana crown,니르바나의 왕관,additional_landmark_on_build,30,,,,,9
 64,levataine sword,레바테인의 칼,move_in_dice_range_after_dice,33,,,,,10
 65,donate_guidebook,기부왕의 지옥가이드북,donate_guidebook,70,,,,,9
+66,healing_trampoline,힐링 트램폴린,enemy_land_trampoline_freemove,35,,,,,7

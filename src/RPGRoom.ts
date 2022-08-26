@@ -33,18 +33,23 @@ class RPGRoom extends Room {
 		return this
 	}
 	cryptTurn(turn: number) {
+		if(!this.gameloop) return
 		return this.gameloop.game.cryptTurn(turn)
 	}
 	thisCryptTurn() {
+		if(!this.gameloop) return
 		return this.gameloop.game.thisCryptTurn()
 	}
 	isThisTurn(cryptTurn: string) {
+		if(!this.gameloop) return
 		return this.gameloop.game.isThisTurn(cryptTurn)
 	}
 	user_message(turn: number, msg: string): string {
+		if(!this.gameloop) return
 		return this.gameloop.user_message(turn, msg)
 	}
 	getMapId() {
+		if(!this.gameloop) return
 		return this.gameloop.game.mapId
 	}
 
@@ -63,7 +68,12 @@ class RPGRoom extends Room {
 		return setting
 	}
 	user_reconnect(turn:number){
+		if(!this.gameloop) return
 		this.gameloop.user_reconnect(turn)
+	}
+	user_disconnect(turn: number): void {
+		if(!this.gameloop) return
+		this.gameloop.user_disconnect(turn)
 	}
 	hasGameLoop(){
 		return this.gameloop!=null
@@ -76,6 +86,8 @@ class RPGRoom extends Room {
 	 * @returns test if all players are connected
 	 */
 	user_startGame(): boolean {
+		if(!this.gameloop) return
+
 		let canstart = this.gameloop.game.canStart()
 		if (!canstart) return false
 		else if (!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
@@ -83,6 +95,8 @@ class RPGRoom extends Room {
 	}
 
 	onGameover(isNormal:boolean) {
+		if(!this.gameloop) return
+		
 		if(!isNormal){
 			this.reset()
 			return

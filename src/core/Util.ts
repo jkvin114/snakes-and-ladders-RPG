@@ -288,6 +288,7 @@ export const makeArrayOf = function <T>(element: T, count: number): T[] {
 	for (let i = 0; i < count; ++i) {
 		arr.push(element)
 	}
+	
 	return arr
 }
 export const Normalize = function (list: number[]): number[] {
@@ -472,6 +473,103 @@ class HPChangeData {
 }
 interface SkillTargetConditionFunction {
 	(this: Entity): boolean
+}
+export class ListSet<T>{
+	map:Map<T,number>
+	constructor(elem?:Iterable<T>){
+		this.map=new Map<T,number>()
+		if(elem!=null){
+			for(const e of elem){
+				this.add(e)
+			}
+		}
+	}
+	copy(){
+		return new ListSet<T>(this.toArray())
+	}
+	add(toadd:T){
+		if(this.map.has(toadd)){
+			this.map.set(toadd,this.map.get(toadd)+1)
+		}
+		else{
+			this.map.set(toadd,1)
+		}
+		return this
+	}
+	countItem(item:T){
+		if(!this.map.has(item)) return 0
+		return this.map.get(item)
+	}
+	delete(e:T){
+		if(this.map.has(e)){
+			this.map.set(e,this.map.get(e)-1)
+			if(this.map.get(e)===0) this.map.delete(e)
+		}
+		return this
+	}
+	has(e:T,count?:number){
+		if(count===undefined) count=0
+
+		return this.map.has(e) && this.map.get(e)>count
+	}
+	toArray(){
+		let list=[]
+		for(const [e,count] of this.map.entries()){
+			for(let i=0;i<count;++i){
+				list.push(e)
+			}
+		}
+		return list
+	}
+}
+export class Stack<T>{
+	private top:StackNode<T>
+	size:number
+	constructor(){
+		this.top=null
+		this.size=0
+	}
+	push(val:T){
+		let node=new StackNode<T>(val)
+		if(this.top)
+			node.setPrev(this.top.copy())
+		this.top=node
+		this.size+=1
+		return this
+	}
+	pop(){
+		if(!this.top) return null
+		let val=this.top.val
+		this.top=this.top.prev
+		this.size-=1
+		return val
+	}
+	toString():string{
+		if(!this.top) return ""
+		return "["+this.top.toString()+"]"
+	}
+
+}
+class StackNode<T>{
+	prev:StackNode<T>
+	val:T
+	constructor(val:T){
+		this.val=val
+		this.prev=null
+	}
+	setPrev(prev:StackNode<T>){
+		this.prev=prev
+		return this
+	}
+	toString():string{
+		if(!this.prev) return this.val+""
+
+		return this.prev.toString() + "," + this.val
+	}
+	
+	copy(){
+		return new StackNode<T>(this.val).setPrev(this.prev)
+	}
 }
 
 class SkillTargetSelector {

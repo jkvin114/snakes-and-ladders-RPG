@@ -171,7 +171,7 @@ class ItemTreeNode {
 			`<div class='onetreeitem' value='${String(this.item_id)}'>` +
 			`<div class='store_treeitemimg ${!this.canbuy || this.have ? "itemhave" : ""}'>` +
 			`<img src='res/img/store/items.png' style='margin-left:${-1 * this.item_id * 100}px';>` +
-			`</div><b>${this.price}$</b>` +
+			`</div><b>$${this.price}</b>` +
 			(this.have && !this.isparent ? "<img class='itemcheck' src='res/img/ui/confirm.png'>" : "") +
 			"</div>"
 		return str
@@ -485,7 +485,7 @@ export class StoreInterface {
 					<div class=store_curritemimg ><img src='res/img/store/items.png' style='margin-left:${
 						-1 * item_id * 100
 					}px';> 
-					</div><b class='summaryprice ${canbuy ? "" : " cannotbuyitem "}'> ${this.storeStatus.itemPrices[item_id]}$</b>
+					</div><b class='summaryprice ${canbuy ? "" : " cannotbuyitem "}'> $${this.storeStatus.itemPrices[item_id]}</b>
 				</div>
 				<p>${GAME.chooseLang(this.storeStatus.itemList[item_id].summary.eng, this.storeStatus.itemList[item_id].summary.kor)}
 				</p>
@@ -576,7 +576,7 @@ export class StoreInterface {
 
 		let price = this.storeInstance.getLifePrice()
 
-		$("#buylife").html(price + "$")
+		$("#buylife").html("$"+price)
 
 		if (price > this.storeStatus.money || !this.storeInstance.enabled) {
 			$("#buylife").off()
@@ -753,7 +753,7 @@ export class StoreInterface {
 			(thisitem.price - this.storeInstance.calcDiscount(item_id, predicted_itemlist)) * this.storeStatus.priceMultiplier
 		)
 
-		$("#buyitem").html(actual_price + "$")
+		$("#buyitem").html( "$"+actual_price )
 
 		let _this = this
 		if (this.storeStatus.canBuyItem(item_id) && this.storeInstance.enabled) {

@@ -6,10 +6,10 @@ import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import {  AskBuyoutAction } from "../QueryAction"
-import { ActionPackageBuilder } from "./ActionPackageBuilder"
+import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
-export class ClaimBuyoutActionBuilder extends ActionPackageBuilder {
+export class ClaimBuyoutActionBuilder extends DefendableActionBuilder {
 	private tile: BuildableTile
 
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, tile: BuildableTile) {

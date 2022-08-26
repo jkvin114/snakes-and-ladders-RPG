@@ -587,7 +587,7 @@
 				{ "type": "AR", "value": 40, "type_kor": "방어력" },
 				{ "type": "HP", "value": 25, "type_kor": "최대체력" }
 			],
-			"children": [4,7],
+			"children": [7,4],
 			"parents": [],
 			"unique_effect": "Become invisible for 1 turn if HP is below 30%",
 			"unique_effect_kor": "체력이 30% 이하로 떨어지면 1턴간 투명화",

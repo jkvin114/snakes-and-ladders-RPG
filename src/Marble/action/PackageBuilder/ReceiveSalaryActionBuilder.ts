@@ -9,9 +9,9 @@ import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
 import { AddMultiplierAction, EarnMoneyAction } from "../InstantAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
+	
 
-
-export class ReceiveSalaryActionBuilder extends ActionPackageBuilder {
+export class PassOrArriveStartActionBuilder extends ActionPackageBuilder {
 	private main: EarnMoneyAction
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, amt: number) {
 		super(game, trace, invoker, EVENT_TYPE.RECEIVE_SALARY)
