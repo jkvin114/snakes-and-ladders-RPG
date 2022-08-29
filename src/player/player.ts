@@ -123,8 +123,8 @@ abstract class Player extends Entity {
 	abstract getSkillScale():any
 	abstract passive(): void
 	abstract getSkillName(skill: number): string
-	abstract onSkillDurationCount(): void
-	abstract onSkillDurationEnd(skill: number): void
+	protected abstract onSkillDurationCount(): void
+	protected abstract onSkillDurationEnd(skill: number): void
 	// abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
 	abstract getSkillBaseDamage(skill: number): number
 	constructor(turn: number, team: boolean, game: Game, ai: boolean, char: number, name: string) {
@@ -188,7 +188,7 @@ abstract class Player extends Entity {
 	distanceTo(p2: Player): number {
 		return Math.abs(this.pos - p2.pos)
 	}
-	getPlayer(): Player {
+	protected getPlayer(): Player {
 		return this
 	}
 	message(text: string) {
@@ -347,17 +347,19 @@ abstract class Player extends Entity {
 			canUseSkill: this.canUseSkill()
 		}
 	}
-	rechargeBasicAttack() {
+	protected rechargeBasicAttack() {
 		this.basicAttackCount = this.ability.basicAttackSpeed.get()
+	}
+	protected hasBasicAttackTarget():boolean{
+		return this.mediator.selectAllFrom(this.getBasicAttackFilter()).length > 0
 	}
 	canBasicAttack(): boolean {
 		return (
 			this.basicAttackCount > 0 &&
 			this.effects.canBasicAttack() &&
-			this.mediator.selectAllFrom(this.getBasicAttackFilter()).length > 0 &&
 			!this.dead &&
 			this.mapHandler.canAttack()
-		)
+		) && this.hasBasicAttackTarget()
 	}
 
 	canUseSkill(): boolean {
@@ -547,7 +549,7 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	//========================================================================================================
-	incrementKda(type: string) {
+	private incrementKda(type: string) {
 		switch (type) {
 			case "k":
 				this.kill += 1
@@ -612,7 +614,7 @@ abstract class Player extends Entity {
    * @param {*}data Util.HPChangeData
 
    */
-	private changeHP_damage(data: Util.HPChangeData) {
+	changeHP_damage(data: Util.HPChangeData) {
 		if (this.dead) {
 			return
 		}
@@ -797,7 +799,7 @@ abstract class Player extends Entity {
 	 * @param {*} isForceMoved whether it is forcemoved
 	 * @returns
 	 */
-	obstacle(obs: number, isForceMoved: boolean,isRooted:boolean,isInvisible:boolean): number {
+	 private obstacle(obs: number, isForceMoved: boolean,isRooted:boolean,isInvisible:boolean): number {
 		//속박일경우
 		if (isRooted) {
 			//특정 장애물은 속박시 무시
@@ -841,14 +843,13 @@ abstract class Player extends Entity {
 		else{
 			this.game.eventEmitter.goStore(this.turn, this.inven.getStoreData(priceMultiplier))
 		}
-		
 	}
 
 	//========================================================================================================
 	/**
 	 * levels up if avaliable
 	 */
-	lvlup() {
+	private lvlup() {
 		let respawn = MAP.getRespawn(this.mapId)
 		for (let i = 1; i < respawn.length; ++i) {
 			if (this.pos >= respawn[i] && this.level <= i && this.mapHandler.isOnMainWay()) {
@@ -883,7 +884,7 @@ abstract class Player extends Entity {
 
 	//========================================================================================================
 
-	addKill(deadplayer: Player) {
+	private addKill(deadplayer: Player) {
 		
 		//선취점
 		let totalkill = this.mediator.allPlayer().reduce(function (t: number, a: Player) {
@@ -916,7 +917,7 @@ abstract class Player extends Entity {
 	 * @param damage
 	 * @param type
 	 */
-	doObstacleDamage(damage: number, type?: string): boolean {
+	 doObstacleDamage(damage: number, type?: string): boolean {
 		let changeData = new Util.HPChangeData().setSource(-1)
 
 		if (type != null) {
@@ -943,7 +944,7 @@ abstract class Player extends Entity {
 	 * @param damage
 	 * @returns
 	 */
-	shieldDamage(damage: number): number {
+	private shieldDamage(damage: number): number {
 		let damageLeft = this.effects.applyShield(damage)
 		if (damageLeft > damage) return
 
@@ -1007,7 +1008,7 @@ abstract class Player extends Entity {
 		}
 	}
 
-	canRevive(): string {
+	private canRevive(): string {
 		if (this.inven.isActiveItemAvailable(ENUM.ITEM.GUARDIAN_ANGEL)) return "guardian_angel"
 
 		if (this.inven.life > 0) return "life"
@@ -1015,7 +1016,7 @@ abstract class Player extends Entity {
 		return null
 	}
 
-	prepareRevive(reviveType: string) {
+	private prepareRevive(reviveType: string) {
 		this.game.eventEmitter.update("waiting_revival", this.turn,"")
 
 		if (reviveType === "life") this.inven.changeLife(-1)
@@ -1030,7 +1031,7 @@ abstract class Player extends Entity {
 		this.invulnerable=true
 	}
 
-	sendKillInfo(killer: number) {
+	private sendKillInfo(killer: number) {
 		// if (this.game.instant) return
 
 		// if (gostore) {
@@ -1065,7 +1066,7 @@ abstract class Player extends Entity {
 	 * 4. 리스폰지점으로 이동
 	 * @param {*} skillfrom 0에서시작
 	 */
-	die(skillfrom: number) {
+	private die(skillfrom: number) {
 		if (skillfrom >= 0) {
 			this.message(this.game.pOfTurn(skillfrom).name + " killed " + this.name)
 			this.game.pOfTurn(skillfrom).addKill(this)
@@ -1076,7 +1077,7 @@ abstract class Player extends Entity {
 		}
 		this.game.addKillData(skillfrom, this.turn, this.pos)
 
-		this.Assist(skillfrom)
+		this.addAssist(skillfrom)
 		this.HP = 0
 		this.dead = true
 		this.mapHandler.onDeath()
@@ -1107,7 +1108,7 @@ abstract class Player extends Entity {
 
 	//========================================================================================================
 
-	getRespawnPoint(): number {
+	private getRespawnPoint(): number {
 		let res = MAP.getRespawn(this.mapId)
 
 		return res[this.level - 1]
@@ -1136,7 +1137,7 @@ abstract class Player extends Entity {
 	 * 3턴 이내에 피해를 준 플레이어가 사망
 	 * @param {*} skillfrom
 	 */
-	Assist(skillfrom: number) {
+	private addAssist(skillfrom: number) {
 		//let assists=[]
 		for (let i = 0; i < this.game.totalnum; ++i) {
 			if (this.damagedby[i] > 0 && this.turn !== i && skillfrom !== i) {
@@ -1252,7 +1253,7 @@ abstract class Player extends Entity {
 	}
 	usePendingAreaSkill(pos: number) {}
 
-	private getBasicAttackFilter() {
+	protected getBasicAttackFilter() {
 		return EntityFilter.ALL_ENEMY(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
 	}
 
@@ -1268,7 +1269,7 @@ abstract class Player extends Entity {
 		damage = this.mapHandler.onBasicAttack(damage)
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 		//	console.log("basicattack")
-		let died = this.mediator.basicAttack(this, this.getBasicAttackFilter())(damage)
+		this.mediator.basicAttack(this, this.getBasicAttackFilter(),damage)
 	}
 	getTargetParameters(){
 

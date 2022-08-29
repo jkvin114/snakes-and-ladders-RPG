@@ -317,19 +317,14 @@ class EntityMediator {
 
 		return false
 	}
-	basicAttack(from:Player,filter:EntityFilter){
-		return (damage:Damage) => {
-			let targets=this.selectAllFrom(filter)
-			if(targets.length===0) return false
-			AttackHandler.basicAttacks(from,targets,damage)
-			return true
-		}
+	basicAttack(from:Player,filter:EntityFilter,damage:Damage){
+		let targets=this.selectAllFrom(filter)
+		if(targets.length===0) return false
+		AttackHandler.basicAttacks(from,targets,damage)
 	}
 
-	basicAttackSingle(from:Player,to:string){
-		return (damage:Damage) => {
-			return AttackHandler.basicAttacks(from,[this.getPlayer(to)],damage)
-		}
+	basicAttackSingle(from:Player,to:string,damage:Damage){
+		return AttackHandler.basicAttacks(from,[this.getPlayer(to)],damage)
 	}
 
 
@@ -339,13 +334,10 @@ class EntityMediator {
 	 * @param filter 
 	 * @returns 
 	 */
-	skillAttack(from:Player,filter:EntityFilter){
-		return (skillAttack:SkillAttack) => {
-			let targets=this.selectAllFrom(filter)
-			if(targets.length===0) return false
-			AttackHandler.skillAttacks(from,targets,skillAttack)
-			return true
-		}
+	skillAttack(from:Player,filter:EntityFilter,skillAttack:SkillAttack){
+		let targets=this.selectAllFrom(filter)
+		if(targets.length===0) return false
+		AttackHandler.skillAttacks(from,targets,skillAttack)		
 	}
 	/**
 	 * skill attack by clicking skill button
@@ -353,10 +345,8 @@ class EntityMediator {
 	 * @param filter 
 	 * @returns 
 	 */
-	skillAttackSingle(from:Player,to:string){
-		return (skillAttack:SkillAttack) => {
-			AttackHandler.skillAttacks(from,[this.getPlayer(to)],skillAttack)
-		}
+	skillAttackSingle(from:Player,to:string,skillAttack:SkillAttack){
+		AttackHandler.skillAttacks(from,[this.getPlayer(to)],skillAttack)
 	}
 	/**
 	 * skill attack without clicking button(projectile,tickdamage...)
@@ -364,28 +354,23 @@ class EntityMediator {
 	 * @param filter 
 	 * @returns 
 	 */
-	skillAttackAuto(from:Player,to:string){
-
-		return (skillAttack:SkillAttack) => {
-			return AttackHandler.skillAttackAuto(from,this.getPlayer(to),skillAttack)
-		}
+	skillAttackAuto(from:Player,to:string,skillAttack:SkillAttack){
+		return AttackHandler.skillAttackAuto(from,this.getPlayer(to),skillAttack)
+		
 	}
 
-	attackSingle(from:Entity,target:Entity){
-		return (damage:Damage,effectname:string) => {
-			return AttackHandler.plainAttack(from,target,damage,effectname)
-		}
+	attackSingle(from:Entity,target:Entity,damage:Damage,effectname:string){
+		return AttackHandler.plainAttack(from,target,damage,effectname)
 	}
 
-	attack(from:Entity,filter:EntityFilter){
-		return (damage:Damage,effectname:string) => {
-			let attacked=false
-			for (let e of this.selectAllFrom(filter)) {
-				attacked=true
-				AttackHandler.plainAttack(from,e,damage,effectname)
-			}
-			return attacked
+	attack(from:Entity,filter:EntityFilter,damage:Damage,effectname:string){
+		let attacked=false
+		for (let e of this.selectAllFrom(filter)) {
+			attacked=true
+			AttackHandler.plainAttack(from,e,damage,effectname)
 		}
+		return attacked
+	
 	}
 	forEach(filter: EntityFilter):(action: EntityActionFunction<Entity>)=>number {
 		return (action: EntityActionFunction<Entity>) => {

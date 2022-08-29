@@ -24,9 +24,7 @@ class TreeAgent extends AiAgent{
 		}
     }
 	nextSkill(): number {
-		if (this.player.canBasicAttack()) {
-			return  AiAgent.BASICATTACK
-		}
+		
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
 			return SKILL.ULT
 		}
@@ -35,6 +33,9 @@ class TreeAgent extends AiAgent{
 		}
 		if (!this.attemptedSkills.has(SKILL.Q)) {
 			return SKILL.Q
+		}
+		if (this.player.canBasicAttack()) {
+			return AiAgent.BASICATTACK
 		}
 		return -1
 	}

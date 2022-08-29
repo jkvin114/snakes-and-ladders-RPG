@@ -148,7 +148,7 @@ class Jellice extends Player {
 			EntityFilter.ALL_ATTACKABLE_PLAYER(this)
 				.in(this.pos + range.start + 1, this.pos + range.end_front)
 				.in(this.pos - range.end_back, this.pos - range.start)
-		)(dmg)
+		,dmg)
 
 		
 		if(!attacked) 

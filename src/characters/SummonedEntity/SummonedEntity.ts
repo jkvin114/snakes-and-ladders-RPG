@@ -140,10 +140,10 @@ class Attackable extends EntityDecorator {
 			this.mediator.skillAttack(
 				this.summoner,
 				EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(this.attackRange)
-			)(new SkillAttack(this.damage, this.attackName))
+			,new SkillAttack(this.damage, this.attackName))
 		} else {
 			//attack as entity damage
-			this.mediator.attack(this.summoner, EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(this.attackRange))(
+			this.mediator.attack(this.summoner, EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(this.attackRange),
 				this.damage,
 				this.attackName
 			)

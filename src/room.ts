@@ -22,6 +22,7 @@ abstract class Room {
 	connectionTimeoutTurn: number
 	idleTimeoutTurn: number
 	resetCallback:Function
+	private playerSessions:Set<string>
 	abstract user_message(turn:number,msg:string):string
 	abstract getMapId():number
 	abstract registerClientInterface(callback:GameEventEmitter):Room
@@ -43,12 +44,21 @@ abstract class Room {
 		this.idleTimeoutTurn = -1
 		this.connectionTimeout = null
 		this.connectionTimeoutTurn = -1
+		this.playerSessions=new Set<string>()
 	}
 	registerResetCallback(onreset:Function){
 		this.resetCallback=onreset
 		return this
 	}
-	
+	addSession(id:string){
+		this.playerSessions.add(id)
+	}
+	hasSession(id:string){
+		return this.playerSessions.has(id)
+	}
+	deleteSession(id:string){
+		this.playerSessions.delete(id)
+	}
 	
 
 	makePlayerList(): ProtoPlayer[] {
@@ -200,7 +210,7 @@ abstract class Room {
 		// this.stopIdleTimeout()
 		console.log(this.name + "has been reset")
 		this.name = null
-		
+		this.playerSessions.clear()
 		this.hosting = 0
 		this.guestnum = 0
 		this.isTeam = false

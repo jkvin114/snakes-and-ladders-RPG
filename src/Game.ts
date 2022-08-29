@@ -951,7 +951,7 @@ class Game {
 				died = this.entityMediator.skillAttackAuto(
 					this.entityMediator.getPlayer(this.turn2Id(pp.sourceTurn)),
 					this.turn2Id(this.thisturn)
-				)(skillattack)
+				,skillattack)
 
 				upid = pp.UPID
 			}
@@ -1007,7 +1007,7 @@ class Game {
 				let died = this.entityMediator.skillAttackAuto(
 					this.entityMediator.getPlayer(this.turn2Id(proj.sourceTurn)),
 					this.turn2Id(player.turn)
-				)(skillattack)
+				,skillattack)
 				//player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
 
 				if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
@@ -1038,7 +1038,7 @@ class Game {
 	
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
-		this.entityMediator.skillAttackSingle(p, this.turn2Id(target))(p.getSkillDamage(target))
+		this.entityMediator.skillAttackSingle(p, this.turn2Id(target),p.getSkillDamage(target))
 
 	//	return this.getSkillStatus()
 	}
@@ -1313,10 +1313,10 @@ class Game {
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
-				return -Infinity
+				return -1
 			}
 			if (b.turn === this.winner) {
-				return Infinity
+				return 1
 			} else {
 				if (b.kill === a.kill) {
 					return a.death - b.death

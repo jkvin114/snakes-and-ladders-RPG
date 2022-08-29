@@ -20,6 +20,7 @@ class InterfaceState {
 		InterfaceState.page_max = 12
 		InterfaceState.current_page = 0
 		InterfaceState.page_direction = "next"
+		InterfaceState.sidebar_shown=false
 	}
 }
 const chooseLang = function (kor, eng) {
@@ -446,12 +447,18 @@ $(document).ready(function () {
 		return false
 	}
 	$("#sidebarbtn").click(function(){
-		$("#sidebar").animate({left:0},500)
+		if(InterfaceState.sidebar_shown){
+			InterfaceState.sidebar_shown=false
+			$("#sidebar").animate({left:-150},200)
+		}
+		else{
+			$("#sidebar").animate({left:0},200)
+			InterfaceState.sidebar_shown=true
+		}
+		
 	})
 	$("#close_sidebar").click(function(){
-		$("#sidebar").animate({left:-700},500,function(){
-			$("#sidebar").css({left:"-50%"})
-		})
+		
 	})
 })
 

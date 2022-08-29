@@ -112,7 +112,7 @@ class Gorae extends Player {
 		})
 		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 
-		this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(3))(dmg)
+		this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(3),dmg)
 		this.showEffect(Gorae.VISUALEFFECT_W, this.turn)
 
 		this.startCooltime(ENUM.SKILL.W)

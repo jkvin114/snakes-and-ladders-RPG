@@ -101,7 +101,7 @@ class Yangyi extends Player {
 
 			skilldmg.damage.updateAttackDamage(CALC_TYPE.multiply, damagecoeff)
 			
-			this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(4))(skilldmg)
+			this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(4),skilldmg)
 
 			// for (let p of targets) {
 			// 	this.mediator.skillAttackSingle(this,p.turn)(skilldmg)

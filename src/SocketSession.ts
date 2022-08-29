@@ -16,7 +16,10 @@ export namespace SocketSession {
 		const req = socket.request as express.Request
 		return req.session.turn
 	}
-
+	export function getId(socket: Socket): string {
+		const req = socket.request as express.Request
+		return req.session.id
+	}
 	export function setRoomName(socket: Socket, roomname: string) {
 		const req = socket.request as express.Request
 		req.session.roomname = roomname
@@ -26,5 +29,12 @@ export namespace SocketSession {
 	export function getRoomName(socket: Socket): string {
 		const req = socket.request as express.Request
 		return req.session.roomname
+	}
+	export function removeGameSession(socket: Socket) {
+		const req = socket.request as express.Request
+		delete req.session.turn 
+		delete req.session.roomname
+		delete req.session.username
+		// console.log(req.session)
 	}
 }

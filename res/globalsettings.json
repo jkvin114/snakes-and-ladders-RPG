@@ -41,55 +41,55 @@
     "delay_next_turn":700,
     "characters": [
         {
-            "name": "크리드",
+            "name": "Reaper",
             "imgdir": "reaper.png",
             "bgcolor": "#7e0000"
         },
         {
-            "name": "실버",
+            "name": "Elephant",
             "imgdir": "elephant.png",
             "bgcolor": "#086300"
         },
         {
-            "name": "티모",
+            "name": "Ghost",
             "imgdir": "ghost.png",
             "bgcolor": "#001381"
         },
         {
-            "name": "양이",
+            "name": "Dinosaur",
             "imgdir": "dinosaur.png",
             "bgcolor": "#3d5700"
         },
         {
-            "name": "진",
+            "name": "Sniper",
             "imgdir": "sniper.png",
             "bgcolor": "#581c00"
         },
         {
-            "name": "젤리스",
+            "name": "Magician",
             "imgdir": "magician.png",
             "bgcolor": "#680051"
         },
         {
-            "name": "고래",
+            "name": "Kraken",
             "imgdir": "kraken.png",
             "bgcolor": "#006a72"
         },
         {
-            "name": "버드",
+            "name": "Bird",
             "imgdir": "bird.png",
             "bgcolor": "#ff8420"
         },
         {
-            "name": "나무",
+            "name": "Tree",
             "imgdir": "tree.png",
             "bgcolor": "#d1a400"
         }
     ],
     "dev_settings":{
-        "enabled":false,
+        "enabled":true,
         "player":{
-            "level":1,"pos":15,"money":150
+            "level":3,"pos":40,"money":100
         }
     }
 }

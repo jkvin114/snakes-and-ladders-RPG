@@ -17,15 +17,15 @@
 }
 
 @font-face {
-    font-family: "Do Hyeon";
-    src: url("res/font/DoHyeon.ttf");
+    font-family: "nanumB";
+    src: url("res/font/NanumSquareB.ttf");
 }
 body{     
    background-color: rgb(36, 36, 36);
    color: beige;
+  margin: 0;
 
-
-font-family: 'cookierun';
+font-family: 'nanumB';
 text-align:center;
 
 }
@@ -38,23 +38,25 @@ h1{
 }
 
 .button{
-  font-family: 'cookierun';
-  color:white;
-  background-color: #7E00BF;
+  font-family: 'nanumB';
+  color:#c654ff;
+  /* background-color: #7E00BF; */
+  background: transparent;
+  border: 1px solid #c654ff;
   cursor:pointer;
   text-align:center;
-  padding: 10px 20px;
-  font-size: 20px;
+  padding: 7px 20px;
+  font-size: 15px;
   margin: 15px 5px;
-  border:none;
+  /* border:none; */
   vertical-align: middle;
-  border-radius: 10px;
+  border-radius: 3px;
 }
 input{
   text-align: center;
 }
 .button:hover{
-  background-color: rgb(74, 2, 110);
+  background-color: rgb(52, 7, 74);
 }
 #startgame{
   display:block;
@@ -84,14 +86,15 @@ input{
    font-size: 20px;
    border-radius:10px;
   padding: 5px;
-  font-family:"cookierun" ;
+  font-family:"nanumB" ;
   width: min(70%,400px);
 }
 #simulation{
-  background-color: rgb(127, 187, 255);
+  border:1px solid rgb(127, 187, 255);
+  color:rgb(127, 187, 255);
 }
 #simulation:hover{
-  background-color: rgb(77, 159, 253);
+  background-color: rgb(20, 60, 105);
 }
 
 #logout{
@@ -117,26 +120,32 @@ footer{
 }
 #navbar{
   display: flex;
-  background: none;
+  background-color: #31313C;
+  border-bottom: 1px solid gray;
+  margin-top: 0;
+  padding: 4px;
   justify-content:space-between;
   align-items: stretch;
   height: 40px;
+
 }
 .navbtn{
-  font-family: 'cookierun';
+  font-family: 'nanumB';
   color:white;
-  background-color: #7E00BF;
+  /* background-color: #7E00BF; */
+  background: transparent;
   cursor:pointer;
   text-align:center;
   font-size: 20px;
   border:none;
   vertical-align: middle;
-  border-radius: 5px;
+  border-radius: 20%;
 
   height: 30px;
 }
 .navbtn:hover{
-  transform: scale(1.1);
+  /* transform: scale(1.1); */
+  background: rgb(65, 65, 65);
 }
 img.navbtn{
   padding: 5px;
@@ -146,7 +155,7 @@ button.navbtn{
 }
 
 #quitbtn{
-  background-color: #ff5656;
+  /* background-color: #ff5656; */
 
 }
 .hidden{
@@ -215,7 +224,10 @@ button.navbtn{
   background: conic-gradient(rgba(255,255,255,0.0) 0%,rgba(255,255,255,0.0) 30%,rgba(255,255,255,0.6) 30% ,rgba(255,255,255,0.6) 100%);
 }
 #postbtn{
-  background-color: rgb(163, 87, 33);
+  /* background-color: rgb(163, 87, 33); */
+}
+#room-name-input{
+  margin-bottom: 16px;
 }
 </style>
 <body>
@@ -228,7 +240,7 @@ button.navbtn{
       <div>
         <button class=navbtn id="loginbtn" onclick="open_login()">Log in</button>
         <button class='navbtn hidden' id="logoutbtn" onclick="logout()">Log Out</button>
-        <!-- <img class='navbtn postbtn' id="postbtn" src="res/img/svg/list.svg"> -->
+        <img class='navbtn postbtn' id="postbtn" src="res/img/svg/list.svg">
       </div>
       <!-- <div class="cool">
         <img class=img src="res/img/skill/7-3.jpg">
@@ -250,14 +262,14 @@ button.navbtn{
     </div>
 
 
-    <div id="firstpage" class="page">
-      Username 
+    <div id="firstpage" class="page" >
+     
       <br>
-      <input type='text' name="nickname" value="">
+      <input type='text' name="nickname" value="" placeholder=" Username ">
       <div id="ip_area">
-        Server ip address 
+        
         <br>
-        <input type='text' name="ip" value="">
+        <input type='text' name="ip" value="" placeholder="Server ip address ">
 
       </div>
      
@@ -271,8 +283,8 @@ button.navbtn{
         <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
       </div>
       <div id=field>
-        Room Name<br>
-        <input type='text' name="room_name" value="">
+        <br>
+        <input type='text' name="room_name" value="" placeholder="Room Name" id="room-name-input">
         <br>
         
         <button class=button id="create_room" onclick="createroom(false)">Start</button>
@@ -283,16 +295,14 @@ button.navbtn{
 
     <div id="loginpage" class="hidden page">
       <form id="loginform" method="post" action="/user/login">
-        Username 
+         
         <br>
         
 
-        <input type='text' name="username">
+        <input type='text' name="username" placeholder="Username">
         <br><a class="input_alert login_id"></a><br>
-        Password 
-        <br>
         
-        <input type='password' name="password"><br>
+        <input type='password' name="password" placeholder="Password"><br>
         <a class="input_alert login_pw"></a><br>
         <button class='button loginpage_btn' type="submit" >Login</button>
         <button class='button loginpage_btn' type="button" onclick="open_signup()">Sign up</button>
@@ -306,19 +316,19 @@ button.navbtn{
     <div id="signuppage" class="hidden page">
       <form id="registerform" method="post" action="/user/register">
 
-        Username 
+         
         <br>
-        <input type='text' name="username">
+        <input type='text' name="username" placeholder="Username">
         <br><a class="input_alert register_id"></a><br>
-        Password 
+         
         <br>
-        <input type='password' name="password"><br><a class="input_alert register_pw"></a><br>
-        Verify Password 
+        <input type='password' name="password" placeholder="Password"><br><a class="input_alert register_pw" ></a><br>
+        
         <br>
-        <input type='password' name="password2"><br><a class="input_alert"></a><br>
-        Email
+        <input type='password' name="password2" placeholder="Verify Password "><br><a class="input_alert"></a><br>
+        
         <br>
-        <input type='email' name="email">
+        <input type='email' name="email" placeholder="Email">
         <br><a class="input_alert register_email"></a><br>
         <button class='button regpage_btn' type="submit" >Sign up</button>
         <button class='button regpage_btn' type="button" onclick="open_login()">Login</button>

@@ -25,8 +25,8 @@
 		src: url("res/font/CookieRun.ttf");
 	}
 	@font-face {
-		font-family: "Do Hyeon";
-		src: url("res/font/DoHyeon.ttf");
+		font-family: "nanumB";
+		src: url("res/font/NanumSquareB.ttf");
 	}
 	</style>
 	<head>
@@ -34,54 +34,52 @@
 
 		<meta charset="utf-8" />
 	</head>
+	<div id="sidebar">
+		<div class="sidebar_item intro_simulation" >
+			<a>Simulation</a>
+		</div>
+		<div class="sidebar_item intro_game">
+			<a>Games</a>
+		</div>
+		<div class="sidebar_item reset">
+			<a>Refresh</a>
+		</div>
+		<div class="sidebar_item changelang" onclick="changelang()">
+			<a>Language</a>
+		</div>
+	</div>
 	<body>
 		<img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off">
 
 		
-		<h1 href="statpage.html">Game Statistics</h1>
+		<!-- <h1 href="statpage.html">Game Statistics</h1> -->
 		<div id="toolbar">
 			
-			<div id="sidebar">
-				<a id="close_sidebar">&times;</a>
-				<br><br>
-				<!-- <div class="sidebar_item quit">
-					<a>Quit</a>
-				</div> -->
-				<div class="sidebar_item intro_simulation" >
-					<a>Simulation</a>
-				</div>
-				<div class="sidebar_item intro_game">
-					<a>Games</a>
-				</div>
-				<div class="sidebar_item reset">
-					<a>Refresh</a>
-				</div>
-				<div class="sidebar_item changelang" onclick="changelang()">
-					<a>Language</a>
-				</div>
-			</div>
+			
 			<div class="toolbar_item" id="sidebarbtn">
 				<img src="res/img/svg/menu.svg">
 			</div>
-			<div class="toolbar_item intro_simulation">
+			<!-- <div class="toolbar_item intro_simulation">
 				<a>Simulations</a>
 			</div>
 			<div class="toolbar_item intro_game">
 				<a>Games</a>
-			</div>
-			<div class="toolbar_item reset" >
-				<img class="settingBtn" src="res/img/svg/refresh.svg">
+			</div> -->
+			<div class="toolbar-buttons">
+				<div class="toolbar_item reset" >
+					<img class="settingBtn" src="res/img/svg/refresh.svg">
+				</div>
+				
+				<div class="toolbar_item changelang"  onclick="changelang()">
+					<img src="res/img/svg/globe.svg"class="settingBtn">
+				</div>
+				<div class="lang_dropdown">
+					<a class="dropitem" value="kor">한국어</a>
+					<a class="dropitem" value="eng">English</a>
+				</div>
+				<div class="toolbar_item quit"><img  src="res/img/svg/out.svg"></div>
 			</div>
 			
-			<div class="toolbar_item changelang"  onclick="changelang()">
-				<img src="res/img/svg/globe.svg"class="settingBtn">
-				
-			</div>
-			<div class="lang_dropdown">
-				<a class="dropitem" value="kor">한국어</a>
-				<a class="dropitem" value="eng">English</a>
-			</div>
-			<div class="toolbar_item quit"><img  src="res/img/svg/out.svg"></div>
 		</div>
 		
 		

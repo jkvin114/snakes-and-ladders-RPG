@@ -179,7 +179,7 @@ class Jean extends Player {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
 			let skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0), this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
-			this.mediator.skillAttackSingle(this,this.u_target)(skillattr)
+			this.mediator.skillAttackSingle(this,this.u_target,skillattr)
 			// this.hitOneTarget(this.u_target, skillattr)
 		}
 		//궁 세번째 공격
@@ -189,7 +189,7 @@ class Jean extends Player {
 			}
 			let skillattr = new SkillAttack(new Damage(0,0,this.getSkillBaseDamage(ENUM.SKILL.ULT)),this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
 
-			this.mediator.skillAttackSingle(this,this.u_target)(skillattr)
+			this.mediator.skillAttackSingle(this,this.u_target,skillattr)
 
 			this.u_target = null
 		}

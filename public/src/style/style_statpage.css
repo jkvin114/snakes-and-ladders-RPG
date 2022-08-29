@@ -407,7 +407,7 @@ height:60vh;
   .tooltiptext h4{
       margin: 3px;
       color: #d39eff;
-      font-family: 'Do Hyeon';
+      font-family: 'nanumB';
       font-weight:lighter;
       font-size: 16px;
   }
@@ -495,24 +495,38 @@ height:60vh;
     width: 100%;
     display: flex;
     flex-wrap:nowrap;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items:stretch;
-    background-color: rgb(152, 71, 219);
+    background-color: #31313C;
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray;
+
     padding: 0;
     top:0;
     position:sticky;
     z-index: 3;
 }
-.toolbar_item,.sidebar_item{
+.toolbar-buttons{
+    display: flex;
+    flex-wrap:nowrap;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items:stretch;
+}
+.toolbar_item{
     text-align: center;
-    width: 100px;
+    width: fit-content;
+    padding-left: 20px;
+    padding-right: 20px;
     cursor: pointer;
     display: flex;
     align-items:center;
     justify-content: center;
-
+    font-size: 1.4rem;
 }
-
+.sidebar_item{
+    text-align: center;
+}
 .toolbar_item > button,.toolbar_item > img,
 .sidebar_item > button,.sidebar_item > img{
     
@@ -524,11 +538,11 @@ height:60vh;
     font-size: 20px;
     border: none;
     vertical-align: middle;
-    font-family: "Do Hyeon";
+    font-family: "nanumB";
 }
 .toolbar_item:hover{
-    text-decoration: underline;
-    background-color: rgb(116, 41, 177);;
+    /* text-decoration: underline; */
+    background-color: #414150;
 }
 
 #togglelist,#gotop{
@@ -778,21 +792,23 @@ transform: scale(1.1);
   
   }
   #sidebarbtn{
-      visibility: collapse;
+      /* visibility: collapse; */
   }
   #sidebar{
+    top:46px;
       /* visibility: hidden; */
-      position: absolute;
-      left: -50%;
-      width: 40%;
+      position: fixed;
+      left: -150px;
+      width: min(30%,150px);
       height: 100vh;
-      background-color: rgba(214, 214, 214, 0.85);
+      /* background-color: rgba(214, 214, 214, 0.85); */
+      background: #31313C;
     display: flex;
     flex-direction: column;
     /* position:sticky; */
     z-index: 4;
   }
-  #close_sidebar{
+  /* #close_sidebar{
       position: absolute;
       right: 10px;
       top: 0;
@@ -801,26 +817,31 @@ transform: scale(1.1);
   }
   #close_sidebar:hover{
       transform: scale(1.4);
-  }
+  } */
   .sidebar_item{
-      font-size: 3vh;
-      color: rgb(70, 70, 70);
-      height: 5vh;
+    font-family: 'nanumB';
+      font-size: 15px;
+      color: rgb(196, 196, 196);
+      height: 50px;
       width: 100%;
+      cursor: pointer;
       /* text-decoration: underline; */
       
+  }
+  .sidebar_item >a {
+    line-height: 40px;
   }
   .sidebar_item:hover{
     background-color: rgba(120, 120, 120, 0.85);
   }
   @media screen and (orientation: portrait){
       #toolbar{
-        justify-content: flex-start;
+        /* justify-content: flex-start; */
       }
       
-    .toolbar_item{
+    /* .toolbar_item{
         visibility: collapse;
-    }
+    } */
     #sidebarbtn{
         visibility: visible;
     }

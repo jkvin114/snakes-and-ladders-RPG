@@ -30,6 +30,8 @@ module.exports=function(socket:Socket){
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
 				io.to(roomname).emit(type,...args)
 			}).setNickname(SocketSession.getUsername(socket), 0)
+
+			room.addSession(SocketSession.getId(socket))
 			socket.join(rname)
 			console.log(socket.rooms)
 		})
@@ -47,7 +49,7 @@ module.exports=function(socket:Socket){
 			if (room.hosting <= 0) {
 				socket.emit("server:room_full")
 			}
-			
+			room.addSession(SocketSession.getId(socket))
 			socket.join(rname)
 			room.guestnum += 1
 			socket.emit("server:join_room", rname)
@@ -77,9 +79,12 @@ module.exports=function(socket:Socket){
 		})
 	})
 	socket.on("user:guest_quit", function () {
-		const req = socket.request as express.Request
-		delete req.session.turn
-		//req.session.destroy((e)=>{console.log("destroy guest session")})
+		controlRoom(socket,(room,rname)=>{
+			room.deleteSession(SocketSession.getId(socket))
+		})
+		
+		
+		// req.session.destroy((e)=>{console.log("destroy guest session")})
 	})
 	//==========================================================================================
 //controlRoom(socket,(room,rname)=>{})
@@ -90,6 +95,10 @@ module.exports=function(socket:Socket){
 			io.to(rname).emit("server:kick_player", turn)
 
 		})
+		
+		// const req = socket.request as express.Request
+		// delete req.session.turn
+		// delete req.session.roomname
 		// try {
 		// 	let rname = SocketSession.getRoomName(socket)
 		// 	if (!R.hasRoom(rname)) return
@@ -101,6 +110,7 @@ module.exports=function(socket:Socket){
 		// 	console.log(e)
 		// }
 	})
+
 
 	//==========================================================================================
 

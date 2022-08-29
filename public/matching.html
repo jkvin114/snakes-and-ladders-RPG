@@ -20,8 +20,8 @@
     src: url("res/font/CookieRun.ttf");
 }
 @font-face {
-    font-family: "Do Hyeon";
-    src: url("res/font/DoHyeon.ttf");
+    font-family: "nanumB";
+    src: url("res/font/NanumSquareB.ttf");
 }
 </style>
 <body> 
@@ -51,76 +51,130 @@
     <div id=player_choice>
       
       <div class="playercard connected me">
-        <p class="iname">1P</p>
-        <img class="playerchamp" src="res/img/ui/random.png">
+        <div class="card-buttons">
+          <img class="playerchamp" src="res/img/ui/random.png">
+          <p class="iname">1P</p>
+        </div>
+        
       </div>
 
       <div class="waiting"></div>
 
       <div class="aicard hidden">
-        <p class="iname">1P(Computer)</p>
-        <img class="aichamp hidden" value=0>
+        <div class="card-buttons">
+          
+          <img class="aichamp hidden" value=0>
+          <p class="iname">1P(Computer)</p>
+        </div>
       </div>
 <!-- 2P================================================================ -->
       <div class="playercard connected hidden">
-        <p class="iname"> 2P</p>  
-        <img class="playerchamp" src="res/img/ui/random.png">
-        <button class="kick_player" value=1> &times; </button>
+        <div class="card-buttons">
+          <img class="playerchamp" src="res/img/ui/random.png">
+          <p class="iname"> 2P</p>  
+        </div>
+        <div class="card-buttons">
+
+          
+          <button class="kick_player" value=1> &times; </button>
+        </div>
       </div>
 
       <div class="playercard waiting hidden">
-        <p class="iname">2P(Waiting for player)</p>
-        <img class="toai" src="res/img/ui/robot.png" value=1>
-        <button class="kick" value=1>  &times; </button>
-        
+        <div class="card-buttons">
+
+          <p class="iname">2P(Waiting for player)</p>
+        </div>
+        <div class="card-buttons">
+
+          <img class="toai" src="res/img/svg/cpu.svg" value=1>
+          <button class="kick" value=1>  &times; </button>
+        </div>
       </div>
 
       <div class="aicard hidden">
-        <p class="iname">2P(Computer)</p>
-        <img class="aichamp" src="res/img/ui/random.png" value=1>
-        <img class="toplayer" src="res/img/ui/user.png" value=1>
-        <button class="kick" value=1>  &times; </button>
+        <div class="card-buttons">
+
+          <img class="aichamp" src="res/img/ui/random.png" value=1>
+          <p class="iname">2P(Computer)</p>
+        </div>
+        <div class="card-buttons">
+          
+          <img class="toplayer" src="res/img/svg/user.svg" value=1>
+          <button class="kick" value=1>  &times; </button>
+        </div>
       </div>
 <!-- 3P================================================================ -->
 
       <div class="playercard connected hidden">
-        <p class="iname"> 3P</p>
-        <img class="playerchamp" src="res/img/ui/random.png" >
-        <button class="kick_player" value=2> &times; </button>
+        <div class="card-buttons">
+          <img class="playerchamp" src="res/img/ui/random.png" >
+          <p class="iname"> 3P</p>
+
+        </div>
+        <div class="card-buttons">
+
+          <button class="kick_player" value=2> &times; </button>
+        </div>
 
       </div>
 
       <div class="playercard waiting hidden">
-        <p class="iname"> 3P(Waiting for player)</p>  
-        <img class="toai" src="res/img/ui/robot.png" value=2>
-        <button class="kick" value=2>  &times; </button>    
+        <div class="card-buttons">
+          <p class="iname"> 3P(Waiting for player)</p>  
+        </div>
+        <div class="card-buttons">
+
+          <img class="toai" src="res/img/svg/cpu.svg" value=2>
+          <button class="kick" value=2>  &times; </button>    
+        </div>
       </div>
 
       <div class="aicard hidden">
-        <p class="iname">3P(Computer)</p>
-        <img class="aichamp" src="res/img/ui/random.png"  value=2>
-        <img class="toplayer" src="res/img/ui/user.png" value=2>
-        <button class="kick" value=2> &times; </button>
+        <div class="card-buttons">
+          <img class="aichamp" src="res/img/ui/random.png"  value=2>
+          <p class="iname">3P(Computer)</p>
+        </div>
+          
+        <div class="card-buttons">
+
+          <img class="toplayer" src="res/img/svg/user.svg" value=2>
+          <button class="kick" value=2> &times; </button>
+        </div>
         
       </div>
 
 <!-- 4P================================================================ -->
 
       <div class="playercard connected hidden">
-        <button class="kick_player hidden" value=3> &times; </button>
-        <p class="iname">4P</p>
-        <img class="playerchamp" src="res/img/ui/random.png" >
+        <div class="card-buttons">
+          <p class="iname">4P</p>
+        </div>
+        <div class="card-buttons">
+
+          <button class="kick_player hidden" value=3> &times; </button>
+          <img class="playerchamp" src="res/img/ui/random.png" >
+        </div>
 
       </div>
 
       <div class="playercard waiting hidden">
-        <p class="iname"> 4P(Waiting for player)</p>
+        <div class="card-buttons">
+          <p class="iname"> 4P(Waiting for player)</p>
+        </div>
+        
       </div>
 
       <div class="aicard hidden">          
-        <p class="iname">4P(Computer)</p>
-        <img class="aichamp" src="res/img/ui/random.png"  value=3>
-        <button class="kick" value=3> &times; </button>
+        
+        <div class="card-buttons">
+          <img class="aichamp" src="res/img/ui/random.png"  value=3>
+          <p class="iname">4P(Computer)</p>
+        </div>
+        <div class="card-buttons">
+
+          <button class="kick" value=3> &times; </button>
+        </div>
       </div>
 
     
@@ -149,18 +203,36 @@
     <div id=map_choice>
       <!-- <a>Choose the map</a> -->
       <!-- <br> -->
-      <img class="mapbtn" src="res/img/map_thumbnail\default.jpg" value=0>
+      <div class="mapbtn" value=0>
+        <img src="res/img/map_thumbnail/default_icon.jpg">
+        <a>Default</a>
+      </div>
+      <div class="mapbtn" value=1>
+        <img src="res/img/map_thumbnail/ocean_icon.jpg">
+        <a>Ocean</a>
+        
+      </div>
+      <div class="mapbtn" value=2>
+        <img src="res/img/map_thumbnail/casino_icon.jpg">
+        <a>Casino</a>
+        
+      </div>
+      <!-- <img class="mapbtn" src="res/img/map_thumbnail\default.jpg" value=0>
       <img class="mapbtn" src="res/img/map_thumbnail\ocean.jpg"  value=1>
-      <img class="mapbtn" src="res/img/map_thumbnail\casino.jpg" value=2>    
+      <img class="mapbtn" src="res/img/map_thumbnail\casino.jpg" value=2>     -->
       <button class="mapbtn-marble hidden" value=0>월드맵</button>  
       <button class="mapbtn-marble hidden" value=1>신의손</button>  
       <br>
       <div id="character_selection">
-        <!-- <div class=champbtn_new style="background-color: #7e0000;" value=0>
-          <img src="res/img/character/reaper.png">
+
+
+        <!-- <div class=champbtn_new value=0>
+          <div>
+            <img src="res/img/character/reaper.png"  style="background-color: #7e0000;" >
+          </div>
           <div class="champbtn_name">Reaper</div>
-        </div>
-      -->
+        </div> -->
+     
 
 
       </div>

@@ -19,29 +19,31 @@ function onReceiveCharacters(request) {
 	let characters = JSON.parse(request.responseText).characters
 	MATCH.characterSetting = characters
 	$(".champmenu").html(`<img class="champmenu_item" src="${RANDOM_CHAR_DIR}"  value=-1>`)
-	$("#character_selection").html(` <div class="champbtn_new random_champ" style="background-color: lightblue;" value=-1>
-										<img src="${RANDOM_CHAR_DIR}">
-										<div class="champbtn_name">Random</div>
-									</div>`)
-
+	$("#character_selection").html(`<div class=champbtn_new value=-1>
+		<div>
+			<img src="${RANDOM_CHAR_DIR}"  style="background-color:white;" >
+		</div>
+		<div class="champbtn_name">Random</div>
+	</div>`)
+	let str=""
+	let str2=""
 	for (let i = 0; i < characters.length; ++i) {
-		let str = '<div class=champbtn_new style="background-color: '
-		str += characters[i].bgcolor
-		str += ';" value='
-		str += String(i)
-		str += '><img src="res/img/character/'
-		str += characters[i].imgdir
-		str += '"><div class="champbtn_name">'
-		str += characters[i].name
-		str += "</div></div>"
 
-		$("#character_selection").append(str)
 
-		$(".champmenu").append(
-			`<img class="champmenu_item" src="res/img/character/${characters[i].imgdir}"  value=${String(i)}>`
-		)
+		str+=`<div class=champbtn_new value=${String(i)}>
+				<div>
+					<img src="res/img/character/${characters[i].imgdir}"  style="background-color: ${characters[i].bgcolor};" >
+				</div>
+				<div class="champbtn_name">${characters[i].name}</div>
+			</div>`
+
+		
+		
+		str2+=`<img class="champmenu_item" src="res/img/character/${characters[i].imgdir}"  value=${String(i)}>`
+		
 	}
-
+ 	$("#character_selection").append(str)
+	 $(".champmenu").append(str2)
 	$(".champmenu img").click(function () {
 		let champ = Number($(this).attr("value"))
 		MATCH.ui.onAiCharacterSelect(champ)
@@ -270,6 +272,7 @@ class MatchStatus {
 		if (this.myturn === turn) {
 			sessionStorage.status = null
 			alert("You have been kicked!")
+			ServerConnection.guestQuit()
 			window.onbeforeunload = () => {}
 			window.location.href = "index.html"
 		}
@@ -914,7 +917,7 @@ $(document).ready(function () {
 	})
 	$("#readybtn").click(function () {
 		if (MATCH.ready) {
-			$(this).css("background-color", "darkgrey")
+			$(this).css("background-color", "transparent")
 		} else {
 			$(this).css("background-color", "#ff5656")
 		}
@@ -968,8 +971,8 @@ $(document).ready(function () {
 	})
 
 	$(".aichamp")
-		.not(".disabled")
 		.click(function () {
+			if($(this).hasClass("disabled")) return
 			let turn = Number($(this).attr("value"))
 			let pos = $(this).offset()
 			MATCH.ui.showAiCharacterList(turn, pos)
