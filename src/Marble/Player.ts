@@ -203,7 +203,7 @@ class MarblePlayer{
         this.money+=amt
     }
     bankrupt(){
-        console.log("bankrupt")
+     //   console.log("bankrupt")
         this.retired=true
     }
 }

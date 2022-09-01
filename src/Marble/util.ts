@@ -135,7 +135,7 @@ export type ProtoPlayer = {
     ready: boolean;
 }
 export function cl(...str:any){
-	console.log(str)
+	//console.log(str)
 }
 export function hexId(){
 	return randomBytes(8).toString("hex");

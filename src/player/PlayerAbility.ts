@@ -142,8 +142,6 @@ class PlayerAbility {
 				return this.arP.get()
 			case "MP":
 				return this.MP.get()
-			case "MP":
-				return this.MP.get()
 			case "extraHP":
 				return this.extraHP
 			case "HP":

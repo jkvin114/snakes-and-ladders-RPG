@@ -46,8 +46,8 @@
             "bgcolor": "#7e0000"
         },
         {
-            "name": "Elephant",
-            "imgdir": "elephant.png",
+            "name": "Knight",
+            "imgdir": "knight.png",
             "bgcolor": "#086300"
         },
         {
@@ -89,7 +89,9 @@
     "dev_settings":{
         "enabled":true,
         "player":{
+          
             "level":3,"pos":40,"money":100
-        }
+        },
+        "dice":-1
     }
 }

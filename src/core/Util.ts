@@ -345,6 +345,9 @@ export function normalize(list:number[]){
 	let sorted=list.sort((a,b)=>a-b)
 	return list.map((val)=>(val-sorted[0])/(sorted[sorted.length-1]-sorted[0]))
 }
+export function removeDuplicate<T>(list:T[]):T[]{
+	return [...new Set<T>(list)]
+}
 class PriorityArray<T> extends Array {
 	constructor() {
 		super()

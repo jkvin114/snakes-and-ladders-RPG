@@ -498,7 +498,7 @@ class MarbleGame {
 	}
 	checkPassedPlayers(oldpos: number, newpos: number, mover: MarblePlayer, source: ActionTrace, movetype: MOVETYPE) {
 		for (const player of this.mediator.getPlayersBetween(oldpos, newpos)) {
-			console.log(mover.turn + "pass" + player.turn)
+		//	console.log(mover.turn + "pass" + player.turn)
 			if (mover.turn === player.turn) continue
 			let block = this.mediator.onPlayerPassOther(mover, player, oldpos, newpos, source, movetype)
 			if (block) return player.pos
@@ -883,7 +883,7 @@ class MarbleGame {
 		}
 
 		this.actionStack.pushAll(...actions.before)
-		this.actionStack.iterate()
+		//this.actionStack.iterate()
 	}
 	useDefenceCard(turn: number, action: AskDefenceCardAction) {
 		this.mediator.pOfTurn(turn).useCard()
@@ -912,7 +912,7 @@ class MarbleGame {
 		}
 
 		this.actionStack.pushAll(action.setPrevActionTrace(trace))
-		this.actionStack.iterate()
+		//this.actionStack.iterate()
 	}
 	onActionBlock(blockedAction: Action) {
 		cl(blockedAction.type + " blocked")

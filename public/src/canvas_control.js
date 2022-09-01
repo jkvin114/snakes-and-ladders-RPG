@@ -1866,7 +1866,7 @@ export class Scene extends Board{
 		let scale = 1
 		let addedEffectImg = null
 		let addedEffectImg2 = null
-
+		let addedEffectImg3 = null
 		switch (type) {
 			//일반
 			case "hit":
@@ -1951,24 +1951,36 @@ export class Scene extends Board{
 
 				break
 			case "elephant_q":
-				this.game.playSound("stab")
+				this.game.playSound("metal")
+				this.game.playSound("hit")
+
 				this.defaultEffect(position, change)
 				addedEffectImg=this.createCroppedEffectImage('elephant_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x-20,pos.y,1,1,1,0)
+				this.setEffectImageAttr(addedEffectImg,pos.x-50,pos.y,1,1,1,-90)
 				this.animateOpacity(addedEffectImg,0,1000)
-				this.animateAngle(addedEffectImg,-90,200)
+				this.animateAngle(addedEffectImg,0,200)
 
 				break
 			case "elephant_r":
 				this.game.playSound("2r")
+				this.game.playSound("horse")
+				addedEffectImg3=this.createCroppedEffectImage('elephant_r_horse')
+				this.setEffectImageAttr(addedEffectImg3,pos.x-200,pos.y,0.7,0.7,0.9,0)
+				this.animateX(addedEffectImg3,pos.x,700)
+				setTimeout(()=>{
+					this.removeImage(addedEffectImg3)
+				},700)
+
 				addedEffectImg=this.createCroppedEffectImage('elephant_r_energy')
 				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-50,1.5,0.5,1,0)
 				this.animateOpacity(addedEffectImg,0,1000)
 				this.animateScaleY(addedEffectImg,5.5,700)
 
 				addedEffectImg2=this.createCroppedEffectImage('elephant_r_shield')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,0.5,0)
+				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,0.9,0)
 				this.animateOpacity(addedEffectImg2,0,3000)
+
+				
 
 				break
 			case "reaper_q":
@@ -2222,6 +2234,7 @@ export class Scene extends Board{
 		
 		this.removeImageAfter(addedEffectImg,3000)
 		this.removeImageAfter(addedEffectImg2,3000)
+		this.removeImageAfter(addedEffectImg3,3000)
 	}
 	//===========================================================================================================================
 

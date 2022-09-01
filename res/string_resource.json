@@ -57,7 +57,6 @@
         "ultHaste": "Lv3 skill cooltime reduction",
         "moveSpeed": "Movement speed",
         "basicAttackSpeed": "Basic attack count"
-
     }
     ,"stat_kor":{
         "AD": "공격력",
@@ -78,7 +77,22 @@
         "moveSpeed": "이동 속도",
         "basicAttackSpeed": "기본공격 횟수"
     },
-
+    "scale_stat_kor":{
+        "arP": "물리 관통",
+        "MP": "마법 관통",
+        "AR": "방어력",
+        "MR": "마법저항",
+        "HP": "현재체력",
+        "extraHP": "추가체력",
+        "MaxHP": "최대체력",
+        "missingHP": "잃은체력"
+    },
+    "scale_stat":{
+        "HP": "Current HP",
+        "MaxHP": "Max HP",
+        "extraHP": "Extra Hp",
+        "missingHP": "Missing HP"
+    },
     "casinolabel" : [
         {"name":"Win","desc":"Receives 100$"},
         {"name":"JACKPOT","desc":"Money Doubles"},

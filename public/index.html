@@ -23,11 +23,10 @@
 body{     
    background-color: rgb(36, 36, 36);
    color: beige;
-  margin: 0;
+    margin: 0;
 
-font-family: 'nanumB';
-text-align:center;
-
+  font-family: 'nanumB';
+  text-align:center;
 }
 div{
 text-align:center;
@@ -80,14 +79,17 @@ form > input{
   display:none;
 }
 input{
-  border: none;
-  background-color: rgb(68, 68, 68);
-   color: beige;
-   font-size: 20px;
-   border-radius:10px;
-  padding: 5px;
-  font-family:"nanumB" ;
-  width: min(70%,400px);
+    border: none;
+    background-color: rgb(68, 68, 68);
+    color: beige;
+    font-size: 20px;
+    border-radius:10px;
+    padding: 5px;
+    font-family:"cookierun" ;
+    width: min(70%,400px);
+}
+input[type=password]{
+  font-family:"cookierun" ;
 }
 #simulation{
   border:1px solid rgb(127, 187, 255);
@@ -229,6 +231,9 @@ button.navbtn{
 #room-name-input{
   margin-bottom: 16px;
 }
+#ip-input{
+  visibility: hidden;
+}
 </style>
 <body>
 <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" data-on=false>
@@ -238,7 +243,8 @@ button.navbtn{
 
     <div id="navbar">
       <div>
-        <button class=navbtn id="loginbtn" onclick="open_login()">Log in</button>
+        <img class='navbtn' id="loginbtn" onclick="open_login()" src="../res/img/svg/user.svg">
+        <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
         <button class='navbtn hidden' id="logoutbtn" onclick="logout()">Log Out</button>
         <img class='navbtn postbtn' id="postbtn" src="res/img/svg/list.svg">
       </div>
@@ -256,7 +262,7 @@ button.navbtn{
           <a class="dropitem" value="eng">English</a>
         </div>
         
-        <img class=navbtn id="quitbtn" src="res/img/svg/out.svg">
+        <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
       </div>
       
     </div>
@@ -267,10 +273,8 @@ button.navbtn{
       <br>
       <input type='text' name="nickname" value="" placeholder=" Username ">
       <div id="ip_area">
-        
         <br>
-        <input type='text' name="ip" value="" placeholder="Server ip address ">
-
+        <input type='text' id="ip-input" name="ip" value="" placeholder="Server ip address " >
       </div>
      
       <!-- <button onclick="tolocalhost()">localhost</button> -->

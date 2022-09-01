@@ -850,7 +850,7 @@ class SkillInfoFactory {
 	lang: number
 	static readonly SKILL_NAME = [
 		["Scythe Strike", "Reaping Wind", "Grave Delivery"],
-		["Tusk Attack", "Curse of Ivory", "Strengthen"],
+		["Mace Attack", "Tanut", "Strengthen"],
 		["Blind Curse", "Phantom Menace", "Poison Bomb"],
 		["Claw Strike", "Regeneration", "Burning at the Stake"],
 		["Gunfire", "Net Trap", "Target Locked"],
@@ -861,7 +861,7 @@ class SkillInfoFactory {
 	]
 	static readonly SKILL_NAME_KOR = [
 		["절단", "바람 가르기", "태풍"],
-		["암흑의 표창", "도발", "실버의 갑옷"],
+		["암흑의 철퇴", "도발", "실버의 갑옷"],
 		["실명", "재빠른 이동", "죽음의 독버섯"],
 		["양이의 손톱", "양이의 고민", "양이의 불"],
 		["원거리 소총", "덫 함정", "저격수의 극장"],

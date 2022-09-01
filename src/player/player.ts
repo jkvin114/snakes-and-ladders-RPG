@@ -1233,8 +1233,9 @@ abstract class Player extends Entity {
 					.onlyIf(skillTargetSelector.condition)
 			)
 			.map((pl:Player) => pl.turn)
-		targets = targets.concat(conditionedTargets)
 
+		targets = Util.removeDuplicate(targets.concat(conditionedTargets)) 
+		
 		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
 			//return "notarget"

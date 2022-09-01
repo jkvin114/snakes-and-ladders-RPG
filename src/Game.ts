@@ -681,6 +681,11 @@ class Game {
 		//original dice number
 		let diceShown = Math.floor(Math.random() * 6) + 1
 		let dcused = false
+		
+		if(SETTINGS.dev_settings && SETTINGS.dev_settings.dice>0){
+			diceShown=SETTINGS.dev_settings.dice
+			dicenum=SETTINGS.dev_settings.dice
+		}
 
 		// diceShown=6  //임시
 

@@ -8,6 +8,7 @@ class StringResource {
 	constructor() {
 		this.EFFECTS
 		this.STATS
+		this.SCALE_NAMES
 		this.ITEMS
 		this.OBSTACLES
 		this.ITEMS_SORTED //Map
@@ -1214,7 +1215,10 @@ class Game {
 
 		if (sound === "gold") {
 			toPlay = GAME.sounds.get(Math.random() > 0.5 ? "gold" : "gold2")
-		} else if (sound === "store") {
+		}
+		else if (sound === "hit") {
+			toPlay = GAME.sounds.get(Math.random() > 0.5 ? "hit" : "hit2")
+		}  else if (sound === "store") {
 			toPlay = GAME.sounds.get(Math.random() > 0.5 ? "store" : "store2")
 		} else if (GAME.sounds.has(sound)) {
 			toPlay = GAME.sounds.get(sound)
@@ -1319,6 +1323,7 @@ function requestStringRes() {
 			//	obstacleList = JSON.parse(request.responseText)
 			let res = JSON.parse(request.responseText)
 			GAME.strRes.STATS = GAME.chooseLang(res.stat, res.stat_kor)
+			GAME.strRes.SCALE_NAMES = GAME.chooseLang(res.scale_stat, res.scale_stat_kor)
 			GAME.strRes.EFFECTS = GAME.chooseLang(res.statuseffect, res.statuseffect_kor)
 			GAME.strRes.TRIAL_LABELS = GAME.chooseLang(res.triallabel, res.triallabel_kor)
 			GAME.strRes.CASINO_LABELS = GAME.chooseLang(res.casinolabel, res.casinolabel_kor)
@@ -1349,6 +1354,7 @@ function registerSounds() {
 	Howler.volume(VOLUME)
 	const sounds = [
 		"hit",
+		"hit2",
 		"basicattack",
 		"curse",
 		"dice",
@@ -1391,7 +1397,9 @@ function registerSounds() {
 		"tree_plant",
 		"tree_plant_hit",
 		"fruit_crush",
-		"takemoney"
+		"takemoney",
+		"metal",
+		"horse"
 	]
 
 	for (const sound of sounds) {

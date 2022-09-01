@@ -852,6 +852,10 @@ export default class GameInterface {
 			$(this.elements.charimgs[GAME.turn2ui(turn)]).attr("src", "res/img/character/bird_r.png")
 			$(this.elements.kdaimgs[turn]).attr("src", "res/img/character/bird_r.png")
 		}
+		if (data === "elephant_r") {
+			$(this.elements.charimgs[GAME.turn2ui(turn)]).attr("src", "res/img/character/knight_r.png")
+			$(this.elements.kdaimgs[turn]).attr("src", "res/img/character/knight_r.png")
+		}
 		if (data === "tree_low_hp") {
 			$(this.elements.charimgs[GAME.turn2ui(turn)]).attr("src", "res/img/character/tree_low_hp.png")
 			$(this.elements.kdaimgs[turn]).attr("src", "res/img/character/tree_low_hp.png")
@@ -891,6 +895,7 @@ export default class GameInterface {
 		})
 	}
 	setSkillScaleTooltip(name){
+		
 		let scale=GAME.skillScale[name]
 
 		if(!scale){
@@ -899,7 +904,12 @@ export default class GameInterface {
 		}  
 		let str=`${scale.base}`
 		for(const s of scale.scales){
-			str+=`<a class=${s.ability}>(+${s.val}${s.ability})</a>`
+
+			let name=this.game.strRes.SCALE_NAMES[s.ability]
+			console.log(name)
+			if(name===undefined) name=s.ability
+
+			str+=`<a class=${s.ability}>(+${s.val}${name})</a>`
 		}
 		$(".skill_scale_tooltip p").html(str)
 	}

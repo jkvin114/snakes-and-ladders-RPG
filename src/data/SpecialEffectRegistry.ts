@@ -13,7 +13,7 @@ export namespace SpecialEffect {
 	export const SKILL = {
 		ELEPHANT_PASSIVE: {
 			isgood:true,
-            src:"character/elephant.png",
+            src:"character/knight.png",
 			name: "elephant_passive",
 			desc: "Attack and magic resistance increase based on missing health",
 			desc_kor: " 잃은 체력에 비례해 방어력과 마법저항력 증가 "

@@ -44,7 +44,7 @@ CODE,ITEMNAME,itemname_kor,ABILITYNAME,CHANCE,VALUE,UPGRADEVALUE,FIRSTONLY,LIMIT
 42,every_healing,어디서나 힐링 여행권,healing_everywhere,25,,,,,6
 43,policecar,일단정지 경찰차,police_car,75,,,,,5
 44,islandescape,마이더스의 지도,instant_escape_island,80,,,,,5
-45,redsticker,공포의 빨간 딱지,red_sticker,100,,,,,9
+45,redsticker,공포의 빨간 딱지,red_sticker,33,,,,,9
 46,newtown,뉴타운 확장권,newtown,25,,,,,8
 47,fortune_trampoline,행운의 트램폴린,line_trampoline,35,,,,,7
 48,jester_trampoline,곡예사의 트램폴린,my_land_trampoline,40,,,,,7

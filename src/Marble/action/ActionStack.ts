@@ -9,14 +9,14 @@ export class ActionStack {
 		this.priorityStack = []
 	}
 	pop(): Action | undefined {
-		 console.log("pop")
+	//	 console.log("pop")
 
 		if (this.priorityStack.length > 0) {
 			return this.priorityStack.pop()
 		}
 
 		let a = this.stack.pop()
-		this.iterate()
+	//	this.iterate()
 		return a
 	}
 	/**
@@ -29,7 +29,7 @@ export class ActionStack {
 	}
 	private push(action: Action | undefined) {
 		if (!action) return
-		 console.log("push")
+	//	 console.log("push")
 		if (action.priority === 1 && action instanceof InstantAction) this.priorityStack.push(action)
 		else this.stack.push(action)
 	}

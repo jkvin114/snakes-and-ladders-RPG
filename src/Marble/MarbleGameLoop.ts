@@ -125,7 +125,7 @@ class MarbleGameLoop{
 
             // 액션 무시
             if(!action.valid || action.type===ACTION_TYPE.EMPTY) {
-                console.log("action ignored")
+                // console.log("action ignored")
                 continue
             }
 
@@ -161,7 +161,7 @@ class MarbleGameLoop{
             
             // 액션 무시
             if(!action.valid || action.type===ACTION_TYPE.EMPTY) {
-                console.log("action ignored")
+             //   console.log("action ignored")
                 continue
             }
 
@@ -179,7 +179,7 @@ class MarbleGameLoop{
             
             await sleep(500)
             let nextstate=this.state.getNext(action)
-            console.log('set state: '+GAME_CYCLE_NAME[nextstate.id])
+      //      console.log('set state: '+GAME_CYCLE_NAME[nextstate.id])
 
             if(nextstate.id===MarbleGameCycleState.ERROR_STATE) {
                 this.loopRunning=false
@@ -210,7 +210,7 @@ class MarbleGameLoop{
         let result=new EventResult(false)
         // if(invoker !== this.state.getInvoker()) return
         args=args[0]
-        console.log(args)
+   //     console.log(args)
         if(args.length===0) return
 
         switch(event){
@@ -242,8 +242,8 @@ class MarbleGameLoop{
                 result=this.state.onUserSelectIsland(args[0])
                 break
         }
-        console.log(result)
-
+     //   console.log(result)
+//
         if(result.result) this.loop()
         
     }

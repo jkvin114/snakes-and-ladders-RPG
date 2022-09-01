@@ -36,7 +36,7 @@
     },
     "elephant_q":{
         "sprite":{
-            "x":7,"y":1
+            "x":6,"y":4
         }
     },
     "elephant_r_shield":{
@@ -47,6 +47,11 @@
     "elephant_r_energy":{
         "sprite":{
             "x":2,"y":3
+        }
+    },
+	"elephant_r_horse":{
+        "sprite":{
+            "x":7,"y":4
         }
     },
     "reaper_q":{
