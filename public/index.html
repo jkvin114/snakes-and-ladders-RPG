@@ -264,7 +264,7 @@ button.navbtn{
         <img class='navbtn' id="loginbtn" onclick="open_login()" src="../res/img/svg/user.svg">
         <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
         <button class='navbtn hidden' id="logoutbtn" onclick="logout()">Log Out</button>
-        <!-- <img class='navbtn postbtn' id="postbtn" src="res/img/svg/list.svg"> -->
+        <img class='navbtn postbtn hidden' id="postbtn" src="res/img/svg/list.svg">
       </div>
       <!-- <div class="cool">
         <img class=img src="res/img/skill/7-3.jpg">
@@ -272,7 +272,7 @@ button.navbtn{
       </div> -->
       <div><h5 id="title">Snakes-and-Ladders RPG</h5></div>
       <div>
-        <!-- <img class='navbtn' onclick="createroom(true)" src="marble/res/icon.jpg"> -->
+        <img class='navbtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg">
         <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg">
         <div class="lang_dropdown">
           <a class="dropitem" value="kor">한국어</a>
@@ -301,7 +301,7 @@ button.navbtn{
         <button class=button id="open_create_room" onclick="open_createroom()">Create room</button>
         <button class='button hidden' id="reconnect" onclick="toGamepage()">Reconnect</button>
         <button class=button id="join" onclick="join()">Join</button>
-        <button class=button id="simulation" onclick="simulation()">simulation</button>
+        <button class='hidden button' id="simulation" onclick="simulation()">simulation</button>
         <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
       </div>
       <div id=field>
@@ -390,13 +390,21 @@ const names=['Trump','Obama','Bush','Biden','Annonymous','Illuminati','Challenge
 $("document").ready(function(){
   $.ajax({
         method: 'POST',
-        url: '/room/existence_check',
+        url: '/room/home',
     })
     .done(function(data, statusText, xhr){
       let status = xhr.status;
+      
+      if(data)
+      data=JSON.parse(data)
 
       if(status==304){
         showReconnectBtn()
+      }
+      else if(data){
+        if(data.board)$("#postbtn").show()
+        if(data.simulation) $("#simulation").show()
+        if(data.marble)$("#marble").show()
       }
     })
   

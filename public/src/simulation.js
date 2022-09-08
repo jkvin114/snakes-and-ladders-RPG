@@ -426,8 +426,10 @@ function checkAuth(){
 
     })
     .fail(function(data, statusText, xhr){
-
-		if(data.status===401){
+		if(data.status===403){
+        	window.location.href="index.html"
+		}
+		else if(data.status===401){
         	window.location.href="index.html?page=login&redirect=simulation_selection_page.html&"
 		}
 		else{

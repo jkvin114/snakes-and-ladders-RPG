@@ -3,7 +3,7 @@ import { R } from "../RoomStorage"
 import { MarbleRoom } from "../Marble/MarbleRoom"
 const router = express.Router()
 import { RPGRoom } from "../RPGRoom"
-
+import CONFIG from "./../../config/config.json"
 
 function isUserInRPGRoom(req:Express.Request){
 	return req.session.roomname != null &&
@@ -59,6 +59,8 @@ router.post("/create_rpg", function (req: express.Request, res: express.Response
 router.post("/create_marble", function (req: express.Request, res: express.Response) {
 	let body = req.body
 
+	if(!CONFIG.marble) return res.status(403).end()
+
 	if (body.roomname === "") {
 		body.roomname = "room_marble_" + String(Math.floor(Math.random() * 1000000))
 	}
@@ -110,13 +112,13 @@ router.post("/join", async function (req: express.Request, res: express.Response
 	//  console.log(req.session)
 	res.status(200).end()
 })
-router.post("/existence_check", async function (req: express.Request, res: express.Response) {
-
+router.post("/home", async function (req: express.Request, res: express.Response) {
+console.log(CONFIG)
 	if (req.session && isUserInRPGRoom(req)) {
 		// console.error("previous room exists")
-		return res.status(304).end()
-	}
-	res.status(200).end()
+		res.status(304).json(CONFIG).end()
+	}else
+		res.status(200).json(CONFIG)
 })
 router.post("/matching", async function (req: express.Request, res: express.Response) {
 	if (req.session) {
@@ -178,7 +180,10 @@ router.post("/game", async function (req: express.Request, res: express.Response
 })
 
 router.post("/simulation", async function (req: express.Request, res: express.Response) {
+	if(!CONFIG.simulation) return res.status(403).end()
+
 	if (req.session) {
+		
 		console.log("simulation")
 		// console.log(req.session)
 		if (!req.session.isLogined) {

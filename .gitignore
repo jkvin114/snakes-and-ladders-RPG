@@ -1,4 +1,5 @@
 node_modules/
 *.txt
 public/uploads/
-src/data/*.env
+*.env
+config/

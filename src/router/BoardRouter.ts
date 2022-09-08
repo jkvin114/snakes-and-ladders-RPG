@@ -4,12 +4,25 @@ const router = express.Router()
 const { upload } = require("../mongodb/mutler")
 const { UserBoardData, Article, Comment, CommentReply } = require("../mongodb/BoardDBHandler")
 const mongoose = require("mongoose")
+import CONFIG from "./../../config/config.json"
 
 const { User } = require("../mongodb/DBHandler")
+
+const availabilityCheck = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+
+		
+	if(!CONFIG.board) return res.status(403).redirect("/")
+	else next()
+}
+
 const auth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
 	// next();
 	// return
 	try {
+		
+		if(!CONFIG.board) return res.status(403).redirect("/")
+
+		
 		if (req.session.isLogined) {
 			next()
 		} else {
@@ -23,6 +36,8 @@ const ajaxauth = (req: express.Request, res: express.Response, next: express.Nex
 	// next();
 	// return
 	try {
+		if(!CONFIG.board) return res.status(403).redirect("/")
+
 		if (req.session.isLogined) {
 			next()
 		} else {
@@ -71,7 +86,8 @@ function cleanUpComments(){
 }
 
 
-router.get("/", async (req, res) => {
+router.get("/", availabilityCheck,async (req, res) => {
+
 	//cleanUpComments()
 	let start = 0
 	let count = COUNT_PER_PAGE
@@ -93,11 +109,11 @@ router.get("/", async (req, res) => {
 		})
 		.catch((err: any) => res.status(500).redirect("/"))
 })
-router.get("/mypage", auth, (req, res) => {
+router.get("/mypage", availabilityCheck,auth, (req, res) => {
 	res.redirect("/board/user/" + req.session.username + "/posts")
 })
 
-router.get("/user/:username/posts", async (req, res) => {
+router.get("/user/:username/posts", availabilityCheck,async (req, res) => {
 	try{
 		let start = 0
 		let count = COUNT_PER_PAGE
@@ -125,7 +141,7 @@ router.get("/user/:username/posts", async (req, res) => {
 		return
 	}
 })
-router.get("/user/:username/comments", async (req, res) => {
+router.get("/user/:username/comments",availabilityCheck, async (req, res) => {
 	let start = 0
 	let count = COUNT_PER_PAGE
 	let sortby="new"   ///new,old,upvote
@@ -227,7 +243,7 @@ router.get("/user/:username/comments", async (req, res) => {
 		return
 	}
 })
-router.post("/uploadimg", auth, upload.single("img"), async (req, res) => {
+router.post("/uploadimg",availabilityCheck, auth, upload.single("img"), async (req, res) => {
 	const imgfile = req.file
 	console.log(imgfile)
 	// console.log(req.body.content)
@@ -412,7 +428,7 @@ router.post("/post/reply/delete", ajaxauth, async (req, res) => {
 	}
 })
 
-router.get("/post/comment/:commentId/reply", async (req, res) => {
+router.get("/post/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 	try {
 		const comment = await Comment.findOneById(mongoose.Types.ObjectId(req.params.commentId))
 		const commentreply = await Comment.getReplyById(mongoose.Types.ObjectId(req.params.commentId))
@@ -471,7 +487,7 @@ router.post("/post/comment/reply", auth, async (req, res) => {
 	res.redirect("/board/post/comment/" + req.body.commentId + "/reply")
 })
 
-router.get("/post/:postUrl", async (req, res) => {
+router.get("/post/:postUrl",availabilityCheck, async (req, res) => {
 	try {
 		let post = await Article.findOneByArticleIdWithComment(req.params.postUrl)
 
