@@ -87,12 +87,15 @@
         }
     ],
     "dev_settings":{
-        "enabled":true,
+        "enabled":false,
         "player":{
           
             "level":1,"pos":10,"money":0
         },
         "dice":-1,
-        "localDB":true
+        "localDB":true,
+		"simulation":true,
+		"marble":true,
+		"board":true
     }
 }
