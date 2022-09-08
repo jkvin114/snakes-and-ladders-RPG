@@ -332,9 +332,9 @@ class Game {
 	//t:{turn:number,stun:boolean}
 	startTurn(turnUpdateData) {
 		if (!isMapLoaded) {
-			this.android_toast("requestmap again")
-			requestMap()
-			isMapLoaded = true
+			this.android_toast("Error while loading the map, please reconnect.")
+			// requestMap()
+			// isMapLoaded = true
 		}
 
 		// if (t === "gameover") {

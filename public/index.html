@@ -170,12 +170,15 @@ button.navbtn{
   background: rgb(121, 121, 121);
   z-index: 2;
   width: 120px;
+  right: 0;
+
 }
 .lang_dropdown > a{
   display: block;
   font-size: 30px;
   color: rgb(255, 255, 255);
   cursor:pointer;
+  padding:4px;
 }
 .dropitem:hover{
   background: rgb(73, 73, 73);
@@ -234,9 +237,21 @@ button.navbtn{
 #ip-input{
   visibility: hidden;
 }
+#title{
+  font-family: 'nanumEB';
+  font-size: 30px;
+  color: rgb(249, 187, 255);
+  margin: 0;
+  line-height: 40px;
+}
+@media (max-width: 700px) {
+  #title{
+    font-size: 20px;
+  }
+}
 </style>
 <body>
-<img id="toggle_fullscreen" src="res/img/svg/maximize.svg" data-on=false>
+<!-- <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" data-on=false> -->
 
 
   <div>
@@ -246,21 +261,21 @@ button.navbtn{
         <img class='navbtn' id="loginbtn" onclick="open_login()" src="../res/img/svg/user.svg">
         <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
         <button class='navbtn hidden' id="logoutbtn" onclick="logout()">Log Out</button>
-        <img class='navbtn postbtn' id="postbtn" src="res/img/svg/list.svg">
+        <!-- <img class='navbtn postbtn' id="postbtn" src="res/img/svg/list.svg"> -->
       </div>
       <!-- <div class="cool">
         <img class=img src="res/img/skill/7-3.jpg">
         <div class="mask"></div>
       </div> -->
-      
+      <div><h5 id="title">Snakes-and-Ladders RPG</h5></div>
       <div>
-        <img class='navbtn' onclick="createroom(true)" src="marble/res/icon.jpg">
-        <img class=navbtn id="statbtn" onclick="toStatpage()" src="res/img/svg/chart_white.svg">
+        <!-- <img class='navbtn' onclick="createroom(true)" src="marble/res/icon.jpg"> -->
         <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg">
         <div class="lang_dropdown">
           <a class="dropitem" value="kor">한국어</a>
           <a class="dropitem" value="eng">English</a>
         </div>
+        <img class=navbtn id="statbtn" onclick="toStatpage()" src="res/img/svg/chart_white.svg">
         
         <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
       </div>
@@ -281,7 +296,7 @@ button.navbtn{
       <br>
       <div id=buttons>
         <button class=button id="open_create_room" onclick="open_createroom()">Create room</button>
-        
+        <button class='button hidden' id="reconnect" onclick="toGamepage()">Reconnect</button>
         <button class=button id="join" onclick="join()">Join</button>
         <button class=button id="simulation" onclick="simulation()">simulation</button>
         <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
@@ -370,7 +385,17 @@ const names=['Trump','Obama','Bush','Biden','Annonymous','Illuminati','Challenge
 ,'Yangyi','Gorae','Creed','Silver','Jean','Timo','Jellice','Emiya','Muljomdao',"Faker","Undefined","Null","NAN","/(?![^<>]+>)"]
 
 $("document").ready(function(){
+  $.ajax({
+        method: 'POST',
+        url: '/room/existence_check',
+    })
+    .done(function(data, statusText, xhr){
+      let status = xhr.status;
 
+      if(status==304){
+        showReconnectBtn()
+      }
+    })
   
   $("#firstpage").show()
   let page = document.location.href.match(/page=([^&]+)/)
@@ -403,6 +428,7 @@ $("document").ready(function(){
   $("#join").html(chooseLang("Join","방 참가"))
 
   $("#simulation").html(chooseLang("Simulation","시물레이션"))
+  $("#reconnect").html(chooseLang("Reconnect","재접속"))
 
   let loginbtns=$(".loginpage_btn").toArray()
   let registerbtns=$(".regpage_btn").toArray()
@@ -458,6 +484,14 @@ $("document").ready(function(){
 // $("#selectsignup").click(function(){
 //   window.location.href="file:///android_asset/html/signup.html"
 // })
+
+function showReconnectBtn(){
+  $("#join").hide()
+  // $("input").hide()
+  $("#simulation").hide()
+  $("#open_create_room").hide()
+  $("#reconnect").show()
+}
 function chooseLang(eng,kor){
   return sessionStorage.language==="eng"?eng:kor
 }
@@ -751,8 +785,8 @@ function simulation(){
   window.location.href="simulation_selection_page.html"
 
 }
-function marble(){
-  window.location.href="/marble/gamepage.html"
+function toGamepage(){
+  window.location.href="gamepage.html"
 }
 </script>
 </html>

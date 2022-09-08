@@ -338,6 +338,7 @@ class EntityMediator {
 		let targets=this.selectAllFrom(filter)
 		if(targets.length===0) return false
 		AttackHandler.skillAttacks(from,targets,skillAttack)		
+		return true
 	}
 	/**
 	 * skill attack by clicking skill button

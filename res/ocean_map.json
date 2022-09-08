@@ -93,30 +93,27 @@
     {"x":955,"y":500,"obs":-1,"money":0},
 
     {"x":245,"y":266,"obs":0,"money":0},
-    {"x":259,"y":205,"obs":47,"money":13},
     {"x":266,"y":148,"obs":44,"money":0},
     {"x":320,"y":130,"obs":49,"money":0},
     {"x":373,"y":148,"obs":50,"money":0},
-    {"x":389,"y":206,"obs":42,"money":0},    
     {"x":400,"y":257,"obs":43,"money":0},
     {"x":459,"y":239,"obs":50,"money":0},
     {"x":468,"y":184,"obs":47,"money":11},
     {"x":450,"y":125,"obs":49,"money":0},
-    {"x":461,"y":73,"obs":10,"money":0},
     {"x":534,"y":46,"obs":0,"money":0}
   ],
  
     "finish":89,
-    "muststop":[15,36,72,89,90,101],
+    "muststop":[15,36,72,89,90,98],
     "respawn":[0,15,36,72,90],
-    "store":[15,36,72,90,101],
+    "store":[15,36,72,90,98],
     "shuffle":[],
 	"dc_limit_level":4,
     "way2_range":{
       "start":15,
       "end":36,
       "way_start":90,
-      "way_end":101
+      "way_end":98
     },
     "submarine_range":{
       "start":37,

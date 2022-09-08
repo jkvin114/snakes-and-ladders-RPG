@@ -9,7 +9,14 @@ import { ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../data/enum"
 import { PlayerType, ProtoPlayer, randInt, sleep } from "../core/Util"
 import { GameEventObserver } from "../GameEventObserver"
 
-
+class EventResult{
+	result:boolean
+	state?:GameCycleState
+	constructor(result:boolean,state?:GameCycleState){
+		this.result=result
+		this.state=state
+	}
+}
 
 class GameLoop {
 	private idleTimeout: NodeJS.Timeout
@@ -60,6 +67,7 @@ class GameLoop {
 	 */
 	setGameCycle(cycle: GameCycleState): boolean {
 		if(!this.game) return false
+		if(!cycle) return false
 		if (this.state != null) {
 			this.state.onDestroy()
 			if (this.state.shouldStopTimeoutOnDestroy()) this.stopTimeout()
@@ -189,8 +197,10 @@ class GameLoop {
 	//	console.log("user_pressDice")
 		this.restartResetTimeout()
 		if (this.state.crypt_turn !== crypt_turn) return null
+		let result=this.state.onUserPressDice(dicenum)
+		if(!result.result) return null
 
-		this.setGameCycle(this.state.onUserPressDice(dicenum))
+		this.setGameCycle(result.state)
 		//this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
 		let diceRoll: ServerGameEventInterface.DiceRoll = this.state.getData()
 		this.afterDice(diceRoll.actualdice)
@@ -235,22 +245,26 @@ class GameLoop {
 	async user_completePendingObs(info: ClientInputEventInterface.PendingObstacle, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if(this.state.id===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE){
-			this.setGameCycle(this.state.onUserCompletePendingObs(info))
+			let result=this.state.onUserCompletePendingObs(info)
+			if(!result.result) return
+			this.setGameCycle(result.state)
 			await this.state.getPromise()
 			this.nextGameCycle()
 		}else{
-			console.error("invalid game cycle state, should be PendingObstacle but received" + this.state.id)
+			console.error("invalid user pendingobstacle input")
 		}
 	}
 	async user_completePendingAction(info: ClientInputEventInterface.PendingAction, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if(this.state.id===GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION){
-			this.setGameCycle(this.state.onUserCompletePendingAction(info))
+			let result=this.state.onUserCompletePendingAction(info)
+			if(!result.result) return
+			this.setGameCycle(result.state)
 			await this.state.getPromise()
 			this.nextGameCycle()
 		}
 		else{
-			console.error("invalid game cycle state, should be PendingAction but received" + this.state.id)
+			console.error("invalid user pendingaction input")
 		}
 		//this.setGameCycle(this.state.onUserCompletePendingAction(info))
 	}
@@ -274,21 +288,29 @@ class GameLoop {
 	user_basicAttack(crypt_turn: string) {
 		this.restartResetTimeout()
 		if (this.state.crypt_turn !== crypt_turn) return
-		this.setGameCycle(this.state.onUserBasicAttack())
+		let result=this.state.onUserBasicAttack()
+		if(!result.result) return
+		this.setGameCycle(result.state)
 	}
 	user_choseSkillTarget(target: number, crypt_turn: string) {
 		if (this.state.crypt_turn !== crypt_turn) return
-		this.setGameCycle(this.state.onUserChooseSkillTarget(target))
+		let result=this.state.onUserChooseSkillTarget(target)
+		if(!result.result) return
+		this.setGameCycle(result.state)
 	}
 
 	user_choseSkillLocation(location: number, crypt_turn: string) {
 		if (this.state.crypt_turn !== crypt_turn) return
-		this.setGameCycle(this.state.onUserChooseSkillLocation(location))
+		let result=this.state.onUserChooseSkillLocation(location)
+		if(!result.result) return
+		this.setGameCycle(result.state)
 	}
 	user_choseAreaSkillLocation(location: number, crypt_turn: string) {
 		if (this.state.crypt_turn !== crypt_turn) return
 	//	console.log("user_choseAreaSkillLocation" + crypt_turn)
-		this.setGameCycle(this.state.onUserChooseAreaSkillLocation(location))
+		let result=this.state.onUserChooseAreaSkillLocation(location)
+		if(!result.result) return
+		this.setGameCycle(result.state)
 	}
 	user_message(turn: number, message: string) {
 		
@@ -354,45 +376,45 @@ abstract class GameCycleState {
 	shouldPass() {
 		return false
 	}
-	onUserPressDice(dicenum: number): GameCycleState {
+	onUserPressDice(dicenum: number): EventResult {
 		console.error("invalid request, id:" + this.id)
-		return this
+		return new EventResult(false)
 	}
 	onUserClickSkill(skill: number): ServerGameEventInterface.SkillInit {
 		console.error("invalid request, id:" + this.id)
 
 		return null
 	}
-	onUserBasicAttack(): GameCycleState {
+	onUserBasicAttack(): EventResult {
 		console.error("invalid request, id:" + this.id)
 
-		return this
+		return new EventResult(false)
 	}
-	onUserChooseSkillTarget(target: number): GameCycleState {
+	onUserChooseSkillTarget(target: number): EventResult {
 		console.error("invalid request, id:" + this.id)
 
-		return this
+		return new EventResult(false)
 	}
-	onUserChooseSkillLocation(location: number): GameCycleState {
+	onUserChooseSkillLocation(location: number): EventResult {
 		console.error("invalid request, id:" + this.id)
 
-		return this
+		return new EventResult(false)
 	}
-	onUserChooseAreaSkillLocation(location: number): GameCycleState {
+	onUserChooseAreaSkillLocation(location: number): EventResult {
 		console.error("invalid request, id:" + this.id)
 
-		return this
+		return new EventResult(false)
 	}
 
-	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle):  GameCycleState {
+	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle):  EventResult {
 		console.error("invalid request, state id:" + this.id)
 
-		return null
+		return new EventResult(false)
 	}
-	onUserCompletePendingAction(info: ClientInputEventInterface.PendingObstacle): GameCycleState {
+	onUserCompletePendingAction(info: ClientInputEventInterface.PendingObstacle): EventResult {
 		console.error("invalid request, state id:" + this.id)
 
-		return null
+		return new EventResult(false)
 	}
 
 	onTimeout(): GameCycleState {
@@ -491,10 +513,10 @@ class WaitingDice extends GameCycleState {
 		return true
 	}
 	onCreate(): void {}
-	onUserPressDice(dicenum: number): GameCycleState {
+	onUserPressDice(dicenum: number): EventResult {
 		let data = this.game.rollDice(dicenum)
 		this.onDestroy()
-		return new ThrowDice(this.game, data)
+		return new EventResult(true,new ThrowDice(this.game, data)) 
 	}
 }
 class ThrowDice extends GameCycleState {
@@ -630,9 +652,9 @@ class PendingObstacle extends GameCycleState {
 	getOnTimeout(): () => void {
 		return () => this.game.processPendingObs(null)
 	}
-	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle): GameCycleState {
+	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle): EventResult {
 		this.result=info
-		return this.getNext()
+		return new EventResult(true,this.getNext())
 	}
 	getNext(): GameCycleState {
 		return new PendingObstacleProgress(this.game,this.result)
@@ -698,9 +720,9 @@ class PendingAction extends GameCycleState {
 			this.game.eventEmitter.sendPendingAction("server:pending_action:ask_way2", 0)
 		}
 	}
-	onUserCompletePendingAction(info: ClientInputEventInterface.PendingAction): GameCycleState {
+	onUserCompletePendingAction(info: ClientInputEventInterface.PendingAction): EventResult {
 		this.result=info
-		return this.getNext()
+		return new EventResult(true,this.getNext())
 	}
 	getNext(): GameCycleState {
 		this.onDestroy()
@@ -772,10 +794,10 @@ export class WaitingSkill extends GameCycleState {
 		this.skillInit = this.game.onSelectSkill(skill - 1)
 		return this.skillInit
 	}
-	onUserBasicAttack(): GameCycleState {
+	onUserBasicAttack(): EventResult {
 		this.game.thisp().basicAttack()
 		this.onDestroy()
-		return new WaitingSkill(this.game)
+		return new EventResult(true,new WaitingSkill(this.game))
 	}
 	getNext(): GameCycleState {
 		if (this.shouldPass()) return this
@@ -824,12 +846,12 @@ class WaitingTarget extends WaitingSkillResult {
 		super(game, WaitingTarget.id, result)
 	}
 	onCreate(): void {}
-	onUserChooseSkillTarget(target: number): GameCycleState {
+	onUserChooseSkillTarget(target: number): EventResult {
 		if (target >=0) {
 			this.game.useSkillToTarget(target)
 		}
 		this.onDestroy()
-		return new WaitingSkill(this.game)
+		return new EventResult(true,new WaitingSkill(this.game))
 	}
 }
 class WaitingLocation extends WaitingSkillResult {
@@ -839,12 +861,12 @@ class WaitingLocation extends WaitingSkillResult {
 		super(game, WaitingLocation.id, result)
 	}
 	onCreate(): void {}
-	onUserChooseSkillLocation(location: number): GameCycleState {
+	onUserChooseSkillLocation(location: number): EventResult {
 		if (location > 0) {
 			this.game.placeSkillProjectile(location)
 		}
 		this.onDestroy()
-		return new WaitingSkill(this.game)
+		return new EventResult(true,new WaitingSkill(this.game))
 	}
 }
 class WaitingAreaTarget extends WaitingSkillResult {
@@ -854,12 +876,12 @@ class WaitingAreaTarget extends WaitingSkillResult {
 		super(game, WaitingAreaTarget.id, result)
 	}
 	onCreate(): void {}
-	onUserChooseAreaSkillLocation(location: number): GameCycleState {
+	onUserChooseAreaSkillLocation(location: number): EventResult {
 		if (location > 0) {
 			this.game.useAreaSkill(location)
 		}
 		this.onDestroy()
-		return new WaitingSkill(this.game)
+		return new EventResult(true,new WaitingSkill(this.game))
 	}
 }
 class TurnTerminator extends GameCycleState {

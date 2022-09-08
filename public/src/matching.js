@@ -853,13 +853,18 @@ $(document).ready(function () {
 		let status = xhr.status;
 		console.log(status)
 		
-
+		if(status==304){
+			alert(chooseLang("You are already in a game","이미 게임에 참가 중입니다"))
+        	window.location.href="index.html"
+			return
+		}
 		if(status===201){
 			MATCH.setAsHost(data)
 		}
 		else if(status===200){
 			MATCH.setAsGuest(data)
 		}
+
 		connectSocket()
 
     })

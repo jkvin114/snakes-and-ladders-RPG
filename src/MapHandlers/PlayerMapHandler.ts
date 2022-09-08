@@ -156,8 +156,9 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 			this.player.game.setPendingObs(this.player.game.getObstacleAt(info.result))
 			this.player.game.playerForceMove(this.player, info.result, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 		}
+		console.log("onPendingActionComplete"+info.result)
 		if (info.type === "ask_way2" && !info.result && typeof info.result==='boolean') {
-		//	console.log("goWay2")
+			
 			this.goWay2()
 		}
 		super.onPendingActionComplete(info)

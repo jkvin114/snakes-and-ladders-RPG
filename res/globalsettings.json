@@ -90,8 +90,9 @@
         "enabled":true,
         "player":{
           
-            "level":3,"pos":40,"money":100
+            "level":1,"pos":10,"money":0
         },
-        "dice":-1
+        "dice":-1,
+        "localDB":true
     }
 }

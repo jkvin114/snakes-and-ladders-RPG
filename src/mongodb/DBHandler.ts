@@ -1,10 +1,15 @@
 import mongoose from "mongoose"
 require('dotenv').config({path:__dirname+'/../data/variables.env'})
+import SETTINGS = require("../../res/globalsettings.json")
 
 
 console.log("connecting to mongodb ")
 try{
-    mongoose.connect(process.env.MONGODB_URL)
+    if(SETTINGS.dev_settings.localDB && process.env.MONGODB_URL_LOCAL){
+        mongoose.connect(process.env.MONGODB_URL_LOCAL)
+    }
+    else
+        mongoose.connect(process.env.MONGODB_URL)
 }
 catch(e){
     console.log('mongodb Connection Failed!');

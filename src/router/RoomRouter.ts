@@ -4,6 +4,13 @@ import { MarbleRoom } from "../Marble/MarbleRoom"
 const router = express.Router()
 import { RPGRoom } from "../RPGRoom"
 
+
+function isUserInRPGRoom(req:Express.Request){
+	return req.session.roomname != null &&
+	R.hasRPGRoom(req.session.roomname) &&
+	R.getRPGRoom(req.session.roomname).hasSession(req.session.id)
+}
+
 /**
  * roomname:string,username:string
  */
@@ -23,9 +30,7 @@ router.post("/create_rpg", function (req: express.Request, res: express.Response
 	console.log("createroom")
 	console.log(req.session)
 	if (
-		req.session.roomname != null &&
-		R.hasRPGRoom(req.session.roomname) &&
-		R.getRPGRoom(req.session.roomname).hasSession(req.session.id)
+		isUserInRPGRoom(req)
 	) {
 		res.status(304).end("previous room exists")
 		return
@@ -55,12 +60,12 @@ router.post("/create_marble", function (req: express.Request, res: express.Respo
 	let body = req.body
 
 	if (body.roomname === "") {
-		body.roomname = "room_" + String(Math.floor(Math.random() * 1000000))
+		body.roomname = "room_marble_" + String(Math.floor(Math.random() * 1000000))
 	}
 	let rname = String(body.roomname)
 
 	if (R.hasMarbleRoom(rname)) {
-		console.log("exidt")
+		// console.log("exidt")
 		res.status(400).end("room name exists")
 		return
 	}
@@ -90,9 +95,7 @@ router.post("/join", async function (req: express.Request, res: express.Response
 	let body = req.body
 
 	if (
-		req.session.roomname != null &&
-		R.hasRPGRoom(req.session.roomname) &&
-		R.getRPGRoom(req.session.roomname).hasSession(req.session.id)
+		isUserInRPGRoom(req)
 	) {
 		res.status(304).end("previous room exists")
 		return
@@ -107,14 +110,26 @@ router.post("/join", async function (req: express.Request, res: express.Response
 	//  console.log(req.session)
 	res.status(200).end()
 })
+router.post("/existence_check", async function (req: express.Request, res: express.Response) {
 
+	if (req.session && isUserInRPGRoom(req)) {
+		// console.error("previous room exists")
+		return res.status(304).end()
+	}
+	res.status(200).end()
+})
 router.post("/matching", async function (req: express.Request, res: express.Response) {
 	if (req.session) {
 		console.log("matching")
 		// console.log(req.session)
 		if (req.session.turn === undefined) {
-			console.error("unauthorized access to the matching page")
+			// console.error("unauthorized access to the matching page")
 			return res.status(401).end()
+			
+		}
+		if (isUserInRPGRoom(req)) {
+			// console.error("previous room exists")
+			return res.status(304).end()
 		}
 
 		//host

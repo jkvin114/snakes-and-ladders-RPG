@@ -280,7 +280,7 @@ export class StoreInterface {
 		// $(typelistbtns[3]).html(GAME.chooseLang("Defence", "방어"))
 		// $(typelistbtns[4]).html(GAME.chooseLang("Health", "체력"))
 		// $(typelistbtns[5]).html(GAME.chooseLang("Movement", "이동"))
-
+		$("#store_auto_text").html(GAME.chooseLang("Item auto buy", "아이템 자동구매"))
 		$("#loweritem").html(GAME.chooseLang("Lower Level Items", "하위 아이템"))
 		$("#upperitem").html(GAME.chooseLang("Upper Level Items", "상위 아이템"))
 		$(".store_life_summary p").html(GAME.chooseLang("Additional Life", "추가 목숨"))

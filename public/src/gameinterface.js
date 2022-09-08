@@ -77,6 +77,7 @@ export default class GameInterface {
 				"티켓 값 외상 가능, 지하철에서는 기본공격 피해 40% 감소"
 			)
 		)
+		
 
 		$("#nextturn").click(() => GAME.onNextTurn())
 
@@ -1494,7 +1495,7 @@ export default class GameInterface {
 
 		GAME.connection.selectionComplete(GAME.pendingSelection.type, {
 			type: GAME.pendingSelection.name,
-			booleanResult: !result,
+			result: !result,
 			complete:true
 		})
 	}
