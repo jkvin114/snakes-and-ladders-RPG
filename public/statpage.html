@@ -36,7 +36,7 @@
 	</head>
 	<div id="sidebar">
 		<div class="sidebar_item intro_simulation" >
-			<a>Simulation</a>
+			<a>Simulations</a>
 		</div>
 		<div class="sidebar_item intro_game">
 			<a>Games</a>
@@ -122,7 +122,7 @@
 		<!-- <button id="togglelist" ><img src="res/img/svg/chevron-left.svg"></button> -->
 		<div id="main_start"></div>
 		<div id="main" class="hidden">
-			<div id="gamelist_wrapper">	
+			<div id="gamelist_wrapper" class="collapse">	
 			<!-- <div class="onegame_container">
 					<div class="character"><div class="charimg list_charimg"><img src="res/img/character/bird.png"></div><a> 1/10/0</a></div>
 					<div class="character"><div class="charimg list_charimg"><img src="res/img/character/bird.png"></div><a> 1/10/0</a></div>
@@ -156,182 +156,247 @@
 
 				<div id="game_detail">		
 					<p id="game_resulttext"></p>
-					<div class="divTable greenTable" id="stattable">
-						<div class="divTableHeading">
-							<div class="divTableRow statTableRow">
-								<!-- <div class="divTableHead">Rank</div>
-								<div class="divTableHead">Player</div>
-								<div class="divTableHead">Character</div>
-								<div class="divTableHead">KDA</div>
-								<div class="divTableHead">Items</div> -->
-							</div>
-						</div>
-						<div class="divTableBody">
-							<div class="divTableRow statTableRow">
-								<div class="divTableCell statTableCell rank" style="font-size: 20px">
-									1
+					<div id="game_detail_content">
+						<div>
+							<div class="divTable greenTable" id="stattable">
+								<div class="divTableHeading">
+									<div class="divTableRow statTableRow">
+										<!-- <div class="divTableHead">Rank</div>
+										<div class="divTableHead">Player</div>
+										<div class="divTableHead">Character</div>
+										<div class="divTableHead">KDA</div>
+										<div class="divTableHead">Items</div> -->
+									</div>
 								</div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell playername"></div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell itemlist"></div>
-							</div>
-
-							<div class="divTableRow statTableRow">
-								<div class="divTableCell statTableCell rank" style="font-size: 20px">
-									2
+								<div class="divTableBody">
+									<div class="divTableRow statTableRow">
+										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+											1
+										</div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell playername"></div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell itemlist"></div>
+									</div>
+		
+									<div class="divTableRow statTableRow">
+										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+											2
+										</div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell playername"></div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell itemlist"></div>
+									</div>
+		
+									<div class="divTableRow statTableRow">
+										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+											3
+										</div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell playername"></div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell itemlist"></div>
+									</div>
+		
+									<div class="divTableRow statTableRow">
+										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+											4
+										</div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell playername"></div>
+										<div class="divTableCell statTableCell"></div>
+										<div class="divTableCell statTableCell itemlist"></div>
+									</div>
 								</div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell playername"></div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell itemlist"></div>
 							</div>
-
-							<div class="divTableRow statTableRow">
-								<div class="divTableCell statTableCell rank" style="font-size: 20px">
-									3
+							<div id=detailbtn_container>
+								<button class="detailbtn" value="1">Details</button>
+								<button class="detailbtn" value="2">Item Build</button>
+								<button class="detailbtn" value="3">Kills</button>
+								<button class="detailbtn" value="4">Position</button>
+								<button class="detailbtn" value="5">Money</button>
+								<!-- <button class="detailbtn" value="6">&times;</button> -->
+							</div>
+							<div id="otherstattable-container">
+								<div class="divTable greenTable" id="otherstattable">
+									<div class="divTableHeading">
+										<div class="divTableRow otherTableRow">
+											<div class="divTableHead otherTableLabel">&nbsp;&nbsp;Player</div>
+											<div class="divTableHead otherTableLabel">Money Spent</div>
+											<div class="divTableHead otherTableLabel">Money taken</div>
+											<div class="divTableHead otherTableLabel">Revived</div>
+											<div class="divTableHead otherTableLabel">Forcemoved</div>
+											<div class="divTableHead otherTableLabel">Basic attack</div>
+											<div class="divTableHead otherTableLabel">Executed</div>
+										</div>
+									</div>
+									<div class="divTableBody">
+										<div class="divTableRow otherTableRow">
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+										</div>
+		
+										<div class="divTableRow otherTableRow">
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+										</div>
+		
+										<div class="divTableRow otherTableRow">
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+										</div>
+		
+										<div class="divTableRow otherTableRow">
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+											<div class="divTableCell otherTableCell"></div>
+										</div>
+									</div>
 								</div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell playername"></div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell itemlist"></div>
 							</div>
-
-							<div class="divTableRow statTableRow">
-								<div class="divTableCell statTableCell rank" style="font-size: 20px">
-									4
+							<div id="chart-container">
+								<div class="divTable greenTable" id="itembuildTable">
+									<div class="divTableHeading">
+										<div class="divTableRow ">
+											<div class="divTableHead ">Player</div>
+											<div class="divTableHead ">Item Build</div>
+										</div>
+									</div>
+									<div class="divTableBody">
+										<div class="divTableRow itembuildTableRow">
+											<div class="divTableCell itembuildTableName"></div>
+											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
+										</div>
+										<div class="divTableRow itembuildTableRow">
+											<div class="divTableCell itembuildTableName"></div>
+											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
+										</div>
+										<div class="divTableRow itembuildTableRow">
+											<div class="divTableCell itembuildTableName"></div>
+											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
+										</div>
+										<div class="divTableRow itembuildTableRow">
+											<div class="divTableCell itembuildTableName"></div>
+											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
+											
+										</div>				
+									</div>
 								</div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell playername"></div>
-								<div class="divTableCell statTableCell"></div>
-								<div class="divTableCell statTableCell itemlist"></div>
-							</div>
-						</div>
-					</div>
-					<div id=detailbtn_container>
-						<button class="detailbtn" value="1">Details</button>
-						<button class="detailbtn" value="2">Item Build</button>
-						<button class="detailbtn" value="3">Kills</button>
-						<button class="detailbtn" value="4">Position</button>
-						<button class="detailbtn" value="5">Money</button>
-						<button class="detailbtn" value="6">&times;</button>
-					</div>
-
-					<div class="divTable greenTable" id="otherstattable">
-						<div class="divTableHeading">
-							<div class="divTableRow otherTableRow">
-								<div class="divTableHead otherTableLabel">&nbsp;&nbsp;Player</div>
-								<div class="divTableHead otherTableLabel">Money Spent</div>
-								<div class="divTableHead otherTableLabel">Money taken</div>
-								<div class="divTableHead otherTableLabel">Revived</div>
-								<div class="divTableHead otherTableLabel">Forcemoved</div>
-								<div class="divTableHead otherTableLabel">Basic attack</div>
-								<div class="divTableHead otherTableLabel">Executed</div>
-							</div>
-						</div>
-						<div class="divTableBody">
-							<div class="divTableRow otherTableRow">
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-							</div>
-
-							<div class="divTableRow otherTableRow">
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-							</div>
-
-							<div class="divTableRow otherTableRow">
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-							</div>
-
-							<div class="divTableRow otherTableRow">
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-								<div class="divTableCell otherTableCell"></div>
-							</div>
-						</div>
-					</div>
-					<div class="divTable greenTable" id="itembuildTable">
-						<div class="divTableHeading">
-							<div class="divTableRow ">
-								<div class="divTableHead ">Player</div>
-								<div class="divTableHead ">Item Build</div>
-							</div>
-						</div>
-						<div class="divTableBody">
-							<div class="divTableRow itembuildTableRow">
-								<div class="divTableCell itembuildTableName"></div>
-								<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
-							</div>
-							<div class="divTableRow itembuildTableRow">
-								<div class="divTableCell itembuildTableName"></div>
-								<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
-							</div>
-							<div class="divTableRow itembuildTableRow">
-								<div class="divTableCell itembuildTableName"></div>
-								<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
-							</div>
-							<div class="divTableRow itembuildTableRow">
-								<div class="divTableCell itembuildTableName"></div>
-								<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
+								<div id="killRecordTable">
+						<!-- 
+									<div class="killframewrapper">
+										<b>1</b>
+										<div class="killframe">
+											<div class="charframe"><img src="res/img/obstacle.png"></div>
+											<img src="res/img/kill.png">
+											<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
+										</div><br>
+										<div class="killframe">
+											<div class="charframe"><img src="res/img/obstacle.png"></div>
+											<img src="res/img/kill.png">
+											<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
+										</div><br>
+									</div>
+									<b>&#10140;</b> -->
+							
+								</div>
 								
-							</div>				
+								<div id="position_chart"></div>
+								<div id="money_chart"></div>
+							</div>
+							
+							<div id="train_detail" class="">
+								<p> </p>
+							</div>
 						</div>
-					</div>
-					<div id="killRecordTable">
-			<!-- 
-						<div class="killframewrapper">
-							<b>1</b>
-							<div class="killframe">
-								<div class="charframe"><img src="res/img/obstacle.png"></div>
-								<img src="res/img/kill.png">
-								<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
-							</div><br>
-							<div class="killframe">
-								<div class="charframe"><img src="res/img/obstacle.png"></div>
-								<img src="res/img/kill.png">
-								<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
-							</div><br>
+						<div>
+							<div id="game-detail-graphs">
+							
+								<div class="game-detail-graph">
+									<b class="game-detail-graph-type"></b><br>
+									<div class="game-detail-graph-players">
+										<!-- <div class="game-detail-graph-oneplayer">
+											<div class="game-detail-graph-name">
+												<b>1P</b><img src="res/img/character/bird.png">
+											</div>
+											<div class="game-detail-graph-value">
+												<div class="game-detail-graph-amount"></div>
+												<b>1426</b>
+											</div>
+										</div>  -->
+									</div>
+								</div>
+								<div class="game-detail-graph">
+									<b class="game-detail-graph-type"></b><br>
+									<div class="game-detail-graph-players">
+	
+									</div>
+								</div>
+								<div class="game-detail-graph">
+									<b class="game-detail-graph-type"></b><br>
+									<div class="game-detail-graph-players">
+	
+									</div>
+								</div>
+								<div class="game-detail-graph">
+									<b class="game-detail-graph-type"></b><br>
+									<div class="game-detail-graph-players">
+	
+									</div>
+								</div>
+								<div class="game-detail-graph">
+									<b class="game-detail-graph-type"></b><br>
+									<div class="game-detail-graph-players">
+	
+									</div>
+								</div>
+								<div class="game-detail-graph">
+									<b class="game-detail-graph-type"></b><br>
+									<div class="game-detail-graph-players">
+	
+									</div>
+								</div>
+								
+							</div>
+							<div id="kdaGraph"></div> 
 						</div>
-						<b>&#10140;</b> -->
-				
-					</div>
-					<div id="position_chart"></div>
-					<div id="money_chart"></div>
-					<div id="train_detail" class="">
-						<p> </p>
-					</div>
-					<div id="graphcontainer">
-						<!-- <div id="kda_chart" class="graph"></div> -->
 						
-						<div id="kdaGraph"></div>
+						
+					</div>
+					
+					
+					<!-- 
+					<div id="graphcontainer">
+						<div id="kda_chart" class="graph"></div> 
+						
+						
 						<div id="chartdiv" class="graph"></div>
 						<div id="chartdiv1" class="graph"></div>
 						<div id="chartdiv2" class="graph"></div>
 						<div id="chartdiv3" class="graph"></div>
 						<div id="chartdiv4" class="graph"></div>
 						<div id="chartdiv5" class="graph"></div>
-					</div>
+					</div>-->
 				</div>
 			
 			</div>

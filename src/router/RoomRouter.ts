@@ -113,7 +113,7 @@ router.post("/join", async function (req: express.Request, res: express.Response
 	res.status(200).end()
 })
 router.post("/home", async function (req: express.Request, res: express.Response) {
-console.log(CONFIG)
+// console.log(CONFIG)
 	if (req.session && isUserInRPGRoom(req)) {
 		// console.error("previous room exists")
 		res.status(304).json(CONFIG).end()

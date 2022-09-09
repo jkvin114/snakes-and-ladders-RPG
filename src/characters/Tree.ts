@@ -271,7 +271,7 @@ class Tree extends Player {
 		if (this.mediator.count(filter)>0) return true
 		
 
-		filter=EntityFilter.ALL_ENEMY_PLAYER(this).excludeUnattackable()
+		filter=EntityFilter.ALL_ENEMY_PLAYER(this).excludeUnattackable().in(0,0)
 		this.plantEntities.forEach((plant) => {
 			let entity=this.mediator.getEntity(plant)
 			if(!entity) return

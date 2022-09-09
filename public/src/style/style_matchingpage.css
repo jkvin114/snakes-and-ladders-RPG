@@ -764,6 +764,9 @@ input:checked + .slider {
   .name{
     font-size: 2rem;
   }
+  .champbtn_name{
+    font-size: 1rem;
+  }
 }
 
 #marble-item-page{

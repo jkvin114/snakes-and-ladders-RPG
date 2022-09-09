@@ -185,7 +185,9 @@ function requestStatById(id) {
 	let xhr = $.get(ip + "/stat/simulation?statid=" + id)
 
 	xhr.done((data) => {
-		window.location.href = "#gamelist"
+		// window.location.href = "#gamelist"
+		location.href="#gamelist_wrapper"
+
 		showStat(data)
 	})
 }
@@ -265,6 +267,25 @@ function addItemTooltipEvent() {
 		$(".tooltiptext").css("visibility", "hidden")
 	})
 }
+function hideDetail(){
+	$("#otherstattable").css({ visibility: "collapse" })
+	$("#itembuildTable").css({ visibility: "collapse" })
+	$("#position_chart").hide()
+	$("#money_chart").hide()
+	$("#killRecordTable").css({ display: "none" })
+}
+function updateSimulationGridLayout(){
+	if (window.innerWidth > 1300) {
+
+		$("#main").css("grid-template-columns", "auto 1000px")
+	} 
+	else{
+		$("#main").css("grid-template-columns", "auto")
+	}
+}
+$(window).on("load",function(){
+	requestGames(0, InterfaceState.page_max)
+})
 $(document).ready(function () {
 	itemLists = $(".itemlist").toArray()
 	playerNameLists = $(".playername").toArray()
@@ -342,25 +363,21 @@ $(document).ready(function () {
 		}
 	})
 
-	$("#togglelist").click(function () {
-		if (InterfaceState.gamelist_hidden) {
-			$("#gamelist_wrapper").show()
-			if (window.innerWidth > 1300) {
-				$(this).css("left", "426px")
+	// $("#togglelist").click(function () {
+	// 	if (InterfaceState.gamelist_hidden) {
+	// 		$("#gamelist_wrapper").show()
+	// 		updateSimulationGridLayout()
+	// 		if (window.innerWidth > 1300) {
+	// 			$(this).css("right", "1000px")
 
-				$("#main").css("grid-template-columns", "420px auto")
-			} else if (window.innerWidth > 900) {
-				$(this).css("left", "226px")
-				$("#main").css("grid-template-columns", "220px auto")
-			}
-			InterfaceState.gamelist_hidden = false
-		} else {
-			$("#gamelist_wrapper").hide()
-			$(this).css("left", "0")
-			$("#main").css("grid-template-columns", "auto")
-			InterfaceState.gamelist_hidden = true
-		}
-	})
+	// 		} 
+	// 		InterfaceState.gamelist_hidden = false
+	// 	} else {
+	// 		$("#gamelist_wrapper").hide()
+	// 		$(this).css("left", "0")
+	// 		InterfaceState.gamelist_hidden = true
+	// 	}
+	// })
 
 	//for small screen
 	$("#listhidebtn").click(function () {
@@ -377,28 +394,29 @@ $(document).ready(function () {
 		}
 	})
 	$("#maximize_list_btn").click(function () {
+		
 		if (InterfaceState.gamelist_maximized) {
-			if (window.innerWidth > 1300) {
-				$("#main").css("grid-template-columns", "420px auto")
-			} else if (window.innerWidth > 900) {
-				$("#main").css("grid-template-columns", "220px auto")
-			}
+			updateSimulationGridLayout()
 			InterfaceState.gamelist_maximized = false
 			$(this).attr("src", "res/img/svg/maximize.svg")
 		} else {
-			InterfaceState.gamelist_maximized = true
 			$("#main").css("grid-template-columns", "auto")
+
+			InterfaceState.gamelist_maximized = true
 			$(this).attr("src", "res/img/svg/push.svg")
 			$(this).css("transform", "rotate(180deg)")
 		}
 	})
 	$(".detailbtn").click(function () {
+		if($(this).hasClass("active")){
+			hideDetail()
+			$(this).removeClass("active")
+			return
+		}
 		let v = $(this).val()
-		$("#otherstattable").css({ visibility: "collapse" })
-		$("#itembuildTable").css({ visibility: "collapse" })
-		$("#position_chart").hide()
-		$("#money_chart").hide()
-		$("#killRecordTable").css({ display: "none" })
+		hideDetail()
+		$(".detailbtn").removeClass("active")
+		$(this).addClass("active")
 		switch (Number(v)) {
 			case 1:
 				$("#otherstattable").css({ visibility: "visible" })
@@ -484,10 +502,12 @@ function convertCountToItemSlots(items) {
 function setItemList(turn, item) {
 	//console.log(turn)
 	let text = ""
-	if (item.length > 10) {
+	if (item.length > 20) {
 		item = convertCountToItemSlots(item)
 	}
+	let i=0
 	for (let it of item) {
+		i+=1
 		if (it === -1) {
 			text += "<div class='toast_itemimg'><img src='res/img/store/emptyslot.png'> </div>"
 		} else {
@@ -498,9 +518,10 @@ function setItemList(turn, item) {
 				-1 * it * 100 +
 				"px'; > </div>"
 		}
+		if(i>0 && i%6===0) text+="<br>"
 	}
 
-	$(itemLists[turn]).html(text)
+	$(itemLists[turn]).html('<div class=itemlist_container>'+text+'</div>')
 
 	// $(".toast_itemimg").css({
 	// 	margin: "-30px",
@@ -750,10 +771,14 @@ function showStat(data) {
 	data = JSON.parse(data)
 
 	if (!data.multiple) {
-		$("#gamelist_wrapper").css("visibility", "collapse")
+		$("#gamelist_wrapper").css("height", "0")
+		$("#gamelist_wrapper").addClass('collapse')
+
 		$(".simulationGraph").hide()
 		showSingleStat(data)
 	} else {
+
+		updateSimulationGridLayout()
 		$("#simulation_detail").show()
 		statData = data.stat
 		if(statData.length <=0){
@@ -911,18 +936,47 @@ function showStat(data) {
 
 		if (!data.isGamelist) {
 			$("#gamelist_side").html(string)
-			$("#gamelist_wrapper").css("visibility", "visible")
+			$("#gamelist_wrapper").removeClass('collapse')
 
 		} else {
 			$("#summary").removeClass("hidden")
 			$("#main").css("grid-template-columns", "auto")
-			$("#gamelist_wrapper").css("visibility", "collapse")
+			$("#gamelist_wrapper").addClass('collapse')
 			$("#summary").html(string)
 		}
 
 		return
 	}
 }
+function drawSmallGraph(data){
+	let max=-Infinity
+
+	for(let d of data){
+		max=Math.max(max,d.value)
+	}
+
+	let str=""
+	let sorted=data.sort((a,b)=>a.turn-b.turn)
+	console.log(sorted)
+	for(const player of sorted){
+		
+		str+=`
+		<div class="game-detail-graph-oneplayer">
+			<div class="game-detail-graph-name">
+				<b>${player.turn+1}P</b><img src="${getCharImgUrl(player.champ)}">
+			</div>
+			<div class="game-detail-graph-value">
+				<div class="game-detail-graph-amount" style="width:${100 * (player.value/max)}%;"></div>
+				<b>${player.value}</b>
+			</div>
+		</div> 
+		`
+	}
+	return str
+	
+
+}
+
 function showonestat(n) {
 	showSingleStat(statData[n])
 }
@@ -973,6 +1027,14 @@ function showSingleStat(data) {
 	$(".detailbtn:nth-child(3)").html(chooseLang("킬/데스", "Kill/Death"))
 	$(".detailbtn:nth-child(4)").html(chooseLang("위치", "Position"))
 	$(".detailbtn:nth-child(5)").html(chooseLang("돈", "Money"))
+	let smallGraphTypes=$(".game-detail-graph-type").toArray()
+	$(smallGraphTypes[0]).html(chooseLang("입힌 피해량","Damage Dealt"))
+	$(smallGraphTypes[1]).html(chooseLang("플레이어에게 받은 피해","Damage From Players"))
+	$(smallGraphTypes[2]).html(chooseLang("장애물에게 받은 피해","Damage Obstacle"))
+	$(smallGraphTypes[3]).html(chooseLang("회복량","Heal Amount"))
+	$(smallGraphTypes[4]).html(chooseLang("획득한 돈","Money Earned"))
+	$(smallGraphTypes[5]).html(chooseLang("피해 감소량","Damage Absorbed"))
+
 	$("#stattable").show()
 	$("#detailbtn_container").show()
 	location.href = "#stattable"
@@ -1085,15 +1147,15 @@ function showSingleStat(data) {
 			}
 			$(itembuildTable[i]).children(".itembuildTableContent").html(str)
 
-			$(".toast_itemimg_itembuild").css({
-				margin: "-30px",
-				width: "100px",
-				overflow: "hidden",
-				height: "100px",
-				display: "inline-block",
-				transform: "scale(0.4)",
-				"vertical-align": "middle"
-			})
+			// $(".toast_itemimg_itembuild").css({
+			// 	margin: "-30px",
+			// 	width: "100px",
+			// 	overflow: "hidden",
+			// 	height: "100px",
+			// 	display: "inline-block",
+			// 	transform: "scale(0.4)",
+			// 	"vertical-align": "middle"
+			// })
 
 			
 		}
@@ -1181,16 +1243,15 @@ function showSingleStat(data) {
 
 		kda_graph.push({
 			category: (p.turn+1)+ "P(" + p.champ + ")",
-			k: p.kda[0],
-			d: p.kda[1],
-			a: p.kda[2]
+			k: (p.kda[0]+p.kda[2])/Math.max(1,p.kda[1])
 		})
 		for (let j = 0; j < p.stats.length; ++j) {
 			//$(dataList[k + j + 4]).html(p.stats[j])
 
 			let graphData = {
-				category: (p.turn+1)+ "P(" + p.champ + ")",
-				"column-2": p.stats[j]
+				turn: p.turn,
+				champ:p.champ_id,
+				value:p.stats[j]
 			}
 			switch (j) {
 				case 0:
@@ -1214,6 +1275,14 @@ function showSingleStat(data) {
 			}
 		}
 	}
+	let smallgraphs=$(".game-detail-graph-players").toArray()
+
+	$(smallgraphs[0]).html(drawSmallGraph(damagedealt_graph))
+	$(smallgraphs[1]).html(drawSmallGraph(damagetakenC_graph))
+	$(smallgraphs[2]).html(drawSmallGraph(damagetakenO_graph))
+	$(smallgraphs[3]).html(drawSmallGraph(heal_graph))
+	$(smallgraphs[4]).html(drawSmallGraph(gold_graph))
+	$(smallgraphs[5]).html(drawSmallGraph(damageabsorbed_graph))
 
 	let otherDataList = $(".otherTableCell").toArray()
 
@@ -1222,6 +1291,7 @@ function showSingleStat(data) {
 		if (p.stats.length < 9) continue
 
 		$(otherDataList[k]).html(p.name)
+		
 		$(otherDataList[k + 1]).html(p.stats[5])
 		$(otherDataList[k + 2]).html(p.stats[6])
 		$(otherDataList[k + 3]).html(p.stats[8])
@@ -1289,7 +1359,7 @@ function showSingleStat(data) {
 			],
 			series: [
 				{
-					name: "Kill",
+					name: "KDA",
 					bullets: [
 						{
 							type: "LabelBullet",
@@ -1313,56 +1383,56 @@ function showSingleStat(data) {
 						categoryX: "category"
 					}
 				},
-				{
-					name: "Death",
-					bullets: [
-						{
-							type: "LabelBullet",
-							label: {
-								text: "{d}",
-								fontSize: 10,
-								fill: "white",
-								truncate: false,
-								dy: 10
-							}
-						}
-					],
-					type: "ColumnSeries",
-					columns: {
-						width: "60%",
-						fill: "#fc5060",
-						stroke: "none"
-					},
-					dataFields: {
-						valueY: "d",
-						categoryX: "category"
-					}
-				},
-				{
-					name: "Assist",
-					bullets: [
-						{
-							type: "LabelBullet",
-							label: {
-								text: "{a}",
-								fontSize: 10,
-								fill: "white",
-								truncate: false,
-								dy: 10
-							}
-						}
-					],
-					type: "ColumnSeries",
-					columns: {
-						width: "60%",
-						fill: "#32cd32",
-						stroke: "none"
-					},
-					dataFields: {
-						valueY: "a",
-						categoryX: "category"
-					}
-				}
+				// {
+				// 	name: "Death",
+				// 	bullets: [
+				// 		{
+				// 			type: "LabelBullet",
+				// 			label: {
+				// 				text: "{d}",
+				// 				fontSize: 10,
+				// 				fill: "white",
+				// 				truncate: false,
+				// 				dy: 10
+				// 			}
+				// 		}
+				// 	],
+				// 	type: "ColumnSeries",
+				// 	columns: {
+				// 		width: "60%",
+				// 		fill: "#fc5060",
+				// 		stroke: "none"
+				// 	},
+				// 	dataFields: {
+				// 		valueY: "d",
+				// 		categoryX: "category"
+				// 	}
+				// },
+				// {
+				// 	name: "Assist",
+				// 	bullets: [
+				// 		{
+				// 			type: "LabelBullet",
+				// 			label: {
+				// 				text: "{a}",
+				// 				fontSize: 10,
+				// 				fill: "white",
+				// 				truncate: false,
+				// 				dy: 10
+				// 			}
+				// 		}
+				// 	],
+				// 	type: "ColumnSeries",
+				// 	columns: {
+				// 		width: "60%",
+				// 		fill: "#32cd32",
+				// 		stroke: "none"
+				// 	},
+				// 	dataFields: {
+				// 		valueY: "a",
+				// 		categoryX: "category"
+				// 	}
+				// }
 			]
 		},
 		document.getElementById("kdaGraph")

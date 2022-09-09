@@ -131,6 +131,15 @@ footer{
   height: 40px;
 
 }
+.nav-section{
+  min-width: 80px;
+}
+.nav-section.left{
+  text-align: left;
+}
+.nav-section.right{
+  text-align: right
+} 
 .navbtn{
   font-family: 'nanumB';
   color:white;
@@ -251,6 +260,8 @@ button.navbtn{
   #navbar{
     height:80px;
   }
+}.wikibtn{
+  filter: invert();
 }
 </style>
 <body>
@@ -260,18 +271,23 @@ button.navbtn{
   <div>
 
     <div id="navbar">
-      <div>
-        <img class='navbtn' id="loginbtn" onclick="open_login()" src="../res/img/svg/user.svg">
+      <div class="nav-section left">
+        <img class='navbtn' id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg">
         <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
-        <button class='navbtn hidden' id="logoutbtn" onclick="logout()">Log Out</button>
+        <!-- <button class='navbtn hidden' id="logoutbtn" onclick="logout()"></button> -->
+        <img class='navbtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()">
+
         <img class='navbtn postbtn hidden' id="postbtn" src="res/img/svg/list.svg">
+
+        <img class='navbtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/ui/random.png">
       </div>
       <!-- <div class="cool">
         <img class=img src="res/img/skill/7-3.jpg">
         <div class="mask"></div>
       </div> -->
-      <div><h5 id="title">Snakes-and-Ladders RPG</h5></div>
-      <div>
+      <!-- Snakes-and-Ladders RPG -->
+      <div class="nav-section center"><h5 id="title">Snakes-and-Ladders RPG</h5></div>
+      <div class="nav-section right">
         <img class='navbtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg">
         <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg">
         <div class="lang_dropdown">
@@ -387,6 +403,9 @@ const names=['Trump','Obama','Bush','Biden','Annonymous','Illuminati','Challenge
 ,'Bormir','Sauron','Stark','Steve','Peter','Natasha','Clint','Bruce','Gamora','Drax','Groot','Thanos','Thor','Loki','Valkyrie','Wanda','Odin'
 ,'Yangyi','Gorae','Creed','Silver','Jean','Timo','Jellice','Emiya','Muljomdao',"Faker","Undefined","Null","NAN","/(?![^<>]+>)"]
 
+function golink(link){
+  window.location.href=link
+}
 $("document").ready(function(){
   $.ajax({
         method: 'POST',
@@ -394,9 +413,9 @@ $("document").ready(function(){
     })
     .done(function(data, statusText, xhr){
       let status = xhr.status;
-      
-      if(data)
-      data=JSON.parse(data)
+      console.log(data)
+      // if(data)
+      // data=JSON.parse(data)
 
       if(status==304){
         showReconnectBtn()
