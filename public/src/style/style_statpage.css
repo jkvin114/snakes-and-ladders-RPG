@@ -43,8 +43,8 @@ div.greenTable {
 .divTable.greenTable .divTableCell,
 .divTable.greenTable .divTableHead{
     /* border: 1px solid lightgray; */
-    padding-bottom: 10px;
-    padding-top: 10px;
+    padding-bottom: 3px;
+    padding-top: 3px;
     padding-left: 5px;
 }
 .divTable.greenTable .divTableiCell {
@@ -61,7 +61,7 @@ div.greenTable {
     border-bottom: 0px solid #444444;
 }
 .divTable.greenTable .divTableHeading .divTableHead {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: #ffffff;
     text-align: center;
 
@@ -69,6 +69,7 @@ div.greenTable {
 
 .divTable {
     display: table;
+    font-family: 'nanumB';
 }
 .divTableRow,
 .divTableiRow {
@@ -118,16 +119,16 @@ div.greenTable {
     filter: brightness(0.85);
 }
 .table_charimg{
-    width: 5rem;
+    width: 4rem;
     max-width: 50px;
-    height: 5rem;
+    height: 4rem;
     max-height: 50px;
 }
 .charimg > img
 {
-    width: 5rem;
+    width: 4rem;
     max-width: 50px;
-    height: 5rem;
+    height: 4rem;
     max-height: 50px;
     transform: scale(0.9);
 }

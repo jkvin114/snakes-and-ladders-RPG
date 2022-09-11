@@ -44,14 +44,14 @@ router.get("/map", function (req:express.Request, res:express.Response) {
 	if (!room) {
 		return
 	}
-	if (room.getMapId() === MAP_TYPE.OCEAN) {
+	if (room.getMapId === MAP_TYPE.OCEAN) {
 		fs.readFile(__dirname + RESOURCE_PATH+"ocean_map.json", "utf8", function (err, data) {
 			if(err){
 				res.status(500).send({err:"error while requesting map file"})
 			}
 			res.end(data)
 		})
-	} else if (room.getMapId()=== MAP_TYPE.CASINO) {
+	} else if (room.getMapId=== MAP_TYPE.CASINO) {
 		fs.readFile(__dirname + RESOURCE_PATH+"casino_map.json", "utf8", function (err, data) {
 			if(err){
 				res.status(500).send({err:"error while requesting map file"})
@@ -111,7 +111,7 @@ router.get("/marble_map", function (req:express.Request, res:express.Response) {
 		res.status(500).send({err:"error while requesting resource file"})
 		return
 	}
-	if(room.getMapId()===0){
+	if(room.getMapId===0){
 		console.log("world_map")
 		fs.readFile(__dirname + RESOURCE_PATH+"marble/world_map.json", "utf8", function (err, data) {
 			if(err){
@@ -120,7 +120,7 @@ router.get("/marble_map", function (req:express.Request, res:express.Response) {
 			res.end(data)
 		})
 	}
-	else if(room.getMapId()===1){
+	else if(room.getMapId===1){
 		console.log("godhand_map")
 		fs.readFile(__dirname + RESOURCE_PATH+"marble/godhand_map.json", "utf8", function (err, data) {
 			if(err){

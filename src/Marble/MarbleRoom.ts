@@ -5,7 +5,7 @@ import { MarbleGameLoop } from "./MarbleGameLoop";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 
 class MarbleRoom extends Room{
-    getMapId(): number {
+    get getMapId(): number {
         return this.map
     }
     user_message(turn: number, msg: string): string {

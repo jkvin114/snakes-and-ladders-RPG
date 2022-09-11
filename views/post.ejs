@@ -96,7 +96,7 @@
   .vote{
     cursor: pointer;
     display: inline-block;
-    min-width: 70px;
+    /* min-width: 70px; */
     user-select: none;
     background-color: #7E00BF;
     border-radius: 3px;
@@ -104,6 +104,8 @@
     padding: 2px;
     padding-top: 4px;
     padding-left: 4px;
+    padding-right: 6px;
+
   }
   .commentvote a{
     font-size: 17px;
@@ -112,8 +114,10 @@
     width: 15px;
   }
   .commentvote{
-    min-width: 50px;
+    /* min-width: 50px; */
     background: none;
+    padding-right: 6px;
+
     border: 1px solid white;
   }
   .downvote img{
@@ -163,6 +167,11 @@
     margin: 4px;
     cursor: pointer;
     border-radius: 3px;
+  }
+  .reply img{
+    vertical-align: middle;
+    width: 14px;
+    padding-right: 4px;
   }
   .reply a{
     text-decoration: none;
@@ -243,9 +252,9 @@
     <a class="title"><%= title %> </a>
   </div>
   <div class="info_container">
-    <b class="info author" onclick="golink('/board/user/<%=author%>/posts')">작성자: <%= author %> </b><br>
+    <b class="info author" onclick="golink('/board/user/<%=author%>/posts')"><%= author %> </b><br>
     <a class="info"><%= createdAt.toString().substring(0,24) %></a>
-    <a class="info"> 조회: <%= views %></a>
+    <a class="info"> views: <%= views %></a>
   </div>
       
   <hr>
@@ -271,23 +280,23 @@
           <input type="hidden" name="postUrl" value="<%= url %>">  
           <input type="hidden" name="postId" value="<%= id %>">  
           <div class="commententer">
-            <input class="enter_comment" type="text" name="content" placeholder="댓글쓰기" required>
-            <input class="submit_comment" type="submit" value="등록">
+            <input class="enter_comment" type="text" name="content" placeholder="write comment" required>
+            <input class="submit_comment" type="submit" value="Submit">
           </div>
             
         </form>
       <%}else{%>
-          <p>댓글을 쓰려면 로그인하세요</p>
+          <p>Log in to write comment</p>
       <%}%>
       <%for(let i=comment.length-1;i>=0;--i){%>
         <%const comm = comment[i]%>
         
         <div class="comment">
           <%if(comm.deleted){%>
-            <a> 삭제된 댓글입니다</a>
+            <a> Deleted comment</a>
             <div></div>
           <%}else{%>
-           <a class="comment_info comment_author">작성자: </a> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comm.author%>/comments')"> <%= comm.author %> </u>
+           <a class="comment_info comment_author"></a> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comm.author%>/comments')"> <%= comm.author %> </u>
             <a class="comment_info"><%= comm.createdAt.toString().substring(0,24) %></a>
             <%if(comm.canModify){%>
               <button value="<%= comm._id%>" class="delete_comment"><b>&times;</b></button>
@@ -304,7 +313,7 @@
               </div>
           <%}%>
           <div class="reply">
-            <a href="/board/post/comment/<%=comm._id%>/reply">답글:<%=comm.replyCount %> </a>
+            <a href="/board/post/comment/<%=comm._id%>/reply"><img src="/res/img/svg/comment-white.svg"><%=comm.replyCount %> </a>
           </div>
               
         </div>
@@ -340,7 +349,7 @@ $(".delete_comment").click(function(){
     })
     .fail(function(data, statusText, xhr){
       if(data.status==401){
-        alert("권한없음")
+        alert("unauthorized")
       }
       else{
         alert("error")
@@ -348,7 +357,7 @@ $(".delete_comment").click(function(){
     })
 })
 $(".delete_post").click(function(){
-  if(!confirm("정말 삭제하시겠습니까?")) return
+  if(!confirm("Are you sure you want to delete?")) return
 
   let value=$(this).data('id')
   $.ajax({
@@ -364,7 +373,7 @@ $(".delete_post").click(function(){
     })
     .fail(function(data, statusText, xhr){
       if(data.status==401){
-        alert("권한없음")
+        alert("unauthorized")
       }
       else{
         alert("error")
@@ -396,7 +405,7 @@ function sendVote(kind,type,id,vote_count){
     })
     .fail((data, statusText, xhr)=>{
       if(data.status==401){
-        alert("로그인이 필요합니다")
+        alert("Login required")
       }
     })
 }

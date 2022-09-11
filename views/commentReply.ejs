@@ -96,7 +96,10 @@
   .vote{
     cursor: pointer;
     display: inline-block;
-    min-width: 50px;
+    /* min-width: 50px; */
+    padding-right: 6px;
+    border-radius: 3px;
+    padding: 3px;
     background: none;
     border: 1px solid white;
   }
@@ -204,10 +207,10 @@
     
       <%if(postUrl!==""){%>
         <div   onclick="golink('/board/post/<%=postUrl%>')">
-        <a class='white-text'>게시글 보기</a>
+        <a class='white-text'>View post</a>
         </div>
       <%}else{%>
-        <a> 원글이 삭제된 댓글입니다</a>
+        <a> Original post deleted</a>
       <%}%>
   </div>
 
@@ -216,10 +219,10 @@
       <div class="comment">
 
         <%if(comment.deleted){%>
-          <a> 삭제된 댓글입니다</a>
+          <a> deleted comment</a>
           <div></div>
         <%}else{%>
-          <a class="comment_info comment_author">작성자: </a> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
+          <a class="comment_info comment_author"></a> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
           <%= comment.authorName %> </u>
           <a class="comment_info"><%= comment.createdAt.toString().substring(0,24) %></a>
 
@@ -240,14 +243,14 @@
        <form action="/board/post/comment/reply" method="post"> 
         <input type="hidden" name="commentId" value="<%= comment._id %>">  
         <div class="commententer">
-          <input class="enter_comment" type="text" name="content" placeholder="답글쓰기" required>
-          <input class="submit_comment" type="submit" value="등록">
+          <input class="enter_comment" type="text" name="content" placeholder="reply" required>
+          <input class="submit_comment" type="submit" value="submit">
         </div>
       </form>
   <%}else if(comment.deleted){%>
-    <p>삭제된 댓글에는 답글을 달 수 없습니다</p>
+    <p>Can`t reply on deleted comment</p>
   <% }else{%>
-      <p>답글을 쓰려면 로그인하세요</p>
+      <p>Log in to reply</p>
  <% }%>
 
 
@@ -259,7 +262,7 @@
         ㄴ
       </div>
         <div class="comment">
-          <a class="comment_info comment_author">작성자: </a> 
+          <a class="comment_info comment_author"></a> 
           <u class="comment_info comment_author" onclick="golink('/board/user/<%=r.author%>/comments')">
             <%=r.author %> </u>
             <a class="comment_info"><%= r.createdAt.toString().substring(0,24) %></a>
@@ -332,7 +335,7 @@ function sendVote(kind,type,id,vote_count){
     })
     .fail((data, statusText, xhr)=>{
       if(data.status==401){
-        alert("로그인이 필요합니다")
+        alert("Login required")
       }
     })
 }

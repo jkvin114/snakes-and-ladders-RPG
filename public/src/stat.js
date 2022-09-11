@@ -200,7 +200,8 @@ function requestGlobalSetting() {
 
 		let params = document.location.href.split("?")[1]
 		if (params) requestStatAfterGame(params)
-		
+		else requestGames(0, InterfaceState.page_max)
+
 	})
 }
 function requestItem() {
@@ -284,7 +285,6 @@ function updateSimulationGridLayout(){
 	}
 }
 $(window).on("load",function(){
-	requestGames(0, InterfaceState.page_max)
 })
 $(document).ready(function () {
 	itemLists = $(".itemlist").toArray()
@@ -1033,7 +1033,7 @@ function showSingleStat(data) {
 	$(smallGraphTypes[2]).html(chooseLang("장애물에게 받은 피해","Damage Obstacle"))
 	$(smallGraphTypes[3]).html(chooseLang("회복량","Heal Amount"))
 	$(smallGraphTypes[4]).html(chooseLang("획득한 돈","Money Earned"))
-	$(smallGraphTypes[5]).html(chooseLang("피해 감소량","Damage Absorbed"))
+	$(smallGraphTypes[5]).html(chooseLang("피해 감소량","Damage Reduced"))
 
 	$("#stattable").show()
 	$("#detailbtn_container").show()

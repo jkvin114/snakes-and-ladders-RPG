@@ -166,9 +166,9 @@
  
   <div>
     <%if(isEdit){%>
-      <h1>게시글 편집</h1>
+      <h1>Edit post</h1>
     <%}else{%>
-      <h1>게시글 작성</h1>
+      <h1>Write post</h1>
     <%}%>
   </div>
     <form id="form" action="/board/post/<%= isEdit?'edit':'write'%>" method="post" enctype="multipart/form-data">
@@ -186,7 +186,7 @@
     <%}%>
   </form>
     <div id="write_post">
-        <div class="textarea" id="title-input" placeholder="제목" contenteditable><%= title %></div>
+        <div class="textarea" id="title-input" placeholder="Title" contenteditable><%= title %></div>
         
        <hr> 
        <div id="imagearea">
@@ -195,7 +195,7 @@
           <hr>
         <% } %>
         </div>
-       <div  class="textarea"  id="content-input" placeholder="내용" contenteditable><%- content %></div>
+       <div  class="textarea"  id="content-input" placeholder="Content" contenteditable><%- content %></div>
       </div>
       
 </body>
@@ -207,7 +207,7 @@
     let title=$("#title-input").html()
     let content=$("#content-input").html()
     if(title==="" || content===""){
-      alert("내용을 입력하세요")
+      alert("enter content")
       return
     }
     // console.log(content)

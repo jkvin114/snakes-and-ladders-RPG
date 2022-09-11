@@ -1382,6 +1382,8 @@ b {
   right: 4vw;
   top: 1.5rem;
   width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
   position: absolute;
   z-index: 6;
   display: grid;
@@ -1640,7 +1642,7 @@ b {
 
 #kdawindow a {
   color: #e0c9ff;
-  font-size: 2rem;
+  font-size: 1.5rem;
   opacity: 1.0;
 }
 

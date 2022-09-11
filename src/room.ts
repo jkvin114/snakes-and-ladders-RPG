@@ -24,7 +24,7 @@ abstract class Room {
 	resetCallback:Function
 	private playerSessions:Set<string>
 	abstract user_message(turn:number,msg:string):string
-	abstract getMapId():number
+	abstract get getMapId():number
 	abstract registerClientInterface(callback:GameEventEmitter):Room
 	abstract registerSimulationClientInterface(callback:GameEventEmitter):Room
 	constructor(name: string) {

@@ -124,6 +124,10 @@
     margin-left: 3px;
     color: rgb(161, 195, 255);
   }
+  .comment img{
+    width: 13px;
+    vertical-align: middle;
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -143,7 +147,7 @@
     <% }else{%>
       <img src="/res/img/svg/list.svg" class="filter-black" onclick="golink('/board/')"><br>
       <div onclick="golink('/board/user/<%=user%>/comments')">
-        <a class='white-text'>댓글모음</a>
+        <a class='white-text'>Comments</a>
       </div>
       <%}%>
     
@@ -152,9 +156,9 @@
   
   <div>
     <%if(!user) {%>
-      <h1>전체게시판</h1>
+      <h1>All Posts</h1>
       <% }else{%>
-        <h1><%=user%>님의 게시글</h1>
+        <h1><%=user%>`s Posts</h1>
       <% }%>
   </div>
      
@@ -183,23 +187,23 @@
             </div>
             <div></div>
             <div class="subtext_container">
-              <a class="subtext">작성자: <%=posts[i].authorName%></a>
+              <a class="subtext">Author: <%=posts[i].authorName%></a>
               <a class="subtext"> <%= posts[i].createdAt.toString().substring(0,24) %></a>
-              <a class="subtext"> 조회:<%= posts[i].views %></a>
+              <a class="subtext"> views:<%= posts[i].views %></a>
             </div>
             <div>
-              <a class="subtext comment">댓글 [<%= posts[i].commentCount %>]</a><br>
+              <a class="subtext comment"><img src="/res/img/svg/comment.svg"> [<%= posts[i].commentCount %>]</a><br>
             </div>
           </div>
       <% } %> 
       <%if(start>0){%>
         <button id="prevbtn" class="pagebtn" value='/board/<%=(!user?``:`user/${user}/posts`)+`?start=${start-count}`%>'>
-          ❮ 이전</button>
+          ❮ Prev</button>
       <% }%>
 
       <%if(!isEnd){ %> 
         <button id="nextbtn" class="pagebtn" value='/board/<%=(!user?``:`user/${user}/posts`)+`?start=${start+count}`%>'>
-          다음 ❯</button>
+          Next ❯</button>
       <% } %> 
 
 

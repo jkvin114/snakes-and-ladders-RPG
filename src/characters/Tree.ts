@@ -239,7 +239,7 @@ class Tree extends Player {
 	}
 
 	passive() {
-		if (this.HP < this.MaxHP * 0.4) {
+		if (this.HP < this.MaxHP * 0.4 && !this.isWithered) {
 			this.isWithered = true
 
 			this.effects.applySpecial(
@@ -248,7 +248,7 @@ class Tree extends Player {
 			)
 			this.changeSkillImage(Tree.SKILLNAME_STRONG_R, ENUM.SKILL.ULT)
 			this.changeApperance(Tree.APPERANCE_WITHERED)
-		} else {
+		} else if(!this.isWithered) {
 			this.effects.removeByKey(ENUM.EFFECT.TREE_WITHER)
 			this.isWithered = false
 			this.resetApperance()

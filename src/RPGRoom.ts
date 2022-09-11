@@ -48,8 +48,8 @@ class RPGRoom extends Room {
 		if(!this.gameloop) return
 		return this.gameloop.user_message(turn, msg)
 	}
-	getMapId() {
-		if(!this.gameloop) return
+	get getMapId():number {
+		if(!this.gameloop) return -1
 		return this.gameloop.game.mapId
 	}
 
@@ -78,7 +78,7 @@ class RPGRoom extends Room {
 	hasGameLoop(){
 		return this.gameloop!=null
 	}
-	getGameLoop(){
+	get getGameLoop(){
 		return this.gameloop
 	}
 	/**

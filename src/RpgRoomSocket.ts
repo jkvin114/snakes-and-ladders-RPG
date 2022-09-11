@@ -14,6 +14,6 @@ module.exports=function(socket:Socket){
 			io.to(rname).emit("server:update_playerlist", room.playerlist, turnchange)
 		} catch (e) {
 			console.error(e)
-		}
+		}	
 	})
 }

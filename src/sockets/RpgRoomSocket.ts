@@ -117,7 +117,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_update(SocketSession.getTurn(socket),type,data)
+			room.getGameLoop.user_update(SocketSession.getTurn(socket),type,data)
 		})
 
 		// R.getRPGRoom(rname)
@@ -164,7 +164,7 @@ module.exports=function(socket:Socket){
 
 		// if (!R.hasRPGRoom(rname)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_completePendingObs(info,crypt_turn)
+			room.getGameLoop.user_completePendingObs(info,crypt_turn)
 		})
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		// R.getRPGRoom(rname).getGameLoop().user_completePendingObs(info,crypt_turn)
@@ -180,14 +180,14 @@ module.exports=function(socket:Socket){
 
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_completePendingAction(info,crypt_turn)
+			room.getGameLoop.user_completePendingAction(info,crypt_turn)
 		})
 		// R.getRPGRoom(rname).getGameLoop().user_completePendingAction(info,crypt_turn)
 	})
 	//execute when player clicks basic attack
 	socket.on("user:basicattack", function (crypt_turn: string) {
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_basicAttack(crypt_turn)
+			room.getGameLoop.user_basicAttack(crypt_turn)
 		})
 		// room.getGameLoop().user_basicAttack(crypt_turn)
 	})
@@ -199,7 +199,7 @@ module.exports=function(socket:Socket){
 		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			let dice=room.getGameLoop().user_pressDice(dicenum,crypt_turn)
+			let dice=room.getGameLoop.user_pressDice(dicenum,crypt_turn)
 			if(dice!=null)
 			io.to(rname).emit("server:rolldice", dice)
 		})
@@ -219,7 +219,7 @@ module.exports=function(socket:Socket){
 		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 		// let room = R.getRPGRoom(rname)
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			let result=room.getGameLoop().user_clickSkill(s,crypt_turn)
+			let result=room.getGameLoop.user_clickSkill(s,crypt_turn)
 			socket.emit("server:skill_data", result)
 		})
 
@@ -237,7 +237,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_choseSkillTarget(target,crypt_turn)
+			room.getGameLoop.user_choseSkillTarget(target,crypt_turn)
 		})
 		// R.getRPGRoom(rname).getGameLoop().user_choseSkillTarget(target,crypt_turn)
 
@@ -254,7 +254,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_choseSkillLocation(location,crypt_turn)
+			room.getGameLoop.user_choseSkillLocation(location,crypt_turn)
 		})
 		// R.getRPGRoom(rname).getGameLoop().user_choseSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
@@ -266,7 +266,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_choseAreaSkillLocation(location,crypt_turn)
+			room.getGameLoop.user_choseAreaSkillLocation(location,crypt_turn)
 		})
 		// R.getRPGRoom(rname).getGameLoop().user_choseAreaSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
@@ -278,7 +278,7 @@ module.exports=function(socket:Socket){
 
 		// if (!R.hasRPGRoom(rname)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().user_storeComplete(data)
+			room.getGameLoop.user_storeComplete(data)
 		})
 		// R.getRPGRoom(rname).getGameLoop().user_storeComplete(data)
 	})
@@ -291,7 +291,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop().startNextTurn(false)
+			room.getGameLoop.startNextTurn(false)
 		})
 		// R.getRPGRoom(rname).getGameLoop().startNextTurn(false)
 	})
