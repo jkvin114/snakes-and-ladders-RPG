@@ -1,6 +1,6 @@
 import express from "express"
 import CONFIG from "../../../config/config.json"
-const { UserBoardData, Article, Comment, CommentReply } = require("../../mongodb/BoardDBHandler")
+const {Comment } = require("../../mongodb/BoardDBHandler")
 
 export const availabilityCheck = (req: express.Request, res: express.Response, next: express.NextFunction) => {
 

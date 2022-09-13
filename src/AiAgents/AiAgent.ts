@@ -225,7 +225,7 @@ abstract class AiAgent {
 			//타겟이 1명일경우
 			goal = targets[0]
 			//속박걸렸으면 플레이어 위치 그대로
-			if (me.game.pOfTurn(goal).effects.has(EFFECT.STUN)) {
+			if (!me.game.pOfTurn(goal).canThrowDice()) {
 				return Math.floor(me.game.pOfTurn(goal).pos)
 			}
 		} else {
@@ -239,7 +239,7 @@ abstract class AiAgent {
 
 			//속박걸린 플레이어있으면 그 플레이어 위치 그대로
 			for (let t of targets) {
-				if (ps[t].effects.has(EFFECT.STUN)) {
+				if (!ps[t].canThrowDice()) {
 					return Math.floor(ps[t].pos)
 				}
 			}

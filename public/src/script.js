@@ -14,6 +14,7 @@ class StringResource {
 		this.ITEMS_SORTED //Map
 		this.GLOBAL_SETTING
 		this.VISUAL_EFFECTS
+		this.GLOBAL_OBSTACLE_EVENT
 		this.SPECIAL_EFFECTS = new Map()
 	}
 }
@@ -1044,12 +1045,18 @@ class Game {
 	updatePosition(turn, pos) {
 		this.players[turn].pos = pos
 	}
-
-	onIndicateObstacle(obs, turn) {
-		if (this.myturn === turn) {
-			this.ui.showObsNotification(obs)
+	/**
+	 * data: {turn,obs,globalEventName}
+	 */
+	onIndicateObstacle(data) {
+		if (this.myturn === data.turn || data.turn===-1) {
+			if(!data.globalEventName)
+				this.ui.showObsNotification(data.obs)
+			else{
+				this.ui.showObsNotification(data.obs,this.strRes.GLOBAL_OBSTACLE_EVENT[data.globalEventName])
+			}
 		}
-		this.playObstacleSound(obs)
+		this.playObstacleSound(data.obs)
 	}
 	onIndicateItem(turn, item) {
 		console.log("onIndicateItem")
@@ -1317,19 +1324,20 @@ function requestObstacles() {
 function requestStringRes() {
 	let request = new XMLHttpRequest()
 
-	request.open("GET", "/resource/string_resource", true)
+	request.open("GET", "/resource/string_resource?lang="+GAME.chooseLang("eng","kor"), true)
 	request.onload = function () {
 		try {
 			//	obstacleList = JSON.parse(request.responseText)
 			let res = JSON.parse(request.responseText)
-			GAME.strRes.STATS = GAME.chooseLang(res.stat, res.stat_kor)
-			GAME.strRes.SCALE_NAMES = GAME.chooseLang(res.scale_stat, res.scale_stat_kor)
-			GAME.strRes.EFFECTS = GAME.chooseLang(res.statuseffect, res.statuseffect_kor)
-			GAME.strRes.TRIAL_LABELS = GAME.chooseLang(res.triallabel, res.triallabel_kor)
-			GAME.strRes.CASINO_LABELS = GAME.chooseLang(res.casinolabel, res.casinolabel_kor)
-			GAME.strRes.STAT_DETAIL = GAME.chooseLang(res.stat_detail, res.stat_detail_kor)
+			GAME.strRes.STATS = res.stat
+			GAME.strRes.SCALE_NAMES = res.scale_stat
+			GAME.strRes.EFFECTS = res.statuseffect
+			GAME.strRes.TRIAL_LABELS = res.triallabel
+			GAME.strRes.CASINO_LABELS = res.casinolabel
+			GAME.strRes.STAT_DETAIL = res.stat_detail
+			GAME.strRes.GLOBAL_OBSTACLE_EVENT=res.globalObstacleEvent
 			//initiallize effect affay
-			for (let e of res.statuseffect) {
+			for (let _ of res.statuseffect) {
 				GAME.effect_status.push(false)
 			}
 
@@ -1399,7 +1407,8 @@ function registerSounds() {
 		"fruit_crush",
 		"takemoney",
 		"metal",
-		"horse"
+		"horse",
+		"step"
 	]
 
 	for (const sound of sounds) {

@@ -44,7 +44,7 @@ class GameSetting {
 		this.extraResistanceAmount = setting.extraResistanceAmount
 		this.additionalDiceAmount = setting.additionalDiceAmount
 		this.useAdditionalLife = setting.useAdditionalLife
-		this.legacyAA=setting.legacyAA
+		this.legacyAA=!setting.legacyAA
 		// this.AAOnForceMove = setting.AAOnForceMove
 		// this.AAcounterAttackStrength = setting.AAcounterAttackStrength
 		// this.autoNextTurnOnSilent = setting.autoNextTurnOnSilent
@@ -56,8 +56,6 @@ class GameSetting {
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
 		this.winByDecision=setting.winByDecision
-		if(this.winByDecision)
-			this.additionalDiceAmount=1
 	}
 
 	randomize() {

@@ -2380,6 +2380,10 @@ export class Scene extends Board{
 		// hpbar_hp.bringToFront()
 		// this.players[target].nametext.set("text", "(" + String(target + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
 	}
+	onStep(){
+		console.log("step")
+		this.game.playSound('step')
+	}
 	animateHP(data) {
 		let target = data.turn
 		let hp = data.currhp
@@ -2891,7 +2895,7 @@ export class Scene extends Board{
 		if (effect === 1) {
 			this.toggleSpeed(isStart, target)
 		}
-		if (effect === 2) {
+		if (effect === 2 || effect === 18) {
 			this.toggleStun(isStart, target)
 		}
 		if (effect === 4) {
@@ -2953,7 +2957,7 @@ export class Scene extends Board{
 				this.effectindicator[num].set({ fill: "blue" })
 				break
 			case 2:
-				e = this.game.chooseLang("Rooted!", "속박!")
+				e = this.game.chooseLang("Grounded!", "고정!")
 				this.effectindicator[num].set({ fill: "purple" })
 				break
 			case 3:
@@ -3003,6 +3007,10 @@ export class Scene extends Board{
 			case 16:
 				e = this.game.chooseLang("Cursed!", "주작걸림!")
 				this.effectindicator[num].set({ fill: "red" })
+				break
+			case 18:
+				e = this.game.chooseLang("Rooted!", "속박!")
+				this.effectindicator[num].set({ fill: "purple" })
 				break
 		}
 

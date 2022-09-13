@@ -590,7 +590,7 @@ class Game {
 		if (p.effects.has(ENUM.EFFECT.CURSE)) {
 			effects.push("badluck")
 		}
-		let stun=p.effects.has(ENUM.EFFECT.STUN)
+		let noDice=p.effects.has(ENUM.EFFECT.ROOT) || p.effects.has(ENUM.EFFECT.GROUNGING)
 
 		
 		// if (this.mapId === 2 && p.mapHandler.isSubwayDice()) {
@@ -618,7 +618,7 @@ class Game {
 		return {
 			crypt_turn: this.cryptTurn(p.turn),
 			turn: p.turn,
-			stun: stun,
+			stun: noDice,
 			ai: p.AI,
 			dc: p.diceControl,
 			dc_cool: p.diceControlCool,
@@ -660,6 +660,12 @@ class Game {
 		})
 	}
 
+	indicateSingleObstacle(player:number,obs:number){
+		this.eventEmitter.indicateObstacle({turn:player,obs:obs})
+	}
+	indicateGlobalObstacleEvent(obs:number,eventName?:string){
+		this.eventEmitter.indicateObstacle({turn:-1,obs:obs,globalEventName:eventName})
+	}
 	/**
 	 *
 	 * @param {int} killer -1 if executed

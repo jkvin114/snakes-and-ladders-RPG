@@ -64,7 +64,7 @@ class Jean extends Player {
 	private buildProjectile() {
 		return new ProjectileBuilder(this.game,Jean.PROJ_W,Projectile.TYPE_RANGE)
 			.setAction(function (this: Player) {
-				this.effects.apply(ENUM.EFFECT.STUN, 2)
+				this.effects.apply(ENUM.EFFECT.GROUNGING, 2)
 			})
 			.setTrajectorySpeed(300)
 			.setSize(3)
@@ -139,7 +139,7 @@ class Jean extends Player {
 				this.startCooltime(ENUM.SKILL.Q)
 				let _this = this
 				let onhit = function (this: Player) {
-					if (this.effects.has(ENUM.EFFECT.STUN)) {
+					if (this.effects.has(ENUM.EFFECT.ROOT)) {
 						_this.setCooltime(ENUM.SKILL.Q, 1)
 					}
 				}
@@ -157,7 +157,7 @@ class Jean extends Player {
 					skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
 					this.startDuration(ENUM.SKILL.ULT)
 
-					this.effects.apply(ENUM.EFFECT.STUN, 1)
+					this.effects.apply(ENUM.EFFECT.ROOT, 1)
 					this.u_target = this.game.turn2Id(target)
 					this.startCooltime(ENUM.SKILL.ULT)
 				}
@@ -174,7 +174,7 @@ class Jean extends Player {
 
 	onSkillDurationCount() {
 		if (this.duration[ENUM.SKILL.ULT] === 2) {
-			this.effects.apply(ENUM.EFFECT.STUN, 1)
+			this.effects.apply(ENUM.EFFECT.ROOT, 1)
 			let onhit = function (this: Player) {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
@@ -198,7 +198,7 @@ class Jean extends Player {
 		if (skill === ENUM.SKILL.ULT) {
 			this.u_target = null
 			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1)
-			this.effects.reset(ENUM.EFFECT.STUN)
+			this.effects.reset(ENUM.EFFECT.ROOT)
 		}
 	}
 	// /**

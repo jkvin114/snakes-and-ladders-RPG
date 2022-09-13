@@ -4,7 +4,9 @@ import SETTINGS = require("../../res/globalsettings.json")
 import { MAP } from "../MapHandlers/MapStorage"
 import { EffectFactory, StatusEffect } from "../StatusEffect"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
-import { statuseffect_kor, statuseffect } from "../../res/string_resource.json"
+import {statuseffect as statuseffect } from "../../res/string_resource.json"
+import {statuseffect as statuseffect_kor } from "../../res/string_resource_kor.json"
+
 import {Player} from '../player/player'
 import { EntityFilter } from "../entity/EntityFilter"
 class ObstacleHelper {
@@ -13,7 +15,7 @@ class ObstacleHelper {
 		const pendingObsList = SETTINGS.pendingObsList
 		const perma = StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE
 		player.mapHandler.applyObstacle(obs)
-
+		let isGlobalEvent=false
 		try {
 			switch (obs) {
 				case 4:
@@ -23,7 +25,6 @@ class ObstacleHelper {
 					player.inven.takeMoney(30)
 					break
 				case 6:
-					
 					//subway
 					break
 				case 7:
@@ -51,7 +52,7 @@ class ObstacleHelper {
 					// player.message(player.name + ": skill range x3, additional damage 30")
 					break
 				case 13:
-					player.effects.apply(ENUM.EFFECT.STUN, 1)
+					player.effects.apply(ENUM.EFFECT.ROOT, 1)
 					player.obstacleEffect("web")
 
 					break
@@ -61,7 +62,7 @@ class ObstacleHelper {
 					break
 				case 15:
 					let m3 = Math.floor(player.inven.money / 10)
-
+					isGlobalEvent=true
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(player){
 						this.inven.giveMoney(m3)
 					})
@@ -76,6 +77,7 @@ class ObstacleHelper {
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player).excludeDead())(function(player){
 						this.heal(20)
 					})
+					isGlobalEvent=true
 					player.doObstacleDamage(20 * others.length,'hit')
 					
 					break
@@ -84,6 +86,7 @@ class ObstacleHelper {
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(player){
 						this.inven.giveMoney(30)
 					})
+					isGlobalEvent=true
 					player.inven.takeMoney(others.length * 30)
 
 					break
@@ -91,6 +94,7 @@ class ObstacleHelper {
 					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(20))(function(player){
 						this.game.playerForceMove(this, player.pos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 					})
+					isGlobalEvent=true
 
 					// others = player.game.playerSelector.getPlayersByCondition(player, 20, false, true, false, true)
 					// for (let o of others) {
@@ -102,6 +106,7 @@ class ObstacleHelper {
 					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(){
 						return Math.abs(this.pos-mypos)
 					})
+					
 					//if target is also on change obstacle(causes infinite loop)
 					
 					if (target != null && target instanceof Player) {
@@ -110,6 +115,7 @@ class ObstacleHelper {
 						player.game.playerForceMove(player, target.pos, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						player.game.playerForceMove(target, mypos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						others.push(target.UEID)
+						isGlobalEvent=true
 					}
 					break
 				case 21:
@@ -138,7 +144,7 @@ class ObstacleHelper {
 					player.doObstacleDamage(100,"knifeslash")
 					break
 				case 28:
-					player.effects.apply(ENUM.EFFECT.STUN, 1)
+					player.effects.apply(ENUM.EFFECT.ROOT, 1)
 					player.effects.apply(ENUM.EFFECT.SLOW, 2)
 					player.obstacleEffect("web")
 
@@ -170,7 +176,7 @@ class ObstacleHelper {
 					player.effects.apply(ENUM.EFFECT.SLAVE, perma)
 					break
 				case 35:
-					player.effects.apply(ENUM.EFFECT.STUN, 3)
+					player.effects.apply(ENUM.EFFECT.ROOT, 3)
 					player.effects.apply(ENUM.EFFECT.SPEED, 4)
 					break
 				case 36:
@@ -199,7 +205,7 @@ class ObstacleHelper {
 					player.effects.apply(ENUM.EFFECT.BACKDICE, 1)
 					break
 				case 41:
-					player.effects.apply(ENUM.EFFECT.STUN, 1)
+					player.effects.apply(ENUM.EFFECT.ROOT, 1)
 					player.obstacleEffect("web")
 					break
 				case 42:
@@ -238,7 +244,7 @@ class ObstacleHelper {
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).excludeUntargetable().inRadius(3))(function(){
 						this.doObstacleDamage(75,"lightning")
 					})
-					
+					isGlobalEvent=true
 					break
 				case 53:
 					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player))(function(){
@@ -247,13 +253,13 @@ class ObstacleHelper {
 							player.game.playerForceMove(this, this.pos - 3, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 						}
 					})
-
+					isGlobalEvent=true
 					break
 				case 54:
 					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(30))(function(player){
 						this.game.playerForceMove(this, player.pos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 					})
-
+					isGlobalEvent=true
 					break
 				case 55:
 					let r = Math.floor(Math.random() * 10)
@@ -268,6 +274,7 @@ class ObstacleHelper {
 						let r2 = Math.floor(Math.random() * allplayers.length)
 						player.game.playerForceMove(player, allplayers[r2].pos, true,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 					}
+					
 					player.obstacleEffect("wind")
 
 					break
@@ -324,7 +331,7 @@ class ObstacleHelper {
 						player.inven.giveMoney(m1)
 						player.message(" won the lottery! earned" + m1 + "$")
 					}
-
+					
 					break
 				case 70:
 					let m2 = 0
@@ -333,7 +340,7 @@ class ObstacleHelper {
 						this.inven.takeMoney(m1)
 						m2 += m1
 					})
-
+					isGlobalEvent=true
 					player.inven.giveMoney(m2)
 					break
 				case 71:
@@ -359,16 +366,14 @@ class ObstacleHelper {
 			console.error(e)
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		}
-
+		if(isGlobalEvent){
+			player.game.indicateGlobalObstacleEvent(obs)
+		}
 		//not ai, not pending obs and forcemoved, not arrive at none
-		if (!player.AI && !(pendingObsList.includes(obs) && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
-			player.game.eventEmitter.indicateObstacle({turn:player.turn,obs:obs})
+		else if (!(pendingObsList.includes(obs) && isForceMoved) && obs != ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE) {
+			player.game.indicateSingleObstacle(player.turn,obs)
 		}
 
-		//console.log(others)
-		for (let pid of others) {
-			player.game.eventEmitter.indicateObstacle({turn:player.game.id2Turn(pid),obs:obs})
-		}
 
 		return obs
 	}
@@ -376,7 +381,7 @@ class ObstacleHelper {
 
 	static kidnap(player: Player, result: boolean) {
 		if (result) {
-			player.effects.apply(ENUM.EFFECT.STUN, 2)
+			player.effects.apply(ENUM.EFFECT.ROOT, 2)
 		} else {
 			player.doObstacleDamage(300,"stab")
 
@@ -416,7 +421,7 @@ class ObstacleHelper {
 			case 4:
 				player.doObstacleDamage(Math.floor(player.HP / 2),"stab")
 
-				player.effects.apply(ENUM.EFFECT.STUN, 1)
+				player.effects.apply(ENUM.EFFECT.GROUNGING, 1)
 				player.message(player.name + " will get retrial")
 				break
 			case 5:
@@ -426,6 +431,7 @@ class ObstacleHelper {
 						p.killplayer()
 					}
 				}
+				player.game.indicateGlobalObstacleEvent(37,"thanos")
 				break
 		}
 	}
@@ -452,7 +458,7 @@ class ObstacleHelper {
 			case 5:
 				player.doObstacleDamage(50,"stab")
 
-				player.effects.apply(ENUM.EFFECT.STUN, 1)
+				player.effects.apply(ENUM.EFFECT.GROUNGING, 1)
 				break
 		}
 	}
@@ -844,10 +850,10 @@ class AIHelper {
 class SkillInfoFactory {
 	static readonly LANG_ENG = 0
 	static readonly LANG_KOR = 1
-	char: number
-	plyr: Player
-	names: string[]
-	lang: number
+	private char: number
+	private plyr: Player
+	private names: string[]
+	private lang: number
 	static readonly SKILL_NAME = [
 		["Scythe Strike", "Reaping Wind", "Grave Delivery"],
 		["Mace Attack", "Tanut", "Strengthen"],
@@ -1083,7 +1089,7 @@ class SkillInfoFactory {
 			case 4:
 				str =
 					this.nameTitle(s) +
-				`Fires a gun and deals ${this.pDmg(this.baseDmg(s), hotkey)} to a ${this.target()},If the target has ${this.effectNoDur(ENUM.EFFECT.STUN)}
+				`Fires a gun and deals ${this.pDmg(this.baseDmg(s), hotkey)} to a ${this.target()},If the target has ${this.effectNoDur(ENUM.EFFECT.ROOT)} or ${this.effectNoDur(ENUM.EFFECT.GROUNGING)}
 				effect, gets back ${ this.emp("2 turns of ")+"" + this.cooltime()+" for "+this.nameDesc(s)}`
 				break
 			case 5:
@@ -1108,9 +1114,9 @@ class SkillInfoFactory {
 				str =
 					this.nameTitle(s) +
 					this.passive() +
-					`If HP is ${this.lowerbound("lower than 40%")}, you becomes ${this.emp("Withered Tree")}, 
+					`If HP is ${this.lowerbound("lower than 40%")}, transforms to ${this.emp("Withered Tree")}, 
 				On ${this.emp("Withered Tree")} state, you can\`t heal ally with ${this.nameDesc(s)}, but 
-				 ${this.stat("damage absorbtion")} ${this.up("15% increases")} ` +
+				 ${this.stat("damage absorbtion")} ${this.up("35% increases")} ` +
 					this.active() +
 					this.area(3) +
 					`.  Deals ${this.mDmg(this.baseDmg(s), hotkey)} to enemies inside. For allies, ${this.heal(this.skillAmt("qheal"), "qheal")}
@@ -1159,7 +1165,7 @@ class SkillInfoFactory {
 					this.nameTitle(s) +
 					this.target() +
 					`에게 총을 발사해 
-				${this.pDmg(this.baseDmg(s), hotkey)}를 입힘, ${this.effectNoDur(ENUM.EFFECT.STUN)}
+				${this.pDmg(this.baseDmg(s), hotkey)}를 입힘, ${this.effectNoDur(ENUM.EFFECT.ROOT)} 혹은 ${this.effectNoDur(ENUM.EFFECT.GROUNGING)}
 				상태인 대상 적중 시 ${this.nameDesc(s) + "" + this.cooltime() + this.emp(" 2턴")}을 돌려받음`
 				break
 			case 5:
@@ -1189,7 +1195,7 @@ class SkillInfoFactory {
 					this.passive() +
 					`체력이 ${this.lowerbound("40% 미만")}이면 ${this.emp("시든 나무")} 상태 돌입, 
 				${this.emp("시든 나무")} 상태에선 ${this.nameDesc(s)} 로 아군 회복이 불가하지만
-				 ${this.stat("모든 피해 흡혈")}이 ${this.up("15% 증가")}함` +
+				 ${this.stat("모든 피해 흡혈")}이 ${this.up("35% 증가")}함` +
 					this.active() +
 					this.area(3) +
 					`해 그 안에 있는 적들에게 
@@ -1240,7 +1246,7 @@ class SkillInfoFactory {
 			case 4:
 				str =
 					this.nameTitle(s) +
-					` ${this.proj("trap")} of ${this.projsize(3) } that applies ${this.effect(ENUM.EFFECT.STUN, 1)}
+					` ${this.proj("trap")} of ${this.projsize(3) } that applies ${this.effect(ENUM.EFFECT.GROUNGING, 1)}
 					 to the enemy who steps on it`
 				break
 			case 5:
@@ -1248,7 +1254,7 @@ class SkillInfoFactory {
 					this.nameTitle(s) +
 					` ${this.rangeStr()} of ${
 						this.nameDesc(0) + " and " + this.nameDesc(2)
-					} ${this.up("doubles")}, after gaining ${this.effect(ENUM.EFFECT.STUN, 1)}.
+					} ${this.up("doubles")}, after gaining ${this.effect(ENUM.EFFECT.ROOT, 1)}.
 				 Applies ${this.effect(
 						ENUM.EFFECT.IGNITE,
 						2
@@ -1269,7 +1275,7 @@ class SkillInfoFactory {
 					)} on use. 
 				 ${this.basicattack()} deals additional ${this.mDmg(this.skillAmt("w_aa_adamage"), "w_aa_adamage")}, 
 				 ${this.nameDesc(0)} deals additional ${this.mDmg(this.skillAmt("w_q_adamage"), "w_q_adamage")}
-				 and applies ${this.effect(ENUM.EFFECT.STUN, 1)} `
+				 and applies ${this.effect(ENUM.EFFECT.ROOT, 1)} `
 				break
 			case 8:
 				str =
@@ -1321,12 +1327,12 @@ class SkillInfoFactory {
 					this.nameTitle(s) +
 					this.projsize(3) +
 					`의 ${this.proj("덫")}해
-				 밟은 적에게 ${this.effect(ENUM.EFFECT.STUN, 1)} 부여`
+				 밟은 적에게 ${this.effect(ENUM.EFFECT.GROUNGING, 1)} 부여`
 				break
 			case 5:
 				str =
 					this.nameTitle(s) +
-					`사용시 ${this.effect(ENUM.EFFECT.STUN, 1)} 후 ${
+					`사용시 ${this.effect(ENUM.EFFECT.ROOT, 1)} 후 ${
 						this.nameDesc(0) + " 와 " + this.nameDesc(2)
 					}의 ${this.rangeStr()}  ${this.up("2배 증가")},
 				${this.nameDesc(0)} 사용시 적중한 적에게 ${this.effect(
@@ -1350,7 +1356,7 @@ class SkillInfoFactory {
 					)}을 받고, 지속시간 중에 
 				${this.basicattack()}시 ${this.mDmg(this.skillAmt("w_aa_adamage"), "w_aa_adamage")},
 				 ${this.nameDesc(0)} 사용시 ${this.mDmg(this.skillAmt("w_q_adamage"), "w_q_adamage")}
-				 를 추가로 입히고 ${this.effect(ENUM.EFFECT.STUN, 1)} `
+				 를 추가로 입히고 ${this.effect(ENUM.EFFECT.ROOT, 1)} `
 				break
 			case 8:
 				str =
@@ -1438,7 +1444,7 @@ class SkillInfoFactory {
 					)}. Enemy ${this.basicattack()} will kill the ${this.emp("Plant monster")}s.` +
 					this.active() +
 					` Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} and applies 
-				 ${this.effect(ENUM.EFFECT.STUN, 1)}.(2 turns if you are ${this.emp("Withered Tree")} state)
+				 ${this.effect(ENUM.EFFECT.ROOT, 1)}.(2 turns if you are ${this.emp("Withered Tree")} state)
 				,and increases all incoming damage by ${this.up("20%")},
 				 Also, all ${this.emp("Plant monster")}s move toward a target.`
 				break
@@ -1527,7 +1533,7 @@ class SkillInfoFactory {
 				 ${this.mDmg(this.skillAmt("plantdamage"), "plantdamage")}를 입히고 적이 ${this.basicattack()}시 사라짐` +
 					this.active() +
 					`${this.target()}에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입히고
-				 ${this.effect(ENUM.EFFECT.STUN, 1)}.(${this.emp("시든 나무")} 상태이면 2턴)
+				 ${this.effect(ENUM.EFFECT.ROOT, 1)}.(${this.emp("시든 나무")} 상태이면 2턴)
 				,또한 이 상태에서 아군이 가하는 피해 ${this.up("20% 증가")},
 				 이때 맵에 있는 모든 ${this.emp("식충식물")}이 대상 주변으로 이동됨`
 				break

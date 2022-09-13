@@ -271,6 +271,7 @@ export default class GameInterface {
 	 * @param {*} text alternate text
 	 */
 	showObsNotification(obs, text) {
+
 		let opentime = 400
 		let duration = 4000
 		let gouptime = 200

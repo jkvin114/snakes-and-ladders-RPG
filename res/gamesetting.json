@@ -16,19 +16,19 @@
 		"additionalDiceAmount": {
 			"desc": "Additional Dice When Fell Behind",
 			"desc_kor": "뒤쳐졌을때 추가 주사위",
-			"default": 2,	
+			"default": 2,
 			"options": ["None", "Minimum", "Normal", "Maximum"],
 			"options_kor": ["없음", "최소", "보통", "최대"]
 		},
 		"useAdditionalLife": {
 			"desc": "Additional Life on Store",
 			"desc_kor": "추가 목숨 판매",
-			"default": false
+			"default": true
 		},
 		"legacyAA": {
-			"desc": "Legacy basic attack",
-			"desc_kor": "예전 기본공격 방식",
-			"default": false
+			"desc": "Use basic attack button",
+			"desc_kor": "기본공격 버튼 사용",
+			"default": true
 		},
 		"diceControlItemFrequency": {
 			"desc": "Dice Control Item appear frequency",
@@ -43,7 +43,7 @@
 			"default": true
 		},
 		"winByDecision": {
-			"desc": "Enable win by decision",
+			"desc": "Win by decision",
 			"desc_kor": "판정승 사용",
 			"default": true
 		}

@@ -247,6 +247,7 @@ button.navbtn{
   visibility: hidden;
 }
 #title{
+  cursor: pointer;
   font-family: 'nanumEB';
   font-size: 30px;
   color: rgb(249, 187, 255);
@@ -272,29 +273,29 @@ button.navbtn{
 
     <div id="navbar">
       <div class="nav-section left">
-        <img class='navbtn' id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg">
+        <img class='navbtn' id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login">
         <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
         <!-- <button class='navbtn hidden' id="logoutbtn" onclick="logout()"></button> -->
-        <img class='navbtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()">
+        <img class='navbtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()" title="Logout">
 
-        <img class='navbtn postbtn hidden' id="postbtn" src="res/img/svg/note.svg">
+        <img class='navbtn postbtn hidden' id="postbtn" src="res/img/svg/note.svg"  title="post board">
 
-        <img class='navbtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/svg/book.svg">
+        <img class='navbtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/svg/book.svg"  title="Wiki">
       </div>
       <!-- <div class="cool">
         <img class=img src="res/img/skill/7-3.jpg">
         <div class="mask"></div>
       </div> -->
       <!-- Snakes-and-Ladders RPG -->
-      <div class="nav-section center"><h5 id="title">Snakes-and-Ladders RPG</h5></div>
+      <div class="nav-section center" onclick="golink('/')" ><h5 id="title">Snakes-and-Ladders RPG</h5></div>
       <div class="nav-section right">
-        <img class='navbtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg">
-        <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg">
+        <img class='navbtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블">
+        <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg"  title="Language">
         <div class="lang_dropdown">
           <a class="dropitem" value="kor">한국어</a>
           <a class="dropitem" value="eng">English</a>
         </div>
-        <img class=navbtn id="statbtn" onclick="toStatpage()" src="res/img/svg/chart_white.svg">
+        <img class=navbtn id="statbtn" onclick="toStatpage()" src="res/img/svg/chart_white.svg" title="Statistics">
         
         <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
       </div>
@@ -305,8 +306,8 @@ button.navbtn{
     <div id="firstpage" class="page" >
      
       <br>
-      <input type='text' name="nickname" value="" placeholder=" Username ">
-      <div id="ip_area">
+      <input id="input-username" type='text' name="nickname" value="" placeholder=" Username ">
+      <div id="ip_area" class="hidden">
         <br>
         <input type='text' id="ip-input" name="ip" value="" placeholder="Server ip address " >
       </div>
@@ -314,9 +315,9 @@ button.navbtn{
       <!-- <button onclick="tolocalhost()">localhost</button> -->
       <br>
       <div id=buttons>
-        <button class=button id="open_create_room" onclick="open_createroom()">Create room</button>
+        <button class='button' id="open_create_room" onclick="open_createroom()">Create room</button>
         <button class='button hidden' id="reconnect" onclick="toGamepage()">Reconnect</button>
-        <button class=button id="join" onclick="join()">Join</button>
+        <button class='button' id="join" onclick="join()">Join</button>
         <button class='hidden button' id="simulation" onclick="simulation()">simulation</button>
         <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
       </div>
@@ -687,16 +688,19 @@ function open_signup(){
 function open_createroom(){
   $("#field").show()
   $("#buttons").hide()
-  $("#simulation").hide()
+  // $("#simulation").hide()
   $("#lowbtns").hide()
   $("#ip_area").hide()
+//  $("#input-username").hide()
 }
 function close_createroom(){
   $("#field").hide()
   $("#buttons").show()
-  $("#simulation").show()
+  // $("#simulation").show()
   $("#lowbtns").show()
-  $("#ip_area").show()
+  // $("#input-username").show()
+
+  // $("#ip_area").show()
 
 }
 function createroom(isMarble){

@@ -316,7 +316,7 @@ export function openConnection(isInitial) {
 		if (data.turn == null) {
 			return
 		}
-		GAME.onIndicateObstacle(data.obs,data.turn)
+		GAME.onIndicateObstacle(data)
 	})
 	socket.on("server:indicate_item", function (data) {
 		if(!data) return

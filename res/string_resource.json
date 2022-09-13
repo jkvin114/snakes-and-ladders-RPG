@@ -1,44 +1,26 @@
 {
     "statuseffect":[
-        "{Slowness} next dice -2",
-        "[Speed] next dice +2",
-        "{Root} can`t throw dice",
+        "{Slowness} Next dice -2",
+        "[Speed] Next dice +2",
+        "{Grounding} Can`t throw dice (gets obstacle effect)",
         "{Silent} Can`t use skill",
-        "[Shield] ignore one skill",
+        "[Shield] Ignore one skill",
         "{Poison} -30 HP for every turn",
         "{Radiation} Damage x2",
-        "[Annuity] +20$ for every turn",
-        "{Slavery} -80HP for every turn, die if you reach the end(freed if you kill an opponent)",
-        "{Backslide}next dice goes back",
-        "[Rapidness]next dice x2",
+        "[Annuity] +$20 for every turn",
+        "{Slavery} -80HP for every turn, die if you reach the end(freed if you kill enemy)",
+        "{Backslide}Next dice goes back",
+        "[Rapidness]Next dice x2",
         "{Blind} Can`t basic attack, Skill range halves",
-        "{Ignite} damage by 3% of max hp for every player`s turn",
+        "{Ignite} damage by 3% of max HP for every player`s turn",
         "[Invisibility] Ignore enemy targeting and harmful obstacle",
         "{Debt} Can`t earn money and sell tokens",
-        "[Dividend] +50$, +1 token for every turn",
-        "{Curse} get worst result for next dice",
-        "[Farsight] Skill range x3"
+        "[Dividend] +$50, +1 token for every turn",
+        "{Curse} Get worst result for next dice",
+        "[Farsight] Skill range x3",
+        "{Root} Can`t throw dice (ignores obstacle)"
     ]
-    ,"statuseffect_kor":[
-        "{둔화} 다음턴 주사위 -2",
-        "[신속] 다음턴 주사위 +2",
-        "{속박} 다음턴 주사위 휴식",
-        "{침묵} 다음턴 스킬사용 불가",
-        "[방어막] 스킬 1회 무시",
-        "{독} 매턴마다 체력 -30",
-        "{방사능} 모든 피해 2배",
-        "[연금] 매턴마다 +20골드",
-        "{노예계약} 매턴마다 체력 -80, 끝지점 도착시 처형 (적 처치시 해방)",
-        "{퇴보}다음턴 주사위 뒤로",
-        "[쾌속]다음턴 주사위 2배",
-        "{실명} 기본공격불가, 스킬 사거리 절반",
-        "{점화} 매 플레이어 턴마다 최대체력의 3% 피해",
-        "[투명화] 해로운 장애물무시, 대상지정 불가",
-        "{사채} 골드 획득, 토큰 판매 불가",
-        "[연금복권] 매턴마다 +50골드, +1토큰",
-        "{주작} 주사위를 던질때 최악의 결과로 나옴",
-        "[원시] 스킬 사거리 3배"
-    ]
+    
     ,"stat":{
         "AD": "Attack Power",
         "AP": "Magic Power",
@@ -58,35 +40,7 @@
         "moveSpeed": "Movement speed",
         "basicAttackSpeed": "Basic attack count"
     }
-    ,"stat_kor":{
-        "AD": "공격력",
-        "AP": "주문력",
-        "arP": "물리 관통",
-        "MP": "마법 관통",
-        "AR": "방어력",
-        "HP": "체력",
-        "regen": "턴당 체력재생",
-        "MR": "마법 저항력",
-        "absorb": "모든피해 흡혈",
-        "skillDmgReduction": "스킬 데미지감소",
-        "adStat": "적응형 능력치",
-        "addMdmg": "공격시 최대체력비례 추가 마법피해",
-        "attackRange": "기본공격 사거리",
-        "obsR": "장애물 저항",
-        "ultHaste": "궁극기 가속",
-        "moveSpeed": "이동 속도",
-        "basicAttackSpeed": "기본공격 횟수"
-    },
-    "scale_stat_kor":{
-        "arP": "물리 관통",
-        "MP": "마법 관통",
-        "AR": "방어력",
-        "MR": "마법저항",
-        "HP": "현재체력",
-        "extraHP": "추가체력",
-        "MaxHP": "최대체력",
-        "missingHP": "잃은체력"
-    },
+    ,
     "scale_stat":{
         "HP": "Current HP",
         "MaxHP": "Max HP",
@@ -94,36 +48,20 @@
         "missingHP": "Missing HP"
     },
     "casinolabel" : [
-        {"name":"Win","desc":"Receives 100$"},
+        {"name":"Win","desc":"Receives $100"},
         {"name":"JACKPOT","desc":"Money Doubles"},
         {"name":"Escape","desc":"Speed effect for 2 turns"},
         {"name":"Robbery","desc":"HP -50%"},
         {"name":"Lose","desc":"Money Halves"},
-        {"name":"Addiction","desc":"Rooted, HP -50"}
-    ],
-    "casinolabel_kor" : [
-        {"name":"대박","desc":"100$ 획득"},
-        {"name":"잭팟","desc":"재산 2배"},
-        {"name":"탈출","desc":"신속 2턴"},
-        {"name":"강도","desc":"체력 -50%"},
-        {"name":"쪽박","desc":"재산 절반몰수"},
-        {"name":"중독","desc":"속박, 체력 -50"}
+        {"name":"Addiction","desc":"Grounded, HP -50"}
     ],
     "triallabel" : [
-        {"name":"Fine","desc":"Take away 100$"},
+        {"name":"Fine","desc":"Take away $100"},
         {"name":"Slavery","desc":"Slavery effect(dies if you reach the end)"},
         {"name":"Banishment","desc":"Move to nearest player"},
         {"name":"Death","desc":"Death!"},
-        {"name":"Re-trial","desc":"Rooted, HP-50%"},
+        {"name":"Re-trial","desc":"Grounded, HP-50%"},
         {"name":"Thanos","desc":"50% chance of death for every player"}
-    ],  
-    "triallabel_kor" : [
-        {"name":"벌금","desc":"벌금 -100$"},
-        {"name":"강제노역","desc":"노예계약 효과(끝지점도착시 사망)"},
-        {"name":"유배","desc":"가장 가까운 플레이어에게 이동"},
-        {"name":"사형","desc":"사형!"},
-        {"name":"재심","desc":"속박, 체력 -50%"},
-        {"name":"인구감축","desc":"모든플레이어 각각 50% 확률로 사망"}
     ],
     "stat_detail":{
         "attackRange":"Attack range applies up to 5",
@@ -132,11 +70,7 @@
         "basicAttackSpeed":"Damage of each basic attack decreases based on attack speed<br> (total damage will still increase)",
         "adStat":"Adaptative Stat applies to higher one between attack and magic power "
     },
-    "stat_detail_kor":{
-        "attackRange":"기본공격 사거리는 5까지만 증가",
-        "ultHaste":"궁극기 가속은 3턴까지만 적용",
-        "moveSpeed":"이동속도 증가는 2까지만 적용",
-        "adStat":"적응형 능력치는 공격력과 주문력 중 높은 것에 적용됨",
-        "basicAttackSpeed":"공격횟수에 비례해 기본공격 1회당 데미지 감소(데미지 총량은 증가)"
+    "globalObstacleEvent":{
+        "thanos":"Dies immediately by 50% chance!"
     }
 }

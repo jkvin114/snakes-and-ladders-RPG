@@ -189,7 +189,7 @@ class Tree extends Player {
 					.ofSkill(s)
 					.setOnHit(function (this: Player) {
 						this.effects.applySpecial(_this.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
-						this.effects.apply(ENUM.EFFECT.STUN, _this.isWithered ? 2 : 1)
+						this.effects.apply(ENUM.EFFECT.ROOT, _this.isWithered ? 2 : 1)
 					})
 				this.moveAllPlantTo(this.game.pOfTurn(targetTurn).pos)
 				// setTimeout(()=>this.plantAttack(),200)
@@ -243,7 +243,7 @@ class Tree extends Player {
 			this.isWithered = true
 
 			this.effects.applySpecial(
-				new AblityChangeEffect(ENUM.EFFECT.TREE_WITHER, 2, new Map().set("absorb", 15)),
+				new AblityChangeEffect(ENUM.EFFECT.TREE_WITHER, 2, new Map().set("absorb", 35)),
 				SpecialEffect.SKILL.TREE_WITHER.name
 			)
 			this.changeSkillImage(Tree.SKILLNAME_STRONG_R, ENUM.SKILL.ULT)

@@ -497,6 +497,9 @@ abstract class Player extends Entity {
 		this.game.onPlayerChangePos(this.turn)
 		return false
 	}
+	canThrowDice(){
+		return !(this.effects.has(ENUM.EFFECT.ROOT) || this.effects.has(ENUM.EFFECT.GROUNGING))
+	}
 
 	forceMove(pos: number): void {
 		this.statistics.add(ENUM.STAT.FORCEMOVE, 1)
@@ -504,7 +507,9 @@ abstract class Player extends Entity {
 		this.mapHandler.onForceMove(pos)
 		this.changePos(pos)
 
-		this.effects.reset(ENUM.EFFECT.STUN)
+		this.effects.reset(ENUM.EFFECT.ROOT)
+		this.effects.reset(ENUM.EFFECT.GROUNGING)
+
 		this.invulnerable = false
 		// this.stun = false
 	}
@@ -784,13 +789,12 @@ abstract class Player extends Entity {
 
 		if (this.game.applyRangeProjectile(this)) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 
-		let isRooted=this.effects.has(ENUM.EFFECT.STUN)
 		let isInvisible=this.effects.has(ENUM.EFFECT.INVISIBILITY)
 		if(!isForceMoved){
 			this.onBeforeObs()
 		}
 
-		return this.obstacle(this.game.shuffledObstacles[this.pos].obs, isForceMoved,isRooted,isInvisible)
+		return this.obstacle(this.game.shuffledObstacles[this.pos].obs, isForceMoved,isInvisible)
 	}
 
 	/**
@@ -799,15 +803,13 @@ abstract class Player extends Entity {
 	 * @param {*} isForceMoved whether it is forcemoved
 	 * @returns
 	 */
-	 private obstacle(obs: number, isForceMoved: boolean,isRooted:boolean,isInvisible:boolean): number {
+	 private obstacle(obs: number, isForceMoved: boolean,isInvisible:boolean): number {
 		//속박일경우
-		if (isRooted) {
-			//특정 장애물은 속박시 무시
-			if (SETTINGS.ignoreStunObsList.includes(obs)) {
-				if (this.game.setting.legacyAA) this.basicAttack()
+		if (this.effects.has(ENUM.EFFECT.ROOT)) {
 
-				obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
-			}
+			if (this.game.setting.legacyAA) this.basicAttack()
+
+			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.STUN
 		}
 		else if (obs === 0) {
 			this.invulnerable = true

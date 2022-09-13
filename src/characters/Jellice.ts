@@ -117,7 +117,7 @@ class Jellice extends Player {
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
-		this.effects.apply(ENUM.EFFECT.STUN, 1)
+		this.effects.apply(ENUM.EFFECT.ROOT, 1)
 	}
 
 	qRange(){

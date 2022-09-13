@@ -569,7 +569,7 @@ export class Board{
 			this.moveComplete(turn)
 			return
 		}
-		console.log(pos-count)
+		// console.log(pos-count)
 		let x = this.getCoord(pos-count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
 		let y = this.getCoord(pos-count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 
@@ -584,6 +584,7 @@ export class Board{
 			easing: fabric.util.ease.easeOutCubic
 		})
 		let time = 100
+		this.onStep()
 		setTimeout(
 			function () {
 				this.movePlayer(actualdice, count + 1, pos, turn)
@@ -625,6 +626,7 @@ export class Board{
 		if (this.game.simulation) {
 			time = 20
 		}
+		this.onStep()
 		setTimeout(
 			function () {
 				this.movePlayer(actualdice, count + 1, pos, turn)
@@ -691,7 +693,7 @@ export class Board{
 				duration: speed,
 				easing: fabric.util.ease.easeOutCubic
 			})
-			this.onstep()
+			this.onStep()
 			await sleep(speed)
 		}
 		this.moveComplete(turn)

@@ -230,8 +230,9 @@ class GeneralEffectFactory {
 		switch (id) {
 			case EFFECT.SLOW:
 			case EFFECT.BACKDICE:
-			case EFFECT.STUN:
+			case EFFECT.ROOT:
 			case EFFECT.CURSE:
+			case EFFECT.GROUNGING:
 				return new NormalEffect(id, dur, EFFECT_TIMING.BEFORE_OBS)
 			case EFFECT.SILENT:
 			case EFFECT.BLIND:

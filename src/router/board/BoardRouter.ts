@@ -1,7 +1,7 @@
 import express = require("express")
 // import { R } from "../RoomStorage"
 const router = express.Router()
-const { UserBoardData, Article, Comment, CommentReply } = require("../../mongodb/BoardDBHandler")
+const {  Article} = require("../../mongodb/BoardDBHandler")
 import { upload } from "../../mongodb/mutler"
 import { auth, availabilityCheck, COUNT_PER_PAGE, PostTitle } from "./helpers"
 

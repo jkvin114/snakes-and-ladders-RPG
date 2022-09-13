@@ -121,6 +121,7 @@ export namespace ServerGameEventInterface {
 	}
 	export interface Obstacle extends TurnPayloadInterface {
 		obs: number
+		globalEventName?:string
 	}
 	export interface ObstacleEffect extends TurnPayloadInterface {
 		pos: number

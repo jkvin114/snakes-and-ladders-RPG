@@ -76,8 +76,8 @@ html{
     align-items: center;
     justify-content: space-between;
     height: 48px;
-    background-color: #31313C;
-    border-left: 4px solid #9421b7;
+    background-color: #4d4d5e;
+    border-left: 5px solid #a821b7;
     border-radius: 4px;
   }
   .playercard.waiting{
@@ -125,7 +125,7 @@ html{
     /* border:2px solid rgb(205, 106, 255); */
   } 
   .mycard{
-    background-color: #4f4f66;
+    background-color: #636381;
     /* background-color: rgb(98, 98, 98); */
   }
   .kick,.kick_player{
@@ -226,6 +226,7 @@ html{
     color:antiquewhite;
     background: #31313C;
     width:27%;
+    min-width: 100px;
     max-width: 200px;
     cursor: pointer;
     margin: 2px;
@@ -304,7 +305,7 @@ html{
   transform:scale(1.1)
 }
 .champbtn_name{
-  font-size: 0.3rem;
+  font-size: 12px;
   /* -webkit-text-stroke: 1px #000; */
 text-align: center;
   /* width: fit-content; */
@@ -678,6 +679,7 @@ text-align: center;
 }
 
 .slider:before {
+  border-radius: 50%;
   position: absolute;
   content: "";
   height: 26px;
@@ -689,15 +691,15 @@ text-align: center;
   transition: .2s;
 }
 input:checked + .slider:before {
-  -webkit-transform: translateX(27px);
-  -ms-transform: translateX(27px);
-  transform: translateX(27px);
+  -webkit-transform: translateX(29px);
+  -ms-transform: translateX(29px);
+  transform: translateX(29px);
 }
 input:checked + .slider {
-  background-color: #21f372;
+  background-color: #21b4f3;
 }
 .slider{
-  border-radius: 10%;
+  border-radius: 15px;
 }
 .onesetting .rangevalue{
   text-align: center;
@@ -706,7 +708,7 @@ input:checked + .slider {
 .onesetting .settingname{
   font-size: 12px;
   /* line-height: 4rem; */
-  margin: 5px;
+  /* margin: 5px; */
   height: 15px;
   font-weight: normal;
   color: rgb(216, 216, 216);
@@ -765,7 +767,7 @@ input:checked + .slider {
     font-size: 2rem;
   }
   .champbtn_name{
-    font-size: 1rem;
+    /* font-size: 1rem; */
   }
 }
 

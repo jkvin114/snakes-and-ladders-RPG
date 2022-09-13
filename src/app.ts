@@ -151,7 +151,7 @@ app.post("/reset_game", function (req, res) {
 
 
 
-//unused
+//depricated
 function writeStat(stat: any, isSimulation: boolean) {
 	let date_ob = new Date()
 	let date = ("0" + date_ob.getDate()).slice(-2)

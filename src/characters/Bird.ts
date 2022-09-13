@@ -214,7 +214,7 @@ class Bird extends Player {
 					onhit = function(this: Player){
 						this.inven.takeMoney(20)
 						_this.inven.giveMoney(20)
-						this.effects.apply(ENUM.EFFECT.STUN, 1)
+						this.effects.apply(ENUM.EFFECT.ROOT, 1)
 					}
 					
 					damage.updateMagicDamage(CALC_TYPE.plus, this.getSkillAmount("w_q_adamage"))
