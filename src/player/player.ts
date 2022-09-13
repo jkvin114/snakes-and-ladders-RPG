@@ -790,11 +790,12 @@ abstract class Player extends Entity {
 		if (this.game.applyRangeProjectile(this)) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 
 		let isInvisible=this.effects.has(ENUM.EFFECT.INVISIBILITY)
+		let rooted=this.effects.has(ENUM.EFFECT.ROOT)
 		if(!isForceMoved){
 			this.onBeforeObs()
 		}
 
-		return this.obstacle(this.game.shuffledObstacles[this.pos].obs, isForceMoved,isInvisible)
+		return this.obstacle(this.game.shuffledObstacles[this.pos].obs, isForceMoved,isInvisible,rooted)
 	}
 
 	/**
@@ -803,9 +804,9 @@ abstract class Player extends Entity {
 	 * @param {*} isForceMoved whether it is forcemoved
 	 * @returns
 	 */
-	 private obstacle(obs: number, isForceMoved: boolean,isInvisible:boolean): number {
+	 private obstacle(obs: number, isForceMoved: boolean,isInvisible:boolean,rooted:boolean): number {
 		//속박일경우
-		if (this.effects.has(ENUM.EFFECT.ROOT)) {
+		if (rooted) {
 
 			if (this.game.setting.legacyAA) this.basicAttack()
 

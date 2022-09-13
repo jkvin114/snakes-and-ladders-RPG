@@ -29,7 +29,7 @@ class Creed extends Player {
 	static readonly PROJ_W='reaper_w'
 	static readonly Q_SHIELD="reaper_q"
 	static readonly ULT_SHIELD="reaper_ult"
-	static readonly SKILL_EFFECT_NAME=["reaper_q", "reaper_w", "reaper_r"]
+	static readonly SKILL_EFFECT_NAME=["reaper_q", "hit", "reaper_r"]
 
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
@@ -75,6 +75,7 @@ class Creed extends Player {
 			.setAction(function (this: Player) {
 				this.game.playerForceMove(this,this.pos - 4, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 			})
+			.setDamage(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0))
 			.setTrajectorySpeed(300)
 			.addFlag(Projectile.FLAG_IGNORE_OBSTACLE)
 			.setDuration(2)
@@ -122,7 +123,10 @@ class Creed extends Player {
 			return this.calculateScale(Creed.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Creed.SKILL_SCALES.Q)
+			return this.calculateScale(Creed.SKILL_SCALES.R)
+		}
+		if (skill === ENUM.SKILL.W) {
+			return this.calculateScale(Creed.SKILL_SCALES.W)
 		}
 	}
 	private getQShield(shieldamt:number){

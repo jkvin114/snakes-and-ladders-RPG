@@ -6,6 +6,14 @@
 			"scales": [
 				{
 					"ability": "AD",
+					"val": 0.75
+				}
+			]
+		},"W": {
+			"base": 40,
+			"scales": [
+				{
+					"ability": "AP",
 					"val": 1
 				}
 			]

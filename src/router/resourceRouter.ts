@@ -98,12 +98,23 @@ router.get("/obstacle", function (req:express.Request, res:express.Response) {
 })
 
 router.get("/string_resource", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"string_resource.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting resource file"})
-		}
-		res.end(data)
-	})
+	if (req.query.lang === "kor") {
+		fs.readFile(__dirname + RESOURCE_PATH+"string_resource_kor.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting resource file"})
+			}
+			res.end(data)
+		})
+	}
+	else{
+		fs.readFile(__dirname + RESOURCE_PATH+"string_resource.json", "utf8", function (err, data) {
+			if(err){
+				res.status(500).send({err:"error while requesting resource file"})
+			}
+			res.end(data)
+		})
+	}
+	
 })
 router.get("/marble_map", function (req:express.Request, res:express.Response) {
 	let room = R.getMarbleRoom(req.session.roomname)

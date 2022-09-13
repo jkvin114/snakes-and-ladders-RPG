@@ -1217,7 +1217,8 @@ class SkillInfoFactory {
 			case 0:
 				str =
 					this.nameTitle(s) +
-					`${this.proj("Wind")} with ${this.projsize(3)} that blows away enemies who step on it by ${this.down("4 squares backwards")}`
+					`${this.proj("Wind")} with ${this.projsize(3)} that blows away enemies who step on it by ${this.down("4 squares backwards")} and
+					deals ${this.mDmg(this.baseDmg(s), hotkey)}`
 				break
 			case 1:
 				str =
@@ -1296,7 +1297,7 @@ class SkillInfoFactory {
 			case 0:
 				str =
 					this.nameTitle(s) +
-					`,맞은 적을 ${this.down("4칸 뒤로")} 이동시키는 ${this.projsize(3)}의 ${this.proj("토네이도")}`
+					`,맞은 적에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.down("4칸 뒤로")} 이동시키는 ${this.projsize(3)}의 ${this.proj("토네이도")}`
 				break
 			case 1:
 				str =

@@ -1870,6 +1870,7 @@ export class Scene extends Board{
 		switch (type) {
 			//일반
 			case "hit":
+			case "reaper_w":
 				this.defaultEffect(position, change)
 				this.game.playSound("hit")
 				break
