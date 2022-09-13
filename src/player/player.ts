@@ -20,6 +20,7 @@ import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../res/character_ability.json")
 import { Indicator } from "../TrainHelper"
 const { isMainThread } = require('worker_threads')
+import CONFIG from "./../../config/config.json"
 
 // class Minion extends Entity{
 // 	constructor(){
@@ -36,10 +37,10 @@ const { isMainThread } = require('worker_threads')
 // 	args=require("minimist")(process.argv.slice(2))
 // }
 
-const initialSetting = SETTINGS.dev_settings.enabled?{
-	lvl: SETTINGS.dev_settings.player.level,
-	pos: SETTINGS.dev_settings.player.pos,
-	money: SETTINGS.dev_settings.player.money
+const initialSetting = (CONFIG.dev_settings && CONFIG.dev_settings.enabled)?{
+	lvl: CONFIG.dev_settings.player.level,
+	pos: CONFIG.dev_settings.player.pos,
+	money: CONFIG.dev_settings.player.money
 }:{
 	lvl: 1,
 	pos: 0,

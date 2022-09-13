@@ -1,4 +1,4 @@
-
+import CONFIG from "./../config/config.json"
 import SETTINGS = require("../res/globalsettings.json")
 import * as ENUM from "./data/enum"
 import * as Util from "./core/Util"
@@ -688,9 +688,9 @@ class Game {
 		let diceShown = Math.floor(Math.random() * 6) + 1
 		let dcused = false
 		
-		if(SETTINGS.dev_settings && SETTINGS.dev_settings.dice>0){
-			diceShown=SETTINGS.dev_settings.dice
-			dicenum=SETTINGS.dev_settings.dice
+		if(CONFIG.dev_settings && CONFIG.dev_settings.dice>0){
+			diceShown=CONFIG.dev_settings.dice
+			dicenum=CONFIG.dev_settings.dice
 		}
 
 		// diceShown=6  //임시

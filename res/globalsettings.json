@@ -85,12 +85,6 @@
             "imgdir": "tree.png",
             "bgcolor": "#d1a400"
         }
-    ],
-    "dev_settings":{
-        "enabled":true,
-        "player":{
-            "level":1,"pos":40,"money":0
-        },
-        "dice":-1
-    }
+    ]
+    
 }
