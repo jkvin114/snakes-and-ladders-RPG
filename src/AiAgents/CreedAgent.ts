@@ -26,11 +26,12 @@ class CreedAgent extends AiAgent{
 		}
     }
 	nextSkill(): number {
-		if (this.player.canBasicAttack()) {
-			return  AiAgent.BASICATTACK
-		}
+		
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
 			return SKILL.ULT
+		}
+		if (this.player.canBasicAttack()) {
+			return AiAgent.BASICATTACK
 		}
 		if (!this.attemptedSkills.has(SKILL.W)) {
 			return SKILL.W

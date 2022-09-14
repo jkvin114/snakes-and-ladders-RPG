@@ -262,6 +262,7 @@ class Game {
 		this.scene.changeShield(val.turn, val.shield, val.change, val.indicate)
 	}
 	sendMessage() {
+		window.scrollTo(0,0)
 		let msg = $("#text").val()
 		$("#chat_enter").css("visibility", "hidden")
 		if (msg === "") {

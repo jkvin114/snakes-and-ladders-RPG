@@ -825,7 +825,7 @@ class TeamSelector {
 
 $(document).ready(function () {
 	if(!sessionStorage.language){
-		sessionStorage.language='kor'
+		sessionStorage.language='eng'
 	}
 
 	$("#toggle_fullscreen").click(()=>{

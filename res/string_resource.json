@@ -35,10 +35,10 @@
         "adStat": "Adaptative Stat",
         "addMdmg": "Additional magic damage",
         "attackRange": "Basic Attack Range",
-        "obsR": "Obstacle damage reduction",
-        "ultHaste": "Lv3 skill cooltime reduction",
+        "obsR": "Obstacle Resistance",
+        "ultHaste": "Ultimate Haste",
         "moveSpeed": "Movement speed",
-        "basicAttackSpeed": "Basic attack count"
+        "basicAttackSpeed": "Basic Attack count"
     }
     ,
     "scale_stat":{
