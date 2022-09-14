@@ -43,5 +43,8 @@ class BirdAgent extends AiAgent{
 		}
 		return -1
 	}
+	getMessageOnGameStart(): string {
+		return "I will burn you all in the name of the phenix!"
+	}
 }
 export default BirdAgent

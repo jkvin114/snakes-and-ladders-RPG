@@ -22,8 +22,8 @@ export namespace SpecialEffect {
 			isgood:false,
             src:"skill/2-2.jpg",
 			name: "elephant_w",
-			desc: "'Tusk Attack's range and damage increases aginst this unit",
-			desc_kor: " 이 유닛에 대한 '암흑의 표창' 사정거리와 피해량 증가 "
+			desc: "'Mace Attack's range and damage increases aginst this unit",
+			desc_kor: " 이 유닛에 대한 '암흑의 철퇴' 사정거리와 피해량 증가 "
 		},
 		ELEPHANT_ULT: {
 			isgood:true,
@@ -43,7 +43,7 @@ export namespace SpecialEffect {
 			isgood:false,
             src:"skill/6-2.jpg",
 			name: "magician_w_burn",
-			desc: "For every player turn, receives 4(+0.01AP)% of Max HP as fixed damage",
+			desc: "For every player turn, receives fixed damage by Maximum HP",
 			desc_kor: "매 플레이어 턴마다 최대체력 비례 고정 피해"
 		},
         BIRD_W: {
@@ -86,8 +86,8 @@ export namespace SpecialEffect {
 			isgood:true,
             src:"character/tree_low_hp.png",
 			name: "tree_wither",
-			desc: "Unable to heal ally with Lv1 skill, Damage absorbtion 15% increased, LV3 skill root duration increased.",
-			desc_kor: "Q 스킬로 아군 회복 불가, 모든 피해 흡혈 15% 증가, 궁극기 속박 지속시간 증가"
+			desc: "Unable to heal ally with Lv1 skill, Damage absorbtion 35% increased, LV3 skill root duration increased.",
+			desc_kor: "Q 스킬로 아군 회복 불가, 모든 피해 흡혈 35% 증가, 궁극기 속박 지속시간 증가"
 		},
         TREE_ULT: {
 			isgood:false,

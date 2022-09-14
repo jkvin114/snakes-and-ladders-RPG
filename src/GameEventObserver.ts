@@ -121,8 +121,8 @@ export class GameEventObserver {
 		this.eventEmitter(this.rname, "server:respawn", { turn: turn, respawnPos: respawnPos, isRevived: isRevived })
 	}
 
-	message(message: string) {
-		this.eventEmitter(this.rname, "server:receive_message", "[@]", message)
+	message(header:string,message: string) {
+		this.eventEmitter(this.rname, "server:receive_message", header, message)
 	}
 
 	playsound(sound: string) {

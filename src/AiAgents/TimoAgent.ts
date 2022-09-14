@@ -38,5 +38,8 @@ class TimoAgent extends AiAgent{
 		}
 		return -1
 	}
+	getMessageOnGameStart(): string {
+		return "Beware of the silent assasination!"
+	}
 }
 export default TimoAgent

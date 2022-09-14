@@ -29,6 +29,7 @@
     "trajectorySpeedRatio":300,
     "idleTimeout": 20000,
     "connectionTimeout": 10000,
+    "resetTimeout":120000,
     "delay_on_dice":1600,
     "delay_per_dice":100,
     "delay_on_silent":1000,

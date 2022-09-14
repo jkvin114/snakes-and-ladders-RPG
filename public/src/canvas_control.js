@@ -5,7 +5,7 @@ const PLAYER_POS_DIFF = [
 	[6, -5],
 	[-12, -9]
 ] //플레이어별 위치 차이
-const COLOR_LIST = ["blue", "red", "green", "yellow"] //플레이어별 색상
+export const COLOR_LIST = ["blue", "red", "green", "yellow"] //플레이어별 색상
 const PROJ_DIFF = [-2, 4, 2, -4] //플레이어별 투사체범위 위치 차이
 const TILE_IMG_SIZE = 100
 const BOARD_MARGIN = 200
@@ -523,7 +523,7 @@ export class Scene extends Board{
 		let newProj = new ActiveProjectile(
 			this,
 			proj.scope,
-			this.createProjScopeTiles(proj.scope.length, COLOR_LIST[proj.owner]),
+			this.createProjScopeTiles(proj.scope.length, this.game.getPlayerColor(proj.owner)),
 			proj.UPID,
 			proj.owner,
 			this.createProjIcon(proj.name)
@@ -548,7 +548,7 @@ export class Scene extends Board{
 		} else if (proj.owner >= 0) {
 
 			
-			color = COLOR_LIST[proj.owner]
+			color = this.game.getPlayerColor(proj.owner)
 		}
 
 		let newProj = new PassProjectile(
@@ -1335,7 +1335,7 @@ export class Scene extends Board{
 				top: 301,
 				width: 48,
 				height: 3,
-				fill: COLOR_LIST_BG[i],
+				fill: this.game.getPlayerLighterColor(i),
 				visible: false,
 				evented: false,
 			})

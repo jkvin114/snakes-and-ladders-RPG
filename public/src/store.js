@@ -354,9 +354,9 @@ export class StoreInterface {
 			this.isGrid=false
 			this.updateStoreContent()
 		})
-		$("#store_auto").click(()=>{
-			this.isAuto=!this.isAuto
-			GAME.connection.update("auto_store")
+		$("#store_auto").click(function(){
+			this.isAuto=$(this).is(':checked');
+			GAME.connection.update("auto_store",this.isAuto)
 			// GAME.android_toast(this.isAuto)
 		})
 	}

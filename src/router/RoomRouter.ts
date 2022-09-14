@@ -165,10 +165,14 @@ router.post("/matching", async function (req: express.Request, res: express.Resp
 })
 router.post("/game", async function (req: express.Request, res: express.Response) {
 	if (req.session) {
-		console.log("game")
+		// console.log("game")
 		// console.log(req.session)
 		if (req.session.turn === undefined) {
 			console.error("unauthorized access to the game page")
+			return res.status(401).end()
+		}
+		if (!R.hasRoom(req.session.roomname)) {
+			console.error("access to unexisting game")
 			return res.status(401).end()
 		}
 

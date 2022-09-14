@@ -69,5 +69,8 @@ class YangyiAgent extends AiAgent{
 	   }
 	   return null
    }
+   getMessageOnGameStart(): string {
+	return "You all will die under my claw and fire!"
+}
 }
 export default YangyiAgent

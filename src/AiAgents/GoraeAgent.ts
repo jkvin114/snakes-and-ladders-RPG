@@ -66,5 +66,8 @@ class GoraeAgent extends AiAgent{
 		}
 		return null
 	}
+	getMessageOnGameStart(): string {
+		return "I will devour you like a fish!"
+	}
 }
 export default GoraeAgent

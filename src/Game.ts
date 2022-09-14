@@ -206,6 +206,14 @@ class Game {
 	pOfId(id:string){
 		return this.entityMediator.getPlayer(id)
 	}
+	getPlayerMessageHeader(turn:number){
+		return (
+			this.pOfTurn(turn).name +
+				"(" +
+				SETTINGS.characters[this.pOfTurn(turn).champ].name +
+				")"
+		)
+	}
 	turn2Id(turn: number) {
 		return String(turn + 1) + Game.PLAYER_ID_SUFFIX
 	}
@@ -299,7 +307,8 @@ class Game {
 		if (this.clientsReady < this.PNUM) {
 			return false
 		}
-		
+		if(!this.begun)
+			this.onGameStart()
 		return true
 		// p.onMyTurnStart()
 		// this.entityMediator.onTurnStart(this.thisturn)
@@ -316,11 +325,16 @@ class Game {
 		// 	avaliablepos:new Array<number>()
 		// }
 	}
+	onGameStart(){
+		for(const p of this.entityMediator.allPlayer()){
+			if(p.AI) this.eventEmitter.message(this.getPlayerMessageHeader(p.turn),p.AiAgent.getMessageOnGameStart())
+		}
+	}
 	//========================================================================================================
 
-	user_update<T>(turn:number,type:string,data:T){
+	user_update(turn:number,type:string,data:any){
 		if(type==='auto_store'){
-			this.pOfTurn(turn).toggleAutoBuy()
+			this.pOfTurn(turn).setAutoBuy(data)
 		}
 	}
 	summonSubmarine() {

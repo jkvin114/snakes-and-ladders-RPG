@@ -38,5 +38,8 @@ class SilverAgent extends AiAgent{
 		}
 		return -1
 	}
+	getMessageOnGameStart(): string {
+		return "I will defend everything against me!"
+	}
 }
 export default SilverAgent

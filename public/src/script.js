@@ -1,7 +1,8 @@
 import GameInterface from "./gameinterface.js"
-import { Scene, sleep } from "./canvas_control.js"
+import { Scene, sleep,COLOR_LIST } from "./canvas_control.js"
 import { GameClient, openConnection } from "./gameclient.js"
 import { StoreStatus, StoreInstance, StoreInterface } from "./store.js"
+import { COLOR_LIST_BG } from "./board.js"
 
 const VOLUME = 0.7
 class StringResource {
@@ -195,7 +196,19 @@ class Game {
 	getChamps() {
 		return this.players.map((p) => p.champ)
 	}
-
+	isMyTeam(turn){
+		return this.isTeam && this.players[turn].team === this.players[this.myturn].team
+	}
+	getPlayerColor(turn){
+		if(!this.isTeam) return COLOR_LIST[turn]
+		if(this.isMyTeam(turn)) return "blue"
+		else return "red"
+	}
+	getPlayerLighterColor(turn){
+		if(!this.isTeam) return COLOR_LIST_BG[turn]
+		if(this.isMyTeam(turn)) return COLOR_LIST_BG[0]
+		else return COLOR_LIST_BG[1]
+	}
 	init(setting, turn, cturn) {
 		this.begun = true
 		this.myturn = turn
@@ -255,17 +268,19 @@ class Game {
 			return
 		}
 		console.log(msg)
-		//sendMessageToServer(msg,this.thisturn)
+		// //sendMessageToServer(msg,this.thisturn)
 		$("#text").val("")
-		let data = {
-			msg: msg,
-			turn: this.myturn,
-			rname: sessionStorage.roomName
-		}
-		let posting = $.post("http://" + sessionStorage.ip_address + "/chat", data)
-		posting.done(function () {
-			console.log(msg + "done")
-		})
+		this.connection.sendChat(this.myturn,msg)
+		// let data = {
+		// 	msg: msg,
+		// 	turn: this.myturn,
+		// 	rname: sessionStorage.roomName
+		// }
+		// let posting = $.post("http://" + sessionStorage.ip_address + "/chat", data)
+		// posting.done(function () {
+		// 	console.log(msg + "done")
+		// })
+		
 	}
 
 	receiveMessage(source, msg) {
@@ -595,10 +610,10 @@ class Game {
 		this.scene.movePlayer(distance, 1, pos, turn)
 	}
 	moveComplete() {
-		$(".dicebtn").css("transform", "translate(0px,0px)")
+		// $(".dicebtn").css("transform", "translate(0px,0px)")
 		//if(end){return}
 
-		$(".dicebtn").hide()
+		// $(".dicebtn").hide()
 		// $("#largetext").html("")
 		// $("#largekilltext").html("")
 

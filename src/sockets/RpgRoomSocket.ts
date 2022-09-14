@@ -330,5 +330,10 @@ module.exports=function(socket:Socket){
 			io.to(rname).emit("server:turn_roullete")
 		})
 	})
-
+	socket.on("user:chat", function (turn,message) {
+		// let rname = SocketSession.getRoomName(socket)
+		controlRPGRoom(socket,(room,rname,turn)=>{
+			io.to(rname).emit("server:receive_message",room.getPlayerMessageHeader(turn),message)
+		})
+	})
 }

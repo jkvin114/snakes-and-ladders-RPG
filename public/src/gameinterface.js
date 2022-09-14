@@ -1,5 +1,5 @@
 import { GAME } from "./script.js"
-import { COLOR_LIST_BG } from "./canvas_control.js"
+// import { COLOR_LIST_BG } from "./canvas_control.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
 export default class GameInterface {
@@ -195,9 +195,9 @@ export default class GameInterface {
 			//		console.log("dc" + Number($(this).val()))
 
 		//	clearInterval(GAME.diceHighlightInterval)
-			$("#largedicebtn").stop().css({ outline: "none" })
+			// $("#largedicebtn").stop().css({ outline: "none" })
 			$("#largedicebtn").hide()
-			$("#largedicebtnimg").show()
+			// $("#largedicebtnimg").show()
 			GAME.dice_clicked = false
 			GAME.onDiceBtnClick(Number($(this).val()))
 			GAME.scene.hidePossiblePos()
@@ -723,25 +723,25 @@ export default class GameInterface {
 					$(this.elements.nameis[0]).html(setting[i].name)
 					$(this.elements.hpis[0]).html(setting[i].HP + "/" + setting[i].MaxHP)
 
-					if (GAME.isTeam) {
-						if (!setting[i].team) {
-							$(this.elements.nameis[0]).css("background", "rgba(255, 127, 127,0.5)")
-						} else{
-							$(this.elements.nameis[0]).css("background", "rgba(119, 169, 249,0.5)")
-						}
-					}
+					// if (GAME.isTeam) {
+					// 	if (!setting[i].team) {
+					// 		$(this.elements.nameis[0]).css("background", "rgba(255, 127, 127,0.5)")
+					// 	} else{
+					// 		$(this.elements.nameis[0]).css("background", "rgba(119, 169, 249,0.5)")
+					// 	}
+					// }
 
 					GAME.turnsInUI.push(0)
 				} else {
 					$(this.elements.nameis[othercount]).html(setting[i].name)
 					$(this.elements.hpis[othercount]).html(setting[i].HP + "/" + setting[i].MaxHP)
-					if (GAME.isTeam) {
-						if (!setting[i].team) {
-							$(this.elements.nameis[othercount]).css("background", "rgba(255, 127, 127,0.5)")
-						} else{
-							$(this.elements.nameis[othercount]).css("background", "rgba(119, 169, 249,0.5)")
-						}
-					}
+					// if (GAME.isTeam) {
+					// 	if (!setting[i].team) {
+					// 		$(this.elements.nameis[othercount]).css("background", "rgba(255, 127, 127,0.5)")
+					// 	} else{
+					// 		$(this.elements.nameis[othercount]).css("background", "rgba(119, 169, 249,0.5)")
+					// 	}
+					// }
 
 					GAME.turnsInUI.push(othercount)
 					othercount += 1
@@ -753,7 +753,7 @@ export default class GameInterface {
 			$(this.elements.kdainfos[i]).html("0/0/0")
 
 			// GAME.player_champlist[i] = setting[i].champ
-			$(this.elements.charimgs[GAME.turn2ui(i)]).css("background-color", COLOR_LIST_BG[i])
+			$(this.elements.charimgs[GAME.turn2ui(i)]).css("background-color", this.game.getPlayerLighterColor(i))
 
 			if (GAME.isTeam) {
 				if (!setting[i].team) {
@@ -1039,7 +1039,7 @@ export default class GameInterface {
 	highlightUI(t) {
 		for (let i = 0; i < GAME.playerCount; ++i) {
 			if (i === GAME.thisui) {
-				$(this.elements.otherchar[i - 1]).css("outline", "2px solid red")
+				$(this.elements.otherchar[i - 1]).css("outline", "2px solid white")
 			} else {
 				$(this.elements.otherchar[i - 1]).css("outline", "1px solid black")
 			}
@@ -1545,13 +1545,13 @@ export default class GameInterface {
 		if (skillfrom === -1) {
 			str += "white"
 		} else {
-			str += COLOR_LIST_BG[skillfrom]
+			str += this.game.getPlayerLighterColor(skillfrom)
 		}
 
 		str += ";'><img src='" + this.getChampImgofTurn(skillfrom) + "'>"
 
 		str += "</div><img src='res/img/ui/kill.png'><div class='charframe2' style='background:"
-		str += COLOR_LIST_BG[turn]
+		str += this.game.getPlayerLighterColor(turn)
 		str += ";'><img src='" + this.getChampImgofTurn(turn) + "'></div></div><br>"
 
 		$("#killindicator_container").append(str)
@@ -1648,25 +1648,27 @@ export default class GameInterface {
 			//turn:dead player
 			//skillfrom:killer
 			//GAME.myturn: me
-
-			//아군이 죽음
-			if (GAME.isTeam && GAME.players[turn].team === GAME.players[GAME.myturn].team) {
-				good=false
-				text = GAME.chooseLang("Ally", "아군")
-
-				if (killerMultiKillCount > 2) {
-					text = GAME.chooseLang("Enemy", "적")
-				}
-			}
-
-			//아군이 죽임
-			if (GAME.isTeam && GAME.players[skillfrom].team === GAME.players[GAME.myturn].team) {
-				text = GAME.chooseLang("Enemy", "적")
-
-				if (killerMultiKillCount > 2) {
+			if(GAME.isTeam){
+				//아군이 죽음
+				if (GAME.isMyTeam(turn)) {
+					good=false
 					text = GAME.chooseLang("Ally", "아군")
+
+					if (killerMultiKillCount >= 2) {
+						text = GAME.chooseLang("Enemy", "적")
+					}
+				}
+
+				//아군이 죽임
+				if (GAME.isMyTeam(skillfrom)) {
+					text = GAME.chooseLang("Enemy", "적")
+
+					if (killerMultiKillCount >= 2) {
+						text = GAME.chooseLang("Ally", "아군")
+					}
 				}
 			}
+			
 
 			if (skillfrom == -1) {
 				text += GAME.chooseLang(" Executed!", "이 처형되었습니다")

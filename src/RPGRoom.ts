@@ -13,6 +13,9 @@ function workerTs(data: unknown) {
 }
 
 class RPGRoom extends Room {
+	user_message(turn: number, msg: string): string {
+		throw new Error("Method not implemented.")
+	}
 
 	private gameloop: GameLoop
 	protected eventObserver:GameEventObserver
@@ -44,9 +47,9 @@ class RPGRoom extends Room {
 		if(!this.gameloop) return
 		return this.gameloop.game.isThisTurn(cryptTurn)
 	}
-	user_message(turn: number, msg: string): string {
+	getPlayerMessageHeader(turn: number): string {
 		if(!this.gameloop) return
-		return this.gameloop.user_message(turn, msg)
+		return this.gameloop.getPlayerMessageHeader(turn)
 	}
 	get getMapId():number {
 		if(!this.gameloop) return -1

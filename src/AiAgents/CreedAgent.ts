@@ -56,5 +56,8 @@ class CreedAgent extends AiAgent{
 		}
 		return super.selectTarget(skill,targets)
 	}
+	getMessageOnGameStart(): string {
+		return "The death is upon you!"
+	}
 }
 export default CreedAgent

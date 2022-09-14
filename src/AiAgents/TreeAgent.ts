@@ -39,5 +39,8 @@ class TreeAgent extends AiAgent{
 		}
 		return -1
 	}
+	getMessageOnGameStart(): string {
+		return "I am not a giving tree!"
+	}
 }
 export default TreeAgent

@@ -94,7 +94,7 @@ class PlayerInventory {
 	sellToken(token:number,moneyspent:number) {
 		this.changeToken(-1 * token)
 		this.giveMoney(moneyspent)
-		this.player.message(this.player.name + " sold token, obtained " + moneyspent + "$!")
+		this.player.sendConsoleMessage(this.player.name + " sold token, obtained " + moneyspent + "$!")
 	}
 	//========================================================================================================
 
@@ -293,7 +293,7 @@ class PlayerInventory {
 		}
 		let thiefitem = Util.pickRandom(itemhave) 
 
-		this.player.message(this.player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
+		this.player.sendConsoleMessage(this.player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
 		this.changeOneItem(thiefitem, -1)
 		this.itemSlots = this.convertCountToItemSlots(this.item)
 		this.player.game.eventEmitter.update("item", this.player.turn, this.sortedItemSlot())

@@ -1,5 +1,4 @@
 import * as ENUM from "../data/enum"
-import { ITEM } from "../data/enum"
 import { Damage, SkillAttack, SkillTargetSelector } from "../core/Util"
 import { Player } from "../player/player"
 import type { Game } from "../Game"

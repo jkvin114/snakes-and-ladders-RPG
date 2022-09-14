@@ -38,5 +38,8 @@ class JeanAgent extends AiAgent{
 		}
 		return -1
 	}
+	getMessageOnGameStart(): string {
+		return "Everyone will be equal under my bullet!"
+	}
 }
 export default JeanAgent

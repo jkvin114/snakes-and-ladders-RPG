@@ -52,5 +52,8 @@ class JelliceAgent extends AiAgent{
 		}
 		return -1
 	}
+	getMessageOnGameStart(): string {
+		return "The mystic flame will burn you all!"
+	}
 }
 export default JelliceAgent

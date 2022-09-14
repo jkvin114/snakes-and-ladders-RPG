@@ -354,6 +354,9 @@ export function openConnection(isInitial) {
 	GAME.connection.update = function (type,data) {
 		socket.emit("user:update",type,data)
 	}
+	GAME.connection.sendChat = function (turn,text) {
+		socket.emit("user:chat",turn,text)
+	}
 	GAME.connection.pressDice = function (dicenum) {
 		socket.emit("user:press_dice",GAME.crypt_turn, dicenum)
 	}

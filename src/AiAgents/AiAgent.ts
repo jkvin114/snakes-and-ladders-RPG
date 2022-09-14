@@ -24,6 +24,7 @@ abstract class AiAgent {
 		final: number
 	}
 	static readonly BASICATTACK = 4
+	abstract getMessageOnGameStart():string
 	constructor(player: Player) {
 		this.player = player
 		this.isRandomItem=TRAIN_SETTINGS.train && TRAIN_SETTINGS.random_item
@@ -311,6 +312,9 @@ class DefaultAgent extends AiAgent {
 			],
 			final: ITEM.EPIC_SWORD
 		}
+	}
+	getMessageOnGameStart(): string {
+		return "Hello"
 	}
 }
 

@@ -329,7 +329,7 @@ class ObstacleHelper {
 					})
 					if (Math.random() > 0.93) {
 						player.inven.giveMoney(m1)
-						player.message(" won the lottery! earned" + m1 + "$")
+						player.sendConsoleMessage(" won the lottery! earned" + m1 + "$")
 					}
 					
 					break
@@ -399,7 +399,7 @@ class ObstacleHelper {
 		switch (num) {
 			case 0:
 				player.inven.takeMoney(100)
-				player.message(player.name + "fine 100$")
+				player.sendConsoleMessage(player.name + "fine 100$")
 				break
 			case 1:
 				player.effects.apply(ENUM.EFFECT.SLAVE, StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE)
@@ -416,13 +416,13 @@ class ObstacleHelper {
 				break
 			case 3:
 				player.killplayer()
-				player.message(player.name + " has been sentenced to death")
+				player.sendConsoleMessage(player.name + " has been sentenced to death")
 				break
 			case 4:
 				player.doObstacleDamage(Math.floor(player.HP / 2),"stab")
 
 				player.effects.apply(ENUM.EFFECT.GROUNGING, 1)
-				player.message(player.name + " will get retrial")
+				player.sendConsoleMessage(player.name + " will get retrial")
 				break
 			case 5:
 				for (let p of player.mediator.allPlayer()) {

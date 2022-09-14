@@ -192,8 +192,8 @@ abstract class Player extends Entity {
 	protected getPlayer(): Player {
 		return this
 	}
-	message(text: string) {
-		this.game.eventEmitter.message(text)
+	sendConsoleMessage(text: string) {
+		this.game.eventEmitter.message("[@]",text)
 	}
 	getSkillInfoKor() {
 		return this.skillInfoKor.get()
@@ -210,9 +210,9 @@ abstract class Player extends Entity {
 	isMyTurn(){
 		return this.game.thisturn===this.turn
 	}
-	toggleAutoBuy(){
+	setAutoBuy(b:boolean){
 		if(this.AI) return
-		this.autoBuy=!this.autoBuy
+		this.autoBuy=b
 	}
 	calculateAdditionalDice(amount: number): number {
 		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this))(function () {
@@ -780,7 +780,7 @@ abstract class Player extends Entity {
 			if (this.effects.has(ENUM.EFFECT.SLAVE)) {
 				this.pos = MAP.getFinish(this.mapId) - 1
 				this.killplayer()
-				this.message(this.name + " has been finally freed from slavery")
+				this.sendConsoleMessage(this.name + " has been finally freed from slavery")
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 			} else {
 				this.game.gameover = true
@@ -898,7 +898,7 @@ abstract class Player extends Entity {
 		console.log("--------------addkill"+totalkill)
 		if (totalkill === 0) {
 			this.inven.giveMoney(100)
-			this.message(this.name + ", First Blood!")
+			this.sendConsoleMessage(this.name + ", First Blood!")
 		} else {
 			this.inven.giveMoney(70 + 10 * this.thisLifeKillCount + 20 * deadplayer.thisLifeKillCount)
 		}
@@ -1072,11 +1072,11 @@ abstract class Player extends Entity {
 	 */
 	private die(skillfrom: number) {
 		if (skillfrom >= 0) {
-			this.message(this.game.pOfTurn(skillfrom).name + " killed " + this.name)
+			this.sendConsoleMessage(this.game.pOfTurn(skillfrom).name + " killed " + this.name)
 			this.game.pOfTurn(skillfrom).addKill(this)
 			this.thisLifeKillCount = 0
 		} else {
-			this.message(this.name + " has been executed!")
+			this.sendConsoleMessage(this.name + " has been executed!")
 			this.statistics.add(ENUM.STAT.EXECUTED, 1)
 		}
 		this.game.addKillData(skillfrom, this.turn, this.pos)
@@ -1152,7 +1152,7 @@ abstract class Player extends Entity {
 
 				plyr.incrementKda("a")
 				plyr.inven.giveMoney(25)
-				this.message(plyr.name + " assist!")
+				this.sendConsoleMessage(plyr.name + " assist!")
 				//assists.push(this.players[i])
 			}
 		}
