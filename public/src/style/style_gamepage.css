@@ -201,6 +201,9 @@ b {
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 10px;
 }
+.mydisplay.highlight{
+  outline: 3px solid white;
+}
 
 
 .mychar {
@@ -359,7 +362,7 @@ b {
 .otherhpi {
 
   text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
-  font-size: 2vh;
+  font-size: max(10px,2vh);
   margin-left: 2px;
   margin-top: 0;
   /* margin-bottom: 10px; */
@@ -423,6 +426,9 @@ b {
   width: 5vh;
   height: 5vh;
   outline: 1px solid black;
+}
+.otherchar.highlight{
+  outline: 2px solid white;
 }
 
 /* #money,#token{

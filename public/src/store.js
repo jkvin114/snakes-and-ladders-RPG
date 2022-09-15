@@ -612,7 +612,7 @@ export class StoreInterface {
 		if (!this.storeInstance.enabled) {
 			$("#tokenprice").html(GAME.chooseLang("Current price: ??", "현재가: ??"))
 		} else {
-			$("#tokenprice").html(GAME.chooseLang("Current price: ", "현재가: ") + this.storeInstance.tokenprice + "$")
+			$("#tokenprice").html(GAME.chooseLang("Current price: $", "현재가: $") + this.storeInstance.tokenprice)
 		}
 		//mot enough money
 		if (this.storeInstance.tokenprice > this.storeStatus.money || !this.storeInstance.enabled) {

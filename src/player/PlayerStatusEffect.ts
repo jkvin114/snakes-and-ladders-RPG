@@ -81,9 +81,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.category.push(new Map<number, OnFinalDamageEffect>())
 	}
 
-	transfer(func: Function, ...args: any[]) {
-		this.player.mediator.sendToClient(func, ...args)
-	}
+	// transfer(func: Function, ...args: any[]) {
+	// 	this.player.mediator.sendToClient(func, ...args)
+	// }
 	onLethalDamage() {
 		for (const [key, effect] of this.storage.entries()) {
 			if (effect.onLethalDamage()) this.removeByKey(key)

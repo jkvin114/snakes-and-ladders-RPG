@@ -108,7 +108,12 @@
     "respawn":[0,15,36,72,90],
     "store":[15,36,72,90,98],
     "shuffle":[
-	{"start":93,"end":97}
+    {"start":7,"end":13},
+    {"start":20,"end":30},
+	  {"start":93,"end":97},
+    {"start":40,"end":50},
+    {"start":60,"end":70},
+    {"start":73,"end":80}
 	],
 	"dc_limit_level":4,
     "way2_range":{

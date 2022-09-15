@@ -401,7 +401,7 @@ abstract class GameCycleState {
 
 		return new EventResult(false)
 	}
-	onUserCompletePendingAction(info: ClientInputEventInterface.PendingObstacle): EventResult {
+	onUserCompletePendingAction(info: ClientInputEventInterface.PendingAction): EventResult {
 		console.error("invalid request, state id:" + this.id)
 
 		return new EventResult(false)

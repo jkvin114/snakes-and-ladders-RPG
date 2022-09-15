@@ -307,6 +307,7 @@ class PlayerInventory {
 	 * }
 	 */
 	aiUpdateItem(slots: number[], moneyspend: number) {
+		// console.log("changemoney"+moneyspend)
 		this.changemoney(-1 * moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)
 		// this.inven.changeToken(data.tokenbought)
 		// this.inven.changeLife(data.life)
@@ -331,7 +332,7 @@ class PlayerInventory {
 	 * @returns 
 	 */
 	sortedItemSlot(){
-		return this.itemSlots.sort((a,b)=>-a)
+		return this.itemSlots.sort((a,b)=>-(a+1))
 	}
 	/**
 	 * 첫번째 상점에선 2등급이상아이템 구입불가

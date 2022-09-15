@@ -1039,9 +1039,13 @@ export default class GameInterface {
 	highlightUI(t) {
 		for (let i = 0; i < GAME.playerCount; ++i) {
 			if (i === GAME.thisui) {
-				$(this.elements.otherchar[i - 1]).css("outline", "2px solid white")
+				if(i===0) $(".mydisplay").addClass("highlight")
+				else $(this.elements.otherchar[i - 1]).addClass("highlight")
+				// $(this.elements.otherchar[i - 1]).css("outline", "2px solid white")
 			} else {
-				$(this.elements.otherchar[i - 1]).css("outline", "1px solid black")
+				if(i===0) $(".mydisplay").removeClass("highlight")
+				else $(this.elements.otherchar[i - 1]).removeClass("highlight")
+				// $(this.elements.otherchar[i - 1]).css("outline", "1px solid black")
 			}
 		}
 	}

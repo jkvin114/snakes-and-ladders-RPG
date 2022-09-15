@@ -62,8 +62,8 @@ abstract class PlayerMapHandler {
 	}
 	onPendingObsComplete(info:ClientInputEventInterface.PendingObstacle){
 
-		if (info.type === "kidnap" && info.booleanResult!=null) {
-			ObstacleHelper.kidnap(this.player,info.booleanResult)
+		if (info.type === "kidnap" && info.result!=null) {
+			ObstacleHelper.kidnap(this.player,info.result)
 		} 
 	}
 	getPendingObs(pendingObs:number):ServerGameEventInterface.PendingObstacle{
@@ -254,8 +254,8 @@ class CasinoMapHandler extends PlayerMapHandler {
 	}
 	onPendingObsComplete(info: ClientInputEventInterface.PendingObstacle): void {
 	//	console.log("onPendingObsComplete"+info)
-		if (info.type === "threaten" && info.booleanResult!==null) {
-			ObstacleHelper.threaten(this.player,info.booleanResult)
+		if (info.type === "threaten" && info.result!==null) {
+			ObstacleHelper.threaten(this.player,info.result)
 		} else if (info.type === "sell_token") {
 			let result=(info.objectResult as ClientInputEventInterface.TokenStoreResult)
 			if (result.token > 0) {

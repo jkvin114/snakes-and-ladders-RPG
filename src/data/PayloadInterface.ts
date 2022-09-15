@@ -215,7 +215,7 @@ export namespace ClientInputEventInterface {
 	export interface PendingObstacle{
 		type: string
 		complete: boolean
-		booleanResult?: boolean
+		result?: boolean
 		objectResult?: GodHandResult | TokenStoreResult | SubwayResult
 	}
 	export interface PendingAction{
