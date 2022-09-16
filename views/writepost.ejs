@@ -13,7 +13,8 @@
   body{     
    background-color: rgb(36, 36, 36);
    color:white;
-
+   margin: 0;
+    margin-bottom: 20px;
 
     font-family: 'cookierun';
     text-align:center;
@@ -67,7 +68,20 @@
     /* background-color: rgb(74, 2, 110); */
   }
   #savebtn{
+    position: fixed;
+    bottom: 60px;
+    right: 60px;
+    width: 70px;
+    height: 40px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 3px;
+    z-index: 3;
     background-color: #2abb4e;
+  }
+  #savebtn:hover{
+    background-color: #62e884;
+
   }
   #cancelbtn{
     background-color: #ff5656;
@@ -151,11 +165,12 @@
 </head>
  
 <body>
+  <img src="/res/img/svg/save.svg" id="savebtn"  onclick="save()">
+
   <div id="navbar-container">
     <div id="navbar">
-      
-      <img src="/res/img/svg/save.svg" id="savebtn"  onclick="save()">
       <img src="/res/img/svg/out.svg" id="cancelbtn"  onclick="cancel()">
+
       <label for="file" id="filebtn-container">
         <img id="filebtn" src="/res/img/svg/image.svg">
       </label>
@@ -243,5 +258,8 @@
         reader.readAsDataURL(input.files[0])
     }
   })
+  window.onbeforeunload = function (e) {
+		return false
+  }
 </script>
 </html>

@@ -6,6 +6,7 @@
 <script src="lib/jquery-3.6.0.min.js"></script>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+	<link rel="stylesheet" href="./src/style/style_main_navbar.css">
 
   <meta charset="utf-8" >
 </head>
@@ -21,7 +22,7 @@
     src: url("res/font/NanumSquareB.ttf");
 }
 body{     
-   background-color: rgb(36, 36, 36);
+   background-color: #242424;
    color: beige;
     margin: 0;
 
@@ -120,50 +121,16 @@ footer{
   font-family: 'Do Hyeon';
   padding: 0;
 }
-#navbar{
-  display: flex;
-  background-color: #31313C;
-  border-bottom: 1px solid gray;
-  margin-top: 0;
-  padding: 4px;
-  justify-content:space-between;
-  align-items: stretch;
-  height: 40px;
 
-}
-.nav-section{
+/* .nav-section{
   min-width: 80px;
-}
-.nav-section.left{
+} */
+/* .nav-section.left{
   text-align: left;
 }
 .nav-section.right{
   text-align: right
-} 
-.navbtn{
-  font-family: 'nanumB';
-  color:white;
-  /* background-color: #7E00BF; */
-  background: transparent;
-  cursor:pointer;
-  text-align:center;
-  font-size: 20px;
-  border:none;
-  vertical-align: middle;
-  border-radius: 20%;
-
-  height: 30px;
-}
-.navbtn:hover{
-  /* transform: scale(1.1); */
-  background: rgb(65, 65, 65);
-}
-img.navbtn{
-  padding: 5px;
-}
-button.navbtn{
-  height: 40px;
-}
+}  */
 
 #quitbtn{
   /* background-color: #ff5656; */
@@ -246,23 +213,14 @@ button.navbtn{
 #ip-input{
   visibility: hidden;
 }
-#title{
-  cursor: pointer;
-  font-family: 'nanumEB';
-  font-size: 30px;
-  color: rgb(249, 187, 255);
-  margin: 0;
-  line-height: 40px;
-}
-@media (max-width: 700px) {
-  #title{
-    font-size: 20px;
-  }
-  #navbar{
-    height:80px;
-  }
-}.wikibtn{
+
+.wikibtn{
   /* filter: invert(); */
+}
+#title{
+  margin-top: 10vh;
+  margin-bottom: 10vh;
+
 }
 </style>
 <body>
@@ -272,49 +230,60 @@ button.navbtn{
   <div>
 
     <div id="navbar">
-      <div class="nav-section left">
-        <img class='navbtn' id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login">
-        <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
-        <!-- <button class='navbtn hidden' id="logoutbtn" onclick="logout()"></button> -->
-        <img class='navbtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()" title="Logout">
 
-        <img class='navbtn postbtn hidden' id="postbtn" src="res/img/svg/note.svg"  title="post board">
-
-        <img class='navbtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/svg/book.svg"  title="Wiki">
-      </div>
-      <!-- <div class="cool">
-        <img class=img src="res/img/skill/7-3.jpg">
-        <div class="mask"></div>
-      </div> -->
-      <!-- Snakes-and-Ladders RPG -->
-      <div class="nav-section center" onclick="golink('/')" ><h5 id="title">Snakes-and-Ladders RPG</h5></div>
-      <div class="nav-section right">
-        <img class='navbtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블">
-        <img class='navbtn langbtn' id="langbtn" src="res/img/svg/globe.svg"  title="Language">
-        <div class="lang_dropdown">
-          <a class="dropitem" value="kor">한국어</a>
-          <a class="dropitem" value="eng">English</a>
+      <div id="navbar-btn-container">
+        <div class="nav-section ">
+          <div class="navbtn active" onclick="golink('/')">
+            <img src="res/img/svg/home.svg" title="home">
+            <a>Home</a>
+          </div>
+          <div class="navbtn " id="postbtn">
+            <img class='postbtn' src="res/img/svg/note.svg"  title="post board">
+            <a>Posts</a>
+          </div>
+          <div class="navbtn" onclick="toStatpage()">
+            <img id="statbtn" src="res/img/svg/chart_white.svg" title="Statistics">
+            <a>Statistics</a>
+          </div>
         </div>
-        <img class=navbtn id="statbtn" onclick="toStatpage()" src="res/img/svg/chart_white.svg" title="Statistics">
-        
-        <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
+        <div class="nav-section">
+          <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
+          <!-- <button class='navbtn hidden' id="logoutbtn" onclick="logout()"></button> -->
+          <!-- 
+
+          <img class='navbtn postbtn hidden' id="postbtn" src="res/img/svg/note.svg"  title="post board">
+
+          <img class='navbtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/svg/book.svg"  title="Wiki"> -->
+
+        <!-- Snakes-and-Ladders RPG -->
+
+          <img class='menubtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블">
+          <img class='menubtn langbtn' id="langbtn" src="res/img/svg/globe.svg"  title="Language">
+          <div class="lang_dropdown">
+            <a class="dropitem" value="kor">한국어</a>
+            <a class="dropitem" value="eng">English</a>
+          </div>
+          <img class="menubtn" id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login">
+          <img class='menubtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()" title="Logout">
+          <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
+        </div>
       </div>
-      
     </div>
 
 
     <div id="firstpage" class="page" >
-     
+     <div id="title"><h5>Welcome to Snakes-and-Ladders RPG</h5></div>
+
       <br>
-      <input id="input-username" type='text' name="nickname" value="" placeholder=" Username ">
+      <input id="input-username" type='text' name="nickname" value="" placeholder=" Username(optional)">
       <div id="ip_area" class="hidden">
-        <br>
         <input type='text' id="ip-input" name="ip" value="" placeholder="Server ip address " >
       </div>
      
       <!-- <button onclick="tolocalhost()">localhost</button> -->
       <br>
       <div id=buttons>
+        <br>
         <button class='button' id="open_create_room" onclick="open_createroom()">Create room</button>
         <button class='button hidden' id="reconnect" onclick="toGamepage()">Reconnect</button>
         <button class='button' id="join" onclick="join()">Join</button>
@@ -323,7 +292,7 @@ button.navbtn{
       </div>
       <div id=field>
         <br>
-        <input type='text' name="room_name" value="" placeholder="Room Name" id="room-name-input">
+        <input type='text' name="room_name" value="" placeholder="Room Name(optional)" id="room-name-input">
         <br>
         
         <button class=button id="create_room" onclick="createroom(false)">Start</button>

@@ -10,7 +10,8 @@
    background-color: rgb(36, 36, 36);
    color:white;
 
-
+   margin: 0;
+    margin-bottom: 20px;
   font-family: 'cookierun';
   text-align:center;
 
@@ -40,7 +41,7 @@
   #navbar img, #navbar > div{
     color:white;
     /* background-color: #7E00BF; */
-    background: transparent;
+    background: #505060;
     line-height: 30px;
 
     cursor:pointer;
@@ -54,7 +55,7 @@
     height: 30px;
   }
   #navbar img:hover,#navbar > div:hover{
-    background-color: rgb(74, 74, 74);
+    background-color: #7a7a92;
   }
   #navbar img.delete_post{
     /* background-color: #ff5656; */
@@ -200,23 +201,23 @@
   }.enter_comment{
     position: relative;
     width: 100%;
-    font-size: 25px;
+    font-size: 15px;
     padding: 6px;
     color: white;
     background:none;
     border: none;
     border-bottom:2px solid rgb(210, 210, 210);
-    font-family: 'cookierun';
+    font-family: 'nanumB';
     flex-grow: 1;
   }
   .submit_comment{
     border-radius: 5px;
-    font-size: 25px;
+    font-size: 15px;
     padding: 10px;
     border: none;
     background-color: #7E00BF;
     color: white;
-    font-family: 'cookierun';
+    font-family: 'nanumB';
     cursor: pointer;
   }
   .commententer{
@@ -234,7 +235,7 @@
 <body>
  
   <div id="navbar">
-    <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br>
+    <!-- <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br> -->
     <img src="/res/img/svg/list.svg" id="postlistbtn">
     <%if(canModify){%>
       <img src="/res/img/svg/trash.svg" class="delete_post" data-id="<%= id%>">

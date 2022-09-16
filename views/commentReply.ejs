@@ -9,7 +9,8 @@
   body{     
    background-color: rgb(36, 36, 36);
    color:white;
-
+   margin: 0;
+    margin-bottom: 20px;
 
   font-family: 'cookierun';
   text-align:center;
@@ -40,7 +41,7 @@
   #navbar img, #navbar > div{
     color:white;
     /* background-color: #7E00BF; */
-    background: transparent;
+    background: #505060;
 
     cursor:pointer;
     text-align:center;
@@ -54,7 +55,7 @@
     line-height: 30px;
   }
   #navbar img:hover,#navbar > div:hover,.submit_comment:hover{
-    background-color: rgb(73, 73, 73);
+    background-color: #7a7a92;
   }
   #comments form{
     width: 100%;
@@ -167,6 +168,7 @@
     color: white;
     font-family: 'cookierun';
     cursor: pointer;
+    font-family: "nanumB";
   }
   .commententer{
     display: flex;
@@ -244,7 +246,7 @@
         <input type="hidden" name="commentId" value="<%= comment._id %>">  
         <div class="commententer">
           <input class="enter_comment" type="text" name="content" placeholder="reply" required>
-          <input class="submit_comment" type="submit" value="submit">
+          <input class="submit_comment" type="submit" value="Submit">
         </div>
       </form>
   <%}else if(comment.deleted){%>

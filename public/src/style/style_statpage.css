@@ -914,6 +914,7 @@ transform: scale(1.1);
     background: rgb(121, 121, 121);
     z-index: 5;
     top:45px;
+    right: 0;
     width: 120px;
   }
   .lang_dropdown > a{
@@ -977,6 +978,48 @@ transform: scale(1.1);
     display: inline-block;
     transform: scale(0.4);
     vertical-align: middle;
+
+  }
+
+  #stat-navbar{
+    height: 40px;
+    border-bottom: 1px solid rgb(78, 78, 78);
+    /* margin-top: 50px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #stat-navbar > div{
+  }
+  .stat-navbar-btn{
+    display: inline-block;
+    color:white;
+    
+    cursor:pointer;
+    text-align:center;
+    border:none;
+    vertical-align: middle;
+    
+    margin-left: 20px;
+    margin-right: 20px;
+
+    font-family: 'nanumB';
+    /* background-color: #7E00BF; */
+    background: transparent;
+    font-size: 15px;
+    /* border-radius: 4px; */
+    /* height: 30px; */
+    height: 40px;
+  }
+  .stat-navbar-btn > a{
+    line-height: 40px;
+  }
+  .stat-navbar-btn.active{
+    border-bottom: solid 4px #D896FF ;
+
+  }
+  .stat-navbar-btn.active > a{
+   color: #D896FF ;
 
   }
   @media screen and (orientation: portrait){

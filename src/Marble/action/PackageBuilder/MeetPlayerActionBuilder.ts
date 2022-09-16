@@ -103,7 +103,7 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 
 		for (const stayed of this.stayed) {
 			if (this.overrideArrival) break
-
+			
 			const defences = stayed.sampleAbility(EVENT_TYPE.ENEMY_ARRIVE_TO_ME, this.trace)
             if(!this.newPerfume(pkg,stayed))
 			    this.perfume(pkg, stayed)

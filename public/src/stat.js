@@ -9,6 +9,9 @@ let playerNameLists = []
 
 let SETTING = null
 let ITEMS = null
+function golink(link){
+	window.location.href=link
+  }
 
 class InterfaceState {
 	constructor() {
@@ -300,11 +303,25 @@ $(document).ready(function () {
 	requestItem()
 
 	addItemTooltipEvent()
+
+	  
+	$("#langbtn").click(function(){
+		$(".lang_dropdown").show()
+	})
+	
 	$(".dropitem").click(function(){
-		$(".lang_dropdown").hide()
-		let lang=$(this).attr("value")
-		LANG=lang
-	  })
+	  $(".lang_dropdown").hide()
+	  let lang=$(this).attr("value")
+	  LANG=lang
+	})
+
+	
+
+	// $(".dropitem").click(function(){
+	// 	$(".lang_dropdown").hide()
+	// 	let lang=$(this).attr("value")
+	// 	LANG=lang
+	//   })
 
 	  $("#toggle_fullscreen").click(()=>{
 	//	console.log($(this).data("on"))
@@ -321,7 +338,10 @@ $(document).ready(function () {
 
 	$(".intro_simulation").click(function () {
 		window.scrollTo(0,0)
-		$("#sidebar").css({left:"-50%"})
+		$(".intro_simulation").addClass("active")
+		$(".intro_game").removeClass("active")
+
+		// $("#sidebar").css({left:"-50%"})
 		requestSimulationSummary(0, InterfaceState.page_max)
 		$("#summary_navbar").show()
 		//console.log("intro")
@@ -329,7 +349,9 @@ $(document).ready(function () {
 	$(".intro_game").click(function () {
 		requestGames(0, InterfaceState.page_max)
 		window.scrollTo(0,0)
-		$("#sidebar").css({left:"-50%"})
+		$(".intro_simulation").removeClass("active")
+		$(".intro_game").addClass("active")
+		// $("#sidebar").css({left:"-50%"})
 		$("#summary_navbar").show()
 	})
 	$(".quit").click(function () {
