@@ -214,158 +214,192 @@
 					<!-- <br><br>
 					<p id="game_resulttext"></p> -->
 					<div id="game_detail_content">
-							<div id=detailbtn_container class="game-detail-item hidden">
-								<button class="detailbtn" value="1">Details</button>
-								<button class="detailbtn" value="2">Item Build</button>
-								<button class="detailbtn" value="3">Kills</button>
-								<button class="detailbtn" value="4">Position</button>
-								<button class="detailbtn" value="5">Money</button>
-								<!-- <button class="detailbtn" value="6">&times;</button> -->
-							</div>
-							<div class="divTable greenTable" class="game-detail-item" id="stattable">
-								<div class="divTableHeading">
-									<div class="divTableRow statTableRow">
-										<!-- <div class="divTableHead">Rank</div>
-										<div class="divTableHead">Player</div>
-										<div class="divTableHead">Character</div>
-										<div class="divTableHead">KDA</div>
-										<div class="divTableHead">Items</div> -->
-									</div>
-								</div>
-								<div class="divTableBody">
-									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank">
-											1
-										</div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell playername"></div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell itemlist"></div>
-									</div>
-		
-									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank">
-											2
-										</div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell playername"></div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell itemlist"></div>
-									</div>
-		
-									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank">
-											3
-										</div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell playername"></div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell itemlist"></div>
-									</div>
-		
-									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank">
-											4
-										</div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell playername"></div>
-										<div class="divTableCell statTableCell"></div>
-										<div class="divTableCell statTableCell itemlist"></div>
-									</div>
+						<div id=detailbtn_container class="game-detail-item hidden">
+							<button class="detailbtn" value="1">Details</button>
+							<button class="detailbtn" value="2">Item Build</button>
+							<button class="detailbtn" value="3">Kills</button>
+							<button class="detailbtn" value="4">Position</button>
+							<button class="detailbtn" value="5">Money</button>
+							<!-- <button class="detailbtn" value="6">&times;</button> -->
+						</div>
+						<div class="divTable greenTable game-detail-item no-stretch" id="stattable">
+							<div class="divTableHeading">
+								<div class="divTableRow statTableRow">
+									<!-- <div class="divTableHead">Rank</div>
+									<div class="divTableHead">Player</div>
+									<div class="divTableHead">Character</div>
+									<div class="divTableHead">KDA</div>
+									<div class="divTableHead">Items</div> -->
 								</div>
 							</div>
-							<div id="kdaGraph" class="game-detail-item nopadding"></div> 
+							<div class="divTableBody">
+								<div class="divTableRow statTableRow">
+									<div class="divTableCell statTableCell rank">
+										1
+									</div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell playername"></div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell itemlist"></div>
+								</div>
 
-							<div id="money_chart" class="game-detail-item nopadding"></div>
-		
-							<div id="game-detail-graphs" class="game-detail-item ">
+								<div class="divTableRow statTableRow">
+									<div class="divTableCell statTableCell rank">
+										2
+									</div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell playername"></div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell itemlist"></div>
+								</div>
+
+								<div class="divTableRow statTableRow">
+									<div class="divTableCell statTableCell rank">
+										3
+									</div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell playername"></div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell itemlist"></div>
+								</div>
+
+								<div class="divTableRow statTableRow">
+									<div class="divTableCell statTableCell rank">
+										4
+									</div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell playername"></div>
+									<div class="divTableCell statTableCell"></div>
+									<div class="divTableCell statTableCell itemlist"></div>
+								</div>
+							</div>
+						</div>
+
+
+						<div class="game-detail-item no-stretch" >
+							<div class="game-detail-header"> 
+								<b>Game Details</b>
+							</div>
+							<div class="player-data-content"> 
+								<div class="player-data-otherstat">
+									<div>
+										<div class="player-data-otherstat-item">
+											<b class="otherstat-name game-detail-name">Total turn: </b><b class="otherstat-value game-detail-value">1</b>
+										</div>
+										<div class="player-data-otherstat-item">
+											<b class="otherstat-name game-detail-name">Winner: </b><b class="otherstat-value game-detail-value">2</b>
+										</div>
+										<div class="player-data-otherstat-item">
+											<b class="otherstat-name game-detail-name">Map: </b><b class="otherstat-value game-detail-value">3</b>
+										</div>
+									</div>
+									<div>
+										<div class="player-data-otherstat-item">
+											<b class="otherstat-name game-detail-name">Item Limit: </b><b class="otherstat-value game-detail-value">4</b>
+										</div>
+										<div class="player-data-otherstat-item">
+											<b class="otherstat-name game-detail-name">Win by decision: </b><b class="otherstat-value game-detail-value">5</b>
+										</div>
+										<div class="player-data-otherstat-item">
+											<b class="otherstat-name game-detail-name">Additional life: </b><b class="otherstat-value game-detail-value">6</b>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div id="kdaGraph" class="game-detail-item nopadding"></div> 
+
+						<div id="money_chart" class="game-detail-item nopadding"></div>
+
+						<div id="game-detail-graphs" class="game-detail-item ">
+					
+							<div class="game-detail-graph">
+								<b class="game-detail-graph-type"></b><br>
+								<div class="game-detail-graph-players">
+									<!-- <div class="game-detail-graph-oneplayer">
+										<div class="game-detail-graph-name">
+											<b>1P</b><img src="res/img/character/bird.png">
+										</div>
+										<div class="game-detail-graph-value">
+											<div class="game-detail-graph-amount"></div>
+											<b>1426</b>
+										</div>
+									</div>  -->
+								</div>
+							</div>
+							<div class="game-detail-graph">
+								<b class="game-detail-graph-type"></b><br>
+								<div class="game-detail-graph-players">
+
+								</div>
+							</div>
+							<div class="game-detail-graph">
+								<b class="game-detail-graph-type"></b><br>
+								<div class="game-detail-graph-players">
+
+								</div>
+							</div>
+							<div class="game-detail-graph">
+								<b class="game-detail-graph-type"></b><br>
+								<div class="game-detail-graph-players">
+
+								</div>
+							</div>
+							<div class="game-detail-graph">
+								<b class="game-detail-graph-type"></b><br>
+								<div class="game-detail-graph-players">
+
+								</div>
+							</div>
+							<div class="game-detail-graph">
+								<b class="game-detail-graph-type"></b><br>
+								<div class="game-detail-graph-players">
+
+								</div>
+							</div>
 						
-								<div class="game-detail-graph">
-									<b class="game-detail-graph-type"></b><br>
-									<div class="game-detail-graph-players">
-										<!-- <div class="game-detail-graph-oneplayer">
-											<div class="game-detail-graph-name">
-												<b>1P</b><img src="res/img/character/bird.png">
-											</div>
-											<div class="game-detail-graph-value">
-												<div class="game-detail-graph-amount"></div>
-												<b>1426</b>
-											</div>
-										</div>  -->
-									</div>
-								</div>
-								<div class="game-detail-graph">
-									<b class="game-detail-graph-type"></b><br>
-									<div class="game-detail-graph-players">
+						</div>
+						
+						<div id="position_chart" class="game-detail-item nopadding"></div>
 
-									</div>
-								</div>
-								<div class="game-detail-graph">
-									<b class="game-detail-graph-type"></b><br>
-									<div class="game-detail-graph-players">
+						
+						<div id="killRecordTable" class="game-detail-item">
+							<b class="game-detail-item-title">Kill Record</b>
+							<div>
+								<div id="killRecordContent">
 
-									</div>
 								</div>
-								<div class="game-detail-graph">
-									<b class="game-detail-graph-type"></b><br>
-									<div class="game-detail-graph-players">
-
-									</div>
-								</div>
-								<div class="game-detail-graph">
-									<b class="game-detail-graph-type"></b><br>
-									<div class="game-detail-graph-players">
-
-									</div>
-								</div>
-								<div class="game-detail-graph">
-									<b class="game-detail-graph-type"></b><br>
-									<div class="game-detail-graph-players">
-
-									</div>
-								</div>
-							
 							</div>
 							
-							<div id="position_chart" class="game-detail-item nopadding"></div>
-
-							
-							<div id="killRecordTable" class="game-detail-item">
-								<b class="game-detail-item-title">Kill Record</b>
-								<div>
-									<div id="killRecordContent">
-
-									</div>
-								</div>
+							<!-- 
+										<div class="killframewrapper">
+											<b>1</b>
+											<div class="killframe">
+												<div class="charframe"><img src="res/img/obstacle.png"></div>
+												<img src="res/img/kill.png">
+												<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
+											</div><br>
+											<div class="killframe">
+												<div class="charframe"><img src="res/img/obstacle.png"></div>
+												<img src="res/img/kill.png">
+												<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
+											</div><br>
+										</div>
+										<b>&#10140;</b> -->
 								
-								<!-- 
-											<div class="killframewrapper">
-												<b>1</b>
-												<div class="killframe">
-													<div class="charframe"><img src="res/img/obstacle.png"></div>
-													<img src="res/img/kill.png">
-													<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
-												</div><br>
-												<div class="killframe">
-													<div class="charframe"><img src="res/img/obstacle.png"></div>
-													<img src="res/img/kill.png">
-													<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
-												</div><br>
-											</div>
-											<b>&#10140;</b> -->
-									
-							</div>
+						</div>
 
-							
 						
+					
 
-							<div id="train_detail"  class="game-detail-item">
-								<p> </p>
-							</div>
+						
 							
 					</div>
 					<div id="player-detail-content">
-
+						<div id="train_detail"  class="game-detail-item">
+							<p> </p>
+						</div>
 						<div id="player-card-container" style="display: none;">
 
 						

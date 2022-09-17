@@ -31,7 +31,7 @@ const chooseLang = function (kor, eng) {
 	return eng
 }
 function changelang() {
-	$(".lang_dropdown").show()	
+	$(".lang_dropdown").toggle()	
 }
 
 /**
@@ -147,9 +147,12 @@ function onReceiveSimulationSummary(data) {
 			}
 			str += "</div><div>"
 			if (getSetting(s, "isTeam")) {
-				str += '<img src="res/img/ui/team.png"  title="Team Game">'
+				
 				if (getSetting(s, "divideTeamEqually")) {
 					str += '<img src="res/img/ui/equal.png"  title="Divided team equally">'
+				}
+				else{
+					str += '<img src="res/img/ui/team2.png"  title="Team Game">'
 				}
 			}
 			if (getSetting(s, "allowMirrorMatch")) {
@@ -1059,12 +1062,12 @@ function showSingleStat(data) {
 	$(othertable[4]).show()
 	$(itembuildTable[2]).show()
 	$(itembuildTable[3]).show()
-	$(".otherTableLabel:nth-child(2)").html(chooseLang("사용한 돈", "Money spent"))
-	$(".otherTableLabel:nth-child(3)").html(chooseLang("빼앗긴 돈", "Money taken"))
-	$(".otherTableLabel:nth-child(4)").html(chooseLang("부활", "Revived"))
-	$(".otherTableLabel:nth-child(5)").html(chooseLang("강제이동", "Forcemoved"))
-	$(".otherTableLabel:nth-child(6)").html(chooseLang("기본공격", "Basic attack"))
-	$(".otherTableLabel:nth-child(7)").html(chooseLang("처형", "Executed"))
+	// $(".otherTableLabel:nth-child(2)").html(chooseLang("사용한 돈", "Money spent"))
+	// $(".otherTableLabel:nth-child(3)").html(chooseLang("빼앗긴 돈", "Money taken"))
+	// $(".otherTableLabel:nth-child(4)").html(chooseLang("부활", "Revived"))
+	// $(".otherTableLabel:nth-child(5)").html(chooseLang("강제이동", "Forcemoved"))
+	// $(".otherTableLabel:nth-child(6)").html(chooseLang("기본공격", "Basic attack"))
+	// $(".otherTableLabel:nth-child(7)").html(chooseLang("처형", "Executed"))
 	$(".detailbtn:nth-child(1)").html(chooseLang("상세 통계", "Details"))
 	$(".detailbtn:nth-child(2)").html(chooseLang("아이템 빌드", "Item Build"))
 	$(".detailbtn:nth-child(3)").html(chooseLang("킬/데스", "Kill/Death"))
@@ -1073,10 +1076,11 @@ function showSingleStat(data) {
 	let smallGraphTypes=$(".game-detail-graph-type").toArray()
 	$(smallGraphTypes[0]).html(chooseLang("입힌 피해량","Damage Dealt"))
 	$(smallGraphTypes[1]).html(chooseLang("플레이어에게 받은 피해","Damage From Players"))
-	$(smallGraphTypes[2]).html(chooseLang("장애물에게 받은 피해","Damage Obstacle"))
+	$(smallGraphTypes[2]).html(chooseLang("장애물에게 받은 피해","Damage From Obstacle"))
 	$(smallGraphTypes[3]).html(chooseLang("회복량","Heal Amount"))
 	$(smallGraphTypes[4]).html(chooseLang("획득한 돈","Money Earned"))
 	$(smallGraphTypes[5]).html(chooseLang("피해 감소량","Damage Reduced"))
+	let gameDetailValues=$(".game-detail-value").toArray()
 	$("#train_detail").hide()
 	$("#stattable").show()
 	$("#detailbtn_container").show()
@@ -1170,10 +1174,10 @@ function showSingleStat(data) {
 			if (p.itemRecord.length>0) {
 				$(".detailbtn:nth-child(2)").show()
 				let turn = p.itemRecord[0].turn
-				itemstr = "(" + turn + chooseLang("턴", "T") + ")"
+				itemstr = "<a class='itemrecord-text'>" + turn + chooseLang("턴", "T") + "</a><div class='itemrecord-item'>"
 				for (let item of p.itemRecord) {
 					if (item.turn !== turn) {
-						itemstr += "&#10140;(" + item.turn + chooseLang("턴", "T") + ")"
+						itemstr += "</div><a class='itemrecord-text'>&#10140;  " + item.turn + chooseLang("턴", "T") + "</a><div class='itemrecord-item'>"
 						turn = item.turn
 					}
 					for (let j = 0; j < item.count; ++j) {
@@ -1185,6 +1189,7 @@ function showSingleStat(data) {
 							"px'; > </div>"
 					}
 				}
+				itemstr+="</div>"
 			}
 			else{
 				$(".detailbtn:nth-child(2)").hide()
@@ -1229,14 +1234,16 @@ function showSingleStat(data) {
 							</div>
 						</div>
 					</div>
-					<div class="player-data-label">Item Build</div>
-					<div class="itembuildTableContent">
-						${itemstr}
-					</div>
+					${itemstr===""?"":`
+						<div class="player-data-label">${chooseLang("아이템 빌드","Item Build")}</div>
+						<div class="itembuildTableContent">
+							${itemstr}
+						</div>
+					`}
 				</div>
 			</div>
 			`
-			$("#player-detail-content").append(str)
+			$("#game_detail_content").append(str)
 			// $(".toast_itemimg_itembuild").css({
 			// 	margin: "-30px",
 			// 	width: "100px",
@@ -1252,6 +1259,16 @@ function showSingleStat(data) {
 
 		drawKillRecord(data)
 		$("#detailbtn_container").show()
+		$(gameDetailValues[0]).html(data.totalturn)
+		$(gameDetailValues[2]).html(getMapName(data.map_data.name))
+
+
+		let itemlimit=getSetting(data, "itemLimit")
+		$(gameDetailValues[3]).html(!itemlimit?6:itemlimit)
+		let coldGame=getSetting(data, "coldGame")
+		$(gameDetailValues[4]).html(!coldGame?chooseLang("미사용","Disabled"):chooseLang("사용","Enabled"))
+		let useAdditionalLife=getSetting(data, "useAdditionalLife")
+		$(gameDetailValues[5]).html(!useAdditionalLife?chooseLang("미사용","Disabled"):chooseLang("사용","Enabled"))
 		// $("#game_resulttext").html("Total turn:" + data.totalturn + ", Map: "+getMapName(data.map_data.name))
 	}
 	else{
@@ -1272,15 +1289,21 @@ function showSingleStat(data) {
 	}
 
 	if (data.isTeam && data.players[0].team === true) {
-		$("#resulttext").html("Blue Team Victory!")
+		$(gameDetailValues[1]).html("Red Team")
+
+		// $("#resulttext").html("Blue Team Victory!")
 	} else if (data.isTeam !== null && data.players[0].team === false) {
-		$("#resulttext").html("Red Team Victory!")
+		// $("#resulttext").html("Red Team Victory!")
+		$(gameDetailValues[1]).html("Blue Team")
+
 	} else {
+		$(gameDetailValues[1]).html(data.players[0].name)
 		$("#resulttext").html("")
 	}
 
 	let dataList = $(".statTableCell").toArray()
-
+	$(".statTableCell").removeClass("red")
+	$(".statTableCell").removeClass("blue")
 	let winner_team = true
 	for (let i = 0, k = 0; i < data.players.length; ++i, k += 5) {
 		if(data.map_data!=null && data.map_data.name==='train')
@@ -1299,10 +1322,13 @@ function showSingleStat(data) {
 			if (p.team) {
 				charstr += "red"
 				$(dataList[k + 2]).addClass("red")
+				$(dataList[k + 3]).addClass("red")
+
 			}
 			else{
 				charstr += "blue"
 				$(dataList[k + 2]).addClass("blue")
+				$(dataList[k + 3]).addClass("blue")
 			} 
 
 			if (i === 0) {
@@ -1336,9 +1362,7 @@ function showSingleStat(data) {
 				p.kda[1] +
 				"/" +
 				p.kda[2] +
-				" <br> <b style='background-color:red'>" +
-				multiKillText(p.bestMultiKill) +
-				"</b>"
+				(multiKillText(p.bestMultiKill)===""?"":" <br><b class='multikill-text'>" + multiKillText(p.bestMultiKill)+"</b>")
 		)
 
 		kda_graph.push({

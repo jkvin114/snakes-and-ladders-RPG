@@ -64,7 +64,8 @@ div.greenTable {
 }
 
 .divTable.greenTable .divTableBody .divTableCell{
-    /* font-size: 1.2rem; */
+    font-size: clamp(13px,1.2rem,18px);
+
 }
 .divTable.greenTable .divTableHeading {
     background: #6a359c;
@@ -148,12 +149,20 @@ div.greenTable {
 .charkda.red,.statTableCell.red{
     /* background-color:  */
     /* outline: 2px solid red; */
-    color:rgb(255, 167, 167); ;
+    color:#ffa7a7; ;
 }
 .charkda.blue,.statTableCell.blue{
-    color: rgb(168, 201, 255); ;
+    color: #a8c9ff; ;
     /* outline: 2px solid blue; */
     /* background-color: */
+}
+.multikill-text{
+    color: white;
+    background-color: rgb(255, 81, 0);
+    padding: 3px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    line-height: 1em;
 }
 .charimg.winner{
     border: 4px solid gold;
@@ -359,14 +368,17 @@ table, th, td {
 }
 .itembuildTableContent
 {	
-    line-height: 50px;
+    line-height: 56px;
     font-size: 13px;
     /* border-bottom: 1px solid lightgray; */
     text-align: left;
     /* border-left: 1px solid lightgray; */
     padding-top: 10px;
-    padding-left: 15px;
+    padding-left: 5px;
     padding-bottom: 10px;
+    background-color:#552686 ;
+    margin: 5px;
+    
 }
 .itembuildTableName{
     /* border-bottom: 1px solid lightgray; */
@@ -394,6 +406,7 @@ table, th, td {
     max-width: 600px;
 
 }
+
 #killRecordTable > div{
     /* max-width: 600px; */
     /* max-height: 350px; */
@@ -454,7 +467,7 @@ table, th, td {
     border-bottom-right-radius: 4px;
 }
 .charframe{
-    background-color: rgb(191, 255, 234);
+    background-color: rgb(212, 139, 255);
 }
 .charframe2{
     background-color: rgb(255, 188, 188);
@@ -519,6 +532,19 @@ height:60vh;
 .itemlist_container{
     margin-left:-20px ;
     margin-right: -20px;
+}
+.itemrecord-text{
+    padding: 3px;
+    background-color: #351954;
+    word-break: keep-all;
+}
+.itemrecord-item{
+    display: inline;
+    padding: 4px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    background-color: #351954;
+    border-radius: 5px;
 }
 /* Tooltip container */
 .tooltip {
@@ -682,6 +708,9 @@ height:60vh;
     margin: 10px;
     flex-grow: 1;
 }
+.game-detail-item.no-stretch{
+    align-self: center;
+}
 .game-detail-item.nopadding{
     padding: 0;
 }
@@ -698,7 +727,7 @@ height:60vh;
     display: grid;
     grid-template-columns: 1fr 1fr;
     font-size: 12px;
-    min-width: 350px;
+    min-width: 300px;
 }
 .game-detail-graph-type{
     font-size: 15px;
@@ -829,14 +858,24 @@ height:60vh;
     text-align: left;
     padding: 4px;
     border: 3px solid #351954;
-}.otherstat-value{
+}
+.otherstat-name{
+    color: #afafaf;
+}
+.otherstat-value{
     float: right;
 }
 .player-data-header{
     text-align: left;
     height: 50px;
 }
-.player-data-header b{
+.game-detail-header{
+    height: 40px;
+    font-size: 30px;
+    text-align: center;
+}
+
+.player-data-header b.game-detail-header b{
     font-size: 20px;
     line-height: 40px;
     margin-left: 20px;
@@ -870,10 +909,7 @@ height:60vh;
     margin: 5px;
     text-align: center;
 }
-.itembuildTableContent{
-    background-color:#552686 ;
-    margin: 5px;
-}
+
 #toolbar{
     width: 100vw;
     display: flex;
@@ -1204,15 +1240,16 @@ transform: scale(1.1);
     position: absolute;
     background: rgb(121, 121, 121);
     z-index: 5;
-    top:45px;
+    top:40px;
     right: 0;
     width: 120px;
   }
   .lang_dropdown > a{
     display: block;
-    font-size: 30px;
+    font-size: 20px;
     color: rgb(255, 255, 255);
     cursor:pointer;
+    padding: 5px   ;
   }
   .dropitem:hover{
     background: rgb(73, 73, 73);

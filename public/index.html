@@ -151,7 +151,7 @@ footer{
 }
 .lang_dropdown > a{
   display: block;
-  font-size: 30px;
+  font-size: 20px;
   color: rgb(255, 255, 255);
   cursor:pointer;
   padding:4px;
@@ -443,7 +443,7 @@ $("document").ready(function(){
   $(registerbtns[2]).html(chooseLang("Home","홈으로"))
 
   $("#langbtn").click(function(){
-      $(".lang_dropdown").show()
+      $(".lang_dropdown").toggle()
   })
 
   $(".dropitem").click(function(){
