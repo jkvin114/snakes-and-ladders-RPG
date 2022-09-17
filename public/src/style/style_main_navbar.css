@@ -18,7 +18,7 @@
     display: flex;
     justify-content:space-between;
     flex-grow: 1;
-    margin-left: 10vw;
+    margin-left: 5vw;
     margin-right: 10px;
 
   }
@@ -31,7 +31,7 @@
     cursor: pointer;
     font-family: 'nanumEB';
     font-size: 30px;
-    color: rgb(249, 187, 255);
+    color: #b895fc;
     margin: 0;
     line-height: 40px;
     margin-left: 15px;
@@ -64,10 +64,10 @@
     font-family: 'nanumB';
     /* background-color: #7E00BF; */
     background: transparent;
-    font-size: 20px;
+    font-size: 14px;
     /* border-radius: 4px; */
     /* height: 30px; */
-    height: 40px;
+    height: 30px;
   }
   .navbtn.active{
     border-bottom: solid 4px #D896FF ;
@@ -78,7 +78,7 @@
     background: rgb(65, 65, 65);
   }
 .navbtn > img{
-    height: 30px;
+    height: 20px;
     vertical-align: middle;
     padding: 5px;
   
@@ -105,9 +105,9 @@
     margin-right: 2px;
     /* border-radius: 4px; */
     /* height: 30px; */
-    height: 30px;
+    height: 23px;
     padding: 5px;
-    border-radius: 20%;
+    border-radius: 50%;
   }
   .menubtn:hover{
     background: #7a7a92;

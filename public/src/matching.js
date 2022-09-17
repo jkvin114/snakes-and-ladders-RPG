@@ -32,14 +32,14 @@ function onReceiveCharacters(request) {
 
 		str+=`<div class=champbtn_new value=${String(i)}>
 				<div>
-					<img src="res/img/character/${characters[i].imgdir}"  style="background-color: ${characters[i].bgcolor};" >
+					<img src="res/img/character/illust/${characters[i].illustdir}"  style="background-color: ${characters[i].bgcolor};" >
 				</div>
 				<div class="champbtn_name">${characters[i].name}</div>
 			</div>`
 
 		
 		
-		str2+=`<img class="champmenu_item" src="res/img/character/${characters[i].imgdir}"  value=${String(i)}>`
+		str2+=`<img class="champmenu_item" src="res/img/character/illust/${characters[i].illustdir}"  value=${String(i)}>`
 		
 	}
  	$("#character_selection").append(str)
@@ -698,7 +698,7 @@ class MatchInterface {
 
 	updateOneCharacter(turn, champ) {
 		console.log(turn, champ)
-		let src = champ < 0 ? "res/img/ui/random.png" : "res/img/character/" + this.match.characterSetting[champ].imgdir
+		let src = champ < 0 ? "res/img/ui/random.png" : "res/img/character/illust/" + this.match.characterSetting[champ].illustdir
 
 		$(this.aichamp[turn]).attr("src", src)
 		$(this.playerchamp[turn]).attr("src", src)
@@ -778,7 +778,7 @@ class TeamSelector {
 			let c = this.match.playerlist[i].champ
 			$(this.champimgs[i]).attr(
 				"src",
-				c < 0 ? RANDOM_CHAR_DIR : "res/img/character/" + this.match.characterSetting[c].imgdir
+				c < 0 ? RANDOM_CHAR_DIR : "res/img/character/illust/" + this.match.characterSetting[c].illustdir
 			)
 
 			$(this.names[i]).html(nicknames[i])

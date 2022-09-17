@@ -44,46 +44,55 @@
         {
             "name": "Reaper",
             "imgdir": "reaper.png",
+            "illustdir": "reaper.jpg",
             "bgcolor": "#7e0000"
         },
         {
             "name": "Knight",
             "imgdir": "knight.png",
+            "illustdir": "knight.jpg",
             "bgcolor": "#086300"
         },
         {
             "name": "Ghost",
             "imgdir": "ghost.png",
+            "illustdir": "ghost.jpg",
             "bgcolor": "#001381"
         },
         {
             "name": "Dinosaur",
             "imgdir": "dinosaur.png",
+            "illustdir": "dinosaur.jpg",
             "bgcolor": "#3d5700"
         },
         {
             "name": "Sniper",
             "imgdir": "sniper.png",
+            "illustdir": "sniper.jpg",
             "bgcolor": "#581c00"
         },
         {
             "name": "Magician",
             "imgdir": "magician.png",
+            "illustdir": "magician.jpg",
             "bgcolor": "#680051"
         },
         {
             "name": "Kraken",
             "imgdir": "kraken.png",
+            "illustdir": "kraken.jpg",
             "bgcolor": "#006a72"
         },
         {
             "name": "Bird",
             "imgdir": "bird.png",
+            "illustdir": "bird.jpg",
             "bgcolor": "#ff8420"
         },
         {
             "name": "Tree",
             "imgdir": "tree.png",
+            "illustdir": "tree.jpg",
             "bgcolor": "#d1a400"
         }
     ]

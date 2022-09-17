@@ -145,39 +145,40 @@
 				drag and drop txt file to see the statistics(legacy)
 			</a>
 		</div>
+		<div id="summary-container">
+			<div id="summary" class="hidden">
+				<!-- <div class="summary_item">
+					<div class="summary_characters">
+						<div class="summary_char_icon"><img src="res/img/character/bird.png"></div>
+						<div class="summary_char_icon"><img src="res/img/character/dinosaur.png"></div>
+					</div>
+					<div class="summary_detail">
+						<img src="res/img/svg/zoom-in.svg" class="show_detail summary_detail_btn">
+					</div>
+					<div>
+						<div class="summary_map_icon"><img src="res/img/map_thumbnail/casion_icon.jpg"></div>
+					</div>
+					<div>
+						<img src="res/img/ui/team_black.png">
+					</div>
+					<div>
+						<img src="res/img/svg/num.svg">:500
+						<img src="res/img/svg/users.svg">:4
+					</div>
+				</div> -->
+			</div>
+			<div id="summary_navbar"> 
+				<a class="prevpage pagearrow">	&#9664;</a>
+				<a id="pagenum">1</a>
+				<a class="nextpage pagearrow">	&#9654;</a> 
+			</div>
+		</div>
 		
-		<div id="summary" class="hidden">
-			<!-- <div class="summary_item">
-				<div class="summary_characters">
-					<div class="summary_char_icon"><img src="res/img/character/bird.png"></div>
-					<div class="summary_char_icon"><img src="res/img/character/dinosaur.png"></div>
-				</div>
-				<div class="summary_detail">
-					<img src="res/img/svg/zoom-in.svg" class="show_detail summary_detail_btn">
-				</div>
-				<div>
-					<div class="summary_map_icon"><img src="res/img/map_thumbnail/casion_icon.jpg"></div>
-				</div>
-				<div>
-					<img src="res/img/ui/team_black.png">
-				</div>
-				<div>
-					<img src="res/img/svg/num.svg">:500
-					<img src="res/img/svg/users.svg">:4
-				</div>
-			</div> -->
-
-		</div>
-		<div id="summary_navbar"> 
-			<a class="prevpage pagearrow">	&#9664;</a>
-			<a id="pagenum">1</a>
-			<a class="nextpage pagearrow">	&#9654;</a> 
-		</div>
 		<img id="gotop" src="res/img/svg/chevrons-up.svg" title="go top">
 		<!-- <button id="togglelist" ><img src="res/img/svg/chevron-left.svg"></button> -->
 		<div id="main_start"></div>
 		<div id="main" class="hidden">
-			<div id="gamelist_wrapper" class="collapse">	
+			<div id="gamelist_wrapper" class="collapse game-detail-item nopadding">	
 			<!-- <div class="onegame_container">
 					<div class="character"><div class="charimg list_charimg"><img src="res/img/character/bird.png"></div><a> 1/10/0</a></div>
 					<div class="character"><div class="charimg list_charimg"><img src="res/img/character/bird.png"></div><a> 1/10/0</a></div>
@@ -210,10 +211,18 @@
 				</div>
 
 				<div id="game_detail">		
-					<p id="game_resulttext"></p>
+					<!-- <br><br>
+					<p id="game_resulttext"></p> -->
 					<div id="game_detail_content">
-						<div>
-							<div class="divTable greenTable" id="stattable">
+							<div id=detailbtn_container class="game-detail-item hidden">
+								<button class="detailbtn" value="1">Details</button>
+								<button class="detailbtn" value="2">Item Build</button>
+								<button class="detailbtn" value="3">Kills</button>
+								<button class="detailbtn" value="4">Position</button>
+								<button class="detailbtn" value="5">Money</button>
+								<!-- <button class="detailbtn" value="6">&times;</button> -->
+							</div>
+							<div class="divTable greenTable" class="game-detail-item" id="stattable">
 								<div class="divTableHeading">
 									<div class="divTableRow statTableRow">
 										<!-- <div class="divTableHead">Rank</div>
@@ -225,7 +234,7 @@
 								</div>
 								<div class="divTableBody">
 									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+										<div class="divTableCell statTableCell rank">
 											1
 										</div>
 										<div class="divTableCell statTableCell"></div>
@@ -235,7 +244,7 @@
 									</div>
 		
 									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+										<div class="divTableCell statTableCell rank">
 											2
 										</div>
 										<div class="divTableCell statTableCell"></div>
@@ -245,7 +254,7 @@
 									</div>
 		
 									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+										<div class="divTableCell statTableCell rank">
 											3
 										</div>
 										<div class="divTableCell statTableCell"></div>
@@ -255,7 +264,7 @@
 									</div>
 		
 									<div class="divTableRow statTableRow">
-										<div class="divTableCell statTableCell rank" style="font-size: 20px">
+										<div class="divTableCell statTableCell rank">
 											4
 										</div>
 										<div class="divTableCell statTableCell"></div>
@@ -265,128 +274,12 @@
 									</div>
 								</div>
 							</div>
-							<div id=detailbtn_container>
-								<button class="detailbtn" value="1">Details</button>
-								<button class="detailbtn" value="2">Item Build</button>
-								<button class="detailbtn" value="3">Kills</button>
-								<button class="detailbtn" value="4">Position</button>
-								<button class="detailbtn" value="5">Money</button>
-								<!-- <button class="detailbtn" value="6">&times;</button> -->
-							</div>
-							<div id="otherstattable-container">
-								<div class="divTable greenTable" id="otherstattable">
-									<div class="divTableHeading">
-										<div class="divTableRow otherTableRow">
-											<div class="divTableHead otherTableLabel">&nbsp;&nbsp;Player</div>
-											<div class="divTableHead otherTableLabel">Money Spent</div>
-											<div class="divTableHead otherTableLabel">Money taken</div>
-											<div class="divTableHead otherTableLabel">Revived</div>
-											<div class="divTableHead otherTableLabel">Forcemoved</div>
-											<div class="divTableHead otherTableLabel">Basic attack</div>
-											<div class="divTableHead otherTableLabel">Executed</div>
-										</div>
-									</div>
-									<div class="divTableBody">
-										<div class="divTableRow otherTableRow">
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-										</div>
+							<div id="kdaGraph" class="game-detail-item nopadding"></div> 
+
+							<div id="money_chart" class="game-detail-item nopadding"></div>
 		
-										<div class="divTableRow otherTableRow">
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-										</div>
-		
-										<div class="divTableRow otherTableRow">
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-										</div>
-		
-										<div class="divTableRow otherTableRow">
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-											<div class="divTableCell otherTableCell"></div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div id="chart-container">
-								<div class="divTable greenTable" id="itembuildTable">
-									<div class="divTableHeading">
-										<div class="divTableRow ">
-											<div class="divTableHead ">Player</div>
-											<div class="divTableHead ">Item Build</div>
-										</div>
-									</div>
-									<div class="divTableBody">
-										<div class="divTableRow itembuildTableRow">
-											<div class="divTableCell itembuildTableName"></div>
-											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
-										</div>
-										<div class="divTableRow itembuildTableRow">
-											<div class="divTableCell itembuildTableName"></div>
-											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
-										</div>
-										<div class="divTableRow itembuildTableRow">
-											<div class="divTableCell itembuildTableName"></div>
-											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
-										</div>
-										<div class="divTableRow itembuildTableRow">
-											<div class="divTableCell itembuildTableName"></div>
-											<div class="divTableCell itembuildTableContent" style="font-size: 13px;"></div>
-											
-										</div>				
-									</div>
-								</div>
-								<div id="killRecordTable">
-						<!-- 
-									<div class="killframewrapper">
-										<b>1</b>
-										<div class="killframe">
-											<div class="charframe"><img src="res/img/obstacle.png"></div>
-											<img src="res/img/kill.png">
-											<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
-										</div><br>
-										<div class="killframe">
-											<div class="charframe"><img src="res/img/obstacle.png"></div>
-											<img src="res/img/kill.png">
-											<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
-										</div><br>
-									</div>
-									<b>&#10140;</b> -->
-							
-								</div>
-								
-								<div id="position_chart"></div>
-								<div id="money_chart"></div>
-							</div>
-							
-							<div id="train_detail" class="">
-								<p> </p>
-							</div>
-						</div>
-						<div>
-							<div id="game-detail-graphs">
-							
+							<div id="game-detail-graphs" class="game-detail-item ">
+						
 								<div class="game-detail-graph">
 									<b class="game-detail-graph-type"></b><br>
 									<div class="game-detail-graph-players">
@@ -404,40 +297,189 @@
 								<div class="game-detail-graph">
 									<b class="game-detail-graph-type"></b><br>
 									<div class="game-detail-graph-players">
-	
+
 									</div>
 								</div>
 								<div class="game-detail-graph">
 									<b class="game-detail-graph-type"></b><br>
 									<div class="game-detail-graph-players">
-	
+
 									</div>
 								</div>
 								<div class="game-detail-graph">
 									<b class="game-detail-graph-type"></b><br>
 									<div class="game-detail-graph-players">
-	
+
 									</div>
 								</div>
 								<div class="game-detail-graph">
 									<b class="game-detail-graph-type"></b><br>
 									<div class="game-detail-graph-players">
-	
+
 									</div>
 								</div>
 								<div class="game-detail-graph">
 									<b class="game-detail-graph-type"></b><br>
 									<div class="game-detail-graph-players">
-	
+
+									</div>
+								</div>
+							
+							</div>
+							
+							<div id="position_chart" class="game-detail-item nopadding"></div>
+
+							
+							<div id="killRecordTable" class="game-detail-item">
+								<b class="game-detail-item-title">Kill Record</b>
+								<div>
+									<div id="killRecordContent">
+
 									</div>
 								</div>
 								
+								<!-- 
+											<div class="killframewrapper">
+												<b>1</b>
+												<div class="killframe">
+													<div class="charframe"><img src="res/img/obstacle.png"></div>
+													<img src="res/img/kill.png">
+													<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
+												</div><br>
+												<div class="killframe">
+													<div class="charframe"><img src="res/img/obstacle.png"></div>
+													<img src="res/img/kill.png">
+													<div class="charframe2"><img src="res/img/character/dinosaur.png"><b class="charframetxt">1P</b></div>
+												</div><br>
+											</div>
+											<b>&#10140;</b> -->
+									
 							</div>
-							<div id="kdaGraph"></div> 
+
+							
+						
+
+							<div id="train_detail"  class="game-detail-item">
+								<p> </p>
+							</div>
+							
+					</div>
+					<div id="player-detail-content">
+
+						<div id="player-card-container" style="display: none;">
+
+						
+							<div class="player-card">
+								<div class="player-card-img">
+									<img src="res/img/character/illust/dinosaur.jpg">
+								</div>
+								<div class="player-card-name">	
+									Dinosaur_Bot(4P)
+								</div>
+							</div>
+							<div class="player-card">
+								<div class="player-card-img">
+									<img src="res/img/character/illust/dinosaur.jpg">
+								</div>
+								<div class="player-card-name">	
+									Dinosaur_Bot(4P)
+								</div>
+							</div>
+							<br>
+							<div class="player-card">
+								<div class="player-card-img">
+									<img src="res/img/character/illust/dinosaur.jpg">
+								</div>
+								<div class="player-card-name">	
+									Dinosaur_Bot(4P)
+								</div>
+							</div>
+							<div class="player-card">
+								<div class="player-card-img">
+									<img src="res/img/character/illust/dinosaur.jpg">
+								</div>
+								<div class="player-card-name">	
+									Dinosaur_Bot(4P)
+								</div>
+							</div>
+						</div>
+
+					
+						<div class="divTable greenTable" id="otherstattable" class="game-detail-item"  style="display: none;">
+							<div class="divTableHeading">
+								<div class="divTableRow otherTableRow">
+									<div class="divTableHead otherTableLabel">&nbsp;&nbsp;Player</div>
+									<div class="divTableHead otherTableLabel">Money Spent</div>
+									<div class="divTableHead otherTableLabel">Money taken</div>
+									<div class="divTableHead otherTableLabel">Revived</div>
+									<div class="divTableHead otherTableLabel">Forcemoved</div>
+									<div class="divTableHead otherTableLabel">Basic attack</div>
+									<div class="divTableHead otherTableLabel">Executed</div>
+								</div>
+							</div>
+							<div class="divTableBody">
+								<div class="divTableRow otherTableRow">
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+								</div>
+
+								<div class="divTableRow otherTableRow">
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+								</div>
+
+								<div class="divTableRow otherTableRow">
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+								</div>
+
+								<div class="divTableRow otherTableRow">
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+									<div class="divTableCell otherTableCell"></div>
+								</div>
+							</div>
 						</div>
 						
-						
+
+						<div class="divTable greenTable game-detail-item" id="itembuildTable"  style="display: none;">
+							<div class="divTableBody">
+								<div class="divTableRow itembuildTableRow">
+									<div class="divTableCell itembuildTab3leContent"></div>
+								</div>
+								<div class="divTableRow itembuildTableRow">
+									<div class="divTableCell itembuildTab3leContent"></div>
+								</div>
+								<div class="divTableRow itembuildTableRow">
+									<div class="divTableCell itembuildTab3leContent"></div>
+								</div>
+								<div class="divTableRow itembuildTableRow">
+									<div class="divTableCell itembuildTab3leContent"></div>
+									
+								</div>				
+							</div>
+						</div>
 					</div>
+				</div>
 					
 					
 					<!-- 
@@ -452,9 +494,8 @@
 						<div id="chartdiv4" class="graph"></div>
 						<div id="chartdiv5" class="graph"></div>
 					</div>-->
-				</div>
-			
 			</div>
+			
 		</div>
 		<div class='tooltiptext'>
 			<h4>name</h4>

@@ -113,7 +113,7 @@ function onReceiveSimulationSummary(data) {
 		let teamlock = getSetting(s, "teamLock")
 		if (!teamlock || teamlock.length === 0) teamlock = [[], []]
 
-		str += '<div class="summary_item"><div class="summary_characters">'
+		str += `<div class="summary_item summary_to_detail" value=${s.id}><div class="summary_characters">`
 		if (s.setting.length > 0) {
 			let charpools=getSetting(s, "characterPool")
 			if(charpools!=null){
@@ -140,24 +140,22 @@ function onReceiveSimulationSummary(data) {
 			
 
 			str +=
-				'</div><div class="summary_detail"><img src="res/img/svg/chart.svg" value="' +
-				s.id +
-				'" class="show_detail summary_detail_btn summary_to_detail"></div><div>'
+				'</div><div>'
 
 			for (let m of getSetting(s, "mapPool")) {
 				str += '<div class="summary_map_icon" title="Map Type: '+getMapName(m)+'"><img src="' + getMapIconUrl(m) + '"></div>  '
 			}
 			str += "</div><div>"
 			if (getSetting(s, "isTeam")) {
-				str += '<img src="res/img/ui/team_black.png"  title="Team Game">'
+				str += '<img src="res/img/ui/team.png"  title="Team Game">'
 				if (getSetting(s, "divideTeamEqually")) {
 					str += '<img src="res/img/ui/equal.png"  title="Divided team equally">'
 				}
 			}
 			if (getSetting(s, "allowMirrorMatch")) {
-				str += '<img src="res/img/ui/mirror.png"  title="Allowed mirror match">'
+				str += '<img src="res/img/ui/mirror.png"  title="Allowed mirror match" class="invert">'
 			}
-			str += '</div><div><img src="res/img/svg/num.svg"  title="Game count">:' + s.count + '  <img src="res/img/svg/users.svg"  title="Player count per game">:'
+			str += '</div><div><img src="res/img/svg/num.svg"  class="invert" title="Game count">:' + s.count + '  <img src="res/img/svg/users.svg" class="invert"  title="Player count per game">:'
 			if (getSetting(s, "randomizePlayerNumber")) {
 				str += "?"
 			} else {
@@ -167,15 +165,13 @@ function onReceiveSimulationSummary(data) {
 		} else {
 			//if there is no setting stored in data
 			str +=
-				'</div><div class="summary_detail"><img src="res/img/svg/chart.svg" value="' +
-				s.id +
-				'" class="show_detail summary_detail_btn summary_to_detail"></div>' +
-				'<div><img src="res/img/svg/num.svg">:' +
+				'</div>' +
+				'<div><img src="res/img/svg/num.svg" class="invert">:' +
 				s.count +
 				"</div></div>"
 		}
 	}
-	for (let i = 0; i < 5; ++i) {
+	for (let i = 0; i < 10; ++i) {
 		str += '<div class="summary_item dummy"></div>'
 	}
 	$("#summary").html(str)
@@ -272,6 +268,7 @@ function addItemTooltipEvent() {
 	})
 }
 function hideDetail(){
+	return
 	$("#otherstattable").css({ visibility: "collapse" })
 	$("#itembuildTable").css({ visibility: "collapse" })
 	$("#position_chart").hide()
@@ -298,7 +295,7 @@ $(document).ready(function () {
 	let is = new InterfaceState()
 	$("#stattable").hide()
 	$("#detailbtn_container").hide()
-	$("#summary_navbar").hide()
+	// $("#summary_navbar").hide()
 	requestGlobalSetting()
 	requestItem()
 
@@ -338,6 +335,8 @@ $(document).ready(function () {
 
 	$(".intro_simulation").click(function () {
 		window.scrollTo(0,0)
+		InterfaceState.current_page=0
+		$("#pagenum").html("1")
 		$(".intro_simulation").addClass("active")
 		$(".intro_game").removeClass("active")
 
@@ -347,6 +346,9 @@ $(document).ready(function () {
 		//console.log("intro")
 	})
 	$(".intro_game").click(function () {
+		InterfaceState.current_page=0
+		$("#pagenum").html("1")
+
 		requestGames(0, InterfaceState.page_max)
 		window.scrollTo(0,0)
 		$(".intro_simulation").removeClass("active")
@@ -568,7 +570,7 @@ function getPlayerName(rank, data) {
  * @returns
  */
 function getCharImgUrl(champ_id) {
-	return "res/img/character/" + SETTING.characters[champ_id].imgdir
+	return "res/img/character/illust/" + SETTING.characters[champ_id].illustdir
 }
 function getMapIconUrl(map_id) {
 	if (map_id === 0 || map_id === "default") {
@@ -614,6 +616,7 @@ function writeTrainStats(totalturn,playerdata){
 	골드당 피해감소량: ${playerdata.stats[7]/(playerdata.stats[4])}<br>
 	골드당 회복량: ${playerdata.stats[3]/(playerdata.stats[4])}<br>`
 	$("#train_detail p").append(str)
+	$("#train_detail").show()
 }
 
 function drawKillRecord(data) {
@@ -621,15 +624,18 @@ function drawKillRecord(data) {
 	if (data.killRecord.length === 0) {
 		$(".detailbtn:nth-child(3)").hide()
 		return
-	}
+	}//<b>&#10140;</b>
+	let count=1
 	$(".detailbtn:nth-child(3)").show()
 	let turn = data.killRecord[0].turn
-	let str = "<div class='killframewrapper'><b>" + chooseLang("턴 ", "Turn ") + String(turn) + "</b>"
+	let str = "<div class='killframewrapper'>"
 	for (let k of data.killRecord) {
 		if (k.turn !== turn) {
-			str += "</div><b>&#10140;</b><div class='killframewrapper'>"
-			str += "<b>" + chooseLang("턴 ", "Turn ") + String(k.turn) + "</b>"
+			str += "<b>"+chooseLang("턴 ","Turn ") + String(turn) + "</b>"+"</div>"
 			turn = k.turn
+			if(count%12===0) str+="<br>"
+			count+=1
+			str+="<div class='killframewrapper'>"
 		}
 		str += "<div class='killframe'><div class='charframe'><img src='" + getChampImgofTurn(data, k.killer) + "'>"
 		if (k.killer >= 0) {
@@ -638,15 +644,16 @@ function drawKillRecord(data) {
 			str += "<b class='charframetxt'>EX</b>"
 		}
 		str +=
-			"</div><img src='res/img/ui/kill.png'><div class='charframe2'><img src='" +
+			"</div><img src='res/img/ui/basicattack.png'><div class='charframe2'><img src='" +
 			getChampImgofTurn(data, k.dead) +
 			"'><b class='charframetxt'>" +
 			(k.dead + 1) +
 			"P</b></div></div><br>"
 	}
-	str += "</div>"
+	
+	str += "<b>"+chooseLang("턴 ","Turn ") + String(turn) + "</b>"+"</div>"
 
-	$("#killRecordTable").html(str)
+	$("#killRecordContent").html(str)
 }
 
 /*
@@ -898,20 +905,23 @@ function showStat(data) {
 
 		let string = ""
 		for (let i = 0; i < statData.length; ++i) {
-			string += '<div class="onegame_container"><div>'
+			string += '<div class="onegame_container" onclick=showonestat(' +
+			String(i) +
+			')>'
+
 			for (let j = 0; j < 4; ++j) {
+				if(j==0 || j==2) string+="<div>"
+
 				if (j < statData[i].players.length) {
 					let p = statData[i].players[j]
 					let teamstr = ""
 					if (statData[i].isTeam && p.team === true) teamstr = "red"
 					else if (statData[i].isTeam && p.team === false) teamstr = "blue"
-
 					string +=
-						'<div class="character"><div class="charimg list_charimg ' +
-						teamstr +
+						'<div class="character"><div class="charimg list_charimg '+
 						'"><img src="' +
 						getCharImgUrl(p.champ_id) +
-						'"></div><a>' +
+						'"></div><a class="charkda '+teamstr+'">' +
 						p.kda[0] +
 						"/" +
 						p.kda[1] +
@@ -921,38 +931,37 @@ function showStat(data) {
 				} else {
 					string += "<div></div>"
 				}
+				if(j==1 || j==3) string+="</div>"
 			}
-			string += "</div>"
-
-			string += '<div><div class="gameinfo">' + statData[i].totalturn + ' turns<hr></div><div class="gameinfo"></div>'
+			string += ""
 			if(statData[i].map_data!=null){
-				string += '<img class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '">'
+				string += '<div><div class="gameinfo"><img class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '"></div>'
 			}
+			string += '<div class="gameinfo"><img src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div></div>'
+			string+="</div>"
 			
 
 			if (statData[i].setting != null && statData[i].setting.length > 0 && statData[i].setting[0].name != null) {
-				string +=
-					'<img src="res/img/svg/shopping-cart.svg" class="icon" title="item limit">:' +
-					getSetting(statData[i], "itemLimit") +
-					"<br>"
+				// string +=
+				// 	'<img src="res/img/svg/shopping-cart.svg" class="icon" title="item limit">:' +
+				// 	getSetting(statData[i], "itemLimit") +
+				// 	"<br>"
 				// if (getSetting(statData[i], "shuffleObstacle")) {
 				// 	string += '<img src="res/img/svg/shuffle.svg" class="icon" title="shuffled obstacles">'
 				// }
-				if (getSetting(statData[i], "coldGame")) {
-					string += '<img src="res/img/ui/finish-flag.png" class="icon" title="use decision by win">'
-				}
-				if (getSetting(statData[i], "useAdditionalLife")) {
-					string += '<img src="res/img/svg/heart.svg" class="icon" title="additional life avaliable">'
-				}
+				// if (getSetting(statData[i], "coldGame")) {
+				// 	string += '<img src="res/img/ui/finish-flag.png" class="icon" title="use decision by win">'
+				// }
+				// if (getSetting(statData[i], "useAdditionalLife")) {
+				// 	string += '<img src="res/img/svg/heart.svg" class="icon" title="additional life avaliable">'
+				// }
 			}
 
-			string +=
-				'<img src="res/img/svg/zoom-in.svg" class="show_detail" ' +
-				"onclick=showonestat(" +
-				String(i) +
-				")></div></div>"
+			// string +=
+			// 	'<img src="res/img/svg/zoom-in.svg" class="show_detail" ' +
+			// 	"></div></div>"
 		}
-		for(let i=0;i<6;++i){
+		for(let i=0;i<10;++i){
 			string+='<div class="onegame_container dummy"></div>'
 		}
 
@@ -970,9 +979,16 @@ function showStat(data) {
 		return
 	}
 }
-function drawSmallGraph(data){
-	let max=-Infinity
+const randomHex = length => (
+	'0'.repeat(length) 
+	+ Math.floor((Math.random() * 16 ** length))
+	.toString(16)
+).slice(-length);
 
+
+function drawSmallGraph(data,graphId){
+	let max=-Infinity
+	let smallgraphs=$(".game-detail-graph-players").toArray()
 	for(let d of data){
 		max=Math.max(max,d.value)
 	}
@@ -980,22 +996,27 @@ function drawSmallGraph(data){
 	let str=""
 	let sorted=data.sort((a,b)=>a.turn-b.turn)
 	console.log(sorted)
+	let widths=new Map()
 	for(const player of sorted){
-		
+		let id=randomHex(4)
+		widths.set(id,100 * (player.value/max))
 		str+=`
 		<div class="game-detail-graph-oneplayer">
 			<div class="game-detail-graph-name">
 				<b>${player.turn+1}P</b><img src="${getCharImgUrl(player.champ)}">
 			</div>
 			<div class="game-detail-graph-value">
-				<div class="game-detail-graph-amount" style="width:${100 * (player.value/max)}%;"></div>
+				<div class="game-detail-graph-amount" id='${id}'"></div>
 				<b>${player.value}</b>
 			</div>
 		</div> 
 		`
 	}
-	return str
-	
+
+	$(smallgraphs[graphId]).html(str)
+	for(const [id,val] of widths.entries()){
+		$("#"+id).animate({width:val+"%"},1000)
+	}
 
 }
 
@@ -1056,12 +1077,11 @@ function showSingleStat(data) {
 	$(smallGraphTypes[3]).html(chooseLang("회복량","Heal Amount"))
 	$(smallGraphTypes[4]).html(chooseLang("획득한 돈","Money Earned"))
 	$(smallGraphTypes[5]).html(chooseLang("피해 감소량","Damage Reduced"))
-
+	$("#train_detail").hide()
 	$("#stattable").show()
 	$("#detailbtn_container").show()
-	location.href = "#stattable"
-	$("#position_chart").hide()
-	$("#money_chart").hide()
+	// $("#position_chart").hide()
+	// $("#money_chart").hide()
 
 	$("#train_detail p").html("")
 
@@ -1141,34 +1161,82 @@ function showSingleStat(data) {
 				}
 			})
 		}
-
+		$(".player-data-container").remove()
 		for (let i = 0; i < data.players.length; ++i) {
-			$(itembuildTable[i]).children(".itembuildTableName").html(data.players[i].name)
-
+			// $(itembuildTable[i]).children(".itembuildTableName").html(data.players[i].name)
+			const p=data.players[i]
 			//if there is no record
-			if (data.players[i].itemRecord.length === 0) {
+			let itemstr=""
+			if (p.itemRecord.length>0) {
+				$(".detailbtn:nth-child(2)").show()
+				let turn = p.itemRecord[0].turn
+				itemstr = "(" + turn + chooseLang("턴", "T") + ")"
+				for (let item of p.itemRecord) {
+					if (item.turn !== turn) {
+						itemstr += "&#10140;(" + item.turn + chooseLang("턴", "T") + ")"
+						turn = item.turn
+					}
+					for (let j = 0; j < item.count; ++j) {
+						itemstr +=
+							"<div class='toast_itemimg_itembuild item_tooltip' value=" +
+							item.item_id +
+							"><img src='res/img/store/items.png' style='margin-left: " +
+							-1 * item.item_id * 100 +
+							"px'; > </div>"
+					}
+				}
+			}
+			else{
 				$(".detailbtn:nth-child(2)").hide()
-				continue
 			}
-			$(".detailbtn:nth-child(2)").show()
-			let turn = data.players[i].itemRecord[0].turn
-			let str = "(" + turn + chooseLang("턴", "T") + ")"
-			for (let item of data.players[i].itemRecord) {
-				if (item.turn !== turn) {
-					str += "&#10140;(" + item.turn + chooseLang("턴", "T") + ")"
-					turn = item.turn
-				}
-				for (let j = 0; j < item.count; ++j) {
-					str +=
-						"<div class='toast_itemimg_itembuild item_tooltip' value=" +
-						item.item_id +
-						"><img src='res/img/store/items.png' style='margin-left: " +
-						-1 * item.item_id * 100 +
-						"px'; > </div>"
-				}
-			}
-			$(itembuildTable[i]).children(".itembuildTableContent").html(str)
 
+
+			// $(".itembuildTableContent").html(str)
+			let teamstr=""
+			if(data.isTeam){
+				teamstr=`<b class='player-data-header-team ${p.team?"red":"blue"}'>${p.team?"Red":"Blue"} Team</b>`
+			}
+			let str=`
+			<div class="player-data-container">
+				<div class="player-data-header"> 
+					<img src="${getCharImgUrl(p.champ_id)}">
+					<b>${p.name}</b>
+					${teamstr}
+				</div>
+				<div class="player-data-content"> 
+					<div class="player-data-otherstat">
+						<div>
+							<div class="player-data-otherstat-item">
+								<b class="otherstat-name"> ${chooseLang("소모한 돈","Money Spent")}: </b><b class="otherstat-value">${p.stats[5]} </b>
+							</div>
+							<div class="player-data-otherstat-item">
+								<b class="otherstat-name"> ${chooseLang("빼앗긴 돈","Money Taken")}: </b><b class="otherstat-value">${p.stats[6]} </b>
+
+							</div>
+							<div class="player-data-otherstat-item">
+								<b class="otherstat-name"> ${chooseLang("부활한 횟수","Revived")}: </b><b class="otherstat-value">${p.stats[8]} </b>
+							</div>
+						</div>
+						<div>
+							<div class="player-data-otherstat-item">
+								<b class="otherstat-name"> ${chooseLang("강제이동","Forcemoved")}: </b><b class="otherstat-value">${p.stats[9]} </b>
+							</div>
+							<div class="player-data-otherstat-item">
+								<b class="otherstat-name"> ${chooseLang("기본공격 횟수","Basic attack")}: </b><b class="otherstat-value">${p.stats[10]} </b>
+							</div>
+							<div class="player-data-otherstat-item">
+								<b class="otherstat-name"> ${chooseLang("처형당한 횟수","Executed")}: </b><b class="otherstat-value">${p.stats[11]} </b>
+							</div>
+						</div>
+					</div>
+					<div class="player-data-label">Item Build</div>
+					<div class="itembuildTableContent">
+						${itemstr}
+					</div>
+				</div>
+			</div>
+			`
+			$("#player-detail-content").append(str)
 			// $(".toast_itemimg_itembuild").css({
 			// 	margin: "-30px",
 			// 	width: "100px",
@@ -1179,12 +1247,12 @@ function showSingleStat(data) {
 			// 	"vertical-align": "middle"
 			// })
 
-			
+			//player-detail-content
 		}
 
 		drawKillRecord(data)
 		$("#detailbtn_container").show()
-		$("#game_resulttext").html("Total turn:" + data.totalturn + ", Map: "+getMapName(data.map_data.name))
+		// $("#game_resulttext").html("Total turn:" + data.totalturn + ", Map: "+getMapName(data.map_data.name))
 	}
 	else{
 		$("#game_resulttext").html("Total turn:" + data.totalturn)
@@ -1194,13 +1262,13 @@ function showSingleStat(data) {
 	
 	if (data.players.length < 4) {
 		$(table[4]).hide()
-		$(othertable[4]).hide()
-		$(itembuildTable[3]).hide()
+		// $(othertable[4]).hide()
+		// $(itembuildTable[3]).hide()
 	}
 	if (data.players.length < 3) {
 		$(table[3]).hide()
-		$(othertable[3]).hide()
-		$(itembuildTable[2]).hide()
+		// $(othertable[3]).hide()
+		// $(itembuildTable[2]).hide()
 	}
 
 	if (data.isTeam && data.players[0].team === true) {
@@ -1228,8 +1296,14 @@ function showSingleStat(data) {
 
 		//팀전
 		if (data.isTeam) {
-			if (p.team) charstr += "red"
-			else charstr += "blue"
+			if (p.team) {
+				charstr += "red"
+				$(dataList[k + 2]).addClass("red")
+			}
+			else{
+				charstr += "blue"
+				$(dataList[k + 2]).addClass("blue")
+			} 
 
 			if (i === 0) {
 				winner_team = p.team
@@ -1244,8 +1318,12 @@ function showSingleStat(data) {
 			//개인전
 			$(ranks[i]).html(i + 1)
 			if (i === 0) {
-				charstr += " winner"
+				$(ranks[i]).html("<img class=winimg src='res/img/svg/trophy.svg'>")
+				// charstr += " winner"
 			}
+			else if(i===1) $(ranks[i]).html("2<sup>nd</sup>")
+			else if(i===2) $(ranks[i]).html("3<sup>rd</sup>")
+			else $(ranks[i]).html("4<sup>th</sup>")
 		}
 
 		charstr += '"><img src="' + getCharImgUrl(p.champ_id) + '"></div>'
@@ -1297,30 +1375,30 @@ function showSingleStat(data) {
 			}
 		}
 	}
-	let smallgraphs=$(".game-detail-graph-players").toArray()
+	
+	$(".game-detail-graph-amount").css("width","0")
+	drawSmallGraph(damagedealt_graph,0)
+	drawSmallGraph(damagetakenC_graph,1)
+	drawSmallGraph(damagetakenO_graph,2)
+	drawSmallGraph(heal_graph,3)
+	drawSmallGraph(gold_graph,4)
+	drawSmallGraph(damageabsorbed_graph,5)
 
-	$(smallgraphs[0]).html(drawSmallGraph(damagedealt_graph))
-	$(smallgraphs[1]).html(drawSmallGraph(damagetakenC_graph))
-	$(smallgraphs[2]).html(drawSmallGraph(damagetakenO_graph))
-	$(smallgraphs[3]).html(drawSmallGraph(heal_graph))
-	$(smallgraphs[4]).html(drawSmallGraph(gold_graph))
-	$(smallgraphs[5]).html(drawSmallGraph(damageabsorbed_graph))
+	// let otherDataList = $(".otherTableCell").toArray()
 
-	let otherDataList = $(".otherTableCell").toArray()
+	// for (let i = 0, k = 0; i < data.players.length; ++i, k += 7) {
+	// 	let p = data.players[i]
+	// 	if (p.stats.length < 9) continue
 
-	for (let i = 0, k = 0; i < data.players.length; ++i, k += 7) {
-		let p = data.players[i]
-		if (p.stats.length < 9) continue
-
-		$(otherDataList[k]).html(p.name)
+	// 	$(otherDataList[k]).html(p.name)
 		
-		$(otherDataList[k + 1]).html(p.stats[5])
-		$(otherDataList[k + 2]).html(p.stats[6])
-		$(otherDataList[k + 3]).html(p.stats[8])
-		$(otherDataList[k + 4]).html(p.stats[9])
-		$(otherDataList[k + 5]).html(p.stats[10])
-		$(otherDataList[k + 6]).html(p.stats[11])
-	}
+	// 	$(otherDataList[k + 1]).html(p.stats[5])
+	// 	$(otherDataList[k + 2]).html(p.stats[6])
+	// 	$(otherDataList[k + 3]).html(p.stats[8])
+	// 	$(otherDataList[k + 4]).html(p.stats[9])
+	// 	$(otherDataList[k + 5]).html(p.stats[10])
+	// 	$(otherDataList[k + 6]).html(p.stats[11])
+	// }
 	addItemTooltipEvent()
 	$(".itemlist").css("font-size", "20px")
 	am4core.createFromConfig(
@@ -1396,7 +1474,7 @@ function showSingleStat(data) {
 					],
 					type: "ColumnSeries",
 					columns: {
-						width: "60%",
+						width: "25",
 						fill: "#6593F5",
 						stroke: "none"
 					},
@@ -1472,7 +1550,7 @@ function showSingleStat(data) {
 		titles: [
 			{
 				text: chooseLang("위치", "Positions"),
-				fontSize: 40,
+				fontSize: 30,
 				fill: "white"
 			}
 		],
@@ -1532,8 +1610,8 @@ function showSingleStat(data) {
 							children: [
 								{
 									type: "Circle",
-									width: 5,
-									height: 5,
+									width: 2,
+									height: 2,
 									horizontalCenter: "middle",
 									verticalCenter: "middle"
 								}
@@ -1563,8 +1641,8 @@ function showSingleStat(data) {
 							children: [
 								{
 									type: "Circle",
-									width: 5,
-									height: 5,
+									width: 2,
+									height: 2,
 									horizontalCenter: "middle",
 									verticalCenter: "middle"
 								}
@@ -1594,8 +1672,8 @@ function showSingleStat(data) {
 							children: [
 								{
 									type: "Circle",
-									width: 5,
-									height: 5,
+									width: 2,
+									height: 2,
 									horizontalCenter: "middle",
 									verticalCenter: "middle"
 								}
@@ -1625,8 +1703,8 @@ function showSingleStat(data) {
 							children: [
 								{
 									type: "Circle",
-									width: 5,
-									height: 5,
+									width: 2,
+									height: 2,
 									horizontalCenter: "middle",
 									verticalCenter: "middle"
 								}
@@ -1659,8 +1737,8 @@ function showSingleStat(data) {
 		},
 		titles: [
 			{
-				text: chooseLang("돈 획득", "Money Income"),
-				fontSize: 40,
+				text: chooseLang("돈 획득", "Money Obtain"),
+				fontSize: 30,
 				fill: "white"
 			}
 		],
@@ -1682,7 +1760,7 @@ function showSingleStat(data) {
 							disabled: true
 						}
 					},
-					minGridDistance: 20
+					minGridDistance: 25
 				}
 			}
 		],
@@ -1693,14 +1771,11 @@ function showSingleStat(data) {
 				renderer: {
 					labels: {
 						fill: "#ffffff",
-						fontSize: 15
+						fontSize: 13
 					},
 					maxLabelPosition: 1,
 					grid: {
-						strokeOpacity: 1,
-						stroke: "#707070",
-						strokeWidth: 1
-					}
+					},minGridDistance: 25
 				}
 			}
 		],
@@ -1711,24 +1786,6 @@ function showSingleStat(data) {
 				fill: "#0077b6",
 				stroke: "#0077b6",
 				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 5,
-									height: 5,
-									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
-					],
-					template: {
-						type: "Bullet",
-						fill: "#0077b6"
-					},
-					children: [{ type: "Circle", width: 5, height: 5, horizontalCenter: "middle", verticalCenter: "middle" }]
 				},
 				dataFields: {
 					valueY: "value1",
@@ -1743,23 +1800,6 @@ function showSingleStat(data) {
 				fill: "#d54a48",
 				stroke: "#d54a48",
 				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 5,
-									height: 5,
-									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
-					],
-					template: {
-						type: "Bullet",
-						fill: "#d54a48"
-					}
 				},
 				dataFields: {
 					valueY: "value2",
@@ -1774,23 +1814,6 @@ function showSingleStat(data) {
 				fill: "#72cc50",
 				stroke: "#72cc50",
 				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 5,
-									height: 5,
-									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
-					],
-					template: {
-						type: "Bullet",
-						fill: "#72cc50"
-					}
 				},
 				dataFields: {
 					valueY: "value3",
@@ -1805,23 +1828,6 @@ function showSingleStat(data) {
 				fill: "#fff989",
 				stroke: "#fff989",
 				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 5,
-									height: 5,
-									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
-					],
-					template: {
-						type: "Bullet",
-						fill: "#fff989"
-					}
 				},
 				dataFields: {
 					valueY: "value4",
@@ -1840,6 +1846,10 @@ function showSingleStat(data) {
 	}
 	am4core.createFromConfig(position_chart, document.getElementById("position_chart"))
 	am4core.createFromConfig(money_chart, document.getElementById("money_chart"))
+	// location.href = "#game_detail_content"
+	$("#game_detail").show()
+	document.getElementById("game_detail").scrollIntoView();
+
 }
 // am4core.ready(function () {
 
