@@ -853,7 +853,7 @@ height:60vh;
     background-color:#552686 ;
 }
 .player-data-otherstat-item{
-    font-size: 13px;
+    font-size: 15px;
     /* width: 150px; */
     text-align: left;
     padding: 4px;
@@ -868,13 +868,16 @@ height:60vh;
 .player-data-header{
     text-align: left;
     height: 50px;
+    font-size: 20px;
 }
 .game-detail-header{
     height: 40px;
     font-size: 30px;
     text-align: center;
 }
-
+#game-detail-table{
+    max-width: 600px;
+}
 .player-data-header b.game-detail-header b{
     font-size: 20px;
     line-height: 40px;
@@ -1358,6 +1361,9 @@ transform: scale(1.1);
       #game_detail_content{
         /* grid-template-columns: 99vw; */
       }
+      .player-data-otherstat-item{
+        font-size: 10px;
+    }
       .toast_itemimg{
         transform: scale(0.3);
         margin: -34px;
