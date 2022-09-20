@@ -7,7 +7,7 @@ import { Projectile } from "../Projectile"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { SkillInfoFactory } from "../core/helpers"
-import { Entity } from "../entity/Entity"
+import type { Entity } from "../entity/Entity"
 import SilverAgent from "../AiAgents/SilverAgent"
 
 // import SETTINGS = require("../../res/globalsettings.json")
@@ -23,8 +23,6 @@ class Silver extends Player {
 	// private u_active_amt: number
 	// private u_passive_amt: number
 	readonly duration_list: number[]
-	skillInfo:SkillInfoFactory
-	skillInfoKor:SkillInfoFactory
 
 
 	static readonly VISUALEFFECT_ULT="elephant_r"
@@ -149,7 +147,7 @@ class Silver extends Player {
 	 * @param {*} target
 	 * @returns
 	 */
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 		let skillattr: SkillAttack = null //-1 when can`t use skill, 0 when it`s not attack skill
 		let s = this.pendingSkill
 		this.pendingSkill = -1
@@ -166,9 +164,9 @@ class Silver extends Player {
 					_this.heal(heal)
 				})
 
-				if (this.game.pOfTurn(target).effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.UEID)) {
+				if (target.effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.UEID)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, this.getSkillAmount("w_qdamage"))
-					this.game.pOfTurn(target).effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
+					target.effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
 				}
 				break
 			case ENUM.SKILL.W:

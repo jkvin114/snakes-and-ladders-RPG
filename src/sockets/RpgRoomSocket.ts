@@ -76,7 +76,7 @@ module.exports=function(socket:Socket){
 			socket.join(rname)
 			let setting:ServerGameEventInterface.initialSetting = room.user_requestSetting()
 	
-			socket.emit("server:initialsetting", setting, turn, room.cryptTurn(turn))
+			socket.emit("server:initialsetting", setting, turn, room.getGameTurnToken(turn))
 		})
 
 		// if (!room.hasGameLoop()) {

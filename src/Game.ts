@@ -87,47 +87,47 @@ class Game {
 	readonly shuffledObstacles: { obs: number; money: number }[]
 	readonly setting: GameSetting
 	
-	PNUM: number
-	CNUM: number
+	private PNUM: number
+	private CNUM: number
 	totalnum: number
 	thisturn: number
 	// skilldmg: any
 	// skillcount: number
-	clientsReady: number
-	pendingObs: number
+	private clientsReady: number
+	private pendingObs: number
 	private pendingAction: string
-	roullete_result: number
-	nextUPID: number
-	readonly UPIDGen: Util.UniqueIdGenerator
-	readonly UEIDGen: Util.UniqueIdGenerator
+	private roullete_result: number
+	// nextUPID: number
+	private readonly UPIDGen: Util.UniqueIdGenerator
+	private readonly UEIDGen: Util.UniqueIdGenerator
 
 	// nextPassUPID: number
-	rangeProjectiles: Map<string, RangeProjectile>
-	passProjectiles: Map<string, PassProjectile>
-	passProjectileQueue: PassProjectile[]
+	private rangeProjectiles: Map<string, RangeProjectile>
+	private passProjectiles: Map<string, PassProjectile>
+	private passProjectileQueue: PassProjectile[]
 	gameover: boolean
-	winner: number
+	private winner: number
 
-	summonedEntityList: Map<string, SummonedEntity>
-	submarine_cool: number
-	submarine_id: string
-	dcitem_id: string
-	totalEffectsApplied: number
+	// private summonedEntityList: Map<string, SummonedEntity>
+	private submarine_cool: number
+	private submarine_id: string
+	private dcitem_id: string
+	private totalEffectsApplied: number
 	totalturn: number
-	killRecord: {
+	private killRecord: {
 		pos: number
 		turn: number
 		killer: Number
 		dead: number
 	}[]
 	// playerSelector: PlayerSelector
-	entityMediator: EntityMediator
-	turnEncryption: Map<number, string>
-	turnEncryptKey: string
+	private entityMediator: EntityMediator
+	private turnEncryption: Map<number, string>
+	private turnEncryptKey: string
 	begun:boolean
-	cycle:number
+	private cycle:number
 	arriveSquareCallback:Function
-	arriveSquareTimeout:NodeJS.Timeout
+	private arriveSquareTimeout:NodeJS.Timeout
 	eventEmitter:GameEventObserver
 	tempFinish:number
 	disconnectedPlayers:Set<number>
@@ -158,7 +158,7 @@ class Game {
 		this.itemLimit = setting.itemLimit
 		// this.nextUPID = 1
 		// this.nextPassUPID = 1
-		this.summonedEntityList = new Map()
+		// this.summonedEntityList = new Map()
 		this.rangeProjectiles = new Map()
 		this.passProjectiles = new Map()
 		this.passProjectileQueue = []
@@ -195,16 +195,26 @@ class Game {
 		}
 		//console.log("sendtoclient",transfer.name)
 	}
+	setClientInterface(ci:GameEventObserver){
+		this.eventEmitter=ci
+		this.entityMediator.setClientInterface(ci)
+	}
 
 	thisp(): Player {
 		return this.entityMediator.getPlayer(this.turn2Id(this.thisturn))
 	}
 
-	pOfTurn(turn: number): Player {
+	pOfTurn(turn: number): Player |null{
+		if(turn<0 || turn>this.totalnum) return null
+
 		return this.entityMediator.getPlayer(this.turn2Id(turn))
 	}
 	pOfId(id:string){
 		return this.entityMediator.getPlayer(id)
+	}
+	nullablePlayerTurn(player:Player|null){
+		if(!player) return -1
+		return player.turn
 	}
 	getPlayerMessageHeader(turn:number){
 		return (
@@ -221,10 +231,10 @@ class Game {
 		return Number(id[0])
 	}
 
-	cryptTurn(turn: number) {
+	getGameTurnToken(turn: number) {
 		return this.turnEncryption.get(turn)
 	}
-	thisCryptTurn() {
+	thisGameTurnToken() {
 		return this.turnEncryption.get(this.thisturn)
 	}
 	isThisTurn(cryptTurn: string) {
@@ -630,7 +640,7 @@ class Game {
 		}
 		//	console.log("avliablepos" + avaliablepos)
 		return {
-			crypt_turn: this.cryptTurn(p.turn),
+			crypt_turn: this.getGameTurnToken(p.turn),
 			turn: p.turn,
 			stun: noDice,
 			ai: p.AI,
@@ -801,7 +811,7 @@ class Game {
 			turn: this.thisturn,
 			dcused: dcused,
 			died: died,
-			crypt_turn:this.thisCryptTurn()
+			crypt_turn:this.thisGameTurnToken()
 		}
 	}
 
@@ -974,7 +984,7 @@ class Game {
 				let skillattack = new Util.SkillAttack(pp.damage, pp.name).setOnHit(pp.action)
 
 				died = this.entityMediator.skillAttackAuto(
-					this.entityMediator.getPlayer(this.turn2Id(pp.sourceTurn)),
+					pp.sourcePlayer,
 					this.turn2Id(this.thisturn)
 				,skillattack)
 
@@ -999,7 +1009,7 @@ class Game {
 	 */
 	processGodhand(target: number, location: number ) {
 		let p = this.pOfTurn(target)
-		p.damagedby[this.thisturn] = 3
+		p.markDamageFrom(this.thisturn)
 		this.playerForceMove(p, location, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 	}
 	//========================================================================================================
@@ -1030,7 +1040,7 @@ class Game {
 				let skillattack = new Util.SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
 
 				let died = this.entityMediator.skillAttackAuto(
-					this.entityMediator.getPlayer(this.turn2Id(proj.sourceTurn)),
+					proj.sourcePlayer,
 					this.turn2Id(player.turn)
 				,skillattack)
 				//player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
@@ -1063,7 +1073,7 @@ class Game {
 	
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
-		this.entityMediator.skillAttackSingle(p, this.turn2Id(target),p.getSkillDamage(target))
+		this.entityMediator.skillAttackSingle(p, this.turn2Id(target),p.getSkillDamage(this.pOfTurn(target)))
 
 	//	return this.getSkillStatus()
 	}
@@ -1184,7 +1194,7 @@ class Game {
 			//신의손 대기중일 경우 바로 스킬로 안넘어가고 신의손 타겟 전송
 			let targets = this.getGodHandTarget()
 			if (targets.length > 0) {
-				name = "server:pending_obs:godhand"
+				name = "pending_obs:godhand"
 				argument = targets
 			} else {
 				this.resetPendingObs()
@@ -1193,21 +1203,21 @@ class Game {
 		}
 		//납치범
 		else if (this.pendingObs === 33) {
-			name = "server:pending_obs:kidnap"
+			name = "pending_obs:kidnap"
 		}
 		//사형재판
 		else if (this.pendingObs === 37) {
 			let num = Math.floor(Math.random() * 6) //0~5
 			//let num=5
 			this.roullete_result = num
-			name = "server:pending_obs:trial"
+			name = "pending_obs:trial"
 			argument = num
 		}
 		//카지노
 		else if (this.pendingObs === 38) {
 			let num = Math.floor(Math.random() * 6) //0~5
 			this.roullete_result = num
-			name = "server:pending_obs:casino"
+			name = "pending_obs:casino"
 			argument = num
 		}
 		else{

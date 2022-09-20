@@ -67,7 +67,7 @@ class ItemEffectFactory {
 			case ITEM.EPIC_FRUIT:
 				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_FOREVER, TickEffect.FREQ_EVERY_TURN)
 					.setAction(function (this: Player) {
-						this.changeHP_heal(new HPChangeData().setHpChange(this.ability.extraHP * 0.15))
+						this.changeHP_heal(new HPChangeData(this.ability.extraHP * 0.15))
 
 						return false
 					})
@@ -535,7 +535,7 @@ class TickDamageEffect extends TickEffect {
 		if (this.tickDamage instanceof Damage) {
 			return this.doDamage(this.tickDamage)
 		} else if (this.tickDamage instanceof PercentDamage) {
-			return this.doDamage(this.tickDamage.pack(this.owner))
+			return this.doDamage(this.tickDamage.pack(this.owner.MaxHP,this.owner.HP))
 		}
 
 		return false

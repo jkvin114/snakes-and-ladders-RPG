@@ -2,28 +2,21 @@ import { Yangyi } from "../characters/Yangyi";
 import { EFFECT, ITEM, SKILL } from "../data/enum";
 import { ServerGameEventInterface } from "../data/PayloadInterface";
 import { Player } from "../player/player";
-import { AiAgent } from "./AiAgent";
+import { AiAgent, ItemBuild } from "./AiAgent";
 
 class YangyiAgent extends AiAgent{
-    itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+    itemtree: ItemBuild
+	player:Yangyi
     constructor(player:Yangyi){
         super(player)
-        this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.ANCIENT_SPEAR,
-				ITEM.EPIC_WHIP,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.EPIC_FRUIT
-			],
-			final: ITEM.EPIC_SWORD
-		}
+        this.itemtree = new ItemBuild().setItems([
+			ITEM.EPIC_SWORD,
+			ITEM.ANCIENT_SPEAR,
+			ITEM.EPIC_WHIP,
+			ITEM.SWORD_OF_BLOOD,
+			ITEM.WARRIORS_SHIELDSWORD,
+			ITEM.EPIC_FRUIT
+		]).setFinal(ITEM.EPIC_SWORD)
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {

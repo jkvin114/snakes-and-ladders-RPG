@@ -12,6 +12,7 @@ import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import BirdAgent from "../AiAgents/BirdAgent"
+import type { Entity } from "../entity/Entity"
 
 const ID = 7
 
@@ -23,8 +24,6 @@ class Bird extends Player {
 
 	readonly duration_list:number[]
 
-	skillInfo:SkillInfoFactory
-	skillInfoKor:SkillInfoFactory
 
 	static PROJ_ULT_TRACE="bird_r_trace"
 	// static EFFECT_ULT="bird_r"
@@ -55,8 +54,6 @@ class Bird extends Player {
 		this.duration_list=[0,2,4]
 		this.skill_ranges=[20,0,0]
 		
-		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
 		this.AiAgent=new BirdAgent(this)
 	}
 
@@ -73,7 +70,7 @@ class Bird extends Player {
 		let ultburn=this.getUltBurn()
 		return new ProjectileBuilder(this.game,Bird.PROJ_ULT_TRACE,Projectile.TYPE_RANGE)
 			.setSize(3)
-			.setSource(this.turn)
+			.setSource(this)
 			.setAction(function(this: Player){
 				this.effects.applySpecial(ultburn,SpecialEffect.SKILL.BIRD_ULT_BURN.name)
 			})
@@ -195,7 +192,7 @@ class Bird extends Player {
 		return 0
 	}
 
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
@@ -226,7 +223,7 @@ class Bird extends Player {
 
 				if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 					let proj = this.buildProjectile()
-					this.game.placeProjNoSelection(proj, this.game.pOfTurn(target).pos - 1)
+					this.game.placeProjNoSelection(proj, target.pos - 1)
 				}
 				skillattr =new SkillAttack(damage,this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
 				break

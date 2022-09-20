@@ -35,13 +35,13 @@ class RPGRoom extends Room {
 		this.eventObserver.subscribeSimulationEventEmitter(callback)
 		return this
 	}
-	cryptTurn(turn: number) {
+	getGameTurnToken(turn: number) {
 		if(!this.gameloop) return
-		return this.gameloop.game.cryptTurn(turn)
+		return this.gameloop.game.getGameTurnToken(turn)
 	}
-	thisCryptTurn() {
+	thisGameTurnToken() {
 		if(!this.gameloop) return
-		return this.gameloop.game.thisCryptTurn()
+		return this.gameloop.game.thisGameTurnToken()
 	}
 	isThisTurn(cryptTurn: string) {
 		if(!this.gameloop) return

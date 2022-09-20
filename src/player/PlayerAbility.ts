@@ -281,7 +281,7 @@ class PlayerAbility {
 	}
 	//모든피해 흡혈
 	absorb_hp(damage: number) {
-		this.player.changeHP_heal(new HPChangeData().setHpChange(Math.floor((damage * this.absorb.get()) / 100)))
+		this.player.changeHP_heal(new HPChangeData(Math.floor((damage * this.absorb.get()) / 100)))
 	}
 	/**
 	 * 공격속도 비례 데미지 감소
@@ -303,7 +303,7 @@ class PlayerAbility {
 	}
 	onTurnEnd() {
 		if (this.regen.get() > 0) {
-			this.player.changeHP_heal(new HPChangeData().setHpChange(this.regen.get()))
+			this.player.changeHP_heal(new HPChangeData(this.regen.get()))
 		}
 	}
 	applyResistanceToDamage(damage: Damage, target: PlayerAbility): number {

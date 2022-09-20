@@ -38,7 +38,7 @@ export type singleMap = {
 }
 
 class MapStorage {
-	map: singleMap[]
+	private map: singleMap[]
 	static instance=false
 	constructor(m: singleMap[]) {
 		if(MapStorage.instance) return

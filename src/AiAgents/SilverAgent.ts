@@ -1,27 +1,21 @@
 import { Silver } from "../characters/Silver";
 import { ITEM, SKILL } from "../data/enum";
-import { AiAgent } from "./AiAgent";
+import { AiAgent, ItemBuild } from "./AiAgent";
 
 class SilverAgent extends AiAgent{
-    itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+    itemtree: ItemBuild
+	player:Silver
     constructor(player:Silver){
         super(player)
-        this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SHIELD,
-				ITEM.EPIC_ARMOR,
-				ITEM.POWER_OF_MOTHER_NATURE,
-				ITEM.EPIC_FRUIT,
-				ITEM.BOOTS_OF_ENDURANCE,
-				ITEM.GUARDIAN_ANGEL
-			],
-			final: ITEM.EPIC_SHIELD
-		}
+        this.itemtree = 
+		new ItemBuild().setItems([
+			ITEM.EPIC_SHIELD,
+			ITEM.EPIC_ARMOR,
+			ITEM.POWER_OF_MOTHER_NATURE,
+			ITEM.EPIC_FRUIT,
+			ITEM.BOOTS_OF_ENDURANCE,
+			ITEM.GUARDIAN_ANGEL
+		]).setFinal(ITEM.EPIC_SHIELD)
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {

@@ -9,6 +9,7 @@ import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventInterface } from "../data/PayloadInterface"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
 import { GameEventObserver } from "../GameEventObserver"
+import { EntityStorage } from "./EntityStorage"
 
 
 
@@ -150,7 +151,7 @@ class AttackHandler{
 
 
 	static doDamage(from:Entity,target:Entity,damage:Damage, effectname:string, needDelay:boolean, flags?:number[]){
-		let changeData = new HPChangeData()
+		let changeData = new HPChangeData(0)
 		let finaldmg=damage.getTotalDmg()
 
 		if(from instanceof Player && target instanceof Player){
@@ -159,14 +160,14 @@ class AttackHandler{
 			finaldmg=from.ability.applyResistanceToDamage(damage, target.ability)
 			from.statistics.add(STAT.DAMAGE_DEALT, finaldmg)
 			target.statistics.add(STAT.DAMAGE_REDUCED, pureDamage - finaldmg)
-
-			target.damagedby[from.turn] = 3
+			target.markDamageFrom(from.turn)
+			
 			from.ability.absorb_hp(finaldmg) //모든피해흡혈, 어시스트저장
 
 		}
 
 		if(from instanceof Player){
-			changeData.setSource(from.turn)
+			changeData.setSourcePlayer(from)
 			.setType(effectname)
 			.setSkillTrajectorySpeed(from.getSkillTrajectorySpeed(effectname))
 		}
@@ -195,16 +196,15 @@ class AttackHandler{
 
 
 class EntityMediator {
-	storage: EntityStorage
-	readonly isTeam: boolean
-	readonly instant: boolean
-	readonly rname: string
-	eventEmitter:GameEventObserver
+	private  storage: EntityStorage
+	private readonly isTeam: boolean
+	private readonly instant: boolean
+	private readonly rname: string
+	private eventEmitter:GameEventObserver
 	constructor(isTeam: boolean, instant: boolean, rname: string) {
 		this.isTeam = isTeam
 		this.instant = instant
 		this.rname = rname
-		this.eventEmitter=new GameEventObserver(this.rname)
 		this.storage = new EntityStorage()
 	}
 	sendToClient(sender: Function, ...args: any[]) {
@@ -212,7 +212,9 @@ class EntityMediator {
 			sender(this.rname, ...args)
 		}
 	}
-
+	setClientInterface(ci:GameEventObserver){
+		this.eventEmitter=ci
+	}
 	register(e: Entity, id: string) {
 		if (e instanceof Player) {
 			// console.log(e.turn)
@@ -421,6 +423,20 @@ class EntityMediator {
 	selectAllFrom(filter: EntityFilter): PriorityArray<Entity> {
 		return filter.getFrom(this.storage)
 	}
+
+	private filterPlayers(list:PriorityArray<Entity>){
+		let players=new PriorityArray<Player>()
+		for(const e of list)
+		{
+			if(e instanceof Player) players.push(e)
+		}
+		return players
+	}
+
+	selectAllPlayerFrom(filter: EntityFilter): PriorityArray<Player> {
+		return this.filterPlayers(this.selectAllFrom(filter))
+	}
+
 	allPlayer():Player[]{
 		return this.storage.allPlayer()
 	}
@@ -453,64 +469,4 @@ export interface SimplePlayerActionFunction {
 	(this: Player): void
 }
 
-class EntityStorage {
-	private entities: Map<string, Entity>
-	private playerIds: string[]
-	private static readonly PLAYER_ID_SUFFIX = "P"
-	constructor() {
-		this.playerIds = []
-		this.entities = new Map<string, Entity>()
-	}
-	private playerId(turn: number) {
-		return String(turn + 1) + EntityStorage.PLAYER_ID_SUFFIX
-	}
-	addPlayer(id: string, player: Player) {
-		// let pid = this.playerId(this.playerIds.length)
-		this.playerIds.push(id)
-		this.entities.set(id, player)
-	}
-	addEntity(id: string, entity: Entity) {
-		this.entities.set(id, entity)
-	}
-	/**
-	 * get player
-	 * @param id
-	 * @returns Player
-	 */
-	getPlayer(id:string): Player {
-		// if (turn >= this.playerIds.length) return null
-		if (!this.entities.has(id)) return null
-
-		return this.entities.get(id) as Player
-	}
-	allPlayer():Player[]{
-		let list=new Array<Player>()
-		for(let id of this.playerIds){
-			list.push(this.entities.get(id) as Player)
-		}
-		return list
-	}
-	getEntity(id: string): Entity {
-		if (!this.entities.has(id)) return null
-		return this.entities.get(id)
-	}
-	removeEntity(id: string): Entity {
-		if (!this.entities.has(id)) return
-		this.entities.delete(id)
-	}
-
-	cleanUpDeadEntity() {
-		for (let [id, entity] of this.entities.entries()) {
-			if (entity.type!==ENTITY_TYPE.PLAYER && entity.dead) {
-		//		console.log("deleted entity " + id)
-				this.entities.delete(id)
-			}
-		}
-	}
-
-	all() {
-		return this.entities.values()
-	}
-}
-
-export { EntityMediator, EntityStorage }
+export { EntityMediator }

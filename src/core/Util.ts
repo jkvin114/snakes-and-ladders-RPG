@@ -26,15 +26,15 @@ class PercentDamage {
 		if (!type) this.type = Damage.TRUE
 	}
 
-	getTotal(target: Player) {
+	getTotal(maxhp:number,hp:number) {
 		if (this.base === PercentDamage.MAX_HP) {
-			return Math.floor((target.MaxHP * this.percent) / 100)
+			return Math.floor((maxhp * this.percent) / 100)
 		}
 		if (this.base === PercentDamage.MISSING_HP) {
-			return Math.floor(((target.MaxHP - target.HP) * this.percent) / 100)
+			return Math.floor(((maxhp - hp) * this.percent) / 100)
 		}
 		if (this.base === PercentDamage.CURR_HP) {
-			return Math.floor((target.HP * this.percent) / 100)
+			return Math.floor((hp * this.percent) / 100)
 		}
 		return 0
 	}
@@ -43,13 +43,13 @@ class PercentDamage {
 	 * @param target
 	 * @returns Damage
 	 */
-	pack(target: Player) {
+	pack(maxhp:number,hp:number) {
 		if (this.type === Damage.ATTACK) {
-			return new Damage(this.getTotal(target), 0, 0)
+			return new Damage(this.getTotal(maxhp,hp), 0, 0)
 		} else if (this.type === Damage.MAGIC) {
-			return new Damage(0, this.getTotal(target), 0)
+			return new Damage(0, this.getTotal(maxhp,hp), 0)
 		} else {
-			return new Damage(0, 0, this.getTotal(target))
+			return new Damage(0, 0, this.getTotal(maxhp,hp))
 		}
 	}
 }
@@ -411,17 +411,17 @@ class HPChangeData {
 	hp: number
 	maxHp: number
 	type: string
-	source: number
+	sourcePlayer: Player|null
 	needDelay: boolean
 	killedByDamage: boolean
 	willRevive: boolean
 	skillTrajectorySpeed: number
 	flags: Set<number>
-	constructor() {
-		this.hp = 0
+	constructor(hp: number) {
+		this.hp = Math.floor(hp)
 		this.maxHp = 0
 		this.type = "noeffect"
-		this.source = -1
+		this.sourcePlayer=null
 		this.needDelay = false
 		this.killedByDamage = false
 		this.willRevive = false
@@ -429,17 +429,20 @@ class HPChangeData {
 		this.flags = new Set<number>()
 	}
 
+	getSourceTurn(){
+		if(!this.sourcePlayer) return -1
+		else this.sourcePlayer.turn
+	}
 	setHpChange(hp: number) {
 		this.hp = Math.floor(hp)
 		return this
 	}
 	setMaxHpChange(maxhp: number) {
 		this.maxHp = Math.floor(maxhp)
-		this.hp = maxhp
 		return this
 	}
-	setSource(source: number) {
-		this.source = source
+	setSourcePlayer(sourcePlayer: Player) {
+		this.sourcePlayer = sourcePlayer
 		return this
 	}
 	setRespawn() {

@@ -13,12 +13,11 @@ import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import JelliceAgent from "../AiAgents/JelliceAgent"
+import type { Entity } from "../entity/Entity"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
 class Jellice extends Player {
-	skillInfoKor: SkillInfoFactory
-	skillInfo: SkillInfoFactory
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
@@ -46,8 +45,6 @@ class Jellice extends Player {
 		this.skill_ranges = [0, 0, 30]
 		this.u_used = 0
 		
-		this.skillInfo = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor = new SkillInfoFactory(ID, this, SkillInfoFactory.LANG_KOR)
 		this.AiAgent=new JelliceAgent(this)
 
 	}
@@ -63,7 +60,7 @@ class Jellice extends Player {
 		let _this: Player = this.getPlayer()
 		return new ProjectileBuilder(this.game, Jellice.PROJ_ULT, Projectile.TYPE_RANGE)
 			.setSize(3)
-			.setSource(this.turn)
+			.setSource(this)
 			.setAction(function (this: Player) {
 				this.effects.apply(ENUM.EFFECT.SILENT, 1)
 			})
@@ -208,7 +205,7 @@ class Jellice extends Player {
 		//앞 3~15, 뒤 3~8
 		return 0
 	}
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 		return null
 	}
 	onSkillDurationEnd(skill: number) {}

@@ -271,14 +271,14 @@ class CasinoMapHandler extends PlayerMapHandler {
 
 	getPendingObs(pendingObs: number): ServerGameEventInterface.PendingObstacle {
 		if (pendingObs === 63) {
-			return {name:"server:pending_obs:threaten",argument:0}
+			return {name:"pending_obs:threaten",argument:0}
 		}
 		//떡상
 		else if (pendingObs === 67) {
-			return {name:"server:pending_obs:sell_token",argument:this.player.inven.token}
+			return {name:"pending_obs:sell_token",argument:this.player.inven.token}
 		} //지하철
 		else if (pendingObs === 6) {
-			return {name:"server:pending_obs:subway",argument:this.getSubwayPrices()}
+			return {name:"pending_obs:subway",argument:this.getSubwayPrices()}
 		}
 		return super.getPendingObs(pendingObs)
 	}

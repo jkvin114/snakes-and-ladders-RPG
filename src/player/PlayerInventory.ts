@@ -9,14 +9,14 @@ import { ClientInputEventInterface, ServerGameEventInterface } from "../data/Pay
 
 class PlayerInventory {
 	// player:Player
-	activeItems: Util.ActiveItem[]
-	item: number[]
+	private activeItems: Util.ActiveItem[]
+	private item: number[]
 	itemSlots: number[]
 	token: number
 	life: number
 	lifeBought: number
 	money: number
-	player: Player
+	private player: Player
 
 	static readonly indicateList = [
 		ITEM.WARRIORS_SHIELDSWORD,
@@ -45,7 +45,7 @@ class PlayerInventory {
 	onTurnEnd() {
 		this.activeItemCoolDown()
 		if (this.haveItem(9)) {
-			this.player.changeHP_heal(new Util.HPChangeData().setHpChange(Math.floor(this.player.ability.extraHP * 0.15)))
+			this.player.changeHP_heal(new Util.HPChangeData(Math.floor(this.player.ability.extraHP * 0.15)))
 		}
 	}
 

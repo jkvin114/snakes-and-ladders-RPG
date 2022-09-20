@@ -18,8 +18,6 @@ import PlayerInventory from "./PlayerInventory"
 import { Entity } from "../entity/Entity"
 
 interface StatusEffectManager {
-	owner: Entity
-	storage: Map<number, StatusEffect>
 	onLethalDamage(): void
 	onDeath(): void
 	onBeforeObs(): void
@@ -36,8 +34,8 @@ interface StatusEffectManager {
 }
 
 class EntityStatusEffect implements StatusEffectManager {
-	owner: Entity
-	storage: Map<number, StatusEffect>
+	protected owner: Entity
+	protected storage: Map<number, StatusEffect>
 	constructor(owner: Entity) {
 		this.owner = owner
 		this.storage = new Map<number, StatusEffect>()
@@ -62,12 +60,12 @@ class EntityStatusEffect implements StatusEffectManager {
 }
 
 class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager {
-	player: Player
-	category: Map<number, StatusEffect>[]
+	protected owner: Player
+	private category: Map<number, StatusEffect>[]
 
 	constructor(player: Player) {
 		super(player)
-		this.player = player
+		this.owner = player
 		this.initCategory()
 	}
 	initCategory() {
@@ -132,7 +130,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		return SpecialEffect.Setting.get(name)
 	}
 	getEffectSourcePlayerName(source: string): string {
-		return this.player.game.getNameById(source)
+		return this.owner.game.getNameById(source)
 	}
 
 	applySpecial(effect: StatusEffect, name?: string) {
@@ -142,15 +140,15 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 
 		if (data != null) {
 		//	console.log(this.getEffectSourcePlayerName(effect.source))
-			this.player.game.eventEmitter.giveSpecialEffect(
-				this.player.turn,
+			this.owner.game.eventEmitter.giveSpecialEffect(
+				this.owner.turn,
 				effect.name,
 				data,
 				this.getEffectSourcePlayerName(effect.source)
 			)
 		}
 
-		effect.applyTo(this.player)
+		effect.applyTo(this.owner)
 
 	//	console.log("applySpecial  " + effect.name + " " + this.player.turn)
 
@@ -174,16 +172,16 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	 */
 	apply(effect: number, dur: number) {
 		if (dur === 0) return
-		if (effect === EFFECT.SLOW && this.player.inven.haveItem(ITEM.BOOTS_OF_HASTE)) {
+		if (effect === EFFECT.SLOW && this.owner.inven.haveItem(ITEM.BOOTS_OF_HASTE)) {
 			return
 			//장화로 둔화 무시
 		}
 
-		let num = this.player.game.onEffectApply()
+		let num = this.owner.game.onEffectApply()
 
 		//	console.log("giveeffect" + effect)
-		this.player.game.eventEmitter.giveEffect({
-			turn: this.player.turn,
+		this.owner.game.eventEmitter.giveEffect({
+			turn: this.owner.turn,
 			effect: effect, 
 			num:num
 		})
@@ -191,7 +189,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		let statusEffect = GeneralEffectFactory.create(effect, dur)
 		if(!statusEffect) return
 		
-		statusEffect.applyTo(this.player)
+		statusEffect.applyTo(this.owner)
 		if (this.storage.has(effect)) {
 			this.storage.get(effect).onBeforeReapply()
 		}
@@ -232,9 +230,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.category[effectType].delete(key)
 		this.storage.delete(key)
 		if (key < 30) {
-			this.player.game.eventEmitter.update("removeEffect", this.player.turn, key)
+			this.owner.game.eventEmitter.update("removeEffect", this.owner.turn, key)
 		} else {
-			this.player.game.eventEmitter.update("removeSpecialEffect", this.player.turn, effect.name)
+			this.owner.game.eventEmitter.update("removeSpecialEffect", this.owner.turn, effect.name)
 		}
 	}
 	getKeyByName(name: string) {
@@ -320,7 +318,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 
 		this.storage.set(key, effect)
 		this.category[EFFECT_TYPE.SHIELD].set(key, effect)
-		this.player.updateTotalShield(change, noindicate)
+		this.owner.updateTotalShield(change, noindicate)
 	}
 
 	applyShield(damage: number) {

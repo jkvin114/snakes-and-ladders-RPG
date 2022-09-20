@@ -12,6 +12,7 @@ import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import TreeAgent from "../AiAgents/TreeAgent"
+import type { Entity } from "../entity/Entity"
 
 const ID = 8
 class Tree extends Player {
@@ -23,8 +24,6 @@ class Tree extends Player {
 
 	private isWithered: boolean
 	private plantEntities: Set<string>
-	skillInfo: SkillInfoFactory
-	skillInfoKor: SkillInfoFactory
 
 	static readonly PROJ_W = "tree_w"
 	static readonly SKILLNAME_STRONG_R = "tree_wither_r"
@@ -72,7 +71,7 @@ class Tree extends Player {
 	private buildProjectile() {
 		const _this = this.getPlayer()
 		return new ProjectileBuilder(this.game, Tree.PROJ_W, Projectile.TYPE_PASS)
-			.setSource(this.turn)
+			.setSource(this)
 			.setAction(function (this: Player) {
 				if (!this.isEnemyOf(_this)) {
 					this.effects.apply(ENUM.EFFECT.SPEED, 1)
@@ -176,13 +175,13 @@ class Tree extends Player {
 			.setSourceId(this.UEID)
 	}
 
-	getSkillDamage(targetTurn: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.ULT:
-				this.summonPlantAt(this.game.pOfTurn(targetTurn).pos)
+				this.summonPlantAt(target.pos)
 				this.startCooltime(ENUM.SKILL.ULT)
 				const _this = this
 				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0), this.getSkillName(s))
@@ -191,7 +190,7 @@ class Tree extends Player {
 						this.effects.applySpecial(_this.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
 						this.effects.apply(ENUM.EFFECT.ROOT, _this.isWithered ? 2 : 1)
 					})
-				this.moveAllPlantTo(this.game.pOfTurn(targetTurn).pos)
+				this.moveAllPlantTo(target.pos)
 				// setTimeout(()=>this.plantAttack(),200)
 
 				break

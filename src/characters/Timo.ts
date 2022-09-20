@@ -11,10 +11,9 @@ import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import TimoAgent from "../AiAgents/TimoAgent"
+import type { Entity } from "../entity/Entity"
 const ID = 2
 class Timo extends Player {
-	skillInfoKor: SkillInfoFactory
-	skillInfo: SkillInfoFactory
 	//	onoff: boolean[]
 	skill_ranges: number[]
 
@@ -37,9 +36,6 @@ class Timo extends Player {
 		this.cooltime_list = [3, 6, 6]
 		this.duration_list = [0, 1, 0]
 	
-		
-		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
 		this.AiAgent=new TimoAgent(this)
 	}
 
@@ -81,7 +77,7 @@ class Timo extends Player {
 
 		return new ProjectileBuilder(this.game,Timo.PROJ_ULT,Projectile.TYPE_RANGE)
 			.setSize(4)
-			.setSource(this.turn)
+			.setSource(this)
 			.setSkillRange(30)
 			.setAction(function (this: Player) {
 				this.effects.applySpecial(effect, SpecialEffect.SKILL.GHOST_ULT.name)
@@ -146,7 +142,7 @@ class Timo extends Player {
 		}
 	}
 
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
@@ -157,7 +153,7 @@ class Timo extends Player {
 				let admg = new Damage(0, 0, 0)
 				if (this.level > 1 && this.effects.has(ENUM.EFFECT.INVISIBILITY)) {
 					admg = new PercentDamage(30, PercentDamage.MISSING_HP, Damage.MAGIC).pack(
-						this.game.pOfTurn(target)
+						target.MaxHP,target.HP
 					)
 				}
 

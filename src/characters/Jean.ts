@@ -7,10 +7,10 @@ import type { Game } from "../Game"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 
-import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
 import JeanAgent from "../AiAgents/JeanAgent"
+import type { Entity } from "../entity/Entity"
 const ID = 4
 class Jean extends Player {
 	//	onoff: boolean[]
@@ -22,9 +22,6 @@ class Jean extends Player {
 	private u_target: string
 	readonly duration_list: number[]
 	
-	skillInfo:SkillInfoFactory
-	skillInfoKor:SkillInfoFactory
-
 	static readonly PROJ_W="sniper_w"
 	static readonly EFFECT_ULT="sniper_r"
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
@@ -41,8 +38,6 @@ class Jean extends Player {
 		this.u_target = null
 		
 		
-		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
 		this.AiAgent=new JeanAgent(this)
 
 	}
@@ -67,7 +62,7 @@ class Jean extends Player {
 			})
 			.setTrajectorySpeed(300)
 			.setSize(3)
-			.setSource(this.turn)
+			.setSource(this)
 			.setDuration(2)
 			.build()
 	}
@@ -128,7 +123,7 @@ class Jean extends Player {
 		return new ShieldEffect(ENUM.EFFECT.SNIPER_ULT_SHIELD,4,this.getSkillAmount("rshield"))
 	}
 
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 	//	console.log(target + "getSkillDamage" + this.pendingSkill)
 		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
@@ -157,7 +152,7 @@ class Jean extends Player {
 					this.startDuration(ENUM.SKILL.ULT)
 
 					this.effects.apply(ENUM.EFFECT.ROOT, 1)
-					this.u_target = this.game.turn2Id(target)
+					this.u_target = target.UEID
 					this.startCooltime(ENUM.SKILL.ULT)
 				}
 				break

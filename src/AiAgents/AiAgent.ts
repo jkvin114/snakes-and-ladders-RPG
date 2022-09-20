@@ -5,8 +5,7 @@ import { copyElementsOnly, pickRandom, ListSet, shuffle, SkillTargetSelector, sl
 import { items as ItemList } from "../../res/item.json"
 import PlayerInventory from "../player/PlayerInventory"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
-import { EntityMediator } from "../entity/EntityMediator"
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 import { EntityFilter } from "../entity/EntityFilter"
 import SETTINGS = require("./../../res/globalsettings.json")
 import TRAIN_SETTINGS = require("./../../res/train_setting.json")
@@ -14,15 +13,42 @@ import TRAIN_SETTINGS = require("./../../res/train_setting.json")
 const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)
 const ITEMS=ItemList
 
+
+export class ItemBuild{
+	level: number
+	items: ITEM[]
+	final: ITEM
+	constructor(){
+		this.level=0
+		this.items=[]
+		this.final=0
+	}
+	setItems(items: ITEM[]){
+		this.items=items
+		return this
+	}
+	setFinal(final:ITEM){
+		this.final=final
+		return this
+	}
+	onBuyCoreItem(){
+		this.level+=1
+	}
+	nextCoreItem():number
+	{
+		if (this.level >= this.items.length) {
+			return this.final
+		} else {
+			return this.items[this.level]
+		}
+	}
+}
+
 abstract class AiAgent {
 	player: Player
 	attemptedSkills: Set<SKILL>
 	isRandomItem:boolean
-	abstract itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+	abstract itemtree: ItemBuild
 	static readonly BASICATTACK = 4
 	abstract getMessageOnGameStart():string
 	constructor(player: Player) {
@@ -210,13 +236,12 @@ abstract class AiAgent {
 		let me = this.player
 		let goal = null
 		let targets = me.mediator
-			.selectAllFrom(
+			.selectAllPlayerFrom(
 				EntityFilter.ALL_ENEMY_PLAYER(this.player).in(
 					me.pos - 3 - Math.floor(selector.range / 2),
 					me.pos - 3 + Math.floor(selector.range / 2)
 				)
 			)
-			.map((p:Player) => p.turn)
 
 		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {
@@ -226,39 +251,36 @@ abstract class AiAgent {
 			//타겟이 1명일경우
 			goal = targets[0]
 			//속박걸렸으면 플레이어 위치 그대로
-			if (!me.game.pOfTurn(goal).canThrowDice()) {
-				return Math.floor(me.game.pOfTurn(goal).pos)
+			if (!goal.canThrowDice()) {
+				return goal.pos
 			}
 		} else {
 			//타겟이 여러명일경우
-			let ps = me.mediator.allPlayer()
-
 			//앞에있는플레이어 우선
-			targets.sort(function (b: number, a: number): number {
-				return ps[a].pos - ps[b].pos
+			targets.sort(function (b: Player, a: Player): number {
+				return a.pos - b.pos
 			})
 
 			//속박걸린 플레이어있으면 그 플레이어 위치 그대로
-			for (let t of targets) {
-				if (!ps[t].canThrowDice()) {
-					return Math.floor(ps[t].pos)
+			for (const t of targets) {
+				if (!t.canThrowDice()) {
+					return t.pos
 				}
 			}
 
 			goal = targets[0]
 		}
-		return Math.floor(Math.min(me.game.pOfTurn(goal).pos + 7 - selector.size, me.pos + selector.range / 2))
+		return Math.min(goal.pos + 7 - selector.size, me.pos + selector.range / 2)
 	}
 	getAreaPos(skill: SKILL, selector: ServerGameEventInterface.LocationTargetSelector): number {
 		let me = this.player
 
 		let goal = null
 		let targets = me.mediator
-			.selectAllFrom(
+			.selectAllPlayerFrom(
 				EntityFilter.ALL_ATTACKABLE_PLAYER(me)
 					.in(me.pos - 3 - Math.floor(selector.range / 2), me.pos - 3 + Math.floor(selector.range / 2))
 			)
-			.map((p:Player) => p.turn)
 
 		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {
@@ -267,17 +289,16 @@ abstract class AiAgent {
 		if (targets.length === 1) {
 			//타겟이 1명일경우
 			goal = targets[0]
-			return Math.floor(me.game.pOfTurn(goal).pos - selector.size + 1)
+			return Math.floor(goal.pos - selector.size + 1)
 		} else {
 			//타겟이 여러명일경우
-			let ps = me.mediator.allPlayer()
 
 			//앞에있는플레이어 우선
-			targets.sort(function (b: number, a: number): number {
-				return ps[b].pos - ps[a].pos
+			targets.sort(function (b: Player, a: Player): number {
+				return b.pos - a.pos
 			})
 
-			return Math.floor(ps[0].pos - selector.size + 1)
+			return Math.floor(targets[0].pos - selector.size + 1)
 		}
 	}
 	willDiceControl() {
@@ -293,25 +314,18 @@ abstract class AiAgent {
 }
 
 class DefaultAgent extends AiAgent {
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+	itemtree: ItemBuild
 	constructor(player: Player) {
 		super(player)
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.EPIC_CRYSTAL_BALL,
-				ITEM.EPIC_WHIP,
-				ITEM.TIME_WARP_POTION,
-				ITEM.EPIC_FRUIT,
-				ITEM.BOOTS_OF_HASTE
-			],
-			final: ITEM.EPIC_SWORD
-		}
+		this.itemtree = new ItemBuild()
+		.setItems([
+			ITEM.EPIC_SWORD,
+			ITEM.EPIC_CRYSTAL_BALL,
+			ITEM.EPIC_WHIP,
+			ITEM.TIME_WARP_POTION,
+			ITEM.EPIC_FRUIT,
+			ITEM.BOOTS_OF_HASTE
+		]).setFinal(ITEM.EPIC_SWORD)
 	}
 	getMessageOnGameStart(): string {
 		return "Hello"
@@ -319,16 +333,12 @@ class DefaultAgent extends AiAgent {
 }
 
 class AIStoreInstance {
-	build: {
-		level: number
-		items: number[]
-		final: number
-	}
+	build: ItemBuild
 	resultItems: ListSet<number>
 	inven: PlayerInventory
 	totalMoneySpend: number
 	itemLimit: number
-	constructor(inven: PlayerInventory, build: { level: number; items: number[]; final: number }) {
+	constructor(inven: PlayerInventory, build: ItemBuild) {
 		this.inven = inven
 		this.build = build
 		this.totalMoneySpend = 0
@@ -362,12 +372,7 @@ class AIStoreInstance {
 			}
 
 			//console.log("aistore",this.inven.money - this.totalMoneySpend)
-			let tobuy = 0
-			if (this.build.level >= this.build.items.length) {
-				tobuy = this.build.final
-			} else {
-				tobuy = this.build.items[this.build.level]
-			}
+			let tobuy = this.build.nextCoreItem()
 
 			if (attemptedCoreItems.has(tobuy) || this.aiAttemptItemBuy(tobuy) == 0) break
 			attemptedCoreItems.add(tobuy)
@@ -460,7 +465,7 @@ class AIStoreInstance {
 			this.resultItems=temp_itemlist.copy()
 			this.addItem(tobuy)
 			if (item.itemlevel === 3) {
-				this.build.level += 1
+				this.build.onBuyCoreItem()
 			}
 			return price
 		}

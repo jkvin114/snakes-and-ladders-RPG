@@ -117,9 +117,10 @@ class GameLoop {
 		return new GameLoop(game)
 	}
 	setClientInterface(ci: GameEventObserver) {
-		this.game.eventEmitter = ci
-		this.game.entityMediator.eventEmitter = ci
+		// this.game.eventEmitter = ci
+		// this.game.entityMediator.eventEmitter = ci
 		this.eventEmitter = ci
+		this.game.setClientInterface(ci)
 	}
 	user_update<T>(turn: number, type: string, data: T) {
 		this.game.user_update(turn, type, data)
@@ -157,7 +158,7 @@ class GameLoop {
 	startTimeOut(additional: Function): number {
 		if (!this.idleTimeout) {
 			//	console.log("starttimeout" + this.state.turn)
-			this.eventEmitter.startTimeout(this.game.thisCryptTurn(), SETTINGS.idleTimeout)
+			this.eventEmitter.startTimeout(this.game.thisGameTurnToken(), SETTINGS.idleTimeout)
 
 			this.idleTimeout = setTimeout(() => {
 				if (!this.game) return
@@ -171,7 +172,7 @@ class GameLoop {
 	stopTimeout() {
 		//console.log("stoptimeout" + this.state.turn)
 		if (this.idleTimeout != null && this.state != null && this.idleTimeoutTurn === this.state.turn) {
-			this.eventEmitter.stopTimeout(this.game.thisCryptTurn())
+			this.eventEmitter.stopTimeout(this.game.thisGameTurnToken())
 			clearTimeout(this.idleTimeout)
 			this.idleTimeout = null
 		}
@@ -348,7 +349,7 @@ abstract class GameCycleState {
 		this.game = game
 		this.game.setCycle(id)
 		this.turn = this.game.thisturn
-		this.crypt_turn = this.game.thisCryptTurn()
+		this.crypt_turn = this.game.thisGameTurnToken()
 		this.rname = this.game.rname
 		// this.idleTimeout = null
 		this.onCreate()
@@ -700,10 +701,10 @@ class PendingAction extends GameCycleState {
 	onCreate(): void {}
 	send() {
 		if (this.action === "submarine") {
-			this.game.eventEmitter.sendPendingAction("server:pending_action:submarine", this.game.thisp().pos)
+			this.game.eventEmitter.sendPendingAction("pending_action:submarine", this.game.thisp().pos)
 		}
 		if (this.action === "ask_way2") {
-			this.game.eventEmitter.sendPendingAction("server:pending_action:ask_way2", 0)
+			this.game.eventEmitter.sendPendingAction("pending_action:ask_way2", 0)
 		}
 	}
 	onUserCompletePendingAction(info: ClientInputEventInterface.PendingAction): EventResult {

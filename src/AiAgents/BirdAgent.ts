@@ -1,27 +1,25 @@
 import { Bird } from "../characters/Bird";
 import { ITEM, SKILL } from "../data/enum";
-import { AiAgent } from "./AiAgent";
+import { AiAgent, ItemBuild } from "./AiAgent";
 
 class BirdAgent extends AiAgent{
-    itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+    itemtree: ItemBuild
+	player:Bird
     constructor(player:Bird){
         super(player)
-        this.itemtree = {
-			level: 0,
-			items: [
+        this.itemtree = new ItemBuild().setItems([
 				ITEM.EPIC_CRYSTAL_BALL,
 				ITEM.EPIC_WHIP,
 				ITEM.ANCIENT_SPEAR,
 				ITEM.TIME_WARP_POTION,
 				ITEM.CARD_OF_DECEPTION,
 				ITEM.GUARDIAN_ANGEL
-			],
-			final: ITEM.ANCIENT_SPEAR
-		}
+			]).setFinal(ITEM.ANCIENT_SPEAR)
+		//  {
+		// 	level: 0,
+		// 	items: 
+		// 	final: 
+		// }
     }
 	nextSkill(): number {
 		

@@ -1,27 +1,21 @@
 import { Jean } from "../characters/Jean";
 import { ITEM, SKILL } from "../data/enum";
-import { AiAgent } from "./AiAgent";
+import { AiAgent, ItemBuild } from "./AiAgent";
 
 class JeanAgent extends AiAgent{
-    itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+    itemtree: ItemBuild
+	player:Jean
     constructor(player:Jean){
         super(player)
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.EPIC_WHIP,
-				ITEM.BOOTS_OF_HASTE,
-				ITEM.CROSSBOW_OF_PIERCING,
-				ITEM.WARRIORS_SHIELDSWORD
-			],
-			final: ITEM.EPIC_SWORD
-		}
+		this.itemtree = 
+		new ItemBuild().setItems([
+			ITEM.EPIC_SWORD,
+			ITEM.SWORD_OF_BLOOD,
+			ITEM.EPIC_WHIP,
+			ITEM.BOOTS_OF_HASTE,
+			ITEM.CROSSBOW_OF_PIERCING,
+			ITEM.WARRIORS_SHIELDSWORD
+		]).setFinal(ITEM.EPIC_SWORD)
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {

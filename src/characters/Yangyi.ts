@@ -12,10 +12,9 @@ import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import YangyiAgent from "../AiAgents/YangyiAgent"
+import type { Entity } from "../entity/Entity"
 const ID = 3
 class Yangyi extends Player {
-	skillInfoKor: SkillInfoFactory
-	skillInfo: SkillInfoFactory
 	// onoff: boolean[]	
 	skill_ranges: number[]
 
@@ -125,7 +124,7 @@ class Yangyi extends Player {
 		}
 	}
 
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 		//무조건 궁
 		let skillattr = null //-1 when can`t use skill, 0 when it`s not attack skill
 		this.pendingSkill = -1
@@ -139,7 +138,7 @@ class Yangyi extends Player {
 
 		skillattr = new SkillAttack(
 			new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0).mergeWith(
-				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(this.game.pOfTurn(target))
+				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(target.MaxHP,target.HP)
 			),
 			this.getSkillName(ENUM.SKILL.ULT)
 		).ofSkill(ENUM.SKILL.ULT).setOnKill(k)

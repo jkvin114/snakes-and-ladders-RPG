@@ -8,6 +8,7 @@ export class GameEventObserver {
 	private eventEmitter: GameEventEmitter
     private simulationEventEmitter:GameEventEmitter
 	private rname: string
+	private static readonly PREFIX="server:"
 	constructor(rname: string) {
 		this.rname = rname
 		this.eventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}
@@ -24,69 +25,93 @@ export class GameEventObserver {
     //    console.log("registerCallback")
 		this.simulationEventEmitter = callback
 	}
+	emit(type:string,...args:unknown[]){
+		this.eventEmitter(this.rname, GameEventObserver.PREFIX+type, ...args)
+	}
+
 	updateNextTurn(turnUpdateData: ServerGameEventInterface.TurnStart) {
-		this.eventEmitter(this.rname, "server:nextturn", turnUpdateData)
+		this.emit("nextturn",turnUpdateData)
+		// this.eventEmitter(this.rname, "server:nextturn", turnUpdateData)
 		// / (, turnUpdateData)
 	}
 	syncVisibility(data: ServerGameEventInterface.PlayerPosSync[]) {
-		this.eventEmitter(this.rname, "server:sync_player_visibility", data)
+		this.emit("sync_player_visibility",data)
+		// this.eventEmitter(this.rname, "server:sync_player_visibility", data)
 	}
 	rollDice(data: ServerGameEventInterface.DiceRoll) {
-		this.eventEmitter(this.rname, "server:rolldice", data)
+		this.emit("rolldice",data)
+		// this.eventEmitter(this.rname, "server:rolldice", data)
 	}
 	startTimeout(crypt_turn: string, time: number) {
-		this.eventEmitter(this.rname, "server:start_timeout_countdown", crypt_turn, time)
+		this.emit("start_timeout_countdown",crypt_turn, time)
+		// this.eventEmitter(this.rname, "server:start_timeout_countdown", crypt_turn, time)
 	}
 	stopTimeout(crypt_turn: string) {
-		this.eventEmitter(this.rname, "server:stop_timeout_countdown", crypt_turn)
+		this.emit("stop_timeout_countdown",crypt_turn)
+		// this.eventEmitter(this.rname, "server:stop_timeout_countdown", crypt_turn)
 	}
 	forceNextturn(crypt_turn: string) {
-		this.eventEmitter(this.rname, "server:force_nextturn", crypt_turn)
+		this.emit("force_nextturn",crypt_turn)
+		// this.eventEmitter(this.rname, "server:force_nextturn", crypt_turn)
 	}
 	sendPendingObs(data: ServerGameEventInterface.PendingObstacle) {
-		this.eventEmitter(this.rname, data.name, data.argument)
+		this.emit(data.name,data.argument)
+		// this.eventEmitter(this.rname, data.name, data.argument)
 	}
 	setSkillReady(skildata: ServerGameEventInterface.SkillStatus) {
-		this.eventEmitter(this.rname, "server:skills", skildata)
+		this.emit("skills",skildata)
+		// this.eventEmitter(this.rname, "server:skills", skildata)
 	}
 	sendPendingAction(name: string, data: number) {
-		this.eventEmitter(this.rname, name, data)
+		this.emit(name,data)
+		// this.eventEmitter(this.rname, name, data)
 	}
 	simulationProgress(progress: number) {
-		this.simulationEventEmitter(this.rname, "server:simulation_progress", progress)
+		this.emit("simulation_progress",progress)
+		// this.simulationEventEmitter(this.rname, "server:simulation_progress", progress)
 	}
 	simulationOver(msg: string) {
-		this.simulationEventEmitter(this.rname, "server:simulationover", msg)
+		this.emit("simulationover",msg)
+		// this.simulationEventEmitter(this.rname, "server:simulationover", msg)
 	}
 	gameOver(winner: number) {
+		this.emit("gameover",winner)
 		//	console.log(rname)
-		this.eventEmitter(this.rname, "server:gameover", winner)
+		// this.eventEmitter(this.rname, "server:gameover", winner)
 	}
 	gameStatReady(id: string) {
-		this.eventEmitter(this.rname, "server:game_stat_ready", id)
+		this.emit("game_stat_ready",id)
+		// this.eventEmitter(this.rname, "server:game_stat_ready", id)
 	}
 	simulationStatReady(id: string,message:string) {
-		this.simulationEventEmitter(this.rname, "server:simulation_stat_ready", id,message)
+		this.emit("simulation_stat_ready",id,message)
+		// this.simulationEventEmitter(this.rname, "server:simulation_stat_ready", id,message)
 	}
 
 	changeMoney(turn: number, indicate_amt: number, result: number) {
-		this.eventEmitter(this.rname, "server:money", { turn: turn, amt: indicate_amt, result: result })
+		this.emit("money", { turn: turn, amt: indicate_amt, result: result })
+		
+		// this.eventEmitter(this.rname, "server:money", { turn: turn, amt: indicate_amt, result: result })
 	}
 
 	changeHP_damage(hpChangeData: ServerGameEventInterface.Damage) {
-		this.eventEmitter(this.rname, "server:damage", hpChangeData)
+		this.emit("damage",hpChangeData)
+		// this.eventEmitter(this.rname, "server:damage", hpChangeData)
 	}
 
 	changeHP_heal(hpChangeData: ServerGameEventInterface.Heal) {
-		this.eventEmitter(this.rname, "server:heal", hpChangeData)
+		this.emit("heal",hpChangeData)
+		// this.eventEmitter(this.rname, "server:heal", hpChangeData)
 	}
 
 	changeShield(shieldData: ServerGameEventInterface.Shield) {
-		this.eventEmitter(this.rname, "server:shield", shieldData)
+		this.emit("shield",shieldData)
+		// this.eventEmitter(this.rname, "server:shield", shieldData)
 	}
 
 	giveEffect(data: ServerGameEventInterface.NormalEffect) {
-		this.eventEmitter(this.rname, "server:status_effect", data)
+		this.emit("status_effect",data)
+		// this.eventEmitter(this.rname, "server:status_effect", data)
 	}
 	giveSpecialEffect(
 		turn: number,
@@ -94,90 +119,119 @@ export class GameEventObserver {
 		data: SpecialEffect.DescriptionData,
 		sourcePlayer: string
 	) {
-		this.eventEmitter(this.rname, "server:special_effect", {
+		this.emit("special_effect",{
 			turn: turn,
 			name: name,
 			data: data,
 			sourcePlayer: sourcePlayer
 		})
+		// this.eventEmitter(this.rname, "server:special_effect", {
+		// 	turn: turn,
+		// 	name: name,
+		// 	data: data,
+		// 	sourcePlayer: sourcePlayer
+		// })
 	}
 
 	playerForceMove(turn: number, pos: number, movetype: string) {
-		this.eventEmitter(this.rname, "server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
+		this.emit("teleport_pos",{ turn: turn, pos: pos, movetype: movetype })
+		// this.eventEmitter(this.rname, "server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
 	}
 	smoothTeleport(turn: number, pos: number, distance: number) {
-		this.eventEmitter(this.rname, "server:smooth_teleport", { turn: turn, pos: pos, distance: distance })
+		this.emit("smooth_teleport",{ turn: turn, pos: pos, distance: distance })
+		// this.eventEmitter(this.rname, "server:smooth_teleport", { turn: turn, pos: pos, distance: distance })
 	}
 
 	removeProj(UPID: string) {
-		this.eventEmitter(this.rname, "server:delete_projectile", UPID)
+		this.emit("delete_projectile",UPID)
+		// this.eventEmitter(this.rname, "server:delete_projectile", UPID)
 	}
 
 	die(killData: ServerGameEventInterface.Death) {
-		this.eventEmitter(this.rname, "server:death", killData)
+		this.emit("death",killData)
+		// this.eventEmitter(this.rname, "server:death", killData)
 	}
 
 	respawn(turn: number, respawnPos: number, isRevived: boolean) {
-		this.eventEmitter(this.rname, "server:respawn", { turn: turn, respawnPos: respawnPos, isRevived: isRevived })
+		this.emit("respawn",{ turn: turn, respawnPos: respawnPos, isRevived: isRevived })
+		// this.eventEmitter(this.rname, "server:respawn", { turn: turn, respawnPos: respawnPos, isRevived: isRevived })
 	}
 
 	message(header:string,message: string) {
-		this.eventEmitter(this.rname, "server:receive_message", header, message)
+		this.emit("receive_message",header, message)
+		// this.eventEmitter(this.rname, "server:receive_message", header, message)
 	}
 
 	playsound(sound: string) {
-		this.eventEmitter(this.rname, "server:sound", sound)
+		this.emit("sound",sound)
+		// this.eventEmitter(this.rname, "server:sound", sound)
 	}
 
 	placePassProj(data: ServerGameEventInterface.PassProjectile) {
-		this.eventEmitter(this.rname, "server:create_passprojectile", data)
+		this.emit("create_passprojectile",data)
+		// this.eventEmitter(this.rname, "server:create_passprojectile", data)
 	}
 
 	placeProj(proj: ServerGameEventInterface.RangeProjectile) {
-		this.eventEmitter(this.rname, "server:create_projectile", proj)
+		this.emit("create_projectile",proj)
+		// this.eventEmitter(this.rname, "server:create_projectile", proj)
 	}
 
 	summonEntity(entity: ServerGameEventInterface.SummonedEntity) {
-		this.eventEmitter(this.rname, "server:create_entity", entity)
+		this.emit("create_entity",entity)
+		// this.eventEmitter(this.rname, "server:create_entity", entity)
 	}
 
 	deleteEntity(UEID: string, iskilled: boolean) {
-		this.eventEmitter(this.rname, "server:delete_entity", UEID, iskilled)
+		this.emit("delete_entity",UEID, iskilled)
+		// this.eventEmitter(this.rname, "server:delete_entity", UEID, iskilled)
 	}
 
 	update(type: string, turn: number, amt: any) {
-		this.eventEmitter(this.rname, "server:update_other_data", { type: type, turn: turn, amt: amt })
+		this.emit("update_other_data",{ type: type, turn: turn, amt: amt })
+		// this.eventEmitter(this.rname, "server:update_other_data", { type: type, turn: turn, amt: amt })
 	}
 
 	updateSkillInfo(turn: number, info_kor: string[], info_eng: string[]) {
-		this.eventEmitter(this.rname, "server:update_skill_info", { turn: turn, info_kor: info_kor, info_eng: info_eng })
+		this.emit("update_skill_info",{ turn: turn, info_kor: info_kor, info_eng: info_eng })
+		// this.eventEmitter(this.rname, "server:update_skill_info", { turn: turn, info_kor: info_kor, info_eng: info_eng })
 	}
 
 	visualEffect(pos: number, type: string, source: number) {
-		this.eventEmitter(this.rname, "server:visual_effect", { pos: pos, type: type, source: source })
+		this.emit("visual_effect",{ pos: pos, type: type, source: source })
+		// this.eventEmitter(this.rname, "server:visual_effect", { pos: pos, type: type, source: source })
 	}
 
 	attack(data: ServerGameEventInterface.Attack) {
-		this.eventEmitter(this.rname, "server:attack", data)
+		this.emit("attack",data)
+		// this.eventEmitter(this.rname, "server:attack", data)
 	}
 	skillTrajectory(data: ServerGameEventInterface.skillTrajectory) {
-		this.eventEmitter(this.rname, "server:skill_trajectory", data)
+		this.emit("skill_trajectory",data)
+		// this.eventEmitter(this.rname, "server:skill_trajectory", data)
 	}
 	indicateObstacle(data: ServerGameEventInterface.Obstacle) {
-		this.eventEmitter(this.rname, "server:indicate_obstacle", data)
+		this.emit("indicate_obstacle",data)
+		// this.eventEmitter(this.rname, "server:indicate_obstacle", data)
 	}
 	obstacleEffect(data: ServerGameEventInterface.ObstacleEffect) {
-		this.eventEmitter(this.rname, "server:obstacle_effect", data)
+		this.emit("obstacle_effect",data)
+		// this.eventEmitter(this.rname, "server:obstacle_effect", data)
 	}
 
 	indicateItem(turn: number, item: number) {
-		this.eventEmitter(this.rname, "server:indicate_item", { turn: turn, item: item })
+		this.emit("indicate_item",{ turn: turn, item: item })
+		// this.eventEmitter(this.rname, "server:indicate_item", { turn: turn, item: item })
 	}
 
 	goStore(turn: number, storeData: ServerGameEventInterface.EnterStore) {
-		this.eventEmitter(this.rname, "server:store", {
+		this.emit("store",{
 			turn: turn,
 			storeData: storeData
 		})
+		// this.eventEmitter(this.rname, "server:store", {
+		// 	turn: turn,
+		// 	storeData: storeData
+		// })
 	}
 }

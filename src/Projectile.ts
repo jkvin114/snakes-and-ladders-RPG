@@ -1,4 +1,4 @@
-import { Player } from "./player/player"
+import type { Player } from "./player/player"
 import type { Game } from "./Game";
 
 import { ServerGameEventInterface } from "./data/PayloadInterface"
@@ -14,23 +14,25 @@ abstract class Projectile {
 	
 	static readonly TARGET_ENEMY = 6
 	static readonly TARGET_ALL = 7
-	sourceTurn: number
-	size: number
+	// sourceTurn: number
+	sourcePlayer:Player
+	protected size: number
 	name: string
 	damage: Damage
 	pos: number
 	activated: boolean
-	trajectorySpeed: number
+	protected trajectorySpeed: number
 	UPID: string
 	action: (this:Player)=>void
-	game: Game
-	duration: number
-	flags: Set<number>
-	target: number
+	protected game: Game
+	protected duration: number
+	protected flags: Set<number>
+	protected target: number
 	constructor(builder: ProjectileBuilder) {
-		this.sourceTurn = builder.sourceTurn
+		// this.sourceTurn = builder.sourceTurn
 		this.size = builder.size
 		this.name = builder.name
+		this.sourcePlayer=builder.sourcePlayer
 		this.action = builder.action
 		this.damage = builder.damage
 		this.game = builder.game
@@ -51,7 +53,7 @@ abstract class Projectile {
 		if (!this.activated) {
 			return false
 		}
-		if (this.sourceTurn === thisturn || (this.sourceTurn === -1 && thisturn === 0)) {
+		if (this.sourcePlayer.turn === thisturn || (!this.sourcePlayer && thisturn === 0)) {
 			this.duration = decrement(this.duration)
 			if (this.duration === 0) {
 				this.activated = false
@@ -63,8 +65,8 @@ abstract class Projectile {
 		return false
 	}
 	canApplyTo(target: Player) {
-		if (this.sourceTurn === -1 || this.target === Projectile.TARGET_ALL) return true
-		if (this.target === Projectile.TARGET_ENEMY && target.isAttackableFrom(this.game.pOfTurn(this.sourceTurn)))
+		if (!this.sourcePlayer || this.target === Projectile.TARGET_ALL) return true
+		if (this.target === Projectile.TARGET_ENEMY && target.isAttackableFrom(this.sourcePlayer))
 			return true
 
 		return false
@@ -86,7 +88,10 @@ abstract class Projectile {
 		this.damage = null
 		this.duration = 0
 	}
-	
+	protected getOwner(){
+		if(!this.sourcePlayer) return -1
+		else this.sourcePlayer.turn
+	}
 }
 
 class RangeProjectile extends Projectile {
@@ -107,7 +112,7 @@ class RangeProjectile extends Projectile {
 		return {
 			scope: this.scope,
 			UPID: this.UPID,
-			owner: this.sourceTurn,
+			owner: this.getOwner(),
 			name: this.name,
 			trajectorySpeed: this.trajectorySpeed
 		}
@@ -125,7 +130,7 @@ class PassProjectile extends Projectile {
 			scope: [this.pos],
 			UPID: this.UPID,
 			stopPlayer: this.hasFlag(Projectile.FLAG_STOP_PLAYER),
-			owner: this.sourceTurn,
+			owner: this.getOwner(),
 			trajectorySpeed: this.trajectorySpeed
 		}
 	}
@@ -235,7 +240,7 @@ class PassProjectile extends Projectile {
 // }
 
 class ProjectileBuilder {
-	sourceTurn: number
+	sourcePlayer: Player
 	size: number
 	name: string
 	skillrange: number
@@ -250,7 +255,7 @@ class ProjectileBuilder {
 	type: number
 	target: number
 	constructor(game: Game, name: string, type: number) {
-		this.sourceTurn = -1
+		this.sourcePlayer = null
 		this.size = 1
 		this.name = name
 		// this.skillrange = 0
@@ -270,8 +275,8 @@ class ProjectileBuilder {
 		this.target = Projectile.TARGET_ALL
 		return this
 	}
-	setSource(turn: number) {
-		this.sourceTurn = turn
+	setSource(sourcePlayer: Player) {
+		this.sourcePlayer = sourcePlayer
 		return this
 	}
 	setSize(size: number) {

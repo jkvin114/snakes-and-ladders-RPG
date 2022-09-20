@@ -40,8 +40,9 @@ class ObstacleHelper {
 					player.effects.apply(ENUM.EFFECT.SILENT, 1)
 					break
 				case 11:
-					player.resetCooltime([ENUM.SKILL.Q, ENUM.SKILL.W])
-					player.cooltime[ENUM.SKILL.ULT] = Math.floor(player.cooltime[ENUM.SKILL.ULT] / 2)
+					player.potionObstacle()
+					
+					// player.cooltime[ENUM.SKILL.ULT] = 
 					break
 				case 12:
 					player.effects.apply(ENUM.EFFECT.FARSIGHT, 1)
@@ -153,10 +154,12 @@ class ObstacleHelper {
 					player.effects.apply(ENUM.EFFECT.POISON, perma)
 					break
 				case 30:
-					player.doObstacleDamage(new Util.PercentDamage(33, Util.PercentDamage.CURR_HP).getTotal(player),"explode")
+					player.doObstacleDamage(new Util.PercentDamage(33, Util.PercentDamage.CURR_HP)
+					.getTotal(player.MaxHP,player.HP),"explode")
 					break
 				case 31:
-					player.doObstacleDamage(new Util.PercentDamage(50, Util.PercentDamage.MISSING_HP).getTotal(player),"explode")
+					player.doObstacleDamage(new Util.PercentDamage(50, Util.PercentDamage.MISSING_HP)
+					.getTotal(player.MaxHP,player.HP),"explode")
 					player.effects.apply(ENUM.EFFECT.RADI, 1)
 					break
 				case 32:
@@ -289,7 +292,7 @@ class ObstacleHelper {
 					break
 				case 60:
 					player.effects.apply(ENUM.EFFECT.IGNITE, 3)
-					player.doObstacleDamage(new Util.PercentDamage(25, Util.PercentDamage.MAX_HP).getTotal(player),"explode")
+					player.doObstacleDamage(new Util.PercentDamage(25, Util.PercentDamage.MAX_HP).getTotal(player.MaxHP,player.HP),"explode")
 
 					break
 				case 61:

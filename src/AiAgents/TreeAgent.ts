@@ -1,27 +1,20 @@
 import { Tree } from "../characters/Tree";
 import { ITEM, SKILL } from "../data/enum";
-import { AiAgent } from "./AiAgent";
+import { AiAgent, ItemBuild } from "./AiAgent";
 
 class TreeAgent extends AiAgent{
-    itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
+    itemtree: ItemBuild
+	player:Tree
     constructor(player:Tree){
         super(player)
-        this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_CRYSTAL_BALL,
-				ITEM.CARD_OF_DECEPTION,
-				ITEM.TIME_WARP_POTION,
-				ITEM.ANCIENT_SPEAR,
-				ITEM.INVISIBILITY_CLOAK,
-				ITEM.BOOTS_OF_PROTECTION,
-			],
-			final: ITEM.EPIC_CRYSTAL_BALL
-		}
+        this.itemtree = new ItemBuild().setItems([
+			ITEM.EPIC_CRYSTAL_BALL,
+			ITEM.CARD_OF_DECEPTION,
+			ITEM.TIME_WARP_POTION,
+			ITEM.ANCIENT_SPEAR,
+			ITEM.INVISIBILITY_CLOAK,
+			ITEM.BOOTS_OF_PROTECTION,
+		]).setFinal(ITEM.EPIC_CRYSTAL_BALL)
     }
 	nextSkill(): number {
 		

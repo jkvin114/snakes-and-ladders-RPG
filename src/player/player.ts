@@ -19,7 +19,7 @@ import { ServerGameEventInterface } from "../data/PayloadInterface"
 import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../res/character_ability.json")
 import { Indicator } from "../TrainHelper"
-const { isMainThread } = require('worker_threads')
+// const { isMainThread } = require('worker_threads')
 import CONFIG from "./../../config/config.json"
 
 // class Minion extends Entity{
@@ -76,12 +76,12 @@ abstract class Player extends Entity {
 	assist: number
 	invulnerable: boolean
 	adice: number //추가 주사위숫자
-	pendingSkill: number
+	protected pendingSkill: number
 	oneMoreDice: boolean
 	diceControl: boolean
 	diceControlCool: number
 	thisLevelDeathCount: number //현재 레벨에서 사망 횟수
-	thisLifeKillCount: number //죽지않고 킬 횟수
+	private thisLifeKillCount: number //죽지않고 킬 횟수
 	waitingRevival: boolean
 
 	//	HP: number
@@ -93,14 +93,14 @@ abstract class Player extends Entity {
 	mapHandler: PlayerMapHandler
 	shield: number
 	cooltime: number[]
-	duration: number[]
-	basicAttackCount: number //basic attack count avaliable in this turn
+	protected duration: number[]
+	protected basicAttackCount: number //basic attack count avaliable in this turn
 
 	//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
 	// loanTurnLeft: number
 
-	autoBuy:boolean
-	damagedby: number[]
+	private autoBuy:boolean
+	private damagedby: number[]
 	//for eath player, turns left to be count as assist(maximum 3)
 
 	bestMultiKill: number
@@ -114,15 +114,15 @@ abstract class Player extends Entity {
 	// }
 	abstract readonly duration_list: number[]
 	abstract readonly skill_ranges: number[]
-	skillInfoKor: SkillInfoFactory
-	skillInfo: SkillInfoFactory
+	private skillInfoKor: SkillInfoFactory
+	private skillInfo: SkillInfoFactory
 
 	abstract getSkillTrajectorySpeed(s: string): number
-	abstract getSkillTargetSelector(skill: number): Util.SkillTargetSelector
+	protected abstract getSkillTargetSelector(skill: number): Util.SkillTargetSelector
 	abstract getSkillProjectile(projpos: number): Projectile
-	abstract getSkillDamage(target: number): Util.SkillAttack
+	abstract getSkillDamage(target:Entity): Util.SkillAttack
 	abstract getSkillScale():any
-	abstract passive(): void
+	protected abstract passive(): void
 	abstract getSkillName(skill: number): string
 	protected abstract onSkillDurationCount(): void
 	protected abstract onSkillDurationEnd(skill: number): void
@@ -547,7 +547,10 @@ abstract class Player extends Entity {
 	setCooltime(skill: ENUM.SKILL, amt: number) {
 		this.cooltime[skill] = amt
 	}
-
+	potionObstacle(){
+		this.resetCooltime([ENUM.SKILL.Q, ENUM.SKILL.W])
+		this.cooltime[ENUM.SKILL.ULT]=Math.floor(this.cooltime[ENUM.SKILL.ULT] / 2)
+	}
 	isSkillActivated(skill: ENUM.SKILL) {
 		return this.duration[skill] > 0
 	}
@@ -627,7 +630,7 @@ abstract class Player extends Entity {
 		let hp = data.hp
 
 		if (hp > -4000) {
-			if (data.source >= 0) {
+			if (data.sourcePlayer!=null) {
 				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_CHAMP, -hp)
 			} //챔피언에게 받은 피해
 			else {
@@ -647,7 +650,7 @@ abstract class Player extends Entity {
 				change: hp,
 				currhp: this.HP,
 				currmaxhp: this.MaxHP,
-				source: data.source,
+				source: data.getSourceTurn(),
 				currshield:this.shield
 			}
 			this.game.eventEmitter.changeHP_damage(hpChangeData)
@@ -876,14 +879,14 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	heal(h: number) {
-		this.changeHP_heal(new Util.HPChangeData().setHpChange(h).setType("heal"))
+		this.changeHP_heal(new Util.HPChangeData(h).setType("heal"))
 	}
 	//========================================================================================================
 
 	addMaxHP(m: number) {
 		//this.transfer(PlayerClientInterface.update, "maxhp", this.turn, m)
 		this.MaxHP += m
-		this.changeHP_heal(new Util.HPChangeData().setHpChange(m).setType("maxhpChange"))
+		this.changeHP_heal(new Util.HPChangeData(m).setType("maxhpChange"))
 	}
 
 	//========================================================================================================
@@ -922,7 +925,7 @@ abstract class Player extends Entity {
 	 * @param type
 	 */
 	 doObstacleDamage(damage: number, type?: string): boolean {
-		let changeData = new Util.HPChangeData().setSource(-1)
+		let changeData = new Util.HPChangeData(0)
 
 		if (type != null) {
 			changeData.setType(type)
@@ -973,7 +976,7 @@ abstract class Player extends Entity {
 	 */
 	doDamage(damage: number, changeData: Util.HPChangeData):boolean {
 		try {
-			if (this.dead || this.invulnerable || damage === 0 || changeData.source===this.turn) {
+			if (this.dead || this.invulnerable || damage === 0 || changeData.getSourceTurn()===this.turn) {
 				return false
 			}
 		//	let predictedHP = this.HP + this.shield - damage
@@ -998,7 +1001,7 @@ abstract class Player extends Entity {
 				let reviveType = this.canRevive()
 
 				if (reviveType == null) {
-					this.die(changeData.source)
+					this.die(changeData.sourcePlayer)
 					return true
 				} else {
 					this.prepareRevive(reviveType)
@@ -1035,7 +1038,7 @@ abstract class Player extends Entity {
 		this.invulnerable=true
 	}
 
-	private sendKillInfo(killer: number) {
+	private sendKillInfo(killer: Player|null) {
 		// if (this.game.instant) return
 
 		// if (gostore) {
@@ -1043,7 +1046,7 @@ abstract class Player extends Entity {
 		// }
 
 		let killData: ServerGameEventInterface.Death = {
-			killer: killer,
+			killer: -1,
 			turn: this.turn,
 			location: this.pos,
 			isShutDown: false,
@@ -1051,15 +1054,17 @@ abstract class Player extends Entity {
 		}
 
 		//상대에게 죽은경우
-		if (killer >= 0) {
+		if (killer!=null) {
 			//console.log("sendkillinfo skillfrom " + skillfrom)
-			let killerMultiKillCount = this.game.pOfTurn(killer).thisLifeKillCount
-			this.game.pOfTurn(killer).effects.reset(ENUM.EFFECT.SLAVE)
+			let killerMultiKillCount = killer.thisLifeKillCount
+			killer.effects.reset(ENUM.EFFECT.SLAVE)
 
 			let isShutDown = this.thisLifeKillCount > 1
 			killData.isShutDown = isShutDown
 			killData.killerMultiKillCount = killerMultiKillCount
+			killData.killer=killer.turn
 		}
+
 		this.game.eventEmitter.die(killData)
 	}
 
@@ -1070,18 +1075,22 @@ abstract class Player extends Entity {
 	 * 4. 리스폰지점으로 이동
 	 * @param {*} skillfrom 0에서시작
 	 */
-	private die(skillfrom: number) {
-		if (skillfrom >= 0) {
-			this.sendConsoleMessage(this.game.pOfTurn(skillfrom).name + " killed " + this.name)
-			this.game.pOfTurn(skillfrom).addKill(this)
-			this.thisLifeKillCount = 0
-		} else {
+	private die(skillfrom: Player|null) {
+		if (!skillfrom) {
+
 			this.sendConsoleMessage(this.name + " has been executed!")
 			this.statistics.add(ENUM.STAT.EXECUTED, 1)
+			
+		} else {
+			
+			this.sendConsoleMessage(skillfrom.name + " killed " + this.name)
+			skillfrom.addKill(this)
+			this.thisLifeKillCount = 0
+			
 		}
-		this.game.addKillData(skillfrom, this.turn, this.pos)
+		this.game.addKillData(skillfrom.turn, this.turn, this.pos)
 
-		this.addAssist(skillfrom)
+		this.addAssist(skillfrom.turn)
 		this.HP = 0
 		this.dead = true
 		this.mapHandler.onDeath()
@@ -1105,8 +1114,8 @@ abstract class Player extends Entity {
 			this.goStore()
 		}
 		
-
 		this.sendKillInfo(skillfrom)
+
 	}
 	
 
@@ -1127,7 +1136,7 @@ abstract class Player extends Entity {
 			this.statistics.add(ENUM.STAT.REVIVE, 1)
 		}
 
-		this.changeHP_heal(new Util.HPChangeData().setHpChange(health).setRespawn())
+		this.changeHP_heal(new Util.HPChangeData(health).setRespawn())
 		this.dead = false
 		this.invulnerable=false
 		//	console.log("revive" + this.HP)
@@ -1136,6 +1145,9 @@ abstract class Player extends Entity {
 		this.waitingRevival = false
 	}
 
+	markDamageFrom(turn:number){
+		this.damagedby[turn] = 3
+	}
 	//========================================================================================================
 	/**
 	 * 3턴 이내에 피해를 준 플레이어가 사망
@@ -1171,7 +1183,7 @@ abstract class Player extends Entity {
 
 		let payload: ServerGameEventInterface.SkillInit = {
 			turn: this.turn,
-			crypt_turn: this.game.cryptTurn(this.turn),
+			crypt_turn: this.game.getGameTurnToken(this.turn),
 			type: ENUM.INIT_SKILL_RESULT.NON_TARGET,
 			data: null,
 			skill: skill

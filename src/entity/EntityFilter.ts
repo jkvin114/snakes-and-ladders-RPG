@@ -1,5 +1,5 @@
 import type { Entity } from "./Entity"
-import type { EntityStorage } from "./EntityMediator"
+import type { EntityStorage } from "./EntityStorage"
 import { ENTITY_TYPE } from "../data/enum"
 import { PriorityArray } from "../core/Util"
 

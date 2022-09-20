@@ -9,6 +9,7 @@ import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
 import CreedAgent from "../AiAgents/CreedAgent"
+import { Entity } from "../entity/Entity"
 
 const ID = 0
 class Creed extends Player {
@@ -24,8 +25,6 @@ class Creed extends Player {
 	private usedQ: boolean
 	readonly duration_list: number[]
 
-	skillInfo:SkillInfoFactory
-	skillInfoKor:SkillInfoFactory
 	static readonly PROJ_W='reaper_w'
 	static readonly Q_SHIELD="reaper_q"
 	static readonly ULT_SHIELD="reaper_ult"
@@ -71,7 +70,7 @@ class Creed extends Player {
 		let _this: Player = this
 		return new ProjectileBuilder(this.game,Creed.PROJ_W,Projectile.TYPE_RANGE)
 			.setSize(3)
-			.setSource(this.turn)
+			.setSource(this)
 			.setAction(function (this: Player) {
 				this.game.playerForceMove(this,this.pos - 4, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 			})
@@ -136,7 +135,7 @@ class Creed extends Player {
 		return new ShieldEffect(ENUM.EFFECT.REAPER_ULT_SHIELD,3, 70)
 	}
 
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 	//	console.log(target + "getSkillDamage" + this.pendingSkill)
 		let damage: SkillAttack = null
 		let s: number = this.pendingSkill
@@ -160,7 +159,7 @@ class Creed extends Player {
 				this.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
-				this.game.playerForceMove(this,this.game.pOfTurn(target).pos, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
+				this.game.playerForceMove(this,target.pos, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
 				damage = new SkillAttack(new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),this.getSkillName(s)).ofSkill(s)
 				break
 		}

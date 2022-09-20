@@ -10,6 +10,7 @@ import { SkillInfoFactory } from "../core/helpers"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import GoraeAgent from "../AiAgents/GoraeAgent"
+import type { Entity } from "../entity/Entity"
 const ID=6
 class Gorae extends Player {
 	skill_ranges: number[]
@@ -24,8 +25,6 @@ class Gorae extends Player {
 	}
 	readonly duration_list: number[]
 	
-	skillInfo:SkillInfoFactory
-	skillInfoKor:SkillInfoFactory
 	static readonly VISUALEFFECT_W='kraken_w_wave'
 	static readonly PROJ_Q="kraken_q"
 	static readonly EFFECT_W="kraken_w"
@@ -40,8 +39,6 @@ class Gorae extends Player {
 		this.duration_list=[0,2,0]
 		this.skill_ranges=[15,0,20]
 		
-		this.skillInfo=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor=new SkillInfoFactory(ID,this,SkillInfoFactory.LANG_KOR)
 		this.AiAgent=new GoraeAgent(this)
 	}
 
@@ -56,7 +53,7 @@ class Gorae extends Player {
 	private buildProjectile() {
 		return new ProjectileBuilder(this.game,Gorae.PROJ_Q,Projectile.TYPE_RANGE)
 		.setSize(2)
-		.setSource(this.turn)
+		.setSource(this)
 		.setTrajectorySpeed(300)
 		.setDuration(2)
         .setDamage(new Damage( 0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0))
@@ -141,7 +138,7 @@ class Gorae extends Player {
 		if(key==="wshield") return this.calculateScale(Gorae.SKILL_SCALES.wshield)
 		return 0
 	}
-	getSkillDamage(target: number): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack {
 	//	console.log(target+"getSkillDamage"+this.pendingSkill)
 		let skillattr: SkillAttack = null
 		let s: number = this.pendingSkill
