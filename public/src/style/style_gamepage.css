@@ -3598,3 +3598,35 @@ b {
     /* width: 10px; */
     /* height: 10px; */
 }
+#replaystart{
+  position: absolute;
+  z-index: 99;
+  width: 100px;
+  height: 50px;
+  top: 300px;
+  left: 300px;
+  display:none;
+}
+#replaypause{
+  position: absolute;
+  z-index: 99;
+  width: 100px;
+  height: 50px;
+  top: 300px;
+  left: 600px;
+  display:none;
+}
+#replayprogress{
+  position: absolute;
+  z-index: 99;
+  top: 30px;
+  left: 30%;
+  display:none;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000;
+  font-size: 30px;
+  color: white;
+}

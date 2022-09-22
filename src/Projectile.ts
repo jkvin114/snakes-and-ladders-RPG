@@ -53,7 +53,17 @@ abstract class Projectile {
 		if (!this.activated) {
 			return false
 		}
-		if (this.sourcePlayer.turn === thisturn || (!this.sourcePlayer && thisturn === 0)) {
+		if(!this.sourcePlayer){
+			if(thisturn === 0)
+			{
+				this.duration = decrement(this.duration)
+				if (this.duration === 0) {
+					this.activated = false
+					return true
+				}
+			}
+		}
+		else if (this.sourcePlayer.turn === thisturn) {
 			this.duration = decrement(this.duration)
 			if (this.duration === 0) {
 				this.activated = false
@@ -88,9 +98,9 @@ abstract class Projectile {
 		this.damage = null
 		this.duration = 0
 	}
-	protected getOwner(){
+	protected getOwner():number{
 		if(!this.sourcePlayer) return -1
-		else this.sourcePlayer.turn
+		else return this.sourcePlayer.turn
 	}
 }
 
@@ -109,6 +119,7 @@ class RangeProjectile extends Projectile {
 	}
 
 	getTransferData() :ServerGameEventInterface.RangeProjectile {
+		// console.log(this.sourcePlayer)
 		return {
 			scope: this.scope,
 			UPID: this.UPID,

@@ -49,18 +49,19 @@ app.on("error", (err: any) => {
 	console.error("Server error:", err)
 })
 
-const interfaces = os.networkInterfaces()
-var addresses = []
-for (var k in interfaces) {
-	for (var k2 in interfaces[k]) {
-		var address = interfaces[k][k2]
-		if (address.family === "IPv4" && !address.internal) {
-			addresses.push(address.address)
-		}
-	}
-}
+// const interfaces = os.networkInterfaces()
+// var addresses = []
+// for (var k in interfaces) {
+// 	for (var k2 in interfaces[k]) {
+// 		var address = interfaces[k][k2]
+// 		if (address.family === "IPv4" && !address.internal) {
+// 			addresses.push(address.address)
+// 		}
+// 	}
+// }
+
 console.log("start server")
-console.log("IP Address:" + addresses[0])
+// console.log("IP Address:" + addresses[0])
 console.log("version " + SETTINGS.version)
 
 // function ROOMS.get(name: string): Room {
@@ -87,7 +88,7 @@ io.use((socket, next) => {
 })
 
 io.on("listen", function () {
-	console.log("listen")
+	console.log("listen to socket")
 })
 io.on("error", function (e: any) {
 	console.log(e)
@@ -118,18 +119,18 @@ app.get("/", function (req, res) {
 // app.get("/getobs_kor", function (req, res) {
 
 // })
-app.post("/chat", function (req, res) {
-	console.log("chat " + req.body.msg + " " + req.body.turn)
-	let room = R.getRoom(req.session.roomname)
-	if (!room) {
-		return
-	}
-	io.to(req.session.roomname).emit(
-		"server:receive_message",
-		room.user_message(req.body.turn,req.body.msg)
-	)
-	res.end("")
-})
+// app.post("/chat", function (req, res) {
+// 	console.log("chat " + req.body.msg + " " + req.body.turn)
+// 	let room = R.getRoom(req.session.roomname)
+// 	if (!room) {
+// 		return
+// 	}
+// 	io.to(req.session.roomname).emit(
+// 		"server:receive_message",
+// 		room.user_message(req.body.turn,req.body.msg)
+// 	)
+// 	res.end("")
+// })
 
 app.post("/reset_game", function (req, res) {
 	//console.log(req.session)

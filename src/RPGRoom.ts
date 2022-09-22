@@ -3,7 +3,7 @@ import { Room } from "./room"
 import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
 
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./mongodb/DBHandler")
-import { hasProp } from "./core/Util"
+import { hasProp, writeFile } from "./core/Util"
 import { Worker, isMainThread } from "worker_threads"
 import { GameEventObserver, GameEventEmitter } from "./GameEventObserver"
 const path = require("path")
@@ -106,6 +106,7 @@ class RPGRoom extends Room {
 		}
 		let stat = this.gameloop.game.getFinalStatistics()
 		let winner = this.gameloop.game.thisturn
+		// console.log(this.gameloop.game.retrieveReplayRecord())
 
 		let rname = this.name
 		this.reset()
@@ -176,6 +177,7 @@ class RPGRoom extends Room {
 	onSimulationOver(result: boolean, resultStat: any) {
 		let rname = this.name
 		if (result) {
+			writeFile(JSON.stringify(resultStat.replay[0]),"stats/replay","json","replay saved")
 			let stat = resultStat.stat
 			let simple_stat = resultStat.simple_stat
 			// let stat = this.simulation.getFinalStatistics()

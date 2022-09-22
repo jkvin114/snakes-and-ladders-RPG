@@ -26,6 +26,7 @@ import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
 import { GameEventObserver } from "./GameEventObserver"
 import { GameRecord } from "./TrainHelper"
+import { ReplayEventRecords } from "./ReplayEventRecord"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -132,13 +133,12 @@ class Game {
 	tempFinish:number
 	disconnectedPlayers:Set<number>
 	private static readonly PLAYER_ID_SUFFIX = "P"
-
+	private replayRecord:ReplayEventRecords
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
 		this.instant = setting.instant
 		this.simulation = false
 		this.rname = rname
-
 		if (mapid < 0 || mapid > 3) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
 		this.begun=false
@@ -188,6 +188,9 @@ class Game {
 		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
 		this.tempFinish=-1
 		this.disconnectedPlayers=new Set<number>()
+		this.replayRecord=new ReplayEventRecords(setting.replay)
+		this.eventEmitter.bindEventRecorder(this.replayRecord)
+		this.entityMediator.setClientInterface(this.eventEmitter)
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -196,10 +199,16 @@ class Game {
 		//console.log("sendtoclient",transfer.name)
 	}
 	setClientInterface(ci:GameEventObserver){
+		ci.bindEventRecorder(this.replayRecord)
 		this.eventEmitter=ci
 		this.entityMediator.setClientInterface(ci)
 	}
-
+	onCreate(){
+		this.replayRecord.setInitialSetting(this.getInitialSetting())
+	}
+	retrieveReplayRecord(){
+		return this.replayRecord
+	}
 	thisp(): Player {
 		return this.entityMediator.getPlayer(this.turn2Id(this.thisturn))
 	}
@@ -267,7 +276,7 @@ class Game {
 
 	//team:number,char:str,name:str
 	addAI(team: boolean, char: number, name: string) {
-		console.log("add ai " + char + "  " + team)
+		// console.log("add ai " + char + "  " + team)
 
 		char = Number(char)
 		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, true)
@@ -296,9 +305,10 @@ class Game {
 		}
 		return {
 			isTeam: this.isTeam,
+			map:this.mapId,
 			playerSettings: setting,
 			gameSettings: this.setting.getInitialSetting(),
-			shuffledObstacles: this.shuffledObstacles
+			shuffledObstacles: this.shuffledObstacles.map((obs)=>obs.obs)
 		}
 	}
 
@@ -530,7 +540,8 @@ class Game {
 		if (this.gameover) {
 			return null
 		}
-			
+		
+		//console.log(this.replayRecord)
 		this.entityMediator.forAllPlayer()(function () {
 			this.ability.sendToClient()
 		})
@@ -804,7 +815,7 @@ class Game {
 				moveDistance = 0
 			}
 		}
-		return {
+		const data= {
 			dice: diceShown, //표시된 주사위 숫자
 			actualdice: moveDistance, //플레이어 움직일 거리
 			currpos: currpos,
@@ -813,6 +824,9 @@ class Game {
 			died: died,
 			crypt_turn:this.thisGameTurnToken()
 		}
+		this.eventEmitter.rollDice(data)
+		return data
+		
 	}
 
 	playerForceMove(player: Player, pos: number, ignoreObstacle: boolean, movetype: string) {

@@ -39,34 +39,22 @@ router.get("/visualeffects", function (req:express.Request, res:express.Response
 		res.end(data)
 	})
 })
-router.get("/map", function (req:express.Request, res:express.Response) {
-	let room = R.getRoom(req.session.roomname)
-	if (!room) {
-		return
+router.get("/map/:mapId", function (req:express.Request, res:express.Response) {
+
+	let mapId = Number(req.params.mapId)
+	let filename="map.json"
+	if (mapId === MAP_TYPE.OCEAN) {
+		filename="ocean_map.json"
+	} else if (mapId=== MAP_TYPE.CASINO) {
+		filename="casino_map.json"
 	}
-	if (room.getMapId === MAP_TYPE.OCEAN) {
-		fs.readFile(__dirname + RESOURCE_PATH+"ocean_map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting map file"})
-			}
-			res.end(data)
-		})
-	} else if (room.getMapId=== MAP_TYPE.CASINO) {
-		fs.readFile(__dirname + RESOURCE_PATH+"casino_map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting map file"})
-			}
-			res.end(data)
-		})
-	} else {
-		
-		fs.readFile(__dirname + RESOURCE_PATH+"map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting map file"})
-			}
-			res.end(data)
-		})
-	}
+	
+	fs.readFile(__dirname + RESOURCE_PATH + filename, "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting map file"})
+		}
+		res.end(data)
+	})
 })
 
 router.get("/item", function (req:express.Request, res:express.Response) {
@@ -116,6 +104,16 @@ router.get("/string_resource", function (req:express.Request, res:express.Respon
 	}
 	
 })
+router.get("/replay_format", function (req:express.Request, res:express.Response) {
+	fs.readFile(__dirname + RESOURCE_PATH+"replay_record_format.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting replay_record_format file"})
+		}
+		res.end(data)
+	})
+})
+
+
 router.get("/marble_map", function (req:express.Request, res:express.Response) {
 	let room = R.getMarbleRoom(req.session.roomname)
 	if (!room) {

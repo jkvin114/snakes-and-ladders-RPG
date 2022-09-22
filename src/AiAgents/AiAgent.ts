@@ -270,7 +270,7 @@ abstract class AiAgent {
 
 			goal = targets[0]
 		}
-		return Math.min(goal.pos + 7 - selector.size, me.pos + selector.range / 2)
+		return Math.min(goal.pos + 7 - selector.size, Math.floor(me.pos + selector.range / 2))
 	}
 	getAreaPos(skill: SKILL, selector: ServerGameEventInterface.LocationTargetSelector): number {
 		let me = this.player

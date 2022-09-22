@@ -25,6 +25,7 @@ class GameSetting {
 	itemRecord: boolean
 	positionRecord: boolean
 	moneyRecord: boolean
+	replay:boolean
 	constructor(setting: ClientInputEventInterface.GameSetting, instant: boolean, isTeam: boolean) {
 		this.instant = instant
 		this.isTeam = isTeam
@@ -56,6 +57,7 @@ class GameSetting {
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
 		this.winByDecision=setting.winByDecision
+		this.replay=true
 	}
 
 	randomize() {
@@ -77,6 +79,7 @@ class GameSetting {
 		this.itemRecord = setting.itemRecord
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
+
 	}
 	getInitialSetting() {
 		return {

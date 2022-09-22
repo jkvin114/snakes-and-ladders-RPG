@@ -48,6 +48,7 @@ export class Board{
 		}
 		Board._instance = this
 		this.shouldRender=false
+		this.gameSpeed=1
 	}
 	startRenderInterval() {
 		this.renderInterval = setInterval(
@@ -62,12 +63,38 @@ export class Board{
 		)
 	}
 
+
 	//===========================================================================================================================
 	clearRenderInterval() {
 		clearInterval(this.renderInterval)
 	}
 	//===========================================================================================================================
+	getMoveSpeed(type){
+		let speed=0
+		switch(type){
+			case "step":
+				speed=100
+				break
+			case "tp_simple":
+				speed=500
+				break
+			case "tp_levitate":
+				speed=300
+				break
+			case "tp_levitate_hide":
+				speed=150
+				break
+			case "indicator":
+				speed=2000
+				break
+		}
 
+
+		return Math.floor(speed/Math.min(4,this.gameSpeed))
+	}
+	modifyMoveSpeed(val){
+		return Math.floor(val/Math.min(4,this.gameSpeed))
+	}
 	forceRender() {
 		this.canvas.renderAll()
 	}
@@ -188,7 +215,8 @@ export class Board{
 		let x = rect.left + pos.x * this.boardScale * this.zoomScale  - window.innerWidth / 2//+ ( )// - this.game.ui.winwidth/2)
 		let y = rect.top + pos.y * this.boardScale * this.zoomScale - window.innerHeight / 2
 
-		this.game.ui.elements.board_container.scrollBy(x, y)
+		if(this.game.ui!=null)
+			this.game.ui.elements.board_container.scrollBy(x, y)
 		//		 this.game.ui.elements.board_container.scrollBy((pos.x* this.zoomScale-this.game.ui.winwidth/2), 0)
 
 		// console.log("moveboard x" + Math.floor(this.game.ui.elements.board_container.scrollLeft)
@@ -519,15 +547,15 @@ export class Board{
 		if (movetype === "simple") {
 			this.tpPlayerSimple(target, pos)
 		} else if (movetype === "levitate") {
-			console.log("tp")
+			// console.log("tp")
 			this.levitatePlayer(target)
-			let time = 300
+			let time = this.getMoveSpeed("tp_levitate")
 			//	console.log("tp")
 			setTimeout(() => this.tpPlayer(target, pos), time)
 		}
 		setTimeout(() => {
 			this.updateNameText(target)
-		}, 1000)
+		}, this.getMoveSpeed("tp_simple")*2)
 	}
 	//===========================================================================================================================
 
@@ -537,7 +565,7 @@ export class Board{
 		let y = this.getCoord(pos).y + BOARD_MARGIN
 
 		this.players[target].pos = pos
-		let time = 500
+		let time = this.getMoveSpeed("tp_simple")
 
 		this.players[target].playerimg.animate("top", y + PLAYER_POS_DIFF[target][1], {
 			onChange: this.render.bind(this),
@@ -572,18 +600,18 @@ export class Board{
 		// console.log(pos-count)
 		let x = this.getCoord(pos-count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
 		let y = this.getCoord(pos-count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
+		const time=this.getMoveSpeed("step")
 
 		this.players[turn].playerimg.animate("left", x, {
 			onChange: this.render.bind(this),
-			duration: 100,
+			duration: time,
 			easing: fabric.util.ease.easeOutCubic
 		})
 		this.players[turn].playerimg.animate("top", y, {
 			onChange: this.render.bind(this),
-			duration: 100,
+			duration: time,
 			easing: fabric.util.ease.easeOutCubic
 		})
-		let time = 100
 		this.onStep()
 		setTimeout(
 			function () {
@@ -609,23 +637,21 @@ export class Board{
 
 			return
 		}
+		const time=this.getMoveSpeed("step")
+
 		let x = this.getCoord(pos+count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
 		let y = this.getCoord(pos+count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 
 		this.players[turn].playerimg.animate("left", x, {
 			onChange: this.render.bind(this),
-			duration: 100,
+			duration: time,
 			easing: fabric.util.ease.easeOutCubic
 		})
 		this.players[turn].playerimg.animate("top", y, {
 			onChange: this.render.bind(this),
-			duration: 100,
+			duration: time,
 			easing: fabric.util.ease.easeOutCubic
 		})
-		let time = 100
-		if (this.game.simulation) {
-			time = 20
-		}
 		this.onStep()
 		setTimeout(
 			function () {
@@ -672,7 +698,8 @@ export class Board{
 			callback(turn)
 			return
 		}
-		const speed=movetype==="travel"?40:100
+		const time=this.getMoveSpeed("step")
+		const speed=movetype==="travel"?time*0.4:time
 		this.arrow.set({ opacity: 0 })
 		this.arrow.bringToFront()
 		this.hideNameText(turn)
@@ -708,7 +735,7 @@ export class Board{
 		this.players[target].playerimg.set({ left: x + PLAYER_POS_DIFF[target][0], top: 0 })
 
 		this.players[target].pos = pos
-		let time = 400
+		let time = this.getMoveSpeed("tp_levitate")
 		this.players[target].playerimg.animate("top", y + PLAYER_POS_DIFF[target][1], {
 			onChange: this.render.bind(this),
 			duration: time,
@@ -722,7 +749,7 @@ export class Board{
 	//===========================================================================================================================
 
 	levitatePlayer(target) {
-		let time = 150
+		let time = this.getMoveSpeed("tp_levitate_hide")
 		let thisimg = this.players[target].playerimg
 		thisimg.animate("top", 0, {
 			onChange: this.render.bind(this),

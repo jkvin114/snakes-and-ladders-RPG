@@ -1,6 +1,5 @@
-import { GAME } from "./script.js"
+import { GAME } from "./GameMain.js"
 // import { COLOR_LIST_BG } from "./canvas_control.js"
-const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
 export default class GameInterface {
 	constructor(game) {
@@ -25,8 +24,6 @@ export default class GameInterface {
 		this.clicked = false //for drag check
 		this.chat_hidden = false
 
-		this.multikillAlertTimeout=null
-		this.killTextTimeout=null
 
 		//important,repetedly used DOM elements
 		this.elements = {
@@ -842,8 +839,8 @@ export default class GameInterface {
 	setCharacterDefaultApperance(i) {
 		// let charnames = ["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree"]
 		// if (champ < 0 || champ > charnames.length - 1) return
-		$(this.elements.charimgs[GAME.turn2ui(i)]).attr("src",this.getChampImgofTurn(i))
-		$(this.elements.kdaimgs[i]).attr("src", this.getChampImgofTurn(i))
+		$(this.elements.charimgs[this.game.turn2ui(i)]).attr("src",this.game.getChampImgofTurn(i))
+		$(this.elements.kdaimgs[i]).attr("src", this.game.getChampImgofTurn(i))
 	}
 
 	updateCharacterApperance(data, turn) {
@@ -1519,252 +1516,19 @@ export default class GameInterface {
 		$("#dialog").show()
 	}
 
-	getCharImgUrl(champ_id) {
-		return "res/img/character/" + GAME.strRes.GLOBAL_SETTING.characters[champ_id].imgdir
-	}
+	// getCharImgUrl(champ_id) {
+	// 	return "res/img/character/" + GAME.strRes.GLOBAL_SETTING.characters[champ_id].imgdir
+	// }
 
-	getChampImgofTurn(turn) {
-		if (turn === -1) return "res/img/ui/obstacle.png"
+	// getChampImgofTurn(turn) {
+	// 	if (turn === -1) return "res/img/ui/obstacle.png"
 
-		let player=GAME.players[turn]
-		if(!player) return ""
-		return this.getCharImgUrl(player.champ)
-	}
+	// 	let player=GAME.players[turn]
+	// 	if(!player) return ""
+	// 	return this.getCharImgUrl(player.champ)
+	// }
 	indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount) {
-		console.log("indicatePlayerDeath" + turn)
-
 		$(this.elements.kdasections[turn]).css("background", "rgba(146, 0, 0, 0.5)")
-		let good=true
-		let str = "<div class='killframe "
-
-		if (skillfrom === GAME.myturn) {
-			str += "bluekill"
-		} else if (skillfrom >= 0) {
-			str += "redkill"
-		} else if (skillfrom === -1) {
-			str += "whitekill"
-		}
-
-		str += "'><div class='charframe' style='background:"
-		if (skillfrom === -1) {
-			str += "white"
-		} else {
-			str += this.game.getPlayerLighterColor(skillfrom)
-		}
-
-		str += ";'><img src='" + this.getChampImgofTurn(skillfrom) + "'>"
-
-		str += "</div><img src='res/img/ui/kill.png'><div class='charframe2' style='background:"
-		str += this.game.getPlayerLighterColor(turn)
-		str += ";'><img src='" + this.getChampImgofTurn(turn) + "'></div></div><br>"
-
-		$("#killindicator_container").append(str)
-
-		let text = ""
-		let largetext = false
-		if (turn === GAME.myturn) {
-			good=false
-			text = GAME.chooseLang("You Died!", "적에게 당했습니다")
-
-			if (skillfrom == -1) {
-				text = GAME.chooseLang("Executed!", "처형되었습니다")
-			}
-			if (isShutDown) {
-				text = GAME.chooseLang("Shut Down!", "제압되었습니다")
-
-				largetext = false
-			}
-			switch (killerMultiKillCount) {
-				case 1:
-					break
-				case 2:
-					text = GAME.chooseLang("ENEMY DOUBLE KILL!", "적 더블킬")
-
-					largetext = false
-					break
-				case 3:
-					text = GAME.chooseLang("ENEMY TRIPLE KILL!", "적 트리플킬")
-					largetext = true
-					break
-				case 4:
-					text = GAME.chooseLang("ENEMY QUADRA KILL!", "적 쿼드라킬")
-					largetext = true
-					break
-				case 5:
-					text = GAME.chooseLang("ENEMY PENTA KILL!", "적 펜타킬")
-					largetext = true
-					break
-				default:
-					text = GAME.chooseLang("ENEMY IS LEGENDARY!", "적은 전설적입니다")
-
-					largetext = true
-					break
-			}
-			// if (largetext) {
-			// 	$("#largekilltext").html(text)
-			// } else {
-			// 	$("#largetext").html(text)
-			// }
-		} else if (skillfrom === GAME.myturn) {
-			
-			text = GAME.chooseLang("You Slayed an Enemy", "적을 처치했습니다")
-
-			GAME.android_toast(GAME.chooseLang("You Slayed an Enemy!<br>One more dice!", "적을 처치했습니다<br>주사위 한번더!"))
-			if (isShutDown) {
-				text = GAME.chooseLang("Shut Down!", "제압되었습니다")
-				largetext = false
-			}
-			switch (killerMultiKillCount) {
-				case 1:
-					break
-				case 2:
-					text = GAME.chooseLang("DOUBLE KILL!", "더블킬")
-					largetext = false
-					break
-				case 3:
-					text = GAME.chooseLang("TRIPLE KILL!", "트리플킬")
-					largetext = true
-					break
-				case 4:
-					text = GAME.chooseLang("QUADRA KILL!", "쿼드라킬")
-					largetext = true
-					break
-				case 5:
-					text = GAME.chooseLang("PENTA KILL!", "펜타킬")
-
-					largetext = true
-					break
-				default:
-					text = GAME.chooseLang("LEGENDARY!", "전설의 출현!")
-
-					largetext = true
-					break
-			}
-			// if (largetext) {
-			// 	$("#largekilltext").html(text)
-			// } else {
-			// 	$("#largetext").html(text)
-			// }
-		} else {
-			//팀전이 아님
-			text = GAME.chooseLang("Enemy", "적")
-
-			//turn:dead player
-			//skillfrom:killer
-			//GAME.myturn: me
-			if(GAME.isTeam){
-				//아군이 죽음
-				if (GAME.isMyTeam(turn)) {
-					good=false
-					text = GAME.chooseLang("Ally", "아군")
-
-					if (killerMultiKillCount >= 2) {
-						text = GAME.chooseLang("Enemy", "적")
-					}
-				}
-
-				//아군이 죽임
-				if (GAME.isMyTeam(skillfrom)) {
-					text = GAME.chooseLang("Enemy", "적")
-
-					if (killerMultiKillCount >= 2) {
-						text = GAME.chooseLang("Ally", "아군")
-					}
-				}
-			}
-			
-
-			if (skillfrom == -1) {
-				text += GAME.chooseLang(" Executed!", "이 처형되었습니다")
-				killerMultiKillCount = 0
-			}
-
-			switch (killerMultiKillCount) {
-				case 0:
-					break
-				case 1:
-					if (isShutDown) {
-						text += GAME.chooseLang(" Shut Down!", "이 제압되었습니다")
-						largetext = false
-					} else {
-						text += GAME.chooseLang(" died!", "이 사망했습니다")
-					}
-					break
-				case 2:
-					text += GAME.chooseLang(" DOUBLE KILL!", " 더블킬")
-					largetext = false
-					break
-				case 3:
-					text += GAME.chooseLang(" TRIPLE KILL!", " 트리플킬")
-					largetext = true
-					break
-				case 4:
-					text += GAME.chooseLang(" QUADRA KILL!", " 쿼드라킬")
-					largetext = true
-					break
-				case 5:
-					text += GAME.chooseLang(" PENTA KILL!", " 펜타킬")
-
-					largetext = true
-					break
-				default:
-					text += GAME.chooseLang(" IS LEGENDARY!", "은 전설적입니다!")
-
-					largetext = true
-					break
-			}
-			
-		}
-		if (largetext) {
-			this.showMultiKillImg(skillfrom,killerMultiKillCount,text)
-		} else {
-			this.showKillText(skillfrom,turn,text,good)
-		}
-
-
-
-		// setTimeout(() => {
-		// 	$("#largekilltext").html("")
-		// 	$("#largetext").html("")
-		// }, 2000)
-	}
-	showMultiKillImg(killer,count,text){
-		$(".multikillimg").hide()
-		$("#kill_text").hide()
-		
-		if(count>=5){
-			$(this.elements.multikillimg[0]).show()
-		}
-		if(count>=4){
-			$(this.elements.multikillimg[1]).show()
-		}
-		$(this.elements.multikillimg[2]).show()
-		// let charnames = ["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree"]
-		$(".multikillchar").attr("src", this.getChampImgofTurn(killer))
-		$("#largekilltext").removeClass('long')
-		if(GAME.chooseLang(true,false)){
-			$("#largekilltext").addClass('long')
-		}
-		$("#largekilltext").html(text)
-		$("#multikill_indicator").show()
-		clearTimeout(this.multikillAlertTimeout)
-		this.multikillAlertTimeout=setTimeout(()=>$("#multikill_indicator").hide(),2500)
-	}
-	showKillText(killer,dead,text,good){
-		$("#largetext").html(text)
-		$("#kill_text").removeClass('good')
-		$("#kill_text").removeClass('bad')
-		if(good){
-			$("#kill_text").addClass('good')
-		}
-		else{
-			$("#kill_text").addClass('bad')
-		}
-		$(".killtext_killerimg img").attr("src", this.getChampImgofTurn(killer))
-		$(".killtext_deadimg img").attr("src", this.getChampImgofTurn(dead))
-		$("#kill_text").show()
-		clearTimeout(this.killTextTimeout)
-		this.killTextTimeout=setTimeout(()=>$("#kill_text").hide(),2500)
 	}
 	playerReconnect(turn,name){
 		this.showKillText(turn,10,GAME.chooseLang(name+" has reconnected",name+"님이 다시 연결되었습니다"))

@@ -32,7 +32,7 @@ class AttackHandler{
 	static async skillAttacks(from:Player,targets:Entity[],skillattack:SkillAttack){
 	//	console.log(skillattack)
 		let delay=from.getSkillTrajectorySpeed(from.getSkillName(skillattack.skill))
-		if(delay>0 && !from.game.instant){
+		if(delay>0){
 			delay=MAP.getCoordinateDistance(from.mapId,from.pos,targets[0].pos) * delay / trajectorySpeedRatio
 			let data:ServerGameEventInterface.skillTrajectory={
 				from:from.pos,
@@ -41,7 +41,10 @@ class AttackHandler{
 				delay:delay
 			}
 			from.game.eventEmitter.skillTrajectory(data)
-			await sleep(delay)
+
+			if(!from.game.instant){
+				await sleep(delay)
+			}
 		}
 
 		let data:ServerGameEventInterface.Attack={

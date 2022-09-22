@@ -19,7 +19,8 @@ export namespace ServerGameEventInterface {
 		}[]
 		isTeam: boolean
 		gameSettings: Object
-		shuffledObstacles: { obs: number; money: number }[]
+		map:number,
+		shuffledObstacles: number[]
 	}
 	export interface LocationTargetSelector {
 		kind?: "location"
@@ -36,7 +37,8 @@ export namespace ServerGameEventInterface {
 		data: LocationTargetSelector | PlayerTargetSelector | null
 		skill: number
 	}
-
+	
+	//replay
 	export interface SkillStatus extends TurnPayloadInterface {
 		cooltime: number[]
 		duration: number[] //remaining duration/full duration
@@ -46,6 +48,7 @@ export namespace ServerGameEventInterface {
 		canBasicAttack:boolean
 		canUseSkill:boolean
 	}
+	//replay
 	export interface skillTrajectory {
 		from: number
 		to: number
@@ -61,11 +64,13 @@ export namespace ServerGameEventInterface {
 		avaliablepos: number[] //avaliable positions(maximum 6, for dice control)
 		ai: boolean //temporary, dont need in client
 	}
+	//replay
 	export interface PlayerPosSync {
 		alive: boolean
 		pos: number
 		turn: number
 	}
+	//replay
 	export interface DiceRoll extends CryptedPayloadInterface {
 		dice: number //dice number shown
 		actualdice: number //actual distance to move
@@ -78,10 +83,12 @@ export namespace ServerGameEventInterface {
 		name: string
 		argument: number | number[]
 	}
+	//replay
 	export interface NormalEffect extends TurnPayloadInterface {
 		effect: number
 		num: number //indicator number
 	}
+	//replay
 	export interface PassProjectile {
 		name: string
 		scope: number[]
@@ -90,6 +97,7 @@ export namespace ServerGameEventInterface {
 		owner: number
 		trajectorySpeed: number
 	}
+	//replay
 	export interface RangeProjectile {
 		scope: number[]
 		UPID: string
@@ -97,6 +105,7 @@ export namespace ServerGameEventInterface {
 		name: string
 		trajectorySpeed: number
 	}
+	//replay
 	export interface SummonedEntity {
 		sourceTurn: number
 		pos: number
@@ -113,6 +122,7 @@ export namespace ServerGameEventInterface {
 		itemLimit: number
 		priceMultiplier: number
 	}
+	//replay
 	export interface Death extends TurnPayloadInterface {
 		killer: number
 		location: number
@@ -127,29 +137,35 @@ export namespace ServerGameEventInterface {
 		pos: number
 		type: number
 	}
+	//replay
 	export interface Shield extends TurnPayloadInterface {
 		turn: number
 		shield: number
 		change: number
 		indicate: boolean
 	}
+	//replay
 	export interface HPChange extends TurnPayloadInterface {
 		change: number
 		currhp: number
 		currmaxhp: number
 		currshield:number
 	}
+	//replay
 	export interface Heal extends HPChange {
 		type: string
 	}
+	//replay
 	export interface Damage extends HPChange {
 		source: number
 	}
+	//replay
 	export interface Victim {
 		pos: number
 		flags: string[]
 		damage: number
 	}
+	//replay
 	export interface Attack {
 		targets: Victim[]
 		source: number

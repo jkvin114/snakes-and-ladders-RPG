@@ -199,9 +199,9 @@ module.exports=function(socket:Socket){
 		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			let dice=room.getGameLoop.user_pressDice(dicenum,crypt_turn)
-			if(dice!=null)
-			io.to(rname).emit("server:rolldice", dice)
+			room.getGameLoop.user_pressDice(dicenum,crypt_turn)
+			// if(dice!=null)
+			// io.to(rname).emit("server:rolldice", dice)
 		})
 
 		// let dice = R.getRPGRoom(rname).getGameLoop().user_pressDice(dicenum,crypt_turn)

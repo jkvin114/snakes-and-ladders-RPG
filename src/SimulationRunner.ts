@@ -8,6 +8,7 @@ import { shuffle, pickRandom, PlayerType } from "./core/Util"
 import { ClientInputEventInterface } from "./data/PayloadInterface"
 import { TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../res/train_setting.json")
+import type { ReplayEventRecords } from "./ReplayEventRecord"
 
 const { workerData, parentPort, isMainThread } = require("worker_threads")
 
@@ -199,6 +200,7 @@ class SimulationSetting {
 	}
 }
 
+const MAX_COUNT=999
 class Simulation {
 	private count: number
 	private progressCount: number
@@ -210,10 +212,12 @@ class Simulation {
 	private setting: SimulationSetting
 	private runnerId: string
 	private trainData:TrainData
+	replayRecords:ReplayEventRecords[]
+
 
 	constructor(roomname: string, count: number, setting: SimulationSetting, runner: string) {
 		this.setting = setting
-		this.count = count
+		this.count = Math.min(count,MAX_COUNT)
 		this.roomName = roomname
 		this.runnerId = runner
 		// this.game = null
@@ -222,7 +226,7 @@ class Simulation {
 		this.summaryStats = new Set<any>()
 		this.progressCount = 0
 		this.trainData=new TrainData()
-		
+		this.replayRecords=[]
 	}
 
 	getFinalStatistics() {
@@ -308,6 +312,8 @@ class Simulation {
 		if(this.setting.isTrain){
 			this.trainData.addGame(this.gameCycle.game.getTrainData())
 		}
+		this.replayRecords.push(this.gameCycle.game.retrieveReplayRecord())
+		// console.table()
 	}
 	skill() {
 		if (this.gameCycle.id === GAME_CYCLE.SKILL.AI_SKILL) {
@@ -371,6 +377,7 @@ function runSimulation(data: SimulationInit): Promise<any> {
 	return new Promise((resolve, reject) => {
 		simulation.run(function () {
 			resolve({
+				replay:simulation.replayRecords,
 				stat: simulation.isSummaryOnly() ? null : simulation.getFinalStatistics(),
 				simple_stat: simulation.getSimpleResults()
 			})

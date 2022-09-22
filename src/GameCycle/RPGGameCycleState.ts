@@ -114,6 +114,7 @@ class GameLoop {
 				)
 			}
 		}
+		game.onCreate()
 		return new GameLoop(game)
 	}
 	setClientInterface(ci: GameEventObserver) {
@@ -190,7 +191,7 @@ class GameLoop {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
 			let data: ServerGameEventInterface.DiceRoll = this.state.getData()
-			this.eventEmitter.rollDice(data)
+			// this.eventEmitter.rollDice(data)
 			this.afterDice(data.actualdice)
 		}
 	}

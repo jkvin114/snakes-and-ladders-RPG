@@ -368,7 +368,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 
 	onSkillHit(damage: Util.Damage, target: Player) {
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONHIT].entries()) {
-			console.log("onSkillHit" + effect.name)
+			// console.log("onSkillHit" + effect.name)
 			if (!(effect instanceof OnHitEffect)) continue
 
 			damage = (effect as OnHitEffect).onHitWithSkill(target, damage)

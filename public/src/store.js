@@ -1,5 +1,5 @@
 const EMPTY = -1
-import { GAME } from "./script.js"
+import { GAME } from "./GameMain.js"
 export class StoreStatus {
 	constructor() {
 		this.itemList
@@ -805,15 +805,16 @@ export class StoreInterface {
 		if (!this.storeInstance.enabled) return
 		let price = Math.floor(this.storeStatus.itemList[item_id].price / 2.5)
 
-		GAME.ui.showDialog(
-			GAME.chooseLang(this.storeStatus.itemList[item_id].name,this.storeStatus.itemList[item_id].kor_name)
-				+'<br>'+
-				GAME.chooseLang("price:", "가격:") +
-				price +
-				"$<br>" +
-				GAME.chooseLang("Do you really want to sell?", "정말 판매하시겠습니까?"),
-			() => this.onItemSellConfirm(item_id, price)
-		)
+		if(GAME.ui!=null)
+			GAME.ui.showDialog(
+				GAME.chooseLang(this.storeStatus.itemList[item_id].name,this.storeStatus.itemList[item_id].kor_name)
+					+'<br>'+
+					GAME.chooseLang("price:", "가격:") +
+					price +
+					"$<br>" +
+					GAME.chooseLang("Do you really want to sell?", "정말 판매하시겠습니까?"),
+				() => this.onItemSellConfirm(item_id, price)
+			)
 
 		// let retVal = confirm(
 		// 	itemname +

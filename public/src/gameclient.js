@@ -1,5 +1,5 @@
 const CONNECTION_TIMEOUT=2000
-import { GAME } from "./script.js"
+import { GAME } from "./GameMain.js"
 // import { calculatePrize,randomObs } from "./roulette.js"
 export class GameClient {
 	constructor() {
@@ -86,13 +86,14 @@ export function openConnection(isInitial) {
 
 	socket.on("server:damage", function (val) {
 		if (val == null) return
-		GAME.scene.animateDamage(val) 
+		GAME.animateDamage(val) 
+		
 		// GAME.scene.hpChanger.enqueueHpChange(val)
 	})
 
 	socket.on("server:heal", function (val) {
 		if (val == null) return
-		GAME.scene.animateHeal(val)
+		GAME.animateHeal(val)
 	})
 
 
@@ -127,9 +128,7 @@ export function openConnection(isInitial) {
 	// })
 	socket.on("server:teleport_pos", function (val) {
 		if (val == null) return
-
-		GAME.scene.teleportPlayer(val.turn, val.pos, val.movetype)
-		GAME.updatePosition(val.turn,val.pos)
+		GAME.teleportPlayer(val)
 	})
 	socket.on("server:smooth_teleport", function (val) {
 		if (val == null) return
@@ -235,14 +234,14 @@ export function openConnection(isInitial) {
 	})
 
 	socket.on("server:pending_obs:kidnap", function () {
-		if (!GAME.ismyturn) {
+		if (!GAME.ismyturn|| !GAME.ui) {
 			return
 		}
 		GAME.ui.showSelection("obs", "kidnap")
 	})
 
 	socket.on("server:pending_obs:threaten", function () {
-		if (!GAME.ismyturn) {
+		if (!GAME.ismyturn|| !GAME.ui) {
 			return
 		}
 		GAME.ui.showSelection("obs", "threaten")
@@ -255,14 +254,14 @@ export function openConnection(isInitial) {
 	})
 
 	socket.on("server:pending_obs:subway", function (prices) {
-		if (!GAME.ismyturn || prices == null) {
+		if (!GAME.ismyturn || prices == null || !GAME.ui) {
 			return
 		}
 		GAME.ui.showSubwaySelection(prices)
 	})
 
 	socket.on("server:pending_action:ask_way2", function () {
-		if (!GAME.ismyturn) {
+		if (!GAME.ismyturn || !GAME.ui) {
 			return
 		}
 		GAME.ui.showSelection("action", "ask_way2")
@@ -285,19 +284,19 @@ export function openConnection(isInitial) {
 		GAME.onReceiveChangeData(data.type, data.turn, data.amt)
 	})
 	socket.on("server:update_skill_info", function (data) {
-		if (GAME.myturn !== data.turn || data.turn == null) {
+		if (GAME.myturn !== data.turn || data.turn == null|| !GAME.ui) {
 			return
 		}
 		GAME.ui.updateSkillInfo(data.info_kor, data.info_eng)
 	})
 	socket.on("server:start_timeout_countdown", function (crypt_turn, time) {
-		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null) {
+		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null|| !GAME.ui) {
 			return
 		}
 		GAME.ui.timeoutStart(time)
 	})
 	socket.on("server:stop_timeout_countdown", function (crypt_turn) {
-		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null) {
+		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null|| !GAME.ui) {
 			return
 		}
 		GAME.ui.timeoutStop()

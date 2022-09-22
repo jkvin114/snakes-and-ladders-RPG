@@ -515,7 +515,8 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	async placeProj(proj) {
-		if (proj.trajectorySpeed > 0) {
+		console.log(proj)
+		if (proj.trajectorySpeed > 0 && proj.owner>0) {
 			this.animateProjTrajectory(proj,proj.trajectorySpeed)
 			await sleep(proj.trajectorySpeed)
 		}
@@ -827,9 +828,9 @@ export class Scene extends Board{
 		this.zoomScale = 1
 		$("#boardwrapper").css("margin", "1300px")
 
-		this.game.ui.elements.board_container.scrollTo(
-			BOARD_MARGIN * this.boardScale + 1000,
-			BOARD_MARGIN * this.boardScale + 1000
+		document.getElementById("canvas-container").scrollTo(
+			BOARD_MARGIN * this.boardScale + 1200,
+			BOARD_MARGIN * this.boardScale + 1200
 		)
 	}
 
@@ -866,7 +867,7 @@ export class Scene extends Board{
 	drawWay(i, obsimg, tileimg, tileshadows) {
 		let obs_id = 0
 
-		obs_id = this.game.shuffledObstacles[i].obs
+		obs_id = this.game.shuffledObstacles[i]
 
 		//  let index=num;
 		if (obs_id === -1 || obs_id === 0) {
@@ -984,7 +985,6 @@ export class Scene extends Board{
 			opacity: 0,
 			objectCaching: false
 		})
-
 		this.lockFabricObject(line)
 		this.canvas.add(line)
 		this.line = line
@@ -1006,6 +1006,7 @@ export class Scene extends Board{
 		this.tooltip = tooltip
 
 		
+		console.log("showobjest")
 
 		//힐=================================================================
 
@@ -1817,7 +1818,7 @@ export class Scene extends Board{
 	}
 
 	async showAttackEffect(data) {
-
+		console.log(this.line)
 		// switch(data.visualeffect){
 		// 	case 'kraken_w':
 		// 		this.showEffect(data.sourcePos, 'kraken_w_wave', 0, data.source)
@@ -1827,7 +1828,7 @@ export class Scene extends Board{
 
 		for (let i = 0; i < data.targets.length; ++i) {
 			let t = data.targets[i]
-			console.log(data.visualeffect)
+			// console.log(data.visualeffect)
 			switch(data.visualeffect){
 				case "magician_w_q":
 				case "magician_q":
@@ -2284,7 +2285,7 @@ export class Scene extends Board{
 		if (change > 0) {
 			this.players[target].shieldindicator.set("text", "+" + String(change))
 		}
-		let time = 2000
+		let time = this.getMoveSpeed("indicator")
 		this.animateOpacity(this.players[target].shieldindicator,0,time)
 		this.animateYEaseOut(this.players[target].shieldindicator,y - 50,time)
 	}
@@ -2303,9 +2304,9 @@ export class Scene extends Board{
 				sc = 2.5
 			}
 			this.setEffectImageAttr(this.heal,pos.x,pos.y-40*sc,1,sc,1,0)
-			this.animateOpacity(this.heal,0,3000)
+			this.animateOpacity(this.heal,0,this.modifyMoveSpeed(3000))
 		}
-		this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
+		// this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
 		this.setHp(data)
 		if (type === "heal_simple" || type === "heal") this.animateHP(data)
 	}
@@ -2344,7 +2345,7 @@ export class Scene extends Board{
 		// 	//	this.showEffect(target, "shield", change, skillfrom)
 		// 	}
 		// }
-		this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
+		// this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
 		this.setHp(data)
 		this.animateHP(data)
 	}
@@ -2357,10 +2358,10 @@ export class Scene extends Board{
 		let shield=data.currshield
 		let change = data.change
 
-		if (target === this.game.myturn) {
-			this.game.ui.lostHP(hp, change)
-		}
-		let ui = this.game.turn2ui(target)
+		// if (target === this.game.myturn) {
+		// 	this.game.ui.lostHP(hp, change)
+		// }
+		// let ui = this.game.turn2ui(target)
 
 		let hpbar_hp = this.players[target].hpbar.hp
 		let hpbar_frame = this.players[target].hpbar.frame
@@ -2382,7 +2383,6 @@ export class Scene extends Board{
 		// this.players[target].nametext.set("text", "(" + String(target + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
 	}
 	onStep(){
-		console.log("step")
 		this.game.playSound('step')
 	}
 	animateHP(data) {
@@ -2466,7 +2466,7 @@ export class Scene extends Board{
 				this.players[target].hpIndicatorLostTimeout = setTimeout(() => {
 					hp_lost.set({ width: 0 })
 					this.players[target].isHpIndicatorVisible = false
-				}, HEALTHBAR_LOST_DISAPPEAR_DELAY)
+				}, this.modifyMoveSpeed(HEALTHBAR_LOST_DISAPPEAR_DELAY))
 			}
 
 			this.players[target].hpIndicatorFrameTimeout = setTimeout(() => {
@@ -2474,7 +2474,7 @@ export class Scene extends Board{
 				hp_bg.set({ visible: false })
 				hp_remain.set({ visible: false })
 				hp_lost.set({ visible: false })
-			}, HEALTHBAR_FRAME_DISAPPEAR_DELAY)
+			}, this.modifyMoveSpeed(HEALTHBAR_FRAME_DISAPPEAR_DELAY))
 
 			//console.log(this.players[target].hpIndicatorFrameTimeout)
 		}
@@ -2522,7 +2522,7 @@ export class Scene extends Board{
 				dmgIndicator.set({ fill: "white" })
 			}
 			dmgIndicator.set({ top: y, left: x, opacity: 1 }).bringToFront()
-			const time = 2000
+			const time = this.getMoveSpeed("indicator")
 			setTimeout(()=>this.animateOpacity(dmgIndicator,0,time*3/4),time/4)
 			this.animateYEaseOut(dmgIndicator,y-50,time)
 			
@@ -2538,7 +2538,7 @@ export class Scene extends Board{
 
 			this.players[target].healindicator.set({ top: y, left: x, opacity: 1 }).bringToFront()
 
-			const time = 2000
+			const time = this.getMoveSpeed("indicator")
 			setTimeout(()=>this.animateOpacity(this.players[target].healindicator,0,time*3/4),time/4)
 			this.animateYEaseOut(this.players[target].healindicator,y-50,time)
 		}
@@ -2555,7 +2555,7 @@ export class Scene extends Board{
 	{
 		let pos1 = this.getPlayerPos(turn)	
 
-		console.log(this.players[turn].hpbar)
+		// console.log(this.players[turn].hpbar)
 		this.players[turn].hpbar.frame.set({ visible: true, left: pos1.x - HPBAR_OFFSET_X, top: pos1.y - HPBAR_OFFSET_Y })
 		this.players[turn].hpbar.hp.set({
 			visible: true,
@@ -2603,7 +2603,7 @@ export class Scene extends Board{
 				this.players[target].moneyindicator.set("fontSize", 115)
 			}
 		}
-		const time = 2000
+		const time = this.getMoveSpeed("indicator")
 		this.animateOpacity(this.players[target].moneyindicator,0,time)
 		this.animateYEaseOut(this.players[target].moneyindicator,y-50,time)
 	
@@ -2611,7 +2611,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	indicateDcItem(turn, change) {
-		const time = 1500
+		const time = this.getMoveSpeed("indicator")
 		let pos = this.getPlayerPos(turn)
 		if (change < 0) {
 			this.dcItemIndicator._objects[0].set("text", "-1")
@@ -3200,7 +3200,7 @@ export class Scene extends Board{
 			img.off()
 		})
 
-		this.game.ui.hideSkillCancel()
+		// this.game.ui.hideSkillCancel()
 		this.shadow.set({ visible: false })
 		this.shadow.sendToBack()
 		this.render()
@@ -3217,7 +3217,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 	moveComplete(turn){
 		this.game.moveComplete()
-		let ui = this.game.turn2ui(turn)
+		// let ui = this.game.turn2ui(turn)
 		// this.players[turn].nametext.set("text", "(" + String(turn + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
 		// this.updateNameText(turn)
 		super.moveComplete(turn)
@@ -3306,7 +3306,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	tileReset() {
-		this.game.ui.onTileReset()
+		// this.game.ui.onTileReset()
 
 		for (let i = 0; i < this.tileselectimgs.length; ++i) {
 			this.tileselectimgs[i].set({ x: 0, y: 0, opacity: 0 })

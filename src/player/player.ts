@@ -1076,21 +1076,22 @@ abstract class Player extends Entity {
 	 * @param {*} skillfrom 0에서시작
 	 */
 	private die(skillfrom: Player|null) {
+		let killerturn=-1
 		if (!skillfrom) {
 
 			this.sendConsoleMessage(this.name + " has been executed!")
 			this.statistics.add(ENUM.STAT.EXECUTED, 1)
 			
 		} else {
-			
+			killerturn=skillfrom.turn
 			this.sendConsoleMessage(skillfrom.name + " killed " + this.name)
 			skillfrom.addKill(this)
 			this.thisLifeKillCount = 0
 			
 		}
-		this.game.addKillData(skillfrom.turn, this.turn, this.pos)
+		this.game.addKillData(killerturn, this.turn, this.pos)
 
-		this.addAssist(skillfrom.turn)
+		this.addAssist(killerturn)
 		this.HP = 0
 		this.dead = true
 		this.mapHandler.onDeath()
