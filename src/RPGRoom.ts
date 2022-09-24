@@ -1,6 +1,7 @@
 import { GameLoop } from "./GameCycle/RPGGameCycleState"
 import { Room } from "./room"
 import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
+const { Replay } = require("./mongodb/ReplayDBHandler")
 
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./mongodb/DBHandler")
 import { hasProp, writeFile } from "./core/Util"
@@ -97,7 +98,7 @@ class RPGRoom extends Room {
 		return true
 	}
 
-	onGameover(isNormal:boolean) {
+	async onGameover(isNormal:boolean) {
 		if(!this.gameloop) return
 		
 		if(!isNormal){
@@ -107,16 +108,21 @@ class RPGRoom extends Room {
 		let stat = this.gameloop.game.getFinalStatistics()
 		let winner = this.gameloop.game.thisturn
 		// console.log(this.gameloop.game.retrieveReplayRecord())
-
-		let rname = this.name
+		let replayData=this.gameloop.game.retrieveReplayRecord()
+		
 		this.reset()
+		try{
 
-		GameRecord.create(stat)
-			.then((resolvedData: any) => {
-				console.log("stat saved successfully")
-				this.eventObserver.gameStatReady(resolvedData.id)
-			})
-			.catch((e: any) => console.error(e))
+			if(replayData.enabled){
+				const replay=await Replay.create(replayData)
+				stat.replay=replay.id.toString()
+			}
+			const resolvedData=await GameRecord.create(stat)
+			this.eventObserver.gameStatReady(resolvedData.id)
+		}
+		catch(e){
+			console.error(e)
+		}
 
 		this.eventObserver.gameOver(winner)
 	}
@@ -174,63 +180,56 @@ class RPGRoom extends Room {
 		})
 	}
 
-	onSimulationOver(result: boolean, resultStat: any) {
+	async onSimulationOver(result: boolean, resultStat: any) {
 		let rname = this.name
-		if (result) {
-			writeFile(JSON.stringify(resultStat.replay[0]),"stats/replay","json","replay saved")
-			let stat = resultStat.stat
-			let simple_stat = resultStat.simple_stat
-			// let stat = this.simulation.getFinalStatistics()
-			// let simple_stat = this.simulation.getSimpleResults()
-			this.reset()	
-
-			if (!stat) {
-				if (!simple_stat) {
-					console.log("simulation complete")
-					this.eventObserver.simulationOver("no_stat")
-					return
-				}
-
-				SimpleSimulationRecord.create(simple_stat)
-					.then((resolvedData: any) => {
-						console.log("simple stat saved successfully")
-					})
-					.catch((e: any) => {
-						console.error(e)
-						this.eventObserver.simulationStatReady("error",e.toString())
-					})
-
-					this.eventObserver.simulationStatReady("none","")
-			} else {
-				SimulationRecord.create(stat)
-					.then((resolvedData: any) => {
-					//	console.log(resolvedData)
-						console.log("stat saved successfully")
-
-						simple_stat.simulation = resolvedData.id.toString()
-
-						SimpleSimulationRecord.create(simple_stat)
-							.then((resolvedData: any) => {
-								console.log("simple stat saved successfully")
-							})
-							.catch((e: any) => {
-								console.error(e)
-								this.eventObserver.simulationStatReady("error",e.toString())
-							})
-
-						this.eventObserver.simulationStatReady(resolvedData.id,"")
-					})
-					.catch((e: any) => {
-								console.error(e)
-								this.eventObserver.simulationStatReady("error",e.toString())
-					})
-			}
-
-			this.eventObserver.simulationOver("success")
-		} else {
-			//error
+		if(!result){
 			this.eventObserver.simulationOver("error " + resultStat)
+			return
 		}
+		//writeFile(JSON.stringify(resultStat.replay[0]),"stats/replay","json","replay saved")
+		let stat = resultStat.stat
+		let simple_stat = resultStat.simple_stat
+
+		this.reset()	
+
+		if (!stat) {
+			if (!simple_stat) {
+				console.log("simulation complete")
+				this.eventObserver.simulationOver("no_stat")
+				return
+			}
+			try{
+
+				await SimpleSimulationRecord.create(simple_stat)
+				this.eventObserver.simulationStatReady("none","")
+			}
+			catch(e){
+				console.error(e)
+				this.eventObserver.simulationStatReady("error",e.toString())
+
+			}
+		} else {
+			try{
+				// console.log(resultStat.replay[0].events.length)
+				if(resultStat.replay[0].events.length>0){
+					const replay=await Replay.create(resultStat.replay[0])
+					stat.stat[0].replay=replay.id.toString()
+				}
+				
+				const data=await SimulationRecord.create(stat)
+				simple_stat.simulation = data.id.toString()
+				await SimpleSimulationRecord.create(simple_stat)
+				this.eventObserver.simulationStatReady(data.id,"")
+			}
+			catch(e){
+				console.error(e)
+				this.eventObserver.simulationStatReady("error",e.toString())
+			}
+			
+		}
+
+		this.eventObserver.simulationOver("success")
+		
 	}
 	reset(): void {
 		super.reset()

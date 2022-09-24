@@ -191,6 +191,7 @@ export namespace ClientInputEventInterface {
 		positionRecord: boolean
 		moneyRecord: boolean
 		summaryOnly: boolean
+		replay:boolean
 	}
 
 	export interface SimulationSetting {
@@ -212,6 +213,7 @@ export namespace ClientInputEventInterface {
 		positionRecord: boolean
 		moneyRecord: boolean
 		summaryOnly: boolean
+		replay:boolean
 	}
 	interface GodHandResult {
 		kind: "godhand"

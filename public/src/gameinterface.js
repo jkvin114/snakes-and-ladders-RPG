@@ -246,20 +246,8 @@ export default class GameInterface {
 		$("#selecttruebutton").click(() => this.selected(true))
 		$("#selectfalsebutton").click(() => this.selected(false))
 
-		$("#toggle_fullscreen").click(function(){
-			console.log($(this).data("on"))
-			if(!$(this).data("on")){
-			  
-			  document.documentElement.requestFullscreen()
-			  $(this).data("on",true)
-			}
-			else {
-			  document.exitFullscreen()
-			  $(this).data("on",false)
-			}
-		  })
+		
 		  
-		$("#quit").click(GAME.onQuit.bind(GAME))
 	}
 
 	/**
@@ -329,116 +317,6 @@ export default class GameInterface {
 		}
 	}
 
-	//add drag event for chat window move
-	addChatDragEvent() {
-		let element = $("#movechat")
-		let pos1 = 0,
-			pos2 = 0,
-			pos3 = 0,
-			pos4 = 0
-		let chat = document.getElementById("chat")
-		element.on(
-			"touchstart",
-			function (coord) {
-				coord = coord || window.event
-
-				coord.preventDefault()
-				// get the mouse cursor position at startup:
-				pos3 = coord.changedTouches[0].pageX
-				pos4 = coord.changedTouches[0].pageY
-
-				element.on("touchend", function () {
-					// stop moving when mouse button is released:
-					element.off("touchend")
-					element.off("touchmove")
-					element.off("cancel")
-				})
-				element.on("touchcancel", function () {
-					// stop moving when mouse button is released:
-					element.off("touchend")
-					element.off("touchmove")
-					element.off("cancel")
-				})
-				// call a function whenever the cursor moves:
-				element.on(
-					"touchmove",
-					function (coord) {
-						coord = coord || window.event
-						coord.preventDefault()
-
-						// calculate the new cursor position:
-						pos1 = pos3 - coord.changedTouches[0].pageX
-						pos2 = pos4 - coord.changedTouches[0].pageY
-						pos3 = coord.changedTouches[0].pageX
-						pos4 = coord.changedTouches[0].pageY
-
-						let marginY = this.chat_hidden ? 60 : 150
-						let marginX = this.chat_hidden ? 100 : 230
-
-						// set the element's new position:
-						chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 100)) + "px"
-						chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 100)) + "px"
-					}.bind(this)
-				)
-			}.bind(this)
-		)
-
-		$(element).on(
-			"mousedown",
-			function (coord) {
-				coord = coord || window.event
-
-				coord.preventDefault()
-				// get the mouse cursor position at startup:
-				pos3 = coord.pageX
-				pos4 = coord.pageY
-
-				$(element).on("mouseup", function () {
-					// stop moving when mouse button is released:
-					element.off("mouseup")
-					element.off("mouseleave")
-					element.off("mousemove")
-					element.off("mouseout")
-				})
-				$(element).on("mouseleave", function () {
-					// stop moving when mouse button is released:
-					element.off("mouseup")
-					element.off("mouseleave")
-					element.off("mousemove")
-					element.off("mouseout")
-				})
-				$(element).on("mouseout", function () {
-					// stop moving when mouse button is released:
-					element.off("mouseup")
-					element.off("mouseleave")
-					element.off("mousemove")
-					element.off("mouseout")
-				})
-				// call a function whenever the cursor moves:
-				$(element).on(
-					"mousemove",
-					function (coord) {
-						coord = coord || window.event
-						coord.preventDefault()
-
-						// calculate the new cursor position:
-						pos1 = pos3 - coord.pageX
-						pos2 = pos4 - coord.pageY
-						pos3 = coord.pageX
-						pos4 = coord.pageY
-
-						let marginY = this.chat_hidden ? 60 : 150
-						let marginX = this.chat_hidden ? 100 : 230
-
-						// set the element's new position:
-						chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 200)) + "px"
-						chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 200)) + "px"
-					}.bind(this)
-				)
-			}.bind(this)
-		)
-	}
-
 	addKeyboardEvent() {
 		document.addEventListener(
 			"keydown",
@@ -467,191 +345,6 @@ export default class GameInterface {
 			}).bind(this)
 		)
 	}
-	addWheelEvent() {
-		// wheelzoom(document.getElementById("board"), {zoom:0.05});
-		// return
-		document.getElementById("boardwrapper").addEventListener(
-			"wheel",
-			function (event) {
-				event.preventDefault()
-
-				let rect = document.getElementById("boardwrapper").getBoundingClientRect()
-				let originX = Math.max((this.mousePosX - rect.left) / rect.width, 0)
-				let originY = Math.max((this.mousePosY - rect.top) / rect.height, 0)
-				if (event.deltaY < 0) {
-					GAME.scene.zoomOut(0.05, originX, originY)
-				} else if (event.deltaY > 0) {
-					GAME.scene.zoomIn(0.05, originX, originY)
-				}
-			}.bind(this)
-		)
-		document.getElementById("board").addEventListener("wheel", function (event) {
-			event.preventDefault()
-		})
-		this.elements._boardside.addEventListener(
-			"mousemove",
-			function (coord) {
-				this.mousePosX = coord.pageX
-				this.mousePosY = coord.pageY
-			}.bind(this)
-		)
-	}
-
-	addTouchEvent() {
-		let board_container = this.elements.board_container
-		this.elements._boardside.addEventListener(
-			"touchstart",
-			function (click_pos) {
-				this.clicked = true
-
-				let origX = click_pos.changedTouches[0].pageX + board_container.scrollLeft
-				let origY = click_pos.changedTouches[0].pageY + board_container.scrollTop
-
-				if (this.waitingDoudleClick && click_pos.targetTouches.length === 1) {
-					//double touch
-					this.waitingDoudleClick = false
-					GAME.scene.moveBoardToPlayer(GAME.myturn)
-					this.clicked = false
-				} else if (click_pos.targetTouches.length === 1) {
-					this.waitingDoudleClick = true
-					setTimeout((() => (this.waitingDoudleClick = false)).bind(this), 150)
-				}
-
-				this.lastZoomScale = 0
-
-				this.elements._boardside.addEventListener(
-					"touchmove",
-					function (e) {
-						if (e.targetTouches.length === 2) {
-							let l = this.lastZoomScale
-							let gesturedata = this.gesturePinchZoom(e)
-							if (!gesturedata) return
-
-							let rect = document.getElementById("boardwrapper").getBoundingClientRect()
-							let originX = Math.max((gesturedata.originX - rect.left) / rect.width, 0)
-							let originY = Math.max((gesturedata.originY - rect.top) / rect.height, 0)
-
-							if (gesturedata.zoom > 0.4) {
-								GAME.scene.zoomIn(0.07, originX, originY)
-							} else if (gesturedata.zoom < -0.4) {
-								GAME.scene.zoomOut(0.07, originX, originY)
-							}
-						} else {
-							if (!this.clicked) return
-							let curX = e.changedTouches[0].pageX + board_container.scrollLeft
-							let diffX = origX - curX
-
-							let curY = e.changedTouches[0].pageY + board_container.scrollTop
-							let diffY = origY - curY
-
-							board_container.scrollBy(diffX, diffY)
-						}
-					}.bind(this),
-					false
-				)
-			}.bind(this),
-			false
-		)
-		this.elements._boardside.addEventListener(
-			"touchend",
-			function () {
-				this.lastZoomScale = null
-				this.clicked = false
-			}.bind(this),
-			false
-		)
-		this.elements._boardside.addEventListener(
-			"touchcancel",
-			function () {
-				this.lastZoomScale = null
-				this.clicked = false
-			}.bind(this),
-			false
-		)
-	}
-	gesturePinchZoom(event) {
-		let zoom = false
-
-		if (event.targetTouches.length === 2) {
-			let p1 = event.targetTouches[0]
-			let p2 = event.targetTouches[1]
-			let zoomScale = Math.sqrt(Math.pow(p2.pageX - p1.pageX, 2) + Math.pow(p2.pageY - p1.pageY, 2)) //euclidian distance
-			let centerX = (p2.pageX + p1.pageX) / 2
-			let centerY = (p2.pageY + p1.pageY) / 2
-		//	let origin = GAME.scene.pagePosToTransformOrigin(centerX, centerY)
-
-			if (this.lastZoomScale !== null) {
-				zoom = zoomScale - this.lastZoomScale
-			}
-
-			this.lastZoomScale = zoomScale
-			return {
-				zoom: zoom,
-				originX: centerX,
-				originY: centerY
-			}
-		}
-		return null
-	}
-
-	addMouseEvent() {
-		let board_container = this.elements.board_container
-		this.elements._boardside.addEventListener(
-			"mousedown",
-			function (click_pos) {
-				let origX = click_pos.pageX + board_container.scrollLeft
-				let origY = click_pos.pageY + board_container.scrollTop
-				this.clicked = true
-				if (this.waitingDoudleClick) {
-					this.waitingDoudleClick = false
-					GAME.scene.moveBoardToPlayer(GAME.myturn)
-					this.clicked = false
-				} else {
-					this.waitingDoudleClick = true
-					setTimeout(() => this.waitingDoudleClick = false, 150)
-				}
-				this.elements._boardside.addEventListener(
-					"mousemove",
-					function (coord) {
-						if (!this.clicked) return
-						let curX = coord.pageX + board_container.scrollLeft
-						let diffX = origX - curX
-
-						let curY = coord.pageY + board_container.scrollTop
-						let diffY = origY - curY
-
-						board_container.scrollBy(diffX, diffY)
-						//console.log("x" + Math.floor(board_container.scrollLeft) + "  y" + Math.floor(board_container.scrollTop))
-
-					}.bind(this),
-					false
-				)
-			}.bind(this),
-			false
-		)
-		this.elements._boardside.addEventListener(
-			"mouseup",
-			function (e) {
-				this.clicked = false
-			}.bind(this),
-			false
-		)
-		this.elements._boardside.addEventListener(
-			"mouseleave",
-			function (e) {
-				this.clicked = false
-			}.bind(this),
-			false
-		)
-		this.elements._boardside.addEventListener(
-			"mouseout",
-			function (e) {
-				this.clicked = false
-			}.bind(this),
-			false
-		)
-	}
-
 	hideChat() {
 		$("#chat").css({ height: "50px", width: "100px", border: "2px solid black" })
 
@@ -659,6 +352,115 @@ export default class GameInterface {
 
 		$("#writemessage").hide()
 	}
+//add drag event for chat window move
+addChatDragEvent() {
+	let element = $("#movechat")
+	let pos1 = 0,
+		pos2 = 0,
+		pos3 = 0,
+		pos4 = 0
+	let chat = document.getElementById("chat")
+	element.on(
+		"touchstart",
+		function (coord) {
+			coord = coord || window.event
+
+			coord.preventDefault()
+			// get the mouse cursor position at startup:
+			pos3 = coord.changedTouches[0].pageX
+			pos4 = coord.changedTouches[0].pageY
+
+			element.on("touchend", function () {
+				// stop moving when mouse button is released:
+				element.off("touchend")
+				element.off("touchmove")
+				element.off("cancel")
+			})
+			element.on("touchcancel", function () {
+				// stop moving when mouse button is released:
+				element.off("touchend")
+				element.off("touchmove")
+				element.off("cancel")
+			})
+			// call a function whenever the cursor moves:
+			element.on(
+				"touchmove",
+				function (coord) {
+					coord = coord || window.event
+					coord.preventDefault()
+
+					// calculate the new cursor position:
+					pos1 = pos3 - coord.changedTouches[0].pageX
+					pos2 = pos4 - coord.changedTouches[0].pageY
+					pos3 = coord.changedTouches[0].pageX
+					pos4 = coord.changedTouches[0].pageY
+
+					let marginY = this.chat_hidden ? 60 : 150
+					let marginX = this.chat_hidden ? 100 : 230
+
+					// set the element's new position:
+					chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 100)) + "px"
+					chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 100)) + "px"
+				}.bind(this)
+			)
+		}.bind(this)
+	)
+
+	$(element).on(
+		"mousedown",
+		function (coord) {
+			coord = coord || window.event
+
+			coord.preventDefault()
+			// get the mouse cursor position at startup:
+			pos3 = coord.pageX
+			pos4 = coord.pageY
+
+			$(element).on("mouseup", function () {
+				// stop moving when mouse button is released:
+				element.off("mouseup")
+				element.off("mouseleave")
+				element.off("mousemove")
+				element.off("mouseout")
+			})
+			$(element).on("mouseleave", function () {
+				// stop moving when mouse button is released:
+				element.off("mouseup")
+				element.off("mouseleave")
+				element.off("mousemove")
+				element.off("mouseout")
+			})
+			$(element).on("mouseout", function () {
+				// stop moving when mouse button is released:
+				element.off("mouseup")
+				element.off("mouseleave")
+				element.off("mousemove")
+				element.off("mouseout")
+			})
+			// call a function whenever the cursor moves:
+			$(element).on(
+				"mousemove",
+				function (coord) {
+					coord = coord || window.event
+					coord.preventDefault()
+
+					// calculate the new cursor position:
+					pos1 = pos3 - coord.pageX
+					pos2 = pos4 - coord.pageY
+					pos3 = coord.pageX
+					pos4 = coord.pageY
+
+					let marginY = this.chat_hidden ? 60 : 150
+					let marginX = this.chat_hidden ? 100 : 230
+
+					// set the element's new position:
+					chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 200)) + "px"
+					chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 200)) + "px"
+				}.bind(this)
+			)
+		}.bind(this)
+	)
+}
 
 	timeoutStart(time) {
 		//	console.log("timeoutstart")
@@ -1500,20 +1302,6 @@ export default class GameInterface {
 			result: !result,
 			complete:true
 		})
-	}
-	showDialog(content,onconfirm,oncancel){
-		$("#dialog p").html(content)
-		$("#dialog .dialog_cancel").off()
-		$("#dialog .dialog_confirm").off()
-		$("#dialog .dialog_cancel").click(()=>{
-			if(oncancel!=null) oncancel()
-			$("#dialog").hide()
-		})
-		$("#dialog .dialog_confirm").click(()=>{
-			if(onconfirm!=null) onconfirm()
-			$("#dialog").hide()
-		})
-		$("#dialog").show()
 	}
 
 	// getCharImgUrl(champ_id) {

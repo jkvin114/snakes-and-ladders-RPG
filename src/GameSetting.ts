@@ -57,7 +57,7 @@ class GameSetting {
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
 		this.winByDecision=setting.winByDecision
-		this.replay=true
+		this.replay=setting.replay
 	}
 
 	randomize() {
@@ -69,8 +69,8 @@ class GameSetting {
 		this.diceControlItemFrequency = Util.randInt(GAMESETTINGS.gameplaySetting.diceControlItemFrequency.options.length)
 		this.shuffleObstacle = Util.randomBoolean()
 		this.winByDecision=Util.randomBoolean()
-		if(this.winByDecision)
-			this.additionalDiceAmount=1
+		// if(this.winByDecision)
+		// 	this.additionalDiceAmount=1
 		return this
 	}
 
@@ -79,6 +79,7 @@ class GameSetting {
 		this.itemRecord = setting.itemRecord
 		this.positionRecord = setting.positionRecord
 		this.moneyRecord = setting.moneyRecord
+		this.replay=setting.replay
 
 	}
 	getInitialSetting() {

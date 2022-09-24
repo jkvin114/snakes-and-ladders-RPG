@@ -48,15 +48,12 @@ export class PlayableGame extends Game{
 		this.store = new StoreInstance(this.storeStatus)
 		this.store_ui = new StoreInterface(this.storeStatus, this.store)
 		this.ui.addKeyboardEvent()
-		this.ui.addWheelEvent()
-		this.ui.addTouchEvent()
-		this.ui.addMouseEvent()
 		this.ui.addChatDragEvent()
-
+		super.onCreate()
 	}
 
 	onDisconnect() {
-		this.ui.showDialog(
+		this.showDialog(
 			this.chooseLang("Unable to connect server, do you wish to reconnect?", "서버 연결 불가, 재접속 하시겠습니까?"),
 			()=>this.tryReconnect(),
 			()=>this.onQuit()

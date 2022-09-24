@@ -1,6 +1,8 @@
 import { Game } from "./script.js"
-import { REPLAY } from "./replays/replay_test2.js"
+import { REPLAY } from "./replays/replay_test.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
+
+const SPEEDS=[0.25,0.5,0.75,1,1.5,2,3,4]
 
 export class ReplayGame extends Game {
 	constructor(id) {
@@ -13,6 +15,7 @@ export class ReplayGame extends Game {
 		this.pause=false
 		this.speed=1
 		this.myturn=undefined
+		this.speedIndex=3
 	}
 	setSpeed(speed){
 		this.speed=Math.min(4,speed)
@@ -26,6 +29,7 @@ export class ReplayGame extends Game {
 		$("#skillbtncontainer").hide()
 		$(".myui_new").hide()
 		$("#otherui_container").hide()
+		$("#replay-control").show()
 		$("#replaystart").click(() => {
 			this.start()
 			this.running=true
@@ -39,11 +43,44 @@ export class ReplayGame extends Game {
 			$("#replaypause").hide()
 			$("#replaystart").show()
 		})
+		$("#replayslow").click(() => {
+			this.speedIndex=Math.max(0,this.speedIndex-1)
+			this.updateSpeed()
+		})
+		$("#replayfast").click(() => {
+			this.speedIndex=Math.min(SPEEDS.length-1,this.speedIndex+1)
+			this.updateSpeed()
+		})
+		super.onCreate()
 	}
-	requestReplay() {
-		let setting = REPLAY.setting
-		this.init(setting, 0, "")
+	async requestReplay() {
+		try{
+			await this.requestReplayById()
+			console.log(this.replayData.setting)
+			let setting = this.replayData.setting
+			this.init(setting, 0, "")
+		}
+		catch(e){
+			alert("error while loading replay data")
+			window.location.href="index.html"
+		}
 		//this.loadResource()
+	}
+	requestReplayById() {
+		return new Promise((resolve, reject) => {
+			$.ajax({
+				url: "/resource/replay/"+this.replayId,
+				type: "GET",
+				success: (data) => {
+					this.replayData = JSON.parse(data)
+					resolve()
+				},
+				error: (e) => {
+					console.log(e)
+					reject()
+				},
+			})
+		})
 	}
 	requestFormat() {
 		return new Promise((resolve, reject) => {
@@ -65,11 +102,16 @@ export class ReplayGame extends Game {
 		await this.requestFormat()
 		super.loadResource()
 	}
+	updateSpeed(){
+		this.setSpeed(SPEEDS[this.speedIndex])
+		$("#replay-speed").html("&times;"+SPEEDS[this.speedIndex])
+	}
 	//start playing game
 	mapLoadComplete() {
 		super.mapLoadComplete()
 		$("#replaystart").show()
-		this.setSpeed(3)
+		this.updateSpeed()
+		
 	}
 	modifyDelay(val){
 		return Math.floor(val/Math.min(4,this.speed))
@@ -80,11 +122,13 @@ export class ReplayGame extends Game {
 		if (this.running) return
 		this.pause=false
 		this.running = true
-		for (let i = this.currentIndex; i < REPLAY.events.length; ++i) {
-			const event = REPLAY.events[i]
+		for (let i = this.currentIndex; i < this.replayData.events.length; ++i) {
+			const event = this.replayData.events[i]
 			this.currentIndex += 1
 			try {
-				$("#replayprogress").html("Playing... "+i+"/"+(REPLAY.events.length-1))
+				$(".replayprogress").html("Playing... "+i+"/"+(this.replayData.events.length-1))
+				$(".replay-progress-value").css("width",(i/this.replayData.events.length)*100+"%")
+				
 				if(event.action==="moveByDice") await sleep(this.modifyDelay(500))
 				let delay = this.playEvent(event)
 				await sleep(this.modifyDelay(delay))
@@ -118,7 +162,7 @@ export class ReplayGame extends Game {
 					actualdice: this.getProp(event, "distance"),
 					currpos: this.getProp(event, "currpos"),
 				})
-				delay = this.getProp(event, "distance") * this.modifyDelay(100)
+				delay = this.getProp(event, "distance")*100
 				break
 			case "damage":
 				this.animateDamage({
@@ -192,6 +236,7 @@ export class ReplayGame extends Game {
 					this.getProp(event, "turn"),
 					this.getProp(event, "num")
 				)
+				delay=0
 				break
 			case "teleport_pos":
 				this.teleportPlayer({
@@ -202,7 +247,7 @@ export class ReplayGame extends Game {
 				if(this.getProp(event, "movetype") ==="simple")
 					delay = 500
 				else
-					delay=800
+					delay=1000
 				break
 			case "smooth_teleport":
 				this.smoothTeleport(
@@ -224,7 +269,7 @@ export class ReplayGame extends Game {
 					this.getProp(event, "isShutDown"),
 					this.getProp(event, "killerMultiKillCount")
 				)
-				delay=500
+				delay=0
 				break
 			case "create_projectile":
 				this.scene.placeProj({
@@ -281,6 +326,9 @@ export class ReplayGame extends Game {
 				this.onReceiveChangeData(event.action,event.invoker)
 				delay=0
 				break
+			default:
+				delay=0
+			break
 		}
 		return delay
 	}

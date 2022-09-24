@@ -701,6 +701,22 @@ height:60vh;
     /* padding: 10px; */
     /* background: #45455d; */
 }
+#replay{
+    text-align: center;
+}
+#replay-btn{
+    background-color: #8b4dc5;
+    border: none;
+    color: white;
+    font-size: 15px;
+    margin: 4px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 5px;
+}
+#replay-btn:hover{
+    background-color:#5c3481 ;
+}
 .game-detail-item{
     background-color: #351954;
     padding: 7px;

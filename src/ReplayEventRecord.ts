@@ -17,7 +17,7 @@ export interface replayInitialSetting {
 export class ReplayEventRecords{
     private events:EventRecord[]
     private setting:replayInitialSetting
-    private enabled:boolean
+    enabled:boolean
     constructor(enabled:boolean){
         this.enabled=enabled
         this.events=[]

@@ -337,6 +337,7 @@ class Simulation {
 	}
 	makeGame() {
 		this.setting.updateGameSetting()
+		if(this.progressCount>1) this.setting.gameSetting.replay=false
 
 		let playernumber = this.setting.getPlayerCount()
 		let charlist = this.setting.getCharacterList(playernumber)

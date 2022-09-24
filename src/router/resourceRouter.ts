@@ -6,6 +6,8 @@ import { ITEM_REGISTRY } from '../Marble/ItemRegistry';
 const RESOURCE_PATH="/../../res/"
 const router = express.Router()
 const{MarbleItemPreset} = require("../mongodb/DBHandler")
+const{Replay} = require("../mongodb/ReplayDBHandler")
+
 
 router.get("/gamesetting", function (req:express.Request, res:express.Response) {
 	fs.readFile(__dirname + RESOURCE_PATH+"gamesetting.json", "utf8", function (err, data) {
@@ -111,6 +113,12 @@ router.get("/replay_format", function (req:express.Request, res:express.Response
 		}
 		res.end(data)
 	})
+})
+
+router.get("/replay/:replayid", async function (req:express.Request, res:express.Response) {
+	let data=await Replay.findById(req.params.replayid)
+
+	res.end(JSON.stringify(data))
 })
 
 

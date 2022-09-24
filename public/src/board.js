@@ -87,6 +87,9 @@ export class Board{
 			case "indicator":
 				speed=2000
 				break
+			case "entity_move":
+				speed=500
+				break
 		}
 
 

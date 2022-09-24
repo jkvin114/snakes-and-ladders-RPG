@@ -68,6 +68,11 @@
 			"desc": "Money",
 			"desc_kor": "돈",
 			"default": true
+		},
+		"replay": {
+			"desc": "Save Replay",
+			"desc_kor": "리플레이 저장",
+			"default": true
 		},"summaryOnly": {
 			"desc": "Summary only",
 			"desc_kor": "요약본만 저장",

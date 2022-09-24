@@ -1357,6 +1357,7 @@ class Game {
 			},
 			killRecord: this.killRecord,
 			isTeam: this.isTeam,
+			replay:"",
 			setting: this.setting.getSummary()
 		}
 

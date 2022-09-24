@@ -73,9 +73,9 @@ class SummonedEntity {
 		this.pos = pos
 		this.coordX = this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN + PLAYER_POS_DIFF[source][0] + randoffset
 		this.coordY = this.scene.Map.coordinates[this.pos].y + 20 + BOARD_MARGIN + PLAYER_POS_DIFF[source][1] + randoffset
-
-		this.scene.animateX(this.img,this.coordX,500)
-		this.scene.animateY(this.img,this.coordY,500)
+		const time=this.scene.getMoveSpeed("entity_move")
+		this.scene.animateX(this.img,this.coordX,time)
+		this.scene.animateY(this.img,this.coordY,time)
 
 		// this.img.animate("left", this.coordX, {
 		// 	onChange: this.scene.render(),

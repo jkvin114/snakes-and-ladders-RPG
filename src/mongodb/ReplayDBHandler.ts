@@ -38,3 +38,12 @@ const replaySchema = new mongoose.Schema(
 	{ timestamps: true }
 )
 
+replaySchema.statics.create=function(data){
+    return (new Replay(data)).save()
+}
+
+replaySchema.statics.findOneById = function(id) {
+    return this.findById(id)
+};
+export const Replay=mongoose.model('Replay',replaySchema)
+

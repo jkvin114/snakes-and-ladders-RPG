@@ -51,6 +51,24 @@
 <body>
   <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off">
 
+  
+<div id="replay-control">
+  
+  <div id="replay-buttons">
+    <img id="replaystart" src="res/img/svg/play.svg">
+    <img id="replaypause" src="res/img/svg/pause.svg">
+    <img id="replayslow" src="res/img/svg/fast.svg">
+    <img id="replayfast" src="res/img/svg/fast.svg">
+    <div id="replay-speed">&times;1</div>
+    
+  </div>
+  <div class="replay-progressbar">
+    <div class="replay-progress-value"></div>
+    <b class="replayprogress">0/0</b>
+  </div>
+</div>
+
+
 <div id="Gamepage">
 
      
@@ -236,9 +254,6 @@
   </div>   
   <!-- boardside -->
 
-<button id="replaystart">start replay</button>  
-<button id="replaypause">pause</button>  
-<h3 id="replayprogress">0/0</h3>
 
 <a id=toastmessage class="hidden">toast</a>
 

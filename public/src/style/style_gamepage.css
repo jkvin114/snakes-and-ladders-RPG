@@ -3598,35 +3598,67 @@ b {
     /* width: 10px; */
     /* height: 10px; */
 }
-#replaystart{
+#replay-control{
   position: absolute;
   z-index: 99;
-  width: 100px;
-  height: 50px;
-  top: 300px;
-  left: 300px;
+  width: 80vw;
+  height: 60px;
+  bottom: 0px;
+  left: 50%;
+  transform: translate(-50%);
   display:none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border: 2px solid #D896FF;
+  border-bottom: none;
+  background: #363636;
+}
+.replay-progressbar{
+  position: relative;
+  background: #4d4d4d;
+}
+
+.replay-progress-value{
+  background-color: #D896FF;
+  width:0%;
+  height: 30px;
+}
+.replay-progressbar > b{
+  font-weight: normal;
+  position: absolute;
+  left: 5%;
+  top: 0px;
+  font-size: 17px;
+  line-height: 30px;
+  color: black;
+}
+#replay-buttons{
+  text-align: center;
+  
+}
+#replay-speed{
+  font-size: 20px;
+  line-height: 30px;
+  color: whitesmoke;
+  display: inline-block;
+  min-width: 70px;
+}
+#replay-buttons > img{
+  cursor: pointer;
+  height: 20px;
+  margin: 2px;
+  padding: 2px;
+  border: 1px solid #D896FF;
+  color: #555555;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+#replay-buttons > img:hover{
+  color: #727272;
 }
 #replaypause{
-  position: absolute;
-  z-index: 99;
-  width: 100px;
-  height: 50px;
-  top: 300px;
-  left: 600px;
-  display:none;
+  display: none;
 }
-#replayprogress{
-  position: absolute;
-  z-index: 99;
-  top: 30px;
-  left: 30%;
-  display:none;
-  text-shadow:
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000;
-  font-size: 30px;
-  color: white;
+#replayslow{
+  transform: rotate(180deg);
 }

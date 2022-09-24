@@ -806,7 +806,7 @@ export class StoreInterface {
 		let price = Math.floor(this.storeStatus.itemList[item_id].price / 2.5)
 
 		if(GAME.ui!=null)
-			GAME.ui.showDialog(
+			GAME.showDialog(
 				GAME.chooseLang(this.storeStatus.itemList[item_id].name,this.storeStatus.itemList[item_id].kor_name)
 					+'<br>'+
 					GAME.chooseLang("price:", "가격:") +

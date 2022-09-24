@@ -940,8 +940,11 @@ function showStat(data) {
 			if(statData[i].map_data!=null){
 				string += '<div><div class="gameinfo"><img class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '"></div>'
 			}
-			string += '<div class="gameinfo"><img src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div></div>'
-			string+="</div>"
+			string += '<div class="gameinfo"><img src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div>'
+			if(statData[i].replay!=null)
+			string += '<div class="gameinfo"><img src="res/img/svg/play.svg" class="icon" title="Replay avaliable"></div>'
+
+			string+="</div></div>"
 			
 
 			if (statData[i].setting != null && statData[i].setting.length > 0 && statData[i].setting[0].name != null) {
@@ -1086,7 +1089,15 @@ function showSingleStat(data) {
 	$("#detailbtn_container").show()
 	// $("#position_chart").hide()
 	// $("#money_chart").hide()
-
+	if(!data.replay || data.replay===""){
+		$("#replay").hide()
+	}
+	else{
+		$("#replay").show()
+		$("#replay-btn").click(()=>{
+			window.location.href="gamepage.html?isreplay=true&replayid="+data.replay
+		})
+	}
 	$("#train_detail p").html("")
 
 

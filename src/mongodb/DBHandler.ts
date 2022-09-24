@@ -77,8 +77,8 @@ const gameRecordSchema=new mongoose.Schema({
         finish:Number
     },
     killRecord:[killRecordSchema],
-    setting:[gameSettingSchema]
-
+    setting:[gameSettingSchema],
+    replay:mongoose.Types.ObjectId
 },{timestamps:true})
 
 const simulationRecordSchema=new mongoose.Schema({
