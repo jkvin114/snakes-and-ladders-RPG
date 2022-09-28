@@ -214,6 +214,9 @@ abstract class Player extends Entity {
 		if(this.AI) return
 		this.autoBuy=b
 	}
+	onGameStart(){
+		this.mapHandler.onGameStart()
+	}
 	calculateAdditionalDice(amount: number): number {
 		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this))(function () {
 			return this.pos
@@ -494,7 +497,7 @@ abstract class Player extends Entity {
 		if (this.mapHandler.doMineDamage()) return true
 
 		this.pos = Util.clamp(pos, 0, MAP.getLimit(this.mapId))
-		this.lvlup()
+		this.checkLevelUp()
 		this.game.onPlayerChangePos(this.turn)
 		return false
 	}
@@ -532,9 +535,15 @@ abstract class Player extends Entity {
 	 */
 	startCooltime(skill: ENUM.SKILL) {
 		this.cooltime[skill] = this.cooltime_list[skill]
+
+		if(this.mapId===ENUM.MAP_TYPE.RAPID)
+			this.cooltime[skill] = Math.ceil(this.cooltime_list[skill]*0.66)
+
 		if (skill === ENUM.SKILL.ULT) {
 			this.cooltime[skill] -= this.ability.ultHaste.get()
 		}
+		
+		this.cooltime[skill]=Math.max(0,this.cooltime[skill])
 	}
 	startDuration(skill: ENUM.SKILL) {
 		this.duration[skill] = this.duration_list[skill]
@@ -852,29 +861,36 @@ abstract class Player extends Entity {
 		}
 	}
 
-	//========================================================================================================
-	/**
-	 * levels up if avaliable
-	 */
-	private lvlup() {
+	private checkLevelUp(){
 		let respawn = MAP.getRespawn(this.mapId)
 		for (let i = 1; i < respawn.length; ++i) {
 			if (this.pos >= respawn[i] && this.level <= i && this.mapHandler.isOnMainWay()) {
-				this.addMaxHP(ABILITY[this.champ].growth.HP)
-				this.level += 1
-				this.ability.onLevelUp(this.game.totalnum)
-
-				this.effects.reset(ENUM.EFFECT.ANNUITY_LOTTERY) //연금복권 끝
-
-				if (this.level === 3) {
-					this.cooltime[2] = 1
-				}
-				this.thisLevelDeathCount = 0
-
+				this.lvlup()
 				break
 			}
 		}
 	}
+	//========================================================================================================
+	/**
+	 * levels up if avaliable
+	 */
+	lvlup() {
+		this.addMaxHP(ABILITY[this.champ].growth.HP)
+		this.level += 1
+		this.ability.onLevelUp(this.game.totalnum)
+
+		this.effects.reset(ENUM.EFFECT.ANNUITY_LOTTERY) //연금복권 끝
+
+		if (this.level === 3) {
+			this.cooltime[2] = 1
+
+			if(this.mapId===ENUM.MAP_TYPE.RAPID)
+				this.cooltime[2] = 3
+		}
+		this.thisLevelDeathCount = 0
+
+	}
+
 
 	//========================================================================================================
 

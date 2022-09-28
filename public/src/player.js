@@ -9,6 +9,8 @@ export class Player {
 		this.turn = turn
 		this.name = name
 		this.isInSubway = false
+		this.hp=200
+		this.maxhp=200
 
 		//fabric objects
 		this.dmgindicator

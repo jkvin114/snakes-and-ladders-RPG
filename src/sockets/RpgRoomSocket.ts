@@ -1,7 +1,7 @@
 import type { Socket } from "socket.io";
 import { io } from "../app";
 import { R } from "../RoomStorage";
-import { SocketSession } from "../SocketSession";
+import { SocketSession } from "./SocketSession";
 import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface";
 import { RPGRoom } from "../RPGRoom";
 import { controlRoom, controlRPGRoom } from "./Controller";

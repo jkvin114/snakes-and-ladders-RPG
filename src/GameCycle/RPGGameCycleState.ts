@@ -57,6 +57,7 @@ class GameLoop {
 	}
 	startSimulation() {
 		this.setGameCycle(new GameInitializer(this.game))
+		this.game.onGameStart()
 		return this
 	}
 	/**

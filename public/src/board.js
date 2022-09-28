@@ -70,7 +70,7 @@ export class Board{
 	}
 	//===========================================================================================================================
 	getMoveSpeed(type){
-		let speed=0
+		let speed=500
 		switch(type){
 			case "step":
 				speed=100
@@ -93,7 +93,7 @@ export class Board{
 		}
 
 
-		return Math.floor(speed/Math.min(4,this.gameSpeed))
+		return this.modifyMoveSpeed(speed)
 	}
 	modifyMoveSpeed(val){
 		return Math.floor(val/Math.min(4,this.gameSpeed))
@@ -413,6 +413,9 @@ export class Board{
 		}
 		else if(this.mapname==='marble_godhand' || this.mapname==='marble_world'){
 			boardimg = document.getElementById("marble_boardimg")
+		}
+		else if (this.mapname === "rapid") {
+			boardimg = document.getElementById("rapid_boardimg")
 		}
 		else{
 			boardimg = document.getElementById("boardimg")

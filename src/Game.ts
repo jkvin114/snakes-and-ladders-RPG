@@ -139,7 +139,7 @@ class Game {
 		this.instant = setting.instant
 		this.simulation = false
 		this.rname = rname
-		if (mapid < 0 || mapid > 3) mapid = 0
+		if (mapid < 0 || mapid > 4) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
 		this.begun=false
 		this.totalturn = 0
@@ -347,6 +347,7 @@ class Game {
 	}
 	onGameStart(){
 		for(const p of this.entityMediator.allPlayer()){
+			p.onGameStart()
 			if(p.AI) this.eventEmitter.message(this.getPlayerMessageHeader(p.turn),p.AiAgent.getMessageOnGameStart())
 		}
 	}
@@ -1360,6 +1361,8 @@ class Game {
 			replay:"",
 			setting: this.setting.getSummary()
 		}
+		
+		data.replay=null
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {

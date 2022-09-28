@@ -334,12 +334,12 @@ export function writeFile(data:string,dir:string,extension:string,onSuccess:stri
 	})
 }
 
-export function dot(arr1:number[],arr2:number[]){
-	let list=[]
+export function dot(arr1:number[],arr2:number[]):number{
+	let val=0
 	for(let i=0;i<arr1.length;++i){
-		list.push(arr1[i]*arr2[i])
+		val+=(arr1[i]*arr2[i])
 	}
-	return list.reduce((prev,curr)=>prev+curr)
+	return val
 }
 export function normalize(list:number[]){
 	let sorted=list.sort((a,b)=>a-b)

@@ -6,7 +6,7 @@ html {
 
 body {
   font-family: 'cookierun';
-  background-color: rgb(36, 36, 36);
+  background-color: #242424;
   overflow: hidden;
   margin: 0;
   /* width:fit-content;
@@ -389,9 +389,24 @@ b {
   display: block;
   height: 100%;
   background: repeating-linear-gradient(to right, rgba(65, 211, 68, 1) 0px, rgba(65, 211, 68, 1) 18px,
-      rgba(65, 211, 68, 1) 18px, rgba(0, 0, 0, 1) 18px, rgba(0, 0, 0, 1) 20px);
+      rgba(65, 211, 68, 1) 18px, rgba(0, 0, 0, 1) 19px, rgba(0, 0, 0, 1) 20px);
 }
-
+.otherhp.red{
+  background: repeating-linear-gradient(to right, rgba(255, 87, 87, 1) 0px, rgba(255, 87, 87, 1) 18px,
+      rgb(255, 87, 87) 18.5px, rgba(0, 0, 0, 1) 18.5px, rgba(0, 0, 0, 1) 20px);
+}
+.otherhp.blue{
+  background: repeating-linear-gradient(to right, rgb(87, 135, 255) 0px, rgba(87, 135, 255, 1) 18px,
+  rgb(87, 135, 255) 18.5px, rgba(0, 0, 0, 1) 18.5px, rgba(0, 0, 0, 1) 20px);
+}
+.otherhp.green{
+  background: repeating-linear-gradient(to right, rgb(53, 163, 92) 0px, rgba(53, 163, 92, 1) 18px,
+  rgb(53, 163, 92) 18.5px, rgba(0, 0, 0, 1) 18.5px, rgba(0, 0, 0, 1) 20px);
+}
+.otherhp.yellow{
+  background: repeating-linear-gradient(to right, rgb(254, 223, 20) 0px, rgba(254, 223, 20, 1) 18px,
+  rgb(254, 223, 20) 18.5px, rgba(0, 0, 0, 1) 18.5px, rgba(0, 0, 0, 1) 20px);
+}
 .othershieldframe {
 
   display: inline-block;
@@ -1161,7 +1176,7 @@ b {
   pointer-events: none;
 }
 
-.red {
+.red-overlay {
   opacity: 0;
   position: absolute;
   background: rgba(255, 0, 0, 0.2);
@@ -1604,7 +1619,7 @@ b {
   height: fit-content;
   /* z-index: 6; */
   border: 2px solid rgb(126, 126, 126);
-  background: rgba(61, 61, 61, 0.9);
+  background: rgb(57, 57, 57);
   display: block;
   text-align: left;
 }
@@ -1635,7 +1650,11 @@ b {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-
+  
+}
+.kdasection.myturn{
+  /* background: rgb(94, 94, 94); */
+  outline: 2px solid white;
 }
 
 .itemsection {
@@ -1647,7 +1666,7 @@ b {
 }
 
 #kdawindow a {
-  color: #e0c9ff;
+  color: #ffffff;
   font-size: 1.5rem;
   opacity: 1.0;
 }
@@ -2615,9 +2634,9 @@ b {
 
 .charframe img,
 .charframe2 img {
-  width: 24px;
-  height: 24px;
-  margin: 1px;
+  width: 26px;
+  height: 26px;
+  /* margin: 1px; */
 }
 
 .killframe>img {
@@ -3250,9 +3269,9 @@ b {
 }
 .multikillchar{
   position: absolute;
-
-  width: 80px;
-  top: 80px;
+  border-radius: 50%;
+  width: 95px;
+  top: 72px;
   z-index:11 ;
    transform: translate(-50%);
 }
@@ -3316,7 +3335,8 @@ b {
 .killtextchar > img{
   width: 3.5rem;
   top: 3.5rem;
-  transform: scale(0.9);
+  /* transform: scale(0.9); */
+  border-radius: 50%;
   /* padding: 2px; */
 }
 /* .killtext_deadimg{

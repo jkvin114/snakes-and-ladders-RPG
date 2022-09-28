@@ -3,6 +3,7 @@ import oceanmap = require("../../res/ocean_map.json")
 import casinomap = require("../../res/casino_map.json")
 import defaultmap = require("../../res/map.json")
 import trainmap = require("../../res/train_map.json")
+import rapidmap = require("../../res/rapid_map.json")
 
 export type singleMap = {
 	mapname: string
@@ -113,4 +114,4 @@ class MapStorage {
 	}
 }
 
-export const MAP: MapStorage = new MapStorage([defaultmap, oceanmap, casinomap,trainmap])
+export const MAP: MapStorage = new MapStorage([defaultmap, oceanmap, casinomap,rapidmap,trainmap])

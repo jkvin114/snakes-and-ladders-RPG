@@ -49,6 +49,8 @@ router.get("/map/:mapId", function (req:express.Request, res:express.Response) {
 		filename="ocean_map.json"
 	} else if (mapId=== MAP_TYPE.CASINO) {
 		filename="casino_map.json"
+	}else if (mapId=== MAP_TYPE.RAPID) {
+		filename="rapid_map.json"
 	}
 	
 	fs.readFile(__dirname + RESOURCE_PATH + filename, "utf8", function (err, data) {

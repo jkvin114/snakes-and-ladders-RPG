@@ -1,7 +1,7 @@
 import type { Socket } from "socket.io";
 // import { R } from "../RoomStorage";
 import { controlMarbleRoom } from "../sockets/Controller";
-import { SocketSession } from "../SocketSession";
+import { SocketSession } from "../sockets/SocketSession";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 
 const prefix="marble:user:"

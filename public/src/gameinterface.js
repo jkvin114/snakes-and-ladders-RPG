@@ -1,5 +1,5 @@
 import { GAME } from "./GameMain.js"
-// import { COLOR_LIST_BG } from "./canvas_control.js"
+import { COLOR_LIST_BG } from "./canvas_control.js"
 
 export default class GameInterface {
 	constructor(game) {
@@ -500,7 +500,7 @@ addChatDragEvent() {
 			$(this.elements.kdasections[2]).hide()
 		}
 
-		$(this.elements.kdasections[GAME.myturn]).css("border", "3px solid #a86aff")
+		$(this.elements.kdasections[GAME.myturn]).addClass("myturn")
 
 		let othercount = 1
 		console.log("simulation" + simulation)
@@ -551,16 +551,21 @@ addChatDragEvent() {
 		for (let i = 0; i < GAME.playerCount; ++i) {
 			$(this.elements.kdainfos[i]).html("0/0/0")
 
-			// GAME.player_champlist[i] = setting[i].champ
-			$(this.elements.charimgs[GAME.turn2ui(i)]).css("background-color", this.game.getPlayerLighterColor(i))
 
-			if (GAME.isTeam) {
-				if (!setting[i].team) {
-					$(this.elements.kdaimgs[i]).css("background-color", "#ff7f7f")
-				} else if (setting[i].team) {
-					$(this.elements.kdaimgs[i]).css("background-color", "#77a9f9")
-				}
-			}
+			// GAME.player_champlist[i] = setting[i].champ
+			//$(this.elements.charimgs[GAME.turn2ui(i)]).css("background-color", this.game.getPlayerLighterColor(i))
+			$(this.elements.kdainfos[i]).css("color", this.game.getPlayerLighterColor(i))
+			$(this.elements.hpspan[i]).addClass(this.game.getPlayerColor(i))
+			// if (GAME.isTeam) {
+			// 	if (!setting[i].team) {
+			// 		$(this.elements.kdainfos[i]).css("color", "#ff7f7f")
+			// 	} else if (setting[i].team) {
+			// 		$(this.elements.kdainfos[i]).css("color", "#77a9f9")
+			// 	}
+			// }
+			// else{
+			// 	$(this.elements.kdainfos[i]).css("color", COLOR_LIST_BG[i])
+			// }
 			// console.log(setting[i])
 			this.changeHP(i, setting[i].HP, setting[i].MaxHP)
 			
@@ -929,15 +934,19 @@ addChatDragEvent() {
 			$(this.elements.hpspan[ui]).css({
 				width: String(0.2 * hp) + "px"
 			})
-
-			if(maxhp >= 800){
+			let space=170
+			if(window.matchMedia("(orientation: portrait)").matches){
+				space=100
+			}
+			if(maxhp<250) space/=2
+			// if(maxhp >= 800){
 				$(this.elements.hpspan[ui]).css({
-					transform: "scale(0.7,1)"
+					transform: "scale("+(5*space/maxhp)+",1)"
 				})
 				$(this.elements.hpframe[ui]).css({
-					width: String(0.2 * 0.7 * maxhp) + "px"
+					width: String(space) + "px"
 				})
-			}
+			// }
 		}
 
 		let shield = $(this.elements.hpis[ui])
@@ -1317,12 +1326,13 @@ addChatDragEvent() {
 	// }
 	indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount) {
 		$(this.elements.kdasections[turn]).css("background", "rgba(146, 0, 0, 0.5)")
+		
 	}
 	playerReconnect(turn,name){
-		this.showKillText(turn,10,GAME.chooseLang(name+" has reconnected",name+"님이 다시 연결되었습니다"))
+		this.game.showKillText(turn,10,GAME.chooseLang(name+" has reconnected",name+"님이 다시 연결되었습니다"))
 	}
 	playerDisconnect(turn,name){
-		this.showKillText(turn,10,GAME.chooseLang(name+" has left the game",name+"님이 게임을 종료했습니다"))
+		this.game.showKillText(turn,10,GAME.chooseLang(name+" has left the game",name+"님이 게임을 종료했습니다"))
 	}
 }
 
@@ -1336,11 +1346,12 @@ class ObsNotification {
 	write(obs, num, text) {
 		let obstacle = GAME.strRes.OBSTACLES.obstacles[obs]
 
+		let desc=obstacle.desc
 		//룰렛전용
 		if (text != null) {
-			obstacle.desc = text
+			desc = text
 		}
-		$(".obs_notification" + num + " p").html(obstacle.desc)
+		$(".obs_notification" + num + " p").html(desc)
 		$(".obs_notification" + num + " b").html(obstacle.name)
 		$(".obs_notification" + num).removeClass("good")
 		$(".obs_notification" + num).removeClass("bad")

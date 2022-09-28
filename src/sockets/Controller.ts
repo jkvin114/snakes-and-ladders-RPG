@@ -1,6 +1,6 @@
 import type { Socket } from "socket.io";
 import { R } from "../RoomStorage";
-import { SocketSession } from "../SocketSession";
+import { SocketSession } from "./SocketSession";
 import type { Room } from "../room";
 import type { RPGRoom } from "../RPGRoom";
 import type { MarbleRoom } from "../Marble/MarbleRoom";

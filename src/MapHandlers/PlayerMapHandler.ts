@@ -27,6 +27,9 @@ abstract class PlayerMapHandler {
 	transfer(func: Function, ...args: any[]) {
 		this.player.mediator.sendToClient(func, ...args)
 	}
+	onGameStart(){
+
+	}
 	isTargetableFrom(other: Player) {
 		return true
 	}
@@ -96,6 +99,9 @@ abstract class PlayerMapHandler {
 		else if (mapId === ENUM.MAP_TYPE.TRAIN) {
 			return new TrainMapHandler(player)
 		}
+		else if (mapId === ENUM.MAP_TYPE.RAPID) {
+			return new RapidMapHandler(player)
+		}
 		return new DefaultMapHandler(player)
 	}
 }
@@ -111,6 +117,16 @@ class TrainMapHandler extends PlayerMapHandler {
 	constructor(player: Player) {
 		super(player)
 		this.gamemap = MAP.get(ENUM.MAP_TYPE.TRAIN)
+	}
+}
+class RapidMapHandler extends PlayerMapHandler {
+	constructor(player: Player) {
+		super(player)
+		this.gamemap = MAP.get(ENUM.MAP_TYPE.RAPID)
+	}
+	onGameStart(): void {
+		this.player.inven.giveMoney(400)
+		this.player.lvlup()
 	}
 }
 

@@ -808,7 +808,7 @@ export class Scene extends Board{
 			this.boardScale =winheight / this.boardInnerHeight
 			console.log("horizontally longer map, scale" + this.boardScale)
 		}
-		const max_boardscale=win_ratio<0.7?0.5:1
+		const max_boardscale=win_ratio<0.7?0.5:2
 		console.log(win_ratio)
 		this.boardScale=Math.min(max_boardscale,this.boardScale)
 		console.log(this.boardScale)
@@ -841,7 +841,7 @@ export class Scene extends Board{
 		if (this.mapname === "ocean") {
 			tile_img = document.getElementById("tiles_ocean")
 		}
-		if (this.mapname === "casino" || this.mapname === "marble") {
+		if (this.mapname === "casino" || this.mapname === "marble" || this.mapname==="rapid") {
 			tile_img = document.getElementById("tiles_casino")
 		}
 		else{
@@ -1347,7 +1347,7 @@ export class Scene extends Board{
 				top: 301,
 				width: 0,
 				height: 3,
-				fill: "#CCCCCC",
+				fill: "#AAAAAA",
 				visible: false,
 				evented: false,
 			})
@@ -2272,6 +2272,8 @@ export class Scene extends Board{
 	changeShield(target, shield, change, indicate) {
 		//	console.log("changehield" + shield)
 		change = Math.floor(change)
+		this.setHp(target,this.players[target].hp,this.players[target].maxhp,shield)
+
 		if (!indicate) return
 
 		let pos = this.getPlayerPos(target)
@@ -2307,7 +2309,7 @@ export class Scene extends Board{
 			this.animateOpacity(this.heal,0,this.modifyMoveSpeed(3000))
 		}
 		// this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
-		this.setHp(data)
+		this.setHp(data.turn,data.currhp,data.currmaxhp,data.currshield)
 		if (type === "heal_simple" || type === "heal") this.animateHP(data)
 	}
 	//===========================================================================================================================
@@ -2315,13 +2317,13 @@ export class Scene extends Board{
 	animateDamage(data) {
 		let target = data.turn
 
-		let change = data.change
-		change = Math.floor(change)
+		// let change = data.change
+		// change = Math.floor(change)
 		// let skillfrom = data.source
 
 		if (target === this.game.myturn) {
-			$(".red").css("opacity", "100%")
-			$(".red").animate(
+			$(".red-overlay").css("opacity", "100%")
+			$(".red-overlay").animate(
 				{
 					opacity: 0
 				},
@@ -2346,29 +2348,26 @@ export class Scene extends Board{
 		// 	}
 		// }
 		// this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
-		this.setHp(data)
+		this.setHp(data.turn,data.currhp,data.currmaxhp,data.currshield)
 		this.animateHP(data)
 	}
 	//===========================================================================================================================
 
-	setHp(data) {
-		let target = data.turn
-		let hp = Math.max(0,data.currhp)
-		let maxhp = data.currmaxhp
-		let shield=data.currshield
-		let change = data.change
-
-		// if (target === this.game.myturn) {
-		// 	this.game.ui.lostHP(hp, change)
-		// }
-		// let ui = this.game.turn2ui(target)
+	setHp(target,hp,maxhp,shield) {
+		console.log("setHP",target,hp,maxhp,shield)
+		hp=Math.max(0,hp)
+		shield=Math.max(0,shield)
+		this.players[target].hp=hp
+		this.players[target].maxhp=maxhp
 
 		let hpbar_hp = this.players[target].hpbar.hp
 		let hpbar_frame = this.players[target].hpbar.frame
 		let hpbar_shield = this.players[target].hpbar.shield
 
 		let pos1 = this.getPlayerPos(target)
-		let healthPixels= Math.floor((hp/maxhp) * 48)
+		let healthPixels= Math.floor((hp/Math.max(maxhp,hp+shield)) * 48)
+		let shieldPixels= Math.floor((shield/Math.max(maxhp,hp+shield)) * 48)
+
 
 		hpbar_frame.set({ visible: true, left: pos1.x - HPBAR_OFFSET_X, top: pos1.y - HPBAR_OFFSET_Y })
 		hpbar_hp.set({
@@ -2377,10 +2376,13 @@ export class Scene extends Board{
 			top: pos1.y - HPBAR_OFFSET_Y + 1,
 			width: healthPixels
 		})
+		hpbar_shield.set({
+			visible: true,
+			left: pos1.x - HPBAR_OFFSET_X + 1 + healthPixels,
+			top: pos1.y - HPBAR_OFFSET_Y + 1,
+			width: shieldPixels
+		})
 
-		// hpbar_frame.bringToFront()
-		// hpbar_hp.bringToFront()
-		// this.players[target].nametext.set("text", "(" + String(target + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
 	}
 	onStep(){
 		this.game.playSound('step')
@@ -2562,9 +2564,10 @@ export class Scene extends Board{
 			left: pos1.x - HPBAR_OFFSET_X + 1,
 			top: pos1.y - HPBAR_OFFSET_Y + 1
 		})
+
 		this.players[turn].hpbar.shield.set({
 			visible: true,
-			left: pos1.x - HPBAR_OFFSET_X  + 1,
+			left: pos1.x - HPBAR_OFFSET_X  + 1 +this.players[turn].hpbar.hp.width,
 			top: pos1.y - HPBAR_OFFSET_Y + 1
 		})
 
@@ -3207,7 +3210,7 @@ export class Scene extends Board{
 	} //===========================================================================================================================
 
 	showTooltip(index) {
-		let i = this.game.shuffledObstacles[index].obs
+		let i = this.game.shuffledObstacles[index]
 		let desc = this.game.strRes.OBSTACLES.obstacles[i].desc
 		let pos = this.getTilePos(index)
 
@@ -3553,6 +3556,16 @@ export class Scene extends Board{
 			// } else if (index === 107) {
 			// 	tile = 4
 			// }
+		}
+		else if (this.mapname === "rapid") {
+			if (index > 1 && index < 13) {
+				tile = 2 + (index % 2)
+			} else if (index > 13 && index < 27) {
+				tile = 3 + (index % 2)
+			} else if (index >= 27) {
+				tile = (index % 2===0?4:9)
+			}
+			else return 3
 		}
 
 		return tile

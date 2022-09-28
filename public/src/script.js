@@ -12,50 +12,20 @@ export class Game {
 		Game._instance = this
 
 		this.turnsInUI = [] //turn 으로  ui 위치 찾을때 사용
-		//this.thisui = 0 //현제 턴의 ui
 
 		this.simulation = false
-		//this.skillstatus = null //쿨타임, 침묵 등 스킬관련 정보 저장
 
 		this.thisturn = 0 //현재 턴
-		// this.gameSettings = {
-		// 	//	autoNextTurnOnStore: false,
-		// 	autoNextTurnOnSilent: true
-		// }
 		this.isTeam = false
-		//this.ismyturn = false //자신의 턴인지
 		this.playerCount = 0 //total number of player
-		//this.myturn = 0 //Number(sessionStorage.turn) //내 턴
-		//this.crypt_turn = "" //encrypted my turn
-
-		//this.rname = sessionStorage.roomName //방제
-		//this.godhandtarget = -1 //신의손 대상 저장용
-
-		//this.dice_clicked = false //주사위 클릭했지
-
-		// this.effect_status = new Set() //이펙트 활성화여부
-
-		// this.myStat = {}
-		// this.onMainWay = true //메인 길에 있는지
-		// this.diceControl = false //주컨 사용가능여부
 		this.players = []
 		this.strRes = new StringResource()
 		this.scene
 		this.LANG = sessionStorage.language
-		// this.pendingSelection = { type: "", name: "" }
-		// this.ui
-		// this.storeStatus
-
-		// this.subwayPrices = [0, 50, 100]
-		// this.subwayTicket = -1
-		// this.connection
-		// this.store
-		// this.store_ui
 		this.shuffledObstacles
 		this.sounds = new Map()
 		this.begun = false
 		this.map=0
-		// this.skillScale={}
 		this.multikillimg=$(".multikillimg").toArray()
 
 		this.multikillAlertTimeout=null
@@ -199,15 +169,18 @@ export class Game {
 		this.isTeam = setting.isTeam
 		this.shuffledObstacles = setting.shuffledObstacles
 		for (let i = 0; i < setting.playerSettings.length; ++i) {
-			this.players.push(
-				new Player(
-					this,
-					i,
-					setting.playerSettings[i].champ,
-					setting.playerSettings[i].team,
-					setting.playerSettings[i].name
-				)
+			let player=new Player(
+				this,
+				i,
+				setting.playerSettings[i].champ,
+				setting.playerSettings[i].team,
+				setting.playerSettings[i].name
 			)
+			player.hp=setting.playerSettings[i].HP
+			player.maxhp=setting.playerSettings[i].MaxHP
+
+			this.players.push(player)
+
 		//	if(i===this.myturn) this.skillScale=setting.playerSettings[i].skillScale
 
 		}
@@ -700,7 +673,7 @@ export class Game {
 		$(".overlay").hide()
 	}
 	getCharImgUrl(champ_id) {
-		return "res/img/character/" + this.strRes.GLOBAL_SETTING.characters[champ_id].imgdir
+		return "res/img/character/illust/" + this.strRes.GLOBAL_SETTING.characters[champ_id].illustdir
 	}
 
 	getChampImgofTurn(turn) {

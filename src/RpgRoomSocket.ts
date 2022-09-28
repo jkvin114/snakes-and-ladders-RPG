@@ -1,7 +1,7 @@
 import type { Socket } from "socket.io";
 import { io } from "./app";
 import { R } from "./RoomStorage";
-import { SocketSession } from "./SocketSession";
+import { SocketSession } from "./sockets/SocketSession";
 
 module.exports=function(socket:Socket){
     socket.on("user:update_playerlist", function (playerlist: any) {

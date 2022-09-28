@@ -585,7 +585,10 @@ function getMapIconUrl(map_id) {
 	if (map_id === 2 || map_id === "casino") {
 		return "res/img/map_thumbnail/casino_icon.jpg"
 	}
-	if (map_id === 3 || map_id === "train") {
+	if (map_id === 3 || map_id === "rapid") {
+		return "res/img/map_thumbnail/rapid_icon.jpg"
+	}
+	if (map_id === 4 || map_id === "train") {
 		return "res/img/ui/setting.png"
 	}
 }
@@ -599,7 +602,10 @@ function getMapName(map_id){
 	if (map_id === 2 || map_id === "casino") {
 		return "Casino"
 	}
-	if (map_id === 3 || map_id === "train") {
+	if (map_id === 3 || map_id === "rapid") {
+		return "Rapid"
+	}
+	if (map_id === 4 || map_id === "train") {
 		return "Train"
 	}
 }
