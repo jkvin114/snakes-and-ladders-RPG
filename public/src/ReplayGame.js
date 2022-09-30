@@ -1,5 +1,5 @@
 import { Game } from "./script.js"
-import { REPLAY } from "./replays/replay_test.js"
+// import { REPLAY } from "./replays/replay_test.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
 const SPEEDS=[0.25,0.5,0.75,1,1.5,2,3,4]
