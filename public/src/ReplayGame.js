@@ -106,6 +106,9 @@ export class ReplayGame extends Game {
 		this.setSpeed(SPEEDS[this.speedIndex])
 		$("#replay-speed").html("&times;"+SPEEDS[this.speedIndex])
 	}
+	isMyTeam(turn){
+		return !this.players[turn].team
+	}
 	//start playing game
 	mapLoadComplete() {
 		super.mapLoadComplete()

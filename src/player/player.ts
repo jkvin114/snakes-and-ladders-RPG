@@ -96,7 +96,6 @@ abstract class Player extends Entity {
 	protected duration: number[]
 	protected basicAttackCount: number //basic attack count avaliable in this turn
 
-	//0.slow 1.speed 2.stun 3.silent 4. shield  5.poison  6.radi  7.annuity 8.slave
 	// loanTurnLeft: number
 
 	private autoBuy:boolean

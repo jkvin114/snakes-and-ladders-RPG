@@ -111,10 +111,6 @@ app.get("/mode_selection", function (req, res, next) {})
 
 app.get("/check_players", function (req, res) {})
 
-app.get("/", function (req, res) {
-	res.end(firstpage)
-	return
-})
 
 // app.get("/getobs_kor", function (req, res) {
 
