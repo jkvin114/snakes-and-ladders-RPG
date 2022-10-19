@@ -3,7 +3,6 @@
 - [Intro Page](https://jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/index.html)
 
 ## Tech stacks
----
 Server
 - Node.js
 - Express.js
@@ -18,7 +17,6 @@ Client
 
 
 ## Directory structure
----
 <!-- > blockquote -->
 
 
@@ -48,8 +46,7 @@ Client
 ````
 
 ## Configuration
----
-- Create config folder at the root and `config.json` and `variables.env` to /config
+- Create config folder at the root directory and add `config.json` and `variables.env`
 
 ### Sample `config.json`
 ```json
@@ -68,7 +65,6 @@ Client
         "dice":-1 //can force all dice numbers to be fixed (-1 on unset)
     }
 }
-```
 ### Sample `variables.env`
 ```
 MONGODB_URL_LOCAL=//url for local DB
