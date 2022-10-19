@@ -65,7 +65,9 @@ Client
         "dice":-1 //can force all dice numbers to be fixed (-1 on unset)
     }
 }
+```
 ### Sample `variables.env`
+
 ```
 MONGODB_URL_LOCAL=//url for local DB
 MONGODB_URL=//url for cloud DB
@@ -73,5 +75,4 @@ MONGODB_URL=//url for cloud DB
 ```
 
 ## Run with ts-node
----
 `ts-node src/app.ts`
