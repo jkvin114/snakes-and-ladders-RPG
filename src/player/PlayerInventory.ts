@@ -179,7 +179,7 @@ class PlayerInventory {
 		let data: { id: number; cool: number; coolRatio: number }[] = this.activeItems
 			.filter((ef: Util.ActiveItem) => PlayerInventory.indicateList.includes(ef.id) && this.haveItem(ef.id))
 			.map((item) => {
-				return { id: item.id, cool: item.cooltime, coolRatio: 1 - item.cooltime / item.resetVal }
+				return item.getTransferData()
 			})
 		//	console.log(data)
 		this.player.game.eventEmitter.update("activeItem", this.player.turn, data)

@@ -4,12 +4,14 @@ import { io } from "../app";
 import { SocketSession } from "./SocketSession";
 import express = require("express")
 import { controlRoom } from "./Controller";
+import { Room } from "../room";
+import e = require("cors");
 
 module.exports=function(socket:Socket){
     socket.on("user:update_playerlist", function (playerlist: any) {
 		controlRoom(socket,(room,rname)=>{
-			let turnchange = room.user_updatePlayerList(playerlist)
-			io.to(rname).emit("server:update_playerlist", room.playerlist, turnchange)
+			room.user_updatePlayerList(playerlist)
+			io.to(rname).emit("server:update_playerlist", room.getPlayerList())
 		})
 	})
 	
@@ -29,7 +31,7 @@ module.exports=function(socket:Socket){
 			room.setSimulation(false)
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
 				io.to(roomname).emit(type,...args)
-			}).setNickname(SocketSession.getUsername(socket), 0)
+			}).setHostNickname(SocketSession.getUsername(socket), 0,SocketSession.getUserClass(socket))
 
 			room.addSession(SocketSession.getId(socket))
 			socket.join(rname)
@@ -46,13 +48,14 @@ module.exports=function(socket:Socket){
 		// }
 		SocketSession.setRoomName(socket, rname)
 		let hasroom=controlRoom(socket,(room,rname)=>{
-			if (room.hosting <= 0) {
+			if(room.user_guestRegister(SocketSession.getId(socket)))
+			{
+				socket.join(rname)
+				socket.emit("server:join_room", rname)
+			}
+			else{
 				socket.emit("server:room_full")
 			}
-			room.addSession(SocketSession.getId(socket))
-			socket.join(rname)
-			room.guestnum += 1
-			socket.emit("server:join_room", rname)
 		})
 		if(!hasroom) socket.emit("server:room_full")
 	})
@@ -69,46 +72,31 @@ module.exports=function(socket:Socket){
 	})
 	socket.on("user:request_players", function () {
 		controlRoom(socket,(room,rname)=>{
-			let nickname = SocketSession.getUsername(socket)
+			let username = SocketSession.getUsername(socket)
 
-			let turn = room.user_requestPlayers(nickname)
+			let turn = room.addGuestToPlayerList(username,SocketSession.getUserClass(socket))
 			SocketSession.setTurn(socket, turn)
 
-			socket.emit("server:guest_register", turn, room.playerlist)
-			socket.broadcast.to(rname).emit("server:update_playerlist", room.playerlist)
+			socket.emit("server:guest_register", turn, room.getPlayerList())
+			socket.broadcast.to(rname).emit("server:update_playerlist", room.getPlayerList())
 		})
 	})
-	socket.on("user:guest_quit", function () {
-		controlRoom(socket,(room,rname)=>{
-			room.deleteSession(SocketSession.getId(socket))
-		})
+	// socket.on("user:guest_quit", function () {
+	// 	// controlRoom(socket,(room,rname)=>{
+	// 	// 	room.deleteSession(SocketSession.getId(socket))
+	// 	// 	SocketSession.removeGameSession(socket)
+	// 	// })
 		
 		
-		// req.session.destroy((e)=>{console.log("destroy guest session")})
-	})
+	// 	// req.session.destroy((e)=>{console.log("destroy guest session")})
+	// })
 	//==========================================================================================
-//controlRoom(socket,(room,rname)=>{})
 	socket.on("user:kick_player", function (turn: number) {
 		controlRoom(socket,(room,rname)=>{
-			room.guestnum -= 1
-
+			room.user_guestKick(SocketSession.getId(socket))
 			io.to(rname).emit("server:kick_player", turn)
-
 		})
 		
-		// const req = socket.request as express.Request
-		// delete req.session.turn
-		// delete req.session.roomname
-		// try {
-		// 	let rname = SocketSession.getRoomName(socket)
-		// 	if (!R.hasRoom(rname)) return
-		// 	let room = R.getRoom(rname)
-			
-		// 	console.log("kick" + turn)
-		// 	//room.playerlist[turn]=null
-		// } catch (e) {
-		// 	console.log(e)
-		// }
 	})
 
 
@@ -134,7 +122,7 @@ module.exports=function(socket:Socket){
 
 	socket.on("user:request_names", function () {
 		controlRoom(socket,(room,rname)=>{
-			let names = room.user_requestNames()
+			let names = room.getPlayerNamesForTeamSelection()
 
 			io.to(rname).emit("server:player_names", names)
 		})
@@ -211,7 +199,24 @@ module.exports=function(socket:Socket){
 		console.log("disconnected")
 		let turn = SocketSession.getTurn(socket)
 		controlRoom(socket,(room,rname)=>{
-			room.user_disconnect(turn)
+			
+			if(!room.isGameStarted){
+				//if host quits in the matching page
+				if(turn===0){
+					room.reset()
+					io.to(rname).emit("server:quit")
+
+				}//if guest quits in the matching page
+				else{
+					room.deleteSession(SocketSession.getId(socket))
+				}
+				SocketSession.removeGameSession(socket)
+				return
+			}
+			else{
+				room.user_disconnect(turn)
+			}
+
 		})
 	})
 }

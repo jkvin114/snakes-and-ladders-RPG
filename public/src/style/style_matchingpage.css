@@ -83,6 +83,11 @@ html{
   .playercard.waiting{
     border-left: 4px solid #e62424;
   }
+  .playercard.logined .iname{
+    color:gold;
+    font-weight: bold;
+    font-family: "cookierun";
+  }
  .card-buttons{
     display: flex;
     /* flex-direction: row-reverse; */

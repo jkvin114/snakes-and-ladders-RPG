@@ -29,6 +29,10 @@
 			"desc": "Use basic attack button",
 			"desc_kor": "기본공격 버튼 사용",
 			"default": true
+		},"shuffleTurns": {
+			"desc": "Shuffle turn",
+			"desc_kor": "턴 랜덤",
+			"default": true
 		},
 		"diceControlItemFrequency": {
 			"desc": "Dice Control Item appear frequency",

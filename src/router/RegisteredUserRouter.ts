@@ -24,7 +24,7 @@ import session from 'express-session';
  */
 
 
-const{UserBoardData} = require("../mongodb/BoardDBHandler")
+const{UserBoardData} = require("../mongodb/BoardDBSchemas")
 const router = express.Router()
 const crypto = require('crypto')
 const {User} = require("../mongodb/DBHandler")
@@ -52,6 +52,11 @@ function checkPasswordValidity(pw:string){
     return true
 
 }
+
+router.get("/:username",async function(req:express.Request,res:express.Response) {
+    
+})
+
 /**
  * username,password,email
  */
@@ -102,6 +107,12 @@ router.post('/register',async function(req:express.Request,res:express.Response)
     })
 })
 
+router.post("/current",async function(req:express.Request,res:express.Response){
+    if(req.session && req.session.isLogined){
+        res.end(req.session.username)
+    }
+    else res.end("")
+})
 /**
  * username,password
  */
@@ -139,8 +150,13 @@ router.post('/login',async function(req:express.Request,res:express.Response){
     
     console.log(req.session)
     console.log(body.username+" has logged in")
-    res.status(200).end(body.username)
+    res.status(200).json({
+        username:body.username,
+        email:user.email,
+        id:user._id
+    })
 })
+
 
 /**
  * 
@@ -151,9 +167,9 @@ router.post('/logout',function(req:express.Request,res:express.Response){
     req.session.isLogined=false
 
     console.log(req.session.username+" has logged out")
-    req.session.destroy(function(e){
-        if(e) console.log(e)
-    });
+    // req.session.destroy(function(e){
+    //     if(e) console.log(e)
+    // });
     console.log(req.session)
     
 
@@ -272,16 +288,16 @@ router.delete('/',async function(req:express.Request,res:express.Response){
 /**
  * username
  */
-router.get('/',async function(req:express.Request,res:express.Response){
-    let user=await User.findOneByUsername(req.query.username)
-    console.log(user)
-    if(!user){
-        res.status(200).end("available username")
-    }
-    else{
-        res.status(200).end("unavailable username")
-    }
-})
+// router.get('/',async function(req:express.Request,res:express.Response){
+//     let user=await User.findOneByUsername(req.query.username)
+//     console.log(user)
+//     if(!user){
+//         res.status(200).end("available username")
+//     }
+//     else{
+//         res.status(200).end("unavailable username")
+//     }
+// })
 
 /**
  * print session (test)

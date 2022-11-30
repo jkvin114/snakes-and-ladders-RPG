@@ -104,7 +104,7 @@ class AttackHandler{
 			//방어막 효과
 			if (target.effects.has(EFFECT.SHIELD)) {
 				target.effects.reset(EFFECT.SHIELD)
-				AttackHandler.doDamage(from,target,new Damage(0, 0, 0),  effectname, true, [HPChangeData.FLAG_SHIELD])
+				AttackHandler.doDamage(from,target,new Damage(0, 0, 0),  effectname, true, [HPChangeData.FLAG_BLOCKED_BY_SHIELD])
 				victimData.flags.push("shield")
 				return victimData
 			}

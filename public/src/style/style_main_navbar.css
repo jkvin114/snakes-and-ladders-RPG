@@ -67,7 +67,7 @@
     font-size: 14px;
     /* border-radius: 4px; */
     /* height: 30px; */
-    height: 30px;
+    height: 40px;
   }
   .navbtn.active{
     border-bottom: solid 4px #D896FF ;
@@ -78,7 +78,7 @@
     background: rgb(65, 65, 65);
   }
 .navbtn > img{
-    height: 20px;
+    height: 25px;
     vertical-align: middle;
     padding: 5px;
   

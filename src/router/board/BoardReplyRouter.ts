@@ -1,28 +1,12 @@
 import express = require("express")
-import { ajaxauth, auth, availabilityCheck, CommentSummary, COUNT_PER_PAGE, PostTitle, timestampToNumber } from "./helpers"
-
-const {  Article, Comment, CommentReply } = require("../../mongodb/BoardDBHandler")
+import { ajaxauth, ContentType,  voteController } from "./helpers"
+import { ReplySchema } from "./schemaController/Reply"
 const mongoose = require("mongoose")
 
 
 const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
 
-router.post("/vote", ajaxauth, async (req, res) => {
-	const id = mongoose.Types.ObjectId(req.body.id)
-	const voters = await CommentReply.getVotersById(id)
-	const voter = await User.findById(req.session.userId)
-	let change = 0
-	if (req.body.type === "up") {
-		await CommentReply.changeUpvote(id, 1, voter._id)
-		change = 1
-	} else if (req.body.type === "down") {
-		await CommentReply.changeDownvote(id, 1, voter._id)
-		change = 1
-	} else {
-		res.status(500).end()
-	}
-	res.status(200).json({ change: change })
-})
+router.post("/vote", ajaxauth, async (req, res) => voteController(req,res,ContentType.REPLY))
 
 module.exports = router

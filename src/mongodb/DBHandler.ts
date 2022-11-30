@@ -125,7 +125,14 @@ const userSchema=new mongoose.Schema({
     simulations:[mongoose.Types.ObjectId],
     boardData:{
         type:mongoose.Types.ObjectId,ref:"UserBoardData"
-    }
+    },
+    friends:[{
+        type:mongoose.Types.ObjectId,ref:"User"
+    }],
+    follows:[{
+        type:mongoose.Types.ObjectId,ref:"User"
+    }],
+    
 },{timestamps:true})
 
 
@@ -216,6 +223,10 @@ userSchema.statics.findUsernameById = function(id) {
 userSchema.statics.getBoardData = function(id) {
     return this.findById(id).select('boardData')
 };
+userSchema.statics.getBoardDataPopulated = function(id) {
+    return this.findById(id).select('boardData').populate("boardData")
+};
+
 userSchema.statics.deleteOneById = function(id) {
     return this.findByIdAndDelete(id)
 };

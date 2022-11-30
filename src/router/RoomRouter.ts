@@ -32,7 +32,7 @@ router.post("/create_rpg", function (req: express.Request, res: express.Response
 	if (
 		isUserInRPGRoom(req)
 	) {
-		res.status(304).end("previous room exists")
+		res.status(307).end("previous room exists")
 		return
 	}
 
@@ -99,7 +99,7 @@ router.post("/join", async function (req: express.Request, res: express.Response
 	if (
 		isUserInRPGRoom(req)
 	) {
-		res.status(304).end("previous room exists")
+		res.status(307).end("previous room exists")
 		return
 	}
 
@@ -116,7 +116,7 @@ router.post("/home", async function (req: express.Request, res: express.Response
 // console.log(CONFIG)
 	if (req.session && isUserInRPGRoom(req)) {
 		// console.error("previous room exists")
-		res.status(304).json(CONFIG).end()
+		res.status(307).json(CONFIG).end()
 	}else
 		res.status(200).json(CONFIG)
 })
@@ -131,7 +131,7 @@ router.post("/matching", async function (req: express.Request, res: express.Resp
 		}
 		if (isUserInRPGRoom(req)) {
 			// console.error("previous room exists")
-			return res.status(304).end()
+			return res.status(307).end()
 		}
 
 		//host

@@ -295,6 +295,7 @@ class Game {
 				turn: p.turn,
 				team: p.team,
 				HP: p.HP,
+				isLoggedIn:p.isLoggedIn,
 				MaxHP: p.MaxHP,
 				name: p.name,
 				champ: p.champ,

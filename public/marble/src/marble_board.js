@@ -1127,7 +1127,7 @@ export class MarbleScene extends Board{
         this.startRenderInterval()
     }
     onStep(){
-        this.game.playound("step")
+        this.game.playsound("step")
     }
     payMoney(payer,receiver,amount){
         //"top-left", "bottom-left", "top-right", "bottom-right"'

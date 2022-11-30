@@ -33,10 +33,10 @@ app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
 
 app.use("/board", require("./router/board/BoardRouter"))
-app.use("/board/user", require("./router/board/BoardUserRouter"))
-app.use("/board/post", require("./router/board/BoardPostRouter"))
-app.use("/board/comment", require("./router/board/BoardCommentRouter"))
-app.use("/board/reply", require("./router/board/BoardReplyRouter"))
+// app.use("/board/user", require("./router/board/BoardUserRouter"))
+// // app.use("/board/post", require("./router/board/BoardPostRouter"))
+// app.use("/board/comment", require("./router/board/BoardCommentRouter"))
+// app.use("/board/reply", require("./router/board/BoardReplyRouter"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
@@ -107,9 +107,9 @@ app.get("/connection_check", function (req, res) {
 	res.end()
 })
 
-app.get("/mode_selection", function (req, res, next) {})
+// app.get("/mode_selection", function (req, res, next) {})
 
-app.get("/check_players", function (req, res) {})
+// app.get("/check_players", function (req, res) {})
 
 
 // app.get("/getobs_kor", function (req, res) {

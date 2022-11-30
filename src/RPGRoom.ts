@@ -59,10 +59,12 @@ class RPGRoom extends Room {
 
 	user_gameReady(setting: ClientInputEventInterface.GameSetting, roomName: string) {
 		this.instant = false
-
+		this.onBeforeGameStart()
 		// room.aichamplist=aichamplist
 		// room.map=map
-		this.gameloop = GameLoop.create(this.map, roomName, setting, false, this.isTeam, this.playerlist)
+		this.isGameStarted=true
+		this.playerMatchingState.assignGameTurns(setting.shuffleTurns)
+		this.gameloop = GameLoop.create(this.map, roomName, setting, false, this.isTeam, this.playerMatchingState.playerlist)
 		this.gameloop.setClientInterface(this.eventObserver)
 	//	console.log("team" + this.isTeam)
 	}

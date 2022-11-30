@@ -1,6 +1,6 @@
 import { ObstacleHelper } from "./../src/helpers"
 import { Game, GameSetting } from "./../src/Game"
-import { EntityFilter } from "EntityFilter"
+import { EntityFilter } from "./../src/entity/EntityFilter"
 
 describe("game", () => {
 	let game = new Game(

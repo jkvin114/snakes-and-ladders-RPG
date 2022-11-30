@@ -3,7 +3,7 @@
 
 <style>
   @font-face {
-    font-family: "cookierun";
+    font-family: "nanumB";
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
@@ -12,12 +12,12 @@
    margin: 0;
     margin-bottom: 20px;
 
-  font-family: 'cookierun';
+  font-family: 'nanumB';
   text-align:center;
 
   }
   a,p{
-    font-family: 'cookierun';
+    font-family: 'nanumB';
   }
   .filter-invert{
     filter: invert();
@@ -104,6 +104,21 @@
     background: none;
     border: 1px solid white;
   }
+  .vote img{
+    filter: invert();
+  }
+  .upvote.active a{
+    color: #ff9696;
+  }
+  .upvote.active img{
+    filter:invert(73%) sepia(46%) saturate(729%) hue-rotate(307deg) brightness(101%) contrast(100%);
+  }
+  .downvote.active a{
+    color: #aaaaff;
+  }
+  .downvote.active img{
+    filter:invert(66%) sepia(9%) saturate(2608%) hue-rotate(201deg) brightness(104%) contrast(103%);
+  }
   .vote a{
     font-size: 17px;
   }
@@ -153,20 +168,19 @@
     background:none;
     border: none;
     border-bottom:2px solid rgb(210, 210, 210);
-    font-family: 'cookierun';
+    font-family: 'nanumB';
     flex-grow: 1;
   }
   .submit_comment{
     border-radius: 5px;
     font-size: 15px;
-    padding: 10px;
+    padding: 6px;
     padding-left: 20px;
     padding-right: 20px;
 
     border: none;
     background-color: #7E00BF;
     color: white;
-    font-family: 'cookierun';
     cursor: pointer;
     font-family: "nanumB";
   }
@@ -230,12 +244,12 @@
 
           <p class="comment_content"> <%= comment.content %> </p>
           
-          <div class="vote upvote commentvote" data-type="up" data-id="<%=comment._id%>" >
-            <img src="/res/img/svg/like.svg" class="filter-invert">
+          <div class="vote upvote commentvote  <%=(myvote==='up'?'active':'')%>" data-type="up" data-id="<%=comment._id%>" >
+            <img src="/res/img/svg/like.svg">
             <a class="vote_count"><%= comment.upvote %></a>
           </div>
-          <div class="vote downvote commentvote" data-type="down" data-id="<%=comment._id%>" >
-            <img src="/res/img/svg/like.svg" class="filter-invert">
+          <div class="vote downvote commentvote  <%=(myvote==='down'?'active':'')%>" data-type="down" data-id="<%=comment._id%>" >
+            <img src="/res/img/svg/like.svg">
             <a class="vote_count"><%= comment.downvote %></a>
           </div>
         <%}%>
@@ -252,7 +266,7 @@
   <%}else if(comment.deleted){%>
     <p>Can`t reply on deleted comment</p>
   <% }else{%>
-      <p>Log in to reply</p>
+      <p><button class="submit_comment" onclick="goLoginPage()">Log in</button> to reply</p>
  <% }%>
 
 
@@ -261,7 +275,7 @@
       <% const r=reply[i]%>
       <div class="reply-indicator">
         <!-- &#8618; -->
-        ㄴ
+        
       </div>
         <div class="comment">
           <a class="comment_info comment_author"></a> 
@@ -273,12 +287,12 @@
             <%}%><br>
             <p class="comment_content"> <%= r.content %> </p>
             
-            <div class="vote upvote commentvote" data-type="up" data-id="<%=r._id%>" >
-              <img src="/res/img/svg/like.svg" class="filter-invert">
+            <div class="vote upvote replyvote  <%=(r.myvote==='up'?'active':'')%>" data-type="up" data-id="<%=r._id%>" >
+              <img src="/res/img/svg/like.svg">
               <a class="vote_count"><%= r.upvotes %></a>
             </div>
-            <div class="vote downvote commentvote" data-type="down" data-id="<%=r._id%>" >
-              <img src="/res/img/svg/like.svg" class="filter-invert">
+            <div class="vote downvote replyvote  <%=(r.myvote==='down'?'active':'')%>" data-type="down" data-id="<%=r._id%>" >
+              <img src="/res/img/svg/like.svg">
               <a class="vote_count"><%= r.downvotes %></a>
             </div>
             <hr class="comment_hr">
@@ -292,6 +306,10 @@
 <script>
 function golink(link){
   window.location.href=link
+}
+
+function goLoginPage(){
+  golink("/index.html?page=login&redirect="+window.location.pathname)
 }
 $(".delete_comment").click(function(){
   
@@ -315,15 +333,17 @@ $(".delete_comment").click(function(){
 $(".replyvote").click(function(){
   let type=$(this).data('type')
   let id=$(this).data('id')
-  sendVote('reply',type,id,$(this).children('.vote_count').eq(0))
+  sendVote('reply',type,id,$(this))
 })
 $(".commentvote").click(function(){
   let type=$(this).data('type')
   let id=$(this).data('id')
-  sendVote('comment',type,id,$(this).children('.vote_count').eq(0))
+  sendVote('comment',type,id,$(this))
 })
 
-function sendVote(kind,type,id,vote_count){
+function sendVote(kind,type,id,elem){
+  let vote_count=$(elem).children('.vote_count').eq(0)
+
   $.ajax({
         method: 'POST',
         url: '/board/'+kind+'/vote',
@@ -332,7 +352,16 @@ function sendVote(kind,type,id,vote_count){
     .done((data, statusText, xhr)=>{
       let status = xhr.status;
       if(status==200){
-        $(vote_count).html(Number($(vote_count).html()) +  data.change)
+        if(data.change===0) alert(`You already ${type==="up"?"down":"up"}voted.`)
+        else $(vote_count).html(Number($(vote_count).html()) +  data.change)
+
+        if(data.change===1){
+          $(elem).addClass("active")
+        }
+        else if(data.change===-1){
+          $(elem).removeClass("active")
+        }
+
       }
     })
     .fail((data, statusText, xhr)=>{

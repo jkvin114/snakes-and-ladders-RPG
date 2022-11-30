@@ -67,7 +67,7 @@ module.exports=function(socket:Socket){
 		// let turn = SocketSession.getTurn(socket)
 		// if (!R.hasRPGRoom(rname)) return
 		// let room =R.getRPGRoom(rname)
-
+		
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			if (!room.hasGameLoop()) {
 				socket.emit("server:quit")
@@ -75,8 +75,10 @@ module.exports=function(socket:Socket){
 			}
 			socket.join(rname)
 			let setting:ServerGameEventInterface.initialSetting = room.user_requestSetting()
+			let newturn= room.getChangedTurn(turn)
+			SocketSession.setTurn(socket,newturn)
 	
-			socket.emit("server:initialsetting", setting, turn, room.getGameTurnToken(turn))
+			socket.emit("server:initialsetting", setting, newturn, room.getGameTurnToken(newturn))
 		})
 
 		// if (!room.hasGameLoop()) {

@@ -162,6 +162,7 @@ class ProtoPlayer {
 		this.team = true
 		this.champ = -1
 		this.ready = false
+		this.userClass=0
 	}
 }
 
@@ -223,15 +224,15 @@ class MatchStatus {
 
 		this.ui.setAsHost(roomname)
 
-		window.onbeforeunload =  () =>{
-			$.ajax({
-				method: 'POST',
-				url: '/reset_game'
-			})
-			// ServerConnection.resetGame()
-			this.quitted = true
-			return "The room will be reset"
-		}
+		// window.onbeforeunload =  () =>{
+		// 	$.ajax({
+		// 		method: 'POST',
+		// 		url: '/reset_game'
+		// 	})
+		// 	// ServerConnection.resetGame()
+		// 	this.quitted = true
+		// 	return "The room will be reset"
+		// }
 	}
 
 	setAsGuest(roomlist) {
@@ -330,7 +331,8 @@ class MatchStatus {
 	 */
 	setType(type, turn) {
 		this.playerlist[turn].type = type
-		console.log("setType" + this.playerlist[turn])
+		console.log("setType")
+		console.log(this.playerlist)
 		//this.updatePlayerList(this.playerlist)
 		ServerConnection.sendPlayerList(this.playerlist)
 	}
@@ -340,7 +342,7 @@ class MatchStatus {
 	 * @param {} players
 	 * @param {*} turnchange
 	 */
-	updatePlayerList(players, turnchange) {
+	updatePlayerList(players) {
 		
 		if (this.quitted) {
 			//window.onbeforeunload = () => {}
@@ -349,10 +351,10 @@ class MatchStatus {
 		if (!players) {
 			return
 		}
-		if (turnchange && turnchange.indexOf(this.myturn) !== this.myturn) {
-			// sessionStorage.turn = turnchange.indexOf(this.myturn)
-			this.myturn = turnchange.indexOf(this.myturn)
-		}
+		// if (turnchange && turnchange.indexOf(this.myturn) !== this.myturn) {
+		// 	// sessionStorage.turn = turnchange.indexOf(this.myturn)
+		// 	this.myturn = turnchange.indexOf(this.myturn)
+		// }
 		this.setMyTurn(this.myturn)
 
 		this.playerlist = players
@@ -365,7 +367,7 @@ class MatchStatus {
 		}, 0)
 
 		//console.log("myturn"+this.myturn)
-		//console.log(players)
+		console.log(players)
 
 		//card=cards
 		// $(".kick_player").hide()
@@ -383,7 +385,15 @@ class MatchStatus {
 					break
 				case PlayerType.PLAYER_CONNECTED:
 					$(this.ui.playercard[i]).removeClass("hidden")
-					$(this.ui.playercard[i]).children("p").html(this.playerlist[i].name)
+					console.log(this.playerlist[i].name)
+					$(this.ui.playercard[i]).find(".iname").html(this.playerlist[i].name)
+					if(this.playerlist[i].userClass === 1){
+						$(this.ui.playercard[i]).addClass("logined")
+					}
+					else{
+						$(this.ui.playercard[i]).removeClass("logined")
+					}
+
 					if (i > 0 && this.myturn === 0) {
 						$(this.ui.playerkick[i - 1]).removeClass("hidden")
 					}
@@ -463,7 +473,7 @@ class MatchStatus {
 			$("#Hostingpage").css("display", "none")
 			ServerConnection.showTeamToGuest()
 			this.teamSelector.showTeamPage(false)
-			ServerConnection.requestNames()
+			ServerConnection.requestNamesForTeamSelection()
 		}
 	}
 }
@@ -773,15 +783,15 @@ class TeamSelector {
 			}
 		}
 	}
-	setNameAndCharacters(nicknames) {
-		for (let i = 0; i < nicknames.length; ++i) {
+	setNameAndCharacters(playernames) {
+		for (let i = 0; i < playernames.length; ++i) {
 			let c = this.match.playerlist[i].champ
 			$(this.champimgs[i]).attr(
 				"src",
 				c < 0 ? RANDOM_CHAR_DIR : "res/img/character/illust/" + this.match.characterSetting[c].illustdir
 			)
-
-			$(this.names[i]).html(nicknames[i])
+			
+			$(this.names[i]).html(playernames[i].name)
 		}
 	}
 
@@ -853,7 +863,7 @@ $(document).ready(function () {
 		let status = xhr.status;
 		console.log(status)
 		
-		if(status==304){
+		if(status==307){
 			alert(chooseLang("You are already in a game","이미 게임에 참가 중입니다"))
         	window.location.href="index.html"
 			return

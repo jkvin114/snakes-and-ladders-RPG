@@ -1,9 +1,13 @@
 import express = require("express")
-import { ajaxauth, auth, availabilityCheck, CommentSummary, COUNT_PER_PAGE, PostTitle, timestampToNumber } from "./helpers"
+import { ajaxauth, auth, availabilityCheck, voteController ,ContentType, checkVoteRecord} from "./helpers"
 const { upload } = require("../../mongodb/mutler")
+import {UserBoardDataSchema} from "./schemaController/UserData"
+import {PostSchema} from "./schemaController/Post"
+import {CommentSchema} from "./schemaController/Comment"
+import {ReplySchema} from "./schemaController/Reply"
 
-const { UserBoardData, Article, Comment, CommentReply } = require("../../mongodb/BoardDBHandler")
-const mongoose = require("mongoose")
+
+import mongoose from "mongoose"
 
 const { User } = require("../../mongodb/DBHandler")
 
@@ -11,23 +15,7 @@ const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
 
 // console.log(ajaxauth)
-router.post("/vote", ajaxauth, async (req, res) => {
-	const id = mongoose.Types.ObjectId(req.body.id)
-	const voters = await Article.getVotersById(id)
-	const voter = await User.findById(req.session.userId)
-	let change = 0
-
-	if (req.body.type === "up") {
-		await Article.changeUpvote(id, 1, voter._id)
-		change = 1
-	} else if (req.body.type === "down") {
-		await Article.changeDownvote(id, 1, voter._id)
-		change = 1
-	} else {
-		res.status(500).end()
-	}
-	res.status(200).json({ change: change })
-})
+router.post("/vote", ajaxauth, async (req, res) => voteController(req,res,ContentType.POST))
 
 
 
@@ -52,7 +40,7 @@ router.post("/write", auth, upload.single("img"), async (req, res) => {
 
 	try {
 		let user = await User.findOneByUsername(req.session.username)
-		let post = await Article.create({
+		let post = await PostSchema.create({
 			title: title,
 			content: content,
 			author: user._id,
@@ -66,7 +54,7 @@ router.post("/write", auth, upload.single("img"), async (req, res) => {
 			downvote: 0,
 			authorName: req.session.username
 		})
-		await UserBoardData.addPost(user.boardData, post._id)
+		await UserBoardDataSchema.addPost(user.boardData, post._id)
 	} catch (e) {
 		console.error(e)
 		res.status(500).redirect("/")
@@ -77,7 +65,7 @@ router.post("/write", auth, upload.single("img"), async (req, res) => {
 })
 router.get("/edit/:postUrl", auth, async (req, res) => {
 	let url = req.params.postUrl
-	let post = await Article.findOneByArticleId(url)
+	let post = await PostSchema.findOneByArticleId(Number(url))
 	console.log(post.author)
 	console.log(req.session.userId)
 	if (post.author.toString() !== req.session.userId) {
@@ -88,7 +76,7 @@ router.get("/edit/:postUrl", auth, async (req, res) => {
 })
 router.post("/edit", auth, upload.single("img"), async (req, res) => {
 	const url = req.body.url
-	let post = await Article.findOneByArticleId(url)
+	let post = await PostSchema.findOneByArticleId(url)
 	if (post.author.toString() !== req.session.userId) {
 		res.status(401).end("")
 		return
@@ -106,34 +94,34 @@ router.post("/edit", auth, upload.single("img"), async (req, res) => {
 		.replace(/\<.+?\>/g, "")
 		.replace(/\[\[\]\]/g, "<br>")
 
-	await Article.update(url, title, content)
+	await PostSchema.update(url, title, content)
 	if (imagedir !== "") {
-		await Article.updateImage(url, imagedir)
+		await PostSchema.updateImage(url, imagedir)
 	}
 
 	res.redirect("/board/post/" + url)
 })
 router.post("/delete", ajaxauth, async (req, res) => {
 	try {
-		let id = mongoose.Types.ObjectId(req.body.id)
-		const post = await Article.findById(id)
+		let id = new mongoose.Types.ObjectId(req.body.id)
+		const post = await PostSchema.findOneById(id)
 		if (post.author.toString() !== req.session.userId) {
 			res.status(401).end("")
 			return
 		}
 		if (post.comments != null) {
 			for (const comm of post.comments) {
-				await Comment.onPostRemoved(comm._id)
+				await CommentSchema.onPostRemoved(comm._id)
 				if (!comm.reply) continue
 				for (const reply of comm.reply) {
-					await CommentReply.onPostRemoved(reply)
+					await ReplySchema.onPostRemoved(reply)
 				}
 			}
 		}
 
 		let user = await User.getBoardData(req.session.userId)
-		await Article.delete(id)
-		await UserBoardData.removePost(user.boardData, id)
+		await PostSchema.remove(id)
+		await UserBoardDataSchema.removePost(user.boardData, id)
 		res.status(201).end()
 	} catch (e) {
 		console.error(e)
@@ -141,12 +129,12 @@ router.post("/delete", ajaxauth, async (req, res) => {
 	}
 })
 router.post("/comment", auth, async (req, res) => {
-	const postId = mongoose.Types.ObjectId(req.body.postId) //objectid
+	const postId = new mongoose.Types.ObjectId(req.body.postId) //objectid
 	const content = req.body.content
-	const userId = mongoose.Types.ObjectId(req.session.userId)
+	const userId = new mongoose.Types.ObjectId(req.session.userId)
 	let user = await User.getBoardData(userId)
 
-	let comment = await Comment.create({
+	let comment = await CommentSchema.create({
 		content: content,
 		article: postId,
 		author: userId,
@@ -160,25 +148,25 @@ router.post("/comment", auth, async (req, res) => {
 		replyCount: 0,
 		authorName: req.session.username
 	})
-	await Article.addComment(postId, comment._id)
-	await UserBoardData.addComment(user.boardData, comment._id)
+	await PostSchema.addComment(postId, comment._id)
+	await UserBoardDataSchema.addComment(user.boardData, comment._id)
 
 	res.redirect("/board/post/" + req.body.postUrl)
 })
 
 router.post("/comment/delete", ajaxauth, async (req, res) => {
 	try {
-		let commid = mongoose.Types.ObjectId(req.body.commentId)
-		const comment = await Comment.findOneById(commid)
+		let commid = new mongoose.Types.ObjectId(req.body.commentId)
+		const comment = await CommentSchema.findOneById(commid)
 		if (comment.author.toString() !== req.session.userId) {
 			res.status(401).end("")
 			return
 		}
-		await Article.removeComment(comment.article)
+		await PostSchema.removeComment(comment.article)
 		let user = await User.getBoardData(comment.author)
-		await UserBoardData.removeComment(user.boardData, commid)
+		await UserBoardDataSchema.removeComment(user.boardData, commid)
 
-		await Comment.delete(commid)
+		await CommentSchema.remove(commid)
 		res.status(200).end()
 	} catch (e) {
 		console.error(e)
@@ -187,9 +175,9 @@ router.post("/comment/delete", ajaxauth, async (req, res) => {
 })
 router.post("/reply/delete", ajaxauth, async (req, res) => {
 	try {
-		console.log(req.body)
-		let commid = mongoose.Types.ObjectId(req.body.commentId)
-		const reply = await CommentReply.findOneById(commid)
+		//console.log(req.body)
+		let commid = new mongoose.Types.ObjectId(req.body.commentId)
+		const reply = await ReplySchema.findOneById(commid)
 
 		if (reply.author.toString() !== req.session.userId) {
 			res.status(401).end("")
@@ -197,10 +185,10 @@ router.post("/reply/delete", ajaxauth, async (req, res) => {
 		}
 
 		let user = await User.getBoardData(reply.author)
-		await Comment.removeReply(reply.comment, commid)
-		await Article.removeReply(reply.article)
-		await UserBoardData.removeReply(user.boardData, commid)
-		await CommentReply.delete(commid)
+		await CommentSchema.removeReply(reply.comment, commid)
+		await PostSchema.removeReply(reply.article)
+		await UserBoardDataSchema.removeReply(user.boardData, commid)
+		await ReplySchema.remove(commid)
 		res.status(200).end("")
 	} catch (e) {
 		console.error(e)
@@ -210,9 +198,16 @@ router.post("/reply/delete", ajaxauth, async (req, res) => {
 
 router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 	try {
-		const comment = await Comment.findOneById(mongoose.Types.ObjectId(req.params.commentId))
-		const commentreply = await Comment.getReplyById(mongoose.Types.ObjectId(req.params.commentId))
-		const postUrl = await Article.getUrlById(comment.article)
+		const comment = await CommentSchema.findOneById(new mongoose.Types.ObjectId(req.params.commentId))
+		const commentreply = await CommentSchema.getReplyById(new mongoose.Types.ObjectId(req.params.commentId))
+		const postUrl = await PostSchema.getUrlById(comment.article)
+		let voteRecords=null
+		if(req.session && req.session.isLogined){
+			const user = await User.getBoardData(req.session.userId)
+			voteRecords = await UserBoardDataSchema.getVoteRecords(user.boardData)
+		}
+
+
 
 		let replys = []
 		for (let reply of commentreply.reply) {
@@ -223,7 +218,8 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 				upvotes: reply.upvote,
 				downvotes: reply.downvote,
 				author: reply.authorName,
-				createdAt: reply.createdAt
+				createdAt: reply.createdAt,
+				myvote:checkVoteRecord(reply._id,voteRecords)
 			})
 		}
 		replys=replys.reverse()
@@ -232,7 +228,8 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 			comment: comment,
 			reply: replys,
 			postUrl: !postUrl ? "" : postUrl.articleId,
-			logined: req.session.isLogined
+			logined: req.session.isLogined,
+			myvote:checkVoteRecord(comment._id,voteRecords)
 		})
 	} catch (e) {
 		console.error(e)
@@ -241,13 +238,13 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 })
 
 router.post("/comment/reply", auth, async (req, res) => {
-	const commentId = mongoose.Types.ObjectId(req.body.commentId) //objectid
+	const commentId =new  mongoose.Types.ObjectId(req.body.commentId) //objectid
 	const content = req.body.content
-	const userId = mongoose.Types.ObjectId(req.session.userId)
+	const userId = new mongoose.Types.ObjectId(req.session.userId)
 	let user = await User.getBoardData(userId)
-	const comment = await Comment.findOneById(mongoose.Types.ObjectId(req.body.commentId))
+	const comment = await CommentSchema.findOneById(new mongoose.Types.ObjectId(req.body.commentId))
 
-	let reply = await CommentReply.create({
+	let reply = await ReplySchema.create({
 		content: content,
 		comment: commentId,
 		article: comment.article,
@@ -261,21 +258,28 @@ router.post("/comment/reply", auth, async (req, res) => {
 		authorName: req.session.username
 	})
 
-	await Comment.addReply(commentId, reply._id)
-	await UserBoardData.addReply(user.boardData, reply._id)
-	await Article.addReply(comment.article)
+	await CommentSchema.addReply(commentId, reply._id)
+	await UserBoardDataSchema.addReply(user.boardData, reply._id)
+	await PostSchema.addReply(comment.article)
 	res.redirect("/board/post/comment/" + req.body.commentId + "/reply")
 })
 
 router.get("/:postUrl",availabilityCheck, async (req, res) => {
 	try {
-		let post = await Article.findOneByArticleIdWithComment(req.params.postUrl)
+		let post = await PostSchema.findOneByArticleIdWithComment(Number(req.params.postUrl))
+
+		let voteRecords=null
+		if(req.session && req.session.isLogined){
+			const user = await User.getBoardData(req.session.userId)
+			voteRecords = await UserBoardDataSchema.getVoteRecords(user.boardData)
+		}
+		
 
 		if (!post) {
 			res.redirect("/")
 		}
 
-		await Article.incrementView(post.articleId)
+		await PostSchema.incrementView(post.articleId)
 
 		let comment = []
 		for (let comm of post.comments) {
@@ -289,7 +293,8 @@ router.get("/:postUrl",availabilityCheck, async (req, res) => {
 				replyCount: comm.replyCount,
 				deleted: comm.deleted,
 				author: comm.authorName,
-				createdAt: comm.createdAt
+				createdAt: comm.createdAt,
+				myvote:checkVoteRecord(comm._id,voteRecords)
 			})
 		}
 		res.status(200).render("post", {
@@ -305,7 +310,8 @@ router.get("/:postUrl",availabilityCheck, async (req, res) => {
 			logined: req.session.isLogined,
 			upvotes: post.upvote,
 			downvotes: post.downvote,
-			createdAt: post.createdAt
+			createdAt: post.createdAt,
+			myvote:checkVoteRecord(post._id,voteRecords)
 		})
 	} catch (e) {
 		console.error(e)

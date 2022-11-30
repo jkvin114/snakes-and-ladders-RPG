@@ -3,7 +3,7 @@
 
 <style>
   @font-face {
-    font-family: "cookierun";
+    font-family: "nanumB";
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
@@ -12,12 +12,12 @@
 
    margin: 0;
     margin-bottom: 20px;
-  font-family: 'cookierun';
+  font-family: 'nanumB';
   text-align:center;
 
   }
   a,p{
-    font-family: 'cookierun';
+    font-family: 'nanumB';
   }
   .filter-invert{
     filter: invert();
@@ -99,14 +99,29 @@
     display: inline-block;
     /* min-width: 70px; */
     user-select: none;
-    background-color: #7E00BF;
+    /* background-color: #7E00BF; */
     border-radius: 3px;
     /* border: 2px solid rgb(183, 183, 183); */
     padding: 2px;
     padding-top: 4px;
     padding-left: 4px;
     padding-right: 6px;
-
+    border: 1px solid white;
+  }
+  .vote img{
+    filter: invert();
+  }
+  .upvote.active a{
+    color: #ff9696;
+  }
+  .upvote.active img{
+    filter:invert(73%) sepia(46%) saturate(729%) hue-rotate(307deg) brightness(101%) contrast(100%);
+  }
+  .downvote.active a{
+    color: #aaaaff;
+  }
+  .downvote.active img{
+    filter:invert(66%) sepia(9%) saturate(2608%) hue-rotate(201deg) brightness(104%) contrast(103%);
   }
   .commentvote a{
     font-size: 17px;
@@ -119,7 +134,6 @@
     background: none;
     padding-right: 6px;
 
-    border: 1px solid white;
   }
   .downvote img{
     transform: rotate(180deg);
@@ -213,7 +227,7 @@
   .submit_comment{
     border-radius: 5px;
     font-size: 15px;
-    padding: 10px;
+    padding: 6px;
     border: none;
     background-color: #7E00BF;
     color: white;
@@ -263,12 +277,12 @@
         <img class="postimg" src="/uploads/<%= image %>"> 
      <% }  %>
      <div class="content"><%- content %>  </div>
-     <div class="vote upvote postvote"  data-type="up" data-id="<%=id%>">
-      <img src="/res/img/svg/like.svg" class="filter-invert">
+     <div class="vote upvote postvote <%=(myvote==='up'?'active':'')%>"  data-type="up" data-id="<%=id%>">
+      <img src="/res/img/svg/like.svg">
       <a class="vote_count "><%= upvotes %></a>
     </div>
-    <div class="vote downvote postvote"  data-type="down" data-id="<%=id%>">
-      <img src="/res/img/svg/like.svg" class="filter-invert">
+    <div class="vote downvote postvote <%=(myvote==='down'?'active':'')%>"  data-type="down" data-id="<%=id%>">
+      <img src="/res/img/svg/like.svg">
       <a class="vote_count "><%= downvotes %></a>
     </div>
     <br><br>
@@ -287,7 +301,8 @@
             
         </form>
       <%}else{%>
-          <p>Log in to write comment</p>
+        
+          <p><button class="submit_comment" onclick="goLoginPage()">Log in</button> to write comment</p>
       <%}%>
       <%for(let i=comment.length-1;i>=0;--i){%>
         <%const comm = comment[i]%>
@@ -304,12 +319,12 @@
             <%}%><br>
             <p class="comment_content"> <%= comm.content %> </p>
             
-              <div class="vote upvote commentvote" data-type="up" data-id="<%=comm._id%>" >
-                <img src="/res/img/svg/like.svg" class="filter-invert">
+              <div class="vote upvote commentvote  <%=(comm.myvote==='up'?'active':'')%>" data-type="up" data-id="<%=comm._id%>">
+                <img src="/res/img/svg/like.svg">
                 <a class="vote_count"><%= comm.upvotes %></a>
               </div>
-              <div class="vote downvote commentvote" data-type="down" data-id="<%=comm._id%>" >
-                <img src="/res/img/svg/like.svg" class="filter-invert">
+              <div class="vote downvote commentvote  <%=(comm.myvote==='down'?'active':'')%>" data-type="down" data-id="<%=comm._id%>" >
+                <img src="/res/img/svg/like.svg">
                 <a class="vote_count"><%= comm.downvotes %></a>
               </div>
           <%}%>
@@ -330,6 +345,9 @@
 <script>
   function golink(link){
   window.location.href=link
+}
+function goLoginPage(){
+  golink("/index.html?page=login&redirect="+window.location.pathname)
 }
 $("#postlistbtn").click(()=>{
     window.location.href="/board"
@@ -384,15 +402,17 @@ $(".delete_post").click(function(){
 $(".postvote").click(function(){
   let type=$(this).data('type')
   let id=$(this).data('id')
-  sendVote('post',type,id,$(this).children('.vote_count').eq(0))
+  sendVote('post',type,id,$(this))
 })
 $(".commentvote").click(function(){
   let type=$(this).data('type')
   let id=$(this).data('id')
-  sendVote('comment',type,id,$(this).children('.vote_count').eq(0))
+  sendVote('comment',type,id,$(this))
 })
 
-function sendVote(kind,type,id,vote_count){
+function sendVote(kind,type,id,elem){
+
+  let vote_count=$(elem).children('.vote_count').eq(0)
   $.ajax({
         method: 'POST',
         url: '/board/'+kind+'/vote',
@@ -401,7 +421,14 @@ function sendVote(kind,type,id,vote_count){
     .done((data, statusText, xhr)=>{
       let status = xhr.status;
       if(status==200){
-        $(vote_count).html(Number($(vote_count).html()) +  data.change)
+        if(data.change===0) alert(`You already ${type==="up"?"down":"up"}voted.`)
+        else $(vote_count).html(Number($(vote_count).html()) +  data.change)
+        if(data.change===1){
+          $(elem).addClass("active")
+        }
+        else if(data.change===-1){
+          $(elem).removeClass("active")
+        }
       }
     })
     .fail((data, statusText, xhr)=>{

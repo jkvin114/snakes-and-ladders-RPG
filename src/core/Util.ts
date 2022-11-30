@@ -150,12 +150,29 @@ class ActiveItem {
 	name: string
 	id: number
 	cooltime: number
-	resetVal: number
+	private resetVal: number
+	private data:Map<string,number>
 	constructor(name: string, id: number, resetVal: number) {
 		this.name = name
 		this.id = id
 		this.cooltime = 0
 		this.resetVal = resetVal
+		this.data=new Map<string,number>()
+	}
+	addDataValue(key:string,amt:number){
+		if(this.data.has(key))
+		{
+			this.data.set(key,this.data.get(key)+amt)
+		}
+		else{
+			this.data.set(key,amt)
+		}
+	}
+	getDataValue(key:string){
+		return this.data.get(key)
+	}
+	getTransferData():{id:number,cool:number,coolRatio:number}{
+		return { id: this.id, cool: this.cooltime, coolRatio: 1 - this.cooltime / this.resetVal }
 	}
 	cooldown() {
 		this.cooltime = decrement(this.cooltime)
@@ -403,7 +420,7 @@ class PriorityArray<T> extends Array {
 	}
 }
 class HPChangeData {
-	static readonly FLAG_SHIELD = 1
+	static readonly FLAG_BLOCKED_BY_SHIELD = 1
 	static readonly FLAG_NODMG_HIT = 2
 	static readonly FLAG_TICKDMG = 3
 	static readonly FLAG_PLAINDMG = 4
@@ -666,7 +683,8 @@ enum PlayerType {
 	SIM_AI = "sim_ai"
 }
 
-type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean }
+type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean,
+userClass:number }
 
 //added 2021.07.07
 

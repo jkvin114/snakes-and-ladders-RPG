@@ -107,12 +107,17 @@ class GameLoop {
 
 			if (p.type === PlayerType.PLAYER_CONNECED) {
 				game.addPlayer(team, p.champ, p.name)
+				console.log("player added")
 			} else if (p.type === PlayerType.AI) {
 				game.addAI(
 					team,
 					p.champ,
 					SETTINGS.characters[Number(p.champ)].name + "_Bot(" + String(game.totalnum + 1) + "P) "
 				)
+				console.log("computer added")
+			}
+			else{
+				console.log("empty player discarded")
 			}
 		}
 		game.onCreate()

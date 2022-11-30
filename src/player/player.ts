@@ -64,6 +64,7 @@ abstract class Player extends Entity {
 	AiAgent: AiAgent
 	turn: number
 	name: string
+	isLoggedIn:boolean
 	champ: number
 	champ_name: string
 	team: boolean
@@ -86,11 +87,11 @@ abstract class Player extends Entity {
 
 	//	HP: number
 	//	MaxHP: number
-	ability: PlayerAbility
-	statistics: PlayerStatistics
-	inven: PlayerInventory
-	effects: PlayerStatusEffects
-	mapHandler: PlayerMapHandler
+	readonly ability: PlayerAbility
+	readonly statistics: PlayerStatistics
+	readonly inven: PlayerInventory
+	readonly effects: PlayerStatusEffects
+	readonly mapHandler: PlayerMapHandler
 	shield: number
 	cooltime: number[]
 	protected duration: number[]
@@ -138,7 +139,7 @@ abstract class Player extends Entity {
 		this.lastpos = 0 //이전위치
 		this.dead = false
 		this.level = initialSetting.lvl //레벨, 1에서시작
-
+		this.isLoggedIn=false
 		this.UEID = this.game.turn2Id(this.turn)
 
 		this.kill = 0

@@ -97,7 +97,7 @@ function connectSocket(){
 		
 	})
 	
-	socket.on("server:update_playerlist", (playerlist, turnchange) => MATCH.updatePlayerList(playerlist, turnchange))
+	socket.on("server:update_playerlist", (playerlist) => MATCH.updatePlayerList(playerlist))
 	socket.on("server:update_champ",(turn,champ)=>{
 		console.log(turn,champ)
 		MATCH.ui.updateOneCharacter(turn,champ)
@@ -156,7 +156,7 @@ class ServerConnection{
 		socket.emit("user:guest_quit")
 	}
 
-	static requestNames=function() {
+	static requestNamesForTeamSelection=function() {
 		socket.emit("user:request_names")
 	}
 	static showTeamToGuest=function() {

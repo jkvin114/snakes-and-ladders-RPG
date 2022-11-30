@@ -15,7 +15,8 @@ export namespace ServerGameEventInterface {
 			champ: number
 			champ_name: string
 			recommendedItem: number[],
-			skillScale:object
+			skillScale:object,
+			isLoggedIn:boolean
 		}[]
 		isTeam: boolean
 		gameSettings: Object
@@ -185,6 +186,7 @@ export namespace ClientInputEventInterface {
 		diceControlItemFrequency: number
 		shuffleObstacle: boolean
 		winByDecision:boolean
+		shuffleTurns:boolean
 
 		killRecord: boolean
 		itemRecord: boolean

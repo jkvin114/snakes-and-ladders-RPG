@@ -1,12 +1,12 @@
 import express = require("express")
 import { auth, availabilityCheck, CommentSummary, COUNT_PER_PAGE, PostTitle, timestampToNumber } from "./helpers"
 
-const {  Article, Comment, CommentReply } = require("../../mongodb/BoardDBHandler")
+import {CommentSchema} from "./schemaController/Comment"
 
-
+import {PostSchema} from "./schemaController/Post"
+import { ReplySchema } from "./schemaController/Reply"
 const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
-
 
 router.get("/:username/posts", availabilityCheck,async (req, res) => {
 	try{
@@ -18,8 +18,8 @@ router.get("/:username/posts", availabilityCheck,async (req, res) => {
 	
 		let user = await User.findIdByUsername(req.params.username)
 	
-		let total=await Article.countDocuments({author:user._id});
-		let postlist: PostTitle[] = await Article.findTitleOfUserByRange(start, count, user._id)
+		let total=await PostSchema.countDocuments({author:user._id});
+		let postlist: PostTitle[] = await PostSchema.findTitleOfUserByRange(start, count, user._id)
 	
 		res.render("board", {
 			posts: postlist,
@@ -51,8 +51,8 @@ router.get("/:username/comments",availabilityCheck, async (req, res) => {
 	try {
 		let user = await User.findIdByUsername(req.params.username)
 
-		let comments = await Comment.findOfUserByRange(start, count, user._id,sortby)
-		let replys = await CommentReply.findOfUserByRange(start, count, user._id,sortby)
+		let comments = await CommentSchema.findOfUserByRange(start, count, user._id,sortby)
+		let replys = await ReplySchema.findOfUserByRange(start, count, user._id,sortby)
 
 		// console.log(comments)
 		// console.log(replys)
@@ -88,7 +88,7 @@ router.get("/:username/comments",availabilityCheck, async (req, res) => {
 					continue
 				}
 				let articleUrl = 0
-				let post = await Article.getUrlById(comments[c].article)
+				let post = await PostSchema.getUrlById(comments[c].article)
 				if (post != null) articleUrl = post.articleId
 
 				list.push({

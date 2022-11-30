@@ -6,6 +6,10 @@ export namespace SocketSession {
 		const req = socket.request as express.Request
 		return req.session.username
 	}
+	export function getUserClass(socket: Socket): number {
+		const req = socket.request as express.Request
+		return req.session.isLogined?1:0
+	}
 	export function setTurn(socket: Socket, turn: number) {
 		const req = socket.request as express.Request
 		req.session.turn = turn
@@ -34,7 +38,9 @@ export namespace SocketSession {
 		const req = socket.request as express.Request
 		delete req.session.turn 
 		delete req.session.roomname
-		delete req.session.username
+
+		// if(!req.session.isLogined)
+		// 	delete req.session.username
 		// console.log(req.session)
 	}
 }
