@@ -135,7 +135,7 @@
   }
   .subtext{
     font-size: 10px;
-    color: rgb(239, 161, 255);
+    color: #efa1ff;
     word-break: keep-all;
   }
   .subtext_container{
@@ -149,6 +149,11 @@
     width: 13px;
     vertical-align: middle;
   }
+  .title-username{
+    color: #d88bff;
+    text-decoration: underline;
+    cursor: pointer;    display: inline;
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -157,63 +162,52 @@
 </head>
 
 <body>
-  <div id="navbar" style="display:none;">
-    <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br>
-    <%if(!user) {%>
-      <%if(logined) {%>
-        <img src="/res/img/ui/write.png" id="writepostbtn" onclick="golink('/board/post/write')">
 
-        <img src="/res/img/svg/user.svg" id="mypagebtn" onclick="golink('/board/mypage')"><br>
-      <% }  %>
-    <% }else{%>
-      <img src="/res/img/svg/list.svg" class="filter-black" onclick="golink('/board/')"><br>
-      <div onclick="golink('/board/user/<%=user%>/comments')">
-        <a class='white-text'>Comments</a>
-      </div>
-      <%}%>
-  </div>
   <div id="navbar">
 
     <div id="navbar-btn-container">
       <div class="nav-section ">
-        <div class="navbtn " onclick="golink('/')">
-          <img src="/res/img/svg/home.svg" title="home">
-          <a>Home</a>
-        </div>
-        <div class="navbtn active" id="postbtn" onclick="golink('/board')">
-          <img class='postbtn' src="/res/img/svg/note.svg"  title="post board">
-          <a>Posts</a>
-        </div>
-        <div class="navbtn" onclick="golink('/statpage.html')">
-          <img id="statbtn" src="/res/img/svg/chart_white.svg" title="Statistics">
-          <a>Statistics</a>
-        </div>
+        <%if(displayType==="all") {%>
+          <div class="navbtn " onclick="golink('/')">
+            <img src="/res/img/svg/home.svg" title="home">
+            <a>Home</a>
+          </div>
+          <div class="navbtn active" id="postbtn" onclick="golink('/board')">
+            <img class='postbtn' src="/res/img/svg/note.svg"  title="post board">
+            <a>Posts</a>
+          </div>
+          <div class="navbtn" onclick="golink('/statpage.html')">
+            <img id="statbtn" src="/res/img/svg/chart_white.svg" title="Statistics">
+            <a>Statistics</a>
+          </div>
+        <%}%>
       </div>
       <div class="nav-section">
-        <!-- <button class=navbtn onclick="open_login()">Log in</button> -->
-        <!-- <button class='navbtn hidden' id="logoutbtn" onclick="logout()"></button> -->
-        <!-- 
 
-        <img class='navbtn postbtn hidden' id="postbtn" src="res/img/svg/note.svg"  title="post board">
-
-        <img class='navbtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/svg/book.svg"  title="Wiki"> -->
-
-      <!-- Snakes-and-Ladders RPG -->
-      <%if(!user) {%>
+      <%if(displayType==="all") {%>
         <%if(logined) {%>
           <img class="menubtn"  src="/res/img/ui/write.png" id="writepostbtn" onclick="golink('/board/post/write')">
   
-          <img class="menubtn"  src="/res/img/svg/user.svg" id="mypagebtn" onclick="golink('/board/mypage')">
+          <img class="menubtn"  src="/res/img/svg/user.svg" id="mypagebtn" onclick="golink('/user/')">
         <% }  %>
-      <% }else{%>
-        <img onclick="golink('/board/user/<%=user%>/comments')" src="/res/img/svg/comment.svg" class="filter-black menubtn" onclick="golink('/board/')">
+      <% }else if(displayType==="user"){%>
+        <img onclick="golink('/board/user/<%=user%>/comments')" src="/res/img/svg/comment.svg" class="filter-black menubtn">
 
         <img src="/res/img/svg/list.svg" class="filter-black menubtn" onclick="golink('/board/')">
+        <img class="menubtn"  src="/res/img/svg/home.svg" onclick="golink('/')">
+        <%}else if(displayType==="userlikes"){%>
+          <img onclick="golink('/board/user/<%=user%>/comments')" src="/res/img/svg/comment.svg" class="filter-black menubtn">
+  
+          <img src="/res/img/svg/list.svg" class="filter-black menubtn" onclick="golink('/board/')">
+          <img class="menubtn"  src="/res/img/svg/home.svg" onclick="golink('/')">
+          <%}else if(displayType==="bookmarks"){%>
+            <%if(logined) {%>      
+              <img class="menubtn"  src="/res/img/svg/user.svg" id="mypagebtn" onclick="golink('/user/')">
+            <% } %>
+            <img class="menubtn"  src="/res/img/svg/home.svg" onclick="golink('/')">
+            <%}%>
+            
 
-        <!-- <div onclick="golink('/board/user/<%=user%>/comments')">
-          <a class='white-text'>Comments</a>
-        </div> -->
-        <%}%>
         <!-- <img class="menubtn" id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login">
         <img class='menubtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()" title="Logout"> -->
         <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
@@ -222,10 +216,14 @@
   </div>
 
   <div>
-    <%if(!user) {%>
+    <%if(displayType==="all") {%>
       <h1>All Posts</h1>
-      <% }else{%>
-        <h1><%=user%>`s Posts</h1>
+      <% }else if(displayType==="user"){%>
+        <h1><a class="title-username" onclick="golink('/user/<%=user%>')"><%=user%></a>`s Posts</h1>
+      <% }else if(displayType==="userlikes"){%>
+        <h1><a class="title-username"  onclick="golink('/user/<%=user%>')"><%=user%></a>`s likes</h1>
+      <% }else if(displayType==="bookmarks"){%>
+        <h1><%=user%>`s bookmarks</h1>
       <% }%>
   </div>
      
@@ -234,7 +232,6 @@
           <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
             <%if(posts[i].imagedir!=="") {%>
               <div class="thumbnail-img-container">
-
                 <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
               </div>
             <% } else{ %><div></div>
@@ -264,12 +261,12 @@
           </div>
       <% } %> 
       <%if(start>0){%>
-        <button id="prevbtn" class="pagebtn" value='/board/<%=(!user?``:`user/${user}/posts`)+`?start=${start-count}`%>'>
+        <button id="prevbtn" class="pagebtn"data-username="<%= user %>" data-displaytype="<%= displayType %>" data-params="<%= `?start=${start-count}` %>">
           ❮ Prev</button>
       <% }%>
 
       <%if(!isEnd){ %> 
-        <button id="nextbtn" class="pagebtn" value='/board/<%=(!user?``:`user/${user}/posts`)+`?start=${start+count}`%>'>
+        <button id="nextbtn" class="pagebtn" data-username="<%= user %>"data-displaytype="<%= displayType %>"  data-params="<%= `?start=${start+count}` %>">
           Next ❯</button>
       <% } %> 
 
@@ -281,7 +278,25 @@ function golink(link){
   window.location.href=link
 }
 $(".pagebtn").click(function(){
-  window.location.href=$(this).val()
+  let type=$(this).data("displaytype")
+  let params=$(this).data("params")
+  let username=$(this).data("username")
+  switch(type){
+    case "all":
+      window.location.href="/board"+params
+    break
+    case "user":
+      window.location.href=`/board/user/${username}/posts`+params
+    break
+    case "userlikes":
+      window.location.href=`/board/user/${username}/likes`+params
+    break
+    case "bookmarks":
+      window.location.href=`/board/user/${username}/bookmarks`+params
+    break
+  }
+  
+  
 })
 </script>
 </html>

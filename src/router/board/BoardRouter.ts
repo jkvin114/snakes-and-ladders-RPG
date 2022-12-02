@@ -2,12 +2,14 @@ import express = require("express")
 // import { R } from "../RoomStorage"
 const router = express.Router()
 import { PostSchema } from "./schemaController/Post"
-import { upload } from "../../mongodb/mutler"
+import { ImageUploader } from "../../mongodb/mutler"
 import { auth, availabilityCheck, COUNT_PER_PAGE, PostTitle } from "./helpers"
+import { UserBoardDataSchema } from "./schemaController/UserData"
+const  {User}  = require("../../mongodb/DBHandler")
 
 // const { User } = require("../mongodb/DBHandler")
 
-router.post("/uploadimg",availabilityCheck, auth, upload.single("img"), async (req, res) => {
+router.post("/uploadimg",availabilityCheck, auth, ImageUploader.upload.single("img"), async (req, res) => {
 	const imgfile = req.file
 	console.log(imgfile)
 	// console.log(req.body.content)
@@ -31,6 +33,7 @@ router.get("/", availabilityCheck,async (req, res) => {
 	PostSchema.findSummaryByRange(start, count)
 		.then((data: PostTitle[]) => {
 			res.render("board", {
+				displayType:"all",
 				posts: data,
 				logined: req.session.isLogined,
 				user: null,
@@ -44,6 +47,19 @@ router.get("/", availabilityCheck,async (req, res) => {
 router.get("/mypage", availabilityCheck,auth, (req, res) => {
 	res.redirect("/board/user/" + req.session.username + "/posts")
 })
+router.post("/bookmark", auth,async  (req, res) => {
+	const user = await User.getBoardData(req.session.userId)
+	const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
+	if(bookmarks.bookmarks.some((id:any)=>String(id)===req.body.id)){
+		await UserBoardDataSchema.removeBookmark(user.boardData,req.body.id)
+		res.status(200).json({ change: -1 })
+	}
+	else{
+		await UserBoardDataSchema.addBookmark(user.boardData,req.body.id)
+		res.status(200).json({ change: 1 })
+	}
+})
+
 router.use("/user", require("./BoardUserRouter"))
 router.use("/comment", require("./BoardCommentRouter"))
 router.use("/reply", require("./BoardReplyRouter"))

@@ -1,10 +1,12 @@
 import express = require("express")
+import { UserBoardData } from "../../mongodb/BoardDBSchemas"
 import { auth, availabilityCheck, CommentSummary, COUNT_PER_PAGE, PostTitle, timestampToNumber } from "./helpers"
 
 import {CommentSchema} from "./schemaController/Comment"
 
 import {PostSchema} from "./schemaController/Post"
 import { ReplySchema } from "./schemaController/Reply"
+import { UserBoardDataSchema } from "./schemaController/UserData"
 const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
 
@@ -22,6 +24,7 @@ router.get("/:username/posts", availabilityCheck,async (req, res) => {
 		let postlist: PostTitle[] = await PostSchema.findTitleOfUserByRange(start, count, user._id)
 	
 		res.render("board", {
+			displayType:"user",
 			posts: postlist,
 			logined: req.session.isLogined,
 			user: req.params.username,
@@ -36,6 +39,79 @@ router.get("/:username/posts", availabilityCheck,async (req, res) => {
 		return
 	}
 })
+router.get("/:username/likes", availabilityCheck,async (req, res) => {
+	try{
+		let start = 0
+		let count = COUNT_PER_PAGE
+		if (req.query.start) {
+			start = Math.max(0,Number(req.query.start))
+		}
+	
+		let user = await User.findOneByUsername(req.params.username)
+		if(!user){
+			res.status(400).redirect("/notfound")
+        	return
+		}
+		let likes=await UserBoardDataSchema.getLikedPosts(user.boardData)
+		let total=likes.upvotedArticles.length
+		likes=likes.upvotedArticles.slice(start,start+count)
+
+		let postlist: PostTitle[] = await PostSchema.findMultipleByIdList(likes)
+	
+		res.render("board", {
+			displayType:"userlikes",
+			posts: postlist,
+			logined: req.session.isLogined,
+			user: req.params.username,
+			start:start,
+			count:count,
+			isEnd:(start+count >= total)
+		})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end("")
+		return
+	}
+})
+
+router.get("/:username/bookmarks", availabilityCheck,async (req, res) => {
+	try{
+		let start = 0
+		let count = COUNT_PER_PAGE
+		if (req.query.start) {
+			start = Math.max(0,Number(req.query.start))
+		}
+	
+		let user = await User.findOneByUsername(req.params.username)
+		if(!user){
+			res.status(400).redirect("/notfound")
+        	return
+		}
+		let bookmarks=await UserBoardDataSchema.getBookmarks(user.boardData)
+		let total=bookmarks.bookmarks.length
+
+		bookmarks=bookmarks.bookmarks.slice(start,start+count)
+
+		let postlist: PostTitle[] = await PostSchema.findMultipleByIdList(bookmarks)
+	
+		res.render("board", {
+			displayType:"bookmarks",
+			posts: postlist,
+			logined: req.session.isLogined,
+			user: req.params.username,
+			start:start,
+			count:count,
+			isEnd:(start+count >= total)
+		})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end("")
+		return
+	}
+})
+
 router.get("/:username/comments",availabilityCheck, async (req, res) => {
 	let start = 0
 	let count = COUNT_PER_PAGE

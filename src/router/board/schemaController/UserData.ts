@@ -44,14 +44,18 @@ export namespace UserBoardDataSchema{
         return UserBoardData.findByIdAndUpdate(id, { $pull: { replys: reply } })
     }
 
-    export const addBookmark = function (id: mongoose.Types.ObjectId, bm: mongoose.Types.ObjectId) {
+    export const addBookmark = function (id: mongoose.Types.ObjectId, bm: string) {
         return UserBoardData.findByIdAndUpdate(id, { $addToSet: { bookmarks: bm } })
     }
-    export const removeBookmark = function (id: mongoose.Types.ObjectId, bm: mongoose.Types.ObjectId) {
+    export const removeBookmark = function (id: mongoose.Types.ObjectId, bm: string) {
         return UserBoardData.findByIdAndUpdate(id, { $pull: { bookmarks: bm } })
     }
-
-    
+    export const getBookmarks = function (id: mongoose.Types.ObjectId) {
+        return UserBoardData.findById(id).select("bookmarks")
+    }
+    export const getLikedPosts = function (id: mongoose.Types.ObjectId) {
+        return UserBoardData.findById(id).select("upvotedArticles")
+    }
     export const addUpvoteRecord = function (id: mongoose.Types.ObjectId, contentId: mongoose.Types.ObjectId) {
         return UserBoardData.findByIdAndUpdate(id, { $addToSet: { upvotedContents: contentId } })
     }

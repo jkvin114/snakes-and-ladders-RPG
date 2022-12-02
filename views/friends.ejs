@@ -1,0 +1,332 @@
+<html>
+  <script src="/lib/jquery-3.6.0.min.js"></script>
+
+<style>
+  @font-face {
+    font-family: "nanumB";
+    src: url("/res/font/NanumSquareB.ttf");
+  }
+  body{     
+   background-color: rgb(36, 36, 36);
+   color:white;
+
+   margin: 0;
+    margin-bottom: 20px;
+  font-family: 'nanumB';
+  text-align:center;
+
+  }
+  body.scroll_lock{
+    overflow: hidden;
+  }
+  a,p{
+    font-family: 'nanumB';
+  }
+  .filter-invert{
+    filter: invert();
+  }
+  
+  #navbar{
+    /* position:fixed; */
+    display: flex;
+    /* background: none; */
+    justify-content:flex-start;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    height: 40px;
+    background-color: rgb(36, 36, 36);
+    position: sticky;
+    top: 0;
+    padding: 5px;
+    border-bottom: 1px solid rgb(95, 95, 95);
+    z-index: 3;
+  }
+  #navbar img, #navbar > div{
+    color:white;
+    /* background-color: #7E00BF; */
+    background: #505060;
+    line-height: 30px;
+
+    cursor:pointer;
+    text-align:center;
+    font-size: 20px;
+    border:none;
+    vertical-align: middle;
+    border-radius: 20%;
+    padding: 5px;
+    margin-right: 5px;
+    height: 30px;
+  }
+  #navbar img:hover,#navbar > div:hover{
+    background-color: #7a7a92;
+  }
+  #navbar img.delete_post{
+    /* background-color: #ff5656; */
+  }
+  .postimg{
+    max-width: 40%;
+    max-height: 200px;
+  }
+  #post_container{
+    width: min(95%,900px);
+    display: inline-block;
+    background-color: #414141;
+    padding: 10px;
+    text-align: start;
+  }
+  .title_container{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* text-align: start; */
+  }
+  .title{
+    font-size: 30px;
+  }
+  .info_container{
+    text-align: start;
+  }
+  .info{
+    font-size: 10px;
+    color: #b2b2b2;
+  }
+  .content{
+    margin-bottom:100px ;
+  }
+  .profileimg-container{
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background-color: #7E00BF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  .profileimg-container > a{
+    user-select: none;
+    color: #ffffff;
+    font-size: 50px;
+    /* text-align: center; */
+  }
+  .profileimg-container-small{
+    width: 50px;
+    height: 50px;
+  }
+  .profileimg-container-small > a{
+    font-size: 25px;
+  }
+  .profileimg{
+    object-fit: cover;
+
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+
+  }
+  .profileimg-small{
+    object-fit: cover;
+
+    width: 50px;
+    height:50px;
+  }
+  .userinfo
+  {
+    margin-left: 60px;
+    text-align: center;
+    font-size: 15px;
+  }
+  .userinfo-small
+  {
+    margin-left: 30px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .username{
+    font-size: 20px;
+
+  }
+  .email{
+    color: #cbcbeb;
+  }
+  .friend{
+    display: flex;
+    background-color: #505060;
+    color: #ebebfd;
+    font-size: 12px;
+    text-align: left;
+    margin: 20px;
+    padding: 10px;
+    cursor: pointer;
+    /* border: 1px solid beige; */
+    border-radius: 4px;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .linkbtn:hover{
+    text-decoration: underline;
+  }
+  #form{
+    display: none;
+  } 
+  #shadow{
+    z-index: 4;
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0,0,0,0.8);
+  }
+  #settingpage{
+    z-index: 5;
+    display: none;
+    position: absolute;
+    
+    top:5%;
+    width: 80%;
+    max-width: 700px;
+    height: 90%;
+    background-color: #414141;
+    text-align: center;
+    left: 50%;
+    transform: translate(-50%,0);
+    overflow: auto;
+  }
+  #settingpage h4{
+    font-size: 25px;
+  }
+  .setting-section{
+    background-color: #2b3741;
+    margin: 30px;
+    padding: 10px;
+  }
+  .setting-section h5{
+    text-align: left;
+    font-size: 20px;
+    margin: 0;
+  }
+  #close-setting{
+    position: absolute;
+    top:0;
+    right: 0;
+    font-size: 40px;
+    background:none;
+  }
+  .button{
+    background-color: #505060;
+    color: #ebebfd;
+    border: none;
+    font-size: 15px;
+    padding: 6px;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .button:hover{
+    background-color: #616175;
+  }
+  .hidden{
+    display: none;
+  }
+  label{
+    display: inline-block;
+  }
+  form > input{
+  font-size:15px;
+}
+input{
+    border: none;
+    background-color: #2d2d2d;
+    color: beige;
+    font-size: 15px;
+    border-radius:10px;
+    padding: 5px;
+    width: 300px;
+}
+.input_alert{
+  font-size: 12px;
+  color:rgb(255, 78, 78)
+}
+</style>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+
+  <meta charset="utf-8" >
+</head>
+
+<body>
+ 
+  <div id="navbar">
+    <!-- <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br> -->
+    <img src="/res/img/svg/home.svg" id="homebtn">
+
+  </div>
+ <div id="post_container">
+
+
+  <div class="title_container">
+    <div class="profile">
+        <div class="profileimg-container" onclick="golink('/user/<%=username%>')">
+            <%if(!profile || profile==="") {%>
+                <a><%= username.charAt(0).toUpperCase() %></a>
+                <% } else{ %>
+                <img class="profileimg" src="/uploads/profile/<%= profile %>"> 
+             <%}%>
+        </div>
+    </div>
+    <div class="userinfo">
+        <%if(displayType==="all"){%>
+            <div class="username">All users</div>
+        <%}else if(displayType==="friends"){%>
+            <div class="username"><%= username %>`s friend list </div>
+        <%}else if(displayType==="follows"){%>
+            <div class="username"><%= username %>`s follows </div>
+        <%}%>
+    </div>
+    
+  </div>
+      
+  <hr>
+      
+     <div class="content">
+        <% for(let i=0;i<friends.length;++i){%>
+            <div class="friend" onclick="golink(`/user/<%= friends[i].username %>`)">
+                <div class="profile">
+                    <div class="profileimg-container profileimg-container-small">
+                        <%if(!friends[i].profileImgDir || friends[i].profileImgDir==="") {%>
+                            <a><%= friends[i].username.charAt(0).toUpperCase() %></a>
+                            <% } else{ %>
+                            <img class="profileimg profileimg-small" src="/uploads/profile/<%= friends[i].profileImgDir %>"> 
+                         <%}%>
+                    </div>
+                </div>
+                <div class="userinfo-small">
+                    <div class="username"><%= friends[i].username %></div>
+                </div>
+            </div>
+
+        <%}%>
+        
+     </div>
+ </div>
+   
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+
+<script>
+  function golink(link){
+  window.location.href=link
+}
+function goLoginPage(){
+  golink("/index.html?page=login&redirect="+window.location.pathname)
+}
+
+$("#homebtn").click(()=>{
+    window.location.href="/index.html"
+})
+
+
+</script>
+</html>

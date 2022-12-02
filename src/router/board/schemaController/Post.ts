@@ -19,6 +19,9 @@ export namespace PostSchema{
     export const findOneByArticleId = function (id: number) {
         return Article.findOne({ articleId: id })
     }
+    export const findMultipleByIdList = function (id: mongoose.Types.ObjectId[]) {
+        return Article.find({ _id:{$in:id}}).select("createdAt articleId title views upvote downvote imagedir commentCount authorName")
+    }
     export const findOneByArticleIdWithComment = function (id: number) {
         return Article.findOne({ articleId: id }).populate("comments")
     }

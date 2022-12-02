@@ -106,7 +106,9 @@ io.on("connection", function (socket: Socket) {
 app.get("/connection_check", function (req, res) {
 	res.end()
 })
-
+app.get("/notfound", function (req, res) {
+	res.render("notfound")
+})
 // app.get("/mode_selection", function (req, res, next) {})
 
 // app.get("/check_players", function (req, res) {})

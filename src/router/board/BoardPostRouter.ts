@@ -1,6 +1,6 @@
 import express = require("express")
 import { ajaxauth, auth, availabilityCheck, voteController ,ContentType, checkVoteRecord} from "./helpers"
-const { upload } = require("../../mongodb/mutler")
+import { ImageUploader } from "../../mongodb/mutler"
 import {UserBoardDataSchema} from "./schemaController/UserData"
 import {PostSchema} from "./schemaController/Post"
 import {CommentSchema} from "./schemaController/Comment"
@@ -24,7 +24,7 @@ router.get("/write", auth, async (req, res) => {
 	res.render("writepost", { url: "", title: "", content: "", imagedir: "", isEdit: false })
 })
 
-router.post("/write", auth, upload.single("img"), async (req, res) => {
+router.post("/write", auth, ImageUploader.upload.single("img"), async (req, res) => {
 	const imgfile = req.file
 	let postUrl = Date.now()
 	let title = req.body.title
@@ -74,7 +74,7 @@ router.get("/edit/:postUrl", auth, async (req, res) => {
 	}
 	res.render("writepost", { url: url, title: post.title, content: post.content, imagedir: post.imagedir, isEdit: true })
 })
-router.post("/edit", auth, upload.single("img"), async (req, res) => {
+router.post("/edit", auth, ImageUploader.upload.single("img"), async (req, res) => {
 	const url = req.body.url
 	let post = await PostSchema.findOneByArticleId(url)
 	if (post.author.toString() !== req.session.userId) {
@@ -266,18 +266,26 @@ router.post("/comment/reply", auth, async (req, res) => {
 
 router.get("/:postUrl",availabilityCheck, async (req, res) => {
 	try {
-		let post = await PostSchema.findOneByArticleIdWithComment(Number(req.params.postUrl))
 
+		let post = await PostSchema.findOneByArticleIdWithComment(Number(req.params.postUrl))
+		if (!post) {
+			res.status(404).redirect("/notfound")
+			return
+		}
 		let voteRecords=null
+		let isBookmarked=false
 		if(req.session && req.session.isLogined){
 			const user = await User.getBoardData(req.session.userId)
 			voteRecords = await UserBoardDataSchema.getVoteRecords(user.boardData)
+			const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
+			//console.log(bookmarks)
+			if(bookmarks.bookmarks.some((id:mongoose.Types.ObjectId)=>String(id)===String(post._id))){
+				isBookmarked=true
+			}
 		}
 		
 
-		if (!post) {
-			res.redirect("/")
-		}
+		
 
 		await PostSchema.incrementView(post.articleId)
 
@@ -311,7 +319,8 @@ router.get("/:postUrl",availabilityCheck, async (req, res) => {
 			upvotes: post.upvote,
 			downvotes: post.downvote,
 			createdAt: post.createdAt,
-			myvote:checkVoteRecord(post._id,voteRecords)
+			myvote:checkVoteRecord(post._id,voteRecords),
+			isBookmarked:isBookmarked
 		})
 	} catch (e) {
 		console.error(e)

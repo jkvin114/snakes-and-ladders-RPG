@@ -34,6 +34,11 @@ const articleSchema = new mongoose.Schema(
 				ref: "User"
 			}
 		],
+		visilibity: {
+			type: String,
+			enum : ['PUBLIC','FRIENDS','LINK_ONLY','PRIVATE'],
+			default: 'PUBLIC'
+		},
 		views: Number,
 		imagedir: String,
 		upvote: Number,
@@ -80,6 +85,11 @@ const commentSchema = new mongoose.Schema(
 				ref: "User"
 			}
 		],
+		visilibity: {
+			type: String,
+			enum : ['PUBLIC','SECRET'],
+			default: 'PUBLIC'
+		},
 		imagedir: String,
 		upvote: Number,
 		downvote: Number,
@@ -122,7 +132,11 @@ const commentReplySchema = new mongoose.Schema(
 				type: mongoose.Types.ObjectId,
 				ref: "User"
 			}
-		],
+		],visilibity: {
+			type: String,
+			enum : ['PUBLIC','SECRET'],
+			default: 'PUBLIC'
+		},
 		imagedir: String
 	},
 	{ timestamps: true }

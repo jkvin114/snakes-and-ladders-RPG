@@ -1,0 +1,542 @@
+<html>
+  <script src="/lib/jquery-3.6.0.min.js"></script>
+
+<style>
+  @font-face {
+    font-family: "nanumB";
+    src: url("/res/font/NanumSquareB.ttf");
+  }
+  body{     
+   background-color: rgb(36, 36, 36);
+   color:white;
+
+   margin: 0;
+    margin-bottom: 20px;
+  font-family: 'nanumB';
+  text-align:center;
+
+  }
+  body.scroll_lock{
+    overflow: hidden;
+  }
+  a,p{
+    font-family: 'nanumB';
+  }
+  .filter-invert{
+    filter: invert();
+  }
+  
+  #navbar{
+    /* position:fixed; */
+    display: flex;
+    /* background: none; */
+    justify-content:flex-start;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    height: 40px;
+    background-color: rgb(36, 36, 36);
+    position: sticky;
+    top: 0;
+    padding: 5px;
+    border-bottom: 1px solid rgb(95, 95, 95);
+    z-index: 3;
+  }
+  #navbar img, #navbar > div{
+    color:white;
+    /* background-color: #7E00BF; */
+    background: #505060;
+    line-height: 30px;
+
+    cursor:pointer;
+    text-align:center;
+    font-size: 20px;
+    border:none;
+    vertical-align: middle;
+    border-radius: 20%;
+    padding: 5px;
+    margin-right: 5px;
+    height: 30px;
+  }
+  #navbar img:hover,#navbar > div:hover{
+    background-color: #7a7a92;
+  }
+  #navbar img.delete_post{
+    /* background-color: #ff5656; */
+  }
+  .postimg{
+    max-width: 40%;
+    max-height: 200px;
+  }
+  #post_container{
+    width: min(95%,900px);
+    display: inline-block;
+    background-color: #414141;
+    padding: 10px;
+    text-align: start;
+  }
+  .title_container{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* text-align: start; */
+  }
+  .title{
+    font-size: 30px;
+  }
+  .info_container{
+    text-align: start;
+  }
+  .info{
+    font-size: 10px;
+    color: #b2b2b2;
+  }
+  .content{
+    margin-bottom:100px ;
+  }
+  .profileimg-container{
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background-color: #7E00BF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .profileimg-container > a{
+    user-select: none;
+    color: #ffffff;
+    font-size: 50px;
+    /* text-align: center; */
+  }
+  .profileimg{
+    object-fit: cover;
+
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+
+  }
+  .userinfo
+  {
+    margin-left: 60px;
+    text-align: center;
+    font-size: 15px;
+  }
+  .username{
+    font-size: 20px;
+
+  }
+  .email{
+    color: #cbcbeb;
+  }
+  .linkbtn{
+    display: block;
+    background-color: #505060;
+    color: #ebebfd;
+    font-size: 20px;
+    text-align: left;
+    margin: 20px;
+    padding: 10px;
+    cursor: pointer;
+    /* border: 1px solid beige; */
+    border-radius: 4px;
+  }
+  .linkbtn:hover{
+    text-decoration: underline;
+  }
+  #form{
+    display: none;
+  } 
+  #shadow{
+    z-index: 4;
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0,0,0,0.8);
+  }
+  #settingpage{
+    z-index: 5;
+    display: none;
+    position: absolute;
+    
+    top:5%;
+    width: 80%;
+    max-width: 700px;
+    height: 90%;
+    background-color: #414141;
+    text-align: center;
+    left: 50%;
+    transform: translate(-50%,0);
+    overflow: auto;
+  }
+  #settingpage h4{
+    font-size: 25px;
+  }
+  .setting-section{
+    background-color: #2b3741;
+    margin: 30px;
+    padding: 10px;
+  }
+  .setting-section h5{
+    text-align: left;
+    font-size: 20px;
+    margin: 0;
+  }
+  #close-setting{
+    position: absolute;
+    top:0;
+    right: 0;
+    font-size: 40px;
+    background:none;
+  }
+  .button{
+    background-color: #505060;
+    color: #ebebfd;
+    border: none;
+    font-size: 15px;
+    padding: 6px;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: "nanumB";
+  }
+  .button:hover{
+    background-color: #616175;
+  }
+  .hidden{
+    display: none;
+  }
+  label{
+    display: inline-block;
+  }
+  form > input{
+  font-size:15px;
+}
+input{
+    border: none;
+    background-color: #2d2d2d;
+    color: beige;
+    font-size: 15px;
+    border-radius:10px;
+    padding: 5px;
+    width: 300px;
+}
+.input_alert{
+  font-size: 12px;
+  color:rgb(255, 78, 78)
+}
+#friend-btn-container,#follow-btn-container{
+  display: inline;
+}
+.count{
+  font-size: 15px;
+  color: rgb(134, 176, 255);
+}
+</style>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+
+  <meta charset="utf-8" >
+</head>
+
+<body>
+ <a class="hidden" id="storage" data-username="<%= username %>"></a>
+  <div id="navbar">
+    <!-- <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br> -->
+    <img src="/res/img/svg/home.svg" id="homebtn">
+    <%if(isme) {%>
+        <img onclick="setting()" src="/res/img/ui/setting.png" style="background-color: #b6b6d2;">
+        <!-- <img src="/res/img/svg/out.svg" onclick="logout()" title="Logout"> -->
+    <% }  %>
+  </div>
+ <div id="post_container">
+
+
+  <div class="title_container">
+    <div class="profile">
+        <div class="profileimg-container">
+            <%if(!profile || profile==="") {%>
+                <a><%= username.charAt(0).toUpperCase() %></a>
+                <% } else{ %>
+                <img class="profileimg" src="/uploads/profile/<%= profile %>"> 
+             <%}%>
+        </div>
+    </div>
+    <div class="userinfo">
+        <div class="username"><%= username %> </div>
+        <div class="email">Email:<%= email %> </div>
+        <%if(isme) {%>
+          <div style="text-decoration:underline;cursor:pointer;" onclick="logout()">Logout</div>
+      <% }  %>
+    </div>
+    
+  </div>
+    <div style="text-align:center ;">
+      <%if(!isme && isLogined) {%>
+      <hr>
+      <div id="friend-btn-container">
+        <%if(isFriend) {%>
+          <b class="button" style="color:rgb(135, 255, 126);">
+            <img src="/res/img/ui/confirm.png" style="width:15px ;vertical-align: middle;">Friend
+          </b>
+        <%}else{%>
+          <button class="button" id="friend-request-btn" onclick="friendRequest()">Friend request</button>
+        <%}%>
+      </div>
+      <div id="follow-btn-container">
+        <%if(isFollowing) {%>
+          <button class="button" id="unfollow-btn"  onclick="unfollow()">Unfollow</button>
+          <%}else{%>
+            <button class="button" id="follow-btn" onclick="follow()" style="background: #7E00BF;">Follow</button>
+          <%}%>
+       
+      </div>
+      <% }  %>
+
+      
+    </div>
+  <hr>
+      
+     <div class="content">
+        <%if(isme) {%>
+            <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/bookmarks`)">Bookmarks <a class="count">(<%= counts[2] %>)</a></div>
+            <div class="linkbtn" onclick="golink(`/user/<%= username %>/follow`)">Following <a class="count">(<%= counts[1] %>)</a></div>
+        <% }  %>
+        <div class="linkbtn" onclick="golink(`/user/<%= username %>/friend`)">Friends <a class="count">(<%= counts[0] %>)</a></div>
+
+        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/posts`)">Posts <a class="count">(<%= counts[3] %>)</a></div>
+        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/comments`)">Comments <a class="count">(<%= counts[4] %>)</a></div>
+        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/likes`)">Liked Posts <a class="count">(<%= counts[5] %>)</a></div>
+
+        
+     </div>
+     
+     <%if(isme){%>
+        
+      <div id="shadow"></div>
+
+      <div id="settingpage">
+        <button class="button" id="close-setting" onclick="closeSetting()">&times;</button>
+        <h4>User Settings</h4>
+        <div class="setting-section">
+          <h5>Profile Image</h5>
+          <hr>
+          <form id="form" action="/user/profileimg" method="post" enctype="multipart/form-data">
+            <div class="filebox">
+              <input type="file" id="file" class="uploadimg" accept="image/*" name="img">
+             </div>
+             <!-- <input type="submit"> -->
+          </form>
+          
+          <label for="file" id="filebtn-container">
+              <div id="setting-profileimg" class="profileimg-container" style="cursor: pointer;">
+                <%if(!profile || profile==="") {%>
+                    <a><%= username.charAt(0).toUpperCase() %></a>
+                    <% } else{ %>
+                    <img class="profileimg" src="/uploads/profile/<%= profile %>"> 
+                <%}%>
+            </div>
+          </label>
+          <br>
+          <button id="submit-img"  class="button hidden" >Confirm change</button>
+            <%if(profile && profile!=="") {%>
+            <button id="remove-profile" class="button" >Remove profile image</button>
+            <% }%>
+
+        </div>
+        <div class="setting-section">
+          <h5>Security</h5>
+          <hr>
+          <form id="password-change-form" method="patch" action="/user/password">
+            <!-- <input name="username" type="hidden" value="<%= username %> "> -->
+
+            <input type='password' name="originalpw" placeholder="previous password">
+            <br><a class="input_alert login_old_pw"></a><br>
+            <input type='password' name="newpw" placeholder="new password"><br>
+            <a class="input_alert login_pw"></a><br>
+            <input type='password' name="newpw2" placeholder="new password check"><br>
+
+            <button class='button' type="submit" >Change Password</button>
+    
+          </form>
+        </div>
+      </div>
+
+          <script>
+            $("#password-change-form").submit(function(e){
+              e.preventDefault()
+
+
+             // let username = $( this ).find( "input[name='username']" ).val()
+              let password = $( this ).find( "input[name='originalpw']" ).val()
+              let newpw = $( this ).find( "input[name='newpw']" ).val()
+              let newpw2 = $( this ).find( "input[name='newpw2']" ).val()
+              if(newpw!==newpw2){
+                $(".input_alert.login_pw").html("Password does not match")
+                return
+              }
+              if(newpw==="" || password===""){
+                alert("Empty")
+                return
+              }
+              $(".input_alert").html("")
+
+              axios.patch('/user/password',{originalpw:password,newpw:newpw})
+              .then(function(res){
+                console.log(res)
+                    let status = res.status;  
+                    if(res.data==='password not match'){
+                      $(".input_alert.login_old_pw").html("Wrong password")
+                    }
+                    else if(res.data==="pw error"){
+                      $(".input_alert.login_pw").html("Password should be longer than 3 characters containing both alphabet and number")
+                    }
+                    else if(status===200){
+                      alert("changed password")
+                      window.location.reload()
+                    }
+                  })
+                  .catch(function(e){
+                    alert("server error"+e)
+                  })
+            })
+
+            function setting(){
+              $("#settingpage").show()
+              $("#shadow").show()
+              $("body").addClass("scroll_lock")
+              const inputImage = document.getElementById("file")
+              inputImage.addEventListener("change", e => {
+                  let input=e.target
+                  if(input.files && input.files[0]) {
+                      // 이미지 파일인지 검사 (생략)
+                      // FileReader 인스턴스 생성
+                      const reader = new FileReader()
+                      // 이미지가 로드가 된 경우
+                      reader.onload = e => {
+                          // $("#imagearea").html("<img class='postimg' src='"+e.target.result+"'><hr>")
+                          $("#setting-profileimg").html(` <img class="profileimg" src=${e.target.result}> `)
+                          $("#submit-img").show()
+                          $("#remove-profile").hide()
+                      }
+                      // reader가 이미지 읽도록 하기
+                      reader.readAsDataURL(input.files[0])
+                  }
+              })
+            }
+            function closeSetting(){
+              $("#settingpage").hide()
+              $("#shadow").hide()
+              $("body").removeClass("scroll_lock")
+            }
+            $("#submit-img").click(()=>{
+              console.log("d")
+                document.getElementById("form").submit()
+            })
+            
+            $("#remove-profile").click(()=>{
+                $.ajax({
+                    method: 'POST',
+                    url: '/user/remove_profileimg'
+                })
+                .done(function(data, statusText, xhr){
+                let status = xhr.status;
+                    window.location.reload()
+                
+                })
+                .fail(function(data, statusText, xhr){
+                    alert("error")
+                })
+            })
+
+            function logout(){
+              if(confirm("Do you want to log out?")){
+                localStorage.removeItem("username")
+                $.ajax({
+                    method: 'POST',
+                    url: '/user/logout'
+                }).done(()=>{
+                    alert("Logged out")
+                    window.location.href="/index.html"
+                })
+              }
+            }
+          </script>
+    <% }%>
+ </div>
+   
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+
+<script>
+
+
+function follow(){
+  let username=$("#storage").data("username")
+  axios.post('/user/relation/follow',{username:username})
+  .then((res)=>{
+        let status = res.status; 
+        if(status===200){
+          $("#follow-btn-container").html(`
+          <button class="button" id="unfollow-btn"  onclick="unfollow()">Unfollow</button>`)
+          // alert("became friend!")
+        }
+      })
+      .catch((e)=>{
+        if(e.status===401) alert("login required")
+        else
+          alert("server error"+e)
+      })
+}
+function unfollow(){
+  let username=$("#storage").data("username")
+  axios.post('/user/relation/unfollow',{username:username})
+  .then((res)=>{
+        let status = res.status; 
+        if(status===200){
+          $("#follow-btn-container").html(`
+          <button class="button" id="follow-btn" onclick="follow()" style="background: #7E00BF;">Follow</button>`)
+        }
+      })
+      .catch((e)=>{
+        if(e.status===401) alert("login required")
+        else
+          alert("server error"+e)
+      })
+}
+function friendRequest(){
+  let username=$("#storage").data("username")
+  axios.post('/user/relation/friend_request',{username:username})
+  .then((res)=>{
+        let status = res.status; 
+        if(status===200){
+          $("#friend-btn-container").html(`
+          <b class="button" style="color:rgb(135, 255, 126);">
+            <img src="/res/img/ui/confirm.png" style="width:15px ;vertical-align: middle;">Friend
+          </b>`)
+          // alert("became friend!")
+        }
+      })
+      .catch((e)=>{
+        if(e.status===401) alert("login required")
+        else
+          alert("server error"+e)
+      })
+}
+  function golink(link){
+  window.location.href=link
+}
+function goLoginPage(){
+  golink("/index.html?page=login&redirect="+window.location.pathname)
+}
+
+$("#homebtn").click(()=>{
+    window.location.href="/index.html"
+})
+
+
+</script>
+</html>

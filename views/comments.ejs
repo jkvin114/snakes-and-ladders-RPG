@@ -191,6 +191,13 @@
   #sort{
     margin: 10px;
   }
+  
+  .title-username{
+    color: #d88bff;
+    text-decoration: underline;
+    cursor: pointer;
+    display: inline;
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -206,7 +213,7 @@
           <a class='white-text'>Posts</a>
         </div>
   </div>
-  <h1><%=user%>`s comments</h1>
+  <h1><a class="title-username"  onclick="golink('/user/<%=user%>')"><%=user%></a>`s comments</h1>
 
  
   <div id="main">

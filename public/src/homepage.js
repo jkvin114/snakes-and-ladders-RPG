@@ -127,6 +127,9 @@ function chooseLang(eng,kor){
   return sessionStorage.language==="kor"?kor:eng
 }
 
+function mypage(){
+  window.location.href="/user/"
+}
 $("#loginform").submit(function(e){
   e.preventDefault()
 
@@ -241,7 +244,7 @@ function setAsLogin(username){
   $("#input-username").hide()
   $(".input_alert").html("")
   $("#loginbtn").hide()
-  $("#logoutbtn").show()
+  $("#mypagebtn").show()
   $("input[name='nickname']" ).val(username)
   $("#logged_in_username p").html("Welcome, <b id='myname'>"+username+"</b>")
   

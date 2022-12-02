@@ -211,7 +211,6 @@ module.exports=function(socket:Socket){
 					room.deleteSession(SocketSession.getId(socket))
 				}
 				SocketSession.removeGameSession(socket)
-				return
 			}
 			else{
 				room.user_disconnect(turn)

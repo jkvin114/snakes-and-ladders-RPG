@@ -239,6 +239,29 @@
     width: 100%;
     position: relative;
   }
+  .bookmark{
+    display: inline-block;
+    float: right;
+    cursor: pointer;
+  }
+  .bookmark img{
+    width: 27px;
+    vertical-align: sub;
+    margin-right: 15px;
+    margin-left: 15px;
+  }
+  .bookmark.active .bm-img{
+    display: none;
+  }
+  .bookmark.active .bm-img-filled{
+    display: inline;
+  }
+  .bookmark.inactive .bm-img{
+    display: inline;
+  }
+  .bookmark.inactive .bm-img-filled{
+    display: none;
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -264,7 +287,9 @@
 
 
   <div class="title_container">
+    
     <a class="title"><%= title %> </a>
+    
   </div>
   <div class="info_container">
     <b class="info author" onclick="golink('/board/user/<%=author%>/posts')"><%= author %> </b><br>
@@ -277,6 +302,7 @@
         <img class="postimg" src="/uploads/<%= image %>"> 
      <% }  %>
      <div class="content"><%- content %>  </div>
+     
      <div class="vote upvote postvote <%=(myvote==='up'?'active':'')%>"  data-type="up" data-id="<%=id%>">
       <img src="/res/img/svg/like.svg">
       <a class="vote_count "><%= upvotes %></a>
@@ -284,6 +310,10 @@
     <div class="vote downvote postvote <%=(myvote==='down'?'active':'')%>"  data-type="down" data-id="<%=id%>">
       <img src="/res/img/svg/like.svg">
       <a class="vote_count "><%= downvotes %></a>
+    </div>
+    <div class="bookmark <%=(isBookmarked?'active':'inactive')%>" data-postid="<%=id%>">
+      <img class="bm-img" src="/res/img/svg/bookmark.svg">
+      <img  class="bm-img-filled" src="/res/img/svg/bookmark-filled.svg">
     </div>
     <br><br>
     <hr>
@@ -409,6 +439,34 @@ $(".commentvote").click(function(){
   let id=$(this).data('id')
   sendVote('comment',type,id,$(this))
 })
+$(".bookmark").click(function(){
+  
+  $.ajax({
+        method: 'POST',
+        url: '/board/bookmark',
+        data:{id:$(this).data("postid")}
+    })
+    .done((data, statusText, xhr)=>{
+      let status = xhr.status;
+      if(status==200){
+
+        if(data.change===1){
+          $(this).addClass("active")
+          $(this).removeClass("inactive")
+        }
+        else if(data.change===-1){
+          $(this).addClass("inactive")
+          $(this).removeClass("active")
+        }
+      }
+    })
+    .fail((data, statusText, xhr)=>{
+      if(data.status==401){
+        alert("Login required")
+      }
+    })
+})
+
 
 function sendVote(kind,type,id,elem){
 

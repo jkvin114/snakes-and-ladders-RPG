@@ -164,7 +164,9 @@ export function checkVoteRecord(contentId:mongoose.Types.ObjectId,
 	if(voteRecords.downvotedContents.includes(contentId)) return "down"
 	return "none"
 }
-
+export function containsId(list:mongoose.Types.ObjectId[]|string[],id:mongoose.Types.ObjectId|string){
+	return list.some((_id:mongoose.Types.ObjectId|string)=>String(_id)===String(id))
+}
 
 export enum ContentType{
 	POST,COMMENT,REPLY
