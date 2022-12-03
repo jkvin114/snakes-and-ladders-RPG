@@ -37,49 +37,8 @@
 
 		<meta charset="utf-8" />
 	</head>
-	<div id="sidebar">
-		<div class="sidebar_item intro_simulation" >
-			<a>Simulations</a>
-		</div>
-		<div class="sidebar_item intro_game">
-			<a>Games</a>
-		</div>
-	</div>
 	<body>
-		<!-- <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off"> -->
-
-		
-		<!-- <h1 href="statpage.html">Game Statistics</h1> -->
-		<div id="toolbar" class="hidden" style="display: none;">
-			
-			
-			<div class="toolbar_item" id="sidebarbtn">
-				<img src="res/img/svg/menu.svg">
-			</div>
-			<!-- <div class="toolbar_item intro_simulation">
-				<a>Simulations</a>
-			</div>
-			<div class="toolbar_item intro_game">
-				<a>Games</a>
-			</div> -->
-			<div><h5 id="title" class="reset">Statistics</h5></div>
-
-			<div class="toolbar-buttons">
-				<!-- <div class="toolbar_item reset" >
-					<img class="settingBtn" src="res/img/svg/refresh.svg">
-				</div> -->
-				
-				<div class="toolbar_item changelang"  onclick="changelang()">
-					<img src="res/img/svg/globe.svg"class="settingBtn">
-				</div>
-				<div class="lang_dropdown">
-					<a class="dropitem" value="kor">한국어</a>
-					<a class="dropitem" value="eng">English</a>
-				</div>
-				<div class="toolbar_item quit"><img  src="res/img/svg/home.svg"></div>
-			</div>
-			
-		</div>
+		<div id="root">
 		
 		<div id="navbar">
 	  
@@ -168,17 +127,27 @@
 				</div> -->
 			</div>
 			<div id="summary_navbar"> 
-				<a class="prevpage pagearrow">	&#9664;</a>
-				<a id="pagenum">1</a>
-				<a class="nextpage pagearrow">	&#9654;</a> 
+				<div>
+					<a class="prevpage pagearrow">	&#9650;</a>
+					<a id="pagenum">1</a>
+					<a class="nextpage pagearrow">	&#9660;</a> 
+				</div>
 			</div>
+			
 		</div>
-		
-		<img id="gotop" src="res/img/svg/chevrons-up.svg" title="go top">
+		<div id="summary-collapse" data-collapsed="false">
+			&#9650;collapse
+		</div>
+		<div id="toolbar">
+			<div class="toolbar_item">&#9664;collapse</div>
+			<div class="toolbar_item">&#9654;expand</div>
+			<div class="toolbar_item">&#9664;back to list</div>
+		</div>
+		<!-- <img id="gotop" src="res/img/svg/chevrons-up.svg" title="go top"> -->
 		<!-- <button id="togglelist" ><img src="res/img/svg/chevron-left.svg"></button> -->
 		<div id="main_start"></div>
 		<div id="main" class="hidden">
-			<div id="gamelist_wrapper" class="collapse game-detail-item nopadding">	
+			<div id="gamelist_wrapper" class="game-detail-item nopadding">	
 			<!-- <div class="onegame_container">
 					<div class="character"><div class="charimg list_charimg"><img src="res/img/character/bird.png"></div><a> 1/10/0</a></div>
 					<div class="character"><div class="charimg list_charimg"><img src="res/img/character/bird.png"></div><a> 1/10/0</a></div>
@@ -192,23 +161,27 @@
 						</div>
 						<img src="res/img/svg/zoom-in.svg" class="show_detail">
 					</div>
-					
-				</div> -->
-				<img src="res/img/svg/maximize.svg" id="maximize_list_btn">
-				<p id="simulation_info"></p>
-				<div id="gamelist_side">
 
+				</div> -->
+				<div id="simulation_info_container">
+					<!-- <img src="res/img/svg/maximize.svg" id="maximize_list_btn"> -->
+					<p id="simulation_info"></p>
 				</div>
-				<div id="listhidebar"><img src="res/img/svg/chevron-left.svg" id="listhidebtn"></div>
+				<div id="gamelist_side">
+				</div>
+
+				<!-- <div id="listhidebar"><img src="res/img/svg/chevron-left.svg" id="listhidebtn"></div> -->
 			</div>
+
+
 			<div id="detail_side">
-				<div id="simulation_detail">
-					<p id="resulttext"></p>
-					<p id="simulation_result"></p>
+				<!-- <div id="simulation_detail">
+					<a id="resulttext"></a>
+					<a id="simulation_result"></a> -->
 					<!-- <div id="avgkdaGraph" class="simulationGraph"></div>
 					<div id="avgdamageGraph" class="simulationGraph"></div>
 					<div id="winrateGraph" class="simulationGraph"></div> -->
-				</div>
+				<!-- </div> -->
 
 				<div id="game_detail">		
 					<!-- <br><br>
@@ -391,14 +364,13 @@
 											</div><br>
 										</div>
 										<b>&#10140;</b> -->
-								
+										
 						</div>
 
 						
 					
 
 						
-							
 					</div>
 					<div id="player-detail-content">
 						<div id="train_detail"  class="game-detail-item">
@@ -517,6 +489,7 @@
 							</div>
 						</div>
 					</div>
+					
 				</div>
 					
 					
@@ -540,6 +513,7 @@
 			<p>description.<a>unique effect:</a>blah</p>
 			<i></i>
 		</div>
+	</div>
 	</body>
 	<script type="text/javascript" src="src/stat.js"></script>
 </html>

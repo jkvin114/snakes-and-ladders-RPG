@@ -293,7 +293,7 @@ router.get("/:postUrl",availabilityCheck, async (req, res) => {
 		for (let comm of post.comments) {
 			if (comm.deleted && comm.replyCount === 0) continue
 			comment.push({
-				canModify: String(comm.author) === req.session.userId,
+				canModify: String(comm.author) === req.session.userId && req.session.isLogined,
 				content: comm.content,
 				_id: String(comm._id),
 				upvotes: comm.upvote,
@@ -306,7 +306,7 @@ router.get("/:postUrl",availabilityCheck, async (req, res) => {
 			})
 		}
 		res.status(200).render("post", {
-			canModify: String(post.author) === req.session.userId,
+			canModify: String(post.author) === req.session.userId && req.session.isLogined,
 			comment: comment,
 			url: req.params.postUrl,
 			id: post._id,

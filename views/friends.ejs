@@ -103,6 +103,9 @@
     align-items: center;
     cursor: pointer;
   }
+  .profileimg-container.has-img{
+    background-color: #ebebfd;
+  }
   .profileimg-container > a{
     user-select: none;
     color: #ffffff;
@@ -268,7 +271,7 @@ input{
 
   <div class="title_container">
     <div class="profile">
-        <div class="profileimg-container" onclick="golink('/user/<%=username%>')">
+        <div class="profileimg-container  <%=(!profile || profile==="")?'':'has-img' %>" onclick="golink('/user/<%=username%>')">
             <%if(!profile || profile==="") {%>
                 <a><%= username.charAt(0).toUpperCase() %></a>
                 <% } else{ %>
@@ -294,7 +297,7 @@ input{
         <% for(let i=0;i<friends.length;++i){%>
             <div class="friend" onclick="golink(`/user/<%= friends[i].username %>`)">
                 <div class="profile">
-                    <div class="profileimg-container profileimg-container-small">
+                    <div class="profileimg-container profileimg-container-small <%=(!friends[i].profileImgDir || friends[i].profileImgDir==="")?'':'has-img' %>">
                         <%if(!friends[i].profileImgDir || friends[i].profileImgDir==="") {%>
                             <a><%= friends[i].username.charAt(0).toUpperCase() %></a>
                             <% } else{ %>

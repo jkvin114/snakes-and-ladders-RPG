@@ -102,6 +102,9 @@
     justify-content: center;
     align-items: center;
   }
+  .profileimg-container.has-img{
+    background-color: #ebebfd;
+  }
   .profileimg-container > a{
     user-select: none;
     color: #ffffff;
@@ -257,7 +260,7 @@ input{
 
   <div class="title_container">
     <div class="profile">
-        <div class="profileimg-container">
+        <div class="profileimg-container <%=(!profile || profile==="")?'':'has-img' %>">
             <%if(!profile || profile==="") {%>
                 <a><%= username.charAt(0).toUpperCase() %></a>
                 <% } else{ %>

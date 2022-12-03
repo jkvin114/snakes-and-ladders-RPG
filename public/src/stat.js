@@ -1,3 +1,4 @@
+
 const ip = "http://" + sessionStorage.ip_address
 let table = []
 let othertable = []
@@ -6,24 +7,28 @@ let statData = []
 let LANG = sessionStorage.language
 let itemLists = []
 let playerNameLists = []
-
+let toolbarButtons=[]
 let SETTING = null
 let ITEMS = null
 function golink(link){
 	window.location.href=link
   }
+const STATE_GAMES=0
+const STATE_SIMULATION=1
+const STATE_ONEGAME=2
 
 class InterfaceState {
 	constructor() {
 		InterfaceState.gamelist_hidden = false
 		InterfaceState.gamelist_hidden_smallscreen = true
 		InterfaceState.gamelist_maximized = false
-		InterfaceState.page_type = ""
+		//InterfaceState.page_type = ""
 		InterfaceState.page_start = 0
 		InterfaceState.page_max = 12
 		InterfaceState.current_page = 0
 		InterfaceState.page_direction = "next"
 		InterfaceState.sidebar_shown=false
+		InterfaceState.state=STATE_GAMES
 	}
 }
 const chooseLang = function (kor, eng) {
@@ -40,28 +45,43 @@ function changelang() {
  * @param {*} params url query string
  */
 function requestStatAfterGame(params) {
+	setState(STATE_ONEGAME)
 	console.log(params)
 	$("#main").css("grid-template-columns", "auto")
-	$.get(ip + "/stat/result?" + params).done((data) => showStat(data))
+	$.get("/stat/result?" + params).done((data) => showStat(data))
 }
+/**
+ * request simulation list as summary
+ * @param {*} start 
+ * @param {*} count 
+ */
 function requestSimulationSummary(start, count) {
-	$.get(ip + "/stat/simulation/summary?start=" + start + "&count=" + count).done((data) =>
+	$.get("/stat/simulation/summary?start=" + start + "&count=" + count).done((data) =>
 		onReceiveSimulationSummary(data)
 	)
 }
+/**
+ * request gamelist for normal games(not simulation games)
+ * @param {*} start 
+ * @param {*} count 
+ */
 function requestGames(start, count) {
-	$.get(ip + "/stat/game?start=" + start + "&count=" + count).done((data) => onReceiveGames(data))
+	$.get("/stat/game?start=" + start + "&count=" + count).done((data) => onReceiveGames(data))
 }
-function requestOneSimulationList(id) {
-	$.get(ip + "/stat/simulation/gamelist?statid=" + id).done((data) => onReceiveOneSimulationList(data))
-}
+// function requestOneSimulationList(id) {
+// 	$.get("/stat/simulation/gamelist?statid=" + id).done((data) => onReceiveOneSimulationList(data))
+// }
 
-function requestOneGameInSimulation(id, index) {
-	$.get(ip + "/stat/simulation/game?statid=" + id + "&index=" + index).done((data) =>
-		onReceiveOneGameInSimulation(data)
-	)
-}
+// function requestOneGameInSimulation(id, index) {
+// 	$.get("/stat/simulation/game?statid=" + id + "&index=" + index).done((data) =>
+// 		onReceiveOneGameInSimulation(data)
+// 	)
+// }
 
+/**
+ * updates page number
+ * @param {*} success false if end of page
+ */
 function onPageResponse(success) {
 	if (success) {
 	} else {
@@ -76,6 +96,12 @@ function onPageResponse(success) {
 	$("#pagenum").html(InterfaceState.current_page + 1)
 }
 
+/**
+ * called on changing gamelist page
+ * on success,update page number and display the gamelist
+ * @param {*} data is null if the page ended
+ * @returns 
+ */
 function onReceiveGames(data) {
 	if (!data) {
 		onPageResponse(false)
@@ -83,10 +109,16 @@ function onReceiveGames(data) {
 	}
 
 	onPageResponse(true)
-	InterfaceState.page_type = "games"
+	//InterfaceState.page_type = "games"
 	showStat(data)
 }
 
+/**
+ * check if a character is included in team lock array
+ * @param {*} char 
+ * @param {*} teamlock 
+ * @returns 
+ */
 function getlockedTeam(char, teamlock) {
 	if (teamlock[0].includes(char)) return "red"
 	else if (teamlock[1].includes(char)) return "blue"
@@ -102,7 +134,7 @@ function onReceiveSimulationSummary(data) {
 		return
 	}
 	onPageResponse(true)
-	InterfaceState.page_type = "simulations"
+	//InterfaceState.page_type = "simulations"
 
 	$("#summary").removeClass("hidden")
 	$("#intro").hide()
@@ -183,18 +215,33 @@ function onReceiveSimulationSummary(data) {
 	})
 }
 
+/**
+ * invoked on clicking one entry in simulation list
+ * 
+ * fetches one whole simulation data by DB id
+ * @param {*} id 
+ */
 function requestStatById(id) {
-	let xhr = $.get(ip + "/stat/simulation?statid=" + id)
+	let xhr = $.get("/stat/simulation?statid=" + id)
 
 	xhr.done((data) => {
 		// window.location.href = "#gamelist"
-		location.href="#gamelist_wrapper"
-
+	//	location.href="#gamelist_wrapper"
+		
 		showStat(data)
 	})
 }
+/**
+ *1.request global setting json
+
+	2.response
+
+	3-1. if url query leads to a game result, request that single game 
+
+	3-2. otherwise request game list
+ */
 function requestGlobalSetting() {
-	let xhr = $.get(ip + "/resource/globalsetting")
+	let xhr = $.get("/resource/globalsetting")
 
 	xhr.done((data) => {
 		data = JSON.parse(data)
@@ -206,12 +253,19 @@ function requestGlobalSetting() {
 
 	})
 }
-function requestItem() {
-	let xhr = $.get(ip + "/resource/item")
+/**
+ * request item json file. add item tooltip event on response
+ * and request global setting afterwards
+ */
+function requestResource() {
+	let xhr = $.get("/resource/item")
 
 	xhr.done((data) => {
 		data = JSON.parse(data)
 		ITEMS = data.items
+		
+		addItemTooltipEvent()
+		requestGlobalSetting()
 	})
 }
 /**
@@ -281,10 +335,143 @@ function hideDetail(){
 function updateSimulationGridLayout(){
 	if (window.innerWidth > 1300) {
 
-		$("#main").css("grid-template-columns", "auto 1000px")
+		//$("#main").css("grid-template-columns", "auto 1000px")
 	} 
 	else{
-		$("#main").css("grid-template-columns", "auto")
+		//$("#main").css("grid-template-columns", "auto")
+	}
+}
+
+/**
+ * collapse summary section(gamelist/simulationlist) and change button state
+ */
+function collapseSummary(){
+
+	$("#summary").hide()
+	$("#summary_navbar").hide()
+	$("#summary-collapse").html("&#9660; expand")
+	$("#summary-collapse").data("collapsed","true")
+}
+/**
+ * expand summary section(gamelist/simulationlist) and change button state
+ */
+function expandSummary(){
+
+	$("#summary-collapse").html("&#9650; collapse")
+	$("#summary-collapse").data("collapsed","false")
+	$("#summary").show()
+	$("#summary_navbar").show()
+}
+
+
+function prevPage(){
+
+	if (InterfaceState.current_page === 0) {
+		return
+	}
+	InterfaceState.page_direction = "prev"
+	InterfaceState.current_page -= 1
+	if (InterfaceState.state === STATE_SIMULATION) {
+		requestSimulationSummary(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
+	} else if (InterfaceState.state === STATE_GAMES) {
+		requestGames(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
+	}
+}
+function nextPage(){
+
+	InterfaceState.page_direction = "next"
+	InterfaceState.current_page += 1
+	if (InterfaceState.state === STATE_SIMULATION) {
+		requestSimulationSummary(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
+	} else if (InterfaceState.state === STATE_GAMES) {
+		requestGames(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
+	}
+}
+function showSimulationPage(){
+
+	InterfaceState.current_page=0
+	$("#pagenum").html("1")
+	$(".intro_simulation").addClass("active")
+	$(".intro_game").removeClass("active")
+	setState(STATE_SIMULATION)
+	// $("#sidebar").css({left:"-50%"})
+	requestSimulationSummary(0, InterfaceState.page_max)
+	//$("#summary_navbar").show()
+	expandSummary()
+}
+function showNormalGamePage(){
+
+	InterfaceState.current_page=0
+	$("#pagenum").html("1")
+	setState(STATE_GAMES)
+	requestGames(0, InterfaceState.page_max)
+//	window.scrollTo(0,0)
+	$(".intro_simulation").removeClass("active")
+	$(".intro_game").addClass("active")
+	// $("#sidebar").css({left:"-50%"})
+	//$("#summary_navbar").show()
+	expandSummary()
+}
+/**
+ * set current page state and change overall layout ot page
+ * @param {*} state 
+ */
+function setState(state){
+	InterfaceState.state=state
+	$(".toolbar_item").hide()
+	switch(state){
+		case STATE_ONEGAME:
+			$("#gamelist_wrapper").hide()
+			break
+		case STATE_GAMES:
+			$("#gamelist_wrapper").hide()
+			break
+		case STATE_SIMULATION:
+			$("#gamelist_wrapper").show()
+			$(toolbarButtons[0]).show()
+
+
+			
+			
+			break
+	}
+}
+function onSimulationGameListShow(){
+	
+
+	collapseSummary()
+	$("#gamelist_wrapper").show()
+	$(".toolbar_item").hide()
+	if (window.innerWidth < 900) {
+		
+		// $(toolbarButtons[2]).show()
+	}
+	else{
+		$(toolbarButtons[0]).show()
+	}
+}
+function onGameListShow(){
+
+	$("#summary").removeClass("hidden")
+}
+function onGameDetailShow(){
+
+	collapseSummary()
+	$("#detail_side").show()
+	
+	$(".toolbar_item").hide()
+	if(InterfaceState.state===STATE_SIMULATION){
+
+		if (window.innerWidth < 900) {
+			$(toolbarButtons[2]).show()
+			$("#gamelist_wrapper").hide()
+		}
+		else{
+			$(toolbarButtons[0]).show()
+		}
+	}
+	else{
+		$("#gamelist_wrapper").hide()
 	}
 }
 $(window).on("load",function(){
@@ -295,14 +482,15 @@ $(document).ready(function () {
 	table = $(".statTableRow").toArray()
 	othertable = $(".otherTableRow").toArray()
 	itembuildTable = $(".itembuildTableRow").toArray()
+	toolbarButtons=$(".toolbar_item").toArray()
+	$(".toolbar_item").hide()
 	let is = new InterfaceState()
 	$("#stattable").hide()
 	$("#detailbtn_container").hide()
 	// $("#summary_navbar").hide()
-	requestGlobalSetting()
-	requestItem()
+	
+	requestResource()
 
-	addItemTooltipEvent()
 
 	  
 	$("#langbtn").click(function(){
@@ -314,9 +502,30 @@ $(document).ready(function () {
 	  let lang=$(this).attr("value")
 	  LANG=lang
 	})
-
-	
-
+	$("#summary-collapse").click(function(){
+		let collapsed=$(this).data("collapsed")
+		if(collapsed==="true"){
+			expandSummary()
+		}
+		else{
+			collapseSummary()
+		}
+	})
+	$(toolbarButtons[0]).click(function(){
+		$("#gamelist_wrapper").hide()
+		$(this).hide()
+		$(toolbarButtons[1]).show()
+	})
+	$(toolbarButtons[1]).click(function(){
+		$("#gamelist_wrapper").show()
+		$(this).hide()
+		$(toolbarButtons[0]).show()
+	})
+	$(toolbarButtons[2]).click(function(){
+		$("#gamelist_wrapper").show()
+		$("#detail_side").hide()
+		$(this).hide()
+	})
 	// $(".dropitem").click(function(){
 	// 	$(".lang_dropdown").hide()
 	// 	let lang=$(this).attr("value")
@@ -336,29 +545,10 @@ $(document).ready(function () {
 		}
 	  })
 
-	$(".intro_simulation").click(function () {
-		window.scrollTo(0,0)
-		InterfaceState.current_page=0
-		$("#pagenum").html("1")
-		$(".intro_simulation").addClass("active")
-		$(".intro_game").removeClass("active")
+	$(".intro_simulation").click(showSimulationPage)
+	$(".intro_game").click(showNormalGamePage)
 
-		// $("#sidebar").css({left:"-50%"})
-		requestSimulationSummary(0, InterfaceState.page_max)
-		$("#summary_navbar").show()
-		//console.log("intro")
-	})
-	$(".intro_game").click(function () {
-		InterfaceState.current_page=0
-		$("#pagenum").html("1")
 
-		requestGames(0, InterfaceState.page_max)
-		window.scrollTo(0,0)
-		$(".intro_simulation").removeClass("active")
-		$(".intro_game").addClass("active")
-		// $("#sidebar").css({left:"-50%"})
-		$("#summary_navbar").show()
-	})
 	$(".quit").click(function () {
 		window.location.href = "index.html"
 	})
@@ -368,27 +558,8 @@ $(document).ready(function () {
 	$("#gotop").click(function () {
 		location.href = "#"
 	})
-	$(".prevpage").click(function () {
-		if (InterfaceState.current_page === 0) {
-			return
-		}
-		InterfaceState.page_direction = "prev"
-		InterfaceState.current_page -= 1
-		if (InterfaceState.page_type === "simulations") {
-			requestSimulationSummary(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
-		} else if (InterfaceState.page_type === "games") {
-			requestGames(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
-		}
-	})
-	$(".nextpage").click(function () {
-		InterfaceState.page_direction = "next"
-		InterfaceState.current_page += 1
-		if (InterfaceState.page_type === "simulations") {
-			requestSimulationSummary(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
-		} else if (InterfaceState.page_type === "games") {
-			requestGames(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
-		}
-	})
+	$(".prevpage").click(prevPage)
+	$(".nextpage").click(nextPage)
 
 	// $("#togglelist").click(function () {
 	// 	if (InterfaceState.gamelist_hidden) {
@@ -411,7 +582,7 @@ $(document).ready(function () {
 		if (!InterfaceState.gamelist_hidden_smallscreen) {
 			$("#gamelist_wrapper").css("height", "320px")
 			$(this).css("transform", "rotate(270deg)")
-			window.location.href = "#main_start"
+			//window.location.href = "#main_start"
 			InterfaceState.gamelist_hidden_smallscreen = true
 		} else {
 			$("#gamelist_wrapper").css("height", "100%")
@@ -507,6 +678,9 @@ $(document).ready(function () {
 	})
 })
 
+/**
+ * DEPRICATED
+ */
 function setItem(num, list, names) {
 	let str = ""
 	for (let i = 0; i < list.length; ++i) {
@@ -526,6 +700,11 @@ function convertCountToItemSlots(items) {
 	}
 	return itemslot
 }
+/**
+ * set player table`s item list 
+ * @param {*} turn 
+ * @param {*} item 
+ */
 function setItemList(turn, item) {
 	//console.log(turn)
 	let text = ""
@@ -550,16 +729,13 @@ function setItemList(turn, item) {
 
 	$(itemLists[turn]).html('<div class=itemlist_container>'+text+'</div>')
 
-	// $(".toast_itemimg").css({
-	// 	margin: "-30px",
-	// 	width: "100px",
-	// 	overflow: "hidden",
-	// 	height: "100px",
-	// 	display: "inline-block",
-	// 	transform: "scale(0.4)"
-	// })
 }
-
+/**
+ * 
+ * @param {*} rank 
+ * @param {*} data 
+ * @returns player name of the rank(index)
+ */
 function getPlayerName(rank, data) {
 	if (data.players[rank].name == null) {
 		return ""
@@ -801,196 +977,203 @@ function drawSimulationGraph(winRateList, avgDamageList) {
 		document.getElementById("winrateGraph")
 	)
 }
+function showGameList(data){
+
+	updateSimulationGridLayout()
+	$("#simulation_detail").show()
+	statData = data.stat
+	if(statData.length <=0){
+		alert("empty statistics")
+		return
+	}
+
+	//only simulation
+	if (!data.isGamelist) {
+		let wins = [0, 0, 0, 0]
+		let kdas = [
+			{ kill: 0, death: 0, assist: 0 },
+			{ kill: 0, death: 0, assist: 0 },
+			{ kill: 0, death: 0, assist: 0 },
+			{ kill: 0, death: 0, assist: 0 }
+		]
+		let avgDamageList = []
+		let avgKdaList = []
+		let winRateList = []
+		let dealamt = [0, 0, 0, 0]
+		let str = ""
+		let totalkills = []
+		let totalturn = 0
+		for (let s of data.stat) {
+			totalturn += s.totalturn
+
+			let onegamekill = 0
+			for (let i = 0; i < s.players.length; ++i) {
+				if (i === 0) {
+					wins[s.players[i].turn] += 1
+				}
+				dealamt[s.players[i].turn] += s.players[i].stats[2]
+
+				for (let j = 0; j < 3; ++j) {
+					if (j === 0) {
+						kdas[s.players[i].turn].kill += s.players[i].kda[j]
+						onegamekill += s.players[i].kda[j]
+					}
+					if (j === 1) {
+						kdas[s.players[i].turn].death += s.players[i].kda[j]
+					}
+					if (j === 2) {
+						kdas[s.players[i].turn].assist += s.players[i].kda[j]
+					}
+				}
+			}
+			totalkills.push(onegamekill)
+		}
+		// console.table(kdas)
+		kdas.map(function (k) {
+			k.kill /= data.count
+			k.death /= data.count
+			k.assist /= data.count
+		})
+		let plist = Array.from(data.stat[0].players)
+
+		plist.sort((a, b) => a.turn - b.turn)
+		for (let i = 0; i < plist.length; ++i) {
+			avgDamageList.push({
+				category: plist[i].name,
+				value: Math.floor(dealamt[i] / data.count)
+			})
+			avgKdaList.push({
+				category: plist[i].name,
+				k: Math.floor(100 * kdas[i].kill) / 100,
+				d: Math.floor(100 * kdas[i].death) / 100,
+				a: Math.floor(100 * kdas[i].assist) / 100
+			})
+			winRateList.push({
+				category: plist[i].name,
+				value: wins[i]
+			})
+		}
+
+		totalturn /= data.count
+
+		$("#simulation_info")
+			.html("")
+			.append("Count:" + statData.length)
+		if (data.version != null && data.createdAt != null) {
+			$("#simulation_info").append("<br>version:" + data.version + "<br>Time:" + data.createdAt.slice(0, 16)+"<br>Average turn:"+ totalturn)
+		}
+
+		// $("#simulation_result").html("Simulation average Turn:" + totalturn+", ")
+		// if (data.version) {
+		// 	$("#simulation_result").append("Server version:" + data.version)
+		// }
+		// $("#simulation_result").css("font-size", "20px")
+
+		drawSimulationGraph(winRateList, avgDamageList)
+	} else {
+		//on receive game list
+		$("#simulation_detail").hide()
+	}
+
+	let string = ""
+	for (let i = 0; i < statData.length; ++i) {
+		string += '<div class="onegame_container" onclick=showonestat(' +
+		String(i) +
+		')>'
+
+		for (let j = 0; j < 4; ++j) {
+			if(j==0 || j==2) string+="<div>"
+
+			if (j < statData[i].players.length) {
+				let p = statData[i].players[j]
+				let teamstr = ""
+				if (statData[i].isTeam && p.team === true) teamstr = "red"
+				else if (statData[i].isTeam && p.team === false) teamstr = "blue"
+				string +=
+					'<div class="character"><div class="charimg list_charimg '+
+					'"><img src="' +
+					getCharImgUrl(p.champ_id) +
+					'"></div><a class="charkda '+teamstr+'">' +
+					p.kda[0] +
+					"/" +
+					p.kda[1] +
+					"/" +
+					p.kda[2] +
+					"</a></div>"
+			} else {
+				string += "<div></div>"
+			}
+			if(j==1 || j==3) string+="</div>"
+		}
+		string += ""
+		if(statData[i].map_data!=null){
+			string += '<div><div class="gameinfo"><img class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '"></div>'
+		}
+		string += '<div class="gameinfo"><img src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div>'
+		if(statData[i].replay!=null)
+		string += '<div class="gameinfo"><img src="res/img/svg/play.svg" class="icon" title="Replay avaliable"></div>'
+
+		string+="</div></div>"
+		
+
+		if (statData[i].setting != null && statData[i].setting.length > 0 && statData[i].setting[0].name != null) {
+			// string +=
+			// 	'<img src="res/img/svg/shopping-cart.svg" class="icon" title="item limit">:' +
+			// 	getSetting(statData[i], "itemLimit") +
+			// 	"<br>"
+			// if (getSetting(statData[i], "shuffleObstacle")) {
+			// 	string += '<img src="res/img/svg/shuffle.svg" class="icon" title="shuffled obstacles">'
+			// }
+			// if (getSetting(statData[i], "coldGame")) {
+			// 	string += '<img src="res/img/ui/finish-flag.png" class="icon" title="use decision by win">'
+			// }
+			// if (getSetting(statData[i], "useAdditionalLife")) {
+			// 	string += '<img src="res/img/svg/heart.svg" class="icon" title="additional life avaliable">'
+			// }
+		}
+
+		// string +=
+		// 	'<img src="res/img/svg/zoom-in.svg" class="show_detail" ' +
+		// 	"></div></div>"
+	}
+	for(let i=0;i<10;++i){
+		string+='<div class="onegame_container dummy"></div>'
+	}
+
+	//simulation gamelist
+	if (!data.isGamelist) {
+		$("#gamelist_side").html(string+`<div class="tall-dummy"></div>`)
+		
+		onSimulationGameListShow()
+		
+
+	} else {//gamelist
+		$("#summary").html(string)
+		onGameListShow()
+	}
+
+}
 
 function showStat(data) {
 	$("#intro").hide()
 	$("#holder").hide()
 	$("#main").removeClass("hidden")
 	data = JSON.parse(data)
-
+	$("#detail_side").hide()
 	if (!data.multiple) {
 		$("#gamelist_wrapper").css("height", "0")
 		$("#gamelist_wrapper").addClass('collapse')
 
 		$(".simulationGraph").hide()
 		showSingleStat(data)
+		
 	} else {
-
-		updateSimulationGridLayout()
-		$("#simulation_detail").show()
-		statData = data.stat
-		if(statData.length <=0){
-			alert("empty statistics")
-			return
-		}
-
-		//only simulation
-		if (!data.isGamelist) {
-			let wins = [0, 0, 0, 0]
-			let kdas = [
-				{ kill: 0, death: 0, assist: 0 },
-				{ kill: 0, death: 0, assist: 0 },
-				{ kill: 0, death: 0, assist: 0 },
-				{ kill: 0, death: 0, assist: 0 }
-			]
-			let avgDamageList = []
-			let avgKdaList = []
-			let winRateList = []
-			let dealamt = [0, 0, 0, 0]
-			let str = ""
-			let totalkills = []
-			let totalturn = 0
-			for (let s of data.stat) {
-				totalturn += s.totalturn
-
-				let onegamekill = 0
-				for (let i = 0; i < s.players.length; ++i) {
-					if (i === 0) {
-						wins[s.players[i].turn] += 1
-					}
-					dealamt[s.players[i].turn] += s.players[i].stats[2]
-
-					for (let j = 0; j < 3; ++j) {
-						if (j === 0) {
-							kdas[s.players[i].turn].kill += s.players[i].kda[j]
-							onegamekill += s.players[i].kda[j]
-						}
-						if (j === 1) {
-							kdas[s.players[i].turn].death += s.players[i].kda[j]
-						}
-						if (j === 2) {
-							kdas[s.players[i].turn].assist += s.players[i].kda[j]
-						}
-					}
-				}
-				totalkills.push(onegamekill)
-			}
-			// console.table(kdas)
-			kdas.map(function (k) {
-				k.kill /= data.count
-				k.death /= data.count
-				k.assist /= data.count
-			})
-			let plist = Array.from(data.stat[0].players)
-
-			plist.sort((a, b) => a.turn - b.turn)
-			for (let i = 0; i < plist.length; ++i) {
-				avgDamageList.push({
-					category: plist[i].name,
-					value: Math.floor(dealamt[i] / data.count)
-				})
-				avgKdaList.push({
-					category: plist[i].name,
-					k: Math.floor(100 * kdas[i].kill) / 100,
-					d: Math.floor(100 * kdas[i].death) / 100,
-					a: Math.floor(100 * kdas[i].assist) / 100
-				})
-				winRateList.push({
-					category: plist[i].name,
-					value: wins[i]
-				})
-			}
-
-			totalturn /= data.count
-
-			$("#simulation_info")
-				.html("")
-				.append("Count:" + statData.length)
-			if (data.version != null && data.createdAt != null) {
-				$("#simulation_info").append("<br>version:" + data.version + "<br>Time:" + data.createdAt.slice(0, 16))
-			}
-
-			$("#simulation_result").html("Average Turn:" + totalturn + "<br>")
-			if (data.version) {
-				$("#simulation_result").append("Server version:" + data.version)
-			}
-			$("#simulation_result").css("font-size", "20px")
-
-			drawSimulationGraph(winRateList, avgDamageList)
-		} else {
-			//on receive game list
-			$("#simulation_detail").hide()
-		}
-
-		let string = ""
-		for (let i = 0; i < statData.length; ++i) {
-			string += '<div class="onegame_container" onclick=showonestat(' +
-			String(i) +
-			')>'
-
-			for (let j = 0; j < 4; ++j) {
-				if(j==0 || j==2) string+="<div>"
-
-				if (j < statData[i].players.length) {
-					let p = statData[i].players[j]
-					let teamstr = ""
-					if (statData[i].isTeam && p.team === true) teamstr = "red"
-					else if (statData[i].isTeam && p.team === false) teamstr = "blue"
-					string +=
-						'<div class="character"><div class="charimg list_charimg '+
-						'"><img src="' +
-						getCharImgUrl(p.champ_id) +
-						'"></div><a class="charkda '+teamstr+'">' +
-						p.kda[0] +
-						"/" +
-						p.kda[1] +
-						"/" +
-						p.kda[2] +
-						"</a></div>"
-				} else {
-					string += "<div></div>"
-				}
-				if(j==1 || j==3) string+="</div>"
-			}
-			string += ""
-			if(statData[i].map_data!=null){
-				string += '<div><div class="gameinfo"><img class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '"></div>'
-			}
-			string += '<div class="gameinfo"><img src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div>'
-			if(statData[i].replay!=null)
-			string += '<div class="gameinfo"><img src="res/img/svg/play.svg" class="icon" title="Replay avaliable"></div>'
-
-			string+="</div></div>"
-			
-
-			if (statData[i].setting != null && statData[i].setting.length > 0 && statData[i].setting[0].name != null) {
-				// string +=
-				// 	'<img src="res/img/svg/shopping-cart.svg" class="icon" title="item limit">:' +
-				// 	getSetting(statData[i], "itemLimit") +
-				// 	"<br>"
-				// if (getSetting(statData[i], "shuffleObstacle")) {
-				// 	string += '<img src="res/img/svg/shuffle.svg" class="icon" title="shuffled obstacles">'
-				// }
-				// if (getSetting(statData[i], "coldGame")) {
-				// 	string += '<img src="res/img/ui/finish-flag.png" class="icon" title="use decision by win">'
-				// }
-				// if (getSetting(statData[i], "useAdditionalLife")) {
-				// 	string += '<img src="res/img/svg/heart.svg" class="icon" title="additional life avaliable">'
-				// }
-			}
-
-			// string +=
-			// 	'<img src="res/img/svg/zoom-in.svg" class="show_detail" ' +
-			// 	"></div></div>"
-		}
-		for(let i=0;i<10;++i){
-			string+='<div class="onegame_container dummy"></div>'
-		}
-
-		if (!data.isGamelist) {
-			$("#gamelist_side").html(string)
-			$("#gamelist_wrapper").removeClass('collapse')
-
-		} else {
-			$("#summary").removeClass("hidden")
-			$("#main").css("grid-template-columns", "auto")
-			$("#gamelist_wrapper").addClass('collapse')
-			$("#summary").html(string)
-		}
-
+		showGameList(data)
 		return
 	}
 }
+
+
 const randomHex = length => (
 	'0'.repeat(length) 
 	+ Math.floor((Math.random() * 16 ** length))
@@ -1032,6 +1215,10 @@ function drawSmallGraph(data,graphId){
 
 }
 
+/**
+ * only called from selecting one of simulation games
+ * @param {*} n 
+ */
 function showonestat(n) {
 	showSingleStat(statData[n])
 }
@@ -1052,7 +1239,13 @@ function multiKillText(count) {
 	}
 	return multiKillText
 }
+
+/**
+ * display single game data
+ * @param {*} data 
+ */
 function showSingleStat(data) {
+	onGameDetailShow()
 	let damagetakenC_graph = []
 	let damagetakenO_graph = []
 	let damagedealt_graph = []
@@ -1071,12 +1264,6 @@ function showSingleStat(data) {
 	$(othertable[4]).show()
 	$(itembuildTable[2]).show()
 	$(itembuildTable[3]).show()
-	// $(".otherTableLabel:nth-child(2)").html(chooseLang("사용한 돈", "Money spent"))
-	// $(".otherTableLabel:nth-child(3)").html(chooseLang("빼앗긴 돈", "Money taken"))
-	// $(".otherTableLabel:nth-child(4)").html(chooseLang("부활", "Revived"))
-	// $(".otherTableLabel:nth-child(5)").html(chooseLang("강제이동", "Forcemoved"))
-	// $(".otherTableLabel:nth-child(6)").html(chooseLang("기본공격", "Basic attack"))
-	// $(".otherTableLabel:nth-child(7)").html(chooseLang("처형", "Executed"))
 	$(".detailbtn:nth-child(1)").html(chooseLang("상세 통계", "Details"))
 	$(".detailbtn:nth-child(2)").html(chooseLang("아이템 빌드", "Item Build"))
 	$(".detailbtn:nth-child(3)").html(chooseLang("킬/데스", "Kill/Death"))
@@ -1093,8 +1280,6 @@ function showSingleStat(data) {
 	$("#train_detail").hide()
 	$("#stattable").show()
 	$("#detailbtn_container").show()
-	// $("#position_chart").hide()
-	// $("#money_chart").hide()
 	if(!data.replay || data.replay===""){
 		$("#replay").hide()
 	}
@@ -1183,6 +1368,7 @@ function showSingleStat(data) {
 			})
 		}
 		$(".player-data-container").remove()
+		$(".tall-dummy-gamedetail").remove()
 		for (let i = 0; i < data.players.length; ++i) {
 			// $(itembuildTable[i]).children(".itembuildTableName").html(data.players[i].name)
 			const p=data.players[i]
@@ -1273,7 +1459,8 @@ function showSingleStat(data) {
 
 			//player-detail-content
 		}
-
+		$("#game_detail_content").append(`<div class="tall-dummy tall-dummy-gamedetail"></div>`)
+		
 		drawKillRecord(data)
 		$("#detailbtn_container").show()
 		$(gameDetailValues[0]).html(data.totalturn)
@@ -1889,10 +2076,6 @@ function showSingleStat(data) {
 	am4core.createFromConfig(money_chart, document.getElementById("money_chart"))
 	// location.href = "#game_detail_content"
 	$("#game_detail").show()
-	document.getElementById("game_detail").scrollIntoView();
+	//document.getElementById("game_detail").scrollIntoView();
 
 }
-// am4core.ready(function () {
-
-// })
-// am4core.ready(function () {})
