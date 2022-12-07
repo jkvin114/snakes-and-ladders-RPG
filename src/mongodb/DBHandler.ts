@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-require('dotenv').config({path:__dirname+'/../../config/variables.env'})
+require('dotenv').config({path:__dirname+'/../../config/.env'})
 import CONFIG from "./../../config/config.json"
 
 
@@ -148,6 +148,7 @@ const marbleItemPresetSchema=new mongoose.Schema({
     name:{ type: String, required: true },
     items:[{ type: Number, required: true }],
     randomCount:{ type: Number, required: true }
+
 },{timestamps:true})
 
 
@@ -157,6 +158,7 @@ testschema.statics.create=function(data){
 }
 //=============================================================================================
 marbleItemPresetSchema.statics.create=function(data){
+    MarbleItemPreset.init()
     return (new MarbleItemPreset(data)).save()
 }
 marbleItemPresetSchema.statics.findAll = function() {

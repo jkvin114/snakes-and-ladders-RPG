@@ -1,4 +1,4 @@
-import express = require('express');
+import express, { Express, Request, Response } from 'express';
 import { R } from '../RoomStorage';
 const router = express.Router()
 const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../mongodb/DBHandler")
@@ -16,7 +16,7 @@ interface simulationRecord{
 }
 
 
-router.get('/simulation/summary' ,function (req: express.Request, res:express.Response) {
+router.get('/simulation/summary' ,function (req: Request, res:Response) {
     let count=req.query.count
     let start=req.query.start?req.query.start:0
     console.log(count)

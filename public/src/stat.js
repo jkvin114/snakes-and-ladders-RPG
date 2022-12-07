@@ -422,11 +422,17 @@ function setState(state){
 	switch(state){
 		case STATE_ONEGAME:
 			$("#gamelist_wrapper").hide()
+			$("#summary-container").hide()
+			$("#summary-collapse").hide()
 			break
 		case STATE_GAMES:
+			$("#summary-container").show()
+			$("#summary-collapse").show()
 			$("#gamelist_wrapper").hide()
 			break
 		case STATE_SIMULATION:
+			$("#summary-container").show()
+			$("#summary-collapse").show()
 			$("#gamelist_wrapper").show()
 			$(toolbarButtons[0]).show()
 

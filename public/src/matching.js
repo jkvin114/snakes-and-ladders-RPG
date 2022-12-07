@@ -590,6 +590,7 @@ class MatchInterface {
 
 	saveMarbleItemPreset(){
 		let name=$("#save-preset-name").val()
+		if(!name || name==="") return
 		let items=[]
 		let randcount=Number($("#marble-item-random-count").val())
 

@@ -154,6 +154,13 @@
     text-decoration: underline;
     cursor: pointer;    display: inline;
   }
+  .visibility-icon{
+    width: 20px;
+    height: 20px;
+    filter:invert();
+    float: left;
+    margin-bottom: 3px;
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -230,6 +237,7 @@
     <div id="post_container">
         <% for(let i=0;i<posts.length;++i){%>
           <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
+            
             <%if(posts[i].imagedir!=="") {%>
               <div class="thumbnail-img-container">
                 <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
@@ -237,9 +245,20 @@
             <% } else{ %><div></div>
               <% }  %> 
             <div class="title_container">
-              <a class="title"><%= posts[i].title %> </a> 
+              
+              
+              <a class="title">
+                <%= posts[i].title %> </a> 
             </div>
             <div class="vote_container">
+              
+              <%if(posts[i].visibility==="PRIVATE") {%>
+                <img src="/res/img/svg/lock.svg" class="visibility-icon"><br>
+              <%}else if(posts[i].visibility==="FRIENDS") {%>
+                <img src="/res/img/svg/friend.svg" class="visibility-icon"><br>
+              <%}else if(posts[i].visibility==="LINK_ONLY") {%>
+                <img src="/res/img/svg/link.svg" class="visibility-icon"><br>
+              <%}%>
               <div class="vote upvote" >
                 <img src="/res/img/svg/like.svg" class="filter-white">
                 <a><%= posts[i].upvote %></a>

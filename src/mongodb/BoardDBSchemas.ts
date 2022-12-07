@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose, { Types,Schema} from "mongoose"
 
 const articleSchema = new mongoose.Schema(
 	{
@@ -12,29 +12,29 @@ const articleSchema = new mongoose.Schema(
 		},
 		author: {
 			required: true,
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "User"
 		},
 		authorName: String,
 		comments: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "Comment"
 			}
 		],
 		upvoters: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "User"
 			}
 		],
 		downvoters: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "User"
 			}
 		],
-		visilibity: {
+		visibility: {
 			type: String,
 			enum : ['PUBLIC','FRIENDS','LINK_ONLY','PRIVATE'],
 			default: 'PUBLIC'
@@ -47,7 +47,8 @@ const articleSchema = new mongoose.Schema(
 		uploaded: Boolean,
 		category: Number,
 		articleId: Number,
-		commentCount: Number
+		commentCount: Number,
+		_id:Schema.Types.ObjectId
 	},
 	{ timestamps: true }
 )
@@ -59,29 +60,29 @@ const commentSchema = new mongoose.Schema(
 			type: String
 		},
 		article: {
-			type: mongoose.Types.ObjectId
+			type: Schema.Types.ObjectId
 		},
 		author: {
 			required: true,
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "User"
 		},
 		authorName: String,
 		reply: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "CommentReply"
 			}
 		],
 		upvoters: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "User"
 			}
 		],
 		downvoters: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "User"
 			}
 		],
@@ -94,7 +95,8 @@ const commentSchema = new mongoose.Schema(
 		upvote: Number,
 		downvote: Number,
 		deleted: Boolean,
-		replyCount: Number
+		replyCount: Number,
+		_id:Schema.Types.ObjectId
 	},
 	{ timestamps: true }
 )
@@ -106,15 +108,15 @@ const commentReplySchema = new mongoose.Schema(
 			type: String
 		},
 		article: {
-			type: mongoose.Types.ObjectId
+			type: Schema.Types.ObjectId
 		},
 		comment: {
 			required: true,
-			type: mongoose.Types.ObjectId
+			type: Schema.Types.ObjectId
 		},
 		author: {
 			required: true,
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "User"
 		},
 		authorName: String,
@@ -123,13 +125,13 @@ const commentReplySchema = new mongoose.Schema(
 		deleted: Boolean,
 		upvoters: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "User"
 			}
 		],
 		downvoters: [
 			{
-				type: mongoose.Types.ObjectId,
+				type: Schema.Types.ObjectId,
 				ref: "User"
 			}
 		],visilibity: {
@@ -137,7 +139,8 @@ const commentReplySchema = new mongoose.Schema(
 			enum : ['PUBLIC','SECRET'],
 			default: 'PUBLIC'
 		},
-		imagedir: String
+		imagedir: String,
+		_id:Schema.Types.ObjectId
 	},
 	{ timestamps: true }
 )
@@ -145,45 +148,46 @@ const commentReplySchema = new mongoose.Schema(
 const userBoardDataSchema = new mongoose.Schema({
 	articles: [
 		{
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "Article"
 		}
 	],
 	comments: [
 		{
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "Comment"
 		}
 	],
 	replys: [
 		{
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "CommentReply"
 		}
 	],
 	upvotedArticles: [
 		{
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "Article"
 		}
 	],
 	upvotedContents: [
 		{
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 		}
 	],
 	downvotedContents: [
 		{
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 		}
 	],
 	bookmarks: [
 		{
-			type: mongoose.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			ref: "Article"
 		}
 	],
-	username: String
+	username: String,
+	_id:Types.ObjectId
 })
 
 const UserBoardData = mongoose.model("UserBoardData", userBoardDataSchema)
@@ -191,4 +195,5 @@ const Comment = mongoose.model("Comment", commentSchema)
 const CommentReply = mongoose.model("CommentReply", commentReplySchema)
 const Article = mongoose.model("Article", articleSchema)
 
-export { UserBoardData, Comment, Article, CommentReply }
+
+export { userBoardDataSchema,articleSchema,commentSchema,commentReplySchema,UserBoardData, Comment, Article, CommentReply }

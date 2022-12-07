@@ -1,94 +1,95 @@
 import {Article } from "../../../mongodb/BoardDBSchemas"
 import type mongoose from "mongoose"
+import { SchemaTypes } from "../../../mongodb/SchemaTypes"
 
  
 export namespace PostSchema{
         
-    export const countDocuments = function (data:any) {
-        return Article.countDocuments(data)
+    export const countDocuments = async function (data:any) {
+        return await Article.countDocuments(data)
     }
-    export const create = function (data:any) {
-        return new Article(data).save()
+    export const create = async function (data:any) {
+        return await new Article(data).save()
     }
-    export const findOneById = function (id: mongoose.Types.ObjectId) {
-        return Article.findById(id)
+    export const findOneById = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findById(id).populate<{ comments:SchemaTypes.Comment[]}>("comments")
     }
-    export const getUrlById = function (id: mongoose.Types.ObjectId) {
-        return Article.findById(id).select("articleId")
+    export const getUrlById = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findById(id).select("articleId")
     }
-    export const findOneByArticleId = function (id: number) {
-        return Article.findOne({ articleId: id })
+    export const findOneByArticleId = async function (id: number) {
+        return await Article.findOne({ articleId: id })
     }
-    export const findMultipleByIdList = function (id: mongoose.Types.ObjectId[]) {
-        return Article.find({ _id:{$in:id}}).select("createdAt articleId title views upvote downvote imagedir commentCount authorName")
+    export const findMultipleByIdList = async function (id: mongoose.Types.ObjectId[]) {
+        return await Article.find({ _id:{$in:id}}).select("createdAt articleId title views upvote downvote imagedir commentCount authorName author visibility")
     }
-    export const findOneByArticleIdWithComment = function (id: number) {
-        return Article.findOne({ articleId: id }).populate("comments")
+    export const findOneByArticleIdWithComment = async function (id: number) {
+        return await Article.findOne({ articleId: id }).populate<{ comments:SchemaTypes.Comment[]}>("comments")
     }
-    export const findSummaryByRange = function (start: number, count: number) {
+    export const findSummaryByRange = async function (start: number, count: number) {
         //   console.log(count)    //asc, desc  or 1, -1
-        return Article.find({ deleted: false, uploaded: true })
+        return await Article.find({ deleted: false, uploaded: true })
             .sort({ createdAt: "desc" })
             .skip(start)
             .limit(count)
-            .select("createdAt articleId title views upvote downvote imagedir commentCount authorName")
+            .select("createdAt articleId title views upvote downvote imagedir commentCount authorName author visibility")
     }
-    export const findTitleOfUserByRange = function (
+    export const findSummaryOfUserByRange = async function (
         start: number,
         count: number,
         author: mongoose.Types.ObjectId
     ) {
         //   console.log(count)    //asc, desc  or 1, -1
-        return Article.find({ deleted: false, uploaded: true, author: author })
+        return await Article.find({ deleted: false, uploaded: true, author: author })
             .sort({ createdAt: "desc" })
             .skip(start)
             .limit(count)
-            .select("createdAt articleId title views upvote downvote imagedir commentCount authorName")
+            .select("createdAt articleId title views upvote downvote imagedir commentCount authorName author visibility")
     }
-    export const update = function (url: number, title: string, content: string) {
-        return Article.findOneAndUpdate({ articleId: url }, { title: title, content: content })
+    export const update = async function (url: number, title: string, content: string,visibility:string) {
+        return await Article.findOneAndUpdate({ articleId: url }, { title: title, content: content,visibility:visibility })
     }
-    export const updateImage = function (url: number, image: string) {
-        return Article.findOneAndUpdate({ articleId: url }, { imagedir: image })
+    export const updateImage = async function (url: number, image: string) {
+        return await Article.findOneAndUpdate({ articleId: url }, { imagedir: image })
     }
-    export const incrementView = function (id: mongoose.Types.ObjectId) {
-        return Article.findOneAndUpdate({ articleId: id }, { $inc: { views: 1 } })
+    export const incrementView = async function (id: number) {
+        return await Article.findOneAndUpdate({ articleId: id }, { $inc: { views: 1 } })
     }
 
-    export const changeUpvote = function (id: mongoose.Types.ObjectId, change:number, voter: mongoose.Types.ObjectId) {
+    export const changeUpvote = async function (id: mongoose.Types.ObjectId, change:number, voter: mongoose.Types.ObjectId) {
         if (change < 0) {
-            return Article.findByIdAndUpdate(id, { $inc: { upvote: change }, $pull: { upvoters: voter } })
+            return await Article.findByIdAndUpdate(id, { $inc: { upvote: change }, $pull: { upvoters: voter } })
         } else {
-            return Article.findByIdAndUpdate(id, { $inc: { upvote: change }, $addToSet: { upvoters: voter } })
+            return await Article.findByIdAndUpdate(id, { $inc: { upvote: change }, $addToSet: { upvoters: voter } })
         }
     }
 
-    export const changeDownvote = function (id: mongoose.Types.ObjectId, change:number, voter: mongoose.Types.ObjectId) {
+    export const changeDownvote = async function (id: mongoose.Types.ObjectId, change:number, voter: mongoose.Types.ObjectId) {
         if (change < 0) {
-            return Article.findByIdAndUpdate(id, { $inc: { downvote: change }, $pull: { downvoters: voter } })
+            return await Article.findByIdAndUpdate(id, { $inc: { downvote: change }, $pull: { downvoters: voter } })
         } else {
-            return Article.findByIdAndUpdate(id, { $inc: { downvote: change }, $addToSet: { downvoters: voter } })
+            return await Article.findByIdAndUpdate(id, { $inc: { downvote: change }, $addToSet: { downvoters: voter } })
         }
     }
-    export const getVotersById = function (id: mongoose.Types.ObjectId) {
-        return Article.findById(id).select("upvoters downvoters")
+    export const getVotersById = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findById(id).select("upvoters downvoters")
     }
-    export const remove = function (id: mongoose.Types.ObjectId) {
-        return Article.findByIdAndUpdate(id, { deleted: true })
+    export const remove = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findByIdAndUpdate(id, { deleted: true })
     }
-    export const addComment = function (id: mongoose.Types.ObjectId, commentId: mongoose.Types.ObjectId) {
-        return Article.findByIdAndUpdate(id, { $inc: { commentCount: 1 }, $addToSet: { comments: commentId } })
+    export const addComment = async function (id: mongoose.Types.ObjectId, commentId: mongoose.Types.ObjectId) {
+        return await Article.findByIdAndUpdate(id, { $inc: { commentCount: 1 }, $addToSet: { comments: commentId } })
     }
-    export const removeComment = function (id: mongoose.Types.ObjectId) {
-        return Article.findByIdAndUpdate(id, { $inc: { commentCount: -1 } })
+    export const removeComment = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findByIdAndUpdate(id, { $inc: { commentCount: -1 } })
     }
-    export const addReply = function (id: mongoose.Types.ObjectId) {
-        return Article.findByIdAndUpdate(id, { $inc: { commentCount: 1 } })
+    export const addReply = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findByIdAndUpdate(id, { $inc: { commentCount: 1 } })
     }
-    export const removeReply = function (id: mongoose.Types.ObjectId) {
-        return Article.findByIdAndUpdate(id, { $inc: { commentCount: -1 } })
+    export const removeReply = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findByIdAndUpdate(id, { $inc: { commentCount: -1 } })
     }
-    export const getComments = function (id: mongoose.Types.ObjectId) {
-        return Article.findById(id).select("comments").populate("comments")
+    export const getComments = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findById(id).select("comments").populate<{ comments:SchemaTypes.Comment[]}>("comments")
     }
 }

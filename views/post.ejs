@@ -270,7 +270,6 @@
 </head>
 
 <body>
- 
   <div id="navbar">
     <!-- <img src="/res/img/svg/home.svg" id="homebtn"  onclick="golink('/')"><br> -->
     <img src="/res/img/svg/list.svg" id="postlistbtn">
@@ -291,6 +290,7 @@
     <a class="title"><%= title %> </a>
     
   </div>
+  
   <div class="info_container">
     <b class="info author" onclick="golink('/board/user/<%=author%>/posts')"><%= author %> </b><br>
     <a class="info"><%= createdAt.toString().substring(0,24) %></a>

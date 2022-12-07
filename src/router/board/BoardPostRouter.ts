@@ -1,13 +1,15 @@
-import express = require("express")
-import { ajaxauth, auth, availabilityCheck, voteController ,ContentType, checkVoteRecord} from "./helpers"
+const express = require("express")
+import { ajaxauth, auth, availabilityCheck, voteController ,ContentType, checkVoteRecord, postRoleChecker} from "./helpers"
 import { ImageUploader } from "../../mongodb/mutler"
 import {UserBoardDataSchema} from "./schemaController/UserData"
 import {PostSchema} from "./schemaController/Post"
 import {CommentSchema} from "./schemaController/Comment"
 import {ReplySchema} from "./schemaController/Reply"
+const {ObjectID} = require('mongodb');
 
 
 import mongoose from "mongoose"
+import { SchemaTypes } from "../../mongodb/SchemaTypes"
 
 const { User } = require("../../mongodb/DBHandler")
 
@@ -41,6 +43,7 @@ router.post("/write", auth, ImageUploader.upload.single("img"), async (req, res)
 	try {
 		let user = await User.findOneByUsername(req.session.username)
 		let post = await PostSchema.create({
+			_id:new mongoose.Types.ObjectId(),
 			title: title,
 			content: content,
 			author: user._id,
@@ -52,7 +55,8 @@ router.post("/write", auth, ImageUploader.upload.single("img"), async (req, res)
 			articleId: postUrl,
 			upvote: 0,
 			downvote: 0,
-			authorName: req.session.username
+			authorName: req.session.username,
+			visibility:req.body.visibility
 		})
 		await UserBoardDataSchema.addPost(user.boardData, post._id)
 	} catch (e) {
@@ -94,7 +98,9 @@ router.post("/edit", auth, ImageUploader.upload.single("img"), async (req, res) 
 		.replace(/\<.+?\>/g, "")
 		.replace(/\[\[\]\]/g, "<br>")
 
-	await PostSchema.update(url, title, content)
+	let visibility=req.body.visibility
+	console.log(visibility)
+	await PostSchema.update(url, title, content,visibility)
 	if (imagedir !== "") {
 		await PostSchema.updateImage(url, imagedir)
 	}
@@ -103,8 +109,10 @@ router.post("/edit", auth, ImageUploader.upload.single("img"), async (req, res) 
 })
 router.post("/delete", ajaxauth, async (req, res) => {
 	try {
-		let id = new mongoose.Types.ObjectId(req.body.id)
+		let id = new ObjectID(req.body.id)
 		const post = await PostSchema.findOneById(id)
+		post._id
+		post.comments
 		if (post.author.toString() !== req.session.userId) {
 			res.status(401).end("")
 			return
@@ -129,12 +137,13 @@ router.post("/delete", ajaxauth, async (req, res) => {
 	}
 })
 router.post("/comment", auth, async (req, res) => {
-	const postId = new mongoose.Types.ObjectId(req.body.postId) //objectid
+	const postId = new ObjectID(req.body.postId) //objectid
 	const content = req.body.content
-	const userId = new mongoose.Types.ObjectId(req.session.userId)
+	const userId = new ObjectID(req.session.userId)
 	let user = await User.getBoardData(userId)
 
 	let comment = await CommentSchema.create({
+		_id:new mongoose.Types.ObjectId(),
 		content: content,
 		article: postId,
 		author: userId,
@@ -156,7 +165,7 @@ router.post("/comment", auth, async (req, res) => {
 
 router.post("/comment/delete", ajaxauth, async (req, res) => {
 	try {
-		let commid = new mongoose.Types.ObjectId(req.body.commentId)
+		let commid = new ObjectID(req.body.commentId)
 		const comment = await CommentSchema.findOneById(commid)
 		if (comment.author.toString() !== req.session.userId) {
 			res.status(401).end("")
@@ -176,7 +185,7 @@ router.post("/comment/delete", ajaxauth, async (req, res) => {
 router.post("/reply/delete", ajaxauth, async (req, res) => {
 	try {
 		//console.log(req.body)
-		let commid = new mongoose.Types.ObjectId(req.body.commentId)
+		let commid = new ObjectID(req.body.commentId)
 		const reply = await ReplySchema.findOneById(commid)
 
 		if (reply.author.toString() !== req.session.userId) {
@@ -198,16 +207,14 @@ router.post("/reply/delete", ajaxauth, async (req, res) => {
 
 router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 	try {
-		const comment = await CommentSchema.findOneById(new mongoose.Types.ObjectId(req.params.commentId))
-		const commentreply = await CommentSchema.getReplyById(new mongoose.Types.ObjectId(req.params.commentId))
+		const comment = await CommentSchema.findOneById(new ObjectID(req.params.commentId))
+		const commentreply = await CommentSchema.getReplyById(new ObjectID(req.params.commentId))
 		const postUrl = await PostSchema.getUrlById(comment.article)
 		let voteRecords=null
 		if(req.session && req.session.isLogined){
 			const user = await User.getBoardData(req.session.userId)
 			voteRecords = await UserBoardDataSchema.getVoteRecords(user.boardData)
 		}
-
-
 
 		let replys = []
 		for (let reply of commentreply.reply) {
@@ -238,13 +245,14 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 })
 
 router.post("/comment/reply", auth, async (req, res) => {
-	const commentId =new  mongoose.Types.ObjectId(req.body.commentId) //objectid
+	const commentId =new ObjectID(req.body.commentId) //objectid
 	const content = req.body.content
-	const userId = new mongoose.Types.ObjectId(req.session.userId)
+	const userId = new ObjectID(req.session.userId)
 	let user = await User.getBoardData(userId)
-	const comment = await CommentSchema.findOneById(new mongoose.Types.ObjectId(req.body.commentId))
+	const comment = await CommentSchema.findOneById(new ObjectID(req.body.commentId))
 
 	let reply = await ReplySchema.create({
+		_id:new mongoose.Types.ObjectId(),
 		content: content,
 		comment: commentId,
 		article: comment.article,
@@ -264,7 +272,7 @@ router.post("/comment/reply", auth, async (req, res) => {
 	res.redirect("/board/post/comment/" + req.body.commentId + "/reply")
 })
 
-router.get("/:postUrl",availabilityCheck, async (req, res) => {
+router.get("/:postUrl",availabilityCheck, postRoleChecker, async (req, res) => {
 	try {
 
 		let post = await PostSchema.findOneByArticleIdWithComment(Number(req.params.postUrl))
@@ -283,11 +291,8 @@ router.get("/:postUrl",availabilityCheck, async (req, res) => {
 				isBookmarked=true
 			}
 		}
-		
 
-		
-
-		await PostSchema.incrementView(post.articleId)
+		await PostSchema.incrementView(Number(req.params.postUrl))
 
 		let comment = []
 		for (let comm of post.comments) {
@@ -320,7 +325,8 @@ router.get("/:postUrl",availabilityCheck, async (req, res) => {
 			downvotes: post.downvote,
 			createdAt: post.createdAt,
 			myvote:checkVoteRecord(post._id,voteRecords),
-			isBookmarked:isBookmarked
+			isBookmarked:isBookmarked,
+			visibility:post.visibility
 		})
 	} catch (e) {
 		console.error(e)

@@ -1,5 +1,6 @@
 import express = require("express")
 import session from "express-session"
+import mongoose from "mongoose"
 import { ImageUploader } from "../mongodb/mutler"
 import { ajaxauth, auth, containsId } from "./board/helpers"
 import { UserBoardDataSchema } from "./board/schemaController/UserData"
@@ -179,6 +180,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 	let encryptedPw = await encrypt(body.password, salt)
 
 	let boardData = await UserBoardDataSchema.create({
+		_id:new mongoose.Types.ObjectId(),
 		articles: [],
 		comments: [],
 		bookmarks: [],
@@ -187,6 +189,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 	})
 
 	User.create({
+		_id:new mongoose.Types.ObjectId(),
 		username: body.username,
 		email: body.email,
 		password: encryptedPw,
@@ -232,6 +235,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 		if (user.boardData == null) {
 			console.log("added board data")
 			let boardData = await UserBoardDataSchema.create({
+				_id:new mongoose.Types.ObjectId(),
 				articles: [],
 				comments: [],
 				bookmarks: [],

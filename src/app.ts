@@ -2,11 +2,12 @@ import SETTINGS = require("../res/globalsettings.json")
 
 import { createServer } from "http"
 import {  Server, Socket } from "socket.io"
-import express = require("express")
+// import express = require("express")
 import fs = require("fs")
 import cors = require("cors")
 import os = require("os")
 import { R } from "./RoomStorage"
+
 const session = require("express-session")({
 	key: "sid", //세션의 키 값
 	secret: "salr", //세션의 비밀 키, 쿠키값의 변조를 막기 위해서 이 값을 통해 세션을 암호화 하여 저장
@@ -16,6 +17,11 @@ const session = require("express-session")({
 		maxAge: 24000 * 60 * 60 // 쿠키 유효기간 24시간
 	}
 })
+import express=require("express")
+
+// import session from 'express-session';
+
+
 
 
 const clientPath = `${__dirname}/../public`
@@ -82,8 +88,8 @@ export const io = new Server(httpserver, {
 
 //for using sessing in socket.io
 io.use((socket, next) => {
-	let req = socket.request as express.Request
-	let res = req.res as express.Response
+	let req = socket.request as any
+	let res = req.res as any
 	session(req, res, next as express.NextFunction)
 })
 
@@ -103,10 +109,10 @@ io.on("connection", function (socket: Socket) {
 	require("./Marble/MarbleRoomSocket")(socket)
 })
 
-app.get("/connection_check", function (req, res) {
+app.get("/connection_check", function (req:any, res:any) {
 	res.end()
 })
-app.get("/notfound", function (req, res) {
+app.get("/notfound", function (req:any, res:any) {
 	res.render("notfound")
 })
 // app.get("/mode_selection", function (req, res, next) {})
@@ -130,7 +136,7 @@ app.get("/notfound", function (req, res) {
 // 	res.end("")
 // })
 
-app.post("/reset_game", function (req, res) {
+app.post("/reset_game", function (req:any, res:any) {
 	//console.log(req.session)
 	let rname = req.session.roomname
 	//console.log("reset"+rname)

@@ -1,6 +1,8 @@
 import express = require("express")
-import { UserBoardData } from "../../mongodb/BoardDBSchemas"
-import { auth, availabilityCheck, CommentSummary, COUNT_PER_PAGE, PostTitle, timestampToNumber } from "./helpers"
+import { InferSchemaType } from "mongoose"
+import { Article, UserBoardData } from "../../mongodb/BoardDBSchemas"
+import { SchemaTypes } from "../../mongodb/SchemaTypes"
+import { auth, availabilityCheck, CommentSummary, COUNT_PER_PAGE, filterPostSummary, PostTitle, timestampToNumber } from "./helpers"
 
 import {CommentSchema} from "./schemaController/Comment"
 
@@ -9,6 +11,7 @@ import { ReplySchema } from "./schemaController/Reply"
 import { UserBoardDataSchema } from "./schemaController/UserData"
 const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
+
 
 router.get("/:username/posts", availabilityCheck,async (req, res) => {
 	try{
@@ -21,9 +24,9 @@ router.get("/:username/posts", availabilityCheck,async (req, res) => {
 		let user = await User.findIdByUsername(req.params.username)
 	
 		let total=await PostSchema.countDocuments({author:user._id});
-		let postlist: PostTitle[] = await PostSchema.findTitleOfUserByRange(start, count, user._id)
-	
-		res.render("board", {
+		let postlist: SchemaTypes.Article[] = await PostSchema.findSummaryOfUserByRange(start, count, user._id)
+		postlist=await filterPostSummary(req.session,postlist,false)
+		res.render("postlist", {
 			displayType:"user",
 			posts: postlist,
 			logined: req.session.isLogined,
@@ -54,11 +57,11 @@ router.get("/:username/likes", availabilityCheck,async (req, res) => {
 		}
 		let likes=await UserBoardDataSchema.getLikedPosts(user.boardData)
 		let total=likes.upvotedArticles.length
-		likes=likes.upvotedArticles.slice(start,start+count)
+		let likesId=likes.upvotedArticles.slice(start,start+count)
 
-		let postlist: PostTitle[] = await PostSchema.findMultipleByIdList(likes)
-	
-		res.render("board", {
+		let postlist: SchemaTypes.Article[] = await PostSchema.findMultipleByIdList(likesId)
+		postlist=await filterPostSummary(req.session,postlist,false)
+		res.render("postlist", {
 			displayType:"userlikes",
 			posts: postlist,
 			logined: req.session.isLogined,
@@ -82,6 +85,10 @@ router.get("/:username/bookmarks", availabilityCheck,async (req, res) => {
 		if (req.query.start) {
 			start = Math.max(0,Number(req.query.start))
 		}
+		if(req.query.username!==req.session.username){
+			res.status(401).end()
+			return
+		}
 	
 		let user = await User.findOneByUsername(req.params.username)
 		if(!user){
@@ -91,11 +98,11 @@ router.get("/:username/bookmarks", availabilityCheck,async (req, res) => {
 		let bookmarks=await UserBoardDataSchema.getBookmarks(user.boardData)
 		let total=bookmarks.bookmarks.length
 
-		bookmarks=bookmarks.bookmarks.slice(start,start+count)
+		let bookmarksId=bookmarks.bookmarks.slice(start,start+count)
 
-		let postlist: PostTitle[] = await PostSchema.findMultipleByIdList(bookmarks)
-	
-		res.render("board", {
+		let postlist: SchemaTypes.Article[] = await PostSchema.findMultipleByIdList(bookmarksId)
+		postlist=await filterPostSummary(req.session,postlist,true)
+		res.render("postlist", {
 			displayType:"bookmarks",
 			posts: postlist,
 			logined: req.session.isLogined,
@@ -171,7 +178,7 @@ router.get("/:username/comments",availabilityCheck, async (req, res) => {
 					type: "comment",
 					id: String(comments[c]._id),
 					imagedir: comments[c].imagedir,
-					createdAt: comments[c].createdAt,
+					createdAt: comments[c].createdAt.toString(),
 					content: comments[c].content,
 					upvote: comments[c].upvote,
 					downvote: comments[c].downvote,
@@ -188,7 +195,7 @@ router.get("/:username/comments",availabilityCheck, async (req, res) => {
 					type: "reply",
 					id: String(replys[r]._id),
 					imagedir: replys[r].imagedir,
-					createdAt: replys[r].createdAt,
+					createdAt: replys[r].createdAt.toString(),
 					content: replys[r].content,
 					upvote: replys[r].upvote,
 					downvote: replys[r].downvote,

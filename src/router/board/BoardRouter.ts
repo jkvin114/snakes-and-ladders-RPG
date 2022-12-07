@@ -3,8 +3,9 @@ import express = require("express")
 const router = express.Router()
 import { PostSchema } from "./schemaController/Post"
 import { ImageUploader } from "../../mongodb/mutler"
-import { auth, availabilityCheck, COUNT_PER_PAGE, PostTitle } from "./helpers"
+import { auth, availabilityCheck, COUNT_PER_PAGE, filterPostSummary, PostTitle } from "./helpers"
 import { UserBoardDataSchema } from "./schemaController/UserData"
+import { SchemaTypes } from "../../mongodb/SchemaTypes"
 const  {User}  = require("../../mongodb/DBHandler")
 
 // const { User } = require("../mongodb/DBHandler")
@@ -29,20 +30,19 @@ router.get("/", availabilityCheck,async (req, res) => {
 		start  = Math.max(0,Number(req.query.start))
 	}
 	let total=await PostSchema.countDocuments({});
+ 
+	let data:SchemaTypes.Article[]=(await PostSchema.findSummaryByRange(start, count))
+	data=await filterPostSummary(req.session,data,false)
 
-	PostSchema.findSummaryByRange(start, count)
-		.then((data: PostTitle[]) => {
-			res.render("board", {
-				displayType:"all",
-				posts: data,
-				logined: req.session.isLogined,
-				user: null,
-				count:count,
-				start:start,
-				isEnd:(start+count > total)
-			})
-		})
-		.catch((err: any) => res.status(500).redirect("/"))
+	res.render("postlist", {
+		displayType:"all",
+		posts: data,
+		logined: req.session.isLogined,
+		user: null,
+		count:count,
+		start:start,
+		isEnd:(start+count > total)
+	})
 })
 router.get("/mypage", availabilityCheck,auth, (req, res) => {
 	res.redirect("/board/user/" + req.session.username + "/posts")
