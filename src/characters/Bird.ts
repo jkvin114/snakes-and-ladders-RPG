@@ -4,16 +4,17 @@ import type { Game } from "../Game"
 import * as ENUM from "../data/enum"
 import { ITEM } from "../data/enum"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../core/Util"
+import { CALC_TYPE } from "../core/Util"
+import { Damage,PercentDamage } from "../core/Damage"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { AblityChangeEffect, NormalEffect, TickDamageEffect, TickEffect,ShieldEffect, EFFECT_TIMING } from "../StatusEffect"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import BirdAgent from "../AiAgents/BirdAgent"
 import type { Entity } from "../entity/Entity"
-
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 const ID = 7
 
 class Bird extends Player {
@@ -45,7 +46,7 @@ class Bird extends Player {
 
 	static SKILL_EFFECT_NAME=["hit", "hit", "bird_r"]
 
-	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 30, 7, 7, 0, 30]
 		super(turn, team, game, ai, ID, name)
@@ -80,6 +81,7 @@ class Bird extends Player {
 	}
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
+		this.pendingSkill = s
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s)//-1 when can`t use skill, 0 when it`s not attack skill
 		switch (s) {
 			case ENUM.SKILL.Q:
@@ -175,7 +177,7 @@ class Bird extends Player {
 		return damage
 	}
 
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos:number): Projectile|null {
 		return null
 	}
 
@@ -183,17 +185,18 @@ class Bird extends Player {
 		if (skill === ENUM.SKILL.Q) {
 			return this.calculateScale(Bird.SKILL_SCALES.Q)
 		}
+		return 0
 	}
 	getSkillAmount(key: string): number {
-		if(key==="w_q_adamage") return this.calculateScale(Bird.SKILL_SCALES.w_q_adamage)
-		if(key==="w_aa_adamage") return this.calculateScale(Bird.SKILL_SCALES.w_aa_adamage)
-		if(key==="r_aa_adamage") return this.calculateScale(Bird.SKILL_SCALES.r_aa_adamage)
+		if(key==="w_q_adamage") return this.calculateScale(Bird.SKILL_SCALES.w_q_adamage!)
+		if(key==="w_aa_adamage") return this.calculateScale(Bird.SKILL_SCALES.w_aa_adamage!)
+		if(key==="r_aa_adamage") return this.calculateScale(Bird.SKILL_SCALES.r_aa_adamage!)
 
 		return 0
 	}
 
-	getSkillDamage(target: Entity): SkillAttack {
-		let skillattr: SkillAttack = null
+	getSkillDamage(target: Entity): SkillAttack|null {
+		let skillattr = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {

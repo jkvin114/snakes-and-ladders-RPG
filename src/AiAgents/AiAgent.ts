@@ -1,7 +1,7 @@
 import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventInterface } from "../data/PayloadInterface"
-import { copyElementsOnly, pickRandom, ListSet, shuffle, SkillTargetSelector, sleep, Stack } from "../core/Util"
+import { copyElementsOnly, pickRandom, ListSet, shuffle, sleep, Stack } from "../core/Util"
 import { items as ItemList } from "../../res/item.json"
 import PlayerInventory from "../player/PlayerInventory"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
@@ -9,7 +9,7 @@ import type { Player } from "../player/player"
 import { EntityFilter } from "../entity/EntityFilter"
 import SETTINGS = require("./../../res/globalsettings.json")
 import TRAIN_SETTINGS = require("./../../res/train_setting.json")
-
+import { SkillTargetSelector } from "../core/skill"
 const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)
 const ITEMS=ItemList
 
@@ -217,7 +217,7 @@ abstract class AiAgent {
 		return true
 	}
 
-	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player {
+	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player|null {
 		let players = targets.targets
 		if (players.length === 1) {
 			return this.player.game.pOfTurn(players[0])

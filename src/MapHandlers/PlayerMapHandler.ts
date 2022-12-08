@@ -1,10 +1,11 @@
 import { Player } from "../player/player"
 import { EntityFilter } from "../entity/EntityFilter"
-import { MAP ,singleMap} from "./MapStorage"
+import { MAP ,singleCasinoMap,singleMap, singleOceanMap} from "./MapStorage"
 import * as ENUM from "../data/enum"
-import { CALC_TYPE, Damage, randomBoolean} from "../core/Util"
-import { ObstacleHelper } from "../core/helpers"
+import { CALC_TYPE,  randomBoolean} from "../core/Util"
+import { ObstacleHelper } from "../core/Obstacles"
 import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
+import { Damage } from "../core/Damage"
 
 interface TwoWayMap {
 	onMainWay: boolean //갈림길 체크시 샤용
@@ -69,7 +70,7 @@ abstract class PlayerMapHandler {
 			ObstacleHelper.kidnap(this.player,info.result)
 		} 
 	}
-	getPendingObs(pendingObs:number):ServerGameEventInterface.PendingObstacle{
+	getPendingObs(pendingObs:number):ServerGameEventInterface.PendingObstacle|null{
 		return null
 	}
 	shouldStunDice(){
@@ -132,9 +133,10 @@ class RapidMapHandler extends PlayerMapHandler {
 
 class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 	onMainWay: boolean
+	gamemap:singleOceanMap
 	constructor(player: Player) {
 		super(player)
-		this.gamemap = MAP.get(ENUM.MAP_TYPE.OCEAN)
+		this.gamemap = MAP.get(ENUM.MAP_TYPE.OCEAN) as singleOceanMap
 		this.onMainWay = true //갈림길 체크시 샤용
 	}
 	isOnMainWay() {
@@ -192,7 +194,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 			}
 		} catch (e) {
 			return false
-		}
+		}return false
 	}
 
 	goWay2() {
@@ -232,13 +234,14 @@ enum SUBWAY_TICKET{
 class CasinoMapHandler extends PlayerMapHandler {
 	subwayTicket: number
 	isInSubway: boolean
+	gamemap:singleCasinoMap
 	private static readonly SUBWAY_LOCAL="subway_local"
 	private static readonly SUBWAY_RAPID="subway_rapid"
 	private static readonly SUBWAY_EXPRESS="subway_express"
 	private static readonly SUBWAY_DELAY=400
 	constructor(player: Player) {
 		super(player)
-		this.gamemap = MAP.get(ENUM.MAP_TYPE.CASINO)
+		this.gamemap = MAP.get(ENUM.MAP_TYPE.CASINO) as singleCasinoMap
 		this.isInSubway = false
 	}
 	onDeath(): void {
@@ -285,7 +288,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 		super.onPendingObsComplete(info)
 	}
 
-	getPendingObs(pendingObs: number): ServerGameEventInterface.PendingObstacle {
+	getPendingObs(pendingObs: number): ServerGameEventInterface.PendingObstacle|null {
 		if (pendingObs === 63) {
 			return {name:"pending_obs:threaten",argument:0}
 		}

@@ -1,8 +1,8 @@
 import * as ENUM from "../data/enum"
-import { Damage, SkillAttack, SkillTargetSelector } from "../core/Util"
 import { Player } from "../player/player"
 import type { Game } from "../Game"
 
+import { Damage,PercentDamage } from "../core/Damage"
 
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
@@ -11,6 +11,7 @@ import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
 import JeanAgent from "../AiAgents/JeanAgent"
 import type { Entity } from "../entity/Entity"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 const ID = 4
 class Jean extends Player {
 	//	onoff: boolean[]
@@ -27,7 +28,7 @@ class Jean extends Player {
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 	static readonly SKILL_EFFECT_NAME=["gun", "sniper_w", "sniper_r"]
 
-	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [190, 40, 7, 7, 0, 0]
 		super(turn, team, game, ai, ID, name)
@@ -35,7 +36,7 @@ class Jean extends Player {
 		this.cooltime_list = [3, 4, 9]
 		this.duration_list=[0,0,2]
 		this.skill_ranges=[20,40,40]
-		this.u_target = null
+		this.u_target = ""
 		
 		
 		this.AiAgent=new JeanAgent(this)
@@ -70,6 +71,7 @@ class Jean extends Player {
 	getSkillTargetSelector(s: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s) //-1 when can`t use skill, 0 when it`s not attack skill
 		//console.log("getSkillAttr" + s)
+		this.pendingSkill=s
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[s])
@@ -95,7 +97,7 @@ class Jean extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos:number): Projectile|null {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.W) {
@@ -104,14 +106,16 @@ class Jean extends Player {
 
 			return proj
 		}
+		return null
 	}
 	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
 			return this.calculateScale(Jean.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Jean.SKILL_SCALES.R)
+			return this.calculateScale(Jean.SKILL_SCALES.R!)
 		}
+		return 0
 	}
 	getSkillAmount(key: string): number {
 		if(key==="rshield") return 80
@@ -123,9 +127,9 @@ class Jean extends Player {
 		return new ShieldEffect(ENUM.EFFECT.SNIPER_ULT_SHIELD,4,this.getSkillAmount("rshield"))
 	}
 
-	getSkillDamage(target: Entity): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack|null {
 	//	console.log(target + "getSkillDamage" + this.pendingSkill)
-		let skillattr: SkillAttack = null
+		let skillattr = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
@@ -173,7 +177,8 @@ class Jean extends Player {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
 			let skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0), this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
-			this.mediator.skillAttackSingle(this,this.u_target,skillattr)
+			if(this.u_target!=="")
+				this.mediator.skillAttackSingle(this,this.u_target,skillattr)
 			// this.hitOneTarget(this.u_target, skillattr)
 		}
 		//궁 세번째 공격
@@ -182,15 +187,15 @@ class Jean extends Player {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
 			let skillattr = new SkillAttack(new Damage(0,0,this.getSkillBaseDamage(ENUM.SKILL.ULT)),this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
+			if(this.u_target!=="")
+				this.mediator.skillAttackSingle(this,this.u_target,skillattr)
 
-			this.mediator.skillAttackSingle(this,this.u_target,skillattr)
-
-			this.u_target = null
+			this.u_target = ""
 		}
 	}
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
-			this.u_target = null
+			this.u_target = ""
 			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1)
 			this.effects.reset(ENUM.EFFECT.ROOT)
 		}

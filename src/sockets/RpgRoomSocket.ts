@@ -45,7 +45,7 @@ module.exports=function(socket:Socket){
 
 		if (!R.hasRoom(rname)) return
 
-		R.getRPGRoom(rname).user_gameReady(setting, rname)
+		R.getRPGRoom(rname)?.user_gameReady(setting, rname)
 
 		//게스트 페이지 바꾸기
 		socket.to(rname).emit("server:to_gamepage")

@@ -1,7 +1,10 @@
 import type { Player, ValueScale } from "./player"
-import { HPChangeData, CALC_TYPE, Damage } from "../core/Util"
+import {  CALC_TYPE } from "../core/Util"
 import { ITEM } from "../data/enum"
 import ABILITY = require("../../res/character_ability.json")
+import { PlayerComponent } from "./PlayerComponent"
+import { Damage,PercentDamage } from "../core/Damage"
+import { HPChange } from "../core/health"
 
 class Ability {
 	protected amount: number
@@ -69,7 +72,7 @@ class ConstrainedAbility extends Ability {
 	}
 }
 
-class PlayerAbility {
+class PlayerAbility implements PlayerComponent{
 	AD: Ability
 	AR: Ability
 	MR: Ability
@@ -118,6 +121,9 @@ class PlayerAbility {
 		this.ultHaste = new ConstrainedAbility("ultHaste", PlayerAbility.MAX_ULTHASTE)
 		this.moveSpeed = new ConstrainedAbility("moveSpeed", PlayerAbility.MAX_MOVESPEED)
 		this.pendingMaxHpChange = 0
+	}
+	onTurnStart(){
+
 	}
 	initial(){
 		return ABILITY[this.player.champ].initial
@@ -281,7 +287,7 @@ class PlayerAbility {
 	}
 	//모든피해 흡혈
 	absorb_hp(damage: number) {
-		this.player.changeHP_heal(new HPChangeData(Math.floor((damage * this.absorb.get()) / 100)))
+		this.player.changeHP_heal(new HPChange(Math.floor((damage * this.absorb.get()) / 100)))
 	}
 	/**
 	 * 공격속도 비례 데미지 감소
@@ -303,7 +309,7 @@ class PlayerAbility {
 	}
 	onTurnEnd() {
 		if (this.regen.get() > 0) {
-			this.player.changeHP_heal(new HPChangeData(this.regen.get()))
+			this.player.changeHP_heal(new HPChange(this.regen.get()))
 		}
 	}
 	applyResistanceToDamage(damage: Damage, target: PlayerAbility): number {

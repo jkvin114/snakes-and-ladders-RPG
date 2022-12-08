@@ -2,16 +2,18 @@ import * as ENUM from "../data/enum"
 import { Player } from "../player/player"
 import type { Game } from "../Game"
 
+import { Damage,PercentDamage } from "../core/Damage"
 
-import { Damage, SkillTargetSelector, SkillAttack, PercentDamage, CALC_TYPE } from "../core/Util"
+import { CALC_TYPE } from "../core/Util"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { TickDamageEffect, TickEffect, OnHitEffect } from "../StatusEffect"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import TimoAgent from "../AiAgents/TimoAgent"
 import type { Entity } from "../entity/Entity"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 const ID = 2
 class Timo extends Player {
 	//	onoff: boolean[]
@@ -27,7 +29,7 @@ class Timo extends Player {
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 	static readonly SKILL_EFFECT_NAME=["ghost_q", "hit", "ghost_r"]
 
-	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [170, 30, 6, 6, 0, 30]
 		super(turn, team, game, ai, ID, name)
@@ -90,7 +92,7 @@ class Timo extends Player {
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(skill)
-
+		this.pendingSkill=skill
 		switch (skill) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(this.skill_ranges[skill])
@@ -124,7 +126,7 @@ class Timo extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos:number): Projectile|null {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.ULT) {
@@ -132,18 +134,20 @@ class Timo extends Player {
 			this.startCooltime(ENUM.SKILL.ULT)
 			return proj
 		}
+		return null
 	}
 	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
 			return this.calculateScale(Timo.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Timo.SKILL_SCALES.R)
+			return this.calculateScale(Timo.SKILL_SCALES.R!)
 		}
+		return 0
 	}
 
-	getSkillDamage(target: Entity): SkillAttack {
-		let skillattr: SkillAttack = null
+	getSkillDamage(target: Entity): SkillAttack|null {
+		let skillattr = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {

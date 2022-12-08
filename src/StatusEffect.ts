@@ -1,9 +1,12 @@
 import type { Player } from "./player/player"
-import { CALC_TYPE, Damage, decrement, HPChangeData, PercentDamage, SkillAttack } from "./core/Util"
+import { CALC_TYPE,  decrement } from "./core/Util"
 import { EFFECT, ITEM, SKILL } from "./data/enum"
 import {PlayerAbility} from "./player/PlayerAbility"
 import { SpecialEffect } from "./data/SpecialEffectRegistry"
 import { Entity } from "./entity/Entity"
+import { Damage,PercentDamage } from "./core/Damage"
+import { HPChange } from "./core/health"
+import { SkillAttack } from "./core/skill"
 
 enum EFFECT_SOURCE {
 	ENEMY,
@@ -67,7 +70,7 @@ class ItemEffectFactory {
 			case ITEM.EPIC_FRUIT:
 				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_FOREVER, TickEffect.FREQ_EVERY_TURN)
 					.setAction(function (this: Player) {
-						this.changeHP_heal(new HPChangeData(this.ability.extraHP * 0.15))
+						this.changeHP_heal(new HPChange(this.ability.extraHP * 0.15))
 
 						return false
 					})
@@ -226,7 +229,7 @@ class ItemEffectFactory {
  *
  */
 class GeneralEffectFactory {
-	static create(id: EFFECT, dur: number):StatusEffect {
+	static create(id: EFFECT, dur: number):StatusEffect |null{
 		switch (id) {
 			case EFFECT.SLOW:
 			case EFFECT.BACKDICE:
@@ -287,7 +290,7 @@ abstract class StatusEffect {
 	public readonly timing: EFFECT_TIMING
 	public readonly id: EFFECT
 	public name: string
-	public source: string
+	public source: string|null
 	public effectType: EFFECT_TYPE
 	static readonly DURATION_UNTIL_LETHAL_DAMAGE = 1000
 	static readonly DURATION_UNTIL_DEATH = 2000
@@ -389,7 +392,7 @@ class ShieldEffect extends StatusEffect {
 	onBeforeRemove() {
 		if (this.amount <= 0) return
 		//console.log("shield brefore remove"+this.amount)
-		this.owner.updateTotalShield(-this.amount, true)
+		this.owner?.updateTotalShield(-this.amount, true)
 	}
 }
 class AblityChangeEffect extends StatusEffect {
@@ -411,11 +414,11 @@ class AblityChangeEffect extends StatusEffect {
 		super.applyTo(owner)
 
 		for (const [name, val] of this.abilityChanges.entries()) {
-			this.owner.ability.update(name, val)
+			this.owner?.ability.update(name, val)
 
 			this.remainingChanges.set(name, val)
 		}
-		this.owner.ability.flushChange()
+		this.owner?.ability.flushChange()
 
 		return this
 	}
@@ -424,18 +427,18 @@ class AblityChangeEffect extends StatusEffect {
 			for (const [name, val] of this.remainingChanges.entries()) {
 				let decayamt = Math.floor((-1 * this.abilityChanges.get(name)) / this.duration)
 
-				this.owner.ability.update(name, decayamt)
+				this.owner?.ability.update(name, decayamt)
 
 				this.remainingChanges.set(name, val + decayamt)
 			}
-			this.owner.ability.flushChange()
+			this.owner?.ability.flushChange()
 		}
 
 		return super.cooldown()
 	}
 	onBeforeReapply(): number {
 		for (const [name, val] of this.remainingChanges.entries()) {
-			this.owner.ability.update(name, -1 * val)
+			this.owner?.ability.update(name, -1 * val)
 
 			this.remainingChanges.set(name, 0)
 		}
@@ -445,12 +448,12 @@ class AblityChangeEffect extends StatusEffect {
 	onBeforeRemove(): void {
 		//	console.log(this.owner.ability.MR)
 		for (const [name, val] of this.remainingChanges.entries()) {
-			this.owner.ability.update(name, -1 * val)
+			this.owner?.ability.update(name, -1 * val)
 			//	console.log("removeabilitychange"+name+" "+val)
 			this.remainingChanges.set(name, 0)
 		}
 
-		this.owner.ability.flushChange()
+		this.owner?.ability.flushChange()
 	}
 }
 
@@ -464,14 +467,14 @@ class TickEffect extends StatusEffect {
 
 	protected tickAction: TickActionFunction
 	protected frequency: number
-	protected sourceSkill: SKILL //스킬 판정인지 여부, null 이면 스킬판정 아님
+	protected sourceSkill: SKILL|null //스킬 판정인지 여부, null 이면 스킬판정 아님
 
 	constructor(id: EFFECT, dur: number, frequency: number) {
 		super(id, dur, TICK_EFFECT_TIMING)
 		this.frequency = frequency
 		this.effectType = EFFECT_TYPE.TICK
 		this.sourceSkill = null
-		this.tickAction = null
+		this.tickAction = function(this: Player){return false}
 	}
 
 	setAction(tickAction: TickActionFunction) {

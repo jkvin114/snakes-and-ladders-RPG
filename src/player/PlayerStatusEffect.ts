@@ -16,6 +16,8 @@ import {
 } from "../StatusEffect"
 import PlayerInventory from "./PlayerInventory"
 import { Entity } from "../entity/Entity"
+import { PlayerComponent } from "./PlayerComponent"
+import { Damage,PercentDamage } from "../core/Damage"
 
 interface StatusEffectManager {
 	onLethalDamage(): void
@@ -59,7 +61,7 @@ class EntityStatusEffect implements StatusEffectManager {
 	reset(effect: number) {}
 }
 
-class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager {
+class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager,PlayerComponent {
 	protected owner: Player
 	private category: Map<number, StatusEffect>[]
 
@@ -68,7 +70,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.owner = player
 		this.initCategory()
 	}
-	initCategory() {
+	private initCategory() {
 		this.category = []
 		this.category.push(new Map<number, StatusEffect>())
 		this.category.push(new Map<number, ShieldEffect>())
@@ -92,6 +94,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		for (const [key, effect] of this.storage.entries()) {
 			if (effect.onDeath()) this.removeByKey(key)
 		}
+	}
+	onOneMoreDice(){
+		this.cooldownAllHarmful()
 	}
 	onTurnStart(){
 		this.cooldownEffectTurnStart()
@@ -126,19 +131,20 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		return range
 	}
 
-	getSpecialEffectDesc(name: string): SpecialEffect.DescriptionData {
+	private getSpecialEffectDesc(name: string): SpecialEffect.DescriptionData|undefined {
 		return SpecialEffect.Setting.get(name)
 	}
-	getEffectSourcePlayerName(source: string): string {
+	private getEffectSourcePlayerName(source: string): string {
 		return this.owner.game.getNameById(source)
 	}
 
-	applySpecial(effect: StatusEffect, name?: string) {
+	applySpecial(effect: StatusEffect|undefined, name?: string) {
+		if(!effect)return
 		if (name != null) effect.setName(name)
 
-		let data: SpecialEffect.DescriptionData = this.getSpecialEffectDesc(effect.name)
+		let data: SpecialEffect.DescriptionData|undefined = this.getSpecialEffectDesc(effect.name)
 
-		if (data != null) {
+		if (data) {
 		//	console.log(this.getEffectSourcePlayerName(effect.source))
 			this.owner.game.eventEmitter.giveSpecialEffect(
 				this.owner.turn,
@@ -155,9 +161,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		if (effect instanceof ShieldEffect) {
 			this.setShield(effect.id, effect, false)
 		} else {
-			if (this.storage.has(effect.id)) {
-				this.storage.get(effect.id).onBeforeReapply()
-			}
+			this.storage.get(effect.id)?.onBeforeReapply()
 
 			this.storage.set(effect.id, effect)
 			this.category[effect.effectType].set(effect.id, effect)
@@ -190,9 +194,8 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		if(!statusEffect) return
 		
 		statusEffect.applyTo(this.owner)
-		if (this.storage.has(effect)) {
-			this.storage.get(effect).onBeforeReapply()
-		}
+		this.storage.get(effect)?.onBeforeReapply()
+		
 
 		this.storage.set(effect, statusEffect)
 		this.category[statusEffect.effectType].set(effect, statusEffect)
@@ -218,7 +221,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 
 	//     // }
 	// }
-	removeByKey(key: number) {
+	private removeByKey(key: number) {
 		if (key < 0) return
 		
 		let effect = this.storage.get(key)
@@ -235,7 +238,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 			this.owner.game.eventEmitter.update("removeSpecialEffect", this.owner.turn, effect.name)
 		}
 	}
-	getKeyByName(name: string) {
+	private getKeyByName(name: string) {
 		for (const [key, effect] of this.storage.entries()) {
 			if (effect.name === name) {
 				return key
@@ -250,21 +253,21 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		}
 	}
 
-	cooldownEffectsBeforeSkill() {
+	private cooldownEffectsBeforeSkill() {
 		this.cooldown(EFFECT_TIMING.BEFORE_SKILL)
 	}
 
-	cooldownEffectsAfterSkill() {
+	private cooldownEffectsAfterSkill() {
 		this.cooldown(EFFECT_TIMING.TURN_END)
 	}
-	cooldownEffectTurnStart() {
+	private cooldownEffectTurnStart() {
 		this.cooldown(EFFECT_TIMING.TURN_START)
 	}
 
-	cooldownEffectBeforeObs() {
+	private cooldownEffectBeforeObs() {
 		this.cooldown(EFFECT_TIMING.BEFORE_OBS)
 	}
-	cooldownAllHarmful() {
+	private cooldownAllHarmful() {
 		for (const [key, effect] of this.storage.entries()) {
 			if (!effect.isgood && !effect.cooldown()) this.removeByKey(key)
 		}
@@ -310,10 +313,11 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	 * @param {*} shield 변화량 + or -
 	 * @param {*} noindicate 글자 표시할지 여부
 	 */
-	setShield(key: EFFECT, effect: ShieldEffect, noindicate: boolean) {
+	private setShield(key: EFFECT, effect: ShieldEffect, noindicate: boolean) {
 		let change = effect.amount
-		if (this.storage.has(key)) {
-			change = effect.amount - this.storage.get(key).onBeforeReapply()
+		let ef=this.storage.get(key)
+		if (ef!=null) {
+			change = effect.amount - ef.onBeforeReapply()
 		}
 
 		this.storage.set(key, effect)
@@ -342,14 +346,14 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	}
 
 	onObstacleDamage(damage: number) {
-		let dmg = new Util.Damage(0, 0, damage)
+		let dmg = new Damage(0, 0, damage)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
 			;(effect as OnDamageEffect).onObstacleDamage(dmg)
 		}
 		return dmg.getTotalDmg()
 	}
-	onSkillDamage(damage: Util.Damage, source: string) {
+	onSkillDamage(damage: Damage, source: string) {
 		//console.log("onskilldamage"+this.player.turn)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
@@ -357,7 +361,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		}
 		return damage
 	}
-	onBasicAttackDamage(damage: Util.Damage, source: string) {
+	onBasicAttackDamage(damage: Damage, source: string) {
 		//console.log("onBasicAttackDamage"+this.player.turn)
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONDAMAGE].entries()) {
 			if (!(effect instanceof OnDamageEffect)) continue
@@ -366,7 +370,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		return damage
 	}
 
-	onSkillHit(damage: Util.Damage, target: Player) {
+	onSkillHit(damage: Damage, target: Player) {
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONHIT].entries()) {
 			// console.log("onSkillHit" + effect.name)
 			if (!(effect instanceof OnHitEffect)) continue
@@ -375,7 +379,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		}
 		return damage
 	}
-	onBasicAttackHit(damage: Util.Damage, target: Player) {
+	onBasicAttackHit(damage: Damage, target: Player) {
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONHIT].entries()) {
 			if (!(effect instanceof OnHitEffect)) continue
 			damage = (effect as OnHitEffect).onHitWithBasicAttack(target, damage)

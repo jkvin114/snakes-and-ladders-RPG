@@ -4,8 +4,8 @@ import type {Game } from "../../Game"
 import { EntityFilter } from "../../entity/EntityFilter"
 import { ENTITY_TYPE, SKILL } from "../../data/enum"
 import { ServerGameEventInterface } from "../../data/PayloadInterface"
-import {  SkillAttack }  from "../../core/Util"
-import type {Damage} from "../../core/Util"
+import {  SkillAttack }  from "../../core/skill"
+import type {Damage} from "../../core/Damage"
 abstract class SummonedEntity extends Entity {
 	summoner: Player
 	lifeTime: number
@@ -53,10 +53,10 @@ abstract class SummonedEntity extends Entity {
 
 		if (e instanceof Player) {
 			if (this.summoner === e) return false
-			if (this.game.isTeam && this.summoner.team === e.team) return false
+			if (this.summoner.team === e.team) return false
 		} else if (e instanceof SummonedEntity) {
 			if (this.summoner === e.summoner) return false
-			if (this.game.isTeam && this.summoner.team === e.summoner.team) return false
+			if (this.summoner.team === e.summoner.team) return false
 		}
 		return true
 	}

@@ -49,7 +49,7 @@ class RPGRoom extends Room {
 		return this.gameloop.game.isThisTurn(cryptTurn)
 	}
 	getPlayerMessageHeader(turn: number): string {
-		if(!this.gameloop) return
+		if(!this.gameloop) return ""
 		return this.gameloop.getPlayerMessageHeader(turn)
 	}
 	get getMapId():number {
@@ -92,7 +92,7 @@ class RPGRoom extends Room {
 	 * @returns test if all players are connected
 	 */
 	user_startGame(): boolean {
-		if(!this.gameloop) return
+		if(!this.gameloop) return false
 
 		let canstart = this.gameloop.game.canStart()
 		if (!canstart) return false
@@ -236,7 +236,7 @@ class RPGRoom extends Room {
 	reset(): void {
 		super.reset()
 		if (this.gameloop != null) this.gameloop.onDestroy()
-		this.gameloop = null
+		// this.gameloop = null
 		// this.simulation = null
 	}
 }

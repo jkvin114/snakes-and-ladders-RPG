@@ -5,7 +5,7 @@ import defaultmap = require("../../res/map.json")
 import trainmap = require("../../res/train_map.json")
 import rapidmap = require("../../res/rapid_map.json")
 
-export type singleMap = {
+export interface singleMap {
 	mapname: string
 	coordinates: { x: number; y: number; obs: number; money: number }[]
 	finish: number
@@ -16,19 +16,43 @@ export type singleMap = {
 	goldperturn: number[]
 	shuffle:{start:number,end:number}[]
 	//ocean map only
-	submarine_range?: {
-		start: number
-		end: number
-	}
-	//ocean map only
 	way2_range?: {
 		start: number
 		end: number
 		way_start: number
 		way_end: number
 	}
+	//ocean map only
+	submarine_range?: {
+		start: number
+		end: number
+	}
 	//casino map only
 	subway?:{
+		start:number,
+		end:number,
+		default:number[],
+		rapid:number[],
+		express:number[],
+		prices:number[],
+	}
+}
+export interface singleTwoWayMap extends singleMap{
+	way2_range: {
+		start: number
+		end: number
+		way_start: number
+		way_end: number
+	}
+}
+export interface singleOceanMap extends singleTwoWayMap{
+	submarine_range: {
+		start: number
+		end: number
+	}
+}
+export interface singleCasinoMap extends singleTwoWayMap{
+	subway:{
 		start:number,
 		end:number,
 		default:number[],
@@ -64,7 +88,7 @@ class MapStorage {
 		return this.map[id].finish
 	}
 	getLimit(id: number): number {
-		if(this.map[id].way2_range!=null){
+		if(this.map[id].way2_range){
 			return this.map[id].way2_range.way_end
 		}
 		return this.map[id].finish

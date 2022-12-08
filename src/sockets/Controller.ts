@@ -16,9 +16,10 @@ interface MarbleRoomController{
 }
 export function controlRoom(socket:Socket,roomController:RoomController){
 	let rname = SocketSession.getRoomName(socket)
-	if (!R.hasRoom(rname)) return false
+	let room=R.getRoom(rname)
+	if(!room) return false
 	try{
-		roomController(R.getRoom(rname),rname)
+		roomController(room,rname)
         return true
 	}
 	catch(e){
@@ -29,9 +30,10 @@ export function controlRoom(socket:Socket,roomController:RoomController){
 export function controlRPGRoom(socket:Socket,roomController:RPGRoomController){
 	let rname = SocketSession.getRoomName(socket)
     let turn = SocketSession.getTurn(socket)
-	if (!R.hasRPGRoom(rname)) return false
+	let room=R.getRPGRoom(rname)
+	if(!room) return false
 	try{
-		roomController(R.getRPGRoom(rname),rname,turn)
+		roomController(room,rname,turn)
         return true
 	}
 	catch(e){
@@ -43,8 +45,10 @@ export function controlMarbleRoom(socket:Socket,roomController:MarbleRoomControl
 	let rname = SocketSession.getRoomName(socket)
     let turn = SocketSession.getTurn(socket)
 	if (!R.hasMarbleRoom(rname)) return false
+	let room=R.getMarbleRoom(rname)
+	if(!room) return false
 	try{
-		roomController(R.getMarbleRoom(rname),rname,turn)
+		roomController(room,rname,turn)
         return true
 	}
 	catch(e){

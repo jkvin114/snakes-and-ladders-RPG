@@ -15,8 +15,8 @@ abstract class Room {
 	//simulation: boolean
 	instant: boolean
 	map: number
-	idleTimeout: NodeJS.Timeout
-	connectionTimeout: NodeJS.Timeout
+	idleTimeout: NodeJS.Timeout|null
+	connectionTimeout: NodeJS.Timeout|null
 	connectionTimeoutTurn: number
 	idleTimeoutTurn: number
 	resetCallback:Function
@@ -195,7 +195,7 @@ abstract class Room {
 		// this.stopConnectionTimeout()
 		// this.stopIdleTimeout()
 		console.log(this.name + "has been reset")
-		this.name = null
+		this.name = "DELETED_ROOM"
 		this.playerSessions.clear()
 		
 		this.isTeam = false

@@ -13,7 +13,7 @@ const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
 
 
-router.get("/:username/posts", availabilityCheck,async (req, res) => {
+router.get("/:username/posts", availabilityCheck,async (req: express.Request, res: express.Response) => {
 	try{
 		let start = 0
 		let count = COUNT_PER_PAGE
@@ -42,7 +42,7 @@ router.get("/:username/posts", availabilityCheck,async (req, res) => {
 		return
 	}
 })
-router.get("/:username/likes", availabilityCheck,async (req, res) => {
+router.get("/:username/likes", availabilityCheck,async (req: express.Request, res: express.Response) => {
 	try{
 		let start = 0
 		let count = COUNT_PER_PAGE
@@ -52,10 +52,14 @@ router.get("/:username/likes", availabilityCheck,async (req, res) => {
 	
 		let user = await User.findOneByUsername(req.params.username)
 		if(!user){
-			res.status(400).redirect("/notfound")
+			res.status(404).redirect("/notfound")
         	return
 		}
 		let likes=await UserBoardDataSchema.getLikedPosts(user.boardData)
+		if(!likes){
+			res.status(404).redirect("/notfound")
+        	return
+		}
 		let total=likes.upvotedArticles.length
 		let likesId=likes.upvotedArticles.slice(start,start+count)
 
@@ -78,7 +82,7 @@ router.get("/:username/likes", availabilityCheck,async (req, res) => {
 	}
 })
 
-router.get("/:username/bookmarks", availabilityCheck,async (req, res) => {
+router.get("/:username/bookmarks", availabilityCheck,async (req: express.Request, res: express.Response) => {
 	try{
 		let start = 0
 		let count = COUNT_PER_PAGE
@@ -96,6 +100,10 @@ router.get("/:username/bookmarks", availabilityCheck,async (req, res) => {
         	return
 		}
 		let bookmarks=await UserBoardDataSchema.getBookmarks(user.boardData)
+		if(!bookmarks){
+			res.status(404).redirect("/notfound")
+        	return
+		}
 		let total=bookmarks.bookmarks.length
 
 		let bookmarksId=bookmarks.bookmarks.slice(start,start+count)
@@ -119,7 +127,7 @@ router.get("/:username/bookmarks", availabilityCheck,async (req, res) => {
 	}
 })
 
-router.get("/:username/comments",availabilityCheck, async (req, res) => {
+router.get("/:username/comments",availabilityCheck, async (req: express.Request, res: express.Response) => {
 	let start = 0
 	let count = COUNT_PER_PAGE
 	let sortby="new"   ///new,old,upvote
@@ -136,7 +144,10 @@ router.get("/:username/comments",availabilityCheck, async (req, res) => {
 
 		let comments = await CommentSchema.findOfUserByRange(start, count, user._id,sortby)
 		let replys = await ReplySchema.findOfUserByRange(start, count, user._id,sortby)
-
+		if(!comments || !replys){
+			res.status(404).redirect("/notfound")
+        	return
+		} 
 		// console.log(comments)
 		// console.log(replys)
 		let c = 0

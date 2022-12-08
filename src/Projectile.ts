@@ -2,7 +2,8 @@ import type { Player } from "./player/player"
 import type { Game } from "./Game";
 
 import { ServerGameEventInterface } from "./data/PayloadInterface"
-import { Damage, decrement } from "./core/Util"
+import {  decrement } from "./core/Util"
+import { Damage } from "./core/Damage"
 
 abstract class Projectile {
 	static readonly TYPE_RANGE = 1
@@ -15,7 +16,7 @@ abstract class Projectile {
 	static readonly TARGET_ENEMY = 6
 	static readonly TARGET_ALL = 7
 	// sourceTurn: number
-	sourcePlayer:Player
+	sourcePlayer:Player|null
 	protected size: number
 	name: string
 	damage: Damage
@@ -95,7 +96,6 @@ abstract class Projectile {
 		this.pos = -1
 		this.activated = false
 
-		this.damage = null
 		this.duration = 0
 	}
 	protected getOwner():number{
@@ -251,7 +251,7 @@ class PassProjectile extends Projectile {
 // }
 
 class ProjectileBuilder {
-	sourcePlayer: Player
+	sourcePlayer: Player|null
 	size: number
 	name: string
 	skillrange: number
@@ -334,10 +334,9 @@ class ProjectileBuilder {
 	build() {
 		if (this.type === Projectile.TYPE_PASS) {
 			return new PassProjectile(this)
-		} else if (this.type === Projectile.TYPE_RANGE) {
+		} else {
 			return new RangeProjectile(this)
 		}
-		return null
 	}
 }
 export { Projectile, ProjectileBuilder, PassProjectile, RangeProjectile }

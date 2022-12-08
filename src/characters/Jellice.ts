@@ -4,16 +4,17 @@ import type { Game } from "../Game"
 
 import * as ENUM from "../data/enum"
 import { ITEM } from "../data/enum"
+import { Damage,PercentDamage } from "../core/Damage"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../core/Util"
 import { TickDamageEffect, TickEffect,ShieldEffect, NormalEffect, EFFECT_TIMING } from "../StatusEffect"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import JelliceAgent from "../AiAgents/JelliceAgent"
 import type { Entity } from "../entity/Entity"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
@@ -35,7 +36,7 @@ class Jellice extends Player {
 	static readonly SKILL_EFFECT_NAME = ["magician_q", "hit", "magician_r"]
 	static readonly EFFECT_W_SHIELD="magician_w_shield"
 
-	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [170, 30, 6, 6, 0, 50]
 		super(turn, team, game, ai, ID, name)
@@ -72,6 +73,7 @@ class Jellice extends Player {
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s) //-1 when can`t use skill, 0 when it`s not attack skill
+		this.pendingSkill=s
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
@@ -92,6 +94,7 @@ class Jellice extends Player {
 	}
 	useNonTargetSkill(skill: number): boolean {
 		if(skill===ENUM.SKILL.Q) return this.useQ()
+		return false
 	}
 	private getWShield() {
 		return new ShieldEffect(ENUM.EFFECT.MAGICIAN_W_SHIELD, 2, 50)
@@ -171,7 +174,7 @@ class Jellice extends Player {
 		return super.getBaseBasicAttackDamage()
 	}
 
-	getSkillProjectile(pos: number): Projectile {
+	getSkillProjectile(pos: number): Projectile|null {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 
@@ -185,27 +188,29 @@ class Jellice extends Player {
 
 			return proj
 		}
+		return null
 	}
 
 	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return this.calculateScale(Jellice.SKILL_SCALES.Q)
+			return this.calculateScale(Jellice.SKILL_SCALES.Q!)
 		}
 		if (skill === ENUM.SKILL.W) {
-			return this.calculateScale(Jellice.SKILL_SCALES.W)
+			return this.calculateScale(Jellice.SKILL_SCALES.W!)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Jellice.SKILL_SCALES.R)
+			return this.calculateScale(Jellice.SKILL_SCALES.R!)
 		}
+		return 0
 	}
 	getSkillAmount(key: string): number {
-		if (key === "qrange_start") return Jellice.SKILL_SCALES.qrange_start.base
-		if (key === "qrange_end_front") return Jellice.SKILL_SCALES.qrange_end_front.base
-		if (key === "qrange_end_back") return Jellice.SKILL_SCALES.qrange_end_back.base
+		if (key === "qrange_start") return Jellice.SKILL_SCALES.qrange_start!.base
+		if (key === "qrange_end_front") return Jellice.SKILL_SCALES.qrange_end_front!.base
+		if (key === "qrange_end_back") return Jellice.SKILL_SCALES.qrange_end_back!.base
 		//앞 3~15, 뒤 3~8
 		return 0
 	}
-	getSkillDamage(target: Entity): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack |null{
 		return null
 	}
 	onSkillDurationEnd(skill: number) {}

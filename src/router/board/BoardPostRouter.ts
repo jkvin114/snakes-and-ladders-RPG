@@ -1,4 +1,4 @@
-const express = require("express")
+import express = require("express")
 import { ajaxauth, auth, availabilityCheck, voteController ,ContentType, checkVoteRecord, postRoleChecker} from "./helpers"
 import { ImageUploader } from "../../mongodb/mutler"
 import {UserBoardDataSchema} from "./schemaController/UserData"
@@ -17,16 +17,16 @@ const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
 
 // console.log(ajaxauth)
-router.post("/vote", ajaxauth, async (req, res) => voteController(req,res,ContentType.POST))
+router.post("/vote", ajaxauth, async (req: express.Request, res: express.Response) => voteController(req,res,ContentType.POST))
 
 
 
 
-router.get("/write", auth, async (req, res) => {
+router.get("/write", auth, async (req: express.Request, res: express.Response) => {
 	res.render("writepost", { url: "", title: "", content: "", imagedir: "", isEdit: false })
 })
 
-router.post("/write", auth, ImageUploader.upload.single("img"), async (req, res) => {
+router.post("/write", auth, ImageUploader.upload.single("img"), async (req: express.Request, res: express.Response) => {
 	const imgfile = req.file
 	let postUrl = Date.now()
 	let title = req.body.title
@@ -67,7 +67,7 @@ router.post("/write", auth, ImageUploader.upload.single("img"), async (req, res)
 
 	res.redirect("/board/post/" + postUrl)
 })
-router.get("/edit/:postUrl", auth, async (req, res) => {
+router.get("/edit/:postUrl", auth, async (req: express.Request, res: express.Response) => {
 	let url = req.params.postUrl
 	let post = await PostSchema.findOneByArticleId(Number(url))
 	console.log(post.author)
@@ -78,7 +78,7 @@ router.get("/edit/:postUrl", auth, async (req, res) => {
 	}
 	res.render("writepost", { url: url, title: post.title, content: post.content, imagedir: post.imagedir, isEdit: true })
 })
-router.post("/edit", auth, ImageUploader.upload.single("img"), async (req, res) => {
+router.post("/edit", auth, ImageUploader.upload.single("img"), async (req: express.Request, res: express.Response) => {
 	const url = req.body.url
 	let post = await PostSchema.findOneByArticleId(url)
 	if (post.author.toString() !== req.session.userId) {
@@ -107,7 +107,7 @@ router.post("/edit", auth, ImageUploader.upload.single("img"), async (req, res) 
 
 	res.redirect("/board/post/" + url)
 })
-router.post("/delete", ajaxauth, async (req, res) => {
+router.post("/delete", ajaxauth, async (req: express.Request, res: express.Response) => {
 	try {
 		let id = new ObjectID(req.body.id)
 		const post = await PostSchema.findOneById(id)
@@ -136,7 +136,7 @@ router.post("/delete", ajaxauth, async (req, res) => {
 		res.status(500).end()
 	}
 })
-router.post("/comment", auth, async (req, res) => {
+router.post("/comment", auth, async (req: express.Request, res: express.Response) => {
 	const postId = new ObjectID(req.body.postId) //objectid
 	const content = req.body.content
 	const userId = new ObjectID(req.session.userId)
@@ -163,7 +163,7 @@ router.post("/comment", auth, async (req, res) => {
 	res.redirect("/board/post/" + req.body.postUrl)
 })
 
-router.post("/comment/delete", ajaxauth, async (req, res) => {
+router.post("/comment/delete", ajaxauth, async (req: express.Request, res: express.Response) => {
 	try {
 		let commid = new ObjectID(req.body.commentId)
 		const comment = await CommentSchema.findOneById(commid)
@@ -182,7 +182,7 @@ router.post("/comment/delete", ajaxauth, async (req, res) => {
 		res.status(500).end()
 	}
 })
-router.post("/reply/delete", ajaxauth, async (req, res) => {
+router.post("/reply/delete", ajaxauth, async (req: express.Request, res: express.Response) => {
 	try {
 		//console.log(req.body)
 		let commid = new ObjectID(req.body.commentId)
@@ -205,7 +205,7 @@ router.post("/reply/delete", ajaxauth, async (req, res) => {
 	}
 })
 
-router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
+router.get("/comment/:commentId/reply",availabilityCheck, async (req: express.Request, res: express.Response) => {
 	try {
 		const comment = await CommentSchema.findOneById(new ObjectID(req.params.commentId))
 		const commentreply = await CommentSchema.getReplyById(new ObjectID(req.params.commentId))
@@ -244,7 +244,7 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req, res) => {
 	}
 })
 
-router.post("/comment/reply", auth, async (req, res) => {
+router.post("/comment/reply", auth, async (req: express.Request, res: express.Response) => {
 	const commentId =new ObjectID(req.body.commentId) //objectid
 	const content = req.body.content
 	const userId = new ObjectID(req.session.userId)
@@ -272,7 +272,7 @@ router.post("/comment/reply", auth, async (req, res) => {
 	res.redirect("/board/post/comment/" + req.body.commentId + "/reply")
 })
 
-router.get("/:postUrl",availabilityCheck, postRoleChecker, async (req, res) => {
+router.get("/:postUrl",availabilityCheck, postRoleChecker, async (req: express.Request, res: express.Response) => {
 	try {
 
 		let post = await PostSchema.findOneByArticleIdWithComment(Number(req.params.postUrl))

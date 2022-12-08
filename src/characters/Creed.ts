@@ -3,13 +3,15 @@ import type { Game } from "../Game"
 
 import * as ENUM from "../data/enum"
 import { ITEM } from "../data/enum"
-import { Damage, SkillTargetSelector, SkillAttack } from "../core/Util"
+import { Damage,PercentDamage } from "../core/Damage"
+
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
 import CreedAgent from "../AiAgents/CreedAgent"
 import { Entity } from "../entity/Entity"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 
 const ID = 0
 class Creed extends Player {
@@ -31,8 +33,9 @@ class Creed extends Player {
 	static readonly SKILL_EFFECT_NAME=["reaper_q", "hit", "reaper_r"]
 
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
+	private transformPlayer:Player
 
-	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
 		//hp:200, ad:20, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
 		super(turn, team, game, ai, ID, name)
@@ -54,6 +57,7 @@ class Creed extends Player {
 		}
 		this.usedQ = false
 		this.AiAgent=new CreedAgent(this)
+		this.transformPlayer=this.game.createPlayer(this.team,2,this.name,this.turn,this.AI)
 	}
 
 
@@ -83,7 +87,7 @@ class Creed extends Player {
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(skill) //-1 when can`t use skill, 0 when it`s not attack skill
-
+		this.pendingSkill = skill
 	//	console.log("getSkillAttr" + skill)
 		switch (skill) {
 			case ENUM.SKILL.Q:
@@ -95,6 +99,7 @@ class Creed extends Player {
 
 				break
 			case ENUM.SKILL.ULT:
+				return this.transformPlayer.getSkillTargetSelector(skill)
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(20)
 				break
 		}
@@ -108,7 +113,7 @@ class Creed extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos:number): Projectile|null {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.W) {
@@ -116,17 +121,23 @@ class Creed extends Player {
 			this.startCooltime(ENUM.SKILL.W)
 			return proj
 		}
+		else if(s==ENUM.SKILL.ULT){
+			return this.transformPlayer.getSkillProjectile(pos)
+			this.startCooltime(ENUM.SKILL.ULT)
+		}
+		return null
 	}
 	getSkillBaseDamage(skill: number): number {
 		if (skill === ENUM.SKILL.Q) {
-			return this.calculateScale(Creed.SKILL_SCALES.Q)
+			return this.calculateScale(Creed.SKILL_SCALES.Q!)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Creed.SKILL_SCALES.R)
+			return this.calculateScale(Creed.SKILL_SCALES.R!)
 		}
 		if (skill === ENUM.SKILL.W) {
-			return this.calculateScale(Creed.SKILL_SCALES.W)
+			return this.calculateScale(Creed.SKILL_SCALES.W!)
 		}
+		return 0
 	}
 	private getQShield(shieldamt:number){
 		return new ShieldEffect(ENUM.EFFECT.REAPER_Q_SHIELD,1, shieldamt)
@@ -135,9 +146,9 @@ class Creed extends Player {
 		return new ShieldEffect(ENUM.EFFECT.REAPER_ULT_SHIELD,3, 70)
 	}
 
-	getSkillDamage(target: Entity): SkillAttack {
+	getSkillDamage(target: Entity): SkillAttack |null{
 	//	console.log(target + "getSkillDamage" + this.pendingSkill)
-		let damage: SkillAttack = null
+		let damage = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
@@ -155,6 +166,7 @@ class Creed extends Player {
 				}
 				break
 			case ENUM.SKILL.ULT:
+				return this.transformPlayer.getSkillDamage(target)
 				this.startCooltime(ENUM.SKILL.ULT)
 				this.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)

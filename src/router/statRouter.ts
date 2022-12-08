@@ -112,7 +112,7 @@ router.get("/result", function (req: express.Request, res: express.Response) {
 	let rname = req.session.roomname
 
 	if (rname != null && R.hasRoom(rname)) {
-		R.getRoom(rname).reset()
+		R.getRoom(rname)?.reset()
 		R.remove(rname.toString())
 	}
 

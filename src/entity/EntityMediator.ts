@@ -3,13 +3,16 @@ import { Player } from "../player/player"
 import { EntityFilter } from "./EntityFilter"
 import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./Entity"
-import { EFFECT, ENTITY_TYPE,  STAT } from "../data/enum"
-import { Damage, HPChangeData, PriorityArray, SkillAttack,Normalize, sleep, CALC_TYPE } from "../core/Util"
+import { EFFECT, ENTITY_TYPE,  FORCEMOVE_TYPE,  STAT } from "../data/enum"
+import {  PriorityArray, Normalize, sleep, CALC_TYPE } from "../core/Util"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventInterface } from "../data/PayloadInterface"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
 import { GameEventObserver } from "../GameEventObserver"
 import { EntityStorage } from "./EntityStorage"
+import { Damage } from "../core/Damage"
+import { SkillAttack } from "../core/skill"
+import { HPChange } from "../core/health"
 
 
 
@@ -104,7 +107,7 @@ class AttackHandler{
 			//방어막 효과
 			if (target.effects.has(EFFECT.SHIELD)) {
 				target.effects.reset(EFFECT.SHIELD)
-				AttackHandler.doDamage(from,target,new Damage(0, 0, 0),  effectname, true, [HPChangeData.FLAG_BLOCKED_BY_SHIELD])
+				AttackHandler.doDamage(from,target,Damage.zero(),  effectname, true, [HPChange.FLAG_BLOCKED_BY_SHIELD])
 				victimData.flags.push("shield")
 				return victimData
 			}
@@ -116,7 +119,7 @@ class AttackHandler{
 			damage = from.effects.onSkillHit(damage, target)
 
 			if (damage.getTotalDmg() === 0) {
-				flags.push(HPChangeData.FLAG_NODMG_HIT)
+				flags.push(HPChange.FLAG_NODMG_HIT)
 			}
 		//	console.log('skill  '+effectname)
 			victimData.damage=damage.getTotalDmg()
@@ -149,12 +152,12 @@ class AttackHandler{
 
 		from.game.eventEmitter.attack(data)
 
-		return AttackHandler.doDamage(from,target,damage,effectname,false,[HPChangeData.FLAG_PLAINDMG])
+		return AttackHandler.doDamage(from,target,damage,effectname,false,[HPChange.FLAG_PLAINDMG])
 	}
 
 
 	static doDamage(from:Entity,target:Entity,damage:Damage, effectname:string, needDelay:boolean, flags?:number[]){
-		let changeData = new HPChangeData(0)
+		let changeData = new HPChange(0)
 		let finaldmg=damage.getTotalDmg()
 
 		if(from instanceof Player && target instanceof Player){
@@ -256,9 +259,9 @@ class EntityMediator {
 			e.effects.tick(thisturn)
 		}
 	}
-	moveSummonedEntityTo(entityId: string, pos: number): Entity {
+	moveSummonedEntityTo(entityId: string, pos: number) {
 		let entity = this.getEntity(entityId)
-		if (!entity) return null
+		if (!entity) return 
 
 		entity.forceMove(pos)
 		if (entity instanceof SummonedEntity) {
@@ -296,6 +299,16 @@ class EntityMediator {
 		} else {
 			player.game.requestForceMove(player,movetype,false)
 		}
+	}
+	swapPlayerPosition(target1:Entity,target2:Entity):boolean{
+		if (target1 != null && target1 instanceof Player && target2 != null && target2 instanceof Player) {
+
+			this.forceMovePlayerIgnoreObstacle(target1.UEID, target2.pos,FORCEMOVE_TYPE.SIMPLE)
+			this.forceMovePlayer(target2.UEID, target1.pos,  FORCEMOVE_TYPE.SIMPLE)
+			
+			return true
+		}
+		return false
 	}
 	getSecondPlayerLevel():number{
 		let sortedByPos=this.allPlayer().sort((a,b)=>b.pos-a.pos)

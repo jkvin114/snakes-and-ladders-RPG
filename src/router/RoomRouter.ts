@@ -8,7 +8,7 @@ import CONFIG from "./../../config/config.json"
 function isUserInRPGRoom(req:Express.Request){
 	return req.session.roomname != null &&
 	R.hasRPGRoom(req.session.roomname) &&
-	R.getRPGRoom(req.session.roomname).hasSession(req.session.id)
+	R.getRPGRoom(req.session.roomname)?.hasSession(req.session.id)
 }
 
 /**

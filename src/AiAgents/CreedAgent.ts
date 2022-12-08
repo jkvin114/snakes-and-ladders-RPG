@@ -35,7 +35,7 @@ class CreedAgent extends AiAgent{
 		}
 		return -1
 	}
-	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player {
+	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player |null{
 		//가장 앞에있는 플레이어 선택, 본인보다 3칸이상 뒤쳐져있으면 사용안함
 		if(skill===SKILL.ULT){
 			let players = targets.targets

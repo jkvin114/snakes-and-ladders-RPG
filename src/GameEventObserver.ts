@@ -10,7 +10,7 @@ export class GameEventObserver {
     private simulationEventEmitter:GameEventEmitter
 	private rname: string
 	private static readonly PREFIX="server:"
-	private eventRecorder:ReplayEventRecords
+	private eventRecorder?:ReplayEventRecords
 	constructor(rname: string) {
 		this.rname = rname
 		this.eventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}

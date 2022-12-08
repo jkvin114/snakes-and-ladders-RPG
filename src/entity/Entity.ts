@@ -1,6 +1,8 @@
 import { EntityMediator} from "./EntityMediator"
 import type { Game } from "../Game"
-import { Damage, decrement } from "../core/Util"
+import {  decrement } from "../core/Util"
+import { Damage } from "../core/Damage"
+
 import { EntityStatusEffect } from "../player/PlayerStatusEffect"
 import { clamp } from "../core/Util"
 import { MAP } from "../MapHandlers/MapStorage"

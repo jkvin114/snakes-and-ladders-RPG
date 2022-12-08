@@ -2,17 +2,19 @@ import * as ENUM from "../data/enum"
 import { ITEM } from "../data/enum"
 import { Player } from "../player/player"
 import type { Game } from "../Game"
+import { Damage,PercentDamage } from "../core/Damage"
 
-import { Damage, SkillTargetSelector, SkillAttack, CALC_TYPE, randInt } from "../core/Util"
+import { CALC_TYPE, randInt } from "../core/Util"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { AblityChangeEffect, OnDamageEffect, ShieldEffect } from "../StatusEffect"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import TreePlant from "./SummonedEntity/TreePlantEntity"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import TreeAgent from "../AiAgents/TreeAgent"
 import type { Entity } from "../entity/Entity"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 
 const ID = 8
 class Tree extends Player {
@@ -37,7 +39,7 @@ class Tree extends Player {
 
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
 
-	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
 		super(turn, team, game, ai, ID, name)
 		this.cooltime_list = Tree.COOLTIME
 		this.duration_list = [0, 0, 0]
@@ -86,7 +88,7 @@ class Tree extends Player {
 
 	getSkillTargetSelector(skill: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(skill) //-1 when can`t use skill, 0 when it`s not attack skill
-
+		this.pendingSkill=skill
 		switch (skill) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector
@@ -114,7 +116,7 @@ class Tree extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(pos: number): Projectile {
+	getSkillProjectile(pos: number): Projectile |null{
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.W) {
@@ -123,11 +125,12 @@ class Tree extends Player {
 			this.startCooltime(ENUM.SKILL.W)
 			return proj
 		}
+		return null
 	}
 	getSkillAmount(key: string): number {
-		if (key === "qshield") return this.calculateScale(Tree.SKILL_SCALES.qshield)
-		if (key === "qheal") return this.calculateScale(Tree.SKILL_SCALES.qheal)
-		if (key === "plantdamage") return this.calculateScale(Tree.SKILL_SCALES.plantdamage)
+		if (key === "qshield") return this.calculateScale(Tree.SKILL_SCALES.qshield!)
+		if (key === "qheal") return this.calculateScale(Tree.SKILL_SCALES.qheal!)
+		if (key === "plantdamage") return this.calculateScale(Tree.SKILL_SCALES.plantdamage!)
 		if (key === "plant_lifespan") return 3
 
 		return 0
@@ -138,8 +141,9 @@ class Tree extends Player {
 			return this.calculateScale(Tree.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Tree.SKILL_SCALES.R)
+			return this.calculateScale(Tree.SKILL_SCALES.R!)
 		}
+		return 0
 	}
 
 	private createPlantEntity() {
@@ -175,8 +179,8 @@ class Tree extends Player {
 			.setSourceId(this.UEID)
 	}
 
-	getSkillDamage(target: Entity): SkillAttack {
-		let skillattr: SkillAttack = null
+	getSkillDamage(target: Entity): SkillAttack|null {
+		let skillattr = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
@@ -199,7 +203,7 @@ class Tree extends Player {
 		return skillattr
 	}
 	usePendingAreaSkill(pos: number): void {
-		let skillattr: SkillAttack = null
+		let skillattr = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.Q) {
@@ -248,7 +252,7 @@ class Tree extends Player {
 			this.changeSkillImage(Tree.SKILLNAME_STRONG_R, ENUM.SKILL.ULT)
 			this.changeApperance(Tree.APPERANCE_WITHERED)
 		} else {
-			this.effects.removeByKey(ENUM.EFFECT.TREE_WITHER)
+			this.effects.reset(ENUM.EFFECT.TREE_WITHER)
 			this.isWithered = false
 			this.resetApperance()
 			this.resetSkillImage(ENUM.SKILL.ULT)

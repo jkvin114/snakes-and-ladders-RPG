@@ -10,7 +10,7 @@ const  {User}  = require("../../mongodb/DBHandler")
 
 // const { User } = require("../mongodb/DBHandler")
 
-router.post("/uploadimg",availabilityCheck, auth, ImageUploader.upload.single("img"), async (req, res) => {
+router.post("/uploadimg",availabilityCheck, auth, ImageUploader.upload.single("img"), async (req: express.Request, res: express.Response) => {
 	const imgfile = req.file
 	console.log(imgfile)
 	// console.log(req.body.content)
@@ -21,7 +21,7 @@ router.post("/uploadimg",availabilityCheck, auth, ImageUploader.upload.single("i
 })
 
 
-router.get("/", availabilityCheck,async (req, res) => {
+router.get("/", availabilityCheck,async (req: express.Request, res: express.Response) => {
 
 	//cleanUpComments()
 	let start = 0
@@ -44,12 +44,15 @@ router.get("/", availabilityCheck,async (req, res) => {
 		isEnd:(start+count > total)
 	})
 })
-router.get("/mypage", availabilityCheck,auth, (req, res) => {
+router.get("/mypage", availabilityCheck,auth, (req: express.Request, res: express.Response) => {
 	res.redirect("/board/user/" + req.session.username + "/posts")
 })
-router.post("/bookmark", auth,async  (req, res) => {
+router.post("/bookmark", auth,async  (req: express.Request, res: express.Response) => {
 	const user = await User.getBoardData(req.session.userId)
 	const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
+	if(!bookmarks) {
+		return
+	}
 	if(bookmarks.bookmarks.some((id:any)=>String(id)===req.body.id)){
 		await UserBoardDataSchema.removeBookmark(user.boardData,req.body.id)
 		res.status(200).json({ change: -1 })

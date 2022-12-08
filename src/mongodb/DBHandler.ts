@@ -8,7 +8,7 @@ try{
     if(CONFIG.localDB && process.env.MONGODB_URL_LOCAL){
         mongoose.connect(process.env.MONGODB_URL_LOCAL)
     }
-    else
+    else if(process.env.MONGODB_URL)
         mongoose.connect(process.env.MONGODB_URL)
 }
 catch(e){

@@ -19,7 +19,7 @@ class EventResult {
 }
 
 class GameLoop {
-	private idleTimeout: NodeJS.Timeout
+	private idleTimeout: NodeJS.Timeout|null
 	game: Game
 	private state: GameCycleState
 	gameover: boolean
@@ -196,22 +196,24 @@ class GameLoop {
 		if (this.state.id === GAME_CYCLE.BEFORE_OBS.ROOTED) {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
-			let data: ServerGameEventInterface.DiceRoll = this.state.getData()
+			let data: ServerGameEventInterface.DiceRoll|null = this.state.getData()
 			// this.eventEmitter.rollDice(data)
-			this.afterDice(data.actualdice)
+			if(data)
+				this.afterDice(data.actualdice)
 		}
 	}
-	user_pressDice(dicenum: number, crypt_turn: string): ServerGameEventInterface.DiceRoll {
+	user_pressDice(dicenum: number, crypt_turn: string): ServerGameEventInterface.DiceRoll|null {
 		//	console.log("user_pressDice")
 		this.restartResetTimeout()
 		if (this.state.crypt_turn !== crypt_turn) return null
 		let result = this.state.onUserPressDice(dicenum)
-		if (!result.result) return null
+		if (!result.state) return null
 
 		this.setGameCycle(result.state)
 		//this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
-		let diceRoll: ServerGameEventInterface.DiceRoll = this.state.getData()
-		this.afterDice(diceRoll.actualdice)
+		let diceRoll: ServerGameEventInterface.DiceRoll|null = this.state.getData()
+		if(diceRoll)
+			this.afterDice(diceRoll.actualdice)
 		return diceRoll
 	}
 	async afterDice(movedistance: number) {
@@ -253,7 +255,7 @@ class GameLoop {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if (this.state.id === GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE) {
 			let result = this.state.onUserCompletePendingObs(info)
-			if (!result.result) return
+			if (!result.state) return
 			this.setGameCycle(result.state)
 			await this.state.getPromise()
 			this.nextGameCycle()
@@ -265,7 +267,7 @@ class GameLoop {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if (this.state.id === GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION) {
 			let result = this.state.onUserCompletePendingAction(info)
-			if (!result.result) return
+			if (!result.state) return
 			this.setGameCycle(result.state)
 			await this.state.getPromise()
 			this.nextGameCycle()
@@ -278,7 +280,9 @@ class GameLoop {
 	user_clickSkill(s: number, crypt_turn: string) {
 		this.restartResetTimeout()
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
-		let result: ServerGameEventInterface.SkillInit = this.state.onUserClickSkill(s)
+		let result = this.state.onUserClickSkill(s)
+		if(!result) return null
+
 		if (
 			!(
 				result.type === INIT_SKILL_RESULT.NO_COOL ||
@@ -295,32 +299,32 @@ class GameLoop {
 		this.restartResetTimeout()
 		if (this.state.crypt_turn !== crypt_turn) return
 		let result = this.state.onUserBasicAttack()
-		if (!result.result) return
+		if (!result.state) return
 		this.setGameCycle(result.state)
 	}
 	user_choseSkillTarget(target: number, crypt_turn: string) {
 		if (this.state.crypt_turn !== crypt_turn) return
 		let result = this.state.onUserChooseSkillTarget(target)
-		if (!result.result) return
+		if (!result.state) return
 		this.setGameCycle(result.state)
 	}
 
 	user_choseSkillLocation(location: number, crypt_turn: string) {
 		if (this.state.crypt_turn !== crypt_turn) return
 		let result = this.state.onUserChooseSkillLocation(location)
-		if (!result.result) return
+		if (!result.state) return
 		this.setGameCycle(result.state)
 	}
 	user_choseAreaSkillLocation(location: number, crypt_turn: string) {
 		if (this.state.crypt_turn !== crypt_turn) return
 		//	console.log("user_choseAreaSkillLocation" + crypt_turn)
 		let result = this.state.onUserChooseAreaSkillLocation(location)
-		if (!result.result) return
+		if (!result.state) return
 		this.setGameCycle(result.state)
 	}
 	getPlayerMessageHeader(turn: number): string {
 		// console.log("chat "+message)
-		if (!this.game) return
+		if (!this.game) return ""
 		this.restartResetTimeout()
 		return this.game.getPlayerMessageHeader(turn)
 	}
@@ -330,15 +334,17 @@ class GameLoop {
 	onGameover(isNormal: boolean) {
 		//	console.log("gameover")
 		this.gameOverCallBack(isNormal)
-		clearTimeout(this.resetTimeout)
+		if(this.resetTimeout)
+			clearTimeout(this.resetTimeout)
 	}
 	onDestroy() {
 		if (this.game != null) this.game.onDestroy()
 		if (this.state != null) this.state.onDestroy()
-		this.game = null
-		this.state = null
+		// this.game = null
+		// this.state = null
 		//	console.log("ondestroy"+this.game)
-		clearTimeout(this.idleTimeout)
+		if(this.idleTimeout)
+			clearTimeout(this.idleTimeout)
 	}
 }
 
@@ -378,7 +384,7 @@ abstract class GameCycleState {
 		console.error("invalid request, id:" + this.id)
 		return new EventResult(false)
 	}
-	onUserClickSkill(skill: number): ServerGameEventInterface.SkillInit {
+	onUserClickSkill(skill: number): ServerGameEventInterface.SkillInit|null {
 		console.error("invalid request, id:" + this.id)
 
 		return null
@@ -423,7 +429,7 @@ abstract class GameCycleState {
 
 		return this
 	}
-	getData<T>(): T {
+	getData<T>(): T|null {
 		console.error("invalid data request, state id:" + this.id)
 
 		return null
@@ -437,7 +443,7 @@ abstract class GameCycleState {
 		return new TurnTerminator(this.game)
 	}
 	getOnTimeout(): Function {
-		return null
+		return ()=>{}
 	}
 	getPromise(): Promise<unknown> {
 		console.error("this state doesn`t have a promise, state id:" + this.id)
@@ -445,6 +451,7 @@ abstract class GameCycleState {
 	}
 	process() {}
 }
+
 class GameInitializer extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_START
 	constructor(game: Game) {
@@ -458,12 +465,13 @@ class GameInitializer extends GameCycleState {
 
 class TurnInitializer extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.INITIALIZE
-	turnUpdateData: ServerGameEventInterface.TurnStart
+	turnUpdateData: ServerGameEventInterface.TurnStart|null
 	constructor(game: Game) {
 		let turnUpdateData = game.goNextTurn()
 		super(game, TurnInitializer.id)
 		this.turnUpdateData = turnUpdateData
-		this.game.eventEmitter.updateNextTurn(turnUpdateData)
+		if(turnUpdateData)
+			this.game.eventEmitter.updateNextTurn(turnUpdateData)
 	}
 	onCreate(): void {
 		if (this.game.thisturn === 0) {
@@ -481,7 +489,7 @@ class TurnInitializer extends GameCycleState {
 		if (this.turnUpdateData.ai && !this.turnUpdateData.stun) {
 			return new AiThrowDice(this.game)
 		}
-		if (this.turnUpdateData.stun) {
+		else {//if (this.turnUpdateData.stun) {
 			return new RootedHandler(this.game)
 		}
 	}

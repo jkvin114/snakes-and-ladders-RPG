@@ -2,17 +2,19 @@ import { Player } from "../player/player"
 import type { Game } from "../Game"
 
 import * as ENUM from "../data/enum"
+import { Damage,PercentDamage } from "../core/Damage"
 
-import { CALC_TYPE, Damage, SkillTargetSelector, SkillAttack, PercentDamage } from "../core/Util"
+import { CALC_TYPE } from "../core/Util"
 import { Projectile } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { EFFECT_TIMING, NormalEffect } from "../StatusEffect"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import YangyiAgent from "../AiAgents/YangyiAgent"
 import type { Entity } from "../entity/Entity"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 const ID = 3
 class Yangyi extends Player {
 	// onoff: boolean[]	
@@ -24,7 +26,7 @@ class Yangyi extends Player {
 	static readonly SKILL_EFFECT_NAME= ["dinosaur_q", "hit", "dinosaur_r"]
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
-	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
 		const basic_stats: number[] = [180, 40, 6, 6, 0, 0]
 		super(turn, team, game, ai, ID, name)
 		// this.onoff = [false, false, false]
@@ -44,11 +46,12 @@ class Yangyi extends Player {
 			return this.calculateScale(Yangyi.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Yangyi.SKILL_SCALES.R)
+			return this.calculateScale(Yangyi.SKILL_SCALES.R!)
 		}
+		return 0
 	}
 	getSkillAmount(key: string): number {
-		if(key==="wheal") return this.calculateScale(Yangyi.SKILL_SCALES.wheal)
+		if(key==="wheal") return this.calculateScale(Yangyi.SKILL_SCALES.wheal!)
 		return 0
 	}
 	getSkillTrajectorySpeed(skilltype: string): number {
@@ -60,7 +63,7 @@ class Yangyi extends Player {
 
 	getSkillTargetSelector(s: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s)//-1 when can`t use skill, 0 when it`s not attack skill
-
+		this.pendingSkill=s
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.NON_TARGET)
@@ -162,7 +165,7 @@ class Yangyi extends Player {
 		//     this.w_end()
 		// }
 	}
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos:number): Projectile|null {
 		return null
 	}
 	/**

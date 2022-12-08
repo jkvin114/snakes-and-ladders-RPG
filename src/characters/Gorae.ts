@@ -2,15 +2,17 @@ import * as ENUM from "../data/enum"
 import { Player } from "../player/player"
 import type { Game } from "../Game"
 
-import { Damage, SkillTargetSelector, SkillAttack } from "../core/Util"
+import { Damage,PercentDamage } from "../core/Damage"
+
 import {Projectile,ProjectileBuilder} from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { ShieldEffect } from "../StatusEffect"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import GoraeAgent from "../AiAgents/GoraeAgent"
 import type { Entity } from "../entity/Entity"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 const ID=6
 class Gorae extends Player {
 	skill_ranges: number[]
@@ -31,7 +33,7 @@ class Gorae extends Player {
 	static readonly SKILL_EFFECT_NAME=["kraken_q", "kraken_w", "kraken_r"]
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
-	constructor(turn: number, team: boolean , game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
 		//hp:220, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
 		super(turn, team, game, ai, ID, name)
@@ -64,7 +66,7 @@ class Gorae extends Player {
 		let skillTargetSelector: SkillTargetSelector 
 		= new SkillTargetSelector(skill)
 		 //-1 when can`t use skill, 0 when it`s not attack skill
-
+		 this.pendingSkill=skill
 		//console.log("getSkillAttr" + skill)
 		switch (skill) {
 			case ENUM.SKILL.Q:
@@ -114,7 +116,7 @@ class Gorae extends Player {
 
 		this.startCooltime(ENUM.SKILL.W)
 	}
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos:number): Projectile |null{
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.Q) {
@@ -122,25 +124,27 @@ class Gorae extends Player {
 			this.startCooltime(ENUM.SKILL.Q)
 			return proj
 		}
+		return null
 	}
 	getSkillBaseDamage(skill:number):number{
 		if (skill === ENUM.SKILL.Q) {
 			return this.calculateScale(Gorae.SKILL_SCALES.Q)
 		}
 		if (skill === ENUM.SKILL.W) {
-			return this.calculateScale(Gorae.SKILL_SCALES.W)
+			return this.calculateScale(Gorae.SKILL_SCALES.W!)
 		}
 		if (skill === ENUM.SKILL.ULT) {
-			return this.calculateScale(Gorae.SKILL_SCALES.R)
+			return this.calculateScale(Gorae.SKILL_SCALES.R!)
 		}
-	}
-	getSkillAmount(key: string): number {
-		if(key==="wshield") return this.calculateScale(Gorae.SKILL_SCALES.wshield)
 		return 0
 	}
-	getSkillDamage(target: Entity): SkillAttack {
+	getSkillAmount(key: string): number {
+		if(key==="wshield") return this.calculateScale(Gorae.SKILL_SCALES.wshield!)
+		return 0
+	}
+	getSkillDamage(target: Entity): SkillAttack|null {
 	//	console.log(target+"getSkillDamage"+this.pendingSkill)
-		let skillattr: SkillAttack = null
+		let skillattr = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {

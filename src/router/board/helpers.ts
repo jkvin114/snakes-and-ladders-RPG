@@ -2,7 +2,7 @@ import express from "express"
 import CONFIG from "../../../config/config.json"
 import { UserBoardDataSchema } from "./schemaController/UserData"
 import session, { Session } from "express-session"
-const {ObjectID} = require('mongodb');
+const { ObjectID } =require('mongodb') ;
 
 import { PostSchema } from "./schemaController/Post"
 import { CommentSchema } from "./schemaController/Comment"
@@ -49,8 +49,12 @@ export const ajaxauth = (req: express.Request, res: express.Response, next: expr
 
 export const postRoleChecker =  async (req: express.Request, res: express.Response, next: express.NextFunction)=>{
 	const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
+	if(!post) {
+		res.status(401).end()
+		return
+	}
 	let friends:mongoose.Types.ObjectId[]=[]
-	let currentUser:mongoose.Types.ObjectId=null
+	let currentUser:mongoose.Types.ObjectId|null=null
 	if(req.session.isLogined){
 		currentUser=new ObjectID(req.session.userId) as mongoose.Types.ObjectId
 		const user=await User.findById(currentUser)
@@ -62,7 +66,7 @@ export const postRoleChecker =  async (req: express.Request, res: express.Respon
 
 export const voteController = async function (req: express.Request, res: express.Response, type: ContentType) {
 	const id = new ObjectID(req.body.id) as mongoose.Types.ObjectId
-	let voters: { upvoters: mongoose.Types.ObjectId[]; downvoters: mongoose.Types.ObjectId[] }
+	let voters: { upvoters: mongoose.Types.ObjectId[]; downvoters: mongoose.Types.ObjectId[] }|null=null
 	console.log(type)
 	if (type === ContentType.POST) {
 		voters = await PostSchema.getVotersById(id)
@@ -198,7 +202,7 @@ export function isPostVisibleToUser(
 export function filterPostSummary(session:any,posts:SchemaTypes.Article[],isLinkOnlyAllowed:boolean):Promise<SchemaTypes.Article[]>{
 	return new Promise(async (resolve,reject)=>{
 		let friends:mongoose.Types.ObjectId[]=[]
-		let currentUser:mongoose.Types.ObjectId=null
+		let currentUser:mongoose.Types.ObjectId|null=null
 		if(session.isLogined){
 			currentUser=session.userId
 			const user=await User.findById(currentUser)
@@ -235,7 +239,7 @@ export interface PostTitle {
 export interface CommentSummary {
 	type: string
 	id: string
-	imagedir: string
+	imagedir?: string
 	createdAt: string
 	content: string
 	upvote: number

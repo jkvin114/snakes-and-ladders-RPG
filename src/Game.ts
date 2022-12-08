@@ -3,7 +3,7 @@ import SETTINGS = require("../res/globalsettings.json")
 import * as ENUM from "./data/enum"
 import * as Util from "./core/Util"
 import { Projectile, ProjectileBuilder, RangeProjectile, PassProjectile } from "./Projectile"
-import { ObstacleHelper } from "./core/helpers"
+import { ObstacleHelper } from "./core/Obstacles"
 import { AiAgent } from "./AiAgents/AiAgent"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./entity/Entity"
@@ -13,20 +13,14 @@ import { EntityMediator } from "./entity/EntityMediator"
 import { Player } from "./player/player"
 import { EntityFilter } from "./entity/EntityFilter"
 // import { PlayerClientInterface } from "./app"
-import { Creed } from "./characters/Creed"
-import { Silver } from "./characters/Silver"
-import { Timo } from "./characters/Timo"
-import { Yangyi } from "./characters/Yangyi"
-import { Jean } from "./characters/Jean"
-import { Jellice } from "./characters/Jellice"
-import { Gorae } from "./characters/Gorae"
-import { Bird } from "./characters/Bird"
-import { Tree } from "./characters/Tree"
+
 import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
 import { GameEventObserver } from "./GameEventObserver"
 import { GameRecord } from "./TrainHelper"
 import { ReplayEventRecords } from "./ReplayEventRecord"
+import { PlayerFactory } from "./player/PlayerFactory"
+import { SkillAttack } from "./core/skill"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -36,46 +30,6 @@ function encrypt(val: string, key: string):string {
 		.createHash("sha512")
 		.update(val + key)
 		.digest("hex")
-}
-
-class PlayerFactory {
-	static create(character_id: number, name: string, turn: number, team: boolean, game: Game, isAI: boolean) :Player{
-		let char:Player
-		switch (character_id) {
-			case 0:
-				char= new Creed(turn, team, game, isAI, name)
-				break
-			case 1:
-				char= new Silver(turn, team, game, isAI, name)
-				break
-			case 2:
-				char= new Timo(turn, team, game, isAI, name)
-				break
-			case 3:
-				char= new Yangyi(turn, team, game, isAI, name)
-				break
-			case 4:
-				char= new Jean(turn, team, game, isAI, name)
-				break
-			case 5:
-				char= new Jellice(turn, team, game, isAI, name)
-				break
-			case 6:
-				char= new Gorae(turn, team, game, isAI, name)
-				break
-			case 7:
-				char= new Bird(turn, team, game, isAI, name)
-				break
-			case 8:
-				char= new Tree(turn, team, game, isAI, name)
-				break
-			default:
-				char=new Creed(turn, team, game, isAI, name)
-				break
-		}
-		char.AiAgent.onAfterCreate()
-		return char
-	}
 }
 
 class Game {
@@ -96,7 +50,7 @@ class Game {
 	// skillcount: number
 	private clientsReady: number
 	private pendingObs: number
-	private pendingAction: string
+	private pendingAction: string|null
 	private roullete_result: number
 	// nextUPID: number
 	private readonly UPIDGen: Util.UniqueIdGenerator
@@ -123,12 +77,12 @@ class Game {
 	}[]
 	// playerSelector: PlayerSelector
 	private entityMediator: EntityMediator
-	private turnEncryption: Map<number, string>
+	private turnEncryption:string[]
 	private turnEncryptKey: string
 	begun:boolean
 	private cycle:number
-	arriveSquareCallback:Function
-	private arriveSquareTimeout:NodeJS.Timeout
+	arriveSquareCallback:Function|null
+	private arriveSquareTimeout:NodeJS.Timeout|null
 	eventEmitter:GameEventObserver
 	tempFinish:number
 	disconnectedPlayers:Set<number>
@@ -177,9 +131,9 @@ class Game {
 		this.UEIDGen = new Util.UniqueIdGenerator(this.rname + "_ET")
 		this.turnEncryptKey = Math.round(new Date().valueOf() * Math.random() * Math.random()) + this.rname
 
-		this.turnEncryption = new Map<number, string>()
+		this.turnEncryption = []
 		for (let i = 0; i < 4; ++i) {
-			this.turnEncryption.set(i, encrypt(String(i), this.turnEncryptKey).slice(0,8))
+			this.turnEncryption.push( encrypt(String(i), this.turnEncryptKey).slice(0,8))
 		}
 		this.arriveSquareTimeout=null
 		this.arriveSquareCallback=null
@@ -213,8 +167,11 @@ class Game {
 		return this.entityMediator.getPlayer(this.turn2Id(this.thisturn))
 	}
 
-	pOfTurn(turn: number): Player |null{
-		if(turn<0 || turn>this.totalnum) return null
+	pOfTurn(turn: number): Player{
+		if(turn<0 || turn>this.totalnum){
+			console.trace("Player index out or range at pOfTurn()!")
+			turn=0
+		}
 
 		return this.entityMediator.getPlayer(this.turn2Id(turn))
 	}
@@ -227,7 +184,7 @@ class Game {
 	}
 	getPlayerMessageHeader(turn:number){
 		return (
-			this.pOfTurn(turn).name +
+			this.pOfTurn(turn)?.name +
 				"(" +
 				SETTINGS.characters[this.pOfTurn(turn).champ].name +
 				")"
@@ -241,14 +198,18 @@ class Game {
 	}
 
 	getGameTurnToken(turn: number) {
-		return this.turnEncryption.get(turn)
+		if(turn<0 || turn>= this.totalnum){
+			turn=0
+			console.trace("Player index out or range at getGameTurnToken()!")
+		}
+		return this.turnEncryption[turn]
 	}
 	thisGameTurnToken() {
-		return this.turnEncryption.get(this.thisturn)
+		return this.turnEncryption[this.thisturn]
 	}
 	isThisTurn(cryptTurn: string) {
 		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
-		return this.turnEncryption.get(this.thisturn) === cryptTurn
+		return this.turnEncryption[this.thisturn] === cryptTurn
 	}
 	setCycle(cycle:number){
 		this.cycle=cycle
@@ -264,36 +225,42 @@ class Game {
 	//team:number,char:int,name:str
 	addPlayer(team: boolean, char: number, name: string) {
 		// console.log("add player " + char + "  " + team)
-		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, false)
-		p.setMediator(this.entityMediator)
+		let teamValue=Number(team)
+		if(!this.isTeam) teamValue=this.totalnum
+		let p=this.createPlayer(teamValue,char,name,this.totalnum,false)
 		this.entityMediator.register(p,p.UEID)
-
 		// this.playerSelector.addPlayer(p)
 		this.PNUM += 1
 		this.totalnum += 1
+	}
+	createPlayer(team: number, char: number, name: string,turn:number,AI:boolean){
+		let p = PlayerFactory.create(Number(char), name, turn, team, this, AI)
+		p.setMediator(this.entityMediator)
+		
+		return p
 	}
 	//========================================================================================================
 
 	//team:number,char:str,name:str
 	addAI(team: boolean, char: number, name: string) {
 		// console.log("add ai " + char + "  " + team)
-
-		char = Number(char)
-		let p = PlayerFactory.create(Number(char), name, this.totalnum, team, this, true)
-		p.setMediator(this.entityMediator)
+		let teamValue=Number(team)
+		if(!this.isTeam) teamValue=this.totalnum
+		let p=this.createPlayer(teamValue,char,name,this.totalnum,true)
 		this.entityMediator.register(p,p.UEID)
-
 		// this.playerSelector.addPlayer(p)
 		this.CNUM += 1
 		this.totalnum += 1
 	}
-
+	getTeamAsBool(team:number):boolean{
+		return team===0
+	}
 	getInitialSetting():ServerGameEventInterface.initialSetting {
 		let setting= []
 		for (let p of this.entityMediator.allPlayer()) {
 			setting.push({
 				turn: p.turn,
-				team: p.team,
+				team: this.getTeamAsBool(p.team),
 				HP: p.HP,
 				isLoggedIn:p.isLoggedIn,
 				MaxHP: p.MaxHP,
@@ -367,7 +334,7 @@ class Game {
 			let pos = 0
 			let submarine_range = MAP.get(this.mapId).submarine_range
 
-			if (submarine_range !== null) {
+			if (submarine_range != null) {
 				let diff = submarine_range.end - submarine_range.start
 				pos = submarine_range.start + Math.floor(Math.random() * diff)
 			}
@@ -513,7 +480,7 @@ class Game {
 		p.onMyTurnStart()
 	//	console.log("ONE MORE DICE")
 		p.oneMoreDice = false
-		p.effects.cooldownAllHarmful()
+		p.effects.onOneMoreDice()
 		this.summonDicecontrolItemOnkill(p.turn)
 		p.adice = 0
 	}
@@ -538,7 +505,7 @@ class Game {
 	getNextTurn(){
 		return (this.thisturn+1) % this.totalnum
 	}
-	goNextTurn():ServerGameEventInterface.TurnStart {
+	goNextTurn():ServerGameEventInterface.TurnStart|null {
 		if (this.gameover) {
 			return null
 		}
@@ -795,7 +762,8 @@ class Game {
 			}
 		}
 		if(mapresult.type==="subway"){
-			moveDistance = mapresult.args[0]
+			if(mapresult.args)
+				moveDistance = mapresult.args[0]
 			diceShown=-1
 			overrideMovement=true
 			//overrided by map handler
@@ -942,6 +910,7 @@ class Game {
 		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
 		//	console.log("--------------------------------extendtimeout ARRIVE_SQUARE")
 		//	console.log(player.name)
+			if(this.arriveSquareTimeout)
 			clearTimeout(this.arriveSquareTimeout)
 			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		}
@@ -949,6 +918,7 @@ class Game {
 			 || this.cycle===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS){
 		//	console.log("--------------------------------extendtimeout PENDING_ACTION")
 			//console.log(player.name)
+			if(this.arriveSquareTimeout)
 			clearTimeout(this.arriveSquareTimeout)
 			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
 		}
@@ -997,12 +967,12 @@ class Game {
 			} else {
 				//died = this.thisp().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
 
-				let skillattack = new Util.SkillAttack(pp.damage, pp.name).setOnHit(pp.action)
-
-				died = this.entityMediator.skillAttackAuto(
-					pp.sourcePlayer,
-					this.turn2Id(this.thisturn)
-				,skillattack)
+				let skillattack = new SkillAttack(pp.damage, pp.name).setOnHit(pp.action)
+				if(pp.sourcePlayer)
+					died = this.entityMediator.skillAttackAuto(
+						pp.sourcePlayer,
+						this.turn2Id(this.thisturn)
+					,skillattack)
 
 				upid = pp.UPID
 			}
@@ -1052,13 +1022,13 @@ class Game {
 		for (let proj of this.rangeProjectiles.values()) {
 			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
 			//	console.log("proj hit" + proj.UPID)
-
-				let skillattack = new Util.SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
-
-				let died = this.entityMediator.skillAttackAuto(
-					proj.sourcePlayer,
-					this.turn2Id(player.turn)
-				,skillattack)
+				let died=false
+				let skillattack = new SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
+					if(proj.sourcePlayer)
+					died= this.entityMediator.skillAttackAuto(
+						proj.sourcePlayer,
+						this.turn2Id(player.turn)
+					,skillattack)
 				//player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
 
 				if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
@@ -1089,7 +1059,11 @@ class Game {
 	
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
-		this.entityMediator.skillAttackSingle(p, this.turn2Id(target),p.getSkillDamage(this.pOfTurn(target)))
+		let damage=p.getSkillDamage(this.pOfTurn(target))
+		console.log(damage)
+		console.log(target)
+		if(!damage) return
+		this.entityMediator.skillAttackSingle(p, this.turn2Id(target),damage)
 
 	//	return this.getSkillStatus()
 	}
@@ -1174,7 +1148,7 @@ class Game {
 	removeRangeProjectileById(UPID: string) {
 		if (!this.rangeProjectiles.has(UPID)) return
 
-		this.rangeProjectiles.get(UPID).remove()
+		this.rangeProjectiles.get(UPID)?.remove()
 		this.rangeProjectiles.delete(UPID)
 		this.eventEmitter.removeProj(UPID)
 	}
@@ -1182,7 +1156,7 @@ class Game {
 	removePassProjectileById(UPID: string) {
 		if (!this.passProjectiles.has(UPID)) return
 
-		this.passProjectiles.get(UPID).remove()
+		this.passProjectiles.get(UPID)?.remove()
 		this.passProjectiles.delete(UPID)
 		this.eventEmitter.removeProj(UPID)
 	}
@@ -1201,7 +1175,7 @@ class Game {
 	 * 선택 장애물 대기중일 경우 바로 스킬로 안넘어가고 선택지 전송
 	 * @returns null if no pending obs,  or return {name,arg}
 	 */
-	checkPendingObs(): ServerGameEventInterface.PendingObstacle {
+	checkPendingObs(): ServerGameEventInterface.PendingObstacle|null {
 		if (this.pendingObs === 0 || this.thisp().dead) return null
 
 		let name = ""
@@ -1248,7 +1222,7 @@ class Game {
 	}
 
 	//========================================================================================================
-	processPendingObs(info: ClientInputEventInterface.PendingObstacle,delay?:number) {
+	processPendingObs(info: ClientInputEventInterface.PendingObstacle|null,delay?:number) {
 		
 		this.arriveSquareCallback=null
 
@@ -1289,7 +1263,7 @@ class Game {
 	}
 	//========================================================================================================
 
-	processPendingAction(info: ClientInputEventInterface.PendingAction,delay?:number) {
+	processPendingAction(info: ClientInputEventInterface.PendingAction|null,delay?:number) {
 		//console.log(info)
 
 		
@@ -1342,7 +1316,8 @@ class Game {
 		return p.inven.getStoreData(1)
 	}
 	onDestroy(){
-		clearTimeout(this.arriveSquareTimeout)
+		if(this.arriveSquareTimeout)
+			clearTimeout(this.arriveSquareTimeout)
 	}
 	//========================================================================================================
 	getFinalStatistics() {
@@ -1363,7 +1338,7 @@ class Game {
 			setting: this.setting.getSummary()
 		}
 		
-		data.replay=null
+		data.replay=""
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
@@ -1382,7 +1357,7 @@ class Game {
 
 		for (let p of sortedplayers) {
 			data.players.push({
-				team: p.team,
+				team: this.getTeamAsBool(p.team),
 				name: p.name,
 				champ: p.champ_name,
 				champ_id: p.champ,

@@ -1,14 +1,16 @@
 import * as ENUM from "../data/enum"
 import { Player } from "../player/player"
 import type { Game } from "../Game"
-import { CALC_TYPE, Damage, SkillAttack, SkillTargetSelector } from "../core/Util"
+import { CALC_TYPE } from "../core/Util"
 import { AblityChangeEffect, EFFECT_TIMING, NormalEffect ,ShieldEffect} from "../StatusEffect"
 import { Projectile } from "../Projectile"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
-import { SkillInfoFactory } from "../core/helpers"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import type { Entity } from "../entity/Entity"
 import SilverAgent from "../AiAgents/SilverAgent"
+import { Damage,PercentDamage } from "../core/Damage"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 1
@@ -32,7 +34,7 @@ class Silver extends Player {
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
 
-	constructor(turn: number, team: boolean, game: Game, ai: boolean, name: string) {
+	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats = [250, 25, 15, 15, 0, 20]
 		super(turn, team, game, ai, ID, name)
@@ -62,7 +64,7 @@ class Silver extends Player {
 	 */
 	getSkillTargetSelector(s: number): SkillTargetSelector {
 		let skillTargetSelector: SkillTargetSelector = new SkillTargetSelector(s) //-1 when can`t use skill, 0 when it`s not attack skill
-
+		this.pendingSkill=s
 		switch (s) {
 			case ENUM.SKILL.Q:
 				skillTargetSelector
@@ -107,7 +109,7 @@ class Silver extends Player {
 		return super.getBasicAttackName()
 	}
 
-	getSkillProjectile(pos:number): Projectile {
+	getSkillProjectile(pos:number): Projectile|null {
 		return null
 	}
 
@@ -119,10 +121,10 @@ class Silver extends Player {
 	}
 	getSkillAmount(key: string): number {
 		if(key==="r_resistance") return this.HP < this.MaxHP / 10 ? 150 : 80
-		if(key==="rshield") return this.calculateScale(Silver.SKILL_SCALES.rshield)
+		if(key==="rshield") return this.calculateScale(Silver.SKILL_SCALES.rshield!)
 		if(key==="qheal") return Math.floor(this.getSkillBaseDamage(ENUM.SKILL.Q) * 0.3)
 		if(key==="r_qheal") return Math.floor(this.getSkillBaseDamage(ENUM.SKILL.Q) * 0.6)
-		if(key==="w_qdamage") return this.calculateScale(Silver.SKILL_SCALES.w_qdamage)
+		if(key==="w_qdamage") return this.calculateScale(Silver.SKILL_SCALES.w_qdamage!)
 		if(key==="w_qrange") return 7
 
 		return 0
@@ -147,8 +149,8 @@ class Silver extends Player {
 	 * @param {*} target
 	 * @returns
 	 */
-	getSkillDamage(target: Entity): SkillAttack {
-		let skillattr: SkillAttack = null //-1 when can`t use skill, 0 when it`s not attack skill
+	getSkillDamage(target: Entity): SkillAttack|null {
+		let skillattr = null //-1 when can`t use skill, 0 when it`s not attack skill
 		let s = this.pendingSkill
 		this.pendingSkill = -1
 

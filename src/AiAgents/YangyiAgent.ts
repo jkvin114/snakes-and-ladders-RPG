@@ -36,7 +36,7 @@ class YangyiAgent extends AiAgent{
 		}
 		return -1
 	}
-	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player {
+	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player|null {
 		if(skill===SKILL.ULT){
 			return this.getUltTarget(targets.targets)
 		}

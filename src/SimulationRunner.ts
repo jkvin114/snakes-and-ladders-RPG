@@ -4,7 +4,7 @@ import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
 //import cliProgress = require("cli-progress")
 import SETTINGS = require("../res/globalsettings.json")
-import { shuffle, pickRandom, PlayerType } from "./core/Util"
+import { shuffle, pickRandom, PlayerType, ProtoPlayer } from "./core/Util"
 import { ClientInputEventInterface } from "./data/PayloadInterface"
 import { TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../res/train_setting.json")
@@ -159,7 +159,7 @@ class SimulationSetting {
 			let redlocked = new Set(this.teamLock[0])
 			let bluelocked = new Set(this.teamLock[1])
 
-			let teamlist = charlist.map((c) => {
+			let teamlist:(boolean|null)[] = charlist.map((c) => {
 				if (redlocked.has(c) && red < maxRed) {
 					red++
 					redlocked.delete(c)
@@ -169,19 +169,20 @@ class SimulationSetting {
 					bluelocked.delete(c)
 					return false
 				}
-				return null
+				return false
 			}, this)
 
+			let teamlist2:boolean[]=[]
 			for (let i in teamlist) {
 				if (teamlist[i] === null && red < maxRed) {
-					teamlist[i] = true
+					teamlist2.push(true)
 					red++
 				} else if (teamlist[i] === null && blue < maxBlue) {
-					teamlist[i] = false
+					teamlist2.push(false)
 					blue++
 				}
 			}
-			return teamlist
+			return teamlist2
 		}
 	}
 	getSummary() {
@@ -205,7 +206,7 @@ class Simulation {
 	private count: number
 	private progressCount: number
 	// private game: Game
-	private gameCycle: GameCycleState
+	private gameCycle: GameCycleState|undefined
 	private stats: Set<any>
 	private summaryStats: Set<any>
 	private roomName: string
@@ -221,7 +222,6 @@ class Simulation {
 		this.roomName = roomname
 		this.runnerId = runner
 		// this.game = null
-		this.gameCycle = null
 		this.stats = new Set<any>()
 		this.summaryStats = new Set<any>()
 		this.progressCount = 0
@@ -291,32 +291,32 @@ class Simulation {
 		let oneGame = true
 		while (oneGame) {
 			try {
-				if (this.nextturn()) break
+				if (this.nextturn() || !this.gameCycle) break
 				this.gameCycle = this.gameCycle.getNext()
 				this.skill()
 				this.gameCycle = this.gameCycle.getNext()
 			} catch (e) {
 				console.error("Unexpected error on " + this.progressCount + "th game ")
-				console.error("while processing " + this.gameCycle.game.thisturn + "th turn player")
 				console.error(e)
 				continue
 			}
 		}
-		if (this.setting.saveStatistics) {
+		if (this.setting.saveStatistics && this.gameCycle) {
 			if (!this.setting.summaryOnly) {
 				this.stats.add(this.gameCycle.game.getFinalStatistics())
 			}
 			this.summaryStats.add(this.gameCycle.game.getSummaryStatistics())
 		}
 
-		if(this.setting.isTrain){
+		if(this.setting.isTrain && this.gameCycle){
 			this.trainData.addGame(this.gameCycle.game.getTrainData())
 		}
+		if(this.gameCycle)
 		this.replayRecords.push(this.gameCycle.game.retrieveReplayRecord())
 		// console.table()
 	}
 	skill() {
-		if (this.gameCycle.id === GAME_CYCLE.SKILL.AI_SKILL) {
+		if (this.gameCycle && this.gameCycle.id === GAME_CYCLE.SKILL.AI_SKILL) {
 			this.gameCycle.process()
 			this.gameCycle = this.gameCycle.getNext()
 		} else {
@@ -328,8 +328,10 @@ class Simulation {
 	 * @returns is game over
 	 */
 	nextturn(): boolean {
-		this.gameCycle = this.gameCycle.getNext().getNext()
-		if (this.gameCycle.id === GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE) {
+		
+		if(this.gameCycle)
+			this.gameCycle = this.gameCycle.getNext().getNext()
+		if (this.gameCycle && this.gameCycle.id === GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE) {
 			return this.gameCycle.gameover
 		} else {
 			throw new Error("invalid game cycle state for nextturn")
@@ -342,14 +344,15 @@ class Simulation {
 		let playernumber = this.setting.getPlayerCount()
 		let charlist = this.setting.getCharacterList(playernumber)
 		let teamlist = this.setting.getTeamList(this.setting.isTeam, charlist)
-		let playerlist = []
+		let playerlist:ProtoPlayer[] = []
 		for (let i = 0; i < playernumber; ++i) {
 			playerlist.push({
 				type: PlayerType.AI,
 				name: this.setting.getPlayerName(charlist[i], i),
 				team: teamlist[i],
 				champ: charlist[i],
-				ready: true
+				ready: true,
+				userClass:0
 			})
 		}
 		this.gameCycle = GameLoop.createWithSetting(

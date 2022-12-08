@@ -11,7 +11,8 @@ import PlayerStatistics from "./PlayerStatistics"
 import { PlayerMapHandler } from "../MapHandlers/PlayerMapHandler"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects } from "./PlayerStatusEffect"
-import { ObstacleHelper, SkillInfoFactory } from "../core/helpers"
+import { ObstacleHelper } from "../core/Obstacles"
+import { SkillInfoFactory } from "../data/SkillDescription"
 import { Entity } from "../entity/Entity"
 import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
 import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
@@ -21,6 +22,9 @@ import ABILITY = require("../../res/character_ability.json")
 import { Indicator } from "../TrainHelper"
 // const { isMainThread } = require('worker_threads')
 import CONFIG from "./../../config/config.json"
+import { Damage,PercentDamage } from "../core/Damage"
+import { SkillTargetSelector, SkillAttack } from "../core/skill"
+import { HPChange } from "../core/health"
 
 // class Minion extends Entity{
 // 	constructor(){
@@ -67,7 +71,7 @@ abstract class Player extends Entity {
 	isLoggedIn:boolean
 	champ: number
 	champ_name: string
-	team: boolean
+	team: number
 	//	pos: number
 	lastpos: number
 	dead: boolean
@@ -118,9 +122,9 @@ abstract class Player extends Entity {
 	private skillInfo: SkillInfoFactory
 
 	abstract getSkillTrajectorySpeed(s: string): number
-	protected abstract getSkillTargetSelector(skill: number): Util.SkillTargetSelector
-	abstract getSkillProjectile(projpos: number): Projectile
-	abstract getSkillDamage(target:Entity): Util.SkillAttack
+	abstract getSkillTargetSelector(skill: number): SkillTargetSelector
+	abstract getSkillProjectile(projpos: number): Projectile|null
+	abstract getSkillDamage(target:Entity): SkillAttack|null
 	abstract getSkillScale():any
 	protected abstract passive(): void
 	abstract getSkillName(skill: number): string
@@ -128,7 +132,7 @@ abstract class Player extends Entity {
 	protected abstract onSkillDurationEnd(skill: number): void
 	// abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
 	abstract getSkillBaseDamage(skill: number): number
-	constructor(turn: number, team: boolean, game: Game, ai: boolean, char: number, name: string) {
+	constructor(turn: number, team: number, game: Game, ai: boolean, char: number, name: string) {
 		super(game, ABILITY[char].initial.HP, initialSetting.pos, ENUM.ENTITY_TYPE.PLAYER)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
@@ -222,7 +226,7 @@ abstract class Player extends Entity {
 			return this.pos
 		})
 
-		if (!(first instanceof Player)) return
+		if (!(first instanceof Player)) return 0
 
 		//자신이 1등보다 15칸이상 뒤쳐져있으면 주사위숫자 2 추가,
 		//자신이 1등보다 30칸이상 뒤쳐져있으면 주사위숫자 4 추가
@@ -296,11 +300,11 @@ abstract class Player extends Entity {
 
 		if (e instanceof SummonedEntity) {
 			if (e.summoner === this) return false
-			if (this.game.isTeam && e.summoner.team === this.team) return false
+			if (e.summoner.team === this.team) return false
 			return true
 		} else if (e instanceof Player) {
 			if (e === this) return false
-			if (this.game.isTeam && e.team === this.team) return false
+			if (e.team === this.team) return false
 			return true
 		}
 		return super.isEnemyOf(e)
@@ -629,10 +633,10 @@ abstract class Player extends Entity {
 	}
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
-   * @param {*}data Util.HPChangeData
+   * @param {*}data HPChange
 
    */
-	changeHP_damage(data: Util.HPChangeData) {
+	changeHP_damage(data: HPChange) {
 		if (this.dead) {
 			return
 		}
@@ -651,7 +655,7 @@ abstract class Player extends Entity {
 
 		// if (this.game.instant) return
 
-		// let isblocked = data.hasFlag(Util.HPChangeData.FLAG_SHIELD)
+		// let isblocked = data.hasFlag(HPChange.FLAG_SHIELD)
 
 		if (hp <= 0) {
 			let hpChangeData: ServerGameEventInterface.Damage = {
@@ -668,10 +672,10 @@ abstract class Player extends Entity {
 
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
-   * @param {*}data Util.HPChangeData
+   * @param {*}data HPChange
 
    */
-	changeHP_heal(data: Util.HPChangeData) {
+	changeHP_heal(data: HPChange) {
 		if (data.type !== "respawn" && this.dead) {
 			return
 		}
@@ -885,7 +889,8 @@ abstract class Player extends Entity {
 			this.cooltime[2] = 1
 
 			if(this.mapId===ENUM.MAP_TYPE.RAPID)
-				this.cooltime[2] = 3
+				this.cooltime[2] = 0
+				// this.cooltime[2] = 4
 		}
 		this.thisLevelDeathCount = 0
 
@@ -895,14 +900,14 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	heal(h: number) {
-		this.changeHP_heal(new Util.HPChangeData(h).setType("heal"))
+		this.changeHP_heal(new HPChange(h).setType("heal"))
 	}
 	//========================================================================================================
 
 	addMaxHP(m: number) {
 		//this.transfer(PlayerClientInterface.update, "maxhp", this.turn, m)
 		this.MaxHP += m
-		this.changeHP_heal(new Util.HPChangeData(m).setType("maxhpChange"))
+		this.changeHP_heal(new HPChange(m).setType("maxhpChange"))
 	}
 
 	//========================================================================================================
@@ -941,7 +946,7 @@ abstract class Player extends Entity {
 	 * @param type
 	 */
 	 doObstacleDamage(damage: number, type?: string): boolean {
-		let changeData = new Util.HPChangeData(0)
+		let changeData = new HPChange(0)
 
 		if (type != null) {
 			changeData.setType(type)
@@ -969,7 +974,7 @@ abstract class Player extends Entity {
 	 */
 	private shieldDamage(damage: number): number {
 		let damageLeft = this.effects.applyShield(damage)
-		if (damageLeft > damage) return
+		if (damageLeft > damage) return damage
 
 		this.updateTotalShield(-(damage - damageLeft), false)
 		this.statistics.add(ENUM.STAT.DAMAGE_REDUCED, damage - damageLeft)
@@ -990,7 +995,7 @@ abstract class Player extends Entity {
 	 * @param type: string
 	 * @return 죽으면 true 아니면 false
 	 */
-	doDamage(damage: number, changeData: Util.HPChangeData):boolean {
+	doDamage(damage: number, changeData: HPChange):boolean {
 		try {
 			if (this.dead || this.invulnerable || damage === 0 || changeData.getSourceTurn()===this.turn) {
 				return false
@@ -1031,7 +1036,7 @@ abstract class Player extends Entity {
 		}
 	}
 
-	private canRevive(): string {
+	private canRevive(): string|null {
 		if (this.inven.isActiveItemAvailable(ENUM.ITEM.GUARDIAN_ANGEL)) return "guardian_angel"
 
 		if (this.inven.life > 0) return "life"
@@ -1153,7 +1158,7 @@ abstract class Player extends Entity {
 			this.statistics.add(ENUM.STAT.REVIVE, 1)
 		}
 
-		this.changeHP_heal(new Util.HPChangeData(health).setRespawn())
+		this.changeHP_heal(new HPChange(health).setRespawn())
 		this.dead = false
 		this.invulnerable=false
 		//	console.log("revive" + this.HP)
@@ -1196,7 +1201,7 @@ abstract class Player extends Entity {
 	 * @param {*} skill
 	 */
 	initSkill(skill: number): ServerGameEventInterface.SkillInit {
-		this.pendingSkill = skill
+		
 
 		let payload: ServerGameEventInterface.SkillInit = {
 			turn: this.turn,
@@ -1213,8 +1218,8 @@ abstract class Player extends Entity {
 			payload.type = ENUM.INIT_SKILL_RESULT.NO_COOL
 			return payload
 		}
-		let skillTargetSelector: Util.SkillTargetSelector = this.getSkillTargetSelector(skill)
-
+		let skillTargetSelector: SkillTargetSelector = this.getSkillTargetSelector(skill)
+		console.log(skillTargetSelector)
 		if (skillTargetSelector.isNonTarget()) {
 			payload.type = ENUM.INIT_SKILL_RESULT.NON_TARGET
 			if (!this.AI) {
@@ -1279,8 +1284,8 @@ abstract class Player extends Entity {
 		payload.data = { targets: targets, kind: "target" }
 		return payload
 	}
-	getBaseBasicAttackDamage(): Util.Damage {
-		return new Util.Damage(this.ability.AD.get(), 0, 0)
+	getBaseBasicAttackDamage(): Damage {
+		return new Damage(this.ability.AD.get(), 0, 0)
 	}
 	getBasicAttackName(): string {
 		return "basicattack"
@@ -1291,19 +1296,20 @@ abstract class Player extends Entity {
 		return EntityFilter.ALL_ENEMY(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
 	}
 
-	basicAttack() {
+	basicAttack():boolean {
 		if (this.basicAttackCount <= 0) return false
 
 		this.basicAttackCount -= 1
 		if (!this.effects.canBasicAttack()) {
 			return false
 		}
-		let damage: Util.Damage = this.ability.basicAttackDamage()
+		let damage: Damage = this.ability.basicAttackDamage()
 
 		damage = this.mapHandler.onBasicAttack(damage)
 		this.statistics.add(ENUM.STAT.BASICATTACK, 1)
 		//	console.log("basicattack")
 		this.mediator.basicAttack(this, this.getBasicAttackFilter(),damage)
+		return true
 	}
 	getTargetParameters(){
 

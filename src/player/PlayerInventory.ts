@@ -6,10 +6,13 @@ import { items as ItemList } from "../../res/item.json"
 // import {  PlayerClientInterface, testSetting } from "../app"
 import type { Player } from "./player"
 import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
+import { PlayerComponent } from "./PlayerComponent"
+import { ActiveItem } from "../core/ActiveItem"
+import { HPChange } from "../core/health"
 
-class PlayerInventory {
+class PlayerInventory implements PlayerComponent {
 	// player:Player
-	private activeItems: Util.ActiveItem[]
+	private activeItems: ActiveItem[]
 	private item: number[]
 	itemSlots: number[]
 	token: number
@@ -38,6 +41,7 @@ class PlayerInventory {
 
 		this.itemSlots = Util.makeArrayOf(-1, player.game.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
 	}
+	onTurnStart(){}
 	transfer(func: Function, ...args: any[]) {
 		this.player.mediator.sendToClient(func, ...args)
 	}
@@ -45,7 +49,7 @@ class PlayerInventory {
 	onTurnEnd() {
 		this.activeItemCoolDown()
 		if (this.haveItem(9)) {
-			this.player.changeHP_heal(new Util.HPChangeData(Math.floor(this.player.ability.extraHP * 0.15)))
+			this.player.changeHP_heal(new HPChange(Math.floor(this.player.ability.extraHP * 0.15)))
 		}
 	}
 
@@ -120,7 +124,7 @@ class PlayerInventory {
 		return this.item[item] > 0
 	}
 
-	addActiveItem(itemData: Util.ActiveItem) {
+	addActiveItem(itemData: ActiveItem) {
 		this.activeItems.push(itemData)
 		this.sendActiveItemStatus()
 		//console.log("buy active item" + itemdata)
@@ -139,7 +143,7 @@ class PlayerInventory {
 	 * @returns
 	 */
 	boughtActiveItem(item_id: ITEM) {
-		return this.activeItems.some((i: Util.ActiveItem) => i.id === item_id)
+		return this.activeItems.some((i: ActiveItem) => i.id === item_id)
 	}
 
 	activeItemCoolDown() {
@@ -166,7 +170,7 @@ class PlayerInventory {
 	 */
 	useActiveItem(item_id: ITEM) {
 		if (this.isActiveItemAvailable(item_id)) {
-			this.activeItems.filter((ef: Util.ActiveItem) => ef.id === item_id)[0].use()
+			this.activeItems.filter((ef: ActiveItem) => ef.id === item_id)[0].use()
 
 			if (PlayerInventory.indicateList.includes(item_id)) {
 				this.player.game.eventEmitter.indicateItem(this.player.turn, item_id)
@@ -177,7 +181,7 @@ class PlayerInventory {
 
 	sendActiveItemStatus() {
 		let data: { id: number; cool: number; coolRatio: number }[] = this.activeItems
-			.filter((ef: Util.ActiveItem) => PlayerInventory.indicateList.includes(ef.id) && this.haveItem(ef.id))
+			.filter((ef: ActiveItem) => PlayerInventory.indicateList.includes(ef.id) && this.haveItem(ef.id))
 			.map((item) => {
 				return item.getTransferData()
 			})
@@ -238,8 +242,10 @@ class PlayerInventory {
 		}
 		
 
-		if (ItemList[item].active_cooltime != null && !this.boughtActiveItem(item)) {
-			this.addActiveItem(new Util.ActiveItem(ItemList[item].name, item, ItemList[item].active_cooltime))
+		if (!this.boughtActiveItem(item)) {
+			let cool=ItemList[item].active_cooltime
+			if(cool!==undefined)
+				this.addActiveItem(new ActiveItem(ItemList[item].name, item, cool))
 		}
 
 		if (this.item[item] <= 0 && this.item[item] - count > 0) {

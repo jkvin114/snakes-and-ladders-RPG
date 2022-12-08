@@ -1,7 +1,3 @@
-import type { Entity } from "../entity/Entity"
-import * as ENUM from "../data/enum"
-import type { Player } from "../player/player"
-
 import fs = require("fs")
 
 const CALC_TYPE = {
@@ -11,176 +7,7 @@ const CALC_TYPE = {
 	minus: (o: number, n: number) => o - n,
 	divide: (o: number, n: number) => o / n
 }
-class PercentDamage {
-	percent: number
-	base: number
-	type: number
 
-	static readonly MAX_HP = 1
-	static readonly MISSING_HP = 2
-	static readonly CURR_HP = 3
-	constructor(percent: number, base: number, type?: number) {
-		this.percent = percent
-		this.base = base
-		this.type = type
-		if (!type) this.type = Damage.TRUE
-	}
-
-	getTotal(maxhp:number,hp:number) {
-		if (this.base === PercentDamage.MAX_HP) {
-			return Math.floor((maxhp * this.percent) / 100)
-		}
-		if (this.base === PercentDamage.MISSING_HP) {
-			return Math.floor(((maxhp - hp) * this.percent) / 100)
-		}
-		if (this.base === PercentDamage.CURR_HP) {
-			return Math.floor((hp * this.percent) / 100)
-		}
-		return 0
-	}
-	/**
-	 * converts it to damage object
-	 * @param target
-	 * @returns Damage
-	 */
-	pack(maxhp:number,hp:number) {
-		if (this.type === Damage.ATTACK) {
-			return new Damage(this.getTotal(maxhp,hp), 0, 0)
-		} else if (this.type === Damage.MAGIC) {
-			return new Damage(0, this.getTotal(maxhp,hp), 0)
-		} else {
-			return new Damage(0, 0, this.getTotal(maxhp,hp))
-		}
-	}
-}
-
-class Damage {
-	attack: number
-	magic: number
-	fixed: number
-	static readonly ATTACK = 1
-	static readonly MAGIC = 2
-	static readonly TRUE = 3
-
-	constructor(attack: number, magic: number, fixed: number) {
-		this.attack = Math.floor(attack)
-		this.magic = Math.floor(magic)
-		this.fixed = Math.floor(fixed)
-	}
-	
-	clone():Damage{
-		return new Damage(this.attack,this.magic,this.fixed)
-	}
-
-	getTotalDmg(): number {
-		return this.attack + this.magic + this.fixed
-	}
-	mergeWith(d: Damage) {
-		this.attack += d.attack
-		this.magic += d.magic
-		this.fixed += d.fixed
-		return this
-	}
-
-	updateDamages(calctype: Function, val: number, type: number[]) {
-		for (const t of type) {
-			if (t == Damage.ATTACK) {
-				this.attack = Math.floor(calctype(this.attack, val))
-			}
-			if (t == Damage.MAGIC) {
-				this.magic = Math.floor(calctype(this.magic, val))
-			}
-			if (t == Damage.TRUE) {
-				this.fixed = Math.floor(calctype(this.fixed, val))
-			}
-		}
-		return this
-	}
-
-	updateMagicDamage(calctype: Function, val: number) {
-		this.magic = Math.floor(calctype(this.magic, val))
-		return this
-	}
-	updateAttackDamage(calctype: Function, val: number) {
-		this.attack = Math.floor(calctype(this.attack, val))
-		return this
-	}
-	updateTrueDamage(calctype: Function, val: number) {
-		this.fixed = Math.floor(calctype(this.fixed, val))
-		return this
-	}
-	/**
-	 * update attack and magic damage
-	 * @param calctype
-	 * @param val
-	 * @returns
-	 */
-	updateNormalDamage(calctype: Function, val: number) {
-		this.magic = Math.floor(calctype(this.magic, val))
-		this.attack = Math.floor(calctype(this.attack, val))
-		return this
-	}
-
-	updateAllDamage(calctype: Function, val: number) {
-		this.magic = Math.floor(calctype(this.magic, val))
-		this.attack = Math.floor(calctype(this.attack, val))
-		this.fixed = Math.floor(calctype(this.fixed, val))
-
-		return this
-	}
-
-	applyResistance(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): Damage {
-		let AR: number = data.AR
-		let MR: number = data.MR
-		let arP: number = data.arP
-		let MP: number = data.MP
-		let percentPenetration: number = data.percentPenetration
-
-		AR = AR * (1 - percentPenetration / 100)
-		MR = MR * (1 - percentPenetration / 100)
-
-		this.attack = Math.floor(this.attack * (100 / (100 + (AR - arP))))
-		this.magic = Math.floor(this.magic * (100 / (100 + (MR - MP))))
-
-		return this
-	}
-}
-
-class ActiveItem {
-	name: string
-	id: number
-	cooltime: number
-	private resetVal: number
-	private data:Map<string,number>
-	constructor(name: string, id: number, resetVal: number) {
-		this.name = name
-		this.id = id
-		this.cooltime = 0
-		this.resetVal = resetVal
-		this.data=new Map<string,number>()
-	}
-	addDataValue(key:string,amt:number){
-		if(this.data.has(key))
-		{
-			this.data.set(key,this.data.get(key)+amt)
-		}
-		else{
-			this.data.set(key,amt)
-		}
-	}
-	getDataValue(key:string){
-		return this.data.get(key)
-	}
-	getTransferData():{id:number,cool:number,coolRatio:number}{
-		return { id: this.id, cool: this.cooltime, coolRatio: 1 - this.cooltime / this.resetVal }
-	}
-	cooldown() {
-		this.cooltime = decrement(this.cooltime)
-	}
-	use() {
-		this.cooltime = this.resetVal
-	}
-}
 
 // export type Skillattr =
 // 	| number
@@ -195,29 +22,7 @@ class ActiveItem {
 // interface OnKillFunction{
 // 	(source:Player):void
 // }
-class SkillAttack {
-	damage: Damage
-	skill: number
-	onKill: (this: Player) => void //(player):void
-	onHit: (this: Player) => void //():void
-	name: string
-	constructor(damage: Damage, name: string) {
-		this.damage = damage
-		this.name = name
-	}
-	ofSkill(skill: ENUM.SKILL) {
-		this.skill = skill
-		return this
-	}
-	setOnHit(onhit: (this: Player) => void) {
-		this.onHit = onhit
-		return this
-	}
-	setOnKill(onkill: (this: Player) => void) {
-		this.onKill = onkill
-		return this
-	}
-}
+
 export const clamp = (num: number, start: number, end: number) => Math.max(Math.min(num, end), start)
 export const decrement = (val: number): number => Math.max(val - 1, 0)
 /**
@@ -314,7 +119,7 @@ export const Normalize = function (list: number[]): number[] {
 	return list.map((v) => (v - min) / (max - min))
 }
 
-export type Movement = { player: number; to: number; type: string }
+//export type Movement = { player: number; to: number; type: string }
 
 export const hasProp = <T>(
 	varToBeChecked: unknown,
@@ -371,7 +176,7 @@ class PriorityArray<T> extends Array {
 	}
 	getMax(priority: (this: T) => number): T {
 		let max = -Infinity
-		let maxObject: T = null
+		let maxObject: T = this[0]
 		for (let e of this) {
 			let val = priority.call(e)
 			if (val > max) {
@@ -383,7 +188,7 @@ class PriorityArray<T> extends Array {
 	}
 	getMin(priority: (this: T) => number): T {
 		let min = Infinity
-		let maxObject: T = null
+		let maxObject: T = this[0]
 		for (let e of this) {
 			let val = priority.call(e)
 
@@ -418,84 +223,6 @@ class PriorityArray<T> extends Array {
 		}
 		return minidx
 	}
-}
-class HPChangeData {
-	static readonly FLAG_BLOCKED_BY_SHIELD = 1
-	static readonly FLAG_NODMG_HIT = 2
-	static readonly FLAG_TICKDMG = 3
-	static readonly FLAG_PLAINDMG = 4
-
-	hp: number
-	maxHp: number
-	type: string
-	sourcePlayer: Player|null
-	needDelay: boolean
-	killedByDamage: boolean
-	willRevive: boolean
-	skillTrajectorySpeed: number
-	flags: Set<number>
-	constructor(hp: number) {
-		this.hp = Math.floor(hp)
-		this.maxHp = 0
-		this.type = "noeffect"
-		this.sourcePlayer=null
-		this.needDelay = false
-		this.killedByDamage = false
-		this.willRevive = false
-		this.skillTrajectorySpeed = 0
-		this.flags = new Set<number>()
-	}
-
-	getSourceTurn(){
-		if(!this.sourcePlayer) return -1
-		else this.sourcePlayer.turn
-	}
-	setHpChange(hp: number) {
-		this.hp = Math.floor(hp)
-		return this
-	}
-	setMaxHpChange(maxhp: number) {
-		this.maxHp = Math.floor(maxhp)
-		return this
-	}
-	setSourcePlayer(sourcePlayer: Player) {
-		this.sourcePlayer = sourcePlayer
-		return this
-	}
-	setRespawn() {
-		this.type = "respawn"
-		return this
-	}
-	setDelay() {
-		this.needDelay = true
-		return this
-	}
-	setType(type: string) {
-		this.type = type
-		return this
-	}
-	setKilled() {
-		this.killedByDamage = true
-		return this
-	}
-	setWillRevive() {
-		this.willRevive = true
-		return this
-	}
-	setSkillTrajectorySpeed(speed: number) {
-		this.skillTrajectorySpeed = speed
-		return this
-	}
-	addFlag(flag: number) {
-		this.flags.add(flag)
-		return this
-	}
-	hasFlag(flag: number) {
-		return this.flags.has(flag)
-	}
-}
-interface SkillTargetConditionFunction {
-	(this: Entity): boolean
 }
 export class ListSet<T>{
 	map:Map<T,number>
@@ -546,7 +273,7 @@ export class ListSet<T>{
 	}
 }
 export class Stack<T>{
-	private top:StackNode<T>
+	private top:StackNode<T>|null
 	size:number
 	constructor(){
 		this.top=null
@@ -574,13 +301,13 @@ export class Stack<T>{
 
 }
 class StackNode<T>{
-	prev:StackNode<T>
+	prev:StackNode<T>|null
 	val:T
 	constructor(val:T){
 		this.val=val
 		this.prev=null
 	}
-	setPrev(prev:StackNode<T>){
+	setPrev(prev:StackNode<T>|null){
 		this.prev=prev
 		return this
 	}
@@ -592,74 +319,6 @@ class StackNode<T>{
 	
 	copy(){
 		return new StackNode<T>(this.val).setPrev(this.prev)
-	}
-}
-
-class SkillTargetSelector {
-	resultType: ENUM.SKILL_INIT_TYPE
-	skill_id: number
-	range: number
-	projSize: number
-	areaSize: number
-	condition: SkillTargetConditionFunction
-	conditionedRange: number
-
-	constructor(skill: number) {
-		this.resultType = ENUM.SKILL_INIT_TYPE.CANNOT_USE
-		this.skill_id = skill
-		this.range = -1
-		this.projSize
-		this.areaSize
-		this.condition = () => true
-		this.conditionedRange = -1
-	}
-	setType(type: number) {
-		this.resultType = type
-		return this
-	}
-	setSkill(s: number) {
-		this.skill_id = s
-		return this
-	}
-	setRange(r: number) {
-		this.range = r
-		return this
-	}
-	setAreaSize(size: number) {
-		this.areaSize = size
-		return this
-	}
-
-	setConditionedRange(condition: SkillTargetConditionFunction, range: number) {
-		this.condition = condition
-		this.conditionedRange = range
-		return this
-	}
-
-	meetsCondition(target: Player) {
-		if (!this.condition) return false
-
-		return this.condition.call(target)
-	}
-
-	setProjectileSize(s: number) {
-		this.projSize = s
-		return this
-	}
-	isAreaTarget(): boolean {
-		return this.resultType === ENUM.SKILL_INIT_TYPE.AREA_TARGETING
-	}
-	isNonTarget(): boolean {
-		return this.resultType === ENUM.SKILL_INIT_TYPE.NON_TARGET
-	}
-	isNoTarget(): boolean {
-		return this.resultType === ENUM.SKILL_INIT_TYPE.NO_TARGET
-	}
-	isProjectile(): boolean {
-		return this.resultType === ENUM.SKILL_INIT_TYPE.PROJECTILE
-	}
-	isActivation(): boolean {
-		return this.resultType === ENUM.SKILL_INIT_TYPE.ACTIVATION
 	}
 }
 
@@ -689,13 +348,7 @@ userClass:number }
 //added 2021.07.07
 
 export {
-	Damage,
-	ActiveItem,
-	HPChangeData,
 	CALC_TYPE,
-	SkillTargetSelector,
-	PercentDamage,
-	SkillAttack,
 	UniqueIdGenerator,
 	PriorityArray,
 	PlayerType,ProtoPlayer

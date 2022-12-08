@@ -143,9 +143,9 @@ app.post("/reset_game", function (req:any, res:any) {
 	if (!R.hasRoom(rname)) return
 
 	if(R.hasMarbleRoom(rname))
-		R.getMarbleRoom(rname).reset()
+		R.getMarbleRoom(rname)?.reset()
 	else
-		R.getRPGRoom(rname).reset()
+		R.getRPGRoom(rname)?.reset()
 
 	R.remove(rname)
 	io.to(rname).emit("server:quit")

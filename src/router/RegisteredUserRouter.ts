@@ -76,7 +76,10 @@ router.get("/:username", async function (req: express.Request, res: express.Resp
 	let isFriend = false
 	let isFollowing = false
 	const boardData = await UserBoardDataSchema.findOneById(user.boardData)
-
+	if(!boardData){
+		res.status(404).redirect("/notfound")
+		return
+	}
 	const counts = [user.friends.length, user.follows.length,boardData.bookmarks.length,
         boardData.articles.length,boardData.comments.length+boardData.replys.length,boardData.upvotedArticles.length]
     console.log(counts)
