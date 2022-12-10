@@ -28,7 +28,7 @@ abstract class Projectile {
 	protected game: Game
 	protected duration: number
 	protected flags: Set<number>
-	protected target: number
+	protected targetType: number
 	constructor(builder: ProjectileBuilder) {
 		// this.sourceTurn = builder.sourceTurn
 		this.size = builder.size
@@ -43,7 +43,7 @@ abstract class Projectile {
 		this.activated = false
 		this.flags = builder.flags
 		this.UPID = ""
-		this.target = builder.target
+		this.targetType = builder.target
 	}
 	/**
 	 *
@@ -76,8 +76,8 @@ abstract class Projectile {
 		return false
 	}
 	canApplyTo(target: Player) {
-		if (!this.sourcePlayer || this.target === Projectile.TARGET_ALL) return true
-		if (this.target === Projectile.TARGET_ENEMY && target.isAttackableFrom(this.sourcePlayer))
+		if (!this.sourcePlayer || this.targetType === Projectile.TARGET_ALL) return true
+		if (this.targetType === Projectile.TARGET_ENEMY && target.isAttackableFrom(this.sourcePlayer))
 			return true
 
 		return false

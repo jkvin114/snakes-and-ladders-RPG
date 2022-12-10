@@ -214,7 +214,6 @@ class Jellice extends Player {
 		return null
 	}
 	onSkillDurationEnd(skill: number) {}
-	passive() {}
 	onSkillDurationCount() {}
 	// /**
 	//  *

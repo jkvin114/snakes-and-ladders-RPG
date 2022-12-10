@@ -10,6 +10,7 @@ import { Bird } from "./../characters/Bird"
 import { Tree } from "./../characters/Tree"
 import type { Game } from "../Game"
 import type { Player } from "./player"
+import { Hacker } from "../characters/Hacker"
 export class PlayerFactory {
 	static create(character_id: number, name: string, turn: number, team: number, game: Game, isAI: boolean) :Player{
 		let char
@@ -40,6 +41,9 @@ export class PlayerFactory {
 				break
 			case 8:
 				char= new Tree(turn, team, game, isAI, name)
+				break
+			case 9:
+				char= new Hacker(turn, team, game, isAI, name)
 				break
 			default:
 				char=new Creed(turn, team, game, isAI, name)

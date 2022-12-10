@@ -165,7 +165,6 @@ class Jean extends Player {
 		return skillattr
 	}
 
-	passive() {}
 	getBaseBasicAttackDamage(): Damage {
 		return super.getBaseBasicAttackDamage()
 	}

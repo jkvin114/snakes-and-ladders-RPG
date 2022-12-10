@@ -91,10 +91,10 @@ abstract class Player extends Entity {
 
 	//	HP: number
 	//	MaxHP: number
-	readonly ability: PlayerAbility
+	 ability: PlayerAbility
 	readonly statistics: PlayerStatistics
-	readonly inven: PlayerInventory
-	readonly effects: PlayerStatusEffects
+	 inven: PlayerInventory
+	 effects: PlayerStatusEffects
 	readonly mapHandler: PlayerMapHandler
 	shield: number
 	cooltime: number[]
@@ -104,33 +104,45 @@ abstract class Player extends Entity {
 	// loanTurnLeft: number
 
 	private autoBuy:boolean
-	private damagedby: number[]
-	//for eath player, turns left to be count as assist(maximum 3)
+	private damagedby: number[] //for eath player, turns left to be count as assist(maximum 3)
+	
 
 	bestMultiKill: number
 
-	// abstract readonly hpGrowth: number
 	abstract readonly cooltime_list: number[]
-	// abstract itemtree: {
-	// 	level: number
-	// 	items: number[]
-	// 	final: number
-	// }
 	abstract readonly duration_list: number[]
 	abstract readonly skill_ranges: number[]
 	private skillInfoKor: SkillInfoFactory
 	private skillInfo: SkillInfoFactory
 
 	abstract getSkillTrajectorySpeed(s: string): number
+	/**
+	 * for targeting, projectile, area targeting skill, 
+	 * return SkillTargetSelector to ask client about where to use the skill
+	 * @param skill 
+	 */
 	abstract getSkillTargetSelector(skill: number): SkillTargetSelector
+	/**
+	 * return projectile object of the pending skill of player
+	 * @param projpos 
+	 */
 	abstract getSkillProjectile(projpos: number): Projectile|null
+	/**
+	 * return SkillAttack of the pending skill of player
+	 * @param target 
+	 */
 	abstract getSkillDamage(target:Entity): SkillAttack|null
 	abstract getSkillScale():any
-	protected abstract passive(): void
 	abstract getSkillName(skill: number): string
-	protected abstract onSkillDurationCount(): void
-	protected abstract onSkillDurationEnd(skill: number): void
-	// abstract aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number }
+	/**
+	 * called every time skill duration decrements
+	 */
+	abstract onSkillDurationCount(): void
+	/**
+	 * called if skill duration become 0 or on death
+	 * @param skill 
+	 */
+	abstract onSkillDurationEnd(skill: number): void
 	abstract getSkillBaseDamage(skill: number): number
 	constructor(turn: number, team: number, game: Game, ai: boolean, char: number, name: string) {
 		super(game, ABILITY[char].initial.HP, initialSetting.pos, ENUM.ENTITY_TYPE.PLAYER)
@@ -259,18 +271,8 @@ abstract class Player extends Entity {
 		) {
 			this.effects.apply(ENUM.EFFECT.DOUBLEDICE, 1)
 		}
-		//	 this.applyEffectBeforeDice(ENUM.EFFECT.DOUBLEDICE, 1)
 		return this.adice
 	}
-	// getAiTarget(targets: number[]) {
-	// 	return AIHelper.getAiTarget(this, targets)
-	// }
-	// getAiProjPos(skilldata: any, skill: number) {
-	// 	return AIHelper.getAiProjPos(this, skilldata, skill)
-	// }
-	// getAiAreaPos(skilldata:any,skill:number){
-	// 	return AIHelper.getAiAreaPos(this, skilldata, skill)
-	// }
 	/**
 	 *
 	 * @param {*} skill 0 ~
@@ -284,17 +286,32 @@ abstract class Player extends Entity {
 		}
 		return true
 	}
+	/**
+	 * can be targeted by the entity
+	 * @param e 
+	 * @returns 
+	 */
 	isTargetableFrom(e: Entity): boolean {
 		if (!e) return true
 		if (this.dead || this.invulnerable || this.effects.has(ENUM.EFFECT.INVISIBILITY)) return false
 		if (e instanceof Player && !this.mapHandler.isTargetableFrom(e)) return false
 		return true
 	}
+	/**
+	 * 
+	 * @param e 
+	 * @returns true if targetable and enemy of the entity
+	 */
 	isAttackableFrom(e: Entity): boolean {
 		if (!e) return true
 
 		return this.isTargetableFrom(e) && this.isEnemyOf(e)
 	}
+	/**
+	 * false if it is itself or is in a same team, true otherwise
+	 * @param e 
+	 * @returns 
+	 */
 	isEnemyOf(e: Entity): boolean {
 		if (!e) return true
 
@@ -323,6 +340,11 @@ abstract class Player extends Entity {
 	//========================================================================================================
 
 	//========================================================================================================
+	/**
+	 * show visual effect to client
+	 * @param type 
+	 * @param source 
+	 */
 	showEffect(type: string, source: number) {
 		this.game.eventEmitter.visualEffect(this.pos, type, source)
 	}
@@ -332,12 +354,12 @@ abstract class Player extends Entity {
 		if (!this.oneMoreDice) {
 			this.onSkillDurationCount()
 			this.decrementAllSkillDuration()
-			this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
+			this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId,this.level))
 			this.effects.onTurnStart()
 			console.log("-------------------------onmyturnstart"+this.turn)
 		}
 		this.rechargeBasicAttack()
-		this.passive()
+		// this.passive()
 		this.cooltime = this.cooltime.map(Util.decrement)
 
 		this.game.eventEmitter.update( "skillstatus", this.turn, this.getSkillStatus())
@@ -452,7 +474,11 @@ abstract class Player extends Entity {
 		this.ability.onTurnEnd()
 	}
 	//========================================================================================================
-
+	/**
+	 * modify dice number if there is a muststop position on the path
+	 * @param dice 
+	 * @returns 
+	 */
 	checkMuststop(dice: number): number {
 		if (this.pos + dice < 0) {
 			return this.pos
@@ -535,6 +561,7 @@ abstract class Player extends Entity {
 	}
 	/**
 	 * 스킬사용후 쿨타임 시작
+	 * apply all cooltime reductions
 	 * @param {} skill 스킬종류,0에서시작
 	 */
 	startCooltime(skill: ENUM.SKILL) {
@@ -553,7 +580,7 @@ abstract class Player extends Entity {
 		this.duration[skill] = this.duration_list[skill]
 	}
 	/**
-	 *
+	 *set skill cooltime as it is(no modifier)
 	 * @param skill skill
 	 * @param amt has to be positive
 	 */
@@ -642,6 +669,7 @@ abstract class Player extends Entity {
 		}
 		let hp = data.hp
 
+		//if it is not a damage from execution
 		if (hp > -4000) {
 			if (data.sourcePlayer!=null) {
 				this.statistics.add(ENUM.STAT.DAMAGE_TAKEN_BY_CHAMP, -hp)
@@ -738,7 +766,7 @@ abstract class Player extends Entity {
 		offset += this.adice
 
 		for (let i = offset, n = 0; n < 6; i += increase, ++n) {
-			if (this.pos + i < MAP.get(this.mapId).finish) {
+			if (this.pos + i < this.mapHandler.gamemap.finish) {
 				list.push(this.pos + i)
 			}
 		}
@@ -754,7 +782,7 @@ abstract class Player extends Entity {
 		let dice = 1
 		let searchto = list.length - Math.floor(Math.random() * 4) //앞으로 3~6칸(랜덤)중 선택함
 		for (let i = 0; i < searchto; ++i) {
-			let obs = this.game.shuffledObstacles[list[i]].obs
+			let obs = this.game.getObstacleAt(list[i])
 			//상점
 			if (obs === 0 && worst > 0 && i > 1) {
 				break
@@ -777,13 +805,23 @@ abstract class Player extends Entity {
 	//========================================================================================================
 	isFinished(pos:number){
 		if(!this.mapHandler.isOnMainWay()) return false
-		if(this.game.tempFinish!==-1 && pos >= this.game.tempFinish) return true
-		return this.pos >= MAP.getFinish(this.mapId)
+		return this.game.isFinishPosition(pos)
 	}
-
+	/**
+	 * 1. mapHandler.onArriveSquare()
+	 * 2. check finish position
+	 * 3. apply projectile
+	 * 	3-1 if projectile makes player ignore obstacle, return ARRIVE_SQUARE_RESULT_TYPE.NONE
+	 * 4. onBeforeObs() if not forcemoved
+	 * 5. apply obstacle
+	 * 
+	 * 
+	 * @param isForceMoved 
+	 * @returns ARRIVE_SQUARE_RESULT_TYPE
+	 */
 	arriveAtSquare(isForceMoved: boolean): number {
 		if (this.dead) {
-			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.DEATH
 		}
 
 		if (this.pos < 0) {
@@ -797,7 +835,7 @@ abstract class Player extends Entity {
 				this.pos = MAP.getFinish(this.mapId) - 1
 				this.killplayer()
 				this.sendConsoleMessage(this.name + " has been finally freed from slavery")
-				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.DEATH
 			} else {
 				this.game.gameover = true
 				return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
@@ -812,14 +850,20 @@ abstract class Player extends Entity {
 			this.onBeforeObs()
 		}
 
-		return this.obstacle(this.game.shuffledObstacles[this.pos].obs, isForceMoved,isInvisible,rooted)
+		return this.obstacle(this.game.getObstacleAt(this.pos), isForceMoved,isInvisible,rooted)
 	}
 
 	/**
-	 *
+	 *	1. if rooted, return ARRIVE_SQUARE_RESULT_TYPE.STUN 
+	 	2. if arrived at store, return ARRIVE_SQUARE_RESULT_TYPE.NONE 
+	 *  3. if arrived at finish, return ARRIVE_SQUARE_RESULT_TYPE.FINISH 
+	 *  4. if invisible and ignored obstacle, return ARRIVE_SQUARE_RESULT_TYPE.NONE 
+	 *  5. receive money and apply obstacle
+	 *  6. basic attack(only for legacy AA)
+	 * 
 	 * @param {*} obs obstacle id
 	 * @param {*} isForceMoved whether it is forcemoved
-	 * @returns
+	 * @returns ARRIVE_SQUARE_RESULT_TYPE or obstacle id
 	 */
 	 private obstacle(obs: number, isForceMoved: boolean,isInvisible:boolean,rooted:boolean): number {
 		//속박일경우
@@ -842,7 +886,7 @@ abstract class Player extends Entity {
 		else if (isInvisible && obsInfo.obstacles[obs].val < 0) {
 			obs = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		} else {
-			let money = this.game.shuffledObstacles[this.pos].money * 10
+			let money = this.game.getMoneyAt(this.pos)
 			if (money > 0) {
 				this.inven.giveMoney(money)
 			}
@@ -854,7 +898,11 @@ abstract class Player extends Entity {
 		return obs
 	}
 
-
+	/**
+	 * if autobuy, buy items
+	 * otherwise, send store data to client and activate store button
+	 * @param priceMultiplier 
+	 */
 	goStore(priceMultiplier?: number) {
 		if (!priceMultiplier) priceMultiplier = 1
 		if(this.autoBuy){
@@ -864,7 +912,9 @@ abstract class Player extends Entity {
 			this.game.eventEmitter.goStore(this.turn, this.inven.getStoreData(priceMultiplier))
 		}
 	}
-
+	/**
+	 * levels up if avaliable
+	 */
 	private checkLevelUp(){
 		let respawn = MAP.getRespawn(this.mapId)
 		for (let i = 1; i < respawn.length; ++i) {
@@ -875,9 +925,7 @@ abstract class Player extends Entity {
 		}
 	}
 	//========================================================================================================
-	/**
-	 * levels up if avaliable
-	 */
+	
 	lvlup() {
 		this.addMaxHP(ABILITY[this.champ].growth.HP)
 		this.level += 1
@@ -889,8 +937,8 @@ abstract class Player extends Entity {
 			this.cooltime[2] = 1
 
 			if(this.mapId===ENUM.MAP_TYPE.RAPID)
-				this.cooltime[2] = 0
-				// this.cooltime[2] = 4
+				// this.cooltime[2] = 0
+				this.cooltime[2] = 4
 		}
 		this.thisLevelDeathCount = 0
 
@@ -935,13 +983,17 @@ abstract class Player extends Entity {
 
 		// this.giveEffect('speed',1,1)
 	}
-
+	/**
+	 * display visual effect to client as obstacle effect
+	 * @param type 
+	 */
 	obstacleEffect(type: string) {
 		this.game.eventEmitter.visualEffect(this.pos,type,-1)
 	}
 
 	/**
-	 * step before givedamage
+	 * damage from obstacles
+	 * apply obstacle resistance
 	 * @param damage
 	 * @param type
 	 */
@@ -991,9 +1043,8 @@ abstract class Player extends Entity {
 	 * 5. 체력 바꿈
 	 * 6. 죽었을경우 체크
 	 * @param damage 총 합 데미지
-	 * @param  skillfrom  starts with 0   ,obstacle:-1
-	 * @param type: string
-	 * @return 죽으면 true 아니면 false
+	 * @param changeData: HPChange
+	 * @return 죽으면 true 
 	 */
 	doDamage(damage: number, changeData: HPChange):boolean {
 		try {
@@ -1043,7 +1094,11 @@ abstract class Player extends Entity {
 
 		return null
 	}
-
+	/**
+	 * spend life or item
+	 * set player as waiting revival
+	 * @param reviveType 
+	 */
 	private prepareRevive(reviveType: string) {
 		this.game.eventEmitter.update("waiting_revival", this.turn,"")
 
@@ -1150,7 +1205,9 @@ abstract class Player extends Entity {
 	}
 
 	//========================================================================================================
-
+	/**
+	 * if it is revial: make HP half only, indicate client that it revived
+	 */
 	respawn() {
 		let health = this.MaxHP
 		if (this.waitingRevival) {
@@ -1192,7 +1249,16 @@ abstract class Player extends Entity {
 		}
 		// return assists
 	}
+	/**
+	 * use skill that will be activated for certain amount of time
+	 * @param skill 
+	 */
 	useActivationSkill(skill: number): void {}
+	/**
+	 * use skill that will immediately do an action such as attack
+	 * @param skill 
+	 * @returns 
+	 */
 	useNonTargetSkill(skill: number): boolean {
 		return false
 	}
@@ -1219,7 +1285,6 @@ abstract class Player extends Entity {
 			return payload
 		}
 		let skillTargetSelector: SkillTargetSelector = this.getSkillTargetSelector(skill)
-		console.log(skillTargetSelector)
 		if (skillTargetSelector.isNonTarget()) {
 			payload.type = ENUM.INIT_SKILL_RESULT.NON_TARGET
 			if (!this.AI) {
@@ -1290,12 +1355,24 @@ abstract class Player extends Entity {
 	getBasicAttackName(): string {
 		return "basicattack"
 	}
+	/**
+	 * similar with useNonTargetSkill() but contains targeted position
+	 * @param pos 
+	 */
 	usePendingAreaSkill(pos: number) {}
 
-	protected getBasicAttackFilter() {
+	/**
+	 * 
+	 * @returns default entityfilter fo basic attack
+	 */
+	protected getBasicAttackFilter():EntityFilter {
 		return EntityFilter.ALL_ENEMY(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
 	}
-
+	/**
+	 * perform basic attack if possible
+	 * call mapHandler.onBasicAttack()
+	 * @returns true if performed basic attack
+	 */
 	basicAttack():boolean {
 		if (this.basicAttackCount <= 0) return false
 
@@ -1314,7 +1391,15 @@ abstract class Player extends Entity {
 	getTargetParameters(){
 
 	}
-
+	
+	/**
+	 * called start of every turn,
+	 * record all player`s current position of this turn
+	 */
+	addStatisticRecord(){
+		this.statistics.addPositionRecord(this.mapHandler.getPositonForRecord(this.pos))
+		this.statistics.addMoneyRecord()
+	}
 
 	//0.damagetakenbychamp 1. damagetakenbyobs  2.damagedealt
 	//3.healamt  4.moneyearned  5.moneyspent   6.moneytaken  7.damagereduced

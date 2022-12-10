@@ -58,7 +58,7 @@ abstract class AiAgent {
 	}
 	onAfterCreate(){
 		if(this.isRandomItem){
-			if(TRAIN_SETTINGS.random_item_exclude_character.includes(this.player.champ)) 
+			if(TRAIN_SETTINGS.random_item_exclude_character.includes(this.player.champ as never))
 				return
 
 			let randTree=shuffle(CORE_ITEMS)
@@ -96,6 +96,7 @@ abstract class AiAgent {
 					result = player.AiAgent.useActivationSkill(skill)
 					break
 				case INIT_SKILL_RESULT.TARGTING:
+					if(skillinit.data==null) break
 					if (skillinit.data.kind !== "target" || skillinit.data.targets.length <= 0) break
 					let target = player.AiAgent.selectTarget(skillinit.skill, skillinit.data)
 					if(!target) break
@@ -104,6 +105,7 @@ abstract class AiAgent {
 					result = true
 					break
 				case INIT_SKILL_RESULT.PROJECTILE:
+					if(skillinit.data==null) break
 					if (skillinit.data.kind !== "location") break
 					let projpos = player.AiAgent.getProjectilePos(skillinit.skill, skillinit.data)
 					if (projpos < 0) break
@@ -111,6 +113,7 @@ abstract class AiAgent {
 					result = true
 					break
 				case INIT_SKILL_RESULT.AREA_TARGET:
+					if(skillinit.data==null) break
 					if (skillinit.data.kind !== "location") break
 					let areapos = player.AiAgent.getAreaPos(skillinit.skill, skillinit.data)
 					if (areapos < 0) break
@@ -161,6 +164,7 @@ abstract class AiAgent {
 					result = player.AiAgent.useActivationSkill(skill)
 					break
 				case INIT_SKILL_RESULT.TARGTING:
+					if(skillinit.data==null) break
 					if (skillinit.data.kind !== "target" || skillinit.data.targets.length <= 0) break
 					let target = player.AiAgent.selectTarget(skillinit.skill, skillinit.data)
 					if(!target) break
@@ -173,6 +177,7 @@ abstract class AiAgent {
 					result = true
 					break
 				case INIT_SKILL_RESULT.PROJECTILE:
+					if(skillinit.data==null) break
 					if (skillinit.data.kind !== "location") break
 					let projpos = player.AiAgent.getProjectilePos(skillinit.skill, skillinit.data)
 					if (projpos < 0) break
@@ -180,6 +185,7 @@ abstract class AiAgent {
 					result = true
 					break
 				case INIT_SKILL_RESULT.AREA_TARGET:
+					if(skillinit.data==null) break
 					if (skillinit.data.kind !== "location") break
 					let areapos = player.AiAgent.getAreaPos(skillinit.skill, skillinit.data)
 					if (areapos < 0) break
@@ -348,7 +354,9 @@ class AIStoreInstance {
 		let counts=new Map<number,number>()
 		let stk=[target]
 		while(stk.length>0){
-			for(const child of ITEMS[stk.pop()].children){
+			let i=stk.pop()
+			if(i===undefined) break
+			for(const child of ITEMS[i].children){
 				stk.push(child)
 				if(!counts.has(child)) counts.set(child,itemlist[child])
 			}
@@ -408,7 +416,9 @@ class AIStoreInstance {
 		let childItemsThatMeetsLevel=[]
 		let stk=new Stack<number>().push(tobuy)
 		while(stk.size>0){
-			for(const c of ITEMS[stk.pop()].children){
+			let i=stk.pop()
+			if(i===null) break
+			for(const c of ITEMS[i].children){
 				if(this.inven.checkStoreLevel(ITEMS[c])) childItemsThatMeetsLevel.push(c)
 				else stk.push(c)
 			}

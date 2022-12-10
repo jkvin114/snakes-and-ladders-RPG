@@ -28,9 +28,9 @@ export class EntityStorage {
 	 * @param id
 	 * @returns Player
 	 */
-	getPlayer(id:string): Player {
+	getPlayer(id:string): Player|undefined {
 		// if (turn >= this.playerIds.length) return null
-		if (!this.entities.has(id)) return null
+		if (!this.entities.has(id)) return undefined
 
 		return this.entities.get(id) as Player
 	}
@@ -41,11 +41,11 @@ export class EntityStorage {
 		}
 		return list
 	}
-	getEntity(id: string): Entity {
-		if (!this.entities.has(id)) return null
+	getEntity(id: string): Entity |undefined{
+		if (!this.entities.has(id)) return undefined
 		return this.entities.get(id)
 	}
-	removeEntity(id: string): Entity {
+	removeEntity(id: string) {
 		if (!this.entities.has(id)) return
 		this.entities.delete(id)
 	}

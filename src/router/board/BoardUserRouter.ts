@@ -89,7 +89,7 @@ router.get("/:username/bookmarks", availabilityCheck,async (req: express.Request
 		if (req.query.start) {
 			start = Math.max(0,Number(req.query.start))
 		}
-		if(req.query.username!==req.session.username){
+		if(req.params.username!==req.session.username){
 			res.status(401).end()
 			return
 		}

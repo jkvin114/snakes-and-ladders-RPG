@@ -171,11 +171,12 @@ class Yangyi extends Player {
 	/**
 	 * 자신의 매 턴 시작시마다 호출
 	 */
-	passive() {
+	onMyTurnStart() {
 		//w passive
 		if (this.level > 1 && this.mediator.isFellBehind(this)) {
 			this.adice += 1
 		}
+		super.onMyTurnStart()
 	}
 
 	onSkillDurationCount() {

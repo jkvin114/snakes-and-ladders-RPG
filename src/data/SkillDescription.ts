@@ -282,6 +282,10 @@ export class SkillInfoFactory {
 					`.  Deals ${this.mDmg(this.baseDmg(s), hotkey)} to enemies inside. For allies, ${this.heal(this.skillAmt("qheal"), "qheal")}
 					and ${this.shield(this.skillAmt("qshield"), "qshield")}`
 				break
+			case 9:
+				str=`
+				 Deals ${this.pDmg(this.baseDmg(s), hotkey)} to ${this.target()}.
+				`
 			default:
 				str = ""
 		}

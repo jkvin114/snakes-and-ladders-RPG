@@ -321,5 +321,39 @@
 				}
 			]
 		}
+	},
+	{
+		"name":"hacker",
+		"Q": {
+			"base": 20,
+			"scales": [
+				{
+					"ability": "AD",
+					"val": 0.7
+				},
+				{
+					"ability": "AP",
+					"val": 1
+				}
+			]
+		},"W": {
+			"base": 40,
+			"scales": [
+				{
+					"ability": "AP",
+					"val": 1
+				}
+			]
+		},
+		"R": {
+			"base": 70,
+			"scales": [
+				{
+					"ability": "AD",
+					"val": 0.9
+				}
+			]
+		}
 	}
+
 ]

@@ -151,5 +151,21 @@
         },
         "basicAttackType":"melee",
         "name":"tree"
+    } , {
+        "initial":{
+            "HP":200,
+            "AD":20,
+            "AP":0,            
+            "AR":7,
+            "MR":7
+        },
+        "growth":{
+            "HP":120,
+            "AD":10,
+            "AR":6,
+            "MR":8
+        },
+        "basicAttackType":"melee",
+        "name":"hacker"
     }
 ]

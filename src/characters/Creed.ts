@@ -57,7 +57,6 @@ class Creed extends Player {
 		}
 		this.usedQ = false
 		this.AiAgent=new CreedAgent(this)
-		this.transformPlayer=this.game.createPlayer(this.team,2,this.name,this.turn,this.AI)
 	}
 
 
@@ -99,7 +98,6 @@ class Creed extends Player {
 
 				break
 			case ENUM.SKILL.ULT:
-				return this.transformPlayer.getSkillTargetSelector(skill)
 				skillTargetSelector.setType(ENUM.SKILL_INIT_TYPE.TARGETING).setRange(20)
 				break
 		}
@@ -122,7 +120,6 @@ class Creed extends Player {
 			return proj
 		}
 		else if(s==ENUM.SKILL.ULT){
-			return this.transformPlayer.getSkillProjectile(pos)
 			this.startCooltime(ENUM.SKILL.ULT)
 		}
 		return null
@@ -166,7 +163,6 @@ class Creed extends Player {
 				}
 				break
 			case ENUM.SKILL.ULT:
-				return this.transformPlayer.getSkillDamage(target)
 				this.startCooltime(ENUM.SKILL.ULT)
 				this.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
@@ -179,12 +175,16 @@ class Creed extends Player {
 		return damage
 	}
 
-	passive() {}
+	useActivationSkill(skill: number): void {
+	}
+
 	getBaseBasicAttackDamage(): Damage {
 		return super.getBaseBasicAttackDamage()
 	}
-	onSkillDurationCount() {}
-	onSkillDurationEnd(skill: number) {}
+	onSkillDurationCount() {
+	}
+	onSkillDurationEnd(skill: number) {
+	}
 	/**
 	//  *
 	//  * @param {*} skilldata

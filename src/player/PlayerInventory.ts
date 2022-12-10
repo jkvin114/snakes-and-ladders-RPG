@@ -31,7 +31,7 @@ class PlayerInventory implements PlayerComponent {
 	]
 	constructor(player: Player,money:number) {
 		this.player = player
-
+		console.log(money)
 		this.token = 2
 		this.money = money
 		this.life = 0

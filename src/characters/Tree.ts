@@ -224,7 +224,7 @@ class Tree extends Player {
 				EntityFilter.ALL_ALIVE_PLAYER(this)
 					.excludeEnemy()
 					.in(pos, pos + Tree.Q_AREA_SIZE - 1)
-			)(function (source) {
+			,function (source) {
 				console.log("tree Q " + this.turn)
 				this.heal(healamt)
 				this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD, 2, shieldamt))
@@ -241,7 +241,7 @@ class Tree extends Player {
 		}
 	}
 
-	passive() {
+	onMyTurnStart() {
 		if (this.HP < this.MaxHP * 0.4) {
 			this.isWithered = true
 
@@ -257,6 +257,7 @@ class Tree extends Player {
 			this.resetApperance()
 			this.resetSkillImage(ENUM.SKILL.ULT)
 		}
+		super.onMyTurnStart()
 	}
 	//override
 	basicAttack(): boolean {

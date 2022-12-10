@@ -88,8 +88,9 @@ class MapStorage {
 		return this.map[id].finish
 	}
 	getLimit(id: number): number {
-		if(this.map[id].way2_range){
-			return this.map[id].way2_range.way_end
+		let way2=this.map[id].way2_range
+		if(way2!=null && way2.way_end){
+			return way2.way_end
 		}
 		return this.map[id].finish
 	}

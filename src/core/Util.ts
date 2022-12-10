@@ -238,8 +238,9 @@ export class ListSet<T>{
 		return new ListSet<T>(this.toArray())
 	}
 	add(toadd:T){
-		if(this.map.has(toadd)){
-			this.map.set(toadd,this.map.get(toadd)+1)
+		let val=this.map.get(toadd)
+		if(val!==undefined){
+			this.map.set(toadd,val+1)
 		}
 		else{
 			this.map.set(toadd,1)
@@ -251,16 +252,17 @@ export class ListSet<T>{
 		return this.map.get(item)
 	}
 	delete(e:T){
-		if(this.map.has(e)){
-			this.map.set(e,this.map.get(e)-1)
+		let val=this.map.get(e)
+		if(val!==undefined){
+			this.map.set(e,val-1)
 			if(this.map.get(e)===0) this.map.delete(e)
 		}
 		return this
 	}
 	has(e:T,count?:number){
 		if(count===undefined) count=0
-
-		return this.map.has(e) && this.map.get(e)>count
+		let val=this.map.get(e)
+		return val!==undefined && val>count
 	}
 	toArray(){
 		let list=[]

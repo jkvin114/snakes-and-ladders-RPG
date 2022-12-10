@@ -11,7 +11,7 @@ import {
 	AblityChangeEffect,
 	OnHitEffect,
 	OnDamageEffect,
-	ItemEffectFactory,
+	ItemPassiveEffectFactory,
 	OnFinalDamageEffect,EFFECT_TIMING
 } from "../StatusEffect"
 import PlayerInventory from "./PlayerInventory"
@@ -63,7 +63,10 @@ class EntityStatusEffect implements StatusEffectManager {
 
 class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager,PlayerComponent {
 	protected owner: Player
-	private category: Map<number, StatusEffect>[]
+	private category:[ Map<number, StatusEffect>,Map<number, ShieldEffect>
+		,Map<number, AblityChangeEffect>,Map<number, OnHitEffect>
+		,Map<number, OnDamageEffect>,Map<number, TickEffect>
+		,Map<number, OnFinalDamageEffect>]
 
 	constructor(player: Player) {
 		super(player)
@@ -71,14 +74,17 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.initCategory()
 	}
 	private initCategory() {
-		this.category = []
-		this.category.push(new Map<number, StatusEffect>())
-		this.category.push(new Map<number, ShieldEffect>())
-		this.category.push(new Map<number, AblityChangeEffect>())
-		this.category.push(new Map<number, OnHitEffect>())
-		this.category.push(new Map<number, OnDamageEffect>())
-		this.category.push(new Map<number, TickEffect>())
-		this.category.push(new Map<number, OnFinalDamageEffect>())
+		this.category = [new Map<number, StatusEffect>(),new Map<number, ShieldEffect>()
+			,new Map<number, AblityChangeEffect>(),new Map<number, OnHitEffect>()
+			,new Map<number, OnDamageEffect>(),new Map<number, TickEffect>()
+			,new Map<number, OnFinalDamageEffect>()]
+		// this.category.push()
+		// this.category.push()
+		// this.category.push()
+		// this.category.push()
+		// this.category.push()
+		// this.category.push()
+		// this.category.push())
 	}
 
 	// transfer(func: Function, ...args: any[]) {
@@ -164,7 +170,33 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 			this.storage.get(effect.id)?.onBeforeReapply()
 
 			this.storage.set(effect.id, effect)
-			this.category[effect.effectType].set(effect.id, effect)
+			this.saveEffectInCategory(effect.effectType,effect.id,effect)
+			// this.category[effect.effectType].set(effect.id, effect)
+		}
+	}
+	saveEffectInCategory(type:EFFECT_TYPE,id:EFFECT,effect:StatusEffect){
+		switch(type){
+			case EFFECT_TYPE.NORMAL:
+				this.category[type].set(id,effect)
+				break
+			case EFFECT_TYPE.SHIELD:
+				this.category[type].set(id,effect as ShieldEffect)
+				break
+			case EFFECT_TYPE.ABILITY_CHANGE:
+				this.category[type].set(id,effect as AblityChangeEffect)
+				break
+			case EFFECT_TYPE.ONHIT:
+				this.category[type].set(id,effect as OnHitEffect)
+				break
+			case EFFECT_TYPE.ONDAMAGE:
+				this.category[type].set(id,effect as OnDamageEffect)
+				break
+			case EFFECT_TYPE.TICK:
+				this.category[type].set(id,effect as TickEffect)
+				break
+			case EFFECT_TYPE.ON_FINAL_DAMAGE:
+				this.category[type].set(id,effect as OnFinalDamageEffect)
+				break
 		}
 	}
 
@@ -198,7 +230,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		
 
 		this.storage.set(effect, statusEffect)
-		this.category[statusEffect.effectType].set(effect, statusEffect)
+		this.saveEffectInCategory(statusEffect.effectType,effect,statusEffect)
+
+		// this.category[statusEffect.effectType].set(effect, statusEffect)
 
 		
 		//이펙트 부여하자마자 바로 쿨다운 하기 때문에 지속시간 +1 해줌
@@ -381,8 +415,8 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	}
 	onBasicAttackHit(damage: Damage, target: Player) {
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONHIT].entries()) {
-			if (!(effect instanceof OnHitEffect)) continue
-			damage = (effect as OnHitEffect).onHitWithBasicAttack(target, damage)
+			//if (!(effect instanceof OnHitEffect)) continue
+			damage = effect.onHitWithBasicAttack(target, damage)
 		}
 		return damage
 	}
@@ -394,7 +428,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		}
 	}
 	onAddItem(item: ITEM) {
-		let effect = ItemEffectFactory.create(item)
+		let effect = ItemPassiveEffectFactory.create(item)
 		if (!effect) return
 
 		this.applySpecial(effect, PlayerInventory.getItemName(item))

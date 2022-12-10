@@ -21,6 +21,7 @@ import { GameRecord } from "./TrainHelper"
 import { ReplayEventRecords } from "./ReplayEventRecord"
 import { PlayerFactory } from "./player/PlayerFactory"
 import { SkillAttack } from "./core/skill"
+import { GameMapHandler } from "./MapHandlers/GameMapHandler"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -39,7 +40,6 @@ class Game {
 	readonly simulation: boolean
 	readonly itemLimit: number
 	readonly isTeam: boolean
-	readonly shuffledObstacles: { obs: number; money: number }[]
 	readonly setting: GameSetting
 	
 	private PNUM: number
@@ -64,9 +64,7 @@ class Game {
 	private winner: number
 
 	// private summonedEntityList: Map<string, SummonedEntity>
-	private submarine_cool: number
-	private submarine_id: string
-	private dcitem_id: string
+	
 	private totalEffectsApplied: number
 	totalturn: number
 	private killRecord: {
@@ -84,10 +82,10 @@ class Game {
 	arriveSquareCallback:Function|null
 	private arriveSquareTimeout:NodeJS.Timeout|null
 	eventEmitter:GameEventObserver
-	tempFinish:number
 	disconnectedPlayers:Set<number>
 	private static readonly PLAYER_ID_SUFFIX = "P"
 	private replayRecord:ReplayEventRecords
+	mapController:GameMapHandler
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
 		this.instant = setting.instant
@@ -95,6 +93,7 @@ class Game {
 		this.rname = rname
 		if (mapid < 0 || mapid > 4) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
+		this.mapController=GameMapHandler.create(this,this.mapId,setting.shuffleObstacle)
 		this.begun=false
 		this.totalturn = 0
 		this.isTeam = setting.isTeam
@@ -117,20 +116,13 @@ class Game {
 		this.passProjectiles = new Map()
 		this.passProjectileQueue = []
 		this.gameover = false
-		this.shuffledObstacles = this.setting.shuffleObstacle
-			? MAP.getShuffledObstacles(this.mapId)
-			: MAP.getObstacleList(this.mapId)
-
-		this.submarine_cool = 0
-		this.submarine_id = "" //잠수함의 upid
-		this.dcitem_id = ""
 		this.killRecord = []
 		this.totalEffectsApplied = 0 //total number of effects applied until now
 		// this.playerSelector = new PlayerSelector(this.isTeam)
 		this.UPIDGen = new Util.UniqueIdGenerator(this.rname + "_P")
 		this.UEIDGen = new Util.UniqueIdGenerator(this.rname + "_ET")
 		this.turnEncryptKey = Math.round(new Date().valueOf() * Math.random() * Math.random()) + this.rname
-
+		
 		this.turnEncryption = []
 		for (let i = 0; i < 4; ++i) {
 			this.turnEncryption.push( encrypt(String(i), this.turnEncryptKey).slice(0,8))
@@ -140,7 +132,6 @@ class Game {
 
 		this.eventEmitter=new GameEventObserver(this.rname)
 		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
-		this.tempFinish=-1
 		this.disconnectedPlayers=new Set<number>()
 		this.replayRecord=new ReplayEventRecords(setting.replay)
 		this.eventEmitter.bindEventRecorder(this.replayRecord)
@@ -215,10 +206,10 @@ class Game {
 		this.cycle=cycle
 	}
 	getObstacleAt(pos:number){
-		return this.shuffledObstacles[pos].obs
+		return this.mapController.obstaclePlacement[pos].obs
 	}
 	getMoneyAt(pos:number){
-		return this.shuffledObstacles[pos].money
+		return this.mapController.obstaclePlacement[pos].money * 10
 	}
 	//========================================================================================================
 
@@ -276,7 +267,7 @@ class Game {
 			map:this.mapId,
 			playerSettings: setting,
 			gameSettings: this.setting.getInitialSetting(),
-			shuffledObstacles: this.shuffledObstacles.map((obs)=>obs.obs)
+			shuffledObstacles: this.mapController.obstaclePlacement.map((obs)=>obs.obs)
 		}
 	}
 
@@ -326,26 +317,6 @@ class Game {
 			this.pOfTurn(turn).setAutoBuy(data)
 		}
 	}
-	summonSubmarine() {
-		if (this.submarine_cool === 0) {
-			//console.log("submarine" + this.submarine_id)
-			this.removePassProjectileById(this.submarine_id)
-			this.submarine_id = ""
-			let pos = 0
-			let submarine_range = MAP.get(this.mapId).submarine_range
-
-			if (submarine_range != null) {
-				let diff = submarine_range.end - submarine_range.start
-				pos = submarine_range.start + Math.floor(Math.random() * diff)
-			}
-			pos=60
-			this.placeSubmarine(pos)
-			// this.placeSubmarine(60)
-			this.submarine_cool = SETTINGS.submarine_cooltime
-		} else {
-			this.submarine_cool = Math.max(0, this.submarine_cool - 1)
-		}
-	}
 
 	// removePassProjById(id: string) {
 	// 	if (id === "") return
@@ -377,65 +348,14 @@ class Game {
 		)
 	} //50 30 20   :   25  45  55    : 20%, 36%, 44%
 
-	/**
-	 * called on every player`s turn start
-	 * @returns
-	 */
-	summonDicecontrolItem() {
-		// this.sendToClient(PlayerClientInterface.summonEntity,TreePlant.create(this,null).summon(this.p(),1,this.p().pos+5).getTransferData())
-		// this.sendToClient(PlayerClientInterface.summonEntity,TreePlant.create(this,null).summon(this.p(),1,this.p().pos+6).getTransferData())
-
-		let freq = this.setting.diceControlItemFrequency
-		if (freq === 0) return
-
-		let playercount = this.totalnum
-
-		//player number 4:44% ~ 50% / 3: 31~39% / 2: 16~28% don`t create new item
-		if (this.dcitem_id === "" && Util.chooseWeightedRandom([playercount ** 2 + (3 - freq) * 2, 20]) === 0) {
-			return
-		}
-		//if there is dc item left on the map, don`t change position by 50%
-		if (this.dcitem_id !== "" && Util.randomBoolean()) return
-
-		this.removePassProjectileById(this.dcitem_id)
-		this.dcitem_id = ""
-
-		//don`t re-place item by 40~22% based on player count and freq
-		if (Util.chooseWeightedRandom([playercount + freq, 2]) === 1) {
-			return
-		}
-
-		//플레이어 1명 랜덤선택(뒤쳐져있을수록 확률증가)
-		let r = this.getDiceControlPlayer()
-
-		//플레이어가 일정레벨이상일시 등장안함
-		if (this.pOfTurn(r).level >= MAP.get(this.mapId).dc_limit_level) return
-
-		//플레이어 앞 1칸 ~ (4~8)칸 사이 배치
-		let range = 4 + (3 - freq) * 2 //4~8
-		let pos = this.pOfTurn(r).pos + Math.floor(Math.random() * range) + 1
-		let bound = MAP.get(this.mapId).respawn[MAP.get(this.mapId).dc_limit_level - 1]
-
-		//일정범위 벗어나면 등장안함
-		if (pos <= 0 || pos >= bound) return
-
-		this.placeDiceControlItem(pos)
-	}
+	
 
 	/**
 	 * 킬을 해서 추가주사위 던지면 80%로 앞1~ 8칸이내에 주컨아이템 소환
 	 * @param turn
 	 */
 	summonDicecontrolItemOnkill(turn: number) {
-		if (this.pOfTurn(turn).level >= MAP.get(this.mapId).dc_limit_level || this.setting.diceControlItemFrequency === 0)
-			return
-
-		// P = 0.8~1.0
-		if (Math.random() < 0.7 + 0.1 * this.setting.diceControlItemFrequency) {
-			this.removePassProjectileById(this.dcitem_id)
-			let range = 6
-			this.placeDiceControlItem(this.pOfTurn(turn).pos + Math.floor(Math.random() * range) + 1)
-		}
+		this.mapController.summonDicecontrolItemOnkill(turn)
 	}
 
 	// cleanupDeadEntities(){
@@ -488,18 +408,8 @@ class Game {
 		let secondLevel=this.entityMediator.getSecondPlayerLevel()
 		// console.log("onPlayerChangePos"+secondLevel)
 		if(this.setting.winByDecision){
-			let respawns=MAP.getRespawn(this.mapId)
-			if(secondLevel+1 >= respawns.length) {
-				if(this.tempFinish!==-1)
-					this.eventEmitter.update("finish_pos",turn,MAP.getFinish(this.mapId))
-
-				this.tempFinish=-1
-				return
-			}
-			let finishpos=respawns[secondLevel+1]
-			if(this.tempFinish!==finishpos)
-				this.eventEmitter.update("finish_pos",turn,finishpos)
-			this.tempFinish=finishpos
+			let finishpos=this.mapController.setFinishPos(secondLevel)
+			if(finishpos!==-1) this.eventEmitter.update("finish_pos",turn,finishpos)
 		}
 	}
 	getNextTurn(){
@@ -511,7 +421,7 @@ class Game {
 		}
 		
 		//console.log(this.replayRecord)
-		this.entityMediator.forAllPlayer()(function () {
+		this.entityMediator.forAllPlayer(function () {
 			this.ability.sendToClient()
 		})
 		
@@ -550,24 +460,24 @@ class Game {
 			
 		//	console.log("thisturn" + this.thisturn)
 
-			this.summonDicecontrolItem()
+			// this.summonDicecontrolItem()
 			this.projectileCooldown()
-
+			this.mapController.onTurnStart(this.thisturn)
 			if (this.thisturn <= lastturn) {
 			//	console.log(`turn ${this.totalturn}===========================================================================`)
 
 				this.totalturn += 1
 				if (this.totalturn >= 30 && this.totalturn % 10 === 0) {
-					this.entityMediator.forAllPlayer()(function () {
+					this.entityMediator.forAllPlayer(function () {
 						this.ability.addExtraResistance((this.game.totalturn / 10) * 2 * this.game.setting.extraResistanceAmount)
 					})
 				}
 				this.recordStat()
 
 				//잠수함, 1턴 일때만 소환
-				if (this.mapId === ENUM.MAP_TYPE.OCEAN) {
-					this.summonSubmarine()
-				}
+				// if (this.mapId === ENUM.MAP_TYPE.OCEAN) {
+				// 	this.summonSubmarine()
+				// }
 			}
 
 			p = this.thisp()
@@ -636,7 +546,7 @@ class Game {
 	getPlayerVisibilitySyncData():ServerGameEventInterface.PlayerPosSync[] {
 		let data:ServerGameEventInterface.PlayerPosSync[] = []
 
-		this.entityMediator.forAllPlayer()(function () {
+		this.entityMediator.forAllPlayer(function () {
 			data.push({
 				alive: !this.dead,
 				pos: this.pos,
@@ -646,21 +556,16 @@ class Game {
 
 		return data
 	}
-
+	isFinishPosition(pos:number){
+		return this.mapController.isFinishPos(pos)
+	}
 	/**
 	 * called start of every turn,
 	 * record all player`s current position of this turn
 	 */
 	recordStat() {
-		this.entityMediator.forAllPlayer()(function () {
-			if (this.mapHandler.isOnMainWay()) {
-				this.statistics.addPositionRecord(this.pos)
-			} else if (MAP.get(this.mapId).way2_range != undefined) {
-				this.statistics.addPositionRecord(
-					MAP.get(this.mapId).way2_range.start + (this.pos - MAP.get(this.mapId).way2_range.way_start)
-				)
-			}
-			this.statistics.addMoneyRecord()
+		this.entityMediator.forAllPlayer(function (this:Player) {
+			this.addStatisticRecord()
 		})
 	}
 
@@ -831,6 +736,11 @@ class Game {
 
 		return { moveDistance: dice, projList: projList }
 	}
+	/**
+	 * if obstacle is one of pending obstacle and player is not AI, 
+	 * save the obs as pending obs
+	 * @param obs 
+	 */
 	setPendingObs(obs:number){
 		if (SETTINGS.pendingObsList.includes(obs)) {
 			if (!this.thisp().AI) {
@@ -846,7 +756,19 @@ class Game {
 	}
 	//========================================================================================================
 
-	checkObstacle(delay?:number): number {
+	/**
+	 * 1-1. normal: set arriveSquareTimeout to call onObstacleComplete() after delay
+	 * 1-2. simulation: call onObstacleComplete() immediately after this method
+	 * 2. apply pass projectile
+	 *  2-1. if died, return ARRIVE_SQUARE_RESULT_TYPE.DEATH
+	 * 3. make the player arrive at square and ger effect
+	 *  3-1. if game finished, return ARRIVE_SQUARE_RESULT_TYPE.FINISH
+	 * 4. save pending obstacle if applicable
+	 * 
+	 * @param delay 
+	 * @returns ARRIVE_SQUARE_RESULT_TYPE or obstacle id
+	 */
+	arriveAtSquare(delay?:number): number {
 		let p = this.thisp()
 		this.arriveSquareCallback=null
 		if(!delay)
@@ -859,7 +781,7 @@ class Game {
 		//passprojqueue 에 있는 투사체들을 pendingaction 에 적용
 		let died = this.applyPassProj()
 
-		if (died) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+		if (died) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.DEATH
 
 		//장애물 효과 적용
 		let result = p.arriveAtSquare(false)
@@ -871,9 +793,9 @@ class Game {
 		// 		result = ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
 		// 	}
 		// }
-		this.winner = this.thisturn
 
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
+			this.winner = this.thisturn
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
 
@@ -894,32 +816,39 @@ class Game {
 		}
 	}
 
-
+	/**
+	 * resolve arriveSquareCallback and take player onAfterObs() action
+	 */
 	onObstacleComplete()
 	{
 	//	console.log("--------------------------------onObstacleComplete")
 		this.resolveArriveSquareCallback()
 		this.thisp().onAfterObs()
 	}
-
+	/**
+	 * extends arriveSquareTimeout time
+	 * 
+	 * if the movement doesn`t ignore obstacle, make player arrive at the square after some delay
+	 * @param player 
+	 * @param movetype 
+	 * @param ignoreObstacle 
+	 */
 	requestForceMove(player:Player, movetype: string,ignoreObstacle:boolean){
 		let delay=SETTINGS.delay_simple_forcemove
 		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
 	//	console.log("--------------------------------requestForceMove")
 	//	console.log(this.cycle)
 		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
-		//	console.log("--------------------------------extendtimeout ARRIVE_SQUARE")
-		//	console.log(player.name)
 			if(this.arriveSquareTimeout)
 			clearTimeout(this.arriveSquareTimeout)
+			//call onAfterObs() of the player afterwards
 			this.arriveSquareTimeout=setTimeout(this.onObstacleComplete.bind(this),delay)
 		}
 		else if(this.cycle===GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION_PROGRESS
 			 || this.cycle===GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS){
-		//	console.log("--------------------------------extendtimeout PENDING_ACTION")
-			//console.log(player.name)
 			if(this.arriveSquareTimeout)
 			clearTimeout(this.arriveSquareTimeout)
+			//do not call onAfterObs() of the player
 			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
 		}
 
@@ -948,23 +877,17 @@ class Game {
 		}
 	}
 	/**
-	 * passprojqueue 에 있는 투사체들을 pendingaction 에 적용
+	 * 1.for all projectiles in passprojectile queue to current turn player:
+	 * 	1-1.save as pending action or receive effect immediately
+	 * 	1-2.remove projectiles if possible
+	 *  1-3. break if player died
+	 * 
 	 */
 	applyPassProj() {
 		let died = false
 		for (let pp of this.passProjectileQueue) {
-			let upid = ""
-			if (pp.name === "submarine") {
-				upid = this.submarine_id
-				// pp.removeProj()
-				this.pendingAction = "submarine"
-				this.submarine_id = ""
-			} else if (pp.name === "dicecontrol") {
-				upid = this.dcitem_id
-				// pp.removeProj()
-				this.dcitem_id = ""
-				this.thisp().giveDiceControl()
-			} else {
+			let upid = this.mapController.applyPassProj(pp.name)
+			if (upid===""){
 				//died = this.thisp().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
 
 				let skillattack = new SkillAttack(pp.damage, pp.name).setOnHit(pp.action)
@@ -984,8 +907,11 @@ class Game {
 		this.passProjectileQueue = []
 		return died
 	}
-	getPendingAction():string{
+	getPendingAction():string|null{
 		return this.pendingAction
+	}
+	setPendingAction (pa:string) {
+		this.pendingAction=pa
 	}
 	//========================================================================================================
 
@@ -1013,6 +939,11 @@ class Game {
 		AiAgent.simulationAiSkill(this.thisp())
 	}
 	//========================================================================================================
+	/**
+	 * 
+	 * @param player 
+	 * @returns true if player should ignore obstacle under it
+	 */
 	applyRangeProjectile(player: Player): boolean {
 		if (player.invulnerable) {
 			return false
@@ -1060,8 +991,7 @@ class Game {
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
 		let damage=p.getSkillDamage(this.pOfTurn(target))
-		console.log(damage)
-		console.log(target)
+	
 		if(!damage) return
 		this.entityMediator.skillAttackSingle(p, this.turn2Id(target),damage)
 
@@ -1088,6 +1018,7 @@ class Game {
 	}
 	placeSkillProjectile(pos: number) {
 		let proj = this.thisp().getSkillProjectile(pos)
+		if(!proj) return
 		this.placeProjectile(proj, pos)
 	}
 
@@ -1098,7 +1029,7 @@ class Game {
 	//========================================================================================================
 
 	isAttackableCoordinate(c: number): boolean {
-		let coor = this.shuffledObstacles
+		let coor = this.mapController.obstaclePlacement
 		if (c < 1 || c >= coor.length || coor[c].obs === -1 || coor[c].obs === 0) {
 			return false
 		}
@@ -1121,15 +1052,9 @@ class Game {
 
 	//========================================================================================================
 
-	placeDiceControlItem(pos: number) {
-		let upid = this.placeProjectile(new ProjectileBuilder(this, "dicecontrol", Projectile.TYPE_PASS).build(), pos)
-		this.dcitem_id = upid
-	}
+	
 	//========================================================================================================
-	placeSubmarine(pos: number) {
-		let upid = this.placeProjectile(new ProjectileBuilder(this, "submarine", Projectile.TYPE_PASS).build(), pos)
-		this.submarine_id = upid
-	}
+	
 //========================================================================================================
 	placeProjectile(proj: Projectile, pos: number): string {
 		let id = this.UPIDGen.generate()
@@ -1248,7 +1173,7 @@ class Game {
 		if (info.type === "roullete") {
 			this.roulleteComplete()
 		}
-		else if (info.type === "godhand") {
+		else if (info.type === "godhand" && info.objectResult) {
 			info.objectResult.kind='godhand'
 			if (info.complete && info.objectResult.kind==='godhand') {
 				this.processGodhand(info.objectResult.target,info.objectResult.location)

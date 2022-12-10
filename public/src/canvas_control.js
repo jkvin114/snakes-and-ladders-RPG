@@ -2213,7 +2213,13 @@ export class Scene extends Board{
 				this.animateScaleY(addedEffectImg,1.5,700)
 				this.animateScaleX(addedEffectImg,1.5,700)
 
-		
+				break
+			case "hacker_r":
+				this.defaultEffect(position, change)
+				this.game.playSound("10r")
+				addedEffectImg=this.createCroppedEffectImage('magician_q')
+				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.5,1.5,0.8,0)
+				this.animateOpacity(addedEffectImg,0,1600)
 				break
 			case "revive":
 				this.game.playSound("revive")

@@ -76,6 +76,9 @@ abstract class PlayerMapHandler {
 	shouldStunDice(){
 		return false
 	}
+	getPositonForRecord(pos:number){
+		return pos
+	}
 	/**
 	 *
 	 * @returns died
@@ -145,7 +148,11 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 	isTargetableFrom(other: Player): boolean {
 		return this.inSameWayWith(other)
 	}
-
+	getPositonForRecord(pos:number){
+		if(this.onMainWay)
+			return this.gamemap.way2_range.start + (pos - this.gamemap.way2_range.way_start)
+		else return super.getPositonForRecord(pos)
+	}
 	inSameWayWith(other: Player): boolean {
 		if (other.mapHandler instanceof OceanMapHandler) 
 			return this.onMainWay === other.mapHandler.onMainWay

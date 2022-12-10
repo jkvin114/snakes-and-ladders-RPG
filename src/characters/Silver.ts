@@ -188,7 +188,7 @@ class Silver extends Player {
 	/**
 	 * called every turn before throw dice
 	 */
-	passive() {
+	onMyTurnStart() {
 		if (this.level < 3 || this.HP > 250) {
 			return
 		}
@@ -205,7 +205,7 @@ class Silver extends Player {
 			new AblityChangeEffect(ENUM.EFFECT.ELEPHANT_PASSIVE_RESISTANCE, 2, new Map().set("AR", passive).set("MR", passive)),
 			SpecialEffect.SKILL.ELEPHANT_PASSIVE.name
 		)
-
+		super.onMyTurnStart()
 	}
 
 	/**

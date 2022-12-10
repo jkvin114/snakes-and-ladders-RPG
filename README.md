@@ -8,12 +8,20 @@ Server
 - Express.js
 - socket.io
 - Typescript
-- MongoDB
+- MongoDB(mongoose)
 
 Client
 - HTML/CSS
 - Javascript
 - Jquery
+
+Client Dependencies
+- Jquery
+- Fabric.js
+- Socket.io
+- Amcharts4
+- Howler.js
+- Axios
 
 
 ## Directory structure
@@ -46,7 +54,7 @@ Client
 ````
 
 ## Configuration
-- Create config folder at the root directory and add `config.json` and `variables.env`
+- Create config folder at the root directory and add `config.json` and `.env`
 
 ### Sample `config.json`
 ```json
@@ -66,7 +74,7 @@ Client
     }
 }
 ```
-### Sample `variables.env`
+### Sample `.env`
 
 ```
 MONGODB_URL_LOCAL=//url for local DB

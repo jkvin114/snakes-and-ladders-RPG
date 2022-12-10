@@ -62,7 +62,7 @@ export namespace ObstacleHelper {
 				case 15:
 					let m3 = Math.floor(player.inven.money / 10)
 					isGlobalEvent=true
-					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(player){
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player),function(player){
 						this.inven.giveMoney(m3)
 					})
 					player.inven.takeMoney(m3 * others.length)
@@ -73,7 +73,7 @@ export namespace ObstacleHelper {
 					player.doObstacleDamage(20,'hit')
 					break
 				case 17:
-					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player).excludeDead())(function(player){
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player).excludeDead(),function(player){
 						this.heal(20)
 					})
 					isGlobalEvent=true
@@ -82,7 +82,7 @@ export namespace ObstacleHelper {
 					break
 				case 18:
 
-					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(player){
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player),function(player){
 						this.inven.giveMoney(30)
 					})
 					isGlobalEvent=true
@@ -90,7 +90,7 @@ export namespace ObstacleHelper {
 
 					break
 				case 19:
-					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(20))(function(player){
+					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(20),function(player){
 						this.game.playerForceMove(this, player.pos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 					})
 					isGlobalEvent=true
@@ -107,7 +107,7 @@ export namespace ObstacleHelper {
 					})
 					
 					//if target is also on change obstacle, dont swap.(prevent infinite loop)
-					if(player.game.shuffledObstacles[target.pos].obs!==20 && target.pos !== player.pos){
+					if(player.game.getObstacleAt(target.pos)!==20 && target.pos !== player.pos){
                         if(player.mediator.swapPlayerPosition(player,target))
                         {
                             others.push(target.UEID)
@@ -240,13 +240,13 @@ export namespace ObstacleHelper {
 					break
 				case 52:
 					// player.doObstacleDamage(75, "lightning")
-					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).excludeUntargetable().inRadius(3))(function(){
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player).excludeUntargetable().inRadius(3),function(){
 						this.doObstacleDamage(75,"lightning")
 					})
 					isGlobalEvent=true
 					break
 				case 53:
-					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player))(function(){
+					others=player.mediator.forEachPlayer(EntityFilter.ALL_ALIVE_PLAYER(player),function(){
 						let died = this.doObstacleDamage(30,"wave")
 						if (!died) {
 							player.game.playerForceMove(this, this.pos - 3, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
@@ -255,7 +255,7 @@ export namespace ObstacleHelper {
 					isGlobalEvent=true
 					break
 				case 54:
-					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(30))(function(player){
+					others=player.mediator.forEachPlayer(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(30),function(player){
 						this.game.playerForceMove(this, player.pos, true, ENUM.FORCEMOVE_TYPE.SIMPLE)
 					})
 					isGlobalEvent=true
@@ -323,7 +323,7 @@ export namespace ObstacleHelper {
 					break
 				case 69:
 					let m1 = 0
-					player.mediator.forAllPlayer()(function(){
+					player.mediator.forAllPlayer(function(){
 						m1+=this.statistics.stats[ENUM.STAT.MONEY_EARNED]
 					})
 					if (Math.random() > 0.93) {
@@ -334,7 +334,7 @@ export namespace ObstacleHelper {
 					break
 				case 70:
 					let m2 = 0
-					others = player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player))(function(){
+					others = player.mediator.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(player),function(){
 						let m1 = this.inven.token * 2 + Math.floor(this.inven.money * 0.1)
 						this.inven.takeMoney(m1)
 						m2 += m1

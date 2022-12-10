@@ -194,6 +194,7 @@ export function registerSounds() {
 		"7r",
 		"8r",
 		"9r",
+		"10r",
 		"8r_hit",
 		"judgement",
 		"wind",

@@ -48,7 +48,7 @@
             "bgcolor": "#7e0000"
         },
         {
-            "name": "Knight",
+            "name": "Berserker",
             "imgdir": "knight.png",
             "illustdir": "knight.jpg",
             "bgcolor": "#086300"
@@ -94,6 +94,11 @@
             "imgdir": "tree.png",
             "illustdir": "tree.jpg",
             "bgcolor": "#d1a400"
+        },{
+            "name": "Hacker",
+            "imgdir": "hacker.png",
+            "illustdir": "hacker.jpg",
+            "bgcolor": "#7e0000"
         }
     ]
     

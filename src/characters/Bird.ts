@@ -235,7 +235,7 @@ class Bird extends Player {
 		return skillattr
 	}
 	onSkillDurationEnd(skill: number) {
-		// console.log("birdattackrange:" + this.ability.attackRange)
+		console.log("changeApperance bird:")
 		if (skill === ENUM.SKILL.ULT) {
 			// this.ability.update("attackRange", -2)
 			this.changeApperance("")

@@ -1,4 +1,4 @@
-import { GameLoop } from "./GameCycle/RPGGameCycleState"
+import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { Room } from "./room"
 import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
 const { Replay } = require("./mongodb/ReplayDBHandler")
@@ -207,7 +207,7 @@ class RPGRoom extends Room {
 			}
 			catch(e){
 				console.error(e)
-				this.eventObserver.simulationStatReady("error",e.toString())
+				this.eventObserver.simulationStatReady("error",(e as any).toString())
 
 			}
 		} else {
@@ -225,7 +225,7 @@ class RPGRoom extends Room {
 			}
 			catch(e){
 				console.error(e)
-				this.eventObserver.simulationStatReady("error",e.toString())
+				this.eventObserver.simulationStatReady("error",(e as any).toString())
 			}
 			
 		}

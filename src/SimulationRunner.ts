@@ -1,5 +1,5 @@
 import type { GameCycleState } from "./GameCycle/RPGGameCycleState"
-import { GameLoop } from "./GameCycle/RPGGameCycleState"
+import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
 //import cliProgress = require("cli-progress")

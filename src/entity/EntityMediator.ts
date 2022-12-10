@@ -17,12 +17,13 @@ import { HPChange } from "../core/health"
 
 
 class AttackHandler{
-	static basicAttacks(from:Player,targets:Entity[],damage:Damage):boolean{
+	static basicAttacks(from:Player,targets:(Entity|undefined)[],damage:Damage):boolean{
 		let died=false
 		let data:ServerGameEventInterface.Attack={
 			targets:[],source:from.turn,visualeffect:from.getBasicAttackName(),sourcePos:from.pos
 		}
 		for(let t of targets){
+			if(!t) continue
 			let v=this.basicAttack(from,t,damage)
 			data.targets.push(v)
 			died=died||(v.flags.includes("died"))
@@ -83,7 +84,8 @@ class AttackHandler{
 	}
 
 
-	static skillAttackAuto(from:Player,target:Entity,skillattack:SkillAttack):boolean{
+	static skillAttackAuto(from:Player,target:Entity|undefined,skillattack:SkillAttack):boolean{
+		if(!target) return false
 		let v=this.skillAttack(from,target,skillattack)
 		let data:ServerGameEventInterface.Attack={
 			targets:[v],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
@@ -301,10 +303,10 @@ class EntityMediator {
 		}
 	}
 	swapPlayerPosition(target1:Entity,target2:Entity):boolean{
-		if (target1 != null && target1 instanceof Player && target2 != null && target2 instanceof Player) {
-
-			this.forceMovePlayerIgnoreObstacle(target1.UEID, target2.pos,FORCEMOVE_TYPE.SIMPLE)
-			this.forceMovePlayer(target2.UEID, target1.pos,  FORCEMOVE_TYPE.SIMPLE)
+		if (target1 != null && target2 != null) {
+			let pos2=target1.pos
+			this.forceMovePlayer(target1.UEID, target2.pos,FORCEMOVE_TYPE.SIMPLE)
+			this.forceMovePlayerIgnoreObstacle(target2.UEID, pos2,  FORCEMOVE_TYPE.SIMPLE)
 			
 			return true
 		}
@@ -391,49 +393,44 @@ class EntityMediator {
 		return attacked
 	
 	}
-	forEach(filter: EntityFilter):(action: EntityActionFunction<Entity>)=>number {
-		return (action: EntityActionFunction<Entity>) => {
+	forEach(filter: EntityFilter,action: EntityActionFunction<Entity>):number {
 			let count=0
 			for (let e of this.selectAllFrom(filter)) {
 				count++
 				action.call(e, filter.source)
 			}
 			return count
-		}
+		
 	}
 
-	forEachPlayer(filter: EntityFilter):(action: EntityActionFunction<Player>)=>string[] {
-		return (action: EntityActionFunction<Player>) => {
-			let affected=[]
-			for (let e of this.selectAllFrom(filter)) {
-				affected.push(e.UEID)
-				action.call(e, filter.source)
-			}
-			return affected
+	forEachPlayer(filter: EntityFilter,action: EntityActionFunction<Player>):string[] {
+		let affected=[]
+		for (let e of this.selectAllFrom(filter)) {
+			affected.push(e.UEID)
+			action.call(e, filter.source)
 		}
+		return affected
+		
 	}
-	forAllPlayer():(action: SimplePlayerActionFunction)=>string[]{
-		return (action: SimplePlayerActionFunction) => {
+	forAllPlayer(action: SimplePlayerActionFunction):string[]{
 			let affected=[]
 			for (let e of this.allPlayer()) {
 				affected.push(e.UEID)
 				action.call(e)
 			}
 			return affected
-		}
+		
 	}
 
 
-	forPlayer(id: string, source: Player):(action: EntityActionFunction<Player>)=>void {
-		return (action: EntityActionFunction<Player>) => {
-			action.call(this.storage.getPlayer(id), source)
-		}
+	forPlayer(id: string, source: Player,action: EntityActionFunction<Player>):void {
+		action.call(this.storage.getPlayer(id), source)
+		
 	}
 
-	forEntity(id: string, source: Player):(action: EntityActionFunction<Entity>)=>void {
-		return (action: EntityActionFunction<Entity>) => {
-			action.call(this.storage.getEntity(id), source)
-		}
+	forEntity(id: string, source: Player,action: EntityActionFunction<Entity>):void {
+		action.call(this.storage.getEntity(id), source)
+		
 	}
 
 	selectAllFrom(filter: EntityFilter): PriorityArray<Entity> {

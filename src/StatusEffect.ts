@@ -64,7 +64,7 @@ class EffectFactory {
  * construct effects from items
  *invoked when buying item
  */
-class ItemEffectFactory {
+class ItemPassiveEffectFactory {
 	static create(item: ITEM) {
 		switch (item) {
 			case ITEM.EPIC_FRUIT:
@@ -742,7 +742,7 @@ export {
 	TickEffect,
 	ShieldEffect,
 	onHitFunction,
-	ItemEffectFactory,
+	ItemPassiveEffectFactory,
 	EffectFactory,
 	OnFinalDamageEffect
 }
