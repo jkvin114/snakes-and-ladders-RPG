@@ -99,6 +99,7 @@ abstract class Room {
 	}
 	
 	user_updatePlayerList(playerlist: ProtoPlayer[]) {
+		
 		this.hosting = playerlist.reduce(function (num: number, val: ProtoPlayer) {
 			if (val.type === PlayerType.PLAYER) {
 				num += 1

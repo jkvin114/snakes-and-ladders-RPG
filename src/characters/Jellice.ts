@@ -137,9 +137,9 @@ class Jellice extends Player {
 
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
 			// let burn = this.
-			let _this=this
-			dmg.setOnHit(function (this: Player) {
-				this.effects.applySpecial(_this.getWBurnEffect(), SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
+			dmg.setOnHit(function (this: Player,source:Player) {
+				if(source instanceof Jellice)
+				this.effects.applySpecial(source.getWBurnEffect(), SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
 			})
 		}
 		let range=this.qRange()

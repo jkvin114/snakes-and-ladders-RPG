@@ -507,7 +507,7 @@ export class GameInterface {
 			$(this.doms.playerChar[ui_index]).attr(
 				"src",
 				"./../res/img/character/" +
-					["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree"][p.char] +
+					["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree", "hacker"][p.char] +
 					".png"
 			)
 			$(this.doms.playerMoney[ui_index]).html(moneyToString(p.money))
@@ -522,6 +522,13 @@ export class GameInterface {
 
 		$(this.doms.playerUi[this.turnToUi.get(turn)]).removeClass("inactive")
 		$(this.doms.playerUi[this.turnToUi.get(turn)]).addClass("active")
+	}
+	setTurnIndicator(turn){
+		$("#turn-indicator").show()
+		$("#turn-indicator").html(`${this.game.players[turn].name}(${turn+1}P) 선택`)
+	}
+	resetTurnIndicator(){
+		$("#turn-indicator").hide()
 	}
 	showPlayerWindow(turn) {
 		let abilities = this.game.getAbilities(turn)

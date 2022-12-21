@@ -404,7 +404,7 @@ function connectSocket(){
 function onError(msg){
 	$("#loadingtext").html("FATAL ERROR!")
 	$("#loadingimg").hide()
-	alert(msg)
+	alert("FATAL ERROR! \n"+msg)
 	setTimeout(()=>window.location.href ='index.html',2000)
 	// setTimeout(()=>window.location.href='index.html')
 }

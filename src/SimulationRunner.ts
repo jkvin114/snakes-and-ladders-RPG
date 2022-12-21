@@ -4,7 +4,7 @@ import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"
 //import cliProgress = require("cli-progress")
 import SETTINGS = require("../res/globalsettings.json")
-import { shuffle, pickRandom, PlayerType, ProtoPlayer } from "./core/Util"
+import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean } from "./core/Util"
 import { ClientInputEventInterface } from "./data/PayloadInterface"
 import { TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../res/train_setting.json")
@@ -159,7 +159,7 @@ class SimulationSetting {
 			let redlocked = new Set(this.teamLock[0])
 			let bluelocked = new Set(this.teamLock[1])
 
-			let teamlist:(boolean|null)[] = charlist.map((c) => {
+			let teamlist:boolean[] = charlist.map((c) => {
 				if (redlocked.has(c) && red < maxRed) {
 					red++
 					redlocked.delete(c)
@@ -169,8 +169,8 @@ class SimulationSetting {
 					bluelocked.delete(c)
 					return false
 				}
-				return false
-			}, this)
+				return null
+			})
 
 			let teamlist2:boolean[]=[]
 			for (let i in teamlist) {
@@ -181,7 +181,11 @@ class SimulationSetting {
 					teamlist2.push(false)
 					blue++
 				}
+				else if(teamlist[i] === null){
+					teamlist2.push(randomBoolean())
+				}
 			}
+			console.log(teamlist2)
 			return teamlist2
 		}
 	}
@@ -256,7 +260,7 @@ class Simulation {
 
 	run(callback: Function,onError:Function) {
 		let consolelog = console.log
-		console.log = function () {}
+	//	console.log = function () {}
 		//const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
 		//bar1.start(this.count - 2, 0)
 		let startTime: any = new Date()

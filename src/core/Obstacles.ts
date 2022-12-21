@@ -6,6 +6,7 @@ import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import { EntityFilter } from "../entity/EntityFilter"
 import type { Player } from "../player/player"
 import { StatusEffect, EffectFactory } from "../StatusEffect"
+import type { Entity } from "../entity/Entity"
 
 export namespace ObstacleHelper {
 	export const applyObstacle=function(player: Player, obs: number, isForceMoved: boolean) {
@@ -102,7 +103,7 @@ export namespace ObstacleHelper {
 					break
 				case 20:
 					let mypos=player.pos
-					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(){
+					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(this:Entity){
 						return Math.abs(this.pos-mypos)
 					})
 					

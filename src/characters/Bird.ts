@@ -14,7 +14,7 @@ import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../res/skill_scales.json"
 import BirdAgent from "../AiAgents/BirdAgent"
 import type { Entity } from "../entity/Entity"
-import { SkillTargetSelector, SkillAttack } from "../core/skill"
+import { SkillTargetSelector, SkillAttack, SkillOnHitFunction } from "../core/skill"
 const ID = 7
 
 class Bird extends Player {
@@ -202,21 +202,19 @@ class Bird extends Player {
 		switch (s) {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
-				let _this=this
-				let onhit = function(this: Player){
+				let onhit = function(this: Player,source:Player){
 					this.inven.takeMoney(20)
-					_this.inven.giveMoney(20)
+					source.inven.giveMoney(20)
 				}
 
 				let damage = new Damage(0, this.getSkillBaseDamage(s), 0)
 
 				if (this.isSkillActivated(ENUM.SKILL.W)) {
-					onhit = function(this: Player){
+					onhit = function(this: Player,source:Player){
 						this.inven.takeMoney(20)
-						_this.inven.giveMoney(20)
+						source.inven.giveMoney(20)
 						this.effects.apply(ENUM.EFFECT.ROOT, 1)
 					}
-					
 					damage.updateMagicDamage(CALC_TYPE.plus, this.getSkillAmount("w_q_adamage"))
 					if (this.isSkillActivated(ENUM.SKILL.ULT)) 
 					{
@@ -228,14 +226,13 @@ class Bird extends Player {
 					let proj = this.buildProjectile()
 					this.game.placeProjNoSelection(proj, target.pos - 1)
 				}
-				skillattr =new SkillAttack(damage,this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
+				skillattr =new SkillAttack(damage,this.getSkillName(s)).ofSkill(s).setOnHit(onhit)
 				break
 		}
 
 		return skillattr
 	}
 	onSkillDurationEnd(skill: number) {
-		console.log("changeApperance bird:")
 		if (skill === ENUM.SKILL.ULT) {
 			// this.ability.update("attackRange", -2)
 			this.changeApperance("")

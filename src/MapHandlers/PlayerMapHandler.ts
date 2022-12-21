@@ -1,11 +1,11 @@
 import { Player } from "../player/player"
 import { EntityFilter } from "../entity/EntityFilter"
 import { MAP ,singleCasinoMap,singleMap, singleOceanMap} from "./MapStorage"
-import * as ENUM from "../data/enum"
 import { CALC_TYPE,  randomBoolean} from "../core/Util"
 import { ObstacleHelper } from "../core/Obstacles"
 import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
 import { Damage } from "../core/Damage"
+import { CHANGE_MONEY_TYPE, FORCEMOVE_TYPE, MAP_TYPE } from "../data/enum"
 
 interface TwoWayMap {
 	onMainWay: boolean //갈림길 체크시 샤용
@@ -92,18 +92,18 @@ abstract class PlayerMapHandler {
 		return died
 	}
 
-	static create(player: Player, mapId: ENUM.MAP_TYPE): PlayerMapHandler {
-		if (mapId === ENUM.MAP_TYPE.NORMAL) {
+	static create(player: Player, mapId:  MAP_TYPE): PlayerMapHandler {
+		if (mapId ===  MAP_TYPE.NORMAL) {
 			return new DefaultMapHandler(player)
-		} else if (mapId === ENUM.MAP_TYPE.OCEAN) {
+		} else if (mapId ===  MAP_TYPE.OCEAN) {
 			return new OceanMapHandler(player)
-		} else if (mapId === ENUM.MAP_TYPE.CASINO) {
+		} else if (mapId ===  MAP_TYPE.CASINO) {
 			return new CasinoMapHandler(player)
 		}
-		else if (mapId === ENUM.MAP_TYPE.TRAIN) {
+		else if (mapId ===  MAP_TYPE.TRAIN) {
 			return new TrainMapHandler(player)
 		}
-		else if (mapId === ENUM.MAP_TYPE.RAPID) {
+		else if (mapId ===  MAP_TYPE.RAPID) {
 			return new RapidMapHandler(player)
 		}
 		return new DefaultMapHandler(player)
@@ -114,19 +114,19 @@ abstract class PlayerMapHandler {
 class DefaultMapHandler extends PlayerMapHandler {
 	constructor(player: Player) {
 		super(player)
-		this.gamemap = MAP.get(ENUM.MAP_TYPE.NORMAL)
+		this.gamemap = MAP.get( MAP_TYPE.NORMAL)
 	}
 }
 class TrainMapHandler extends PlayerMapHandler {
 	constructor(player: Player) {
 		super(player)
-		this.gamemap = MAP.get(ENUM.MAP_TYPE.TRAIN)
+		this.gamemap = MAP.get( MAP_TYPE.TRAIN)
 	}
 }
 class RapidMapHandler extends PlayerMapHandler {
 	constructor(player: Player) {
 		super(player)
-		this.gamemap = MAP.get(ENUM.MAP_TYPE.RAPID)
+		this.gamemap = MAP.get( MAP_TYPE.RAPID)
 	}
 	onGameStart(): void {
 		this.player.inven.giveMoney(400)
@@ -139,7 +139,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 	gamemap:singleOceanMap
 	constructor(player: Player) {
 		super(player)
-		this.gamemap = MAP.get(ENUM.MAP_TYPE.OCEAN) as singleOceanMap
+		this.gamemap = MAP.get( MAP_TYPE.OCEAN) as singleOceanMap
 		this.onMainWay = true //갈림길 체크시 샤용
 	}
 	isOnMainWay() {
@@ -149,7 +149,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 		return this.inSameWayWith(other)
 	}
 	getPositonForRecord(pos:number){
-		if(this.onMainWay)
+		if(!this.onMainWay)
 			return this.gamemap.way2_range.start + (pos - this.gamemap.way2_range.way_start)
 		else return super.getPositonForRecord(pos)
 	}
@@ -179,7 +179,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 	onPendingActionComplete(info:ClientInputEventInterface.PendingAction): void {
 		if (info.type === "submarine" && info.complete && typeof info.result==='number') {
 			this.player.game.setPendingObs(this.player.game.getObstacleAt(info.result))
-			this.player.game.playerForceMove(this.player, info.result, false,  ENUM.FORCEMOVE_TYPE.LEVITATE)
+			this.player.game.playerForceMove(this.player, info.result, false,   FORCEMOVE_TYPE.LEVITATE)
 		}
 		console.log("onPendingActionComplete"+info.result)
 		if (info.type === "ask_way2" && !info.result && typeof info.result==='boolean') {
@@ -248,7 +248,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 	private static readonly SUBWAY_DELAY=400
 	constructor(player: Player) {
 		super(player)
-		this.gamemap = MAP.get(ENUM.MAP_TYPE.CASINO) as singleCasinoMap
+		this.gamemap = MAP.get( MAP_TYPE.CASINO) as singleCasinoMap
 		this.isInSubway = false
 	}
 	onDeath(): void {
@@ -414,7 +414,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 			//격차 17 이상:특급
 			this.subwayTicket = SUBWAY_TICKET.EXPRESS
 		}
-		this.player.inven.changemoney(prices[this.subwayTicket], ENUM.CHANGE_MONEY_TYPE.SPEND)
+		this.player.inven.changemoney(prices[this.subwayTicket],  CHANGE_MONEY_TYPE.SPEND)
 	}
 
 	private getSubwayPrices(): number[] {
@@ -430,12 +430,12 @@ class CasinoMapHandler extends PlayerMapHandler {
 		}
 		return prices
 	}
-	selectSubway(type: number, price: number) {
+	private selectSubway(type: number, price: number) {
 		this.subwayTicket = type
 		
-		if (price > 0) this.player.inven.changemoney(-1 * price, ENUM.CHANGE_MONEY_TYPE.SPEND)
+		if (price > 0) this.player.inven.changemoney(-1 * price,  CHANGE_MONEY_TYPE.SPEND)
 	}
-	getSubwayDice() {
+	private getSubwayDice() {
 	//	let diceShown = 1
 		let moveDistance = 0
 		if (this.subwayTicket === SUBWAY_TICKET.EXPRESS ) {

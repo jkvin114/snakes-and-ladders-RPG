@@ -113,10 +113,8 @@ class AttackHandler{
 				victimData.flags.push("shield")
 				return victimData
 			}
-
-			if (skillattack.onHit != null) {
-				skillattack.onHit.call(target)
-			}
+			skillattack.applyOnHitEffect(from,target)
+			
 			damage = target.effects.onSkillDamage(damage, from.UEID)
 			damage = from.effects.onSkillHit(damage, target)
 

@@ -135,16 +135,14 @@ class Yangyi extends Player {
 		this.startCooltime(ENUM.SKILL.ULT)
 		//Math.floor(0.5 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP))
 
-		let k = function (this:Player) {
-			this.resetCooltime([ENUM.SKILL.ULT])
-		}
-
 		skillattr = new SkillAttack(
 			new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0).mergeWith(
 				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(target.MaxHP,target.HP)
 			),
 			this.getSkillName(ENUM.SKILL.ULT)
-		).ofSkill(ENUM.SKILL.ULT).setOnKill(k)
+		).ofSkill(ENUM.SKILL.ULT).setOnKill(function (this:Player) {
+			this.resetCooltime([ENUM.SKILL.ULT])
+		})
 
 		return skillattr
 	}

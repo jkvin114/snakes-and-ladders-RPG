@@ -3,7 +3,7 @@ import { openConnection } from "./socket.js"
 import { GameInterface } from "./interface.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 export const SOLOPLAY=true
-const BGM=true
+const BGM=false
 export var GAME
 class Game{
     constructor(){
@@ -34,6 +34,7 @@ class Game{
         }
         return 0
     }
+    
     init(setting,num,turn)
     {
 
@@ -103,10 +104,12 @@ class Game{
       //  if(this.myTurn!==player) return
         this.scene.showArrow(this.turnToPlayerNum(player))
         this.ui.showDiceBtn(data.hasOddEven,data.origin)
-
+        this.ui.setTurnIndicator(player)
     }
     diceRoll(turn,data){
+
         this.ui.rollDice(data.dice[0],data.dice[1],turn,data.dc)
+
         // toast(data.dice + ((data.isDouble)?"(더블)":"")+ ((data.dc)?"(주사위 컨트롤!)":""))
     }
     playerWalkMove(player,from,distance,movetype){
@@ -234,7 +237,7 @@ class Game{
         if(!this.pressingDice) return
 
         clearInterval(this.diceGageInterval)
-
+        this.ui.resetTurnIndicator()
         this.connection.clickDice(this.diceGage,this.ui.oddeven)
 
         $("#dice_container").hide()

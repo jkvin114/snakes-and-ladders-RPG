@@ -9,7 +9,7 @@ import {
 import { MarblePlayer, MarblePlayerStat } from "./Player"
 import { AskLoanAction } from "./action/QueryAction"
 import { BuildableTile } from "./tile/BuildableTile"
-import { chooseRandom, chooseRandomMultiple, distance, getTilesBewteen, PlayerType, ProtoPlayer, randInt, range } from "./util"
+import { chooseRandom, chooseRandomMultiple, distance, getTilesBewteen, PlayerType, ProtoPlayer, randInt, range, shuffle } from "./util"
 import { CARD_NAME } from "./FortuneCard"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { AbilityValues } from "./Ability/AbilityValues"
@@ -25,6 +25,7 @@ import { ClaimTollActionBuilder } from "./action/PackageBuilder/ClaimTollActionB
 import { MeetPlayerActionBuilder } from "./action/PackageBuilder/MeetPlayerActionBuilder"
 import { MonopolyChanceActionBuilder } from "./action/PackageBuilder/MonopolyChanceActionBuilder"
 import { PassPlayerActionBuilder } from "./action/PackageBuilder/PassPlayerActionBuilder"
+const PLAYER_NAMES=["데니스","슬기","에르난데스","카트리나","스티브","야나기","최배달","밍밍","산티노","휘트니","아리안","콕스","아라","아폴론","타란튤라","헤나"]
 
 class PlayerMediator {
 	map: MarbleGameMap
@@ -34,6 +35,7 @@ class PlayerMediator {
 	retiredPlayers: Set<number>
 	playerCount: number
 	aiCount: number
+	private readonly names:string[]
 
 	constructor(game: MarbleGame, map: MarbleGameMap, playerlist: ProtoPlayer[], startmoney: number) {
 		this.game = game
@@ -42,25 +44,27 @@ class PlayerMediator {
 		this.aiCount = 0
 		this.players = []
 		this.retiredPlayers = new Set<number>()
-
+		this.names=shuffle(PLAYER_NAMES)
 		for (let i = 0; i < playerlist.length; ++i) {
 			const p = playerlist[i]
 			let champ = p.champ === -1 ? randInt(9) : p.champ
 
 			if (p.type === PlayerType.AI) {
 				this.players.push(
-					new MarblePlayer(i, p.name, champ, p.team, true, startmoney,
+					new MarblePlayer(i, this.names[i], champ, p.team, true, startmoney,
 						 new MarblePlayerStat([80, 80, 80, 110, 80]))
 				)
 				this.aiCount += 1
 			} else if (p.type === PlayerType.PLAYER_CONNECED) {
 				this.players.push(
-					new MarblePlayer(i, p.name, champ, p.team, false, startmoney,
+					new MarblePlayer(i, this.names[i], champ, p.team, false, startmoney,
 						 new MarblePlayerStat([80, 80, 80, 110, 80]))
 				)
 				this.playerCount += 1
 			}
 		}
+		
+
 		this.playerTurns = [0, 1, 2, 3]
 	}
 	getPlayerInitialSetting() {

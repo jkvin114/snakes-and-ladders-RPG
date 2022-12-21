@@ -135,20 +135,20 @@ class Jean extends Player {
 		switch (s) {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
-				let _this = this
-				let onhit = function (this: Player) {
+				let onhit = function (this: Player,source:Player) {
 					if (this.effects.has(ENUM.EFFECT.ROOT)) {
-						_this.setCooltime(ENUM.SKILL.Q, 1)
+						source.setCooltime(ENUM.SKILL.Q, 1)
 					}
 				}
 
-				skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
+				skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s))
+				.setOnHit(onhit).ofSkill(s)
 
 				break
 			case ENUM.SKILL.ULT:
 				this.effects.applySpecial(this.getUltShield(),Jean.EFFECT_ULT)
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
-					let onhit = function (this: Player) {
+					let onhit = function (this: Player,source:Player) {
 						this.effects.apply(ENUM.EFFECT.SLOW, 1)
 					}
 
@@ -172,7 +172,7 @@ class Jean extends Player {
 	onSkillDurationCount() {
 		if (this.duration[ENUM.SKILL.ULT] === 2) {
 			this.effects.apply(ENUM.EFFECT.ROOT, 1)
-			let onhit = function (this: Player) {
+			let onhit = function (this: Player,source:Player) {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
 			let skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0), this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
@@ -182,7 +182,7 @@ class Jean extends Player {
 		}
 		//궁 세번째 공격
 		if (this.duration[ENUM.SKILL.ULT] === 1) {
-			let onhit = function (this: Player) {
+			let onhit = function (this: Player,source:Player) {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
 			let skillattr = new SkillAttack(new Damage(0,0,this.getSkillBaseDamage(ENUM.SKILL.ULT)),this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)

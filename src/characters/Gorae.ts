@@ -104,11 +104,13 @@ class Gorae extends Player {
 		return new ShieldEffect(ENUM.EFFECT.KRAKEN_W_SHIELD,this.duration_list[ENUM.SKILL.W],this.getSkillAmount("wshield"))
 	}
 
-    useW() {
-		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W)).ofSkill(ENUM.SKILL.W)
-		.setOnHit(function(this:Player){
+    private useW() {
+		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W))
+		.ofSkill(ENUM.SKILL.W)
+		.setOnHit(function(this:Player,source:Player){
 			this.effects.apply(ENUM.EFFECT.SLOW, 1)
 		})
+		
 		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 
 		this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(3),dmg)
@@ -142,7 +144,7 @@ class Gorae extends Player {
 		if(key==="wshield") return this.calculateScale(Gorae.SKILL_SCALES.wshield!)
 		return 0
 	}
-	getSkillDamage(target: Entity): SkillAttack|null {
+	getSkillDamage(target: Entity): SkillAttack |null {
 	//	console.log(target+"getSkillDamage"+this.pendingSkill)
 		let skillattr = null
 		let s: number = this.pendingSkill

@@ -237,6 +237,7 @@ class Game {
 		// console.log("add ai " + char + "  " + team)
 		let teamValue=Number(team)
 		if(!this.isTeam) teamValue=this.totalnum
+		
 		let p=this.createPlayer(teamValue,char,name,this.totalnum,true)
 		this.entityMediator.register(p,p.UEID)
 		// this.playerSelector.addPlayer(p)
@@ -1263,7 +1264,7 @@ class Game {
 			setting: this.setting.getSummary()
 		}
 		
-		data.replay=""
+		data.replay=null
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
@@ -1333,7 +1334,7 @@ class Game {
 				kill: p.kill,
 				death: p.death,
 				assist: p.assist,
-				team: p.team
+				team: this.getTeamAsBool(p.team)
 			})
 		}
 		return gameresult

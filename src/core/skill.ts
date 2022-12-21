@@ -3,12 +3,13 @@ import type { Entity } from "../entity/Entity"
 import type { Player } from "../player/player"
 import type { Damage } from "./Damage"
 
-export class SkillAttack {
+export class SkillAttack{
 	damage: Damage
 	skill: number
 	onKill?: (this: Player) => void //(player):void
-	onHit?: (this: Player) => void //():void
+	onHit?: SkillOnHitFunction //():void
 	name: string
+	auto:boolean
 	constructor(damage: Damage, name: string) {
 		this.damage = damage
 		this.name = name
@@ -17,15 +18,23 @@ export class SkillAttack {
 		this.skill = skill
 		return this
 	}
-	setOnHit(onhit: (this: Player) => void) {
+	setOnHit(onhit: SkillOnHitFunction) {
 		this.onHit = onhit
 		return this
 	}
-	setOnKill(onkill: (this: Player) => void) {
+	applyOnHitEffect(target:Player,source:Player){
+		if(this.onHit!=null) this.onHit.call(target,source)
+	}
+	setOnKill(onkill: (this:  Player) => void) {
 		this.onKill = onkill
 		return this
 	}
 }
+
+export interface SkillOnHitFunction {
+	(this: Player,source:Player): void
+}
+
 
 export interface SkillTargetConditionFunction {
 	(this: Entity): boolean

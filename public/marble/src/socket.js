@@ -10,7 +10,10 @@ export class Socket{
 }
 const PREFIX="marble:user:"
 function checkTurn(turn){
-	if(SOLOPLAY) return true
+	if(SOLOPLAY){
+		GAME.ui.setTurnIndicator(turn)
+		return true
+	}
 	return GAME.myTurn===turn
 }
 export function openConnection(isInitial){
@@ -80,7 +83,7 @@ export function openConnection(isInitial){
 		GAME.chooseBuild(pos,builds,buildsHave,discount,avaliableMoney)
 	})
     socket.on("server:ask_buyout", function (player,pos,price,originalPrice) {
-		
+		if(!checkTurn(player)) return
 		console.log(player,pos,price,originalPrice)
 		GAME.chooseBuyout(player,pos,price,originalPrice)
 	})
@@ -141,6 +144,7 @@ export function openConnection(isInitial){
 	socket.on("server:obtain_card", function (player,name,level,type) {
         console.log("obtain_card")
 		console.log(name,level,type)
+		checkTurn(player)
 		GAME.obtainCard(player,name,level,type)
 	})
 	socket.on("server:clear_buildings", function (positions) {
@@ -227,6 +231,7 @@ export function openConnection(isInitial){
 	})
 
 	GAME.connection.clickDice=function(gage,oddeven){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"press_dice",GAME.myTurn,gage,oddeven)
 	}
 
@@ -239,29 +244,37 @@ export function openConnection(isInitial){
 		socket.emit(PREFIX+"request_setting")
 	}
 	GAME.connection.chooseBuild=function(builds){
-		console.log("choosebuild")
-		console.log(builds)
+		// console.log("choosebuild")
+		// console.log(builds)
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"select_build",GAME.myTurn,builds)
 	}
 	GAME.connection.chooseBuyout=function(result){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"select_buyout",GAME.myTurn,result)
 	}
 	GAME.connection.chooseLoan=function(result){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"select_loan",GAME.myTurn,result)
 	}
 	GAME.connection.onTileSelect=function(pos,type,result){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"select_tile",GAME.myTurn,pos,type,result)
 	}
 	GAME.connection.finishObtainCard=function(result){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"obtain_card",GAME.myTurn,result)
 	}
 	GAME.connection.finishConfirm=function(result,cardname){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"confirm_card_use",GAME.myTurn,result,cardname)
 	}
 	GAME.connection.selectGodHandSpecial=function(result){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"select_godhand_special",GAME.myTurn,result)
 	}
 	GAME.connection.islandChooseComplete=function(isescape){
+		GAME.ui.resetTurnIndicator()
 		socket.emit(PREFIX+"select_island",GAME.myTurn,isescape)
 	}
 }

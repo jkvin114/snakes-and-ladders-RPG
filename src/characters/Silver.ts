@@ -158,14 +158,13 @@ class Silver extends Player {
 			case ENUM.SKILL.Q:
 				this.startCooltime(ENUM.SKILL.Q)
 
-				let _this = this
 				let dmg = this.getSkillBaseDamage(s)
-				let heal=_this.isSkillActivated(ENUM.SKILL.ULT) ? this.getSkillAmount("r_qheal") : this.getSkillAmount("qheal")
-				
-				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s)).ofSkill(s).setOnHit(function(this: Player){
-					_this.heal(heal)
-				})
+				let heal=this.isSkillActivated(ENUM.SKILL.ULT) ? this.getSkillAmount("r_qheal") : this.getSkillAmount("qheal")
 
+				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s)).ofSkill(s)
+				.setOnHit(function(this:Player,source:Player){
+					source.heal(heal)
+				})
 				if (target.effects.hasEffectFrom(ENUM.EFFECT.ELEPHANT_W_SIGN, this.UEID)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, this.getSkillAmount("w_qdamage"))
 					target.effects.reset(ENUM.EFFECT.ELEPHANT_W_SIGN)
@@ -173,13 +172,12 @@ class Silver extends Player {
 				break
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
-				let effect = this.getWEffect()
-				let onhit = function (this: Player) {
+				let effect=this.getWEffect()
+				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s)).ofSkill(s)
+				.setOnHit(function(this:Player,source:Player){
 					this.effects.applySpecial(effect,SpecialEffect.SKILL.ELEPHANT_W.name)
-					this.effects.apply(ENUM.EFFECT.CURSE, 1)
-				}
-				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
-
+					this.effects.apply(ENUM.EFFECT.CURSE, 1)				
+				})
 				break
 		}
 

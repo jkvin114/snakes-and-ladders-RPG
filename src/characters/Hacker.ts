@@ -189,7 +189,7 @@
             return 0
         }
 
-        getSkillDamage(target: Entity): SkillAttack |null{
+        getSkillDamage(target: Entity): SkillAttack|null{
         //	console.log(target + "getSkillDamage" + this.pendingSkill)
             let damage = null
             let s: number = this.pendingSkill
