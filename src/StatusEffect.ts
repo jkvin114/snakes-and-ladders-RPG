@@ -21,7 +21,7 @@ enum EFFECT_TYPE {
 	ONHIT = 3,
 	ONDAMAGE = 4,
 	TICK = 5,
-	ON_FINAL_DAMAGE=6
+	ON_HP_BELOW_THRESHOLD=6
 }
 enum EFFECT_TIMING {
 	TURN_START,
@@ -33,7 +33,7 @@ const SHIELD_EFFECT_TIMING=EFFECT_TIMING.BEFORE_SKILL
 const ABILITY_CHANGE_EFFECT_TIMING=EFFECT_TIMING.TURN_START
 const TICK_EFFECT_TIMING=EFFECT_TIMING.TURN_END
 const ONHIT_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
-const ONFINALDAMAGE_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
+const ONHPBELOWTHRESHOLD_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
 const ON_DAMAGE_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
 
 
@@ -68,7 +68,7 @@ class ItemPassiveEffectFactory {
 	static create(item: ITEM) {
 		switch (item) {
 			case ITEM.EPIC_FRUIT:
-				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_FOREVER, TickEffect.FREQ_EVERY_TURN)
+				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_PERMANENT, TickEffect.FREQ_EVERY_TURN)
 					.setAction(function (this: Player) {
 						this.changeHP_heal(new HPChange(this.ability.extraHP * 0.15))
 
@@ -76,7 +76,7 @@ class ItemPassiveEffectFactory {
 					})
 					.setGood()
 			case ITEM.POWER_OF_MOTHER_NATURE:
-				return new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE, StatusEffect.DURATION_FOREVER, function (
+				return new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE, StatusEffect.DURATION_PERMANENT, function (
 					Damage: Damage,
 					owner: Player
 				) {
@@ -96,7 +96,7 @@ class ItemPassiveEffectFactory {
 			case ITEM.POWER_OF_NATURE:
 				return new OnDamageEffect(
 					EFFECT.ITEM_POWER_OF_NATURE,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					(Damage: Damage, owner: Player) => {
 						return PlayerAbility.applySkillDmgReduction(Damage, 10)
 					}
@@ -107,7 +107,7 @@ class ItemPassiveEffectFactory {
 			case ITEM.CARD_OF_DECEPTION:
 				return new OnHitEffect(
 					EFFECT.ITEM_CARD_OF_DECEPTION,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					function(this: Player, target: Player, damage: Damage){
 						if (this.inven.isActiveItemAvailable(ITEM.CARD_OF_DECEPTION)) {
 							//	console.log("CARD_OF_DECEPTION")
@@ -127,7 +127,7 @@ class ItemPassiveEffectFactory {
 			case ITEM.ANCIENT_SPEAR:
 				return new OnHitEffect(
 					EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					function(this: Player, target: Player, damage: Damage){
 						return damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.1)
 					}
@@ -137,7 +137,7 @@ class ItemPassiveEffectFactory {
 			case ITEM.SPEAR:
 				return new OnHitEffect(
 					EFFECT.ITEM_SPEAR_ADAMAGE,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					function(this: Player, target: Player, damage: Damage){
 						//	console.log("ITEM_SPEAR_ADAMAGE")
 						return damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.05)
@@ -148,7 +148,7 @@ class ItemPassiveEffectFactory {
 			case ITEM.CROSSBOW_OF_PIERCING:
 				return new OnHitEffect(
 					EFFECT.ITEM_CROSSBOW_ADAMAGE,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					function(this: Player, target: Player, damage: Damage){
 						return damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
 					}
@@ -158,7 +158,7 @@ class ItemPassiveEffectFactory {
 			case ITEM.FULL_DIAMOND_ARMOR:
 				return new OnHitEffect(
 					EFFECT.ITEM_DIAMOND_ARMOR_MAXHP_GROWTH,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					function(this: Player, target: Player, damage: Damage){
 						this.ability.addMaxHP(5)
 						//	console.log("FULL_DIAMOND_ARMOR")
@@ -170,7 +170,7 @@ class ItemPassiveEffectFactory {
 			case ITEM.BOOTS_OF_PROTECTION:
 				return new OnDamageEffect(
 					EFFECT.ITEM_BOOTS_OF_ENDURANCE,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					(damage: Damage, owner: Player) => {
 						//	console.log("BOOTS_OF_PROTECTION")
 						return damage.updateNormalDamage(CALC_TYPE.multiply, 0.65)
@@ -179,9 +179,9 @@ class ItemPassiveEffectFactory {
 					.on([OnDamageEffect.BASICATTACK_DAMAGE])
 					.setGood()
 			case ITEM.WARRIORS_SHIELDSWORD:
-				return new OnFinalDamageEffect(
+				return new OnHPBelowThresholdEffect(
 					EFFECT.ITEM_SHIELDSWORD,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.WARRIORS_SHIELDSWORD)) {
 						//	console.log("WARRIORS_SHIELDSWORD")
@@ -203,9 +203,9 @@ class ItemPassiveEffectFactory {
 					.setInvokeConditionHpPercent(30)
 					.setGood()
 			case ITEM.INVISIBILITY_CLOAK:
-				return new OnFinalDamageEffect(
+				return new OnHPBelowThresholdEffect(
 					EFFECT.ITEM_INVISIBILITY_CLOAK,
-					StatusEffect.DURATION_FOREVER,
+					StatusEffect.DURATION_PERMANENT,
 					(damage: number, owner: Player) => {
 						if (owner.inven.isActiveItemAvailable(ITEM.INVISIBILITY_CLOAK)) {
 						//	console.log("invisibility cloak")
@@ -294,7 +294,7 @@ abstract class StatusEffect {
 	public effectType: EFFECT_TYPE
 	static readonly DURATION_UNTIL_LETHAL_DAMAGE = 1000
 	static readonly DURATION_UNTIL_DEATH = 2000
-	static readonly DURATION_FOREVER = 10000
+	static readonly DURATION_PERMANENT = 10000
 
 	constructor(id: EFFECT, dur: number, timing: EFFECT_TIMING) {
 		this.id = id
@@ -349,7 +349,7 @@ abstract class StatusEffect {
 		return true
 	}
 	onDeath() {
-		if (this.duration >= StatusEffect.DURATION_FOREVER) {
+		if (this.duration >= StatusEffect.DURATION_PERMANENT) {
 			return false
 		}
 
@@ -622,15 +622,15 @@ interface OnFinalDamageFunction {
 	(damage: number, owner: Player): void
 }
 
-class OnFinalDamageEffect extends StatusEffect {
+class OnHPBelowThresholdEffect extends StatusEffect {
 	protected onDamage: OnFinalDamageFunction
-	private conditionHpPercent: number
+	private thresholdHpPercent: number
 
 	constructor(id: EFFECT, dur: number, f: OnFinalDamageFunction) {
-		super(id, dur, ONFINALDAMAGE_EFFECT_TIMING)
+		super(id, dur, ONHPBELOWTHRESHOLD_EFFECT_TIMING)
 		this.onDamage = f
-		this.conditionHpPercent = 100
-		this.effectType=EFFECT_TYPE.ON_FINAL_DAMAGE
+		this.thresholdHpPercent = 100
+		this.effectType=EFFECT_TYPE.ON_HP_BELOW_THRESHOLD
 	}
 
 	/**
@@ -638,7 +638,7 @@ class OnFinalDamageEffect extends StatusEffect {
 	 * @param percent
 	 */
 	setInvokeConditionHpPercent(percent: number) {
-		this.conditionHpPercent = percent
+		this.thresholdHpPercent = percent
 		return this
 	}
 
@@ -648,7 +648,7 @@ class OnFinalDamageEffect extends StatusEffect {
 	 */
 	onFinalDamage(damage: number) {
 		let predictedHP = this.owner.HP - damage
-		if (predictedHP > 0 && predictedHP < (this.conditionHpPercent / 100) * this.owner.MaxHP) {
+		if (predictedHP > 0 && predictedHP < (this.thresholdHpPercent / 100) * this.owner.MaxHP) {
 			this.onDamage(damage, this.owner)
 		}
 	}
@@ -744,5 +744,5 @@ export {
 	onHitFunction,
 	ItemPassiveEffectFactory,
 	EffectFactory,
-	OnFinalDamageEffect
+	OnHPBelowThresholdEffect
 }

@@ -190,7 +190,8 @@ export function openConnection(isInitial) {
 			info.location,
 			info.killer,
 			info.isShutDown,
-			info.killerMultiKillCount
+			info.killerMultiKillCount,
+			info.damages
 		)
 	})
 	socket.on("server:attack", function (info) {

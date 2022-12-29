@@ -1,6 +1,6 @@
 import { Creed } from "../characters/Creed";
 import { ITEM, SKILL } from "../data/enum";
-import { ServerGameEventInterface } from "../data/PayloadInterface";
+import { ServerGameEventFormat } from "../data/EventFormat";
 import { Player } from "../player/player";
 import { AiAgent, ItemBuild } from "./AiAgent";
 
@@ -35,7 +35,7 @@ class CreedAgent extends AiAgent{
 		}
 		return -1
 	}
-	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player |null{
+	selectTarget(skill: SKILL, targets: ServerGameEventFormat.PlayerTargetSelector): Player |null{
 		//가장 앞에있는 플레이어 선택, 본인보다 3칸이상 뒤쳐져있으면 사용안함
 		if(skill===SKILL.ULT){
 			let players = targets.targets

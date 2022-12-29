@@ -17,7 +17,7 @@ const ITEMS:itemData[]=[]
 fs.createReadStream(__dirname+'/items.csv',{encoding:"utf-8"}).pipe(myParser).on('data', (data) => ITEMS.push(data))
 .on('end', () => {
     
-    console.log("marble items registered"+ITEMS[0].name_kor)
+ //   console.log("marble items registered"+ITEMS[0].name_kor)
 });
 
 

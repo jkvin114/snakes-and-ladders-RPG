@@ -1524,15 +1524,15 @@ b {
 }
 
 .skillinfo>i.mdmg {
-  color: rgb(24, 209, 255);
+  color: #18d1ff;
 }
 
 .skillinfo>i.pdmg {
-  color: rgb(218, 87, 0);
+  color: #da5700;
 }
 
 .skillinfo>i.tdmg {
-  color: rgb(255, 252, 233);
+  color: #fffce9;
 }
 
 .skillinfo i.health {
@@ -3681,4 +3681,97 @@ b {
 }
 #replayslow{
   transform: rotate(180deg);
+}
+
+#deathinfo-container{
+  font-family: 'nanumEB';
+  color: #FDFDFD;
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  top:10%;
+  width: 80%;
+  max-width: 800px;
+  transform: translate(-50%,0);
+  background-color:rgba(41, 41, 41,0.8); ;
+  border: 1px solid rgb(91, 24, 129);
+}
+#deathinfo-btn{
+  text-align: center;
+  padding: 7px;
+  cursor: pointer;
+  border: 2px solid rgb(148, 39, 211);
+}
+#deathinfo-btn:hover{
+  background-color:rgba(41, 41, 41,1); 
+}
+#deathinfo{
+  padding: 10px;
+}
+.deathinfo-header{
+  flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  justify-content:space-around ;
+  padding: 5px;
+}
+.deathinfo-damagetype > img{
+  width: 17px;
+ vertical-align: middle;
+}
+.deathinfo-source > div> img{
+  width: 25px;
+  background-color: white;
+  border-radius: 3px;
+}
+.deathinfo-source  > div> img.killer{
+  outline: 2px solid #ff4949;
+}
+.deathinfo-source{
+  font-family: "nanumB";
+  display:grid;
+  grid-template-columns: 30px 100px auto;
+  align-items:center;
+  margin-top: 10px;
+}
+.deathinfo-source> div{
+  margin: 4px;
+}
+.deathinfo-source> div:nth-child(2){
+  word-wrap: break-word;
+}
+.deathinfo-source-graph{
+  position: relative;
+
+}
+.deathinfo-source-bar{
+  float: left;
+  width: 30%;
+  height: 15px;
+  outline: 1px solid black;
+  display: inline-block;
+}
+.deathinfo-header-pdmg{
+  color: #da5700;
+}
+.deathinfo-header-mdmg{
+  color: #18d1ff;
+}
+.deathinfo-header-fdmg
+{
+  color: #fffce9;
+}
+.deathinfo-source-bar-pdamage{
+  background-color: #da5700;
+}
+.deathinfo-source-bar-mdamage{
+  background-color: #18d1ff;
+}
+.deathinfo-source-bar-fdamage{
+  background-color: #fffce9;
+}
+.deathinfo-source-damage{
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 16px;
 }

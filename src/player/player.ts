@@ -16,7 +16,7 @@ import { SkillInfoFactory } from "../data/SkillDescription"
 import { Entity } from "../entity/Entity"
 import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
 import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
-import { ServerGameEventInterface } from "../data/PayloadInterface"
+import { ServerGameEventFormat } from "../data/EventFormat"
 import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../res/character_ability.json")
 import { Indicator } from "../TrainHelper"
@@ -25,6 +25,7 @@ import CONFIG from "./../../config/config.json"
 import { Damage,PercentDamage } from "../core/Damage"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { HPChange } from "../core/health"
+import { DamageRecord, PlayerDamageRecorder } from "./PlayerDamageRecord"
 
 // class Minion extends Entity{
 // 	constructor(){
@@ -93,6 +94,7 @@ abstract class Player extends Entity {
 	//	MaxHP: number
 	 ability: PlayerAbility
 	readonly statistics: PlayerStatistics
+	readonly damageRecord: PlayerDamageRecorder
 	 inven: PlayerInventory
 	 effects: PlayerStatusEffects
 	readonly mapHandler: PlayerMapHandler
@@ -180,6 +182,7 @@ abstract class Player extends Entity {
 		this.effects = new PlayerStatusEffects(this)
 		this.mapHandler = PlayerMapHandler.create(this, this.mapId)
 		this.AiAgent = new DefaultAgent(this)
+		this.damageRecord=new PlayerDamageRecorder()
 
 		this.shield = 0
 
@@ -365,7 +368,7 @@ abstract class Player extends Entity {
 		this.game.eventEmitter.update( "skillstatus", this.turn, this.getSkillStatus())
 	}
 
-	getSkillStatus(): ServerGameEventInterface.SkillStatus {
+	getSkillStatus(): ServerGameEventFormat.SkillStatus {
 		return {
 			turn: this.game.thisturn,
 			cooltime: this.cooltime,
@@ -472,6 +475,7 @@ abstract class Player extends Entity {
 		this.inven.onTurnEnd()
 		this.effects.onTurnEnd()
 		this.ability.onTurnEnd()
+		this.damageRecord.onTurnEnd()
 	}
 	//========================================================================================================
 	/**
@@ -686,7 +690,7 @@ abstract class Player extends Entity {
 		// let isblocked = data.hasFlag(HPChange.FLAG_SHIELD)
 
 		if (hp <= 0) {
-			let hpChangeData: ServerGameEventInterface.Damage = {
+			let hpChangeData: ServerGameEventFormat.Damage = {
 				turn: this.turn,
 				change: hp,
 				currhp: this.HP,
@@ -724,7 +728,7 @@ abstract class Player extends Entity {
 		}
 
 		if (hp > 0) {
-			let changeData: ServerGameEventInterface.Heal = {
+			let changeData: ServerGameEventFormat.Heal = {
 				turn: this.turn,
 				change: hp,
 				currhp: this.HP,
@@ -1006,6 +1010,8 @@ abstract class Player extends Entity {
 		}
 		damage = this.effects.onObstacleDamage(damage)
 		damage *= 1 - this.ability.obsR.get() / 100 //장애물 저항
+
+		this.damageRecord.add(new DamageRecord(-1,2,damage))
 		return this.doDamage(damage, changeData)
 	}
 	updateTotalShield(change: number, noindicate: boolean) {
@@ -1121,12 +1127,13 @@ abstract class Player extends Entity {
 		// 	this.transfer(PlayerClientInterface.goStore, this.turn, this.inven.getStoreData(1))
 		// }
 
-		let killData: ServerGameEventInterface.Death = {
+		let killData: ServerGameEventFormat.Death = {
 			killer: -1,
 			turn: this.turn,
 			location: this.pos,
 			isShutDown: false,
-			killerMultiKillCount: 1
+			killerMultiKillCount: 1,
+			damages:this.damageRecord.getTransferData()
 		}
 
 		//상대에게 죽은경우
@@ -1170,13 +1177,14 @@ abstract class Player extends Entity {
 		this.addAssist(killerturn)
 		this.HP = 0
 		this.dead = true
-		this.mapHandler.onDeath()
 		this.incrementKda("d")
 		this.damagedby = [0, 0, 0, 0]
-
+		
 		this.setAllSkillDuration([0, 0, 0])
 		this.invulnerable = true
+		this.mapHandler.onDeath()
 		this.effects.onDeath()
+		
 		this.oneMoreDice = false
 		// for (let p of this.projectile) {
 		// 	p.remove()
@@ -1192,7 +1200,7 @@ abstract class Player extends Entity {
 		}
 		
 		this.sendKillInfo(skillfrom)
-
+		this.damageRecord.onDeath()
 	}
 	
 
@@ -1266,10 +1274,10 @@ abstract class Player extends Entity {
 	 * check skill avalibility, get avaliable targets or locations from skilltargetselector
 	 * @param {*} skill
 	 */
-	initSkill(skill: number): ServerGameEventInterface.SkillInit {
+	initSkill(skill: number): ServerGameEventFormat.SkillInit {
 		
 
-		let payload: ServerGameEventInterface.SkillInit = {
+		let payload: ServerGameEventFormat.SkillInit = {
 			turn: this.turn,
 			crypt_turn: this.game.getGameTurnToken(this.turn),
 			type: ENUM.INIT_SKILL_RESULT.NON_TARGET,
@@ -1365,7 +1373,7 @@ abstract class Player extends Entity {
 	 * 
 	 * @returns default entityfilter fo basic attack
 	 */
-	protected getBasicAttackFilter():EntityFilter {
+	protected getBasicAttackFilter():EntityFilter<Entity> {
 		return EntityFilter.ALL_ENEMY(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
 	}
 	/**

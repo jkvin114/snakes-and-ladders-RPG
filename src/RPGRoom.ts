@@ -1,6 +1,6 @@
 import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { Room } from "./room"
-import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
+import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
 const { Replay } = require("./mongodb/ReplayDBHandler")
 
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./mongodb/DBHandler")
@@ -57,7 +57,7 @@ class RPGRoom extends Room {
 		return this.gameloop.game.mapId
 	}
 
-	user_gameReady(setting: ClientInputEventInterface.GameSetting, roomName: string) {
+	user_gameReady(setting: ClientInputEventFormat.GameSetting, roomName: string) {
 		this.instant = false
 		this.onBeforeGameStart()
 		// room.aichamplist=aichamplist
@@ -68,7 +68,7 @@ class RPGRoom extends Room {
 		this.gameloop.setClientInterface(this.eventObserver)
 	//	console.log("team" + this.isTeam)
 	}
-	user_requestSetting(): ServerGameEventInterface.initialSetting {
+	user_requestSetting(): ServerGameEventFormat.initialSetting {
 		let setting = this.gameloop.game.getInitialSetting()
 		//	setting.simulation = this.simulation
 		return setting
@@ -129,7 +129,7 @@ class RPGRoom extends Room {
 		this.eventObserver.gameOver(winner)
 	}
 	user_simulationStart(
-		simulationsetting: ClientInputEventInterface.SimulationSetting,
+		simulationsetting: ClientInputEventFormat.SimulationSetting,
 		simulation_count: number,
 		isTeam: boolean,
 		runnerId: string
@@ -147,7 +147,7 @@ class RPGRoom extends Room {
 			})
 	}
 	doInstantSimulation(
-		simulationsetting: ClientInputEventInterface.SimulationSetting,
+		simulationsetting: ClientInputEventFormat.SimulationSetting,
 		simulation_count: number,
 		isTeam: boolean,
 		runnerId: string,

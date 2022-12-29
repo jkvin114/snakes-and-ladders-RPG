@@ -6,20 +6,21 @@ import { Entity } from "./Entity"
 import { EFFECT, ENTITY_TYPE,  FORCEMOVE_TYPE,  STAT } from "../data/enum"
 import {  PriorityArray, Normalize, sleep, CALC_TYPE } from "../core/Util"
 import { MAP } from "../MapHandlers/MapStorage"
-import { ServerGameEventInterface } from "../data/PayloadInterface"
+import { ServerGameEventFormat } from "../data/EventFormat"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
 import { GameEventObserver } from "../GameEventObserver"
 import { EntityStorage } from "./EntityStorage"
 import { Damage } from "../core/Damage"
 import { SkillAttack } from "../core/skill"
 import { HPChange } from "../core/health"
+import { DamageRecord } from "../player/PlayerDamageRecord"
 
 
 
 class AttackHandler{
 	static basicAttacks(from:Player,targets:(Entity|undefined)[],damage:Damage):boolean{
 		let died=false
-		let data:ServerGameEventInterface.Attack={
+		let data:ServerGameEventFormat.Attack={
 			targets:[],source:from.turn,visualeffect:from.getBasicAttackName(),sourcePos:from.pos
 		}
 		for(let t of targets){
@@ -38,7 +39,7 @@ class AttackHandler{
 		let delay=from.getSkillTrajectorySpeed(from.getSkillName(skillattack.skill))
 		if(delay>0){
 			delay=MAP.getCoordinateDistance(from.mapId,from.pos,targets[0].pos) * delay / trajectorySpeedRatio
-			let data:ServerGameEventInterface.skillTrajectory={
+			let data:ServerGameEventFormat.skillTrajectory={
 				from:from.pos,
 				to:targets[0].pos,
 				type:from.getSkillName(skillattack.skill),
@@ -51,7 +52,7 @@ class AttackHandler{
 			}
 		}
 
-		let data:ServerGameEventInterface.Attack={
+		let data:ServerGameEventFormat.Attack={
 			targets:[],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
 		}
 
@@ -63,7 +64,7 @@ class AttackHandler{
 		from.game.eventEmitter.attack(data)
 	}
 
-	static basicAttack(from:Player,target:Entity,dmg:Damage):ServerGameEventInterface.Victim{
+	static basicAttack(from:Player,target:Entity,dmg:Damage):ServerGameEventFormat.Victim{
 		
 		let damage=dmg.clone()
 
@@ -73,7 +74,7 @@ class AttackHandler{
 
 			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}
-		let victimData:ServerGameEventInterface.Victim={
+		let victimData:ServerGameEventFormat.Victim={
 			pos:target.pos,flags:[],damage:damage.getTotalDmg()
 		}
 	//("-----------basicattack"+damage.getTotalDmg())
@@ -87,15 +88,15 @@ class AttackHandler{
 	static skillAttackAuto(from:Player,target:Entity|undefined,skillattack:SkillAttack):boolean{
 		if(!target) return false
 		let v=this.skillAttack(from,target,skillattack)
-		let data:ServerGameEventInterface.Attack={
+		let data:ServerGameEventFormat.Attack={
 			targets:[v],source:from.turn,visualeffect:skillattack.name,sourcePos:from.pos
 		}
 		from.game.eventEmitter.attack(data)
 		return (v.flags.includes("died"))
 	}
 
-	static skillAttack(from:Player,target:Entity,skillattack:SkillAttack):ServerGameEventInterface.Victim{
-		let victimData:ServerGameEventInterface.Victim={
+	static skillAttack(from:Player,target:Entity,skillattack:SkillAttack):ServerGameEventFormat.Victim{
+		let victimData:ServerGameEventFormat.Victim={
 			pos:target.pos,flags:[],damage:0
 		}
 		let damage=skillattack.damage.clone()
@@ -144,7 +145,7 @@ class AttackHandler{
 	static plainAttack(from:Entity,target:Entity,dmg:Damage,effectname:string):boolean{
 		let damage=dmg.clone()
 
-		let data:ServerGameEventInterface.Attack={
+		let data:ServerGameEventFormat.Attack={
 			targets:[{
 				pos:target.pos,flags:[],damage:damage.getTotalDmg()
 			}],source:-1,visualeffect:effectname,sourcePos:0
@@ -163,7 +164,8 @@ class AttackHandler{
 		if(from instanceof Player && target instanceof Player){
 			let pureDamage=finaldmg
 
-			finaldmg=from.ability.applyResistanceToDamage(damage, target.ability)
+			damage=from.ability.applyResistanceToDamage(damage, target.ability)
+			finaldmg=damage.getTotalDmg()
 			from.statistics.add(STAT.DAMAGE_DEALT, finaldmg)
 			target.statistics.add(STAT.DAMAGE_REDUCED, pureDamage - finaldmg)
 			target.markDamageFrom(from.turn)
@@ -186,6 +188,7 @@ class AttackHandler{
 		}
 
 		if (target instanceof Player) {
+			target.damageRecord.addFromAttack(damage,changeData.getSourceTurn())
 			return target.doDamage(finaldmg, changeData)
 		} else if (target instanceof SummonedEntity) {
 			return target.doDamage(from, damage)
@@ -335,7 +338,7 @@ class EntityMediator {
 
 		return false
 	}
-	basicAttack(from:Player,filter:EntityFilter,damage:Damage){
+	basicAttack(from:Player,filter:EntityFilter<Entity>,damage:Damage){
 		let targets=this.selectAllFrom(filter)
 		if(targets.length===0) return false
 		AttackHandler.basicAttacks(from,targets,damage)
@@ -352,7 +355,7 @@ class EntityMediator {
 	 * @param filter 
 	 * @returns 
 	 */
-	skillAttack(from:Player,filter:EntityFilter,skillAttack:SkillAttack){
+	skillAttack(from:Player,filter:EntityFilter<Player>,skillAttack:SkillAttack){
 		let targets=this.selectAllFrom(filter)
 		if(targets.length===0) return false
 		AttackHandler.skillAttacks(from,targets,skillAttack)		
@@ -382,7 +385,7 @@ class EntityMediator {
 		return AttackHandler.plainAttack(from,target,damage,effectname)
 	}
 
-	attack(from:Entity,filter:EntityFilter,damage:Damage,effectname:string){
+	attack(from:Entity,filter:EntityFilter<Player>,damage:Damage,effectname:string){
 		let attacked=false
 		for (let e of this.selectAllFrom(filter)) {
 			attacked=true
@@ -391,7 +394,7 @@ class EntityMediator {
 		return attacked
 	
 	}
-	forEach(filter: EntityFilter,action: EntityActionFunction<Entity>):number {
+	forEach(filter: EntityFilter<Entity>,action: EntityActionFunction<Entity>):number {
 			let count=0
 			for (let e of this.selectAllFrom(filter)) {
 				count++
@@ -401,7 +404,7 @@ class EntityMediator {
 		
 	}
 
-	forEachPlayer(filter: EntityFilter,action: EntityActionFunction<Player>):string[] {
+	forEachPlayer(filter: EntityFilter<Player>,action: EntityActionFunction<Player>):string[] {
 		let affected=[]
 		for (let e of this.selectAllFrom(filter)) {
 			affected.push(e.UEID)
@@ -431,7 +434,7 @@ class EntityMediator {
 		
 	}
 
-	selectAllFrom(filter: EntityFilter): PriorityArray<Entity> {
+	selectAllFrom<T extends Entity>(filter: EntityFilter<T>): PriorityArray<T> {
 		return filter.getFrom(this.storage)
 	}
 
@@ -444,23 +447,23 @@ class EntityMediator {
 		return players
 	}
 
-	selectAllPlayerFrom(filter: EntityFilter): PriorityArray<Player> {
-		return this.filterPlayers(this.selectAllFrom(filter))
+	selectAllPlayerFrom(filter: EntityFilter<Player>): PriorityArray<Player> {
+		return this.selectAllFrom(filter)
 	}
 
 	allPlayer():Player[]{
 		return this.storage.allPlayer()
 	}
 
-	selectBestOneFrom(filter: EntityFilter,reverse:boolean=false,normalize:boolean=false):(pr:EntityPriorityFunction)=>Entity {
+	selectBestOneFrom(filter: EntityFilter<Entity>,reverse:boolean=false,normalize:boolean=false):(pr:EntityPriorityFunction)=>Entity {
 		return (priority: EntityPriorityFunction) => {
 			if(reverse)
-				return this.selectAllFrom(filter).getMin(priority)
+				return this.selectAllFrom<Entity>(filter).getMin(priority)
 			else
-				return this.selectAllFrom(filter).getMax(priority)
+				return this.selectAllFrom<Entity>(filter).getMax(priority)
 		}
 	}
-	count(filter: EntityFilter):number{
+	count(filter: EntityFilter<Entity>):number{
 		return this.selectAllFrom(filter).length
 	}
 

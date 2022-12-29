@@ -1,4 +1,4 @@
-import type { ServerGameEventInterface } from "./data/PayloadInterface"
+import type { ServerGameEventFormat } from "./data/EventFormat"
 export interface replayInitialSetting {
     playerSettings: {
         turn: number
@@ -27,7 +27,7 @@ export class ReplayEventRecords{
         if(this.enabled)
             this.events.push(eventRecord)
     }
-    setInitialSetting(setting:ServerGameEventInterface.initialSetting){
+    setInitialSetting(setting:ServerGameEventFormat.initialSetting){
         if(!this.enabled) return
 
         this.setting={

@@ -1,6 +1,6 @@
 import { Gorae } from "../characters/Gorae"
 import { EFFECT, ITEM, SKILL } from "../data/enum"
-import { ServerGameEventInterface } from "../data/PayloadInterface"
+import { ServerGameEventFormat } from "../data/EventFormat"
 import { EntityFilter } from "../entity/EntityFilter"
 import { Player } from "../player/player"
 import { AiAgent, ItemBuild } from "./AiAgent"
@@ -42,7 +42,7 @@ class GoraeAgent extends AiAgent {
 		}
 		return -1
 	}
-	selectTarget(skill: SKILL, targets: ServerGameEventInterface.PlayerTargetSelector): Player |null{
+	selectTarget(skill: SKILL, targets: ServerGameEventFormat.PlayerTargetSelector): Player |null{
 		if (skill === SKILL.ULT) {
 			return this.getUltTarget(targets.targets)
 		}

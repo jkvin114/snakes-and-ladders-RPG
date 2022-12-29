@@ -530,7 +530,7 @@ export class Game {
 		return true
 	}
 
-	onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount) {
+	onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount,damages) {
 		if (!this.players[turn].alive) return
 
 		this.players[turn].alive = false

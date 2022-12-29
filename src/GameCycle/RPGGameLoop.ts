@@ -1,6 +1,6 @@
 import { ProtoPlayer, randInt, PlayerType, sleep } from "../core/Util"
 import { INIT_SKILL_RESULT } from "../data/enum"
-import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
+import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat"
 import { Game } from "../Game"
 import { GameEventObserver } from "../GameEventObserver"
 import { GameSetting } from "../GameSetting"
@@ -89,7 +89,7 @@ class GameLoop {
 	static create(
 		mapid: number,
 		rname: string,
-		setting: ClientInputEventInterface.GameSetting,
+		setting: ClientInputEventFormat.GameSetting,
 		instant: boolean,
 		isTeam: boolean,
 		playerlist: ProtoPlayer[]
@@ -132,7 +132,7 @@ class GameLoop {
 		this.game.user_update(turn, type, data)
 		//console.log("user_update"+type)
 	}
-	user_storeComplete(data: ClientInputEventInterface.ItemBought) {
+	user_storeComplete(data: ClientInputEventFormat.ItemBought) {
 		if (!this.game) return
 		this.game.userCompleteStore(data)
 	}
@@ -195,13 +195,13 @@ class GameLoop {
 		if (this.state.id === GAME_CYCLE.BEFORE_OBS.ROOTED) {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
-			let data: ServerGameEventInterface.DiceRoll|null = this.state.getData()
+			let data: ServerGameEventFormat.DiceRoll|null = this.state.getData()
 			// this.eventEmitter.rollDice(data)
 			if(data)
 				this.afterDice(data.actualdice)
 		}
 	}
-	user_pressDice(dicenum: number, crypt_turn: string): ServerGameEventInterface.DiceRoll|null {
+	user_pressDice(dicenum: number, crypt_turn: string): ServerGameEventFormat.DiceRoll|null {
 		//	console.log("user_pressDice")
 		this.restartResetTimeout()
 		if (this.state.crypt_turn !== crypt_turn) return null
@@ -210,7 +210,7 @@ class GameLoop {
 
 		this.setGameCycle(result.state)
 		//this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
-		let diceRoll: ServerGameEventInterface.DiceRoll|null = this.state.getData()
+		let diceRoll: ServerGameEventFormat.DiceRoll|null = this.state.getData()
 		if(diceRoll)
 			this.afterDice(diceRoll.actualdice)
 		return diceRoll
@@ -250,7 +250,7 @@ class GameLoop {
 			this.startNextTurn(false)
 		}
 	}
-	async user_completePendingObs(info: ClientInputEventInterface.PendingObstacle, crypt_turn: string) {
+	async user_completePendingObs(info: ClientInputEventFormat.PendingObstacle, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if (this.state.id === GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE) {
 			let result = this.state.onUserCompletePendingObs(info)
@@ -262,7 +262,7 @@ class GameLoop {
 			console.error("invalid user pendingobstacle input")
 		}
 	}
-	async user_completePendingAction(info: ClientInputEventInterface.PendingAction, crypt_turn: string) {
+	async user_completePendingAction(info: ClientInputEventFormat.PendingAction, crypt_turn: string) {
 		if (this.state == null || this.state.crypt_turn !== crypt_turn) return
 		if (this.state.id === GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION) {
 			let result = this.state.onUserCompletePendingAction(info)

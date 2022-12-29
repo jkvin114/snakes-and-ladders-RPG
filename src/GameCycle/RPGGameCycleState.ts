@@ -3,7 +3,7 @@ import SETTINGS = require("../../res/globalsettings.json")
 
 import type { Game } from "../Game"
 import { GAME_CYCLE } from "./StateEnum"
-import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
+import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat"
 import { ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../data/enum"
 import {sleep } from "../core/Util"
 import { EventResult } from "./RPGGameLoop"
@@ -44,7 +44,7 @@ abstract class GameCycleState {
 		console.error("invalid request, id:" + this.id)
 		return new EventResult(false)
 	}
-	onUserClickSkill(skill: number): ServerGameEventInterface.SkillInit|null {
+	onUserClickSkill(skill: number): ServerGameEventFormat.SkillInit|null {
 		console.error("invalid request, id:" + this.id)
 
 		return null
@@ -70,12 +70,12 @@ abstract class GameCycleState {
 		return new EventResult(false)
 	}
 
-	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle): EventResult {
+	onUserCompletePendingObs(info: ClientInputEventFormat.PendingObstacle): EventResult {
 		console.error("invalid request, state id:" + this.id)
 
 		return new EventResult(false)
 	}
-	onUserCompletePendingAction(info: ClientInputEventInterface.PendingAction): EventResult {
+	onUserCompletePendingAction(info: ClientInputEventFormat.PendingAction): EventResult {
 		console.error("invalid request, state id:" + this.id)
 
 		return new EventResult(false)
@@ -125,7 +125,7 @@ class GameInitializer extends GameCycleState {
 
 class TurnInitializer extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.INITIALIZE
-	turnUpdateData: ServerGameEventInterface.TurnStart|null
+	turnUpdateData: ServerGameEventFormat.TurnStart|null
 	constructor(game: Game) {
 		let turnUpdateData = game.goNextTurn()
 		super(game, TurnInitializer.id)
@@ -185,8 +185,8 @@ class WaitingDice extends GameCycleState {
 }
 class ThrowDice extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.THROW_DICE
-	diceData: ServerGameEventInterface.DiceRoll
-	constructor(game: Game, diceData: ServerGameEventInterface.DiceRoll) {
+	diceData: ServerGameEventFormat.DiceRoll
+	constructor(game: Game, diceData: ServerGameEventFormat.DiceRoll) {
 		super(game, ThrowDice.id)
 		this.diceData = diceData
 	}
@@ -247,7 +247,7 @@ class ArriveSquare extends GameCycleState {
 }
 class AiThrowDice extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE
-	dice: ServerGameEventInterface.DiceRoll
+	dice: ServerGameEventFormat.DiceRoll
 	constructor(game: Game) {
 		super(game, AiThrowDice.id)
 	}
@@ -299,9 +299,9 @@ class AiSimulationSkill extends GameCycleState {
 
 class PendingObstacle extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE
-	obs: ServerGameEventInterface.PendingObstacle
-	result: ClientInputEventInterface.PendingObstacle
-	constructor(game: Game, obs: ServerGameEventInterface.PendingObstacle) {
+	obs: ServerGameEventFormat.PendingObstacle
+	result: ClientInputEventFormat.PendingObstacle
+	constructor(game: Game, obs: ServerGameEventFormat.PendingObstacle) {
 		super(game, PendingObstacle.id)
 		this.obs = obs
 		this.game.eventEmitter.sendPendingObs(this.obs)
@@ -316,7 +316,7 @@ class PendingObstacle extends GameCycleState {
 	getOnTimeout(): () => void {
 		return () => this.game.processPendingObs(null)
 	}
-	onUserCompletePendingObs(info: ClientInputEventInterface.PendingObstacle): EventResult {
+	onUserCompletePendingObs(info: ClientInputEventFormat.PendingObstacle): EventResult {
 		this.result = info
 		return new EventResult(true, this.getNext())
 	}
@@ -326,8 +326,8 @@ class PendingObstacle extends GameCycleState {
 }
 class PendingObstacleProgress extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS
-	result: ClientInputEventInterface.PendingObstacle
-	constructor(game: Game, result: ClientInputEventInterface.PendingObstacle) {
+	result: ClientInputEventFormat.PendingObstacle
+	constructor(game: Game, result: ClientInputEventFormat.PendingObstacle) {
 		super(game, PendingObstacleProgress.id)
 		this.result = result
 		this.process()
@@ -358,7 +358,7 @@ class PendingObstacleProgress extends GameCycleState {
 class PendingAction extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_ACTION
 	action: string
-	result: ClientInputEventInterface.PendingAction
+	result: ClientInputEventFormat.PendingAction
 	constructor(game: Game, action: string) {
 		super(game, PendingAction.id)
 		this.action = action
@@ -382,7 +382,7 @@ class PendingAction extends GameCycleState {
 			this.game.eventEmitter.sendPendingAction("pending_action:ask_way2", 0)
 		}
 	}
-	onUserCompletePendingAction(info: ClientInputEventInterface.PendingAction): EventResult {
+	onUserCompletePendingAction(info: ClientInputEventFormat.PendingAction): EventResult {
 		this.result = info
 		return new EventResult(true, this.getNext())
 	}
@@ -394,8 +394,8 @@ class PendingAction extends GameCycleState {
 
 class PendingActionProgress extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_SKILL.PENDING_OBSTACLE_PROGRESS
-	result: ClientInputEventInterface.PendingAction
-	constructor(game: Game, result: ClientInputEventInterface.PendingAction) {
+	result: ClientInputEventFormat.PendingAction
+	constructor(game: Game, result: ClientInputEventFormat.PendingAction) {
 		super(game, PendingActionProgress.id)
 		this.result = result
 		this.process()
@@ -428,7 +428,7 @@ export class WaitingSkill extends GameCycleState {
 	static id = GAME_CYCLE.SKILL.WAITING_SKILL
 	canUseSkill: boolean
 	canUseBasicAttack: boolean
-	skillInit: ServerGameEventInterface.SkillInit
+	skillInit: ServerGameEventFormat.SkillInit
 	constructor(game: Game) {
 		super(game, WaitingSkill.id)
 	}
@@ -449,7 +449,7 @@ export class WaitingSkill extends GameCycleState {
 		//	console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)
 		return !this.canUseSkill && !this.canUseBasicAttack
 	}
-	onUserClickSkill(skill: number): ServerGameEventInterface.SkillInit {
+	onUserClickSkill(skill: number): ServerGameEventFormat.SkillInit {
 		this.skillInit = this.game.onSelectSkill(skill - 1)
 		return this.skillInit
 	}
@@ -485,8 +485,8 @@ export class WaitingSkill extends GameCycleState {
 	}
 }
 abstract class WaitingSkillResult extends GameCycleState {
-	initSkillResult: ServerGameEventInterface.SkillInit
-	constructor(game: Game, id: number, result: ServerGameEventInterface.SkillInit) {
+	initSkillResult: ServerGameEventFormat.SkillInit
+	constructor(game: Game, id: number, result: ServerGameEventFormat.SkillInit) {
 		super(game, id)
 		this.initSkillResult = result
 	}
@@ -501,7 +501,7 @@ abstract class WaitingSkillResult extends GameCycleState {
 class WaitingTarget extends WaitingSkillResult {
 	static id = GAME_CYCLE.SKILL.WAITING_TARGET
 
-	constructor(game: Game, result: ServerGameEventInterface.SkillInit) {
+	constructor(game: Game, result: ServerGameEventFormat.SkillInit) {
 		super(game, WaitingTarget.id, result)
 	}
 	onCreate(): void {}
@@ -516,7 +516,7 @@ class WaitingTarget extends WaitingSkillResult {
 class WaitingLocation extends WaitingSkillResult {
 	static id = GAME_CYCLE.SKILL.WAITING_LOCATION
 
-	constructor(game: Game, result: ServerGameEventInterface.SkillInit) {
+	constructor(game: Game, result: ServerGameEventFormat.SkillInit) {
 		super(game, WaitingLocation.id, result)
 	}
 	onCreate(): void {}
@@ -531,7 +531,7 @@ class WaitingLocation extends WaitingSkillResult {
 class WaitingAreaTarget extends WaitingSkillResult {
 	static id = GAME_CYCLE.SKILL.WAITING_AREA_TARGET
 
-	constructor(game: Game, result: ServerGameEventInterface.SkillInit) {
+	constructor(game: Game, result: ServerGameEventFormat.SkillInit) {
 		super(game, WaitingAreaTarget.id, result)
 	}
 	onCreate(): void {}

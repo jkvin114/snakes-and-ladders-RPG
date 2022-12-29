@@ -3,7 +3,7 @@ import { Player} from "../../player/player"
 import type {Game } from "../../Game"
 import { EntityFilter } from "../../entity/EntityFilter"
 import { ENTITY_TYPE, SKILL } from "../../data/enum"
-import { ServerGameEventInterface } from "../../data/PayloadInterface"
+import { ServerGameEventFormat } from "../../data/EventFormat"
 import {  SkillAttack }  from "../../core/skill"
 import type {Damage} from "../../core/Damage"
 abstract class SummonedEntity extends Entity {
@@ -32,7 +32,7 @@ abstract class SummonedEntity extends Entity {
 		return this
 	}
 
-	getTransferData():ServerGameEventInterface.SummonedEntity {
+	getTransferData():ServerGameEventFormat.SummonedEntity {
 		return {
 			sourceTurn: this.summoner.turn,
 			pos: this.pos,

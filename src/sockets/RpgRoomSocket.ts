@@ -2,13 +2,13 @@ import type { Socket } from "socket.io";
 import { io } from "../app";
 import { R } from "../RoomStorage";
 import { SocketSession } from "./SocketSession";
-import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface";
+import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat";
 import { RPGRoom } from "../RPGRoom";
 import { controlRoom, controlRPGRoom } from "./Controller";
 const { User } = require("../mongodb/DBHandler")
 module.exports=function(socket:Socket){
 
-	socket.on("user:simulationready", function (setting:ClientInputEventInterface.SimulationSetting, count:number, isTeam:boolean) {
+	socket.on("user:simulationready", function (setting:ClientInputEventFormat.SimulationSetting, count:number, isTeam:boolean) {
 		if (!SocketSession.getUsername(socket)) {
 			console.error("user not logined for simulation")
 			return
@@ -40,7 +40,7 @@ module.exports=function(socket:Socket){
 			})
 	})
 
-	socket.on("user:gameready", function (setting:ClientInputEventInterface.GameSetting) {
+	socket.on("user:gameready", function (setting:ClientInputEventFormat.GameSetting) {
 		let rname = SocketSession.getRoomName(socket)
 
 		if (!R.hasRoom(rname)) return
@@ -74,7 +74,7 @@ module.exports=function(socket:Socket){
 				return
 			}
 			socket.join(rname)
-			let setting:ServerGameEventInterface.initialSetting = room.user_requestSetting()
+			let setting:ServerGameEventFormat.initialSetting = room.user_requestSetting()
 			let newturn= room.getChangedTurn(turn)
 			SocketSession.setTurn(socket,newturn)
 	
@@ -157,7 +157,7 @@ module.exports=function(socket:Socket){
 	 * 선택 장애물(신의손,납치범 등) 선택 완료후 정보 전송 받음
 	 * 처리 후 선댁 action(잠수함, 갈림길선택 등) 체크
 	 */
-	socket.on("user:complete_obstacle_selection", function (crypt_turn:string,info: ClientInputEventInterface.PendingObstacle) {
+	socket.on("user:complete_obstacle_selection", function (crypt_turn:string,info: ClientInputEventFormat.PendingObstacle) {
 		//	console.log("obs selection complete")
 
 		// let rname = SocketSession.getRoomName(socket)
@@ -177,7 +177,7 @@ module.exports=function(socket:Socket){
 	 * 선택 action 선택 완료후 처리
 	 * 처리 후 스킬 사용
 	 */
-	socket.on("user:complete_action_selection", function (crypt_turn:string,info: ClientInputEventInterface.PendingAction) {
+	socket.on("user:complete_action_selection", function (crypt_turn:string,info: ClientInputEventFormat.PendingAction) {
 		//	console.log("action selection complete")
 
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
@@ -275,7 +275,7 @@ module.exports=function(socket:Socket){
 	})
 	//==========================================================================================
 
-	socket.on("user:store_data", function (data: ClientInputEventInterface.ItemBought) {
+	socket.on("user:store_data", function (data: ClientInputEventFormat.ItemBought) {
 		// let rname = SocketSession.getRoomName(socket)
 
 		// if (!R.hasRPGRoom(rname)) return

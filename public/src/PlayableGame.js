@@ -189,6 +189,7 @@ export class PlayableGame extends Game{
 			this.connection.pressDice(dice)
 			// document.getElementById('sound_dice').play()
 		}
+		this.ui.hideDeathInfo()
 		this.dice_clicked = true
 	}
 
@@ -594,14 +595,15 @@ export class PlayableGame extends Game{
 		}
 		return true
 	}
-    onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount) {
+    onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount,damages) {
 		if (!this.players[turn].alive) return
-        super.onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount)
+        super.onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount,damages)
 
 		if (turn === this.myturn) {
 			this.scene.canvas.bringToFront(this.scene.shadow)
 			this.scene.canvas.discardActiveObject()
 			this.scene.shadow.set({ visible: true })
+			this.ui.showDeathInfo(skillfrom,damages)
 		}
 		//this.ui.indicatePlayerDeath(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount)
 
@@ -616,6 +618,7 @@ export class PlayableGame extends Game{
     playerRespawn(turn, respawnPos, isRevived) {
         super.playerRespawn(turn, respawnPos, isRevived)
 		$(this.ui.elements.kdasections[turn]).css("background", "none")
+		
 	}
     changeKda(turn, str) {
 		$(this.ui.elements.kdainfos[turn]).html(str)

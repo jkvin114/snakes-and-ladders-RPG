@@ -1,6 +1,6 @@
 import GAMESETTINGS = require("../res/gamesetting.json")
 
-import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
+import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
 import * as Util from "./core/Util"
 
 class GameSetting {
@@ -26,7 +26,7 @@ class GameSetting {
 	positionRecord: boolean
 	moneyRecord: boolean
 	replay:boolean
-	constructor(setting: ClientInputEventInterface.GameSetting, instant: boolean, isTeam: boolean) {
+	constructor(setting: ClientInputEventFormat.GameSetting, instant: boolean, isTeam: boolean) {
 		this.instant = instant
 		this.isTeam = isTeam
 		if (setting === null) {
@@ -74,7 +74,7 @@ class GameSetting {
 		return this
 	}
 
-	setSimulationSettings(setting: ClientInputEventInterface.SimulationSetting) {
+	setSimulationSettings(setting: ClientInputEventFormat.SimulationSetting) {
 		this.killRecord = setting.killRecord
 		this.itemRecord = setting.itemRecord
 		this.positionRecord = setting.positionRecord

@@ -1,10 +1,10 @@
-interface TurnPayloadInterface {
+interface TurnEventFormat {
 	turn: number
 }
-interface CryptedPayloadInterface extends TurnPayloadInterface {
+interface CryptedTurnEventFormat extends TurnEventFormat {
 	crypt_turn: string
 }
-export namespace ServerGameEventInterface {
+export namespace ServerGameEventFormat {
 	export interface initialSetting {
 		playerSettings: {
 			turn: number
@@ -33,14 +33,14 @@ export namespace ServerGameEventInterface {
 		kind?: "target"
 		targets: number[]
 	}
-	export interface SkillInit extends CryptedPayloadInterface {
+	export interface SkillInit extends CryptedTurnEventFormat {
 		type: number
 		data: LocationTargetSelector | PlayerTargetSelector | null
 		skill: number
 	}
 	
 	//replay
-	export interface SkillStatus extends TurnPayloadInterface {
+	export interface SkillStatus extends TurnEventFormat {
 		cooltime: number[]
 		duration: number[] //remaining duration/full duration
 		cooltimeratio: number[] //remaining cooltime/full cooltime
@@ -56,7 +56,7 @@ export namespace ServerGameEventInterface {
 		type: string
 		delay: number
 	}
-	export interface TurnStart extends CryptedPayloadInterface {
+	export interface TurnStart extends CryptedTurnEventFormat {
 		stun: boolean
 		dc: boolean //dice control avalibility
 		dc_cool: number //dice control cooltime left
@@ -72,7 +72,7 @@ export namespace ServerGameEventInterface {
 		turn: number
 	}
 	//replay
-	export interface DiceRoll extends CryptedPayloadInterface {
+	export interface DiceRoll extends CryptedTurnEventFormat {
 		dice: number //dice number shown
 		actualdice: number //actual distance to move
 		currpos: number //position before move
@@ -85,7 +85,7 @@ export namespace ServerGameEventInterface {
 		argument: number | number[]
 	}
 	//replay
-	export interface NormalEffect extends TurnPayloadInterface {
+	export interface NormalEffect extends TurnEventFormat {
 		effect: number
 		num: number //indicator number
 	}
@@ -124,29 +124,33 @@ export namespace ServerGameEventInterface {
 		priceMultiplier: number
 	}
 	//replay
-	export interface Death extends TurnPayloadInterface {
+	export interface Death extends TurnEventFormat {
 		killer: number
 		location: number
 		isShutDown: boolean
 		killerMultiKillCount: number
+		damages:{sourceTurn:number
+			damageType:number
+			attackType:string
+			amt:number}[]
 	}
-	export interface Obstacle extends TurnPayloadInterface {
+	export interface Obstacle extends TurnEventFormat {
 		obs: number
 		globalEventName?:string
 	}
-	export interface ObstacleEffect extends TurnPayloadInterface {
+	export interface ObstacleEffect extends TurnEventFormat {
 		pos: number
 		type: number
 	}
 	//replay
-	export interface Shield extends TurnPayloadInterface {
+	export interface Shield extends TurnEventFormat {
 		turn: number
 		shield: number
 		change: number
 		indicate: boolean
 	}
 	//replay
-	export interface HPChange extends TurnPayloadInterface {
+	export interface HPChange extends TurnEventFormat {
 		change: number
 		currhp: number
 		currmaxhp: number
@@ -176,7 +180,7 @@ export namespace ServerGameEventInterface {
 	}
 }
 
-export namespace ClientInputEventInterface {
+export namespace ClientInputEventFormat {
 	export interface GameSetting {
 		itemLimit: number
 		extraResistanceAmount: number
@@ -243,7 +247,7 @@ export namespace ClientInputEventInterface {
 		result: number | boolean
 		complete: boolean
 	}
-	export interface ItemBought extends CryptedPayloadInterface {
+	export interface ItemBought extends CryptedTurnEventFormat {
 		item: number[]
 		moneyspend: number
 		tokenbought: number

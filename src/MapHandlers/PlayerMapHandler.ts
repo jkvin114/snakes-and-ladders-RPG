@@ -3,7 +3,7 @@ import { EntityFilter } from "../entity/EntityFilter"
 import { MAP ,singleCasinoMap,singleMap, singleOceanMap} from "./MapStorage"
 import { CALC_TYPE,  randomBoolean} from "../core/Util"
 import { ObstacleHelper } from "../core/Obstacles"
-import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
+import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat"
 import { Damage } from "../core/Damage"
 import { CHANGE_MONEY_TYPE, FORCEMOVE_TYPE, MAP_TYPE } from "../data/enum"
 
@@ -47,7 +47,7 @@ abstract class PlayerMapHandler {
 		return damage
 	}
 	applyObstacle(obs: number) {}
-	onPendingActionComplete(info:ClientInputEventInterface.PendingAction){
+	onPendingActionComplete(info:ClientInputEventFormat.PendingAction){
 
 	}
 	onRollDice(moveDistance:number):{type:string,args?:any[]}{
@@ -64,13 +64,13 @@ abstract class PlayerMapHandler {
 			ObstacleHelper.kidnap(this.player, randomBoolean())
 		} 
 	}
-	onPendingObsComplete(info:ClientInputEventInterface.PendingObstacle){
+	onPendingObsComplete(info:ClientInputEventFormat.PendingObstacle){
 
 		if (info.type === "kidnap" && info.result!=null) {
 			ObstacleHelper.kidnap(this.player,info.result)
 		} 
 	}
-	getPendingObs(pendingObs:number):ServerGameEventInterface.PendingObstacle|null{
+	getPendingObs(pendingObs:number):ServerGameEventFormat.PendingObstacle|null{
 		return null
 	}
 	shouldStunDice(){
@@ -176,7 +176,7 @@ class OceanMapHandler extends PlayerMapHandler implements TwoWayMap {
 		super.onForceMove(pos)
 	}
 
-	onPendingActionComplete(info:ClientInputEventInterface.PendingAction): void {
+	onPendingActionComplete(info:ClientInputEventFormat.PendingAction): void {
 		if (info.type === "submarine" && info.complete && typeof info.result==='number') {
 			this.player.game.setPendingObs(this.player.game.getObstacleAt(info.result))
 			this.player.game.playerForceMove(this.player, info.result, false,   FORCEMOVE_TYPE.LEVITATE)
@@ -278,24 +278,24 @@ class CasinoMapHandler extends PlayerMapHandler {
 		}
 		super.onPendingObsTimeout(pendingObs)
 	}
-	onPendingObsComplete(info: ClientInputEventInterface.PendingObstacle): void {
+	onPendingObsComplete(info: ClientInputEventFormat.PendingObstacle): void {
 	//	console.log("onPendingObsComplete"+info)
 		if (info.type === "threaten" && info.result!==null) {
 			ObstacleHelper.threaten(this.player,info.result)
 		} else if (info.type === "sell_token") {
-			let result=(info.objectResult as ClientInputEventInterface.TokenStoreResult)
+			let result=(info.objectResult as ClientInputEventFormat.TokenStoreResult)
 			if (result.token > 0) {
 				this.player.inven.sellToken(result.token,result.money)
 			}
 		} else if (info.type === "subway"){
-			let result=(info.objectResult as ClientInputEventInterface.SubwayResult)
+			let result=(info.objectResult as ClientInputEventFormat.SubwayResult)
 
 			this.selectSubway(result.type, result.price)
 		}
 		super.onPendingObsComplete(info)
 	}
 
-	getPendingObs(pendingObs: number): ServerGameEventInterface.PendingObstacle|null {
+	getPendingObs(pendingObs: number): ServerGameEventFormat.PendingObstacle|null {
 		if (pendingObs === 63) {
 			return {name:"pending_obs:threaten",argument:0}
 		}

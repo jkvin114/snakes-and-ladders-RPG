@@ -12,7 +12,7 @@ import {
 	OnHitEffect,
 	OnDamageEffect,
 	ItemPassiveEffectFactory,
-	OnFinalDamageEffect,EFFECT_TIMING
+	OnHPBelowThresholdEffect,EFFECT_TIMING
 } from "../StatusEffect"
 import PlayerInventory from "./PlayerInventory"
 import { Entity } from "../entity/Entity"
@@ -66,7 +66,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	private category:[ Map<number, StatusEffect>,Map<number, ShieldEffect>
 		,Map<number, AblityChangeEffect>,Map<number, OnHitEffect>
 		,Map<number, OnDamageEffect>,Map<number, TickEffect>
-		,Map<number, OnFinalDamageEffect>]
+		,Map<number, OnHPBelowThresholdEffect>]
 
 	constructor(player: Player) {
 		super(player)
@@ -77,7 +77,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		this.category = [new Map<number, StatusEffect>(),new Map<number, ShieldEffect>()
 			,new Map<number, AblityChangeEffect>(),new Map<number, OnHitEffect>()
 			,new Map<number, OnDamageEffect>(),new Map<number, TickEffect>()
-			,new Map<number, OnFinalDamageEffect>()]
+			,new Map<number, OnHPBelowThresholdEffect>()]
 		// this.category.push()
 		// this.category.push()
 		// this.category.push()
@@ -194,8 +194,8 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 			case EFFECT_TYPE.TICK:
 				this.category[type].set(id,effect as TickEffect)
 				break
-			case EFFECT_TYPE.ON_FINAL_DAMAGE:
-				this.category[type].set(id,effect as OnFinalDamageEffect)
+			case EFFECT_TYPE.ON_HP_BELOW_THRESHOLD:
+				this.category[type].set(id,effect as OnHPBelowThresholdEffect)
 				break
 		}
 	}
@@ -422,9 +422,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	}
 
 	onFinalDamage(damage: number) {
-		for (const [name, effect] of this.category[EFFECT_TYPE.ON_FINAL_DAMAGE].entries()) {
-			if (!(effect instanceof OnFinalDamageEffect)) continue
-			;(effect as OnFinalDamageEffect).onFinalDamage(damage)
+		for (const [name, effect] of this.category[EFFECT_TYPE.ON_HP_BELOW_THRESHOLD].entries()) {
+			if (!(effect instanceof OnHPBelowThresholdEffect)) continue
+			;(effect as OnHPBelowThresholdEffect).onFinalDamage(damage)
 		}
 	}
 	onAddItem(item: ITEM) {

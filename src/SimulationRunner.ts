@@ -5,7 +5,7 @@ import { GameSetting } from "./GameSetting"
 //import cliProgress = require("cli-progress")
 import SETTINGS = require("../res/globalsettings.json")
 import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean } from "./core/Util"
-import { ClientInputEventInterface } from "./data/PayloadInterface"
+import { ClientInputEventFormat } from "./data/EventFormat"
 import { TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../res/train_setting.json")
 import type { ReplayEventRecords } from "./ReplayEventRecord"
@@ -13,7 +13,7 @@ import type { ReplayEventRecords } from "./ReplayEventRecord"
 const { workerData, parentPort, isMainThread } = require("worker_threads")
 
 interface SimulationInit {
-	setting: ClientInputEventInterface.SimulationSetting
+	setting: ClientInputEventFormat.SimulationSetting
 	count: number
 	isTeam: boolean
 	runnerId: string
@@ -72,7 +72,7 @@ class SimulationSetting {
 	]
 
 	isTrain:boolean
-	constructor(isTeam: boolean, setting: ClientInputEventInterface.SimulationSetting) {
+	constructor(isTeam: boolean, setting: ClientInputEventFormat.SimulationSetting) {
 		this.gameSetting = new GameSetting(setting.gameSetting, true, isTeam)
 		this.gameSetting.setSimulationSettings(setting)
 		this.summaryOnly = setting.summaryOnly

@@ -7,7 +7,7 @@ import { ObstacleHelper } from "./core/Obstacles"
 import { AiAgent } from "./AiAgents/AiAgent"
 import { SummonedEntity } from "./characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./entity/Entity"
-import { ClientInputEventInterface, ServerGameEventInterface } from "./data/PayloadInterface"
+import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
 import {MAP} from "./MapHandlers/MapStorage"
 import { EntityMediator } from "./entity/EntityMediator"
 import { Player } from "./player/player"
@@ -247,7 +247,7 @@ class Game {
 	getTeamAsBool(team:number):boolean{
 		return team===0
 	}
-	getInitialSetting():ServerGameEventInterface.initialSetting {
+	getInitialSetting():ServerGameEventFormat.initialSetting {
 		let setting= []
 		for (let p of this.entityMediator.allPlayer()) {
 			setting.push({
@@ -416,7 +416,7 @@ class Game {
 	getNextTurn(){
 		return (this.thisturn+1) % this.totalnum
 	}
-	goNextTurn():ServerGameEventInterface.TurnStart|null {
+	goNextTurn():ServerGameEventFormat.TurnStart|null {
 		if (this.gameover) {
 			return null
 		}
@@ -544,8 +544,8 @@ class Game {
 	}
 
 	//called when start of every 1p`s turn
-	getPlayerVisibilitySyncData():ServerGameEventInterface.PlayerPosSync[] {
-		let data:ServerGameEventInterface.PlayerPosSync[] = []
+	getPlayerVisibilitySyncData():ServerGameEventFormat.PlayerPosSync[] {
+		let data:ServerGameEventFormat.PlayerPosSync[] = []
 
 		this.entityMediator.forAllPlayer(function () {
 			data.push({
@@ -586,7 +586,7 @@ class Game {
 		if (this.setting.killRecord) this.killRecord.push({ killer: killer, dead: dead, pos: pos, turn: this.totalturn })
 	}
 
-	rollDice(dicenum: number):ServerGameEventInterface.DiceRoll {
+	rollDice(dicenum: number):ServerGameEventFormat.DiceRoll {
 		let p: Player = this.thisp()
 
 		// //return if stun
@@ -998,7 +998,7 @@ class Game {
 
 	//	return this.getSkillStatus()
 	}
-	onSelectSkill(skill:ENUM.SKILL):ServerGameEventInterface.SkillInit{
+	onSelectSkill(skill:ENUM.SKILL):ServerGameEventFormat.SkillInit{
 		return this.thisp().initSkill(skill)
 	}
 	//========================================================================================================
@@ -1007,7 +1007,7 @@ class Game {
 	 *
 	 * @returns turn,issilent,cooltile,duration,level,isdead
 	 */
-	getSkillStatus():ServerGameEventInterface.SkillStatus {
+	getSkillStatus():ServerGameEventFormat.SkillStatus {
 		return this.thisp().getSkillStatus()
 	}
 
@@ -1101,7 +1101,7 @@ class Game {
 	 * 선택 장애물 대기중일 경우 바로 스킬로 안넘어가고 선택지 전송
 	 * @returns null if no pending obs,  or return {name,arg}
 	 */
-	checkPendingObs(): ServerGameEventInterface.PendingObstacle|null {
+	checkPendingObs(): ServerGameEventFormat.PendingObstacle|null {
 		if (this.pendingObs === 0 || this.thisp().dead) return null
 
 		let name = ""
@@ -1148,7 +1148,7 @@ class Game {
 	}
 
 	//========================================================================================================
-	processPendingObs(info: ClientInputEventInterface.PendingObstacle|null,delay?:number) {
+	processPendingObs(info: ClientInputEventFormat.PendingObstacle|null,delay?:number) {
 		
 		this.arriveSquareCallback=null
 
@@ -1189,7 +1189,7 @@ class Game {
 	}
 	//========================================================================================================
 
-	processPendingAction(info: ClientInputEventInterface.PendingAction|null,delay?:number) {
+	processPendingAction(info: ClientInputEventFormat.PendingAction|null,delay?:number) {
 		//console.log(info)
 
 		
@@ -1232,12 +1232,12 @@ class Game {
 		this.roullete_result = -1
 	}
 
-	userCompleteStore(data: ClientInputEventInterface.ItemBought){
+	userCompleteStore(data: ClientInputEventFormat.ItemBought){
 		this.pOfTurn(data.turn).inven.playerBuyItem(data)
 	}
 	//========================================================================================================
 
-	getStoreData(turn: number):ServerGameEventInterface.EnterStore {
+	getStoreData(turn: number):ServerGameEventFormat.EnterStore {
 		let p = this.pOfTurn(turn)
 		return p.inven.getStoreData(1)
 	}

@@ -1,4 +1,4 @@
-import type { ServerGameEventInterface } from "./data/PayloadInterface"
+import type { ServerGameEventFormat } from "./data/EventFormat"
 import type { SpecialEffect } from "./data/SpecialEffectRegistry"
 import { EventRecord, ReplayEventRecords } from "./ReplayEventRecord"
 export interface GameEventEmitter {
@@ -40,16 +40,16 @@ export class GameEventObserver {
 		this.eventEmitter(this.rname, GameEventObserver.PREFIX+type, ...args)
 	}
 
-	updateNextTurn(turnUpdateData: ServerGameEventInterface.TurnStart) {
+	updateNextTurn(turnUpdateData: ServerGameEventFormat.TurnStart) {
 		this.emit("nextturn",turnUpdateData)
 		// this.eventEmitter(this.rname, "server:nextturn", turnUpdateData)
 		// / (, turnUpdateData)
 	}
-	syncVisibility(data: ServerGameEventInterface.PlayerPosSync[]) {
+	syncVisibility(data: ServerGameEventFormat.PlayerPosSync[]) {
 		this.emit("sync_player_visibility",data)
 		// this.eventEmitter(this.rname, "server:sync_player_visibility", data)
 	}
-	rollDice(data: ServerGameEventInterface.DiceRoll) {
+	rollDice(data: ServerGameEventFormat.DiceRoll) {
 		
 		this.recordEvent(new EventRecord("rolldice").setInvoker(data.turn).setNumberObject(data.dice)
 		.setNumberArgs(Number(data.dcused)))
@@ -72,11 +72,11 @@ export class GameEventObserver {
 		this.emit("force_nextturn",crypt_turn)
 		// this.eventEmitter(this.rname, "server:force_nextturn", crypt_turn)
 	}
-	sendPendingObs(data: ServerGameEventInterface.PendingObstacle) {
+	sendPendingObs(data: ServerGameEventFormat.PendingObstacle) {
 		this.emit(data.name,data.argument)
 		// this.eventEmitter(this.rname, data.name, data.argument)
 	}
-	setSkillReady(skildata: ServerGameEventInterface.SkillStatus) {
+	setSkillReady(skildata: ServerGameEventFormat.SkillStatus) {
 		this.emit("skills",skildata)
 		// this.eventEmitter(this.rname, "server:skills", skildata)
 	}
@@ -113,7 +113,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:money", { turn: turn, amt: indicate_amt, result: result })
 	}
 
-	changeHP_damage(hpChangeData: ServerGameEventInterface.Damage) {
+	changeHP_damage(hpChangeData: ServerGameEventFormat.Damage) {
 		this.emit("damage",hpChangeData)
 		this.recordEvent(new EventRecord("damage")
 		.setInvoker(hpChangeData.turn)
@@ -122,7 +122,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:damage", hpChangeData)
 	}
 
-	changeHP_heal(hpChangeData: ServerGameEventInterface.Heal) {
+	changeHP_heal(hpChangeData: ServerGameEventFormat.Heal) {
 		this.emit("heal",hpChangeData)
 		this.recordEvent(new EventRecord("heal")
 		.setInvoker(hpChangeData.turn)
@@ -133,7 +133,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:heal", hpChangeData)
 	}
 
-	changeShield(shieldData: ServerGameEventInterface.Shield) {
+	changeShield(shieldData: ServerGameEventFormat.Shield) {
 		this.emit("shield",shieldData)
 		this.recordEvent(new EventRecord("shield")
 		.setInvoker(shieldData.turn)
@@ -143,7 +143,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:shield", shieldData)
 	}
 
-	giveEffect(data: ServerGameEventInterface.NormalEffect) {
+	giveEffect(data: ServerGameEventFormat.NormalEffect) {
 		this.emit("status_effect",data)
 		this.recordEvent(new EventRecord("status_effect")
 		.setInvoker(data.turn)
@@ -193,7 +193,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:delete_projectile", UPID)
 	}
 
-	die(killData: ServerGameEventInterface.Death) {
+	die(killData: ServerGameEventFormat.Death) {
 		this.emit("death",killData)
 		this.recordEvent(new EventRecord("death")
 		.setInvoker(killData.turn)
@@ -220,7 +220,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:sound", sound)
 	}
 
-	placePassProj(data: ServerGameEventInterface.PassProjectile) {
+	placePassProj(data: ServerGameEventFormat.PassProjectile) {
 		this.emit("create_passprojectile",data)
 		this.recordEvent(new EventRecord("create_passprojectile")
 		.setStringObject(data.UPID)
@@ -230,7 +230,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:create_passprojectile", data)
 	}
 
-	placeProj(data: ServerGameEventInterface.RangeProjectile) {
+	placeProj(data: ServerGameEventFormat.RangeProjectile) {
 		// console.log(proj)
 		this.emit("create_projectile",data)
 		this.recordEvent(new EventRecord("create_projectile")
@@ -241,7 +241,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:create_projectile", proj)
 	}
 
-	summonEntity(entity: ServerGameEventInterface.SummonedEntity) {
+	summonEntity(entity: ServerGameEventFormat.SummonedEntity) {
 		this.emit("create_entity",entity)
 		this.recordEvent(new EventRecord("create_entity")
 		.setStringObject(entity.UEID)
@@ -310,7 +310,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:visual_effect", { pos: pos, type: type, source: source })
 	}
 
-	attack(data: ServerGameEventInterface.Attack) {
+	attack(data: ServerGameEventFormat.Attack) {
 		this.emit("attack",data)
 		for(const victim of data.targets){
 			this.recordEvent(new EventRecord("attack")
@@ -322,7 +322,7 @@ export class GameEventObserver {
 		}
 		// this.eventEmitter(this.rname, "server:attack", data)
 	}
-	skillTrajectory(data: ServerGameEventInterface.skillTrajectory) {
+	skillTrajectory(data: ServerGameEventFormat.skillTrajectory) {
 		this.emit("skill_trajectory",data)
 		this.recordEvent(new EventRecord("skill_trajectory")
 			.setNumberArgs(data.from,data.to)
@@ -330,11 +330,11 @@ export class GameEventObserver {
 			.setDelay(data.delay))
 		// this.eventEmitter(this.rname, "server:skill_trajectory", data)
 	}
-	indicateObstacle(data: ServerGameEventInterface.Obstacle) {
+	indicateObstacle(data: ServerGameEventFormat.Obstacle) {
 		this.emit("indicate_obstacle",data)
 		// this.eventEmitter(this.rname, "server:indicate_obstacle", data)
 	}
-	obstacleEffect(data: ServerGameEventInterface.ObstacleEffect) {
+	obstacleEffect(data: ServerGameEventFormat.ObstacleEffect) {
 		this.emit("obstacle_effect",data)
 		// this.eventEmitter(this.rname, "server:obstacle_effect", data)
 	}
@@ -344,7 +344,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:indicate_item", { turn: turn, item: item })
 	}
 
-	goStore(turn: number, storeData: ServerGameEventInterface.EnterStore) {
+	goStore(turn: number, storeData: ServerGameEventFormat.EnterStore) {
 		this.emit("store",{
 			turn: turn,
 			storeData: storeData

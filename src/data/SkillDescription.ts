@@ -22,7 +22,8 @@ export class SkillInfoFactory {
 		["Chain Lightning", "Burning Spellbook", "Dark Magic Circle"],
 		["Tenacle Strike", "Protective Water", "Predation"],
 		["Beak Attack", "Baby Birds", "Phenix Transform"],
-		["Sweet Fruit", "Vine Trap", "Root Prison"]
+		["Sweet Fruit", "Vine Trap", "Root Prison"],
+		["Vulnerability Attack","Remote Control","Extraction"]
 	]
 	static readonly SKILL_NAME_KOR = [
 		["절단", "바람 가르기", "태풍"],
@@ -33,7 +34,8 @@ export class SkillInfoFactory {
 		["직선 번개", "몸체 고정", "마법진 파티"],
 		["촉수 채찍", "보호의 물", "블랙홀"],
 		["날렵한 부리", "아기새 소환", "불사조 소환"],
-		["달콤한 열매", "덩굴 함정", "뿌리 감옥"]
+		["달콤한 열매", "덩굴 함정", "뿌리 감옥"],
+		["취약점 공격","원격 제어","추출"]
 	]
 	static readonly HOTKEY = ["Q", "W", "R"]
 

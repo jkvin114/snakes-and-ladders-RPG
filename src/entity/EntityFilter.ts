@@ -2,8 +2,9 @@ import type { Entity } from "./Entity"
 import type { EntityStorage } from "./EntityStorage"
 import { ENTITY_TYPE } from "../data/enum"
 import { PriorityArray } from "../core/Util"
+import type { Player } from "../player/player"
 
-class EntityFilter {
+class EntityFilter<T extends Entity> {
 	private playerOnly: boolean
 	private enemyOnly: boolean
     private allyOnly: boolean
@@ -18,15 +19,15 @@ class EntityFilter {
 	private me: boolean
 	public source: Entity
 
-	static readonly ALL = (source: Entity) => new EntityFilter(false, source)
-	static readonly ALL_PLAYER = (source: Entity) => new EntityFilter(true, source)
-	static readonly ALL_ENEMY = (source: Entity) => new EntityFilter(false, source).excludeAlly()
-	static readonly ALL_ENEMY_PLAYER = (source: Entity) => new EntityFilter(true, source).excludeAlly()
-	static readonly ALL_OTHER_PLAYER = (source: Entity) => new EntityFilter(true, source).notMe()
-	static readonly ALL_ALIVE_PLAYER = (source: Entity) => new EntityFilter(true, source).excludeDead()
+	static readonly ALL = (source: Entity) => new EntityFilter<Entity>(false, source)
+	static readonly ALL_PLAYER = (source: Entity) => new EntityFilter<Player>(true, source)
+	static readonly ALL_ENEMY = (source: Entity) => new EntityFilter<Entity>(false, source).excludeAlly()
+	static readonly ALL_ENEMY_PLAYER = (source: Entity) => new EntityFilter<Player>(true, source).excludeAlly()
+	static readonly ALL_OTHER_PLAYER = (source: Entity) => new EntityFilter<Player>(true, source).notMe()
+	static readonly ALL_ALIVE_PLAYER = (source: Entity) => new EntityFilter<Player>(true, source).excludeDead()
 	static readonly ALL_ATTACKABLE_PLAYER = (source: Entity) =>
-		new EntityFilter(true, source).excludeDead().excludeAlly().excludeUntargetable().excludeUnattackable()
-	static readonly VALID_MOVE_OBSTACLE_TARGET = (source: Entity) => new EntityFilter(true, source).excludeDead().notMe()
+		new EntityFilter<Player>(true, source).excludeDead().excludeAlly().excludeUntargetable().excludeUnattackable()
+	static readonly VALID_MOVE_OBSTACLE_TARGET = (source: Entity) => new EntityFilter<Player>(true, source).excludeDead().notMe()
 
 	constructor(playeronly: boolean, source: Entity) {
 		this.playerOnly = playeronly
@@ -103,8 +104,8 @@ class EntityFilter {
 		return false
 	}
     
-    getFrom(entities: EntityStorage){
-		let list: PriorityArray<Entity> = new PriorityArray<Entity>()
+    getFrom(entities: EntityStorage): PriorityArray<T>{
+		let list: PriorityArray<T> = new PriorityArray<T>()
         if(this.playerOnly){
             // let list: PriorityArray<Player> = new PriorityArray<Player>()
             for (let entity of entities.all()) {

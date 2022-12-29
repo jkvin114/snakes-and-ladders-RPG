@@ -1,7 +1,7 @@
 import type { Player } from "./player/player"
 import type { Game } from "./Game";
 
-import { ServerGameEventInterface } from "./data/PayloadInterface"
+import { ServerGameEventFormat } from "./data/EventFormat"
 import {  decrement } from "./core/Util"
 import { Damage } from "./core/Damage"
 
@@ -118,7 +118,7 @@ class RangeProjectile extends Projectile {
 		this.scope = this.game.getPlaceableCoordinates(this.pos, this.size)
 	}
 
-	getTransferData() :ServerGameEventInterface.RangeProjectile {
+	getTransferData() :ServerGameEventFormat.RangeProjectile {
 		// console.log(this.sourcePlayer)
 		return {
 			scope: this.scope,
@@ -135,7 +135,7 @@ class PassProjectile extends Projectile {
 		this.size = 1
 	}
 
-	getTransferData():ServerGameEventInterface.PassProjectile {
+	getTransferData():ServerGameEventFormat.PassProjectile {
 		return {
 			name: this.name,
 			scope: [this.pos],

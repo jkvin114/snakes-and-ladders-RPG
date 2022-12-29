@@ -312,7 +312,7 @@ class PlayerAbility implements PlayerComponent{
 			this.player.changeHP_heal(new HPChange(this.regen.get()))
 		}
 	}
-	applyResistanceToDamage(damage: Damage, target: PlayerAbility): number {
+	applyResistanceToDamage(damage: Damage, target: PlayerAbility): Damage {
 		let pp = 0
 		if (this.player.inven.haveItem(ITEM.CROSSBOW_OF_PIERCING)) pp = 40
 
@@ -324,7 +324,6 @@ class PlayerAbility implements PlayerComponent{
 				MP: this.MP.get(),
 				percentPenetration: pp
 			})
-			.getTotalDmg()
 	}
 
 	getMagicCastleDamage() {

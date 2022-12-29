@@ -5,7 +5,7 @@ import { ITEM } from "../data/enum"
 import { items as ItemList } from "../../res/item.json"
 // import {  PlayerClientInterface, testSetting } from "../app"
 import type { Player } from "./player"
-import { ClientInputEventInterface, ServerGameEventInterface } from "../data/PayloadInterface"
+import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat"
 import { PlayerComponent } from "./PlayerComponent"
 import { ActiveItem } from "../core/ActiveItem"
 import { HPChange } from "../core/health"
@@ -188,7 +188,7 @@ class PlayerInventory implements PlayerComponent {
 		//	console.log(data)
 		this.player.game.eventEmitter.update("activeItem", this.player.turn, data)
 	}
-	getStoreData(priceMultiplier: number):ServerGameEventInterface.EnterStore {
+	getStoreData(priceMultiplier: number):ServerGameEventFormat.EnterStore {
 		return {
 			item: this.itemSlots,
 			money: this.money,
@@ -264,7 +264,7 @@ class PlayerInventory implements PlayerComponent {
 	 * moneyspend:int
 	 * }
 	 */
-	playerBuyItem(data: ClientInputEventInterface.ItemBought) {
+	playerBuyItem(data: ClientInputEventFormat.ItemBought) {
 		//	console.log("updateitem " + data.item)
 		//	console.log("updatetoken " + data.token)
 		this.changemoney(-1 * data.moneyspend, ENUM.CHANGE_MONEY_TYPE.SPEND)

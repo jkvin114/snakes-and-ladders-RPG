@@ -1,5 +1,5 @@
 {
-    "version": "3.7.1",
+    "version": "3.8.0",
     "submarine_cooltime": 1,
     "pendingObsList": [
         6,
@@ -40,6 +40,7 @@
     "delay_levitate_forcemove":2000,
     "delay_state_pass":800,
     "delay_next_turn":700,
+    "assist_turn":3,
     "characters": [
         {
             "name": "Reaper",

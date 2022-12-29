@@ -57,13 +57,13 @@ export default class GameInterface {
 		// $("#kdawindow").hide()
 		// $("#chat_enter").hide()
 		// $("#subwaywindow").css("visibility","hi")
-
+		
+		$("#deathinfo-btn").html(GAME.chooseLang("Death Information","사망 정보 확인"))
 		$("#dialog").hide()
 		let subwaynames = $(".subway_name").toArray()
 		$(subwaynames[0]).html(GAME.chooseLang("Local Train", "완행"))
 		$(subwaynames[1]).html(GAME.chooseLang("Rapid Train", "급행"))
 		$(subwaynames[2]).html(GAME.chooseLang("Express Train", "특급 급행"))
-
 		let subwaydescs = $(".subway_desc").toArray()
 		$(subwaydescs[0]).html(GAME.chooseLang("4 stops until next store", "다음 상점까지 4정거장(턴)"))
 		$(subwaydescs[1]).html(GAME.chooseLang("2 stops until next store", "다음 상점까지 2정거장(턴)"))
@@ -246,8 +246,9 @@ export default class GameInterface {
 		$("#selecttruebutton").click(() => this.selected(true))
 		$("#selectfalsebutton").click(() => this.selected(false))
 
-		
-		  
+		$("#deathinfo-btn").click(()=>{
+			$("#deathinfo").toggle()
+		})
 	}
 
 	/**
@@ -1333,6 +1334,69 @@ addChatDragEvent() {
 	}
 	playerDisconnect(turn,name){
 		this.game.showKillText(turn,10,GAME.chooseLang(name+" has left the game",name+"님이 게임을 종료했습니다"))
+	}
+
+	showDeathInfo(skillfrom,damages){
+		console.log(damages)
+		let totalp=0
+		let totalm=0
+		let totalf=0
+		let sources=new Map()
+		for(const d of damages){
+			if(!sources.has(d.sourceTurn)){
+				sources.set(d.sourceTurn,[0,0,0])
+			}
+			sources.get(d.sourceTurn)[d.damageType]+=d.amt
+			if(d.damageType===0) totalp+=d.amt
+			if(d.damageType===1) totalm+=d.amt
+			if(d.damageType===2) totalf+=d.amt
+		}
+		$(".deathinfo-header-pdmg").html(this.game.chooseLang("Attack Damage: ","물리 피해: ")+totalp)
+		$(".deathinfo-header-mdmg").html(this.game.chooseLang("Magic Damage: ","마법 피해: ")+totalm)
+		$(".deathinfo-header-fdmg").html(this.game.chooseLang("Fixed Damage: ","고정 피해: ")+totalf)
+
+		let str=""
+		let list=[]
+		for(const [source,dmg] of sources.entries()){
+			list.push([source,...dmg])
+		}
+		list.sort((a,b)=>{
+			return -(a[1]+a[2]+a[3])+(b[1]+b[2]+b[3])
+		})
+		let maxdmg=list[0][1]+list[0][2]+list[0][3]
+		if(maxdmg===0) return
+		for(const d of list){
+			let graphstr=""
+			let classes=['p','m','f']
+			for(let i=1;i<=3;i++){
+				if(d[i]>0)
+					graphstr+=`<div class="deathinfo-source-bar deathinfo-source-bar-${classes[i-1]}damage" style="width:
+					${(d[i]/maxdmg)*100}%;"></div>`
+			}
+			str+=`
+			<div class="deathinfo-source">
+				<div>
+				<img src="${this.game.getChampImgofTurn(d[0])}" ${d[0]===skillfrom?' class="killer"':''}>
+				</div>
+				<div>
+				${d[0]===-1?this.game.chooseLang("Obstacle","장애물"):this.game.players[d[0]].name}
+				</div>
+				<div>
+
+					<div class="deathinfo-source-graph">
+						${graphstr}
+						<div class="deathinfo-source-damage">${d[1]+d[2]+d[3]}</div>
+					</div>
+				
+				</div>
+			</div>`
+		}	
+		$(".deathinfo-content").html(str)
+		$("#deathinfo-container").show()
+		$("#deathinfo").hide()
+	}
+	hideDeathInfo(){
+		$("#deathinfo-container").hide()
 	}
 }
 
