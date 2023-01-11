@@ -103,9 +103,10 @@ export namespace ObstacleHelper {
 					break
 				case 20:
 					let mypos=player.pos
-					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(this:Entity){
+					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),function(this:Entity){
 						return Math.abs(this.pos-mypos)
-					})
+					},true)
+					if(!target) break
 					
 					//if target is also on change obstacle, dont swap.(prevent infinite loop)
 					if(player.game.getObstacleAt(target.pos)!==20 && target.pos !== player.pos){
@@ -406,13 +407,12 @@ export namespace ObstacleHelper {
 				break
 			case 2:
 
-				let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),true)(function(){
+				let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),function(){
 					return Math.abs(this.pos-player.pos)
-				})
-
-				if (target !== null && target !== undefined) {
-					player.game.playerForceMove(player, target.pos, true,  ENUM.FORCEMOVE_TYPE.LEVITATE)
-				}
+				},true)
+				if(!target) break
+				player.game.playerForceMove(player, target.pos, true,  ENUM.FORCEMOVE_TYPE.LEVITATE)
+				
 				break
 			case 3:
 				player.killplayer()

@@ -141,8 +141,8 @@ class Jean extends Player {
 					}
 				}
 
-				skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s))
-				.setOnHit(onhit).ofSkill(s)
+				skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s),s,this)
+				.setOnHit(onhit)
 
 				break
 			case ENUM.SKILL.ULT:
@@ -152,7 +152,7 @@ class Jean extends Player {
 						this.effects.apply(ENUM.EFFECT.SLOW, 1)
 					}
 
-					skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s)).setOnHit(onhit).ofSkill(s)
+					skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s),s,this).setOnHit(onhit)
 					this.startDuration(ENUM.SKILL.ULT)
 
 					this.effects.apply(ENUM.EFFECT.ROOT, 1)
@@ -175,7 +175,7 @@ class Jean extends Player {
 			let onhit = function (this: Player,source:Player) {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
-			let skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0), this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
+			let skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0), this.getSkillName(ENUM.SKILL.ULT),ENUM.SKILL.ULT,this).setOnHit(onhit)
 			if(this.u_target!=="")
 				this.mediator.skillAttackSingle(this,this.u_target,skillattr)
 			// this.hitOneTarget(this.u_target, skillattr)
@@ -185,7 +185,7 @@ class Jean extends Player {
 			let onhit = function (this: Player,source:Player) {
 				this.effects.apply(ENUM.EFFECT.SLOW, 1)
 			}
-			let skillattr = new SkillAttack(new Damage(0,0,this.getSkillBaseDamage(ENUM.SKILL.ULT)),this.getSkillName(ENUM.SKILL.ULT)).ofSkill(ENUM.SKILL.ULT).setOnHit(onhit)
+			let skillattr = new SkillAttack(new Damage(0,0,this.getSkillBaseDamage(ENUM.SKILL.ULT)),this.getSkillName(ENUM.SKILL.ULT),ENUM.SKILL.ULT,this).setOnHit(onhit)
 			if(this.u_target!=="")
 				this.mediator.skillAttackSingle(this,this.u_target,skillattr)
 

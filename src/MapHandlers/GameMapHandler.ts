@@ -1,6 +1,9 @@
+import { ObstacleHelper } from "../core/Obstacles";
 import { chooseWeightedRandom, randomBoolean } from "../core/Util";
 import { MAP_TYPE } from "../data/enum";
+import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat";
 import type { Game } from "../Game";
+import { Player } from "../player/player";
 import { Projectile, ProjectileBuilder } from "../Projectile";
 import { MAP } from "./MapStorage";
 
@@ -12,7 +15,11 @@ export class GameMapHandler{
 	readonly obstaclePlacement: { obs: number; money: number }[]
     
 	private dcitem_id: string
-    tempFinish:number
+    private tempFinish:number
+
+	private pendingObs: number
+	private pendingAction: string|null
+	private roullete_result: number
 
     protected constructor(game:Game,mapId:MAP_TYPE,shuffleObstacle:boolean){
         this.game=game
@@ -20,7 +27,21 @@ export class GameMapHandler{
         this.obstaclePlacement = shuffleObstacle
 			? MAP.getShuffledObstacles(this.mapId)
 			: MAP.getObstacleList(this.mapId)
+		this.tempFinish=-1
+		
+		this.pendingObs = 0
+		this.pendingAction = null
+		this.roullete_result = -1
     }
+	set setPendingObs(o:number){
+		this.pendingObs=o
+	}
+	set setPendingAction(o:string|null){
+		this.pendingAction=o
+	}
+	get getPendingAction(){
+		return this.pendingAction
+	}
     static create(game:Game,mapId:MAP_TYPE,shuffleObstacle:boolean):GameMapHandler{
         if(mapId===MAP_TYPE.OCEAN)
             return new GameOceanMapHandler(game,mapId,shuffleObstacle)
@@ -31,19 +52,22 @@ export class GameMapHandler{
     }
     setFinishPos(secondPlayerLevel:number):number
     {
-        
-        let respawns=MAP.getRespawn(this.mapId)
+     
+		let respawns=MAP.getRespawn(this.mapId)
         if(secondPlayerLevel+1 >= respawns.length) {
-            if(this.tempFinish!==-1)
+            if(this.tempFinish!==-1){
+				this.tempFinish=-1
                 return MAP.getFinish(this.mapId)
-
-            this.tempFinish=-1
+			}
             return -1
         }
-        let finishpos=respawns[secondPlayerLevel+1]
-        if(this.tempFinish!==finishpos)
+        let finishpos=Math.min(respawns[secondPlayerLevel+1],MAP.getFinish(this.mapId))
+        if(this.tempFinish!==finishpos){
+
+			this.tempFinish=finishpos
+			console.log("finishpos"+finishpos)
             return finishpos
-        this.tempFinish=finishpos
+		}
 		
         return -1
     }
@@ -125,6 +149,119 @@ export class GameMapHandler{
 			this.placeDiceControlItem(this.game.pOfTurn(turn).pos + Math.floor(Math.random() * range) + 1)
 		}
 	}
+
+
+	resetPendingObs(){
+		this.pendingObs=0
+	}
+	/**
+	 * 선택 장애물 대기중일 경우 바로 스킬로 안넘어가고 선택지 전송
+	 * @returns null if no pending obs,  or return {name,arg}
+	 */
+	checkPendingObs(player:Player): ServerGameEventFormat.PendingObstacle|null {
+		
+		if (this.pendingObs === 0 ||player.dead) return null
+
+		let name = ""
+		let argument: number | number[] = -1
+		if (this.pendingObs === 21) {
+			//신의손 대기중일 경우 바로 스킬로 안넘어가고 신의손 타겟 전송
+			let targets = this.game.getGodHandTarget()
+			if (targets.length > 0) {
+				name = "pending_obs:godhand"
+				argument = targets
+			} else {
+				this.resetPendingObs()
+				return null
+			}
+		}
+		//납치범
+		else if (this.pendingObs === 33) {
+			name = "pending_obs:kidnap"
+		}
+		//사형재판
+		else if (this.pendingObs === 37) {
+			let num = Math.floor(Math.random() * 6) //0~5
+			//let num=5
+			this.roullete_result = num
+			name = "pending_obs:trial"
+			argument = num
+		}
+		//카지노
+		else if (this.pendingObs === 38) {
+			let num = Math.floor(Math.random() * 6) //0~5
+			this.roullete_result = num
+			name = "pending_obs:casino"
+			argument = num
+		}
+		else{
+			let result=player.mapHandler.getPendingObs(this.pendingObs)
+			if(!result) return null
+
+			name=result.name
+			argument=result.argument
+		}
+	
+		return { name: name, argument: argument }
+	}
+
+	//========================================================================================================
+	processPendingObs(player:Player,info: ClientInputEventFormat.PendingObstacle|null,delay?:number) {
+		
+		if (!info) {
+			player.mapHandler.onPendingObsTimeout(this.pendingObs)
+			this.roulleteComplete(player)
+			this.resetPendingObs()
+			return
+		}
+		//타임아웃될 경우
+		if(!info || !info.complete) return
+		if (this.pendingObs === 0) {
+			return
+		}
+		if (info.type === "roullete") {
+			this.roulleteComplete(player)
+		}
+		else if (info.type === "godhand" && info.objectResult) {
+			info.objectResult.kind='godhand'
+			if (info.complete && info.objectResult.kind==='godhand') {
+				this.game.processGodhand(info.objectResult.target,info.objectResult.location)
+			}
+		}
+		else{
+			
+			player.mapHandler.onPendingObsComplete(info)
+		}
+
+		this.resetPendingObs()
+	}
+	processPendingAction(player:Player,info: ClientInputEventFormat.PendingAction|null,delay?:number) {
+		
+		if (!info||!this.pendingAction || !info.complete) {
+			this.pendingAction = null
+			return
+		}
+		player.mapHandler.onPendingActionComplete(info)
+
+		this.pendingAction = null
+		
+	}
+	private roulleteComplete(p:Player) {
+		if(this.roullete_result===-1) return
+		//	console.log("roullete" + this.pendingObs)
+
+		//사형재판
+		if (this.pendingObs === 37) {
+			ObstacleHelper.trial(p, this.roullete_result)
+		}
+		//카지노
+		else if (this.pendingObs === 38) {
+			ObstacleHelper.casino(p, this.roullete_result)
+		}
+
+		this.resetPendingObs()
+		this.roullete_result = -1
+	}
 }
 class GameTwoWayMapHandler extends GameMapHandler{
     constructor(game:Game,mapId:MAP_TYPE,shuffleObstacle:boolean){
@@ -137,6 +274,8 @@ class GameOceanMapHandler extends GameTwoWayMapHandler{
 	private submarine_id: string
     constructor(game:Game,mapId:MAP_TYPE,shuffleObstacle:boolean){
         super(game,mapId,shuffleObstacle)
+		this.submarine_cool=0
+		this.submarine_id=""
     }
     onTurnStart(thisturn:number){
         if(thisturn===0) this.summonSubmarine()
@@ -170,7 +309,7 @@ class GameOceanMapHandler extends GameTwoWayMapHandler{
     applyPassProj(name: string): string {
         if(name === "submarine") {
             let upid = this.submarine_id
-            this.game.setPendingAction("submarine")
+            this.setPendingAction="submarine"
             this.submarine_id = ""
             return upid
         }

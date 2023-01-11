@@ -20,6 +20,7 @@ class GoraeAgent extends AiAgent {
 				ITEM.WARRIORS_SHIELDSWORD,
 			])
 			.setFinal(ITEM.FULL_DIAMOND_ARMOR)
+			this.gameStartMessage="I will devour you like a fish!"
 	}
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
@@ -60,9 +61,6 @@ class GoraeAgent extends AiAgent {
 			}
 		}
 		return null
-	}
-	getMessageOnGameStart(): string {
-		return "I will devour you like a fish!"
 	}
 }
 export default GoraeAgent

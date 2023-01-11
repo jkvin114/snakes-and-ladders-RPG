@@ -164,7 +164,7 @@ class Timo extends Player {
 				skillattr = new SkillAttack(
 					new Damage(0, this.getSkillBaseDamage(s), 0).mergeWith(admg),
 					this.getSkillName(s)
-				).ofSkill(s).setOnHit(function (this: Player,source:Player) {
+				,s,this).setOnHit(function (this: Player,source:Player) {
 					this.effects.apply(ENUM.EFFECT.BLIND, 1)
 				})
 				break

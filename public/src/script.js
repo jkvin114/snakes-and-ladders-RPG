@@ -307,6 +307,7 @@ export class Game {
 
 	async animateDice(dice,ismyturn) {
 		$("#dice-container").css({ opacity: 1 })
+		$("#dice-container").show()
 		// let ui = this.turn2ui[dice.turn]
 		let pos = { top: 0, left: 0 }
 		if (ismyturn) pos = { top: "100%", left: "100%" }
@@ -402,6 +403,7 @@ export class Game {
 	}
 
 	afterDice(dice) {
+		$("#dice-container").hide()
 		if(dice.currpos===undefined) return
 		// this.setDice(dice.dice)
 		this.players[dice.turn].pos = dice.currpos + dice.actualdice
@@ -409,7 +411,9 @@ export class Game {
 		this.scene.movePlayer(dice.actualdice, 1, dice.currpos, dice.turn)
 	}
 	smoothTeleport(turn, pos, distance) {
-		this.players[turn].pos = pos
+		console.log("smoothTeleport"+distance)
+		console.log("pos"+pos)
+		this.players[turn].pos = pos+distance
 		this.scene.movePlayer(distance, 1, pos, turn)
 	}
 	moveComplete() {

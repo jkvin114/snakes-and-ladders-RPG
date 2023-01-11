@@ -15,6 +15,7 @@ class BirdAgent extends AiAgent{
 				ITEM.CARD_OF_DECEPTION,
 				ITEM.GUARDIAN_ANGEL
 			]).setFinal(ITEM.ANCIENT_SPEAR)
+		this.gameStartMessage="I will burn you all in the name of the phenix!"
 		//  {
 		// 	level: 0,
 		// 	items: 
@@ -40,9 +41,6 @@ class BirdAgent extends AiAgent{
 			return SKILL.Q
 		}
 		return -1
-	}
-	getMessageOnGameStart(): string {
-		return "I will burn you all in the name of the phenix!"
 	}
 }
 export default BirdAgent

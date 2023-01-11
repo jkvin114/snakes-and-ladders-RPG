@@ -18,6 +18,7 @@ class CreedAgent extends AiAgent{
 			ITEM.GUARDIAN_ANGEL
 		]).setFinal(ITEM.EPIC_SWORD)
 	
+		this.gameStartMessage="The death is upon you!"
     }
 	nextSkill(): number {
 		
@@ -50,9 +51,6 @@ class CreedAgent extends AiAgent{
 			return ps[players[0]]
 		}
 		return super.selectTarget(skill,targets)
-	}
-	getMessageOnGameStart(): string {
-		return "The death is upon you!"
 	}
 }
 export default CreedAgent

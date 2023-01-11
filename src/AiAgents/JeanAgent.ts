@@ -16,6 +16,7 @@ class JeanAgent extends AiAgent{
 			ITEM.CROSSBOW_OF_PIERCING,
 			ITEM.WARRIORS_SHIELDSWORD
 		]).setFinal(ITEM.EPIC_SWORD)
+		this.gameStartMessage="Everyone will be equal under my bullet!"
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
@@ -31,9 +32,6 @@ class JeanAgent extends AiAgent{
 			return SKILL.ULT
 		}
 		return -1
-	}
-	getMessageOnGameStart(): string {
-		return "Everyone will be equal under my bullet!"
 	}
 }
 export default JeanAgent

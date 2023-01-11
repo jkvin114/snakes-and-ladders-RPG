@@ -52,10 +52,11 @@ class EffectFactory {
 					return new AblityChangeEffect(
 						effect_id,
 						1,
-						new Map().set("moveSpeed", 1)
+						new Map().set("moveSpeed", 1),
+						EFFECT_TIMING.TURN_END
 					).setGood()
 			case EFFECT.ITEM_SHIELDSWORD_ABSORB:
-				return new AblityChangeEffect(effect_id, 2, new Map().set("absorb", 30)).setGood()
+				return new AblityChangeEffect(effect_id, 2, new Map().set("absorb", 30),EFFECT_TIMING.TURN_END).setGood()
 		}
 	}
 }
@@ -340,6 +341,7 @@ abstract class StatusEffect {
 		if (this.duration >= StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE) return true
 
 		this.duration = decrement(this.duration)
+		
 		return this.duration > 0
 	}
 	onLethalDamage() {
@@ -399,8 +401,9 @@ class AblityChangeEffect extends StatusEffect {
 	protected abilityChanges: Map<string, number>
 	protected remainingChanges: Map<string, number>
 	protected decay: boolean
-	constructor(id: EFFECT, dur: number, abilityChanges: Map<string, number>) {
-		super(id, dur, ABILITY_CHANGE_EFFECT_TIMING)
+	constructor(id: EFFECT, dur: number, abilityChanges: Map<string, number>,timing?:EFFECT_TIMING) {
+		if(!timing) timing=ABILITY_CHANGE_EFFECT_TIMING
+		super(id, dur, timing)
 		this.decay = false
 		this.abilityChanges = abilityChanges
 		this.remainingChanges = new Map()
@@ -425,11 +428,14 @@ class AblityChangeEffect extends StatusEffect {
 	cooldown(): boolean {
 		if (this.decay) {
 			for (const [name, val] of this.remainingChanges.entries()) {
-				let decayamt = Math.floor((-1 * this.abilityChanges.get(name)) / this.duration)
+				if(this.abilityChanges.has(name)){
 
-				this.owner?.ability.update(name, decayamt)
+					let decayamt = Math.floor((-1 * this.abilityChanges.get(name)) / this.duration)
 
-				this.remainingChanges.set(name, val + decayamt)
+					this.owner?.ability.update(name, decayamt)
+
+					this.remainingChanges.set(name, val + decayamt)
+				}
 			}
 			this.owner?.ability.flushChange()
 		}
@@ -467,13 +473,13 @@ class TickEffect extends StatusEffect {
 
 	protected tickAction: TickActionFunction
 	protected frequency: number
-	protected sourceSkill: SKILL|null //스킬 판정인지 여부, null 이면 스킬판정 아님
+	protected sourceSkill: SKILL |number//스킬 판정인지 여부, -1 이면 스킬판정 아님
 
 	constructor(id: EFFECT, dur: number, frequency: number) {
 		super(id, dur, TICK_EFFECT_TIMING)
 		this.frequency = frequency
 		this.effectType = EFFECT_TYPE.TICK
-		this.sourceSkill = null
+		this.sourceSkill = -1
 		this.tickAction = function(this: Player){return false}
 	}
 
@@ -509,9 +515,9 @@ class TickEffect extends StatusEffect {
 
 		if (!this.source) {
 			return this.owner.doObstacleDamage(damage.getTotalDmg(), this.name)
-		} else if (this.sourceSkill != null) {
+		} else if (this.sourceSkill !== -1) {
 			return this.owner.mediator.skillAttackAuto(this.owner.mediator.getPlayer(this.source),this.owner.UEID,
-			new SkillAttack(damage,this.name))
+			new SkillAttack(damage,this.name,this.sourceSkill,this.owner.mediator.getPlayer(this.source)))
 			// return this.owner.hitBySkill(damage, this.name, this.sourceTurn)
 		} else {
 			return this.owner.mediator.attackSingle(this.owner.mediator.getPlayer(this.source),this.owner
@@ -618,17 +624,17 @@ class OnHitEffect extends StatusEffect {
 	}
 }
 
-interface OnFinalDamageFunction {
+interface OnHPBelowThresholdFunction {
 	(damage: number, owner: Player): void
 }
 
 class OnHPBelowThresholdEffect extends StatusEffect {
-	protected onDamage: OnFinalDamageFunction
+	protected onHPBelowThreshold: OnHPBelowThresholdFunction
 	private thresholdHpPercent: number
 
-	constructor(id: EFFECT, dur: number, f: OnFinalDamageFunction) {
+	constructor(id: EFFECT, dur: number, f: OnHPBelowThresholdFunction) {
 		super(id, dur, ONHPBELOWTHRESHOLD_EFFECT_TIMING)
-		this.onDamage = f
+		this.onHPBelowThreshold = f
 		this.thresholdHpPercent = 100
 		this.effectType=EFFECT_TYPE.ON_HP_BELOW_THRESHOLD
 	}
@@ -649,7 +655,7 @@ class OnHPBelowThresholdEffect extends StatusEffect {
 	onFinalDamage(damage: number) {
 		let predictedHP = this.owner.HP - damage
 		if (predictedHP > 0 && predictedHP < (this.thresholdHpPercent / 100) * this.owner.MaxHP) {
-			this.onDamage(damage, this.owner)
+			this.onHPBelowThreshold(damage, this.owner)
 		}
 	}
 }

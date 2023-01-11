@@ -49,9 +49,6 @@ class Game {
 	// skilldmg: any
 	// skillcount: number
 	private clientsReady: number
-	private pendingObs: number
-	private pendingAction: string|null
-	private roullete_result: number
 	// nextUPID: number
 	private readonly UPIDGen: Util.UniqueIdGenerator
 	private readonly UEIDGen: Util.UniqueIdGenerator
@@ -75,17 +72,18 @@ class Game {
 	}[]
 	// playerSelector: PlayerSelector
 	private entityMediator: EntityMediator
-	private turnEncryption:string[]
-	private turnEncryptKey: string
+	private turnTokens:string[]
+	private turnTokenKey: string
 	begun:boolean
 	private cycle:number
 	arriveSquareCallback:Function|null
 	private arriveSquareTimeout:NodeJS.Timeout|null
 	eventEmitter:GameEventObserver
 	disconnectedPlayers:Set<number>
+	
 	private static readonly PLAYER_ID_SUFFIX = "P"
 	private replayRecord:ReplayEventRecords
-	mapController:GameMapHandler
+	mapHandler:GameMapHandler
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
 		this.instant = setting.instant
@@ -93,7 +91,7 @@ class Game {
 		this.rname = rname
 		if (mapid < 0 || mapid > 4) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
-		this.mapController=GameMapHandler.create(this,this.mapId,setting.shuffleObstacle)
+		this.mapHandler=GameMapHandler.create(this,this.mapId,setting.shuffleObstacle)
 		this.begun=false
 		this.totalturn = 0
 		this.isTeam = setting.isTeam
@@ -104,9 +102,6 @@ class Game {
 		// this.skilldmg = -1
 		// this.skillcount = 0
 		this.clientsReady = 0
-		this.pendingObs = 0
-		this.pendingAction = null
-		this.roullete_result = -1
 		this.winner = -1
 		this.itemLimit = setting.itemLimit
 		// this.nextUPID = 1
@@ -121,11 +116,11 @@ class Game {
 		// this.playerSelector = new PlayerSelector(this.isTeam)
 		this.UPIDGen = new Util.UniqueIdGenerator(this.rname + "_P")
 		this.UEIDGen = new Util.UniqueIdGenerator(this.rname + "_ET")
-		this.turnEncryptKey = Math.round(new Date().valueOf() * Math.random() * Math.random()) + this.rname
+		this.turnTokenKey = Math.round(new Date().valueOf() * Math.random() * Math.random()) + this.rname
 		
-		this.turnEncryption = []
+		this.turnTokens = []
 		for (let i = 0; i < 4; ++i) {
-			this.turnEncryption.push( encrypt(String(i), this.turnEncryptKey).slice(0,8))
+			this.turnTokens.push( encrypt(String(i), this.turnTokenKey).slice(0,8))
 		}
 		this.arriveSquareTimeout=null
 		this.arriveSquareCallback=null
@@ -133,6 +128,7 @@ class Game {
 		this.eventEmitter=new GameEventObserver(this.rname)
 		this.entityMediator = new EntityMediator(this.isTeam, this.instant, this.rname)
 		this.disconnectedPlayers=new Set<number>()
+
 		this.replayRecord=new ReplayEventRecords(setting.replay)
 		this.eventEmitter.bindEventRecorder(this.replayRecord)
 		this.entityMediator.setClientInterface(this.eventEmitter)
@@ -160,7 +156,7 @@ class Game {
 
 	pOfTurn(turn: number): Player{
 		if(turn<0 || turn>this.totalnum){
-			console.trace("Player index out or range at pOfTurn()!")
+			console.trace("Player index out of range at pOfTurn()!")
 			turn=0
 		}
 
@@ -193,23 +189,23 @@ class Game {
 			turn=0
 			console.trace("Player index out or range at getGameTurnToken()!")
 		}
-		return this.turnEncryption[turn]
+		return this.turnTokens[turn]
 	}
 	thisGameTurnToken() {
-		return this.turnEncryption[this.thisturn]
+		return this.turnTokens[this.thisturn]
 	}
 	isThisTurn(cryptTurn: string) {
 		//	console.log(this.turnEncryption.get(this.game.thisturn),cryptTurn)
-		return this.turnEncryption[this.thisturn] === cryptTurn
+		return this.turnTokens[this.thisturn] === cryptTurn
 	}
 	setCycle(cycle:number){
 		this.cycle=cycle
 	}
 	getObstacleAt(pos:number){
-		return this.mapController.obstaclePlacement[pos].obs
+		return this.mapHandler.obstaclePlacement[pos].obs
 	}
 	getMoneyAt(pos:number){
-		return this.mapController.obstaclePlacement[pos].money * 10
+		return this.mapHandler.obstaclePlacement[pos].money * 10
 	}
 	//========================================================================================================
 
@@ -268,7 +264,7 @@ class Game {
 			map:this.mapId,
 			playerSettings: setting,
 			gameSettings: this.setting.getInitialSetting(),
-			shuffledObstacles: this.mapController.obstaclePlacement.map((obs)=>obs.obs)
+			shuffledObstacles: this.mapHandler.obstaclePlacement.map((obs)=>obs.obs)
 		}
 	}
 
@@ -290,25 +286,11 @@ class Game {
 		if(!this.begun)
 			this.onGameStart()
 		return true
-		// p.onMyTurnStart()
-		// this.entityMediator.onTurnStart(this.thisturn)
-		
-		// return {
-		// 	crypt_turn: this.cryptTurn(0),
-		// 	turn: p.turn,
-		// 	stun: p.effects.has(ENUM.EFFECT.STUN),
-		// 	ai: p.AI,
-		// 	dc: p.diceControl,
-		// 	dc_cool: p.diceControlCool,
-		// 	adice: 0,
-		// 	effects: new Array<string>(),
-		// 	avaliablepos:new Array<number>()
-		// }
 	}
 	onGameStart(){
 		for(const p of this.entityMediator.allPlayer()){
 			p.onGameStart()
-			if(p.AI) this.eventEmitter.message(this.getPlayerMessageHeader(p.turn),p.AiAgent.getMessageOnGameStart())
+			if(p.AI) this.eventEmitter.message(this.getPlayerMessageHeader(p.turn),p.AiAgent.gameStartMessage)
 		}
 	}
 	//========================================================================================================
@@ -319,32 +301,17 @@ class Game {
 		}
 	}
 
-	// removePassProjById(id: string) {
-	// 	if (id === "") return
-	// 	//console.log("REmoved PASSPROJECTILE  PASSPROJECTILE" + id)
-	// 	// let toremove=this.passProjectileList.filter((p: PassProjectile) => p.UPID === id)
-	// 	let toremove = this.passProjectileList.get(id)
-	// 	if (toremove !== null) {
-	// 		// this.passProjectileList = this.passProjectileList.filter((proj: PassProjectile) => {
-	// 		// 	proj.UPID!==id
-	// 		// })
-	// 		this.passProjectileList.delete(id)
-
-	// 		toremove.removeProj()
-	// 		toremove = null
-	// 	}
-	// }
-
 	getDiceControlPlayer() {
 		const bias = 1.5
 
-		let firstpos = this.entityMediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.thisp()))(function () {
+		let firstplayer = this.entityMediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.thisp()),function () {
 			return this.pos
-		}).pos
+		})
+		if(!firstplayer) return
 
 		return Util.chooseWeightedRandom(
 			this.entityMediator.allPlayer().map((p) => {
-				return firstpos * bias - p.pos
+				return firstplayer.pos * bias - p.pos
 			})
 		)
 	} //50 30 20   :   25  45  55    : 20%, 36%, 44%
@@ -356,7 +323,7 @@ class Game {
 	 * @param turn
 	 */
 	summonDicecontrolItemOnkill(turn: number) {
-		this.mapController.summonDicecontrolItemOnkill(turn)
+		this.mapHandler.summonDicecontrolItemOnkill(turn)
 	}
 
 	// cleanupDeadEntities(){
@@ -391,8 +358,8 @@ class Game {
 	}
 	onTurnEnd(){
 		if(!this.begun) return
-		this.resetPendingObs()
-		this.pendingAction = null
+		this.mapHandler.resetPendingObs()
+		this.mapHandler.setPendingAction = null
 		let p = this.thisp()
 		this.entityMediator.onTurnEnd(this.thisturn)
 		p.onMyTurnEnd()
@@ -409,7 +376,7 @@ class Game {
 		let secondLevel=this.entityMediator.getSecondPlayerLevel()
 		// console.log("onPlayerChangePos"+secondLevel)
 		if(this.setting.winByDecision){
-			let finishpos=this.mapController.setFinishPos(secondLevel)
+			let finishpos=this.mapHandler.setFinishPos(secondLevel)
 			if(finishpos!==-1) this.eventEmitter.update("finish_pos",turn,finishpos)
 		}
 	}
@@ -463,7 +430,7 @@ class Game {
 
 			// this.summonDicecontrolItem()
 			this.projectileCooldown()
-			this.mapController.onTurnStart(this.thisturn)
+			this.mapHandler.onTurnStart(this.thisturn)
 			if (this.thisturn <= lastturn) {
 			//	console.log(`turn ${this.totalturn}===========================================================================`)
 
@@ -518,12 +485,6 @@ class Game {
 		if (p.effects.has(ENUM.EFFECT.SPEED)) {
 			additional_dice += 2
 		}
-		//	console.log("adice" + additional_dice + " " + doubledice + " turn" + p.turn)
-
-		// //temp
-		// if(p.turn===0){
-		// 	p.diceControl=true
-		// }
 
 		let avaliablepos: number[] = []
 		if (p.diceControl) {
@@ -558,7 +519,7 @@ class Game {
 		return data
 	}
 	isFinishPosition(pos:number){
-		return this.mapController.isFinishPos(pos)
+		return this.mapHandler.isFinishPos(pos)
 	}
 	/**
 	 * called start of every turn,
@@ -664,7 +625,7 @@ class Game {
 		if (mapresult.type==="ask_way2") {
 			if (p.AI) {
 			} else {
-				this.pendingAction = "ask_way2"
+				this.mapHandler.setPendingAction = "ask_way2"
 			}
 		}
 		if(mapresult.type==="subway"){
@@ -745,15 +706,9 @@ class Game {
 	setPendingObs(obs:number){
 		if (SETTINGS.pendingObsList.includes(obs)) {
 			if (!this.thisp().AI) {
-				this.pendingObs=obs
+				this.mapHandler.setPendingObs=obs
 			}
 		}
-	}
-	hasPendingObs(){
-		return this.pendingObs!==0
-	}
-	resetPendingObs(){
-		this.pendingObs=0
 	}
 	//========================================================================================================
 
@@ -837,6 +792,7 @@ class Game {
 	requestForceMove(player:Player, movetype: string,ignoreObstacle:boolean){
 		let delay=SETTINGS.delay_simple_forcemove
 		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
+		if(movetype==ENUM.FORCEMOVE_TYPE.WALK) delay=SETTINGS.delay_walk_forcemove
 	//	console.log("--------------------------------requestForceMove")
 	//	console.log(this.cycle)
 		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
@@ -887,16 +843,17 @@ class Game {
 	applyPassProj() {
 		let died = false
 		for (let pp of this.passProjectileQueue) {
-			let upid = this.mapController.applyPassProj(pp.name)
+			let upid = this.mapHandler.applyPassProj(pp.name)
 			if (upid===""){
 				//died = this.thisp().hitBySkill(pp.damage, pp.name, pp.sourceTurn, pp.action)
 
-				let skillattack = new SkillAttack(pp.damage, pp.name).setOnHit(pp.action)
-				if(pp.sourcePlayer)
+				if(pp.sourcePlayer){
+					let skillattack = new SkillAttack(pp.damage, pp.name,-1,pp.sourcePlayer).setOnHit(pp.action)
 					died = this.entityMediator.skillAttackAuto(
 						pp.sourcePlayer,
 						this.turn2Id(this.thisturn)
 					,skillattack)
+				}
 
 				upid = pp.UPID
 			}
@@ -909,10 +866,7 @@ class Game {
 		return died
 	}
 	getPendingAction():string|null{
-		return this.pendingAction
-	}
-	setPendingAction (pa:string) {
-		this.pendingAction=pa
+		return this.mapHandler.getPendingAction
 	}
 	//========================================================================================================
 
@@ -927,17 +881,12 @@ class Game {
 	}
 	//========================================================================================================
 
-	//()=>{turn:number,silent:number,cooltime:number[],duration:number[]}
-	// skillCheck() {
-	// 	return this.getSkillStatus()
-	// }
-	//========================================================================================================
 
 	aiSkill(callback:Function) {
-		AiAgent.aiSkill(this.thisp(),callback)
+		this.thisp().aiSkill(callback)
 	}
 	simulationAiSkill(){
-		AiAgent.simulationAiSkill(this.thisp())
+		this.thisp().simulationAiSkill()
 	}
 	//========================================================================================================
 	/**
@@ -955,12 +904,13 @@ class Game {
 			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
 			//	console.log("proj hit" + proj.UPID)
 				let died=false
-				let skillattack = new SkillAttack(proj.damage, proj.name).setOnHit(proj.action)
-					if(proj.sourcePlayer)
+				if(proj.sourcePlayer){
+					let skillattack = new SkillAttack(proj.damage, proj.name,-1,proj.sourcePlayer).setOnHit(proj.action)
 					died= this.entityMediator.skillAttackAuto(
 						proj.sourcePlayer,
 						this.turn2Id(player.turn)
 					,skillattack)
+				}
 				//player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
 
 				if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
@@ -994,7 +944,7 @@ class Game {
 		let damage=p.getSkillDamage(this.pOfTurn(target))
 	
 		if(!damage) return
-		this.entityMediator.skillAttackSingle(p, this.turn2Id(target),damage)
+		this.entityMediator.skillAttackSingle(damage.source, this.turn2Id(target),damage)
 
 	//	return this.getSkillStatus()
 	}
@@ -1030,7 +980,7 @@ class Game {
 	//========================================================================================================
 
 	isAttackableCoordinate(c: number): boolean {
-		let coor = this.mapController.obstaclePlacement
+		let coor = this.mapHandler.obstaclePlacement
 		if (c < 1 || c >= coor.length || coor[c].obs === -1 || coor[c].obs === 0) {
 			return false
 		}
@@ -1051,10 +1001,6 @@ class Game {
 		return scope
 	}
 
-	//========================================================================================================
-
-	
-	//========================================================================================================
 	
 //========================================================================================================
 	placeProjectile(proj: Projectile, pos: number): string {
@@ -1102,49 +1048,7 @@ class Game {
 	 * @returns null if no pending obs,  or return {name,arg}
 	 */
 	checkPendingObs(): ServerGameEventFormat.PendingObstacle|null {
-		if (this.pendingObs === 0 || this.thisp().dead) return null
-
-		let name = ""
-		let argument: number | number[] = -1
-		if (this.pendingObs === 21) {
-			//신의손 대기중일 경우 바로 스킬로 안넘어가고 신의손 타겟 전송
-			let targets = this.getGodHandTarget()
-			if (targets.length > 0) {
-				name = "pending_obs:godhand"
-				argument = targets
-			} else {
-				this.resetPendingObs()
-				return null
-			}
-		}
-		//납치범
-		else if (this.pendingObs === 33) {
-			name = "pending_obs:kidnap"
-		}
-		//사형재판
-		else if (this.pendingObs === 37) {
-			let num = Math.floor(Math.random() * 6) //0~5
-			//let num=5
-			this.roullete_result = num
-			name = "pending_obs:trial"
-			argument = num
-		}
-		//카지노
-		else if (this.pendingObs === 38) {
-			let num = Math.floor(Math.random() * 6) //0~5
-			this.roullete_result = num
-			name = "pending_obs:casino"
-			argument = num
-		}
-		else{
-			let result=this.thisp().mapHandler.getPendingObs(this.pendingObs)
-			if(!result) return null
-
-			name=result.name
-			argument=result.argument
-		}
-	
-		return { name: name, argument: argument }
+		return this.mapHandler.checkPendingObs(this.thisp())
 	}
 
 	//========================================================================================================
@@ -1157,46 +1061,12 @@ class Game {
 		if(!this.instant)
 			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
 		
-		
-		//console.log("onPendingObsComplete"+this.pendingObs)
-		//console.log(info)
-		if (!info) {
-			this.thisp().mapHandler.onPendingObsTimeout(this.pendingObs)
-			this.roulleteComplete()
-			this.resetPendingObs()
-			return
-		}
-		//타임아웃될 경우
-		if(!info || !info.complete) return
-		if (this.pendingObs === 0) {
-			return
-		}
-		if (info.type === "roullete") {
-			this.roulleteComplete()
-		}
-		else if (info.type === "godhand" && info.objectResult) {
-			info.objectResult.kind='godhand'
-			if (info.complete && info.objectResult.kind==='godhand') {
-				this.processGodhand(info.objectResult.target,info.objectResult.location)
-			}
-		}
-		else{
-			
-			this.thisp().mapHandler.onPendingObsComplete(info)
-		}
-
-		this.resetPendingObs()
+		this.mapHandler.processPendingObs(this.thisp(),info,delay)
 	}
 	//========================================================================================================
 
 	processPendingAction(info: ClientInputEventFormat.PendingAction|null,delay?:number) {
-		//console.log(info)
-
 		
-		// if (!info) {
-		// 	this.pendingAction = null
-		// 	return
-		// }
 		//타임아웃될 경우
 		if(!delay)
 			delay=0
@@ -1204,34 +1074,9 @@ class Game {
 
 		if(!this.instant)
 			this.arriveSquareTimeout=setTimeout(this.resolveArriveSquareCallback.bind(this),delay)
-
-		if (!info||!this.pendingAction || !info.complete) {
-			this.pendingAction = null
-			return
-		}
-		this.thisp().mapHandler.onPendingActionComplete(info)
-
-		this.pendingAction = null
+		this.mapHandler.processPendingAction(this.thisp(),info,delay)
 		
 	}
-	roulleteComplete() {
-		if(this.roullete_result===-1) return
-		//	console.log("roullete" + this.pendingObs)
-
-		let p = this.thisp()
-		//사형재판
-		if (this.pendingObs === 37) {
-			ObstacleHelper.trial(p, this.roullete_result)
-		}
-		//카지노
-		else if (this.pendingObs === 38) {
-			ObstacleHelper.casino(p, this.roullete_result)
-		}
-
-		this.resetPendingObs()
-		this.roullete_result = -1
-	}
-
 	userCompleteStore(data: ClientInputEventFormat.ItemBought){
 		this.pOfTurn(data.turn).inven.playerBuyItem(data)
 	}

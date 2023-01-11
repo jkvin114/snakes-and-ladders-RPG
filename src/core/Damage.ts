@@ -57,7 +57,7 @@ class Damage {
 	static zero():Damage{
         return new Damage(0,0,0)
     }
-	clone():Damage{
+	copy():Damage{
 		return new Damage(this.attack,this.magic,this.fixed)
 	}
 

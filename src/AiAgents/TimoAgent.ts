@@ -15,6 +15,7 @@ class TimoAgent extends AiAgent{
 			ITEM.ANCIENT_SPEAR,
 			ITEM.BOOTS_OF_PROTECTION
 		]).setFinal(ITEM.EPIC_CRYSTAL_BALL)
+		this.gameStartMessage= "Beware of the silent assasination!"
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
@@ -30,9 +31,6 @@ class TimoAgent extends AiAgent{
 			return SKILL.Q
 		}
 		return -1
-	}
-	getMessageOnGameStart(): string {
-		return "Beware of the silent assasination!"
 	}
 }
 export default TimoAgent

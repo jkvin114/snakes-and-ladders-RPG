@@ -161,7 +161,7 @@ class Silver extends Player {
 				let dmg = this.getSkillBaseDamage(s)
 				let heal=this.isSkillActivated(ENUM.SKILL.ULT) ? this.getSkillAmount("r_qheal") : this.getSkillAmount("qheal")
 
-				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s)).ofSkill(s)
+				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s),s,this)
 				.setOnHit(function(this:Player,source:Player){
 					source.heal(heal)
 				})
@@ -173,7 +173,7 @@ class Silver extends Player {
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
 				let effect=this.getWEffect()
-				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s)).ofSkill(s)
+				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s),s,this)
 				.setOnHit(function(this:Player,source:Player){
 					this.effects.applySpecial(effect,SpecialEffect.SKILL.ELEPHANT_W.name)
 					this.effects.apply(ENUM.EFFECT.CURSE, 1)				

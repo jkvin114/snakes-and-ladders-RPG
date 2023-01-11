@@ -16,6 +16,7 @@ class SilverAgent extends AiAgent{
 			ITEM.BOOTS_OF_ENDURANCE,
 			ITEM.GUARDIAN_ANGEL
 		]).setFinal(ITEM.EPIC_SHIELD)
+		this.gameStartMessage="I will defend everything against me!"
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
@@ -31,9 +32,6 @@ class SilverAgent extends AiAgent{
 			return SKILL.Q
 		}
 		return -1
-	}
-	getMessageOnGameStart(): string {
-		return "I will defend everything against me!"
 	}
 }
 export default SilverAgent

@@ -179,6 +179,7 @@ export class GameEventObserver {
 		// this.eventEmitter(this.rname, "server:teleport_pos", { turn: turn, pos: pos, movetype: movetype })
 	}
 	smoothTeleport(turn: number, pos: number, distance: number) {
+	//	console.log("smoothTeleport"+distance)
 		this.emit("smooth_teleport",{ turn: turn, pos: pos, distance: distance })
 		this.recordEvent(new EventRecord("smooth_teleport").setInvoker(turn)
 		.setNumberObject(pos)

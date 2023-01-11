@@ -329,28 +329,19 @@
 			"scales": [
 				{
 					"ability": "AD",
-					"val": 0.7
+					"val": 0.5
 				},
 				{
 					"ability": "AP",
-					"val": 1
+					"val": 0.75
 				}
 			]
 		},"W": {
-			"base": 40,
+			"base": 5,
 			"scales": [
 				{
 					"ability": "AP",
-					"val": 1
-				}
-			]
-		},
-		"R": {
-			"base": 70,
-			"scales": [
-				{
-					"ability": "AD",
-					"val": 0.9
+					"val": 0.4
 				}
 			]
 		}

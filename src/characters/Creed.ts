@@ -155,11 +155,11 @@ class Creed extends Player {
 					this.usedQ = false
 					this.effects.applySpecial(this.getQShield(40),Creed.Q_SHIELD)
 
-					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),this.getSkillName(s)).ofSkill(s)
+					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),this.getSkillName(s),s,this)
 				} else {
 					this.usedQ = true
 					this.effects.applySpecial(this.getQShield(30),Creed.Q_SHIELD)
-					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s), 0, 0),this.getSkillName(s)).ofSkill(s)
+					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s), 0, 0),this.getSkillName(s),s,this)
 				}
 				break
 			case ENUM.SKILL.ULT:
@@ -168,7 +168,7 @@ class Creed extends Player {
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
 				let originalpos = this.pos
 				this.game.playerForceMove(this,target.pos, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
-				damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),this.getSkillName(s)).ofSkill(s)
+				damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),this.getSkillName(s),s,this)
 				break
 		}
 

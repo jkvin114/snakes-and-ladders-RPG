@@ -85,13 +85,9 @@ export class PlayerMatchingState{
 		this.teams = teams
 		teams.forEach((t,i)=>this.playerlist[i].team=t)
 	}
-	spendTurnMapping(originalTurn:number){
-
+	getTurnMapping(originalTurn:number){
 		let newturn=this.turnMapping[originalTurn]
-		//on second access
-		if(newturn===-1) return originalTurn
-
-		this.turnMapping[originalTurn]=-1
+		
 		return newturn
 	}
 	assignGameTurns(shouldShuffle:boolean){

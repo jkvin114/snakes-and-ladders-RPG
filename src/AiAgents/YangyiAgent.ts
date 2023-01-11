@@ -17,6 +17,7 @@ class YangyiAgent extends AiAgent{
 			ITEM.WARRIORS_SHIELDSWORD,
 			ITEM.EPIC_FRUIT
 		]).setFinal(ITEM.EPIC_SWORD)
+		this.gameStartMessage= "You all will die under my claw and fire!"
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
@@ -62,8 +63,5 @@ class YangyiAgent extends AiAgent{
 	   }
 	   return null
    }
-   getMessageOnGameStart(): string {
-	return "You all will die under my claw and fire!"
-}
 }
 export default YangyiAgent

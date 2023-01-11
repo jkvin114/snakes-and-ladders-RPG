@@ -1,32 +1,33 @@
-import { Tree } from "../characters/Tree";
+import { Hacker } from "../characters/Hacker";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
 
-class TreeAgent extends AiAgent{
+class HackerAgent extends AiAgent{
     itemtree: ItemBuild
-	player:Tree
-    constructor(player:Tree){
+	player:Hacker
+    constructor(player:Hacker){
         super(player)
         this.itemtree = new ItemBuild().setItems([
+			ITEM.EPIC_SWORD,
 			ITEM.EPIC_CRYSTAL_BALL,
-			ITEM.CARD_OF_DECEPTION,
-			ITEM.TIME_WARP_POTION,
 			ITEM.ANCIENT_SPEAR,
-			ITEM.INVISIBILITY_CLOAK,
-			ITEM.BOOTS_OF_PROTECTION,
-		]).setFinal(ITEM.EPIC_CRYSTAL_BALL)
-		this.gameStartMessage= "I will not be your giving tree!"
+			ITEM.EPIC_WHIP,
+			ITEM.CROSSBOW_OF_PIERCING,
+			ITEM.GUARDIAN_ANGEL,
+		]).setFinal(ITEM.EPIC_SWORD)
+		this.gameStartMessage= "I know everything about you!"
     }
 	nextSkill(): number {
 		
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
 			return SKILL.ULT
 		}
-		if (!this.attemptedSkills.has(SKILL.W)) {
-			return SKILL.W
-		}
+        
 		if (!this.attemptedSkills.has(SKILL.Q)) {
 			return SKILL.Q
+		}
+		if (!this.attemptedSkills.has(SKILL.W)) {
+			return SKILL.W
 		}
 		if (this.player.canBasicAttack()) {
 			return AiAgent.BASICATTACK
@@ -34,4 +35,4 @@ class TreeAgent extends AiAgent{
 		return -1
 	}
 }
-export default TreeAgent
+export default HackerAgent

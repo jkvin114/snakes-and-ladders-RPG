@@ -1,7 +1,6 @@
 import { PlayerComponent } from "./PlayerComponent";
 import SETTINGS = require("../../res/globalsettings.json")
 import type { Damage } from "../core/Damage";
-import { ServerGameEventFormat } from "../data/EventFormat";
 
 export class DamageRecord{
     sourceTurn:number

@@ -28,9 +28,9 @@ export class EntityStorage {
 	 * @param id
 	 * @returns Player
 	 */
-	getPlayer(id:string): Player|undefined {
+	getPlayer(id:string): Player|null {
 		// if (turn >= this.playerIds.length) return null
-		if (!this.entities.has(id)) return undefined
+		if (!this.entities.has(id)) return null
 
 		return this.entities.get(id) as Player
 	}

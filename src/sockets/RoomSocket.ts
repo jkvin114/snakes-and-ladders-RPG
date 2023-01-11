@@ -1,11 +1,9 @@
 import type { Socket } from "socket.io";
 import { io } from "../app";
-// import { R } from "../RoomStorage";
 import { SocketSession } from "./SocketSession";
 import express = require("express")
 import { controlRoom } from "./Controller";
-import { Room } from "../room";
-import e = require("cors");
+import CONFIG from "./../../config/config.json"
 
 module.exports=function(socket:Socket){
     socket.on("user:update_playerlist", function (playerlist: any) {
@@ -17,16 +15,6 @@ module.exports=function(socket:Socket){
 	
 	socket.on("user:host_connect", function () {
 
-		// if (ROOMS.get(roomName) != null) {
-		// 	socket.emit("server:room_name_exist")
-		// 	return
-		// }
-		/*
-		Test.create({name:"hello",turn:2,sub:{name:"d"}})
-		.then((resolvedData)=>console.log(resolvedData))
-		.catch((e)=>console.error(e))
-		
-*/
 		controlRoom(socket,(room,rname)=>{
 			room.setSimulation(false)
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
@@ -42,10 +30,6 @@ module.exports=function(socket:Socket){
 	})
 	//==========================================================================================
 	socket.on("user:register", function (rname: string) {
-		// if (!R.hasRoom(rname)) {
-		// 	socket.emit("server:room_full")
-		// 	return
-		// }
 		SocketSession.setRoomName(socket, rname)
 		let hasroom=controlRoom(socket,(room,rname)=>{
 			if(room.user_guestRegister(SocketSession.getId(socket)))
@@ -81,15 +65,6 @@ module.exports=function(socket:Socket){
 			socket.broadcast.to(rname).emit("server:update_playerlist", room.getPlayerList())
 		})
 	})
-	// socket.on("user:guest_quit", function () {
-	// 	// controlRoom(socket,(room,rname)=>{
-	// 	// 	room.deleteSession(SocketSession.getId(socket))
-	// 	// 	SocketSession.removeGameSession(socket)
-	// 	// })
-		
-		
-	// 	// req.session.destroy((e)=>{console.log("destroy guest session")})
-	// })
 	//==========================================================================================
 	socket.on("user:kick_player", function (turn: number) {
 		controlRoom(socket,(room,rname)=>{
@@ -115,9 +90,6 @@ module.exports=function(socket:Socket){
 			io.to(rname).emit("server:exit_teampage")
 		})
 
-		// if (!R.hasRoom(rname)) return
-		// R.getRoom(rname).unsetTeamGame()
-		// io.to(rname).emit("server:exit_teampage")
 	})
 
 	socket.on("user:request_names", function () {
@@ -152,12 +124,6 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 
 	socket.on("user:update_team", function (check_status:boolean[]) {
-		// let rname = SocketSession.getRoomName(socket)
-
-		// console.log("set team" + check_status)
-		// if (!R.hasRoom(rname)) return
-		// R.getRoom(rname).user_updateTeams(check_status)
-		// io.to(rname).emit("server:teams", check_status)
 		controlRoom(socket,(room,rname)=>{
 			
 			room.user_updateTeams(check_status)
@@ -170,15 +136,11 @@ module.exports=function(socket:Socket){
 		console.log("reloadgame")
 		let rname = SocketSession.getRoomName(socket)
 
-		// if (!R.hasRPGRoom(rname)) return
-		//ROOMS.get(rname).goNextTurn()
 	})
 	//==========================================================================================
 	socket.on("user:extend_timeout", function () {
 		let rname = SocketSession.getRoomName(socket)
 		let turn = SocketSession.getTurn(socket)
-		// if (!R.hasRPGRoom(rname)) return
-	//	ROOMS.get(rname).extendTimeout(turn)
 	})
 	//==========================================================================================
 
@@ -192,7 +154,6 @@ module.exports=function(socket:Socket){
 			room.user_reconnect(turn)
 			console.log("reconnect"+rname)
 		})
-		// R.getRPGRoom(rname).user_reconnect(turn)
 	})
 	
 	socket.on("disconnect", function () {
@@ -213,7 +174,12 @@ module.exports=function(socket:Socket){
 				SocketSession.removeGameSession(socket)
 			}
 			else{
-				room.user_disconnect(turn)
+				if(CONFIG.dev_settings.enabled && CONFIG.dev_settings.reset_room_on_disconnect && room.isGameRunning){
+					room.reset()
+					io.to(rname).emit("server:quit")
+				}
+				else
+					room.user_disconnect(turn)
 			}
 
 		})

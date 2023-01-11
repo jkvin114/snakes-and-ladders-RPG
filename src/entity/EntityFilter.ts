@@ -17,6 +17,7 @@ class EntityFilter<T extends Entity> {
 	private condition: (this:Entity)=> boolean
 	private returnByTurn: boolean
 	private me: boolean
+	private noPlayer:boolean
 	public source: Entity
 
 	static readonly ALL = (source: Entity) => new EntityFilter<Entity>(false, source)
@@ -42,6 +43,7 @@ class EntityFilter<T extends Entity> {
 		this.me = true
 		this.source = source
         this.allyOnly=false
+		this.noPlayer=false
 	}
 	notMe() {
 		this.me = false
@@ -96,6 +98,10 @@ class EntityFilter<T extends Entity> {
 		this.unattackable = false
 		return this
 	}
+	excludePlayer(){
+		this.noPlayer=true
+		return this
+	}
 	private isInRange(e: Entity) {
 		if (this.ranges.length === 0) return true
 		for (let range of this.ranges) {
@@ -107,7 +113,6 @@ class EntityFilter<T extends Entity> {
     getFrom(entities: EntityStorage): PriorityArray<T>{
 		let list: PriorityArray<T> = new PriorityArray<T>()
         if(this.playerOnly){
-            // let list: PriorityArray<Player> = new PriorityArray<Player>()
             for (let entity of entities.all()) {
 				if (entity.type!==ENTITY_TYPE.PLAYER) continue
                 if (!this.me && this.source === entity) continue
@@ -128,12 +133,14 @@ class EntityFilter<T extends Entity> {
                 if (!this.me && this.source === entity) continue
                 if (!this.condition.call(entity)) continue
                 if (this.excludes.has(entity)) continue
+				if (entity.type===ENTITY_TYPE.PLAYER && this.noPlayer) continue
                 if (!this.isInRange(entity)) continue
                 if (!this.dead && entity.dead) continue
                 if (!this.untargetable && !entity.isTargetableFrom(this.source)) continue
                 if (!this.unattackable && !entity.isAttackableFrom(this.source)) continue
                 if (this.enemyOnly && !entity.isEnemyOf(this.source)) continue
                 if (this.allyOnly && entity.isEnemyOf(this.source)) continue
+
                 list.push(entity)
             }
             return list

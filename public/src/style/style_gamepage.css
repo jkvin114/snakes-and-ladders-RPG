@@ -3687,7 +3687,7 @@ b {
   font-family: 'nanumEB';
   color: #FDFDFD;
   position: absolute;
-  z-index: 20;
+  z-index: 4;
   left: 50%;
   top:10%;
   width: 80%;

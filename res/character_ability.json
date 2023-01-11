@@ -5,7 +5,8 @@
             "AD":20,
             "AP":0,            
             "AR":7,
-            "MR":7
+            "MR":7,
+            "attackRange":0
         },
         "growth":{
             "HP":120,
@@ -22,7 +23,8 @@
             "AD":25,
             "AP":20,            
             "AR":15,
-            "MR":15
+            "MR":15,
+            "attackRange":0
         },
         "growth":{
             "HP":150,
@@ -39,7 +41,8 @@
             "AD":30,
             "AP":30,            
             "AR":6,
-            "MR":6
+            "MR":6,
+            "attackRange":2
         },
         "growth":{
             "HP":110,
@@ -47,7 +50,7 @@
             "AR":6,
             "MR":8
         },
-        "basicAttackType":"melee",
+        "basicAttackType":"ranged",
         "name":"timo"
     },
     {
@@ -56,7 +59,8 @@
             "AD":40,
             "AP":0,            
             "AR":6,
-            "MR":6
+            "MR":6,
+            "attackRange":0
         },
         "growth":{
             "HP":120,
@@ -73,7 +77,8 @@
             "AD":25,
             "AP":0,            
             "AR":6,
-            "MR":6
+            "MR":6,
+            "attackRange":1
         },
         "growth":{
             "HP":110,
@@ -81,7 +86,7 @@
             "AR":6,
             "MR":8
         },
-        "basicAttackType":"melee",
+        "basicAttackType":"ranged",
         "name":"jean"
     },
     {
@@ -90,7 +95,8 @@
             "AD":30,
             "AP":50,            
             "AR":6,
-            "MR":6
+            "MR":6,
+            "attackRange":2
         },
         "growth":{
             "HP":110,
@@ -98,7 +104,7 @@
             "AR":7,
             "MR":9
         },
-        "basicAttackType":"melee",
+        "basicAttackType":"ranged",
         "name":"jellice"
     },
     {
@@ -107,7 +113,8 @@
             "AD":40,
             "AP":40,            
             "AR":8,
-            "MR":8
+            "MR":8,
+            "attackRange":0
         },
         "growth":{
             "HP":140,
@@ -124,7 +131,8 @@
             "AD":30,
             "AP":30,            
             "AR":6,
-            "MR":6
+            "MR":6,
+            "attackRange":0
         },
         "growth":{
             "HP":125,
@@ -141,7 +149,8 @@
             "AD":20,
             "AP":40,            
             "AR":6,
-            "MR":6
+            "MR":6,
+            "attackRange":2
         },
         "growth":{
             "HP":110,
@@ -149,7 +158,7 @@
             "AR":7,
             "MR":9
         },
-        "basicAttackType":"melee",
+        "basicAttackType":"ranged",
         "name":"tree"
     } , {
         "initial":{
@@ -157,7 +166,8 @@
             "AD":20,
             "AP":0,            
             "AR":7,
-            "MR":7
+            "MR":7,
+            "attackRange":1
         },
         "growth":{
             "HP":120,
@@ -165,7 +175,7 @@
             "AR":6,
             "MR":8
         },
-        "basicAttackType":"melee",
+        "basicAttackType":"ranged",
         "name":"hacker"
     }
 ]

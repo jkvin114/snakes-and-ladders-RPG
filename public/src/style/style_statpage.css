@@ -1256,7 +1256,7 @@ transform: scale(1.1);
     display: grid;
     grid-template-columns: 0.9fr 0.9fr 1.2fr;
     height: 55px;
-    width: 220px;
+    width: 240px;
     cursor: pointer;
     padding-right: 10px;
     /* border: 4px solid #d4d4d4; */

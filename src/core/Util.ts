@@ -174,7 +174,8 @@ class PriorityArray<T> extends Array {
 	constructor() {
 		super()
 	}
-	getMax(priority: (this: T) => number): T {
+	getMax(priority: (this: T) => number): T|null {
+		if(this.length===0) return null
 		let max = -Infinity
 		let maxObject: T = this[0]
 		for (let e of this) {
@@ -186,7 +187,8 @@ class PriorityArray<T> extends Array {
 		}
 		return maxObject
 	}
-	getMin(priority: (this: T) => number): T {
+	getMin(priority: (this: T) => number): T|null {
+		if(this.length===0) return null
 		let min = Infinity
 		let maxObject: T = this[0]
 		for (let e of this) {
@@ -200,6 +202,7 @@ class PriorityArray<T> extends Array {
 		return maxObject
 	}
 	getMaxIndex(priority: (this: T) => number): number {
+		if(this.length===0) return -1
 		let max = -Infinity
 		let maxidx = 0
 		for (let i = 0; i < this.length; ++i) {
@@ -212,6 +215,7 @@ class PriorityArray<T> extends Array {
 		return maxidx
 	}
 	getMinIndex(priority: (this: T) => number): number {
+		if(this.length===0) return -1
 		let min = Infinity
 		let minidx = 0
 		for (let i = 0; i < this.length; ++i) {

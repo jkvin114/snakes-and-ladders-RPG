@@ -145,7 +145,7 @@ export class SkillInfoFactory {
 		let txt = `<heal>${this.scaledValue(amt,scaleType)}</>`
 		return this.chooseLang(`heals ${txt} HP`, `${txt}의 체력을 회복`)
 	}
-	private money(amt: number) {
+	private money(amt: number|string) {
 		return `<money>${amt + this.chooseLang("$", "원")}</>`
 	}
 	private shield(amt: number, scaleType?: string) {
@@ -285,9 +285,12 @@ export class SkillInfoFactory {
 					and ${this.shield(this.skillAmt("qshield"), "qshield")}`
 				break
 			case 9:
-				str=`
-				 Deals ${this.pDmg(this.baseDmg(s), hotkey)} to ${this.target()}.
-				`
+				str =
+					this.nameTitle(s) +
+					`Deals ${this.pDmg(this.baseDmg(s)+"+("+this.skillAmt("stack_damage")+" per stack)",hotkey)} to a ${this.target()}, 
+					steals ${this.money("stack x 3")}, and gains a ${this.emp("'vulnerability' stack")} for that target player. 
+					Damage towards the target increases permanently with ${this.emp("vulnerability stacks")}`
+					break
 			default:
 				str = ""
 		}
@@ -367,6 +370,15 @@ export class SkillInfoFactory {
 					`해 그 안에 있는 적들에게 
 				${this.mDmg(this.baseDmg(s), hotkey)}를 입히고
 				 아군은 ${this.heal(this.skillAmt("qheal"), "qheal")}시키고 ${this.shield(this.skillAmt("qshield"), "qshield")}`
+				break
+			case 9:
+				str =
+					this.nameTitle(s) +
+					this.target() +
+					`을 공격해 ${this.pDmg(this.baseDmg(s)+"+(1중첩당 "+this.skillAmt("stack_damage")+")",hotkey)}를 입히고 
+					${this.money("1중첩당 3")}를 빼앗음. 적중시 해당 대상에 대한 ${this.emp("'취약점' 중첩")}을 획득. 
+					${this.emp("취약점 중첩")} 하나당 대상에 대한 피해량 영구 증가
+					`
 				break
 			default:
 				str = ""
@@ -451,6 +463,14 @@ export class SkillInfoFactory {
 					`${this.proj("vine")} of ${this.projsize(1)} that ${this.emp("stops")} player who passes it,
 				  allies will receive ${this.effect(ENUM.EFFECT.SPEED, 1)}`
 				break
+				case 9:
+					str =
+					this.nameTitle(s) +this.passive()+`Deals additional  ${this.mDmg(this.baseDmg(s),hotkey)} on ${this.basicattack()}. 
+					`+this.active()+
+					`Select a ${this.target() } and forcibly moves ${this.emp("2+(1 for 3 vulnerability stacks)squares")} backwards and applies ${this.effect(ENUM.EFFECT.CURSE, 1)}.
+					`
+					break
+				
 			default:
 				return ""
 		}
@@ -531,6 +551,14 @@ export class SkillInfoFactory {
 					this.nameTitle(s) +
 					`지나가는 플레이어를 ${this.emp("멈추는")} ${this.projsize(1)}의 ${this.proj("덩굴")},
 				 덩굴에 걸린 플레이어는 해당 칸의 효과를 받음, 아군은 ${this.effect(ENUM.EFFECT.SPEED, 1)} 부여`
+				break
+			case 9:
+				str =
+					this.nameTitle(s) +this.passive()+`${this.basicattack()}시 ${this.mDmg(this.baseDmg(s),hotkey)}를 추가로 입힘. 
+					`+this.active()+
+					this.target() +
+					`을 선택해 뒤로 ${this.emp("2+(취약점 중첩 3당 1)칸")} 만큼 ${this.emp("강제이동")} 시키고 ${this.effect(ENUM.EFFECT.CURSE, 1)} 부여.
+					`
 				break
 			default:
 				return ""
@@ -615,6 +643,13 @@ export class SkillInfoFactory {
 				 ${this.effect(ENUM.EFFECT.ROOT, 1)}.(2 turns if you are ${this.emp("Withered Tree")} state)
 				,and increases all incoming damage by ${this.up("20%")},
 				 Also, all ${this.emp("Plant monster")}s move toward a target.`
+				break
+				
+			case 9:
+				str =
+					this.nameTitle(s) +
+					`Imitates ultimate(lv3 skill) of ${this.target()} and steals ${this.emp("(vulnerability stack x "+this.skillAmt("r_steal")+")%")} of targets attack power and magic power for 2 turns.
+					 Reusing this skill will use the imitated skill.`
 				break
 			default:
 				return ""
@@ -704,6 +739,13 @@ export class SkillInfoFactory {
 				 ${this.effect(ENUM.EFFECT.ROOT, 1)}.(${this.emp("시든 나무")} 상태이면 2턴)
 				,또한 이 상태에서 아군이 가하는 피해 ${this.up("20% 증가")},
 				 이때 맵에 있는 모든 ${this.emp("식충식물")}이 대상 주변으로 이동됨`
+				break
+			case 9:
+				str =
+					this.nameTitle(s) +this.target()+
+					`의 궁극기(레벨 3 스킬)를 빼앗고 대상 공격력과 주문력의 ${this.emp("(취약점 중첩 x "+this.skillAmt("r_steal")+")%")}
+					를 ${this.up("2턴간 훔침")}.
+					 스킬을 재시전하면 빼앗은 스킬이 사용됨.`
 				break
 			default:
 				return ""

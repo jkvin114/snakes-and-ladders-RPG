@@ -90,7 +90,7 @@ class Yangyi extends Player {
 		}
 	}
 	useQ() {
-		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q)).ofSkill(ENUM.SKILL.Q)
+		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q),ENUM.SKILL.Q,this)
 
 
 		let targets=this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(4))
@@ -140,7 +140,7 @@ class Yangyi extends Player {
 				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(target.MaxHP,target.HP)
 			),
 			this.getSkillName(ENUM.SKILL.ULT)
-		).ofSkill(ENUM.SKILL.ULT).setOnKill(function (this:Player) {
+		,ENUM.SKILL.ULT,this).setOnKill(function (this:Player) {
 			this.resetCooltime([ENUM.SKILL.ULT])
 		})
 

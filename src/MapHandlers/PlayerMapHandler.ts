@@ -403,14 +403,15 @@ class CasinoMapHandler extends PlayerMapHandler {
 				break
 			}
 		}
-		let first = this.player.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.player))(function () {
+		let firstplayer = this.player.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.player),function () {
 			return this.pos
-		}).pos
-		if (this.player.pos + 12 < first) {
+		})
+		if(!firstplayer) return
+		if (this.player.pos + 12 < firstplayer.pos) {
 			//1등과 격차 12~17: 급행
 			this.subwayTicket = SUBWAY_TICKET.RAPID 
 		}
-		if (this.player.pos + 17 < first) {
+		if (this.player.pos + 17 < firstplayer.pos) {
 			//격차 17 이상:특급
 			this.subwayTicket = SUBWAY_TICKET.EXPRESS
 		}

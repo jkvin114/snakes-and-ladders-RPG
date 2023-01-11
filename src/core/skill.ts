@@ -10,20 +10,19 @@ export class SkillAttack{
 	onHit?: SkillOnHitFunction //():void
 	name: string
 	auto:boolean
-	constructor(damage: Damage, name: string) {
+	source:Player
+	constructor(damage: Damage, name: string,skill: number,source:Player) {
 		this.damage = damage
 		this.name = name
-	}
-	ofSkill(skill: SKILL) {
-		this.skill = skill
-		return this
+		this.skill=skill
+		this.source=source
 	}
 	setOnHit(onhit: SkillOnHitFunction) {
 		this.onHit = onhit
 		return this
 	}
-	applyOnHitEffect(target:Player,source:Player){
-		if(this.onHit!=null) this.onHit.call(target,source)
+	applyOnHitEffect(target:Player){
+		if(this.onHit!=null) this.onHit.call(target,this.source)
 	}
 	setOnKill(onkill: (this:  Player) => void) {
 		this.onKill = onkill

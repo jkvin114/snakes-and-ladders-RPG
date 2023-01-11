@@ -104,7 +104,7 @@ class PlayerAbility implements PlayerComponent{
 		this.AR = new Ability("AR").add(this.initial().AR)
 		this.MR = new Ability("MR").add(this.initial().MR)
 		// basic_stats[4]=2
-		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE).add(0)
+		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE).add(this.initial().attackRange)
 		this.AP = new Ability("AP").add(this.initial().AP)
 		// this.basicAttack_multiplier = 1 //평타 데미지 계수
 		this.extraHP = 0 //추가체력
@@ -122,6 +122,7 @@ class PlayerAbility implements PlayerComponent{
 		this.moveSpeed = new ConstrainedAbility("moveSpeed", PlayerAbility.MAX_MOVESPEED)
 		this.pendingMaxHpChange = 0
 	}
+	onDeath: () => void
 	onTurnStart(){
 
 	}

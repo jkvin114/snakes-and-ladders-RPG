@@ -556,7 +556,9 @@ addChatDragEvent() {
 			// GAME.player_champlist[i] = setting[i].champ
 			//$(this.elements.charimgs[GAME.turn2ui(i)]).css("background-color", this.game.getPlayerLighterColor(i))
 			$(this.elements.kdainfos[i]).css("color", this.game.getPlayerLighterColor(i))
-			$(this.elements.hpspan[i]).addClass(this.game.getPlayerColor(i))
+			console.log(setting[i].turn)
+			console.log(this.game.getPlayerColor(setting[i].turn))
+			$(this.elements.hpspan[this.game.turn2ui(i)]).addClass(this.game.getPlayerColor(setting[i].turn))
 			// if (GAME.isTeam) {
 			// 	if (!setting[i].team) {
 			// 		$(this.elements.kdainfos[i]).css("color", "#ff7f7f")
@@ -706,7 +708,7 @@ addChatDragEvent() {
 		let scale=GAME.skillScale[name]
 
 		if(!scale){
-			$(".skill_scale_tooltip p").html("ERROR!")
+			$(".skill_scale_tooltip p").html("??")
 			return
 		}  
 		let str=`${scale.base}`
@@ -751,7 +753,9 @@ addChatDragEvent() {
 		// 	//silent or dead
 		// 	return
 		// }
-
+		if(status.basicAttackType==="ranged"){
+			$(".basicattackbtn").children("img").attr("src","res/img/ui/basicattack-ranged.png")
+		}
 		// $(".storebtn").hide()
 		// $(".skillbtn").show()
 		this.showBasicAttackBtn(status.basicAttackCount,status.canBasicAttack)

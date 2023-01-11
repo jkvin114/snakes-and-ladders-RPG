@@ -41,6 +41,7 @@ class PlayerInventory implements PlayerComponent {
 
 		this.itemSlots = Util.makeArrayOf(-1, player.game.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
 	}
+	onDeath: () => void
 	onTurnStart(){}
 	transfer(func: Function, ...args: any[]) {
 		this.player.mediator.sendToClient(func, ...args)

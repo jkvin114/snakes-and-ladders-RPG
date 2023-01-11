@@ -58,7 +58,6 @@ class Jellice extends Player {
 		return 0
 	}
 	private buildProjectile() {
-		let _this: Player = this.getPlayer()
 		return new ProjectileBuilder(this.game, Jellice.PROJ_ULT, Projectile.TYPE_RANGE)
 			.setSize(3)
 			.setSource(this)
@@ -133,7 +132,7 @@ class Jellice extends Player {
 		let dmg = new SkillAttack(
 			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),
 			this.getSkillName(ENUM.SKILL.Q)
-		).ofSkill(ENUM.SKILL.Q)
+		,ENUM.SKILL.Q,this)
 
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
 			// let burn = this.

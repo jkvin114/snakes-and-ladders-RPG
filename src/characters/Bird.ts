@@ -226,7 +226,7 @@ class Bird extends Player {
 					let proj = this.buildProjectile()
 					this.game.placeProjNoSelection(proj, target.pos - 1)
 				}
-				skillattr =new SkillAttack(damage,this.getSkillName(s)).ofSkill(s).setOnHit(onhit)
+				skillattr =new SkillAttack(damage,this.getSkillName(s),s,this).setOnHit(onhit)
 				break
 		}
 

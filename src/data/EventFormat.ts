@@ -48,6 +48,7 @@ export namespace ServerGameEventFormat {
 		basicAttackCount:number
 		canBasicAttack:boolean
 		canUseSkill:boolean
+		basicAttackType:string
 	}
 	//replay
 	export interface skillTrajectory {

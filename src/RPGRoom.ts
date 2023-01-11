@@ -20,12 +20,14 @@ class RPGRoom extends Room {
 
 	private gameloop: GameLoop
 	protected eventObserver:GameEventObserver
-
+	registeredSessions:Set<string>
 	// simulation: Simulation
 	constructor(name: string) {
 		super(name)
 		this.gameloop
 		this.eventObserver=new GameEventObserver(name)
+		this.registeredSessions=new Set<string>()
+
 		// this.simulation = null
 	}
 	registerClientInterface(callback:GameEventEmitter){
@@ -96,7 +98,10 @@ class RPGRoom extends Room {
 
 		let canstart = this.gameloop.game.canStart()
 		if (!canstart) return false
-		else if (!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
+		else if (!this.gameloop.game.begun){
+			this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
+			this.isGameRunning=true
+		} 
 		return true
 	}
 

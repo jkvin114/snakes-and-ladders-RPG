@@ -260,7 +260,7 @@ class Simulation {
 
 	run(callback: Function,onError:Function) {
 		let consolelog = console.log
-	//	console.log = function () {}
+		console.log = function () {}
 		//const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
 		//bar1.start(this.count - 2, 0)
 		let startTime: any = new Date()

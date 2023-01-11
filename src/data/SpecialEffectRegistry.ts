@@ -43,7 +43,7 @@ export namespace SpecialEffect {
 			isgood:false,
             src:"skill/6-2.jpg",
 			name: "magician_w_burn",
-			desc: "For every player turn, receives fixed damage by Maximum HP",
+			desc: "For every player turn, takes fixed damage based on Maximum HP",
 			desc_kor: "매 플레이어 턴마다 최대체력 비례 고정 피해"
 		},
         BIRD_W: {
@@ -65,7 +65,7 @@ export namespace SpecialEffect {
 			isgood:false,
             src:"effect/flame.png",
 			name: "bird_r_burn",
-			desc: "For every player turn, receives 3% of Max HP as fixed damage",
+			desc: "For every player turn, takes 3% of Max HP as fixed damage",
 			desc_kor: "매 플레이어 턴마다 최대체력의 3% 의 고정 피해"
 		},
         DINOSAUR_W_HEAL: {
@@ -79,7 +79,7 @@ export namespace SpecialEffect {
 			isgood:false,
             src:"skill/3-3.jpg",
 			name: "ghost_r",
-			desc: "Receives magic damage for 3 turns",
+			desc: "Takes magic damage for 3 turns",
 			desc_kor: "3턴에걸쳐 마법 피해를 받고 시전자에 가하는 피해가 50% 감소"
 		},
         TREE_WITHER: {
@@ -95,13 +95,27 @@ export namespace SpecialEffect {
 			name: "tree_ult",
 			desc: "Incoming damage from enemies increases by 20%",
 			desc_kor: "적에게 받는 피해 20% 증가"
+		},
+        HACKER_ULT_ENEMY: {
+			isgood:false,
+            src:"skill/10-3.jpg",
+			name: "hacker_ult_enemy",
+			desc: "Attack damage and ability power decreased",
+			desc_kor: "공격력과 주문력 감소"
+		},
+        HACKER_ULT: {
+			isgood:true,
+            src:"skill/10-3.jpg",
+			name: "hacker_ult",
+			desc: "Attack damage and ability power increased",
+			desc_kor: "공격력과 주문력 증가"
 		}
 	}
 	export const ITEM={
 		POWER_OF_MOTHER_NATURE_ABILITY:{
 			name:"power_of_mother_nature_speed",
-			desc:"Movement speed increases by 1 for 1 turn",
-			desc_kor:"1턴간 이동속도 1 증가",
+			desc:"Movement speed increased by 1 for",
+			desc_kor:"이동속도 1 증가",
 			item_id: ENUM.ITEM.POWER_OF_MOTHER_NATURE
 		},WARRIOR_SHIELDSWORD_ABSORB:{
 			name:"shieldsword_absorb",

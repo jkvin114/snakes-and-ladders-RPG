@@ -105,8 +105,7 @@ class Gorae extends Player {
 	}
 
     private useW() {
-		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W))
-		.ofSkill(ENUM.SKILL.W)
+		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W),ENUM.SKILL.W,this)
 		.setOnHit(function(this:Player,source:Player){
 			this.effects.apply(ENUM.EFFECT.SLOW, 1)
 		})
@@ -153,7 +152,7 @@ class Gorae extends Player {
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
 
-				skillattr = new SkillAttack(new Damage(0, 0, this.getSkillBaseDamage(s)),this.getSkillName(s)).ofSkill(s)
+				skillattr = new SkillAttack(new Damage(0, 0, this.getSkillBaseDamage(s)),this.getSkillName(s),s,this)
 				.setOnKill(function(this:Player){this.ability.addMaxHP(50)})
 
 				break

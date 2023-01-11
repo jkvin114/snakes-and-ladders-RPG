@@ -20,7 +20,8 @@ abstract class Room {
 	connectionTimeoutTurn: number
 	idleTimeoutTurn: number
 	resetCallback:Function
-	isGameStarted:boolean
+	isGameStarted:boolean //true if matching is complete
+	isGameRunning:boolean // true if game is up and running
 	protected playerMatchingState:PlayerMatchingState
 	private playerSessions:Set<string>
 	abstract user_message(turn:number,msg:string):string
@@ -67,7 +68,7 @@ abstract class Room {
 		return this.playerMatchingState.playerlist
 	}
 	getChangedTurn(original:number){
-		return this.playerMatchingState.spendTurnMapping(original)
+		return this.playerMatchingState.getTurnMapping(original)
 	}
 
 	

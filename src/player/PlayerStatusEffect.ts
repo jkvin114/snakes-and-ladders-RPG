@@ -19,12 +19,10 @@ import { Entity } from "../entity/Entity"
 import { PlayerComponent } from "./PlayerComponent"
 import { Damage,PercentDamage } from "../core/Damage"
 
-interface StatusEffectManager {
+interface StatusEffectManager extends PlayerComponent {
 	onLethalDamage(): void
-	onDeath(): void
 	onBeforeObs(): void
 	onAfterObs(): void
-	onTurnEnd(): void
 	reset(effect: number): void
 	tick(currentTurn: number): void
 	applySpecial(effect: StatusEffect, name?: string): void
@@ -42,6 +40,7 @@ class EntityStatusEffect implements StatusEffectManager {
 		this.owner = owner
 		this.storage = new Map<number, StatusEffect>()
 	}
+	onTurnStart():void{}
 	resetAll(): void {}
 	resetAllHarmful(): void {}
 	tick(currentTurn: number): void {}
@@ -61,7 +60,7 @@ class EntityStatusEffect implements StatusEffectManager {
 	reset(effect: number) {}
 }
 
-class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager,PlayerComponent {
+class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager {
 	protected owner: Player
 	private category:[ Map<number, StatusEffect>,Map<number, ShieldEffect>
 		,Map<number, AblityChangeEffect>,Map<number, OnHitEffect>

@@ -16,6 +16,7 @@ class JelliceAgent extends AiAgent{
 			ITEM.CROSSBOW_OF_PIERCING,
 			ITEM.BOOTS_OF_PROTECTION
 		]).setFinal(ITEM.EPIC_CRYSTAL_BALL)
+		this.gameStartMessage="The mystic flame will burn you all!"
     }
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
@@ -43,9 +44,6 @@ class JelliceAgent extends AiAgent{
 			return SKILL.Q
 		}
 		return -1
-	}
-	getMessageOnGameStart(): string {
-		return "The mystic flame will burn you all!"
 	}
 }
 export default JelliceAgent

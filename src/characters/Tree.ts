@@ -187,8 +187,7 @@ class Tree extends Player {
 			case ENUM.SKILL.ULT:
 				this.summonPlantAt(target.pos)
 				this.startCooltime(ENUM.SKILL.ULT)
-				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0), this.getSkillName(s))
-					.ofSkill(s)
+				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0), this.getSkillName(s),s,this)
 					.setOnHit(function (this: Player,source:Player) {
 						if(source instanceof Tree){
 
@@ -213,9 +212,7 @@ class Tree extends Player {
 			this.summonPlantAt(pos)
 
 			// let opponents = this.game.playerSelector.getPlayersIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
-			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), this.getSkillName(s)).ofSkill(
-				s
-			)
+			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), this.getSkillName(s),s,this)
 
 			this.mediator.skillAttack(this, EntityFilter.ALL_ATTACKABLE_PLAYER(this).in(pos, pos + Tree.Q_AREA_SIZE - 1), dmg)
 
@@ -270,14 +267,13 @@ class Tree extends Player {
 	}
 	//override
 	hasBasicAttackTarget(): boolean {
+		if(super.hasBasicAttackTarget()) return true
 		return this.hasBasicAttackAndPlantAttackTarget()
 	}
 	private hasBasicAttackAndPlantAttackTarget() {
-		let filter = this.getBasicAttackFilter()
-		if (this.mediator.count(filter)>0) return true
 		
 
-		filter=EntityFilter.ALL_ENEMY_PLAYER(this).excludeUnattackable().in(0,0)
+		let filter=EntityFilter.ALL_ENEMY_PLAYER(this).excludeUnattackable().in(0,0)
 		this.plantEntities.forEach((plant) => {
 			let entity=this.mediator.getEntity(plant)
 			if(!entity) return
