@@ -2,6 +2,7 @@ import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { Room } from "./room"
 import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
 const { Replay } = require("./mongodb/ReplayDBHandler")
+import CONFIG from "./../config/config.json"
 
 const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./mongodb/DBHandler")
 import { hasProp, writeFile } from "./core/Util"
@@ -124,8 +125,14 @@ class RPGRoom extends Room {
 				const replay=await Replay.create(replayData)
 				stat.replay=replay.id.toString()
 			}
-			const resolvedData=await GameRecord.create(stat)
-			this.eventObserver.gameStatReady(resolvedData.id)
+			//dev setting 켜져있을때는 통계 저장안함
+			if(CONFIG.dev_settings.enabled){
+				this.eventObserver.gameStatReady('')
+			}
+			else{
+				const resolvedData=await GameRecord.create(stat)
+				this.eventObserver.gameStatReady(resolvedData.id)
+			}
 		}
 		catch(e){
 			console.error(e)

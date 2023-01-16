@@ -187,22 +187,23 @@ class Silver extends Player {
 	 * called every turn before throw dice
 	 */
 	onMyTurnStart() {
-		if (this.level < 3 || this.HP > 250) {
-			return
-		}
-		let passive = 0
-		if (this.HP > this.MaxHP * 0.3) {
-			passive = 30
-		} else if (this.HP > this.MaxHP * 0.1) {
-			passive = 45
-		} else {
-			passive = 60
-		}
+		if (this.level >= 3 && this.HP <=250) {
 
-		this.effects.applySpecial(
-			new AblityChangeEffect(ENUM.EFFECT.ELEPHANT_PASSIVE_RESISTANCE, 2, new Map().set("AR", passive).set("MR", passive)),
-			SpecialEffect.SKILL.ELEPHANT_PASSIVE.name
-		)
+			let passive = 0
+			if (this.HP > this.MaxHP * 0.3) {
+				passive = 30
+			} else if (this.HP > this.MaxHP * 0.1) {
+				passive = 45
+			} else {
+				passive = 60
+			}
+
+			this.effects.applySpecial(
+				new AblityChangeEffect(ENUM.EFFECT.ELEPHANT_PASSIVE_RESISTANCE, 2, new Map().set("AR", passive).set("MR", passive)),
+				SpecialEffect.SKILL.ELEPHANT_PASSIVE.name
+			)
+
+		}
 		super.onMyTurnStart()
 	}
 

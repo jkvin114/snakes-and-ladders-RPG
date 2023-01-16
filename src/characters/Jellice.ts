@@ -108,6 +108,7 @@ class Jellice extends Player {
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(this.getSkillBaseDamage(ENUM.SKILL.W), PercentDamage.MAX_HP)
 		).setSourceId(this.UEID)
+		.addData(this.getSkillBaseDamage(ENUM.SKILL.W))
 	}
 	private useW() {
 		console.log("usew")

@@ -337,6 +337,9 @@ export class PlayableGame extends Game{
 		if (type === "disconnect") {
 			this.ui.playerDisconnect(turn,this.players[turn].name)
 		}
+		if(type==="itemData"){
+			this.updateItemData(turn,data)
+		}
 		if (this.myturn !== turn) {
 			return
 		}
@@ -378,6 +381,13 @@ export class PlayableGame extends Game{
 				break
 		}
 	}
+	updateItemData(turn,itemData){
+		for(const data of itemData){
+			let it = this.strRes.ITEMS.items[data.item]
+			let str=`<p class='item-tooltip-data'>${this.chooseLang(data.eng,data.kor)}<b>${data.val}</b></p>`
+			this.strRes.ITEM_DATA[turn].set(it,str)
+		}
+	}
     animateDamage(data){
 		super.animateDamage(data) 
 		this.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
@@ -414,14 +424,19 @@ export class PlayableGame extends Game{
 		if (turn !== this.myturn) {
 			return
 		}
-
-		if (!this.players[this.myturn].effect_status.has(name)) {
+		name=name.replaceAll(" ","_")
+		let desc=this.chooseLang(data.desc, data.desc_kor)
+		//if the effect is currently not applied or has different description, update the effect icon
+		if (!this.players[this.myturn].effect_status.has(name) ||
+			this.strRes.SPECIAL_EFFECTS.get(name)[0]!==desc) {
+			$(".se_" + String(name)).remove()
+				console.log("apply"+name)
 			if (data.type === "item") {
 				this.ui.addItemSpecialEffect(name, data.item_id, data.isgood)
-				this.strRes.SPECIAL_EFFECTS.set(name, [this.chooseLang(data.desc, data.desc_kor), data.item_id])
+				this.strRes.SPECIAL_EFFECTS.set(name, [desc, data.item_id])
 			} else {
 				this.ui.addSpecialEffect(name, data.src, data.isgood)
-				this.strRes.SPECIAL_EFFECTS.set(name, [this.chooseLang(data.desc, data.desc_kor), sourcePlayer])
+				this.strRes.SPECIAL_EFFECTS.set(name, [desc, sourcePlayer])
 			}
 
 			this.players[this.myturn].effect_status.add(name)
@@ -436,9 +451,10 @@ export class PlayableGame extends Game{
 		}
 	}
     removeSpecialEffect(name) {
+		name=name.replaceAll(" ","_")
 		if (this.players[this.myturn].effect_status.has(name)) {
-			$("#se_" + String(name)).remove()
-
+			$(".se_" + String(name)).remove()
+			console.log("remove "+name)
 			this.players[this.myturn].effect_status.delete(name)
 			this.strRes.SPECIAL_EFFECTS.delete(name)
 		}

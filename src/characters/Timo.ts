@@ -69,7 +69,8 @@ class Timo extends Player {
 			.setSourceId(this.UEID)
 
 		let hiteffect = new OnHitEffect(ENUM.EFFECT.GHOST_ULT_WEAKEN,3, function(this:Player,target: Player, damage: Damage){
-			return damage.updateNormalDamage(CALC_TYPE.multiply, 0.5)
+			damage.updateNormalDamage(CALC_TYPE.multiply, 0.5)
+			return damage
 		})
 			.setSourceId(this.UEID)
 			.on(OnHitEffect.EVERYATTACK)

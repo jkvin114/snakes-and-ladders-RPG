@@ -7,12 +7,14 @@ import { items as ItemList } from "../../res/item.json"
 import type { Player } from "./player"
 import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat"
 import { PlayerComponent } from "./PlayerComponent"
-import { ActiveItem } from "../core/ActiveItem"
+import { ActiveItem, ItemData } from "../core/ActiveItem"
 import { HPChange } from "../core/health"
+import { AblityChangeEffect } from "../StatusEffect"
 
 class PlayerInventory implements PlayerComponent {
 	// player:Player
-	private activeItems: ActiveItem[]
+	private activeItems: Map<ITEM, ActiveItem>
+	private itemData:Map<ITEM,ItemData>
 	private item: number[]
 	itemSlots: number[]
 	token: number
@@ -27,33 +29,62 @@ class PlayerInventory implements PlayerComponent {
 		ITEM.CARD_OF_DECEPTION,
 		ITEM.GUARDIAN_ANGEL,
 		ITEM.POWER_OF_MOTHER_NATURE,
-		ITEM.TIME_WARP_POTION
+		ITEM.TIME_WARP_POTION,
 	]
-	constructor(player: Player,money:number) {
+	constructor(player: Player, money: number) {
 		this.player = player
 		console.log(money)
 		this.token = 2
 		this.money = money
 		this.life = 0
 		this.lifeBought = 0
-		this.activeItems = []
+		this.activeItems = new Map<ITEM, ActiveItem>()
+		this.itemData=new Map<ITEM,ItemData>()
 		this.item = Util.makeArrayOf(0, ItemList.length)
 
 		this.itemSlots = Util.makeArrayOf(-1, player.game.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
 	}
 	onDeath: () => void
-	onTurnStart(){}
+	onTurnStart() {}
 	transfer(func: Function, ...args: any[]) {
 		this.player.mediator.sendToClient(func, ...args)
 	}
 
 	onTurnEnd() {
-		this.activeItemCoolDown()
-		if (this.haveItem(9)) {
-			this.player.changeHP_heal(new HPChange(Math.floor(this.player.ability.extraHP * 0.15)))
+		
+		this.activeItems.forEach((i) => i.cooldown())
+		this.sendActiveItemStatus()
+
+		// if (this.haveItem(9)) {
+		// 	this.player.changeHP_heal(new HPChange(Math.floor(this.player.ability.extraHP * 0.15)))
+		// }
+	}
+	moveByDice(distance: number) {
+		if(distance<=0) return
+		if (this.haveItem(ITEM.FLAIL_OF_JUDGEMENT) && this.itemData.has(ITEM.FLAIL_OF_JUDGEMENT)) {
+			this.itemData.get(ITEM.FLAIL_OF_JUDGEMENT)?.addDataValue("charge", distance)
+
+			let charge = this.itemData.get(ITEM.FLAIL_OF_JUDGEMENT).getDataValue("charge")
+			let range=Math.floor(charge / 6)
+			this.player.effects.applySpecial(new AblityChangeEffect(ENUM.EFFECT.ITEM_FLAIL_OF_JUDGEMENT_RANGE,4,
+				new Map<string,number>().set("attackRange",range)))
+			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_FLAIL_OF_JUDGEMENT, [
+				charge,
+				charge * 6,
+				range,
+			])
+		}
+		if (this.haveItem(ITEM.STAFF_OF_JUDGEMENT) && this.itemData.has(ITEM.STAFF_OF_JUDGEMENT)) {
+			this.itemData.get(ITEM.STAFF_OF_JUDGEMENT)?.addDataValue("charge", distance)
+			let charge = this.itemData.get(ITEM.STAFF_OF_JUDGEMENT).getDataValue("charge")
+			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_STAFF_OF_JUDGEMENT, [charge, charge * 10])
+		}
+		if (this.haveItem(ITEM.DAGGER) && this.itemData.has(ITEM.DAGGER)) {
+			this.itemData.get(ITEM.DAGGER)?.addDataValue("charge", distance)
+			let charge = this.itemData.get(ITEM.DAGGER).getDataValue("charge")
+			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_STATIC_DAGGER, [charge, charge * 3])
 		}
 	}
-
 	/**
 	 *
 	 * @param {*} m
@@ -96,7 +127,7 @@ class PlayerInventory implements PlayerComponent {
 		this.token += token
 		this.player.game.eventEmitter.update("token", this.player.turn, this.token)
 	}
-	sellToken(token:number,moneyspent:number) {
+	sellToken(token: number, moneyspent: number) {
 		this.changeToken(-1 * token)
 		this.giveMoney(moneyspent)
 		this.player.sendConsoleMessage(this.player.name + " sold token, obtained " + moneyspent + "$!")
@@ -126,16 +157,16 @@ class PlayerInventory implements PlayerComponent {
 	}
 
 	addActiveItem(itemData: ActiveItem) {
-		this.activeItems.push(itemData)
+		this.activeItems.set(itemData.id, itemData)
 		this.sendActiveItemStatus()
 		//console.log("buy active item" + itemdata)
 	}
 
-	onKillEnemy(){
-		if(this.isActiveItemAvailable(ITEM.TIME_WARP_POTION) && this.player.ability.AP.get()>=200){
-		//	console.log("------------time warp potion")
+	onKillEnemy() {
+		if (this.isActiveItemAvailable(ITEM.TIME_WARP_POTION) && this.player.ability.AP.get() >= 200) {
+			//	console.log("------------time warp potion")
 			this.useActiveItem(ITEM.TIME_WARP_POTION)
-			this.player.resetCooltime([ENUM.SKILL.Q,ENUM.SKILL.W])
+			this.player.resetCooltime([ENUM.SKILL.Q, ENUM.SKILL.W])
 		}
 	}
 	/**
@@ -144,12 +175,7 @@ class PlayerInventory implements PlayerComponent {
 	 * @returns
 	 */
 	boughtActiveItem(item_id: ITEM) {
-		return this.activeItems.some((i: ActiveItem) => i.id === item_id)
-	}
-
-	activeItemCoolDown() {
-		this.activeItems.forEach((i) => i.cooldown())
-		this.sendActiveItemStatus()
+		return this.activeItems.has(item_id)
 	}
 
 	/**
@@ -160,8 +186,7 @@ class PlayerInventory implements PlayerComponent {
 	isActiveItemAvailable(item_id: ITEM) {
 		//console.log(this.item + "avaliable" + this.activeItems)
 		if (!this.haveItem(item_id)) return false
-
-		return this.activeItems.some((it) => it.id === item_id && it.cooltime === 0)
+		return this.activeItems.has(item_id) && this.activeItems.get(item_id).cooltime === 0
 	}
 
 	/**
@@ -171,25 +196,63 @@ class PlayerInventory implements PlayerComponent {
 	 */
 	useActiveItem(item_id: ITEM) {
 		if (this.isActiveItemAvailable(item_id)) {
-			this.activeItems.filter((ef: ActiveItem) => ef.id === item_id)[0].use()
+			this.activeItems.get(item_id)?.use()
 
 			if (PlayerInventory.indicateList.includes(item_id)) {
 				this.player.game.eventEmitter.indicateItem(this.player.turn, item_id)
 				this.sendActiveItemStatus()
 			}
+
+
+
+			if (item_id === ITEM.FLAIL_OF_JUDGEMENT){
+				this.itemData.get(item_id)?.resetDataValue("charge")
+				this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_FLAIL_OF_JUDGEMENT,[0,0,0])
+				this.player.effects.reset(ENUM.EFFECT.ITEM_FLAIL_OF_JUDGEMENT_RANGE)
+			}
+			if (item_id === ITEM.STAFF_OF_JUDGEMENT){
+				this.itemData.get(item_id)?.resetDataValue("charge")
+				this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_STAFF_OF_JUDGEMENT,[0,0])
+			}
+			if (item_id === ITEM.DAGGER){
+				this.itemData.get(item_id)?.resetDataValue("charge")
+				this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_STATIC_DAGGER,[0,0])
+			}
 		}
 	}
 
 	sendActiveItemStatus() {
-		let data: { id: number; cool: number; coolRatio: number }[] = this.activeItems
-			.filter((ef: ActiveItem) => PlayerInventory.indicateList.includes(ef.id) && this.haveItem(ef.id))
-			.map((item) => {
-				return item.getTransferData()
-			})
+		let data: { id: number; cool: number; coolRatio: number }[] = []
+		for (const [id, item] of this.activeItems.entries()) {
+			if (PlayerInventory.indicateList.includes(id) && this.haveItem(id)) {
+				data.push(item.getTransferData())
+			}
+		}
 		//	console.log(data)
 		this.player.game.eventEmitter.update("activeItem", this.player.turn, data)
+		let itemdata:{
+			kor: string;
+			eng: string;
+			item: number;
+		}[]=[]
+		for(const itemData of this.itemData.values()){
+			let d=itemData.getTransferData()
+			if(!!d && ItemList[d.item].itemlevel >= 3 && this.haveItem(d.item))
+				itemdata.push(d)
+		}
+		this.player.game.eventEmitter.update("itemData", this.player.turn, itemdata)
 	}
-	getStoreData(priceMultiplier: number):ServerGameEventFormat.EnterStore {
+	getActiveItemData(item_id: ITEM, key: string) {
+		if (!this.itemData.has(item_id)) return 0
+		return this.itemData.get(item_id).getDataValue(key)
+	}
+	addActiveItemData(item_id: ITEM, key: string, val: number) {
+		if (this.itemData.has(item_id)) this.itemData.get(item_id).addDataValue(key, val)
+	}
+	resetActiveItemData(item_id: ITEM, key: string) {
+		if (this.itemData.has(item_id)) this.itemData.get(item_id).resetDataValue(key)
+	}
+	getStoreData(priceMultiplier: number): ServerGameEventFormat.EnterStore {
 		return {
 			item: this.itemSlots,
 			money: this.money,
@@ -198,7 +261,7 @@ class PlayerInventory implements PlayerComponent {
 			lifeBought: this.lifeBought,
 			recommendeditem: this.player.AiAgent.itemtree.items,
 			itemLimit: this.player.game.itemLimit,
-			priceMultiplier: priceMultiplier
+			priceMultiplier: priceMultiplier,
 		}
 	}
 
@@ -233,7 +296,7 @@ class PlayerInventory implements PlayerComponent {
 			this.player.statistics.addItemRecord({
 				item_id: item,
 				count: count,
-				turn: this.player.game.totalturn
+				turn: this.player.game.totalturn,
 			})
 		}
 		for (let j = 0; j < ItemList[item].ability.length; ++j) {
@@ -241,19 +304,17 @@ class PlayerInventory implements PlayerComponent {
 			let change_amt = ability.value * count
 			this.player.ability.update(ability.type, change_amt)
 		}
-		
 
 		if (!this.boughtActiveItem(item)) {
-			let cool=ItemList[item].active_cooltime
-			if(cool!==undefined)
-				this.addActiveItem(new ActiveItem(ItemList[item].name, item, cool))
+			let cool = ItemList[item].active_cooltime
+			if (cool !== undefined) this.addActiveItem(new ActiveItem(ItemList[item].name, item, cool))
 		}
+		if(!this.itemData.has(item) && count>0) 
+			this.itemData.set(item,new ItemData(item))
 
 		if (this.item[item] <= 0 && this.item[item] - count > 0) {
 			this.player.effects.onRemoveItem(item)
-			if(PlayerInventory.indicateList.includes(item))
-				this.sendActiveItemStatus()
-
+			if (PlayerInventory.indicateList.includes(item)) this.sendActiveItemStatus()
 		} else if (this.item[item] > 0 && this.item[item] - count <= 0) {
 			this.player.effects.onAddItem(item)
 		}
@@ -288,7 +349,7 @@ class PlayerInventory implements PlayerComponent {
 		//	this.item = data.storedata.item
 		this.player.game.eventEmitter.update("item", this.player.turn, this.sortedItemSlot())
 	}
-	thief(){
+	thief() {
 		let itemhave = []
 		for (let i of ItemList) {
 			if (this.haveItem(i.id) && i.itemlevel === 1) {
@@ -298,7 +359,7 @@ class PlayerInventory implements PlayerComponent {
 		if (itemhave.length === 0) {
 			return
 		}
-		let thiefitem = Util.pickRandom(itemhave) 
+		let thiefitem = Util.pickRandom(itemhave)
 
 		this.player.sendConsoleMessage(this.player.name + "`s` " + ItemList[thiefitem].name + " got stolen!")
 		this.changeOneItem(thiefitem, -1)
@@ -319,8 +380,8 @@ class PlayerInventory implements PlayerComponent {
 		// this.inven.changeToken(data.tokenbought)
 		// this.inven.changeLife(data.life)
 		// this.inven.lifeBought += data.life
-		let item=this.convertItemSlotsToCount(slots)
-		
+		let item = this.convertItemSlotsToCount(slots)
+
 		for (let i = 0; i < ItemList.length; ++i) {
 			let diff = item[i] - this.item[i]
 
@@ -330,16 +391,16 @@ class PlayerInventory implements PlayerComponent {
 			this.changeOneItem(i, diff)
 		}
 		// this.itemSlots = this.convertCountToItemSlots(this.item)
-		this.itemSlots=slots
+		this.itemSlots = slots
 		this.player.ability.flushChange()
 		this.player.game.eventEmitter.update("item", this.player.turn, this.sortedItemSlot())
 	}
 	/**
 	 * 빈칸만 맨 뒤로 정렬
-	 * @returns 
+	 * @returns
 	 */
-	sortedItemSlot(){
-		return this.itemSlots.sort((a,b)=>-(a+1))
+	sortedItemSlot() {
+		return this.itemSlots.sort((a, b) => -(a + 1))
 	}
 	/**
 	 * 첫번째 상점에선 2등급이상아이템 구입불가

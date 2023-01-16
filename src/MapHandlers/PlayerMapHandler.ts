@@ -347,8 +347,10 @@ class CasinoMapHandler extends PlayerMapHandler {
 		this.player.game.eventEmitter.update("isInSubway", this.player.turn, false)
 	}
 	onBasicAttack(damage: Damage) {
-		if(this.isInSubway)
-			return damage.updateAttackDamage(CALC_TYPE.multiply, 0.6)
+		if(this.isInSubway){
+			damage.updateAttackDamage(CALC_TYPE.multiply, 0.6)
+			return damage
+		}
 		else return damage
 	}
 	//이동시마다 지하철 안인지 밖인지 체크

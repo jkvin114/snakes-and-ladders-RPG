@@ -22,8 +22,8 @@
     ]
     
     ,"stat":{
-        "AD": "Attack Power",
-        "AP": "Magic Power",
+        "AD": "Attack Power(AD)",
+        "AP": "Magic Power(AP)",
         "arP": "Attack Penetration",
         "MP": "Magic Penetration",
         "AR": "Attack Resistance",

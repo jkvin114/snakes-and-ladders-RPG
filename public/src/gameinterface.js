@@ -973,7 +973,7 @@ addChatDragEvent() {
 			// if(i>0 && i%6==0)
 			// 	text+='<br>'
 			if (it >= 0) {
-				text += `<div class='otherplayeritemimg player_item' value='${String(it)}'>
+				text += `<div class='otherplayeritemimg player_item' value='${String(it)}' data-owner=${turn}>
 					<img src='res/img/store/items.png' style='margin-left:${-1 * it * 100}px'; > </div>`
 			} else {
 				text += "<div class=otherplayeritemimg><img src='res/img/store/emptyslot.png'> </div>"
@@ -986,16 +986,27 @@ addChatDragEvent() {
 	 * register item tooltip event
 	 */
 	addItemTooltipEvent() {
+		
+
 		$(".player_item").off()
 		$(".player_item").mouseenter(function (e) {
+			if($(this).offset().left < window.innerWidth/2){
+				$(".item_tooltip").removeClass("rightside")
+				$(".item_tooltip").addClass("leftside")
+			}
+			else{
+				$(".item_tooltip").removeClass("leftside")
+				$(".item_tooltip").addClass("rightside")
+			}
 			$(".item_tooltip")
 				.css({
 					visibility: "visible"
 				})
 				.css($(this).offset())
 			let item = GAME.strRes.ITEMS.items[Number($(this).attr("value"))]
+			let owner=$(this).data("owner")
 			$(".item_tooltip h4").html(GAME.chooseLang(item.name, item.kor_name))
-			$(".item_tooltip p").html(GAME.ui.getItemDescription(item))
+			$(".item_tooltip p").html(GAME.ui.getItemDescription(item)+GAME.ui.getItemData(owner,item))
 		})
 		$(".player_item").mouseleave(function (e) {
 			$(".item_tooltip").css("visibility", "hidden")
@@ -1026,6 +1037,17 @@ addChatDragEvent() {
 		}
 		ability += "<br><br>" + GAME.chooseLang("price: ", "가격: ") + "<b class=price>" + String(item.price) + "</b>"
 		return ability
+	}
+	/**
+	 * get otem data for tooltip
+	 * @param {*} owner 
+	 * @param {*} item 
+	 */
+	getItemData(owner,item){
+		if(!this.game.strRes.ITEM_DATA[owner].has(item)){
+			return ""
+		}
+		return "<hr>"+this.game.strRes.ITEM_DATA[owner].get(item)
 	}
 	showSelection(type, name) {
 		GAME.pendingSelection.type = type
@@ -1101,7 +1123,7 @@ addChatDragEvent() {
 
 	addItemSpecialEffect(name, item_id, isgood) {
 		$("#effects").append(
-			`<div class='specialeffect ${isgood ? "good" : ""}'  value='${String(name)}' id='se_${String(name)}'>
+			`<div class='specialeffect ${isgood ? "good" : ""} se_${String(name)}'  value='${String(name)}' >
 			<img src='res/img/store/items_small.png' style='margin-left: ${-1 * item_id * 25}px'; >
 		</div>`
 		)
@@ -1111,9 +1133,9 @@ addChatDragEvent() {
 
 	addSpecialEffect(name, src, isgood) {
 		$("#effects").append(
-			`<img src="./res/img/${src}" class="specialeffect ${isgood ? "good" : ""}" value='${String(
+			`<img src="./res/img/${src}" class="specialeffect ${isgood ? "good" : ""} se_${String(name)}" value='${String(
 				name
-			)}' id='se_${String(name)}'>`
+			)}'>`
 		)
 		this.addSpecialEffectTooltipEvent()
 	}

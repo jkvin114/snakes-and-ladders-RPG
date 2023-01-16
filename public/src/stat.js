@@ -582,6 +582,9 @@ $(document).ready(function () {
 	// 		InterfaceState.gamelist_hidden = true
 	// 	}
 	// })
+	$("#show-holder").click(function(){
+		$("#holder").toggle()
+	})
 
 	//for small screen
 	$("#listhidebtn").click(function () {
@@ -697,11 +700,11 @@ function setItem(num, list, names) {
 	$(".itemlist").append(num + 1 + "P Items have: " + str + "<br>")
 }
 
-function convertCountToItemSlots(items) {
+function convertCountToItemSlots(items,isZeroIndex) {
 	let itemslot = []
 	for (let i = 0; i < items.length; ++i) {
 		for (let j = 0; j < items[i]; ++j) {
-			itemslot.push(i)
+			itemslot.push(isZeroIndex?i:i-1)
 		}
 	}
 	return itemslot
@@ -711,11 +714,11 @@ function convertCountToItemSlots(items) {
  * @param {*} turn 
  * @param {*} item 
  */
-function setItemList(turn, item) {
+function setItemList(turn, item,isZeroIndex) {
 	//console.log(turn)
 	let text = ""
 	if (item.length > 20) {
-		item = convertCountToItemSlots(item)
+		item = convertCountToItemSlots(item,isZeroIndex)
 	}
 	let i=0
 	for (let it of item) {
@@ -755,6 +758,7 @@ function getPlayerName(rank, data) {
  * @returns
  */
 function getCharImgUrl(champ_id) {
+	if(champ_id===undefined) return ""
 	return "res/img/character/illust/" + SETTING.characters[champ_id].illustdir
 }
 function getMapIconUrl(map_id) {
@@ -854,7 +858,7 @@ function drawKillRecord(data) {
 
 */
 function getSetting(game, setting) {
-	if (!game || game.setting.length === 0 || !game.setting[0].name) return null
+	if (!game ||!game.setting || game.setting.length === 0 || !game.setting[0].name) return null
 	let s = game.setting.filter((s) => s.name === setting)
 	if (s && s.length > 0) return s[0].value
 	return null
@@ -984,7 +988,7 @@ function drawSimulationGraph(winRateList, avgDamageList) {
 	)
 }
 function showGameList(data){
-
+	
 	updateSimulationGridLayout()
 	$("#simulation_detail").show()
 	statData = data.stat
@@ -995,6 +999,7 @@ function showGameList(data){
 
 	//only simulation
 	if (!data.isGamelist) {
+		$("#holder").hide()
 		let wins = [0, 0, 0, 0]
 		let kdas = [
 			{ kill: 0, death: 0, assist: 0 },
@@ -1162,17 +1167,17 @@ function showGameList(data){
 
 function showStat(data) {
 	$("#intro").hide()
-	$("#holder").hide()
+	//$("#holder").hide()
 	$("#main").removeClass("hidden")
 	data = JSON.parse(data)
 	$("#detail_side").hide()
 	if (!data.multiple) {
 		$("#gamelist_wrapper").css("height", "0")
 		$("#gamelist_wrapper").addClass('collapse')
+		$("#holder").hide()
 
 		$(".simulationGraph").hide()
 		showSingleStat(data)
-		
 	} else {
 		showGameList(data)
 		return
@@ -1226,6 +1231,8 @@ function drawSmallGraph(data,graphId){
  * @param {*} n 
  */
 function showonestat(n) {
+	$("#holder").hide()
+
 	showSingleStat(statData[n])
 }
 
@@ -1296,7 +1303,7 @@ function showSingleStat(data) {
 		})
 	}
 	$("#train_detail p").html("")
-
+	let isLegacy=false
 
 	if (data.version >= 2) {
 		$(".detailbtn:nth-child(4)").show()
@@ -1484,6 +1491,7 @@ function showSingleStat(data) {
 	else{
 		$("#game_resulttext").html("Total turn:" + data.totalturn)
 		$("#detailbtn_container").hide()
+		isLegacy=true
 	}
 
 	
@@ -1523,7 +1531,8 @@ function showSingleStat(data) {
 
 		let p = data.players[i]
 		visiblePlayerNames.push((p.turn+1)+ "P(" + p.champ + ")")
-		setItemList(i, p.items)
+
+		setItemList(i, p.items,data.version>=2)
 
 		let charstr = '<div class="charimg table_charimg '
 

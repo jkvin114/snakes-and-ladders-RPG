@@ -328,7 +328,7 @@ class PlayerAbility implements PlayerComponent{
 	}
 
 	getMagicCastleDamage() {
-		return this.AD.get() * 0.1 + this.AP.get() * 0.08 + this.extraHP * 0.1
+		return Math.floor(this.AD.get() * 0.3 + this.AP.get() * 0.24 + this.extraHP * 0.3) 
 	}
 	calculateScale(data: ValueScale): number {
 		let v =
@@ -339,7 +339,7 @@ class PlayerAbility implements PlayerComponent{
 
 		return Math.floor(v)
 	}
-	static applySkillDmgReduction(damage: Damage, reduction: number) {
+	static applySkillDmgReduction(damage: Damage, reduction: number) :number{
 		return damage.updateNormalDamage(CALC_TYPE.multiply, 1 - reduction * 0.01)
 	}
 }

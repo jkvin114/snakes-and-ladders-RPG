@@ -60,7 +60,9 @@ class Damage {
 	copy():Damage{
 		return new Damage(this.attack,this.magic,this.fixed)
 	}
-
+	get total():number{
+		return this.getTotalDmg()
+	}
 	getTotalDmg(): number {
 		return this.attack + this.magic + this.fixed
 	}
@@ -71,7 +73,8 @@ class Damage {
 		return this
 	}
 
-	updateDamages(calctype: Function, val: number, type: number[]) {
+	updateDamages(calctype: Function, val: number, type: number[]):number {
+		let prev=this.total
 		for (const t of type) {
 			if (t == Damage.ATTACK) {
 				this.attack = Math.floor(calctype(this.attack, val))
@@ -83,20 +86,23 @@ class Damage {
 				this.fixed = Math.floor(calctype(this.fixed, val))
 			}
 		}
-		return this
+		return this.total-prev
 	}
 
-	updateMagicDamage(calctype: Function, val: number) {
+	updateMagicDamage(calctype: Function, val: number):number {
+		let prev=this.total
 		this.magic = Math.floor(calctype(this.magic, val))
-		return this
+		return this.total-prev
 	}
-	updateAttackDamage(calctype: Function, val: number) {
+	updateAttackDamage(calctype: Function, val: number):number {
+		let prev=this.total
 		this.attack = Math.floor(calctype(this.attack, val))
-		return this
+		return this.total-prev
 	}
-	updateTrueDamage(calctype: Function, val: number) {
+	updateTrueDamage(calctype: Function, val: number):number {
+		let prev=this.total
 		this.fixed = Math.floor(calctype(this.fixed, val))
-		return this
+		return this.total-prev
 	}
 	/**
 	 * update attack and magic damage
@@ -104,18 +110,20 @@ class Damage {
 	 * @param val
 	 * @returns
 	 */
-	updateNormalDamage(calctype: Function, val: number) {
+	updateNormalDamage(calctype: Function, val: number) :number{
+		let prev=this.total
 		this.magic = Math.floor(calctype(this.magic, val))
 		this.attack = Math.floor(calctype(this.attack, val))
-		return this
+		return this.total-prev
 	}
 
-	updateAllDamage(calctype: Function, val: number) {
+	updateAllDamage(calctype: Function, val: number) :number{
+		let prev=this.total
 		this.magic = Math.floor(calctype(this.magic, val))
 		this.attack = Math.floor(calctype(this.attack, val))
 		this.fixed = Math.floor(calctype(this.fixed, val))
 
-		return this
+		return this.total-prev
 	}
 
 	applyResistance(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): Damage {

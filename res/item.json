@@ -26,7 +26,7 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "AD", "value": 30, "type_kor": "공격력" }],
 			"children": [2, 2],
-			"parents": [0, 17, 23, 35],
+			"parents": [0, 17, 23, 35,42],
 			"summary": {
 				"kor": "공격력",
 				"eng": "Attack Power"
@@ -87,7 +87,7 @@
 			"kor_name": "3등급 구슬",
 			"price": 40,
 			"itemlevel": 1,
-			"ability": [{ "type": "AP", "value": 20, "type_kor": "주문력" }],
+			"ability": [{ "type": "AP", "value": 15, "type_kor": "주문력" }],
 			"children": [],
 			"parents": [4, 38],
 			"summary": {
@@ -431,7 +431,7 @@
 			"id": 23,
 			"name": "Epic Whip",
 			"kor_name": "살의의 채찍",
-			"price": 340,
+			"price": 290,
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "AD", "value": 45, "type_kor": "공격력" },
@@ -454,7 +454,7 @@
 			"itemlevel": 2,
 			"ability": [{ "type": "attackRange", "value": 1, "type_kor": "기본 공격 사거리" }],
 			"children": [],
-			"parents": [23],
+			"parents": [23,42],
 			"summary": {
 				"kor": "기본공격 강화",
 				"eng": "Enhance basic attack"
@@ -592,8 +592,8 @@
 			],
 			"children": [21, 21, 11],
 			"parents": [],
-			"unique_effect": "Max Hp increases by 5 permanently on every attack",
-			"unique_effect_kor": "적 공격시 최대체력 5 영구 증가",
+			"unique_effect": "Max Hp increases by 10 permanently on every attack",
+			"unique_effect_kor": "적 공격시 최대체력 10 영구 증가",
 			"summary": {
 				"kor": "최대체력",
 				"eng": "Maximum HP"
@@ -718,7 +718,7 @@
 				{ "type": "AP", "value": 70, "type_kor": "주문력" },
 				{ "type": "ultHaste", "value": 1, "type_kor": "궁극기 가속" }
 			],
-			"children": [4, 5],
+			"children": [5, 39],
 			"parents": [],
 			"unique_effect": "When AP is higher than 200, Normal skill cooltime resets if you kill an enemy",
 			"unique_effect_kor": "주문력이 200 이상일 때, 적 처치시 기본스킬 쿨타임 초기화",
@@ -732,6 +732,79 @@
 				"eng": "Skill cooltime reset!"
 			},
 			"category": ["magic"]
+		},{
+			"id": 39,
+			"name": "Magic Wand",
+			"kor_name": "마법 지팡이",
+			"price": 80,
+			"itemlevel": 2,
+			"ability": [
+				{ "type": "AP", "value": 35, "type_kor": "주문력" }
+			],
+			"children": [5],
+			"parents": [38,41],
+			"summary": {
+				"kor": "주문력",
+				"eng": "Magic Power"
+			},
+			"category": ["magic"]
+		},{
+			"id": 40,
+			"name": "Charged Dagger",
+			"kor_name": "정전기의 단검",
+			"price": 70,
+			"itemlevel": 2,
+			"ability": [
+			],
+			"children": [],
+			"parents": [41,42],
+			"summary": {
+				"kor": "충전 공격",
+				"eng": "Charged attack"
+			},"unique_effect": "Moving by dice generates stacks. Next attack deals additional magic damage based on stacks",
+			"unique_effect_kor": "주사위를 던져 이동 거리만큼 충전됨, 다음 공격시 충전을 소모해 추가 마법 피해를 입힘",
+			"active_cooltime": 1,
+			"category": ["attack","magic"]
+		}
+		,{
+			"id": 41,
+			"name": "Staff of Judgement",
+			"kor_name": "심판의 지팡이",
+			"price": 280,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "AP", "value": 70, "type_kor": "주문력" },
+				{ "type": "MP", "value": 10, "type_kor": "마법 관통" }
+			],
+			"children": [39,40],
+			"parents": [],
+			"summary": {
+				"kor": "스킬 강화",
+				"eng": "Enhance skill"
+			},"unique_effect": "Moving by dice generates stacks. Next skill attack deals additional magic damage based on stacks",
+			"unique_effect_kor": "주사위를 던져 이동 거리만큼 충전됨, 다음 스킬 사용시 충전량 비례 추가 마법피해를 입힘(스킬사용시 충전량 소모) ",
+			"active_cooltime": 1,
+			"category": ["magic"]
+		},{
+			"id": 42,
+			"name": "Flail of Judgement",
+			"kor_name": "심판의 철퇴",
+			"price": 310,
+			"itemlevel": 3,
+			"ability": [
+				{ "type": "AD", "value": 40, "type_kor": "공격력" },
+				{ "type": "attackRange", "value": 1, "type_kor": "기본 공격 사거리" },
+				{ "type": "arP", "value": 8, "type_kor": "물리 관통" }
+			],
+			"children": [1,40,24],
+			"parents": [],
+			"summary": {
+				"kor": "기본공격 강화",
+				"eng": "Enhance basic attack"
+			},"unique_effect": "Moving by dice generates stacks. Next basic attack range increases and deals additional magic damage based on stacks",
+			"unique_effect_kor": "주사위를 던져 이동 거리만큼 충전됨, 충전량에 비례해 다음 기본공격 사거리 증가와 추가 마법피해(충전량 소모)",
+			"active_cooltime": 1,
+			"category": ["attack"]
 		}
 	]
 }

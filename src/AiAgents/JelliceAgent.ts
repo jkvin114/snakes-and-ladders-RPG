@@ -11,9 +11,9 @@ class JelliceAgent extends AiAgent{
         this.itemtree = new ItemBuild().setItems([
 			ITEM.EPIC_CRYSTAL_BALL,
 			ITEM.CARD_OF_DECEPTION,
+			ITEM.STAFF_OF_JUDGEMENT,
 			ITEM.TIME_WARP_POTION,
 			ITEM.INVISIBILITY_CLOAK,
-			ITEM.CROSSBOW_OF_PIERCING,
 			ITEM.BOOTS_OF_PROTECTION
 		]).setFinal(ITEM.EPIC_CRYSTAL_BALL)
 		this.gameStartMessage="The mystic flame will burn you all!"

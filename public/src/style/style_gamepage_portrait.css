@@ -2,6 +2,7 @@
     html{
         font-size: 1vh;
     }
+
     .show_on_portraint{
         display: block;
       }
@@ -106,6 +107,9 @@
         top:40%;
         width: 80%;
     }
+    .deathinfo-source{
+        grid-template-columns: auto;
+      }
     /* .store_treeitemimg {
         margin: -20px;
         transform: scale(0.6);

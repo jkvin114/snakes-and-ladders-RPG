@@ -525,6 +525,7 @@ abstract class Player extends Entity {
 
 	moveByDice(dice: number): boolean {
 		this.lastpos = this.pos
+		this.inven.moveByDice(dice)
 		let died = this.changePos(this.pos + dice)
 		return died
 	}
@@ -1016,8 +1017,8 @@ abstract class Player extends Entity {
 		}
 		damage = this.effects.onObstacleDamage(damage)
 		damage *= 1 - this.ability.obsR.get() / 100 //장애물 저항
-
-		this.damageRecord.add(new DamageRecord(-1,2,damage))
+		damage=Math.floor(damage)
+		this.damageRecord.add(new DamageRecord(-1,2,Math.min(damage,this.HP)))
 		return this.doDamage(damage, changeData)
 	}
 	updateTotalShield(change: number, noindicate: boolean) {

@@ -172,7 +172,8 @@ class Tree extends Player {
 
 	getUltEffect() {
 		return new OnDamageEffect(ENUM.EFFECT.TREE_ULT, this.isWithered ? 2 : 1, (damage: Damage, source: Player) => {
-			return damage.updateAllDamage(CALC_TYPE.multiply, 1.2)
+			damage.updateAllDamage(CALC_TYPE.multiply, 1.2)
+			return damage
 		})
 			.on([OnDamageEffect.BASICATTACK_DAMAGE, OnDamageEffect.SKILL_DAMAGE])
 			.from(this.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(this).excludeEnemy()).map((p: Player) => p.UEID))

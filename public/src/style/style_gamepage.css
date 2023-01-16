@@ -2865,8 +2865,8 @@ b {
   top: 500px;
   left: 500px;
   padding: 2px 2px;
-  border-radius: 7px;
-  transform: translate(0, 60%);
+  /* border-radius: 7px; */
+  transform: translate(0, 30px);
   z-index: 7;
 }
 .skill_scale_tooltip{
@@ -2882,7 +2882,7 @@ b {
   font-size: 17px;
 }
 
-.specialeffect_tooltip h4 {
+.specialeffect_tooltip h4 ,#inventory_active_item_data h4{
   margin: 3px;
   color: #7eecff;
   font-family: 'Do Hyeon';
@@ -2890,13 +2890,16 @@ b {
   font-size: 13px;
   text-align: left;
 }
-
+#inventory_active_item_data h4{
+  font-size: 14px;
+}
 .effect_tooltip h4.bad {
   color: rgb(255, 86, 86)
 }
 
 .effect_tooltip p,
-.specialeffect_tooltip p
+.specialeffect_tooltip p,
+#inventory_active_item_data p
 {
 
   text-align: left;
@@ -2904,7 +2907,10 @@ b {
   margin-left: 2px;
   font-size: 10px;
   /* font-family: Arial, Helvetica, sans-serif; */
-  color: white;
+  color: rgb(192, 192, 192);
+}
+.specialeffect_tooltip b,#inventory_active_item_data b{
+  color: rgb(235, 233, 236);
 }
 .skill_scale_tooltip p {
   text-align: left;
@@ -2912,7 +2918,7 @@ b {
   margin-left: 2px;
   font-size: 15px;
   /* font-family: Arial, Helvetica, sans-serif; */
-  color: white;
+  color: rgb(214, 214, 214);
 }
 .skill_scale_tooltip .AD{
   color: rgb(218, 87, 0);
@@ -2933,14 +2939,14 @@ b {
 }
 .stat_tooltip {
   padding: 2px 2px;
-  border-radius: 7px;
+  /* border-radius: 7px; */
   transform: translate(20%, 5%);
   font-family: "nanumB";
 }
 
 .inventory_tooltip {
   padding: 2px 2px;
-  border-radius: 7px;
+  /* border-radius: 7px; */
   transform: translate(25px, 10px);
   font-family: "nanumB";
 }
@@ -3030,7 +3036,7 @@ b {
   color: #fff;
   text-align: center;
   padding: 5px 0;
-  border-radius: 6px;
+  /* border-radius: 6px; */
   word-break: keep-all;
 
 
@@ -3039,7 +3045,16 @@ b {
   z-index: 7;
   transform: translate(40px, 20px)
 }
-
+  
+.item_tooltip.leftside{
+  transform: translate(40px,20px)
+}  
+.item_tooltip.rightside{
+  transform: translate(-200px,20px)  
+}  
+.item_tooltip.rightside::before{
+ left:100%;
+} 
 /* Show the tooltip text when you mouse over the tooltip container */
 /* .tooltip:hover .tooltiptext {
     visibility: visible;
@@ -3086,7 +3101,9 @@ b {
 
   color: white;
 }
-
+.item_tooltip .item-tooltip-data{
+  color: #bcbcbc;
+}
 .item_tooltip .ability_name {
   color: #7bf0ff;
 }

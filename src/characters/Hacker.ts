@@ -254,7 +254,7 @@ class Hacker extends Player {
 					this.startCooltime(s)
 					this.onAfterCopiedSkill()
 				} else if (target instanceof Player) {
-					let stealRatio = (Hacker.ULT_ABILITY_STEAL_PERCENT / 100) * (this.stacks[target.turn]+5)
+					let stealRatio = (Hacker.ULT_ABILITY_STEAL_PERCENT / 100) * (this.stacks[target.turn]+1)
 					let dur=this.duration_list[2]
                     damage = new SkillAttack(Damage.zero(), this.getSkillName(s),s,this)
 						.setOnHit(function (this: Player, source: Player) {
@@ -266,7 +266,7 @@ class Hacker extends Player {
 										EFFECT.HACKER_ULT_ENEMY,
 										dur,
 										new Map().set("AP", -AP).set("AD", -AD)
-									).setSourceId(source.UEID),
+									).setSourceId(source.UEID).addData(stealRatio*100),
 									SpecialEffect.SKILL.HACKER_ULT_ENEMY.name
 								)
 								source.effects.applySpecial(
@@ -274,7 +274,7 @@ class Hacker extends Player {
 										EFFECT.HACKER_ULT,
 										dur,
 										new Map().set("AP", AP).set("AD", AD)
-									),
+									).addData(AD).addData(AP),
 									SpecialEffect.SKILL.HACKER_ULT.name
 								)
 								if (source.copyCharacter(target.champ))

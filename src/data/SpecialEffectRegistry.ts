@@ -1,4 +1,5 @@
 import * as ENUM from "./enum"
+import { items } from "../../res/item.json"
 
 export namespace SpecialEffect {
 	export const OBSTACLE={
@@ -6,8 +7,8 @@ export namespace SpecialEffect {
 			name:"magic_castle",
 			isgood:true,
 			src: "status_effect/magic_castle.png",
-			desc: "Additional Damage on skill(0.1AD+0.08AP+0.1extraHP)",
-			desc_kor: "스킬 사용시 추가 피해(0.1AD+0.08AP+0.1추가체력)",
+			desc: "Additional <d1> true damage for all skill",
+			desc_kor: "스킬 사용시 <d1>의 추가 피해를 입힘",
 		}
 	}
 	export const SKILL = {
@@ -43,8 +44,8 @@ export namespace SpecialEffect {
 			isgood:false,
             src:"skill/6-2.jpg",
 			name: "magician_w_burn",
-			desc: "For every player turn, takes fixed damage based on Maximum HP",
-			desc_kor: "매 플레이어 턴마다 최대체력 비례 고정 피해"
+			desc: "For every player turn, takes <d1>% of Max HP as fixed damage",
+			desc_kor: "매 플레이어 턴마다 최대체력의 <d1>% 의 고정 피해"
 		},
         BIRD_W: {
 			isgood:true,
@@ -56,9 +57,9 @@ export namespace SpecialEffect {
 			isgood:true,
             src:"skill/8-3.jpg",
 			name: "bird_r",
-			desc: "Basic attack damage and range increased,  'Baby Bird'`s additional damage doubles,'beak attack' creates an area" +
+			desc: "Basic attack damage and range increased<br>'Baby Bird'`s additional damage doubles<br>'beak attack' creates an area" +
 			" that applies ignite effect to players who step on it",
-			desc_kor: "기본공격 피해량 30%증가, 사거리 2 증가, '아기새 소환'의 추가 피해 2배 증가,'날렵한 부리' 적중시 " +
+			desc_kor: "기본공격 피해량 30%증가<br> 사거리 2 증가<br>'아기새 소환'의 추가 피해 2배 증가<br>'날렵한 부리' 적중시 " +
 			"밟은 적에게 점화 2턴을 주는 영역을 생성"
 		},
         BIRD_ULT_BURN: {
@@ -100,21 +101,21 @@ export namespace SpecialEffect {
 			isgood:false,
             src:"skill/10-3.jpg",
 			name: "hacker_ult_enemy",
-			desc: "Attack damage and ability power decreased",
-			desc_kor: "공격력과 주문력 감소"
+			desc: "Attack damage and ability power decreased by <d1>%",
+			desc_kor: "공격력과 주문력 <d1>% 감소"
 		},
         HACKER_ULT: {
 			isgood:true,
             src:"skill/10-3.jpg",
 			name: "hacker_ult",
-			desc: "Attack damage and ability power increased",
-			desc_kor: "공격력과 주문력 증가"
+			desc: "Attack damage increased by <d1>, ability power increased by <d2>",
+			desc_kor: "공격력 <d1> 증가, 주문력 <d2> 증가"
 		}
 	}
 	export const ITEM={
 		POWER_OF_MOTHER_NATURE_ABILITY:{
 			name:"power_of_mother_nature_speed",
-			desc:"Movement speed increased by 1 for",
+			desc:"Movement speed increased by 1",
 			desc_kor:"이동속도 1 증가",
 			item_id: ENUM.ITEM.POWER_OF_MOTHER_NATURE
 		},WARRIOR_SHIELDSWORD_ABSORB:{
@@ -127,6 +128,47 @@ export namespace SpecialEffect {
 			name:"shieldsword_shield",
 			desc:"",desc_kor:"",
 			item_id: ENUM.ITEM.WARRIORS_SHIELDSWORD,
+		},"Ancient Spear":{
+			name:items[ENUM.ITEM.ANCIENT_SPEAR].name,
+			desc:"Additional magic damage on attack",
+			desc_kor:"공격시 추가 마법 피해를 입힘",
+			item_id: ENUM.ITEM.ANCIENT_SPEAR,
+		}
+		,"Piercing Spear":{
+			name:items[ENUM.ITEM.SPEAR].name,
+			desc:"Additional magic damage on attack",
+			desc_kor:"공격시 추가 마법 피해를 입힘",
+			item_id: ENUM.ITEM.SPEAR,
+		}
+		,"Crossbow of Piercing":{
+			name:items[ENUM.ITEM.CROSSBOW_OF_PIERCING].name,
+			desc:"Additional fixed damage on attack",
+			desc_kor:"공격시 추가 고정 피해를 입힘",
+			item_id: ENUM.ITEM.CROSSBOW_OF_PIERCING,
+		}
+		,"Full Diamond Armour":{
+			name:items[ENUM.ITEM.FULL_DIAMOND_ARMOR].name,
+			desc:"Maximum HP increases on attack",
+			desc_kor:"공격시 최대체력 영구 증가",
+			item_id: ENUM.ITEM.FULL_DIAMOND_ARMOR,
+		}
+		,"static_dagger":{
+			name:items[ENUM.ITEM.DAGGER].name,
+			desc:"Deals additional magic damage on next attack (spend stacks)<hr>current stacks:<d1><br>additional damage:<d2>",
+			desc_kor:"다음 공격시 충전량을 소모해 추가 마법 피해<hr>현재 충전량:<d1><br>추가 마법 피해:<d2>",
+			item_id: ENUM.ITEM.DAGGER,
+		}
+		,"STAFF_OF_JUDGEMENT":{
+			name:items[ENUM.ITEM.STAFF_OF_JUDGEMENT].name,
+			desc:"Deals additional magic damage on next skill attack (spend stacks)<hr>current stacks:<d1><br>additional damage:<d2>",
+			desc_kor:"다음 스킬 공격시 충전량을 소모해 추가 마법 피해<hr>현재 충전량:<d1><br>추가 마법 피해:<d2>",
+			item_id: ENUM.ITEM.STAFF_OF_JUDGEMENT,
+		}
+		,"FLAIL_OF_JUDGEMENT":{
+			name:items[ENUM.ITEM.FLAIL_OF_JUDGEMENT].name,
+			desc:"Deals additional magic damage on next basic attack with increased range (spend stacks)<hr>current stacks:<d1><br>additional damage:<d2><br>additional range:<d3>",
+			desc_kor:"다음 기본공격시 사정거리 증가, 충전량을 소모해 추가 마법 피해<hr>현재 충전량:<d1><br>추가 마법 피해:<d2><br>추가 사정거리:<d3>",
+			item_id: ENUM.ITEM.FLAIL_OF_JUDGEMENT,
 		}
 	}
 

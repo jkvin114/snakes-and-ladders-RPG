@@ -12,8 +12,8 @@ class CreedAgent extends AiAgent{
         this.itemtree = new ItemBuild().setItems([
 			ITEM.EPIC_SWORD,
 			ITEM.EPIC_WHIP,
+			ITEM.FLAIL_OF_JUDGEMENT,
 			ITEM.SWORD_OF_BLOOD,
-			ITEM.WARRIORS_SHIELDSWORD,
 			ITEM.CROSSBOW_OF_PIERCING,
 			ITEM.GUARDIAN_ANGEL
 		]).setFinal(ITEM.EPIC_SWORD)

@@ -1,10 +1,10 @@
 import type { Player } from "./player/player"
-import { CALC_TYPE,  decrement } from "./core/Util"
+import { CALC_TYPE, decrement } from "./core/Util"
 import { EFFECT, ITEM, SKILL } from "./data/enum"
-import {PlayerAbility} from "./player/PlayerAbility"
+import { PlayerAbility } from "./player/PlayerAbility"
 import { SpecialEffect } from "./data/SpecialEffectRegistry"
 import { Entity } from "./entity/Entity"
-import { Damage,PercentDamage } from "./core/Damage"
+import { Damage, PercentDamage } from "./core/Damage"
 import { HPChange } from "./core/health"
 import { SkillAttack } from "./core/skill"
 
@@ -12,7 +12,7 @@ enum EFFECT_SOURCE {
 	ENEMY,
 	ALLY,
 	OBSTACLE,
-	ITEM
+	ITEM,
 }
 enum EFFECT_TYPE {
 	NORMAL = 0,
@@ -21,42 +21,35 @@ enum EFFECT_TYPE {
 	ONHIT = 3,
 	ONDAMAGE = 4,
 	TICK = 5,
-	ON_HP_BELOW_THRESHOLD=6
+	ON_HP_BELOW_THRESHOLD = 6,
 }
 enum EFFECT_TIMING {
 	TURN_START,
 	TURN_END,
 	BEFORE_SKILL,
-	BEFORE_OBS
+	BEFORE_OBS,
 }
-const SHIELD_EFFECT_TIMING=EFFECT_TIMING.BEFORE_SKILL
-const ABILITY_CHANGE_EFFECT_TIMING=EFFECT_TIMING.TURN_START
-const TICK_EFFECT_TIMING=EFFECT_TIMING.TURN_END
-const ONHIT_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
-const ONHPBELOWTHRESHOLD_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
-const ON_DAMAGE_EFFECT_TIMING=EFFECT_TIMING.BEFORE_OBS
-
+const SHIELD_EFFECT_TIMING = EFFECT_TIMING.BEFORE_SKILL
+const ABILITY_CHANGE_EFFECT_TIMING = EFFECT_TIMING.TURN_START
+const TICK_EFFECT_TIMING = EFFECT_TIMING.TURN_END
+const ONHIT_EFFECT_TIMING = EFFECT_TIMING.BEFORE_OBS
+const ONHPBELOWTHRESHOLD_EFFECT_TIMING = EFFECT_TIMING.BEFORE_OBS
+const ON_DAMAGE_EFFECT_TIMING = EFFECT_TIMING.BEFORE_OBS
 
 class EffectFactory {
-	
-
 	static create(effect_id: EFFECT) {
 		switch (effect_id) {
 			case EFFECT.MAGIC_CASTLE_ADAMAGE:
-				return new OnHitEffect(effect_id, 1, function(this: Player, t: Player, damage: Damage){
-					return damage.updateTrueDamage(CALC_TYPE.plus, this.ability.getMagicCastleDamage())
+				return new OnHitEffect(effect_id, 1, function (this: Player, t: Player, damage: Damage) {
+					damage.updateTrueDamage(CALC_TYPE.plus, this.ability.getMagicCastleDamage())
+					return damage
 				})
 					.setGood()
 					.on(OnHitEffect.SKILLATTACK)
 			case EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY:
-					return new AblityChangeEffect(
-						effect_id,
-						1,
-						new Map().set("moveSpeed", 1),
-						EFFECT_TIMING.TURN_END
-					).setGood()
+				return new AblityChangeEffect(effect_id, 1, new Map().set("moveSpeed", 1), EFFECT_TIMING.TURN_END).setGood()
 			case EFFECT.ITEM_SHIELDSWORD_ABSORB:
-				return new AblityChangeEffect(effect_id, 2, new Map().set("absorb", 30),EFFECT_TIMING.TURN_END).setGood()
+				return new AblityChangeEffect(effect_id, 2, new Map().set("absorb", 30), EFFECT_TIMING.TURN_END).setGood()
 		}
 	}
 }
@@ -71,14 +64,15 @@ class ItemPassiveEffectFactory {
 			case ITEM.EPIC_FRUIT:
 				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_PERMANENT, TickEffect.FREQ_EVERY_TURN)
 					.setAction(function (this: Player) {
-						this.changeHP_heal(new HPChange(this.ability.extraHP * 0.15))
-
+						let amt=this.ability.extraHP * 0.15
+						this.changeHP_heal(new HPChange(amt))
+						this.inven.addActiveItemData(item,"regen",Math.min(this.MaxHP-this.HP,amt))
 						return false
 					})
 					.setGood()
 			case ITEM.POWER_OF_MOTHER_NATURE:
 				return new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE, StatusEffect.DURATION_PERMANENT, function (
-					Damage: Damage,
+					damage: Damage,
 					owner: Player
 				) {
 					if (owner.inven.isActiveItemAvailable(ITEM.POWER_OF_MOTHER_NATURE)) {
@@ -88,8 +82,9 @@ class ItemPassiveEffectFactory {
 							SpecialEffect.ITEM.POWER_OF_MOTHER_NATURE_ABILITY.name
 						)
 					}
-
-					return PlayerAbility.applySkillDmgReduction(Damage, 30)
+					let change= PlayerAbility.applySkillDmgReduction(damage, 30)
+					owner.inven.addActiveItemData(item,"damage",-change)
+					return damage
 				})
 					.on([OnDamageEffect.SKILL_DAMAGE])
 					.setGood()
@@ -98,74 +93,80 @@ class ItemPassiveEffectFactory {
 				return new OnDamageEffect(
 					EFFECT.ITEM_POWER_OF_NATURE,
 					StatusEffect.DURATION_PERMANENT,
-					(Damage: Damage, owner: Player) => {
-						return PlayerAbility.applySkillDmgReduction(Damage, 10)
+					(damage: Damage, owner: Player) => {
+						PlayerAbility.applySkillDmgReduction(damage, 10)
+						return damage
 					}
 				)
 					.on([OnDamageEffect.SKILL_DAMAGE])
 					.setGood()
 
 			case ITEM.CARD_OF_DECEPTION:
-				return new OnHitEffect(
-					EFFECT.ITEM_CARD_OF_DECEPTION,
-					StatusEffect.DURATION_PERMANENT,
-					function(this: Player, target: Player, damage: Damage){
-						if (this.inven.isActiveItemAvailable(ITEM.CARD_OF_DECEPTION)) {
-							//	console.log("CARD_OF_DECEPTION")
-							damage.updateNormalDamage(CALC_TYPE.multiply, 1.1)
-							target.effects.apply(EFFECT.SLOW, 1)
-							this.effects.apply(EFFECT.SPEED, 1)
-							this.inven.useActiveItem(ITEM.CARD_OF_DECEPTION)
-						}
-						return damage
-					}
-				)
+				return new OnHitEffect(EFFECT.ITEM_CARD_OF_DECEPTION, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage
+				) {
+
+					let change=damage.updateNormalDamage(CALC_TYPE.multiply, 1.1)
+					this.inven.addActiveItemData(item,"damage",change)
+					target.effects.apply(EFFECT.SLOW, 1)
+					this.effects.apply(EFFECT.SPEED, 1)
+					return damage
+				})
 					.on(OnHitEffect.SKILLATTACK)
 					.setTargetCondition((owner: Player, target: Player) => {
 						return owner.pos < target.pos
 					})
+					.setConditionActiveItem(ITEM.CARD_OF_DECEPTION)
 					.setGood()
 			case ITEM.ANCIENT_SPEAR:
-				return new OnHitEffect(
-					EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE,
-					StatusEffect.DURATION_PERMANENT,
-					function(this: Player, target: Player, damage: Damage){
-						return damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.1)
-					}
-				)
+				return new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage
+				) {
+					let change= damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.1)
+					this.inven.addActiveItemData(item,"damage",change)
+					return damage
+				})
 					.on(OnHitEffect.EVERYATTACK)
 					.setGood()
 			case ITEM.SPEAR:
-				return new OnHitEffect(
-					EFFECT.ITEM_SPEAR_ADAMAGE,
-					StatusEffect.DURATION_PERMANENT,
-					function(this: Player, target: Player, damage: Damage){
-						//	console.log("ITEM_SPEAR_ADAMAGE")
-						return damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.05)
-					}
-				)
+				return new OnHitEffect(EFFECT.ITEM_SPEAR_ADAMAGE, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage
+				) {
+					//	console.log("ITEM_SPEAR_ADAMAGE")
+					damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.05)
+					return damage
+				})
 					.on(OnHitEffect.EVERYATTACK)
 					.setGood()
 			case ITEM.CROSSBOW_OF_PIERCING:
-				return new OnHitEffect(
-					EFFECT.ITEM_CROSSBOW_ADAMAGE,
-					StatusEffect.DURATION_PERMANENT,
-					function(this: Player, target: Player, damage: Damage){
-						return damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
-					}
-				)
+				return new OnHitEffect(EFFECT.ITEM_CROSSBOW_ADAMAGE, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage
+				) {
+					let change= damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.07)
+					this.inven.addActiveItemData(item,"damage",change)
+					return damage
+				})
 					.on(OnHitEffect.EVERYATTACK)
 					.setGood()
 			case ITEM.FULL_DIAMOND_ARMOR:
-				return new OnHitEffect(
-					EFFECT.ITEM_DIAMOND_ARMOR_MAXHP_GROWTH,
-					StatusEffect.DURATION_PERMANENT,
-					function(this: Player, target: Player, damage: Damage){
-						this.ability.addMaxHP(5)
-						//	console.log("FULL_DIAMOND_ARMOR")
-						return damage
-					}
-				)
+				return new OnHitEffect(EFFECT.ITEM_DIAMOND_ARMOR_MAXHP_GROWTH, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage
+				) {
+					this.ability.addMaxHP(10)
+					this.inven.addActiveItemData(item,"hp",10)
+
+					return damage
+				})
 					.on(OnHitEffect.EVERYATTACK)
 					.setGood()
 			case ITEM.BOOTS_OF_PROTECTION:
@@ -173,8 +174,8 @@ class ItemPassiveEffectFactory {
 					EFFECT.ITEM_BOOTS_OF_ENDURANCE,
 					StatusEffect.DURATION_PERMANENT,
 					(damage: Damage, owner: Player) => {
-						//	console.log("BOOTS_OF_PROTECTION")
-						return damage.updateNormalDamage(CALC_TYPE.multiply, 0.65)
+						damage.updateNormalDamage(CALC_TYPE.multiply, 0.65)
+						return damage
 					}
 				)
 					.on([OnDamageEffect.BASICATTACK_DAMAGE])
@@ -184,41 +185,79 @@ class ItemPassiveEffectFactory {
 					EFFECT.ITEM_SHIELDSWORD,
 					StatusEffect.DURATION_PERMANENT,
 					(damage: number, owner: Player) => {
-						if (owner.inven.isActiveItemAvailable(ITEM.WARRIORS_SHIELDSWORD)) {
-						//	console.log("WARRIORS_SHIELDSWORD")
+						const shieldamt=100+Math.floor(0.7 * owner.ability.AD.get())
+						owner.effects.applySpecial(
+							new ShieldEffect(EFFECT.ITEM_SHIELDSWORD_SHIELD, 2, shieldamt).setGood(),
+							SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_SHIELD.name
+						)
+						owner.inven.addActiveItemData(item,"shield",shieldamt)
 
-							owner.effects.applySpecial(
-								new ShieldEffect(EFFECT.ITEM_SHIELDSWORD_SHIELD, 2, Math.floor(0.7 * owner.ability.AD.get())).setGood(),
-								SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_SHIELD.name
-							)
+						owner.effects.applySpecial(
+							EffectFactory.create(EFFECT.ITEM_SHIELDSWORD_ABSORB),
+							SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_ABSORB.name
+						)
 
-							owner.effects.applySpecial(
-								EffectFactory.create(EFFECT.ITEM_SHIELDSWORD_ABSORB),
-								SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_ABSORB.name
-							)
-
-							owner.inven.useActiveItem(ITEM.WARRIORS_SHIELDSWORD)
-						}
+						owner.inven.useActiveItem(ITEM.WARRIORS_SHIELDSWORD)
 					}
 				)
 					.setInvokeConditionHpPercent(30)
 					.setGood()
+					.setConditionActiveItem(ITEM.WARRIORS_SHIELDSWORD)
 			case ITEM.INVISIBILITY_CLOAK:
 				return new OnHPBelowThresholdEffect(
 					EFFECT.ITEM_INVISIBILITY_CLOAK,
 					StatusEffect.DURATION_PERMANENT,
 					(damage: number, owner: Player) => {
-						if (owner.inven.isActiveItemAvailable(ITEM.INVISIBILITY_CLOAK)) {
-						//	console.log("invisibility cloak")
-							owner.effects.apply(EFFECT.INVISIBILITY, 2)
-
-							owner.inven.useActiveItem(ITEM.INVISIBILITY_CLOAK)
-						}
+						owner.effects.apply(EFFECT.INVISIBILITY, 2)
 					}
 				)
 					.setInvokeConditionHpPercent(30)
 					.setGood()
-
+					.setConditionActiveItem(ITEM.INVISIBILITY_CLOAK)
+			case ITEM.DAGGER:
+				return new OnHitEffect(EFFECT.ITEM_STATIC_DAGGER, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage,
+					data: number[]
+				) {
+					damage.updateMagicDamage(CALC_TYPE.plus, data[1])
+					return damage
+				})
+					.on(OnHitEffect.EVERYATTACK)
+					.setGood()
+					.setConditionActiveItem(item)
+					.setData([0, 0])
+			case ITEM.STAFF_OF_JUDGEMENT:
+				return new OnHitEffect(EFFECT.ITEM_STAFF_OF_JUDGEMENT, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage,
+					data: number[]
+				) {
+					let change= damage.updateMagicDamage(CALC_TYPE.plus, data[1])
+					this.inven.addActiveItemData(item,"damage",change)
+					return damage
+				})
+					.on(OnHitEffect.SKILLATTACK)
+					.setGood()
+					.setConditionActiveItem(item)
+					.setData([0, 0])
+			case ITEM.FLAIL_OF_JUDGEMENT:
+				return new OnHitEffect(EFFECT.ITEM_FLAIL_OF_JUDGEMENT, StatusEffect.DURATION_PERMANENT, function (
+					this: Player,
+					target: Player,
+					damage: Damage,
+					data: number[]
+				) {
+					let change=damage.updateMagicDamage(CALC_TYPE.plus, data[1])
+					this.inven.addActiveItemData(item,"damage",change)
+					return damage
+				})
+					.on(OnHitEffect.BASICATTACK)
+					.setGood()
+					.setConditionActiveItem(item)
+					.setData([0, 0,0])
 			default:
 				return null
 		}
@@ -230,7 +269,7 @@ class ItemPassiveEffectFactory {
  *
  */
 class GeneralEffectFactory {
-	static create(id: EFFECT, dur: number):StatusEffect |null{
+	static create(id: EFFECT, dur: number): StatusEffect | null {
 		switch (id) {
 			case EFFECT.SLOW:
 			case EFFECT.BACKDICE:
@@ -253,7 +292,8 @@ class GeneralEffectFactory {
 				return new TickDamageEffect(id, dur, TickEffect.FREQ_EVERY_TURN, new Damage(0, 0, 30))
 			case EFFECT.RADI: //radiation
 				return new OnDamageEffect(id, dur, (damage: Damage, owner: Player) => {
-					return damage.updateAllDamage(CALC_TYPE.multiply, 2)
+					damage.updateAllDamage(CALC_TYPE.multiply, 2)
+					return damage
 				})
 			case EFFECT.ANNUITY: //annuity
 				return new TickEffect(id, dur, TickEffect.FREQ_EVERY_TURN)
@@ -279,7 +319,8 @@ class GeneralEffectFactory {
 						return false
 					})
 					.setGood()
-			default:return null
+			default:
+				return null
 		}
 	}
 }
@@ -291,8 +332,9 @@ abstract class StatusEffect {
 	public readonly timing: EFFECT_TIMING
 	public readonly id: EFFECT
 	public name: string
-	public source: string|null
+	public source: string | null
 	public effectType: EFFECT_TYPE
+	public data: number[]
 	static readonly DURATION_UNTIL_LETHAL_DAMAGE = 1000
 	static readonly DURATION_UNTIL_DEATH = 2000
 	static readonly DURATION_PERMANENT = 10000
@@ -304,15 +346,15 @@ abstract class StatusEffect {
 		this.owner = null
 		this.timing = timing
 		this.name = ""
-		this.source =null
-
+		this.source = null
+		this.data = []
 		// if (timing === EFFECT_TIMING.BEFORE_SKILL || timing === EFFECT_TIMING.TURN_END) {
 		// 	this.duration += 1
 		// }
 	}
 	applyTo(owner: Player) {
 		this.owner = owner
-	//	if(!owner.isMyTurn()) this.duration+=1
+		//	if(!owner.isMyTurn()) this.duration+=1
 
 		return this
 	}
@@ -328,6 +370,14 @@ abstract class StatusEffect {
 		this.source = source
 		return this
 	}
+	addData(d: number) {
+		this.data.push(d)
+		return this
+	}
+	setData(d: number[]) {
+		this.data = d
+		return this
+	}
 	onBeforeReapply() {
 		return 0
 	}
@@ -341,21 +391,40 @@ abstract class StatusEffect {
 		if (this.duration >= StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE) return true
 
 		this.duration = decrement(this.duration)
-		
+
 		return this.duration > 0
 	}
-	onLethalDamage() {
+	shouldResetOnLethalDamage() {
 		if (this.duration >= StatusEffect.DURATION_UNTIL_DEATH) {
 			return false
 		}
 		return true
 	}
-	onDeath() {
+	shouldResetOnDeath() {
 		if (this.duration >= StatusEffect.DURATION_PERMANENT) {
 			return false
 		}
 
 		return true
+	}
+	tick(currentTurn: number): boolean {
+		return false
+	}
+	onHitWithSkill(target: Player, damage: Damage): Damage | null {
+		return null
+	}
+	onHitWithBasicAttack(target: Player, damage: Damage): Damage | null {
+		return null
+	}
+	onFinalDamage(damage: number) {}
+	onSkillDamage(damage: Damage, source: string): Damage | null {
+		return null
+	}
+	onBasicAttackDamage(damage: Damage, source: string): Damage | null {
+		return null
+	}
+	onObstacleDamage(damage: Damage): Damage | null {
+		return null
 	}
 }
 
@@ -370,7 +439,7 @@ class ShieldEffect extends StatusEffect {
 	// name:string
 	public amount: number
 	constructor(id: EFFECT, duration: number, amount: number) {
-		super(id, duration,SHIELD_EFFECT_TIMING)
+		super(id, duration, SHIELD_EFFECT_TIMING)
 		this.amount = amount
 		this.isgood = true
 		this.effectType = EFFECT_TYPE.SHIELD
@@ -401,8 +470,8 @@ class AblityChangeEffect extends StatusEffect {
 	protected abilityChanges: Map<string, number>
 	protected remainingChanges: Map<string, number>
 	protected decay: boolean
-	constructor(id: EFFECT, dur: number, abilityChanges: Map<string, number>,timing?:EFFECT_TIMING) {
-		if(!timing) timing=ABILITY_CHANGE_EFFECT_TIMING
+	constructor(id: EFFECT, dur: number, abilityChanges: Map<string, number>, timing?: EFFECT_TIMING) {
+		if (!timing) timing = ABILITY_CHANGE_EFFECT_TIMING
 		super(id, dur, timing)
 		this.decay = false
 		this.abilityChanges = abilityChanges
@@ -428,8 +497,7 @@ class AblityChangeEffect extends StatusEffect {
 	cooldown(): boolean {
 		if (this.decay) {
 			for (const [name, val] of this.remainingChanges.entries()) {
-				if(this.abilityChanges.has(name)){
-
+				if (this.abilityChanges.has(name)) {
 					let decayamt = Math.floor((-1 * this.abilityChanges.get(name)) / this.duration)
 
 					this.owner?.ability.update(name, decayamt)
@@ -473,14 +541,16 @@ class TickEffect extends StatusEffect {
 
 	protected tickAction: TickActionFunction
 	protected frequency: number
-	protected sourceSkill: SKILL |number//스킬 판정인지 여부, -1 이면 스킬판정 아님
+	protected sourceSkill: SKILL | number //스킬 판정인지 여부, -1 이면 스킬판정 아님
 
 	constructor(id: EFFECT, dur: number, frequency: number) {
 		super(id, dur, TICK_EFFECT_TIMING)
 		this.frequency = frequency
 		this.effectType = EFFECT_TYPE.TICK
 		this.sourceSkill = -1
-		this.tickAction = function(this: Player){return false}
+		this.tickAction = function (this: Player) {
+			return false
+		}
 	}
 
 	setAction(tickAction: TickActionFunction) {
@@ -492,11 +562,11 @@ class TickEffect extends StatusEffect {
 		this.sourceSkill = skill
 		return this
 	}
-/**
- * 
- * @param currentTurn current turn of player at the point tick is called
- * @returns true if the owner died
- */
+	/**
+	 *
+	 * @param currentTurn current turn of player at the point tick is called
+	 * @returns true if the owner died
+	 */
 	tick(currentTurn: number): boolean {
 		if (currentTurn !== this.owner.turn && this.frequency === TickEffect.FREQ_EVERY_TURN) {
 			return false
@@ -516,12 +586,14 @@ class TickEffect extends StatusEffect {
 		if (!this.source) {
 			return this.owner.doObstacleDamage(damage.getTotalDmg(), this.name)
 		} else if (this.sourceSkill !== -1) {
-			return this.owner.mediator.skillAttackAuto(this.owner.mediator.getPlayer(this.source),this.owner.UEID,
-			new SkillAttack(damage,this.name,this.sourceSkill,this.owner.mediator.getPlayer(this.source)))
+			return this.owner.mediator.skillAttackAuto(
+				this.owner.mediator.getPlayer(this.source),
+				this.owner.UEID,
+				new SkillAttack(damage, this.name, this.sourceSkill, this.owner.mediator.getPlayer(this.source))
+			)
 			// return this.owner.hitBySkill(damage, this.name, this.sourceTurn)
 		} else {
-			return this.owner.mediator.attackSingle(this.owner.mediator.getPlayer(this.source),this.owner
-			,damage,this.name)
+			return this.owner.mediator.attackSingle(this.owner.mediator.getPlayer(this.source), this.owner, damage, this.name)
 			// return this.owner.game.playerSelector.get(this.sourceTurn).dealDamageTo(this.owner, damage, "tick", this.name)
 			// return this.owner.dealDamageTo(damage.getTotalDmg(), this.sourceTurn, this.name, false)
 		}
@@ -538,37 +610,49 @@ class TickDamageEffect extends TickEffect {
 			return false
 		}
 		if (this.tickAction != null) {
-			if(super.tick(currentTurn)) return true
+			if (super.tick(currentTurn)) return true
 		}
 
 		if (this.tickDamage instanceof Damage) {
 			return this.doDamage(this.tickDamage)
 		} else if (this.tickDamage instanceof PercentDamage) {
-			return this.doDamage(this.tickDamage.pack(this.owner.MaxHP,this.owner.HP))
+			return this.doDamage(this.tickDamage.pack(this.owner.MaxHP, this.owner.HP))
 		}
 
 		return false
 	}
 }
-interface ConditionFunction{
-	(owner: Player, target: Player):boolean
+interface ConditionFunction {
+	(owner: Player, target: Player): boolean
 }
 
-class OnConditionEffect extends StatusEffect{
-	ownerCondition:ConditionFunction
-	constructor(id:number,dur:number,timing:EFFECT_TIMING){
+class OnConditionEffect extends StatusEffect {
+	private conditionActiveItem: ITEM
+	constructor(id: number, dur: number, timing: EFFECT_TIMING) {
 		super(id, dur, timing)
+		this.conditionActiveItem = ITEM.EMPTY
+	}
+	setConditionActiveItem(item: ITEM) {
+		this.conditionActiveItem = item
+		return this
+	}
+	protected checkSecondaryCondition() {
+		if (this.conditionActiveItem === ITEM.EMPTY) return true
+
+		return this.owner && this.owner.inven.isActiveItemAvailable(this.conditionActiveItem)
+	}
+	protected onAfterInvoke() {
+		if (this.conditionActiveItem !== ITEM.EMPTY) this.owner?.inven.useActiveItem(this.conditionActiveItem)
 	}
 }
 
-
 interface onHitFunction {
-	(this: Player, target: Player, damage: Damage): Damage
+	(this: Player, target: Player, damage: Damage, data: number[]): Damage
 }
 /**
  * called on dealing damage
  */
-class OnHitEffect extends StatusEffect {
+class OnHitEffect extends OnConditionEffect {
 	protected onHit: onHitFunction
 	protected attack: number
 	protected validTargets: string[] //only activate when attacking players in the array
@@ -599,36 +683,40 @@ class OnHitEffect extends StatusEffect {
 		this.targetCondition = targetCondition
 		return this
 	}
-	isValidTarget(target:Entity){
-		if(this.validTargets.length===0) return true
+	private isValidTarget(target: Entity) {
+		if (this.validTargets.length === 0) return true
 		return this.validTargets.includes(target.UEID)
 	}
 
-	onHitWithSkill(target: Player, damage: Damage) {
+	onHitWithSkill(target: Player, damage: Damage): Damage | null {
 		if (
 			(this.attack === OnHitEffect.SKILLATTACK || this.attack === OnHitEffect.EVERYATTACK) &&
 			this.isValidTarget(target) &&
-			this.targetCondition(this.owner, target)
+			this.targetCondition(this.owner, target) &&
+			this.checkSecondaryCondition()
 		) {
-			return this.onHit.call(this.owner, target, damage)
+			damage = this.onHit.call(this.owner, target, damage, this.data)
+			this.onAfterInvoke()
 		} else return damage
 	}
-	onHitWithBasicAttack(target: Player, damage: Damage) {
+	onHitWithBasicAttack(target: Player, damage: Damage): Damage | null {
 		if (
 			(this.attack === OnHitEffect.BASICATTACK || this.attack === OnHitEffect.EVERYATTACK) &&
-			this.isValidTarget(target)  &&
-			this.targetCondition(this.owner, target)
+			this.isValidTarget(target) &&
+			this.targetCondition(this.owner, target) &&
+			this.checkSecondaryCondition()
 		) {
-			return this.onHit.call(this.owner, target, damage)
+			damage = this.onHit.call(this.owner, target, damage, this.data)
+			this.onAfterInvoke()
 		} else return damage
 	}
 }
 
 interface OnHPBelowThresholdFunction {
-	(damage: number, owner: Player): void
+	(damage: number, owner: Player, data: number[]): void
 }
 
-class OnHPBelowThresholdEffect extends StatusEffect {
+class OnHPBelowThresholdEffect extends OnConditionEffect {
 	protected onHPBelowThreshold: OnHPBelowThresholdFunction
 	private thresholdHpPercent: number
 
@@ -636,7 +724,7 @@ class OnHPBelowThresholdEffect extends StatusEffect {
 		super(id, dur, ONHPBELOWTHRESHOLD_EFFECT_TIMING)
 		this.onHPBelowThreshold = f
 		this.thresholdHpPercent = 100
-		this.effectType=EFFECT_TYPE.ON_HP_BELOW_THRESHOLD
+		this.effectType = EFFECT_TYPE.ON_HP_BELOW_THRESHOLD
 	}
 
 	/**
@@ -654,20 +742,25 @@ class OnHPBelowThresholdEffect extends StatusEffect {
 	 */
 	onFinalDamage(damage: number) {
 		let predictedHP = this.owner.HP - damage
-		if (predictedHP > 0 && predictedHP < (this.thresholdHpPercent / 100) * this.owner.MaxHP) {
-			this.onHPBelowThreshold(damage, this.owner)
+		if (
+			predictedHP > 0 &&
+			predictedHP < (this.thresholdHpPercent / 100) * this.owner.MaxHP &&
+			this.checkSecondaryCondition()
+		) {
+			this.onHPBelowThreshold(damage, this.owner, this.data)
+			this.onAfterInvoke()
 		}
 	}
 }
 
 interface OnDamageFunction {
-	(damage: Damage, owner: Player): Damage
+	(damage: Damage, owner: Player, data: number[]): Damage
 }
 
 /**
  * called on taking damage
  */
-class OnDamageEffect extends StatusEffect {
+class OnDamageEffect extends OnConditionEffect {
 	protected sourceIds: string[] //only active when receiving damage from these players
 	protected onDamage: OnDamageFunction
 	protected damages: number[]
@@ -693,8 +786,8 @@ class OnDamageEffect extends StatusEffect {
 		this.sourceIds = ids
 		return this
 	}
-	private isValidSource(source:string){
-		if(this.sourceIds.length===0) return true
+	private isValidSource(source: string) {
+		if (this.sourceIds.length === 0) return true
 		return this.sourceIds.includes(source)
 	}
 	/**
@@ -702,9 +795,14 @@ class OnDamageEffect extends StatusEffect {
 	 * @param damage
 	 * @returns modified damage
 	 */
-	onSkillDamage(damage: Damage, source: string) {
-		if (this.damages.includes(OnDamageEffect.SKILL_DAMAGE) && this.isValidSource(source)) {
-			return this.onDamage(damage, this.owner)
+	onSkillDamage(damage: Damage, source: string): Damage | null {
+		if (
+			this.damages.includes(OnDamageEffect.SKILL_DAMAGE) &&
+			this.isValidSource(source) &&
+			this.checkSecondaryCondition()
+		) {
+			damage = this.onDamage(damage, this.owner, this.data)
+			this.onAfterInvoke()
 		}
 		return damage
 	}
@@ -713,9 +811,14 @@ class OnDamageEffect extends StatusEffect {
 	 * @param damage
 	 * @returns modified damage
 	 */
-	onBasicAttackDamage(damage: Damage, source: string) {
-		if (this.damages.includes(OnDamageEffect.BASICATTACK_DAMAGE) && this.isValidSource(this.source)) {
-			return this.onDamage(damage, this.owner)
+	onBasicAttackDamage(damage: Damage, source: string): Damage | null {
+		if (
+			this.damages.includes(OnDamageEffect.BASICATTACK_DAMAGE) &&
+			this.isValidSource(this.source) &&
+			this.checkSecondaryCondition()
+		) {
+			damage = this.onDamage(damage, this.owner, this.data)
+			this.onAfterInvoke()
 		}
 		return damage
 	}
@@ -725,9 +828,10 @@ class OnDamageEffect extends StatusEffect {
 	 * @param damage
 	 * @returns modified damage
 	 */
-	onObstacleDamage(damage: Damage) {
-		if (this.damages.includes(OnDamageEffect.OBSTACLE_DAMAGE)) {
-			return this.onDamage(damage, this.owner)
+	onObstacleDamage(damage: Damage): Damage | null {
+		if (this.damages.includes(OnDamageEffect.OBSTACLE_DAMAGE) && this.checkSecondaryCondition()) {
+			damage = this.onDamage(damage, this.owner, this.data)
+			this.onAfterInvoke()
 		}
 		return damage
 	}
@@ -735,7 +839,8 @@ class OnDamageEffect extends StatusEffect {
 
 export {
 	StatusEffect,
-	EFFECT_TYPE,EFFECT_TIMING,
+	EFFECT_TYPE,
+	EFFECT_TIMING,
 	EFFECT_SOURCE,
 	TickActionFunction,
 	AblityChangeEffect,
@@ -750,5 +855,5 @@ export {
 	onHitFunction,
 	ItemPassiveEffectFactory,
 	EffectFactory,
-	OnHPBelowThresholdEffect
+	OnHPBelowThresholdEffect,
 }

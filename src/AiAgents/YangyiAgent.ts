@@ -12,10 +12,10 @@ class YangyiAgent extends AiAgent{
         this.itemtree = new ItemBuild().setItems([
 			ITEM.EPIC_SWORD,
 			ITEM.ANCIENT_SPEAR,
+			ITEM.FLAIL_OF_JUDGEMENT,
 			ITEM.EPIC_WHIP,
 			ITEM.SWORD_OF_BLOOD,
-			ITEM.WARRIORS_SHIELDSWORD,
-			ITEM.EPIC_FRUIT
+			ITEM.WARRIORS_SHIELDSWORD
 		]).setFinal(ITEM.EPIC_SWORD)
 		this.gameStartMessage= "You all will die under my claw and fire!"
     }

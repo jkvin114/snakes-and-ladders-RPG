@@ -10,11 +10,11 @@ class JeanAgent extends AiAgent{
 		this.itemtree = 
 		new ItemBuild().setItems([
 			ITEM.EPIC_SWORD,
-			ITEM.SWORD_OF_BLOOD,
+			ITEM.FLAIL_OF_JUDGEMENT,
 			ITEM.EPIC_WHIP,
-			ITEM.BOOTS_OF_HASTE,
 			ITEM.CROSSBOW_OF_PIERCING,
-			ITEM.WARRIORS_SHIELDSWORD
+			ITEM.WARRIORS_SHIELDSWORD,
+			ITEM.BOOTS_OF_HASTE
 		]).setFinal(ITEM.EPIC_SWORD)
 		this.gameStartMessage="Everyone will be equal under my bullet!"
     }

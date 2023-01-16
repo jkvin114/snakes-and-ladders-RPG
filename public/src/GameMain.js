@@ -13,6 +13,7 @@ export class StringResource {
 		this.VISUAL_EFFECTS
 		this.GLOBAL_OBSTACLE_EVENT
 		this.SPECIAL_EFFECTS = new Map()
+		this.ITEM_DATA = [new Map(),new Map(),new Map(),new Map()]
 	}
 }
 

@@ -74,14 +74,15 @@ class AttackHandler {
 		if (target instanceof Player) {
 			damage = from.effects
 				.onBasicAttackHit(damage, target)
-				.updateAllDamage(CALC_TYPE.multiply, from.ability.basicAttackMultiplier())
+
+			damage.updateAllDamage(CALC_TYPE.multiply, from.ability.basicAttackMultiplier())
 
 			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}
 		let victimData: ServerGameEventFormat.Victim = {
 			pos: target.pos,
 			flags: [],
-			damage: damage.getTotalDmg(),
+			damage: damage.total,
 		}
 		//("-----------basicattack"+damage.getTotalDmg())
 		let died = AttackHandler.doDamage(from, target, damage, from.getBasicAttackName(), true)

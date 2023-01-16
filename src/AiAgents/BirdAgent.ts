@@ -10,9 +10,9 @@ class BirdAgent extends AiAgent{
         this.itemtree = new ItemBuild().setItems([
 				ITEM.EPIC_CRYSTAL_BALL,
 				ITEM.EPIC_WHIP,
-				ITEM.ANCIENT_SPEAR,
+				ITEM.STAFF_OF_JUDGEMENT,
 				ITEM.TIME_WARP_POTION,
-				ITEM.CARD_OF_DECEPTION,
+				ITEM.ANCIENT_SPEAR,
 				ITEM.GUARDIAN_ANGEL
 			]).setFinal(ITEM.ANCIENT_SPEAR)
 		this.gameStartMessage="I will burn you all in the name of the phenix!"
