@@ -140,9 +140,9 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		return range
 	}
 
-	private getSpecialEffectDesc(name: string, data: number[]): SpecialEffect.DescriptionData | undefined {
-		if (!SpecialEffect.Setting.has(name)) return undefined
-		let description = SpecialEffect.Setting.get(name)
+	private getSpecialEffectDesc(namespace: string, data: number[]): SpecialEffect.DescriptionData | undefined {
+		if (!SpecialEffect.Namespace.has(namespace)) return undefined
+		let description = SpecialEffect.Namespace.get(namespace)
 		//clone object
 		let desc = {
 			type: description.type,
@@ -163,21 +163,21 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		return this.owner.game.getNameById(source)
 	}
 	private transferSpecialEffect(effect: StatusEffect) {
-		let data: SpecialEffect.DescriptionData | undefined = this.getSpecialEffectDesc(effect.name, effect.data)
+		let data: SpecialEffect.DescriptionData | undefined = this.getSpecialEffectDesc(effect.namespace, effect.data)
 
 		if (data) {
 			this.owner.game.eventEmitter.giveSpecialEffect(
 				this.owner.turn,
-				effect.name,
+				effect.namespace,
 				data,
 				this.getEffectSourcePlayerName(effect.source)
 			)
 		}
 	}
-	applySpecial(effect: StatusEffect | undefined, name?: string) {
+	applySpecial(effect: StatusEffect | undefined, namespace?: string) {
 
 		if (!effect) return
-		if (name != null) effect.setName(name)
+		if (namespace != null) effect.setNamespace(namespace)
 
 		this.transferSpecialEffect(effect)
 		
@@ -292,16 +292,17 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		if (key < 30) {
 			this.owner.game.eventEmitter.update("removeEffect", this.owner.turn, key)
 		} else {
-			this.owner.game.eventEmitter.update("removeSpecialEffect", this.owner.turn, effect.name)
+			this.owner.game.eventEmitter.update("removeSpecialEffect", this.owner.turn, effect.namespace)
 		}
 	}
-	private getKeyByName(name: string) {
+	private getKeysByNamespace(namespace: string):number[] {
+		let keys=[]
 		for (const [key, effect] of this.storage.entries()) {
-			if (effect.name === name) {
-				return key
+			if (effect.namespace === namespace) {
+				keys.push(key) 
 			}
 		}
-		return -1
+		return keys
 	}
 
 	cooldown(timing: EFFECT_TIMING) {
@@ -420,6 +421,7 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	}
 
 	onSkillHit(damage: Damage, target: Player) {
+
 		for (const [name, effect] of this.category[EFFECT_TYPE.ONHIT].entries()) {
 			let d = effect.onHitWithSkill(target, damage)
 			if (d != null) damage = d
@@ -441,12 +443,14 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	}
 	onAddItem(item: ITEM) {
 		let effect = ItemPassiveEffectFactory.create(item)
-		if (!effect) return
-
-		this.applySpecial(effect, PlayerInventory.getItemName(item))
+		for(const e of effect){
+			if(!!e)
+				this.applySpecial(e, PlayerInventory.getItemName(item))
+		}		
 	}
 	onRemoveItem(item: ITEM) {
-		this.removeByKey(this.getKeyByName(PlayerInventory.getItemName(item)))
+		for(const key of this.getKeysByNamespace(PlayerInventory.getItemName(item)))
+			this.removeByKey(key)
 	}
 }
 export { PlayerStatusEffects, EntityStatusEffect }

@@ -95,7 +95,7 @@ class PlayerAbility implements PlayerComponent{
 	player: Player
 	private pendingMaxHpChange: number
 
-	static readonly MAX_ATTACKRANGE = 4
+	static readonly MAX_ATTACKRANGE = 5
 	static readonly MAX_MOVESPEED = 3
 	static readonly MAX_ULTHASTE = 3
 	constructor(player: Player) {
@@ -220,6 +220,7 @@ class PlayerAbility implements PlayerComponent{
 			// 	break
 			case "attackRange":
 				this.attackRange.update(change_amt)
+				// console.log("update attackrange"+this.attackRange.get())
 				break
 			case "obsR":
 				this.obsR.update(change_amt)

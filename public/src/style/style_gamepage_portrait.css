@@ -96,9 +96,11 @@
     }
     .mydisplay {
         top:83px;
+        border-top-right-radius: 10px;
+
     }
     .mystatus {
-        left: 15px;
+        left: 0;
     }
     #otherui_container {
         top: 160px;

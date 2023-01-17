@@ -67,7 +67,7 @@ class PlayerInventory implements PlayerComponent {
 			let charge = this.itemData.get(ITEM.FLAIL_OF_JUDGEMENT).getDataValue("charge")
 			let range=Math.floor(charge / 6)
 			this.player.effects.applySpecial(new AblityChangeEffect(ENUM.EFFECT.ITEM_FLAIL_OF_JUDGEMENT_RANGE,4,
-				new Map<string,number>().set("attackRange",range)))
+				new Map().set("attackRange",range)))
 			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_FLAIL_OF_JUDGEMENT, [
 				charge,
 				charge * 6,

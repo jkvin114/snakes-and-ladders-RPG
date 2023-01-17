@@ -103,7 +103,7 @@ class Hacker extends Player {
 		this.ability.sendToClient()
 	}
 	private getStackList(){
-		let str='<br>Vulnerability stacks collected:<br>'
+		let str=''
 		for(const p of this.mediator.allPlayer()){
 			if(p.turn===this.turn) continue
 			str+=p.name+":"+this.stacks[p.turn]+", "
@@ -113,6 +113,7 @@ class Hacker extends Player {
 	//override
 	getSkillInfoEng(): string[] {
 		let info=super.getSkillInfoEng()
+		info[0]+='<br>Vulnerability stacks collected:<br>'
 		info[0]+=this.getStackList()
 		if(this.virtualCharacter && this.copiedCharId!==-1){
 			info[2]=this.virtualCharacter.getSkillInfoEng()[2]
@@ -122,6 +123,7 @@ class Hacker extends Player {
 	//override
 	getSkillInfoKor(): string[] {
 		let info=super.getSkillInfoKor()
+		info[0]+='<br>수집한 취약점 중첩:<br>'
 		info[0]+=this.getStackList()
 		if(this.virtualCharacter && this.copiedCharId!==-1){
 			info[2]=this.virtualCharacter.getSkillInfoKor()[2]

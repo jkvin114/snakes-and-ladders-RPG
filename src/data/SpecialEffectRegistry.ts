@@ -180,10 +180,10 @@ export namespace SpecialEffect {
 		desc_kor: string
 		isgood: boolean
 	}
-	export const Setting = new Map<string, DescriptionData>()
+	export const Namespace = new Map<string, DescriptionData>()
 	for (const [k, v] of Object.entries(ITEM)){
 		if(v.desc!="")
-		Setting.set(v.name,{
+		Namespace.set(v.name,{
 			type:"item",
 			item_id:v.item_id,
 			desc:v.desc,
@@ -193,7 +193,7 @@ export namespace SpecialEffect {
 	}
 	for (const [k, v] of Object.entries(SKILL)){
 		if(v.desc!="")
-		Setting.set(v.name,{
+		Namespace.set(v.name,{
 			type:"skill",
 			src:v.src,
 			desc:v.desc,
@@ -203,7 +203,7 @@ export namespace SpecialEffect {
 	}
 	for (const [k, v] of Object.entries(OBSTACLE)){
 		if(v.desc!="")
-		Setting.set(v.name,{
+		Namespace.set(v.name,{
 			type:"obstacle",
 			src:v.src,
 			desc:v.desc,

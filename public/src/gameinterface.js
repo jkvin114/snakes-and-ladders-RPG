@@ -343,7 +343,22 @@ export default class GameInterface {
 				if (keyName === "e" && this.skillBtnShown) {
 					GAME.onSkillBtnClick(3)
 				}
+				if (keyName === "Tab" ) {
+
+					$("#infowindow").css("visibility", "visible")
+					event.preventDefault()
+				}
 			}).bind(this)
+		)
+		document.addEventListener(
+			"keyup",
+			((event) => {
+				const keyName = event.key
+				if (keyName === "Tab" ) {
+					$("#infowindow").css("visibility", "hidden")
+					event.preventDefault()
+				}
+			})
 		)
 	}
 	hideChat() {
@@ -861,33 +876,52 @@ addChatDragEvent() {
 
 	changeShield(shield, target) {
 		let ui = GAME.turn2ui(target)
-		if (shield <= 0) {
-			$(this.elements.shieldframe[ui]).hide()
-			
-		} else $(this.elements.shieldframe[ui]).css("display", "inline-block")
+		shield = Math.max(shield, 0)
 
 		if (ui === 0) {
 			$(this.elements.shieldframe[ui]).css({
 				width: String(shield) + "px"
 			})
 			$("#effects").css("left", String(0.8 * shield + 30) + "px")
+			if (shield <= 0) {
+				$(".myshieldframe-container").hide()
+				$(".myhp-val").html($(".myhp-val").data("hp")+"/"+$(".myhp-val").data("maxhp"))
+				$(".myhp-val").data("shield",0)
+			} else {
+
+				$(".myshieldframe-container").css("display", "inline-block")
+				$(".myhp-val").html($(".myhp-val").data("hp")+"/"+$(".myhp-val").data("maxhp")+`
+					(+${shield})`)
+				$(".myhp-val").data("shield",shield)
+			}
 		} else {
 			$(this.elements.shieldframe[ui]).css({
 				width: String(0.2 * shield) + "px"
 			})
-		}
-		shield = Math.max(shield, 0)
+			if (shield <= 0) {
+				$(this.elements.shieldframe[ui]).hide()
+				$(this.elements.hpis[ui]).html($(this.elements.hpis[ui]).data("hp")+"/"+$(this.elements.hpis[ui]).data("maxhp"))
+				$(this.elements.hpis[ui]).data("shield",0)
+			} else{
+				$(this.elements.shieldframe[ui]).css("display", "inline-block")
+				$(this.elements.hpis[ui]).html($(this.elements.hpis[ui]).data("hp")+"/"+$(this.elements.hpis[ui]).data("maxhp")+`
+				(+${shield})`)
+				$(this.elements.hpis[ui]).data("shield",shield)
+			} 
+			
 
-		let name = $(this.elements.hpis[ui]).html()
-		let s = name.match(/\([+0-9]+\)/)
-		console.log(s)
-		if (!s) {
-			$(this.elements.hpis[ui]).html(name + ` (+${Math.floor(shield)})`)
-		} else if (shield === 0) {
-			$(this.elements.hpis[ui]).html(name.replace(/\([+0-9]+\)/, ""))
-		} else {
-			$(this.elements.hpis[ui]).html(name.replace(/(?<=\(\+)[0-9]+/, shield))
+			// let name = $(this.elements.hpis[ui]).html()
+			// let s = name.match(/\([+0-9]+\)/)
+			// console.log(s)
+			// if (!s) {
+			// 	$(this.elements.hpis[ui]).html(name + ` (+${Math.floor(shield)})`)
+			// } else if (shield === 0) {
+			// 	$(this.elements.hpis[ui]).html(name.replace(/\([+0-9]+\)/, ""))
+			// } else {
+			// 	$(this.elements.hpis[ui]).html(name.replace(/(?<=\(\+)[0-9]+/, shield))
+			// }
 		}
+		
 	}
 
 	lostHP(hp, change) {
@@ -925,11 +959,19 @@ addChatDragEvent() {
 			}
 
 			if(maxhp > space){
-				$(this.elements.hpframe[ui]).css({
+				$(".myhpframe-container").css({
 					transform: "scale("+(space/maxhp)+",1)"
 				})
-				console.log(space/maxhp)
+				// console.log(space/maxhp)
 			}
+			$(".myhp-val").data("hp",hp)
+			$(".myhp-val").data("maxhp",maxhp)
+			let shield=$(".myhp-val").data("shield")
+			let str=hp+"/"+maxhp
+			if(!!shield) str+="(+"+shield+")"
+			$(this.elements.hpis[ui]).html(str)
+		
+			$(".myhp-val").html(str)
 		}
 		else{
 			$(this.elements.hpframe[ui]).css({
@@ -952,19 +994,22 @@ addChatDragEvent() {
 					width: String(space) + "px"
 				})
 			// }
+			
+		$(this.elements.hpis[ui]).data("hp",hp)
+		$(this.elements.hpis[ui]).data("maxhp",maxhp)
+		// let shield = $(this.elements.hpis[ui])
+		// .html()
+		// .match(/\([+0-9]+\)/)
+		let shield=$(this.elements.hpis[ui]).data("shield")
+		// let str = $(this.elements.hpis[ui])
+		// 	.html()
+		// 	.replace(/\s\([+0-9]+\)/, shield ? shield[0] : "")
+		// 	.replace(/[0-9]+(?=\/)/, String(Math.floor(hp)))
+		// 	.replace(/(?<=\/)[0-9]+/, String(Math.floor(maxhp)))
+		let str=hp+"/"+maxhp
+		if(!!shield) str+="(+"+shield+")"
+			$(this.elements.hpis[ui]).html(str)
 		}
-
-		let shield = $(this.elements.hpis[ui])
-			.html()
-			.match(/\([+0-9]+\)/)
-
-		let str = $(this.elements.hpis[ui])
-			.html()
-			.replace(/\s\([+0-9]+\)/, shield ? shield[0] : "")
-			.replace(/[0-9]+(?=\/)/, String(Math.floor(hp)))
-			.replace(/(?<=\/)[0-9]+/, String(Math.floor(maxhp)))
-
-		$(this.elements.hpis[ui]).html(str)
 	}
 	updatePlayerItems(turn, items) {
 		let text = ""
@@ -990,23 +1035,31 @@ addChatDragEvent() {
 
 		$(".player_item").off()
 		$(".player_item").mouseenter(function (e) {
-			if($(this).offset().left < window.innerWidth/2){
-				$(".item_tooltip").removeClass("rightside")
-				$(".item_tooltip").addClass("leftside")
+			
+			let left=$(this).offset().left
+			let top=$(this).offset().top
+			let offsetX=40
+			let offsetY=40
+			if($(this).offset().left > window.innerWidth/2){
+				offsetX=-200
 			}
-			else{
-				$(".item_tooltip").removeClass("leftside")
-				$(".item_tooltip").addClass("rightside")
+			if($(this).offset().top > window.innerHeight/2){
+				// offsetY=-150
 			}
-			$(".item_tooltip")
-				.css({
-					visibility: "visible"
-				})
-				.css($(this).offset())
+			
+				// .css($(this).offset())
 			let item = GAME.strRes.ITEMS.items[Number($(this).attr("value"))]
 			let owner=$(this).data("owner")
 			$(".item_tooltip h4").html(GAME.chooseLang(item.name, item.kor_name))
 			$(".item_tooltip p").html(GAME.ui.getItemDescription(item)+GAME.ui.getItemData(owner,item))
+			left+=offsetX
+			top+=offsetY
+			let maxtop=window.innerHeight-$(".item_tooltip").height()-10
+			let maxleft=window.innerWidth-$(".item_tooltip").width()-10
+			$(".item_tooltip")
+				.css({
+					visibility: "visible",left:Math.min(maxleft,Math.max(0,left)),top:Math.min(maxtop,Math.max(0,top))
+				})
 		})
 		$(".player_item").mouseleave(function (e) {
 			$(".item_tooltip").css("visibility", "hidden")

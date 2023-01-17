@@ -419,8 +419,8 @@
 			],
 			"children": [25, 27],
 			"parents": [],
-			"unique_effect": "On attack, additionally deals 10% of target`s maximum HP as magic damage",
-			"unique_effect_kor": "공격시 대상 최대체력의 10%의 추가 마법 피해를 입힘",
+			"unique_effect": "Skill attack deals bonus magic damage equal to 10%(5% for basic attack) of target`s maximum HP",
+			"unique_effect_kor": "스킬공격시 대상 최대체력의 10%, 기본공격시 5%의 추가 마법 피해를 입힘",
 			"summary": {
 				"kor": "공격시 추가피해",
 				"eng": "Additional damage on attack"
@@ -429,9 +429,9 @@
 		},
 		{
 			"id": 23,
-			"name": "Epic Whip",
+			"name": "Fury Whip",
 			"kor_name": "살의의 채찍",
-			"price": 290,
+			"price": 340,
 			"itemlevel": 3,
 			"ability": [
 				{ "type": "AD", "value": 45, "type_kor": "공격력" },
@@ -448,7 +448,7 @@
 		},
 		{
 			"id": 24,
-			"name": "Rare Whip",
+			"name": "Reach Whip",
 			"kor_name": "교활한 채찍",
 			"price": 145,
 			"itemlevel": 2,
@@ -500,8 +500,8 @@
 			"ability": [{ "type": "adStat", "value": 20, "type_kor": "적응형 능력치" }],
 			"children": [],
 			"parents": [22, 31],
-			"unique_effect": "On attack, additionally deals 5% of target`s maximum HP as magic damage",
-			"unique_effect_kor": "공격시 대상 최대체력의 5%의 추가 마법 피해를 입힘",
+			"unique_effect": "Skill attack deals bonus magic damage equal to 5%(2% for basic attack) of target`s maximum HP",
+			"unique_effect_kor": "스킬공격시 대상 최대체력의 5%, 기본공격시 2% 의 추가 마법 피해를 입힘",
 			"summary": {
 				"kor": "공격시 추가피해",
 				"eng": "Additional damage on attack"
@@ -572,8 +572,8 @@
 			"ability": [{ "type": "adStat", "value": 60, "type_kor": "적응형 능력치" }],
 			"children": [30, 27, 25],
 			"parents": [],
-			"unique_effect": "40% armor and magic penetration and additionally deals 7% of target`s maximum HP as fixed damage on attack",
-			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시하고 공격시 대상 최대체력의 7%의 추가 고정 피해를 입힘",
+			"unique_effect": "40% armor and magic penetration. Skill attack deals bonus fixed damage equal to 7%(4% for basic attack) of target`s maximum HP",
+			"unique_effect_kor": "적 방어력과 마법저항력을 40% 무시. 스킬공격시 대상 최대체력의 7%, 기본공격시 4% 의 추가 고정 피해를 입힘",
 			"summary": {
 				"kor": "탱커 대항",
 				"eng": "Anti-tank"
@@ -643,7 +643,7 @@
 		},
 		{
 			"id": 35,
-			"name": "Warrior`s Shieldsword",
+			"name": "Fortitude Shieldsword",
 			"kor_name": "전사의 방패검",
 			"price": 300,
 			"itemlevel": 3,
@@ -668,7 +668,7 @@
 		},
 		{
 			"id": 36,
-			"name": "Boots of Protection",
+			"name": "Boots of Preservation",
 			"kor_name": "수호의 장화",
 			"price": 270,
 			"itemlevel": 3,
@@ -734,7 +734,7 @@
 			"category": ["magic"]
 		},{
 			"id": 39,
-			"name": "Magic Wand",
+			"name": "Mystic Wand",
 			"kor_name": "마법 지팡이",
 			"price": 80,
 			"itemlevel": 2,
@@ -768,7 +768,7 @@
 		}
 		,{
 			"id": 41,
-			"name": "Staff of Judgement",
+			"name": "Thunderbolt Staff",
 			"kor_name": "심판의 지팡이",
 			"price": 280,
 			"itemlevel": 3,
@@ -787,7 +787,7 @@
 			"category": ["magic"]
 		},{
 			"id": 42,
-			"name": "Flail of Judgement",
+			"name": "Energized Flail of Reach",
 			"kor_name": "심판의 철퇴",
 			"price": 310,
 			"itemlevel": 3,

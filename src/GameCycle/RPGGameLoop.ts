@@ -344,6 +344,8 @@ class GameLoop {
 		//	console.log("ondestroy"+this.game)
 		if(this.idleTimeout)
 			clearTimeout(this.idleTimeout)
+		if(this.resetTimeout)
+			clearTimeout(this.resetTimeout)
 	}
 }
 

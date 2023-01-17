@@ -88,7 +88,7 @@
       </div>
 
       <div class='stat_tooltip tooltip'>
-        <button id="close_stat_tooltip">&times;</button>
+        <!-- <button id="close_stat_tooltip">&times;</button> -->
         <div id="stat_content">
           <div class="stat_row">
             <a class="name">n</a><a class="value">1000</a>
@@ -96,7 +96,7 @@
         </div>
       </div>
       <div class='inventory_tooltip tooltip'>
-        <button id="close_inventory_tooltip">&times;</button>
+        <!-- <button id="close_inventory_tooltip">&times;</button> -->
         <div id="inventory_content">
         
         </div>
@@ -108,9 +108,6 @@
             &nbsp;</div>
           </div> -->
         </div>
-        <div id="inventory_active_item_data">
-          
-        </div>
       </div>
       <div class='item_tooltip ' id="item_tooltip">
         <h4>name</h4>
@@ -120,25 +117,36 @@
       <div class="myui_new">
 
         <div class="mydisplay">
-          <img class="mychar char">
+          <img class="mychar char" >
           <img id="show_stat" src="res/img/svg/chart.svg">
           <strong id=money class="display_description"> 0$</strong>
           <img id="show_items" src="res/img/svg/shopping-bag.svg">
         </div>
 
         <div class="mystatus">
-          <a class=" myhpi namei">1p</a><a class="myhpi hpi "> 200/200 </a>       
+          <div class="mystatus-container myhpi-container">
+            <a class=" myhpi namei">1p</a>
+          </div>
+          <!-- <a class="myhpi hpi "> 200/200 </a>        -->
           <div class=" mainhpcontainer">
+            
+            
+            <a class="myhp-val hpi">100/100</a>
+            <a class="myshield-val"></a>
+            <div class="mystatus-container myhpframe-container">
+              <div class="myhpframe hpframe">
+                <span class="myhp hp">
+                </span>
+                <span class="myhp_lost">
+                </span>
+              </div>
+            </div><br>
+            <div class="mystatus-container myshieldframe-container hidden">
 
-            <div class="myhpframe hpframe">
-              <span class="myhp hp">
-              </span>
-              <span class="myhp_lost">
-              </span>
-            </div>
-            <div class="myshieldframe shieldframe hidden">
-              <span class="myshield shield">
-              </span>
+              <div class="myshieldframe shieldframe">
+                <span class="myshield shield">
+                </span>
+              </div>
             </div>
             <div id="effects">
                       <!-- <a style="background:url('res/img/effects.png') 0 0" class=effect data-toggle="tooltip" title="[Slowness] next dice -2"></a> -->

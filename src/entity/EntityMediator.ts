@@ -72,10 +72,9 @@ class AttackHandler {
 		let damage = dmg.copy()
 
 		if (target instanceof Player) {
-			damage = from.effects
-				.onBasicAttackHit(damage, target)
-
 			damage.updateAllDamage(CALC_TYPE.multiply, from.ability.basicAttackMultiplier())
+			damage = from.effects.onBasicAttackHit(damage, target)
+
 
 			damage = target.effects.onBasicAttackDamage(damage, from.UEID)
 		}

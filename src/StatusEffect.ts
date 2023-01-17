@@ -59,10 +59,11 @@ class EffectFactory {
  *invoked when buying item
  */
 class ItemPassiveEffectFactory {
-	static create(item: ITEM) {
+	static create(item: ITEM) :(StatusEffect|null)[]{
+		let effects:(StatusEffect|null)[]=[null,null]
 		switch (item) {
 			case ITEM.EPIC_FRUIT:
-				return new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_PERMANENT, TickEffect.FREQ_EVERY_TURN)
+				effects[0]= new TickEffect(EFFECT.ITEM_FRUIT, StatusEffect.DURATION_PERMANENT, TickEffect.FREQ_EVERY_TURN)
 					.setAction(function (this: Player) {
 						let amt=this.ability.extraHP * 0.15
 						this.changeHP_heal(new HPChange(amt))
@@ -70,27 +71,35 @@ class ItemPassiveEffectFactory {
 						return false
 					})
 					.setGood()
+					break
 			case ITEM.POWER_OF_MOTHER_NATURE:
-				return new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE1, StatusEffect.DURATION_PERMANENT, function (
 					damage: Damage,
 					owner: Player
 				) {
-					if (owner.inven.isActiveItemAvailable(ITEM.POWER_OF_MOTHER_NATURE)) {
-						owner.inven.useActiveItem(ITEM.POWER_OF_MOTHER_NATURE)
-						owner.effects.applySpecial(
-							EffectFactory.create(EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY),
-							SpecialEffect.ITEM.POWER_OF_MOTHER_NATURE_ABILITY.name
-						)
-					}
 					let change= PlayerAbility.applySkillDmgReduction(damage, 30)
 					owner.inven.addActiveItemData(item,"damage",-change)
 					return damage
 				})
 					.on([OnDamageEffect.SKILL_DAMAGE])
 					.setGood()
-
+					
+				effects[1]=new OnDamageEffect(EFFECT.ITEM_POWER_OF_MOTHER_NATURE2, StatusEffect.DURATION_PERMANENT, function (
+					damage: Damage,
+					owner: Player
+				) {
+					owner.effects.applySpecial(
+						EffectFactory.create(EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY),
+						SpecialEffect.ITEM.POWER_OF_MOTHER_NATURE_ABILITY.name
+					)
+					return damage
+				})
+					.on([OnDamageEffect.SKILL_DAMAGE])
+					.setGood()
+					.setConditionActiveItem(item)
+					break
 			case ITEM.POWER_OF_NATURE:
-				return new OnDamageEffect(
+				effects[0]=  new OnDamageEffect(
 					EFFECT.ITEM_POWER_OF_NATURE,
 					StatusEffect.DURATION_PERMANENT,
 					(damage: Damage, owner: Player) => {
@@ -100,9 +109,9 @@ class ItemPassiveEffectFactory {
 				)
 					.on([OnDamageEffect.SKILL_DAMAGE])
 					.setGood()
-
+					break
 			case ITEM.CARD_OF_DECEPTION:
-				return new OnHitEffect(EFFECT.ITEM_CARD_OF_DECEPTION, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_CARD_OF_DECEPTION, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -120,8 +129,9 @@ class ItemPassiveEffectFactory {
 					})
 					.setConditionActiveItem(ITEM.CARD_OF_DECEPTION)
 					.setGood()
+					break
 			case ITEM.ANCIENT_SPEAR:
-				return new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE1, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -130,10 +140,22 @@ class ItemPassiveEffectFactory {
 					this.inven.addActiveItemData(item,"damage",change)
 					return damage
 				})
-					.on(OnHitEffect.EVERYATTACK)
+					.on(OnHitEffect.SKILLATTACK)
 					.setGood()
+				effects[1]=  new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE2, StatusEffect.DURATION_PERMANENT, function (
+						this: Player,
+						target: Player,
+						damage: Damage
+					) {
+						let change= damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.05)
+						this.inven.addActiveItemData(item,"damage",change)
+						return damage
+					})
+						.on(OnHitEffect.BASICATTACK)
+						.setGood()
+					break
 			case ITEM.SPEAR:
-				return new OnHitEffect(EFFECT.ITEM_SPEAR_ADAMAGE, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_SPEAR_ADAMAGE1, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -142,10 +164,22 @@ class ItemPassiveEffectFactory {
 					damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.05)
 					return damage
 				})
-					.on(OnHitEffect.EVERYATTACK)
+					.on(OnHitEffect.SKILLATTACK)
 					.setGood()
+				effects[1]=  new OnHitEffect(EFFECT.ITEM_SPEAR_ADAMAGE2, StatusEffect.DURATION_PERMANENT, function (
+						this: Player,
+						target: Player,
+						damage: Damage
+					) {
+						//	console.log("ITEM_SPEAR_ADAMAGE")
+						damage.updateMagicDamage(CALC_TYPE.plus, target.MaxHP * 0.02)
+						return damage
+					})
+						.on(OnHitEffect.BASICATTACK)
+						.setGood()
+					break
 			case ITEM.CROSSBOW_OF_PIERCING:
-				return new OnHitEffect(EFFECT.ITEM_CROSSBOW_ADAMAGE, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_CROSSBOW_ADAMAGE1, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -154,10 +188,22 @@ class ItemPassiveEffectFactory {
 					this.inven.addActiveItemData(item,"damage",change)
 					return damage
 				})
-					.on(OnHitEffect.EVERYATTACK)
+					.on(OnHitEffect.SKILLATTACK)
 					.setGood()
+				effects[1]=  new OnHitEffect(EFFECT.ITEM_CROSSBOW_ADAMAGE2, StatusEffect.DURATION_PERMANENT, function (
+						this: Player,
+						target: Player,
+						damage: Damage
+					) {
+						let change= damage.updateTrueDamage(CALC_TYPE.plus, target.MaxHP * 0.04)
+						this.inven.addActiveItemData(item,"damage",change)
+						return damage
+					})
+						.on(OnHitEffect.BASICATTACK)
+						.setGood()
+					break
 			case ITEM.FULL_DIAMOND_ARMOR:
-				return new OnHitEffect(EFFECT.ITEM_DIAMOND_ARMOR_MAXHP_GROWTH, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_DIAMOND_ARMOR_MAXHP_GROWTH, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -169,8 +215,9 @@ class ItemPassiveEffectFactory {
 				})
 					.on(OnHitEffect.EVERYATTACK)
 					.setGood()
+				break
 			case ITEM.BOOTS_OF_PROTECTION:
-				return new OnDamageEffect(
+				effects[0]=  new OnDamageEffect(
 					EFFECT.ITEM_BOOTS_OF_ENDURANCE,
 					StatusEffect.DURATION_PERMANENT,
 					(damage: Damage, owner: Player) => {
@@ -180,8 +227,9 @@ class ItemPassiveEffectFactory {
 				)
 					.on([OnDamageEffect.BASICATTACK_DAMAGE])
 					.setGood()
+					break
 			case ITEM.WARRIORS_SHIELDSWORD:
-				return new OnHPBelowThresholdEffect(
+				effects[0]=  new OnHPBelowThresholdEffect(
 					EFFECT.ITEM_SHIELDSWORD,
 					StatusEffect.DURATION_PERMANENT,
 					(damage: number, owner: Player) => {
@@ -203,8 +251,9 @@ class ItemPassiveEffectFactory {
 					.setInvokeConditionHpPercent(30)
 					.setGood()
 					.setConditionActiveItem(ITEM.WARRIORS_SHIELDSWORD)
+					break
 			case ITEM.INVISIBILITY_CLOAK:
-				return new OnHPBelowThresholdEffect(
+				effects[0]=  new OnHPBelowThresholdEffect(
 					EFFECT.ITEM_INVISIBILITY_CLOAK,
 					StatusEffect.DURATION_PERMANENT,
 					(damage: number, owner: Player) => {
@@ -214,8 +263,9 @@ class ItemPassiveEffectFactory {
 					.setInvokeConditionHpPercent(30)
 					.setGood()
 					.setConditionActiveItem(ITEM.INVISIBILITY_CLOAK)
+					break
 			case ITEM.DAGGER:
-				return new OnHitEffect(EFFECT.ITEM_STATIC_DAGGER, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_STATIC_DAGGER, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage,
@@ -228,8 +278,9 @@ class ItemPassiveEffectFactory {
 					.setGood()
 					.setConditionActiveItem(item)
 					.setData([0, 0])
+					break
 			case ITEM.STAFF_OF_JUDGEMENT:
-				return new OnHitEffect(EFFECT.ITEM_STAFF_OF_JUDGEMENT, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_STAFF_OF_JUDGEMENT, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage,
@@ -243,8 +294,9 @@ class ItemPassiveEffectFactory {
 					.setGood()
 					.setConditionActiveItem(item)
 					.setData([0, 0])
+					break
 			case ITEM.FLAIL_OF_JUDGEMENT:
-				return new OnHitEffect(EFFECT.ITEM_FLAIL_OF_JUDGEMENT, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_FLAIL_OF_JUDGEMENT, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage,
@@ -258,9 +310,10 @@ class ItemPassiveEffectFactory {
 					.setGood()
 					.setConditionActiveItem(item)
 					.setData([0, 0,0])
-			default:
-				return null
+					break
 		}
+		console.log(effects)
+		return effects
 	}
 }
 
@@ -331,7 +384,7 @@ abstract class StatusEffect {
 	public owner: Player
 	public readonly timing: EFFECT_TIMING
 	public readonly id: EFFECT
-	public name: string
+	public namespace: string
 	public source: string | null
 	public effectType: EFFECT_TYPE
 	public data: number[]
@@ -345,7 +398,7 @@ abstract class StatusEffect {
 		this.isgood = false
 		this.owner = null
 		this.timing = timing
-		this.name = ""
+		this.namespace = ""
 		this.source = null
 		this.data = []
 		// if (timing === EFFECT_TIMING.BEFORE_SKILL || timing === EFFECT_TIMING.TURN_END) {
@@ -358,8 +411,8 @@ abstract class StatusEffect {
 
 		return this
 	}
-	setName(name: string) {
-		this.name = name
+	setNamespace(name: string) {
+		this.namespace = name
 		return this
 	}
 	setGood() {
@@ -584,16 +637,16 @@ class TickEffect extends StatusEffect {
 		}
 
 		if (!this.source) {
-			return this.owner.doObstacleDamage(damage.getTotalDmg(), this.name)
+			return this.owner.doObstacleDamage(damage.getTotalDmg(), this.namespace)
 		} else if (this.sourceSkill !== -1) {
 			return this.owner.mediator.skillAttackAuto(
 				this.owner.mediator.getPlayer(this.source),
 				this.owner.UEID,
-				new SkillAttack(damage, this.name, this.sourceSkill, this.owner.mediator.getPlayer(this.source))
+				new SkillAttack(damage, this.namespace, this.sourceSkill, this.owner.mediator.getPlayer(this.source))
 			)
 			// return this.owner.hitBySkill(damage, this.name, this.sourceTurn)
 		} else {
-			return this.owner.mediator.attackSingle(this.owner.mediator.getPlayer(this.source), this.owner, damage, this.name)
+			return this.owner.mediator.attackSingle(this.owner.mediator.getPlayer(this.source), this.owner, damage, this.namespace)
 			// return this.owner.game.playerSelector.get(this.sourceTurn).dealDamageTo(this.owner, damage, "tick", this.name)
 			// return this.owner.dealDamageTo(damage.getTotalDmg(), this.sourceTurn, this.name, false)
 		}
@@ -695,9 +748,12 @@ class OnHitEffect extends OnConditionEffect {
 			this.targetCondition(this.owner, target) &&
 			this.checkSecondaryCondition()
 		) {
+			
 			damage = this.onHit.call(this.owner, target, damage, this.data)
 			this.onAfterInvoke()
-		} else return damage
+			
+		}
+		return damage
 	}
 	onHitWithBasicAttack(target: Player, damage: Damage): Damage | null {
 		if (
@@ -708,7 +764,8 @@ class OnHitEffect extends OnConditionEffect {
 		) {
 			damage = this.onHit.call(this.owner, target, damage, this.data)
 			this.onAfterInvoke()
-		} else return damage
+		} 
+		 return damage
 	}
 }
 

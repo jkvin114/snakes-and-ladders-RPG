@@ -205,6 +205,8 @@ abstract class Room {
 		this.map = 0
 		if(this.resetCallback!=null)
 			this.resetCallback()
+		if(this.idleTimeout) clearTimeout(this.idleTimeout)
+		if(this.connectionTimeout) clearTimeout(this.connectionTimeout)
 	}
 }
 

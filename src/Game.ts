@@ -1089,6 +1089,7 @@ class Game {
 	onDestroy(){
 		if(this.arriveSquareTimeout)
 			clearTimeout(this.arriveSquareTimeout)
+		this.gameover=true
 	}
 	//========================================================================================================
 	getFinalStatistics() {
