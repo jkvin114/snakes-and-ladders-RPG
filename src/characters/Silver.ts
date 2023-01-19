@@ -149,9 +149,9 @@ class Silver extends Player {
 	 * @param {*} target
 	 * @returns
 	 */
-	getSkillDamage(target: Entity): SkillAttack|null {
+	getSkillDamage(target: Entity,s:number): SkillAttack|null {
 		let skillattr = null //-1 when can`t use skill, 0 when it`s not attack skill
-		let s = this.pendingSkill
+		// let s = this.pendingSkill
 		this.pendingSkill = -1
 
 		switch (s) {

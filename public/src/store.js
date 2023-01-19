@@ -331,7 +331,7 @@ export class StoreInterface {
 		$(".storeclose").click(function () {
 			GAME.store_ui.closeStore()
 		})
-		$(".storebtn").click(function () {
+		$(".storebtn2").click(function () {
 			GAME.store_ui.openStore()
 
 			//$(".overlay").show(0)
@@ -366,15 +366,13 @@ export class StoreInterface {
 		this.storeStatus.updateLife(data.life)
 	}
 	updateStoreBtnState() {
-		$(".storebtn").show()
+		// $(".storebtn2").show()
 		if (this.storeInstance.enabled) {
-			$(".storebtn").css({
-				filter: "grayscale(0%)"
-			})
+			$(".storebtn2").attr("disabled", false)
+			$(".storebtn2").removeClass("unavaliable")
 		} else {
-			$(".storebtn").css({
-				filter: "grayscale(70%)"
-			})
+			$(".storebtn2").attr("disabled", true)
+			$(".storebtn2").addClass("unavaliable")
 		}
 	}
 	openNewStore(data) {

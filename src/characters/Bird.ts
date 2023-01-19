@@ -195,9 +195,9 @@ class Bird extends Player {
 		return 0
 	}
 
-	getSkillDamage(target: Entity): SkillAttack|null {
+	getSkillDamage(target: Entity,s:number): SkillAttack|null {
 		let skillattr = null
-		let s: number = this.pendingSkill
+		
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.Q:

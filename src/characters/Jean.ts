@@ -127,10 +127,10 @@ class Jean extends Player {
 		return new ShieldEffect(ENUM.EFFECT.SNIPER_ULT_SHIELD,4,this.getSkillAmount("rshield"))
 	}
 
-	getSkillDamage(target: Entity): SkillAttack|null {
+	getSkillDamage(target: Entity,s:number): SkillAttack|null {
 	//	console.log(target + "getSkillDamage" + this.pendingSkill)
 		let skillattr = null
-		let s: number = this.pendingSkill
+		// let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.Q:

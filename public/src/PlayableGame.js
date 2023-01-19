@@ -222,21 +222,32 @@ export class PlayableGame extends Game{
             }
 
             $("#largedicebtn").show()
+			$(".dcbtn .cooltime").html("x")
             if (this.myStat.level < this.scene.Map.dc_limit_level) {
                 this.diceControl = t.dc
-                $(".dc").css("visibility", "visible")
+                // $(".dc").css("visibility", "visible")
+				
                 if (!t.dc) {
-                    $("#dicecontrolbtn").css({ filter: "grayscale(100%)" })
+					$(".dcbtn").attr("disabled",true)
+					$(".dcbtn").addClass("unavaliable")
+                  //  $("#dicecontrolbtn").css({ filter: "grayscale(100%)" })
                 } else {
-                    $("#dicecontrolbtn").css({ filter: "grayscale(0%)" })
+					$(".dcbtn").attr("disabled",false)
+					$(".dcbtn").removeClass("unavaliable")
+                  //  $("#dicecontrolbtn").css({ filter: "grayscale(0%)" })
                 }
                 //		console.log(t)
                 if (t.dc_cool === 0) {
-                    $("#dicecontrolcool").html("")
+                    $(".dcbtn .cooltime").html("x")
                 } else {
-                    $("#dicecontrolcool").html(String(t.dc_cool))
+                    $(".dcbtn .cooltime").html(String(t.dc_cool))
                 }
             }
+			else{
+				
+				$(".dcbtn").attr("disabled",true)
+				$(".dcbtn").addClass("unavaliable")
+			}
         }
     }
     manageStun() {
@@ -255,7 +266,9 @@ export class PlayableGame extends Game{
 		)
 	}
     rollDice(dice) {
-        $(".dc").css("visibility", "hidden")
+        // $(".dc").css("visibility", "hidden")
+		$(".dcbtn").attr("disabled",true)
+		$(".dcbtn").addClass("unavaliable")
         if (this.crypt_turn === dice.crypt_turn && !dice.died) {
 			this.store.disable()
 			this.store_ui.updateStoreBtnState()

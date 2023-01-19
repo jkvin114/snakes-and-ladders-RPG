@@ -84,7 +84,7 @@ abstract class Player extends Entity {
 	assist: number
 	invulnerable: boolean
 	adice: number //추가 주사위숫자
-	protected pendingSkill: number
+	pendingSkill: number
 	oneMoreDice: boolean
 	diceControl: boolean
 	diceControlCool: number
@@ -135,7 +135,7 @@ abstract class Player extends Entity {
 	 * return SkillAttack of the pending skill of player
 	 * @param target 
 	 */
-	abstract getSkillDamage(target:Entity): SkillAttack|null
+	abstract getSkillDamage(target:Entity,skill:number): SkillAttack|null
 	abstract getSkillScale():any
 	abstract getSkillName(skill: number): string
 	/**

@@ -180,9 +180,9 @@ class Tree extends Player {
 			.setSourceId(this.UEID)
 	}
 
-	getSkillDamage(target: Entity): SkillAttack|null {
+	getSkillDamage(target: Entity,s:number): SkillAttack|null {
 		let skillattr = null
-		let s: number = this.pendingSkill
+		// let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.ULT:

@@ -128,49 +128,45 @@ export namespace SpecialEffect {
 			name:"shieldsword_shield",
 			desc:"",desc_kor:"",
 			item_id: ENUM.ITEM.WARRIORS_SHIELDSWORD,
-		},"Ancient Spear":{
-			name:items[ENUM.ITEM.ANCIENT_SPEAR].name,
+		}
+	}
+	const ITEM_PASSIVE=[
+		{
 			desc:"Additional magic damage on attack",
 			desc_kor:"공격시 추가 마법 피해를 입힘",
 			item_id: ENUM.ITEM.ANCIENT_SPEAR,
 		}
-		,"Piercing Spear":{
-			name:items[ENUM.ITEM.SPEAR].name,
+		,{
 			desc:"Additional magic damage on attack",
 			desc_kor:"공격시 추가 마법 피해를 입힘",
 			item_id: ENUM.ITEM.SPEAR,
 		}
-		,"Crossbow of Piercing":{
-			name:items[ENUM.ITEM.CROSSBOW_OF_PIERCING].name,
+		,{
 			desc:"Additional fixed damage on attack",
 			desc_kor:"공격시 추가 고정 피해를 입힘",
 			item_id: ENUM.ITEM.CROSSBOW_OF_PIERCING,
 		}
-		,"Full Diamond Armour":{
-			name:items[ENUM.ITEM.FULL_DIAMOND_ARMOR].name,
+		,{
 			desc:"Maximum HP increases on attack",
 			desc_kor:"공격시 최대체력 영구 증가",
 			item_id: ENUM.ITEM.FULL_DIAMOND_ARMOR,
 		}
-		,"static_dagger":{
-			name:items[ENUM.ITEM.DAGGER].name,
+		,{
 			desc:"Deals additional magic damage on next attack (spend stacks)<hr>current stacks:<d1><br>additional damage:<d2>",
 			desc_kor:"다음 공격시 충전량을 소모해 추가 마법 피해<hr>현재 충전량:<d1><br>추가 마법 피해:<d2>",
 			item_id: ENUM.ITEM.DAGGER,
 		}
-		,"STAFF_OF_JUDGEMENT":{
-			name:items[ENUM.ITEM.STAFF_OF_JUDGEMENT].name,
+		,{
 			desc:"Deals additional magic damage on next skill attack (spend stacks)<hr>current stacks:<d1><br>additional damage:<d2>",
 			desc_kor:"다음 스킬 공격시 충전량을 소모해 추가 마법 피해<hr>현재 충전량:<d1><br>추가 마법 피해:<d2>",
 			item_id: ENUM.ITEM.STAFF_OF_JUDGEMENT,
 		}
-		,"FLAIL_OF_JUDGEMENT":{
-			name:items[ENUM.ITEM.FLAIL_OF_JUDGEMENT].name,
+		,{
 			desc:"Deals additional magic damage on next basic attack with increased range (spend stacks)<hr>current stacks:<d1><br>additional damage:<d2><br>additional range:<d3>",
 			desc_kor:"다음 기본공격시 사정거리 증가, 충전량을 소모해 추가 마법 피해<hr>현재 충전량:<d1><br>추가 마법 피해:<d2><br>추가 사정거리:<d3>",
 			item_id: ENUM.ITEM.FLAIL_OF_JUDGEMENT,
 		}
-	}
+	]
 
 	export interface DescriptionData {
 		type: string
@@ -184,6 +180,16 @@ export namespace SpecialEffect {
 	for (const [k, v] of Object.entries(ITEM)){
 		if(v.desc!="")
 		Namespace.set(v.name,{
+			type:"item",
+			item_id:v.item_id,
+			desc:v.desc,
+			desc_kor:v.desc_kor,
+			isgood:true
+		})
+	}
+	for (const v of ITEM_PASSIVE){
+		if(v.desc!="")
+		Namespace.set(items[v.item_id].name,{
 			type:"item",
 			item_id:v.item_id,
 			desc:v.desc,

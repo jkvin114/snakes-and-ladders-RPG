@@ -76,7 +76,10 @@ export default class GameInterface {
 		)
 		
 
-		$("#nextturn").click(() => GAME.onNextTurn())
+		$(".nextturnbtn").click(() => {
+			//if(GAME.ui.nextTurnBtnShown) 
+			GAME.onNextTurn()}
+			)
 
 		$("#skillcancel").click(function () {
 			GAME.onSkillCancel()
@@ -175,12 +178,15 @@ export default class GameInterface {
 			GAME.onDiceBtnClick(-1)
 		})
 
-		$("#dicecontrolbtn").click(function () {
+		$(".dcbtn").click(function () {
 			if (!GAME.diceControl) {
 				return
 			}
 			GAME.dice_clicked = true
-			$(".dc").css("visibility", "hidden")
+			// $(".dc").css("visibility", "hidden")
+			$(".dcbtn .cooltime").html("x")
+			$(".dcbtn").attr("disabled",true)
+			$(".dcbtn").addClass("unavaliable")
 			$("#diceselection").show()
 			$("#largedicebtn").hide()
 			$("#diceselection").animate({ right: "30px" }, 300)
@@ -264,11 +270,11 @@ export default class GameInterface {
 
 		//단순 돈은 알림표시 안함
 		if (obs <= 3) return
-
+		let yOffset=window.matchMedia("(orientation: portrait)").matches?50:0
 		if (this.obsNoti1.position === 0 && this.obsNoti2.position === 0) {
 			this.obsNoti1.write(obs, 1, text)
 			//write noti1
-			$(this.obsNoti1.name).css({ bottom: "4px", left: "-400px" })
+			$(this.obsNoti1.name).css({ bottom: (4+yOffset)+"px", left: "-400px" })
 			clearTimeout(this.obsNoti1.timeout)
 			$(this.obsNoti1.name).animate({ left: "5px" }, opentime)
 			this.obsNoti1.position = 1
@@ -283,9 +289,9 @@ export default class GameInterface {
 			//write noti2
 			this.obsNoti2.write(obs, 2, text)
 
-			$(this.obsNoti2.name).css({ bottom: "4px", left: "-400px" })
+			$(this.obsNoti2.name).css({ bottom: (4+yOffset)+"px", left: "-400px" })
 
-			$(this.obsNoti1.name).animate({ bottom: "95px" }, gouptime)
+			$(this.obsNoti1.name).animate({ bottom: (95+yOffset)+"px" }, gouptime)
 			this.obsNoti1.position = 2
 			clearTimeout(this.obsNoti2.timeout)
 			$(this.obsNoti2.name).animate({ left: "5px" }, opentime)
@@ -301,9 +307,9 @@ export default class GameInterface {
 			//write noti1 again
 			this.obsNoti1.write(obs, 1, text)
 
-			$(this.obsNoti1.name).css({ bottom: "4px", left: "-400px" })
+			$(this.obsNoti1.name).css({ bottom: (4+yOffset)+"px", left: "-400px" })
 
-			$(this.obsNoti2.name).animate({ bottom: "95px" }, gouptime)
+			$(this.obsNoti2.name).animate({ bottom: (95+yOffset)+"px" }, gouptime)
 			this.obsNoti2.position = 2
 			clearTimeout(this.obsNoti1.timeout)
 			$(this.obsNoti1.name).animate({ left: "5px" }, opentime)
@@ -698,6 +704,11 @@ addChatDragEvent() {
 
 		$(".scaled_value").off()
 		$(".scaled_value").mouseenter(function (e) {
+			if($(this).offset().left > window.innerWidth/2){
+				$(".skill_scale_tooltip").addClass("rightside")
+			}
+			else $(".skill_scale_tooltip").removeClass("rightside")
+
 			$(".skill_scale_tooltip")
 				.css({
 					visibility: "visible"
@@ -748,11 +759,12 @@ addChatDragEvent() {
 
 	showSkillBtn(status) {
 		console.log("show skill btn turn:" + status.turn)
-		$(".storebtn").show()
+		// $(".storebtn").show()
 
-		$("#nextturn").show()
+		// $(".nextturnbtn").show()
 		this.nextTurnBtnShown = true
-		$("#nextturn").attr("disabled", false)
+		$(".nextturnbtn").attr("disabled", false)
+		$(".nextturnbtn").removeClass("unavaliable")
 		// if (status.dead) {
 		// 	return
 		// }
@@ -829,13 +841,14 @@ addChatDragEvent() {
 			}
 		}
 	}
-
+	
 	hideSkillBtn() {
 		$(".status").html("")
 		$(".basicattackbtn").hide()
 		// $(".skillbtn").hide()
 		$(".skillbtn button").attr("disabled", true)
-		$("#nextturn").hide()
+		$(".nextturnbtn").attr("disabled", true)
+		$(".nextturnbtn").addClass("unavaliable")
 		$(".skillbtn").addClass("unavaliable")
 		this.nextTurnBtnShown = false
 		this.skillBtnShown = false
@@ -849,7 +862,8 @@ addChatDragEvent() {
 		$("#skillcancel").hide()
 		$("#confirm_tileselection").hide()
 		$("#largedicebtn").hide()
-		$(".dc").css("visibility", "hidden")
+		$(".dcbtn").attr("disabled",true)
+		$(".dcbtn").addClass("unavaliable")
 		$("#diceselection").hide()
 		$("#sell_token").hide()
 		$("#casino").hide()
@@ -879,20 +893,26 @@ addChatDragEvent() {
 		shield = Math.max(shield, 0)
 
 		if (ui === 0) {
-			$(this.elements.shieldframe[ui]).css({
-				width: String(shield) + "px"
-			})
-			$("#effects").css("left", String(0.8 * shield + 30) + "px")
-			if (shield <= 0) {
-				$(".myshieldframe-container").hide()
-				$(".myhp-val").html($(".myhp-val").data("hp")+"/"+$(".myhp-val").data("maxhp"))
-				$(".myhp-val").data("shield",0)
-			} else {
+			let hp=$(".myhp-val").data("hp")
+			let maxhp=$(".myhp-val").data("maxhp")
 
-				$(".myshieldframe-container").css("display", "inline-block")
+			$(".myshield").css({
+				width: String(shield) + "px",
+				left: String(hp) + "px"
+			})
+			// $("#effects").css("left", String(0.8 * shield + 30) + "px")
+			if (shield <= 0) {
+				// $(".myshieldframe-container").hide()
+				$(".myhp-val").html(hp+"/"+maxhp)
+				$(".myhp-val").data("shield",0)
+				$(".myhp").removeClass("withshield")
+			} else {
+				this.setMyMaxhpSpace(maxhp+shield)
+				// $(".myshieldframe-container").css("display", "inline-block")
 				$(".myhp-val").html($(".myhp-val").data("hp")+"/"+$(".myhp-val").data("maxhp")+`
 					(+${shield})`)
 				$(".myhp-val").data("shield",shield)
+				$(".myhp").addClass("withshield")
 			}
 		} else {
 			$(this.elements.shieldframe[ui]).css({
@@ -923,7 +943,19 @@ addChatDragEvent() {
 		}
 		
 	}
+	setMyMaxhpSpace(maxhp){
+		
+		$(this.elements.hpframe[0]).css({
+			width: String(maxhp) + "px"
+		})
+		let space=window.innerWidth-80
 
+		if(maxhp > space){
+			$(".myhpframe-container").css({
+				transform: "scale("+(space/maxhp)+",1)"
+			})
+		}
+	}
 	lostHP(hp, change) {
 		if (change < 0) {
 			setTimeout(function () {
@@ -945,30 +977,25 @@ addChatDragEvent() {
 
 		let ui = GAME.turn2ui(target)
 		if (ui === 0) {
-			$(this.elements.hpframe[ui]).css({
-				width: String(maxhp) + "px"
-			})
 
 			$(this.elements.hpspan[ui]).css({
 				width: String(hp) + "px"
 			})
 
-			let space=window.innerWidth-35
-			if(window.matchMedia("(orientation: landscape)").matches){
-				space=window.innerWidth-135
-			}
-
-			if(maxhp > space){
-				$(".myhpframe-container").css({
-					transform: "scale("+(space/maxhp)+",1)"
-				})
-				// console.log(space/maxhp)
-			}
 			$(".myhp-val").data("hp",hp)
 			$(".myhp-val").data("maxhp",maxhp)
 			let shield=$(".myhp-val").data("shield")
 			let str=hp+"/"+maxhp
-			if(!!shield) str+="(+"+shield+")"
+			if(!shield) shield=0
+			else {
+				str+="(+"+shield+")"
+				$(".myshield").css({
+					left: String(hp) + "px"
+				})
+			}
+
+			this.setMyMaxhpSpace(maxhp+shield)
+
 			$(this.elements.hpis[ui]).html(str)
 		
 			$(".myhp-val").html(str)
@@ -1151,15 +1178,16 @@ addChatDragEvent() {
 		$("#skillcancel").hide()
 		$("#godhandcancel").hide()
 		$("#cancel_tileselection").hide()
-		$(".storebtn").show()
+		//$(".storebtn").show()
 	}
 	disableAllSkillBtn() {
 		$(".skillbtns button").attr("disabled", true)
-		$("#nextturn").attr("disabled", true)
+		$(".nextturnbtn").attr("disabled", true)
+		$(".nextturnbtn").addClass("unavaliable")
 	}
 
 	onTileReset() {
-		$(".storebtn").show()
+		//$(".storebtn").show()
 		$("#cancel_tileselection").hide()
 		$("#confirm_tileselection").hide()
 		$("#cancel_tileselection").off()
@@ -1199,7 +1227,10 @@ addChatDragEvent() {
 		$(".specialeffect").off()
 		$(".specialeffect").mouseenter(function (e) {
 			$(".effect_tooltip").css("visibility", "hidden")
-
+			if($(this).offset().left > window.innerWidth/2){
+				$(".specialeffect_tooltip").addClass("rightside")
+			}
+			else $(".specialeffect_tooltip").removeClass("rightside")
 			$(".specialeffect_tooltip")
 				.css({
 					visibility: "visible"
@@ -1259,6 +1290,11 @@ addChatDragEvent() {
 	addEffectTooltipEvent() {
 		$(".effect, .info_effect").off()
 		$(".effect, .info_effect").mouseenter(function (e) {
+			if($(this).offset().left > window.innerWidth/2){
+				$(".effect_tooltip").addClass("rightside")
+			}
+			else $(".effect_tooltip").removeClass("rightside")
+
 			$(".specialeffect_tooltip").css("visibility", "hidden")
 			$(".effect_tooltip")
 				.css({

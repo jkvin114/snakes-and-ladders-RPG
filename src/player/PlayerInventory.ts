@@ -82,7 +82,7 @@ class PlayerInventory implements PlayerComponent {
 		if (this.haveItem(ITEM.DAGGER) && this.itemData.has(ITEM.DAGGER)) {
 			this.itemData.get(ITEM.DAGGER)?.addDataValue("charge", distance)
 			let charge = this.itemData.get(ITEM.DAGGER).getDataValue("charge")
-			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_STATIC_DAGGER, [charge, charge * 3])
+			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_DAGGER, [charge, charge * 3])
 		}
 	}
 	/**
@@ -216,7 +216,7 @@ class PlayerInventory implements PlayerComponent {
 			}
 			if (item_id === ITEM.DAGGER){
 				this.itemData.get(item_id)?.resetDataValue("charge")
-				this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_STATIC_DAGGER,[0,0])
+				this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_DAGGER,[0,0])
 			}
 		}
 	}

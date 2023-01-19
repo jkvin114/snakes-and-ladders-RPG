@@ -46,9 +46,9 @@ class EffectFactory {
 				})
 					.setGood()
 					.on(OnHitEffect.SKILLATTACK)
-			case EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY:
+			case EFFECT.ITEM_ABILITY_POWER_OF_MOTHER_NATURE:
 				return new AblityChangeEffect(effect_id, 1, new Map().set("moveSpeed", 1), EFFECT_TIMING.TURN_END).setGood()
-			case EFFECT.ITEM_SHIELDSWORD_ABSORB:
+			case EFFECT.ITEM_ABILITY_SHIELDSWORD_ABSORB:
 				return new AblityChangeEffect(effect_id, 2, new Map().set("absorb", 30), EFFECT_TIMING.TURN_END).setGood()
 		}
 	}
@@ -89,7 +89,7 @@ class ItemPassiveEffectFactory {
 					owner: Player
 				) {
 					owner.effects.applySpecial(
-						EffectFactory.create(EFFECT.ITEM_POWER_OF_MOTHER_NATURE_ABILITY),
+						EffectFactory.create(EFFECT.ITEM_ABILITY_POWER_OF_MOTHER_NATURE),
 						SpecialEffect.ITEM.POWER_OF_MOTHER_NATURE_ABILITY.name
 					)
 					return damage
@@ -131,7 +131,7 @@ class ItemPassiveEffectFactory {
 					.setGood()
 					break
 			case ITEM.ANCIENT_SPEAR:
-				effects[0]=  new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE1, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR1, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -142,7 +142,7 @@ class ItemPassiveEffectFactory {
 				})
 					.on(OnHitEffect.SKILLATTACK)
 					.setGood()
-				effects[1]=  new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR_ADAMAGE2, StatusEffect.DURATION_PERMANENT, function (
+				effects[1]=  new OnHitEffect(EFFECT.ITEM_ANCIENT_SPEAR2, StatusEffect.DURATION_PERMANENT, function (
 						this: Player,
 						target: Player,
 						damage: Damage
@@ -155,7 +155,7 @@ class ItemPassiveEffectFactory {
 						.setGood()
 					break
 			case ITEM.SPEAR:
-				effects[0]=  new OnHitEffect(EFFECT.ITEM_SPEAR_ADAMAGE1, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_SPEAR1, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -166,7 +166,7 @@ class ItemPassiveEffectFactory {
 				})
 					.on(OnHitEffect.SKILLATTACK)
 					.setGood()
-				effects[1]=  new OnHitEffect(EFFECT.ITEM_SPEAR_ADAMAGE2, StatusEffect.DURATION_PERMANENT, function (
+				effects[1]=  new OnHitEffect(EFFECT.ITEM_SPEAR2, StatusEffect.DURATION_PERMANENT, function (
 						this: Player,
 						target: Player,
 						damage: Damage
@@ -179,7 +179,7 @@ class ItemPassiveEffectFactory {
 						.setGood()
 					break
 			case ITEM.CROSSBOW_OF_PIERCING:
-				effects[0]=  new OnHitEffect(EFFECT.ITEM_CROSSBOW_ADAMAGE1, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_CROSSBOW1, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -190,7 +190,7 @@ class ItemPassiveEffectFactory {
 				})
 					.on(OnHitEffect.SKILLATTACK)
 					.setGood()
-				effects[1]=  new OnHitEffect(EFFECT.ITEM_CROSSBOW_ADAMAGE2, StatusEffect.DURATION_PERMANENT, function (
+				effects[1]=  new OnHitEffect(EFFECT.ITEM_CROSSBOW2, StatusEffect.DURATION_PERMANENT, function (
 						this: Player,
 						target: Player,
 						damage: Damage
@@ -203,7 +203,7 @@ class ItemPassiveEffectFactory {
 						.setGood()
 					break
 			case ITEM.FULL_DIAMOND_ARMOR:
-				effects[0]=  new OnHitEffect(EFFECT.ITEM_DIAMOND_ARMOR_MAXHP_GROWTH, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_DIAMOND_ARMOR, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage
@@ -235,17 +235,16 @@ class ItemPassiveEffectFactory {
 					(damage: number, owner: Player) => {
 						const shieldamt=100+Math.floor(0.7 * owner.ability.AD.get())
 						owner.effects.applySpecial(
-							new ShieldEffect(EFFECT.ITEM_SHIELDSWORD_SHIELD, 2, shieldamt).setGood(),
+							new ShieldEffect(EFFECT.ITEM_ABILITY_SHIELDSWORD_SHIELD, 2, shieldamt).setGood(),
 							SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_SHIELD.name
 						)
 						owner.inven.addActiveItemData(item,"shield",shieldamt)
 
 						owner.effects.applySpecial(
-							EffectFactory.create(EFFECT.ITEM_SHIELDSWORD_ABSORB),
+							EffectFactory.create(EFFECT.ITEM_ABILITY_SHIELDSWORD_ABSORB),
 							SpecialEffect.ITEM.WARRIOR_SHIELDSWORD_ABSORB.name
 						)
 
-						owner.inven.useActiveItem(ITEM.WARRIORS_SHIELDSWORD)
 					}
 				)
 					.setInvokeConditionHpPercent(30)
@@ -265,7 +264,7 @@ class ItemPassiveEffectFactory {
 					.setConditionActiveItem(ITEM.INVISIBILITY_CLOAK)
 					break
 			case ITEM.DAGGER:
-				effects[0]=  new OnHitEffect(EFFECT.ITEM_STATIC_DAGGER, StatusEffect.DURATION_PERMANENT, function (
+				effects[0]=  new OnHitEffect(EFFECT.ITEM_DAGGER, StatusEffect.DURATION_PERMANENT, function (
 					this: Player,
 					target: Player,
 					damage: Damage,

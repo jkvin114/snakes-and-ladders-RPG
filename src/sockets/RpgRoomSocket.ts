@@ -300,7 +300,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop.startNextTurn(false)
+			room.getGameLoop.user_clickNextturn()
 		})
 		// R.getRPGRoom(rname).getGameLoop().startNextTurn(false)
 	})

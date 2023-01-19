@@ -21,15 +21,27 @@ class ToggleSetting{
 		if(type===SettingType.MATCH){
 			parent=$("#match .setting_category")
 		}
-		let str="<div class='onesetting togglesetting'><a class='settingname'>"
-		str+=this.name
-		str+='</a><br><br><label class="switch"><input type="checkbox" value="'
-		str+=index
-		str+='"'
-		if(this.state===true){
-			str+=' checked=true '
-		}
-		str+=' ><span class="slider"></span></label></div>'
+		let str=`  
+		<div class="onesetting">
+			<div class="settingname-container">
+			<a>${this.name}</a>
+			</div>
+			<div class="settingvalue">
+			<label class="switch">
+				<input type="checkbox" value="${index}" ${this.state?'checked=true':''}>
+				<span class="slider"></span>
+			</label>
+			</div>
+		</div> `
+		// str="<div class='onesetting togglesetting'><a class='settingname'>"
+		// str+=this.name
+		// str+='</a><br><br><label class="switch"><input type="checkbox" value="'
+		// str+=index
+		// str+='"'
+		// if(this.state===true){
+		// 	str+=' checked=true '
+		// }
+		// str+=' ><span class="slider"></span></label></div>'
 
 		$(parent).append(str)
 
@@ -91,16 +103,26 @@ class RangeSetting{
 		if(type===SettingType.MATCH){
 			parent=$("#match .setting_category")
 		}
-
-		let str="<div class='onesetting rangesetting'><a class='settingname'>"
-		str+=this.name
-		str+='</a><br><br><button class="rangedown rangearrow" value="'
-		str+=index
-		str+='">	&#9664;</button> <div class="rangevalue_wrapper"><a class="rangevalue" >'
-		str+=this.getText()
-		str+='</a></div><button class="rangeup rangearrow " value="'
-		str+=index
-		str+='">&#9654;</button></div>'
+		let str=`
+		<div class="onesetting rangesetting">
+			<div class="settingname-container ">
+			<a class='settingname'>${this.name}</a>
+			</div>
+			<div class="settingvalue">
+				<button class="rangedown rangearrow" value="${index}">	&#9664;</button>
+				<div class="rangevalue_wrapper"><a class="rangevalue">${this.getText()}</a></div>
+				<button class="rangeup rangearrow" value="${index}">	&#9654;</button>
+			</div>
+		</div>  `
+		// let str="<div class='onesetting rangesetting'><a class='settingname'>"
+		// str+=this.name
+		// str+='</a><br><br><button class="rangedown rangearrow" value="'
+		// str+=index
+		// str+='">	&#9664;</button> <div class="rangevalue_wrapper"><a class="rangevalue" >'
+		// str+=this.getText()
+		// str+='</a></div><button class="rangeup rangearrow " value="'
+		// str+=index
+		// str+='">&#9654;</button></div>'
 		$(parent).append(str)
 	}
 }

@@ -211,11 +211,11 @@ class Hacker extends Player {
 		this.stacks[turn] += 1
 		this.ability.sendToClient()
 	}
-	getSkillDamage(target: Entity): SkillAttack | null {
+	getSkillDamage(target: Entity,s:number): SkillAttack | null {
         console.log(this.stacks)
 		//	console.log(target + "getSkillDamage" + this.pendingSkill)
 		let damage = null
-		let s: number = this.pendingSkill
+		// let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case SKILL.Q:
@@ -251,7 +251,7 @@ class Hacker extends Player {
 				
 				if (this.copiedCharId !== -1 && this.virtualCharacter) {
 					this.onBeforeCopiedSkillUse()
-					damage = this.virtualCharacter.getSkillDamage(target)
+					damage = this.virtualCharacter.getSkillDamage(target,this.virtualCharacter.pendingSkill)
 					damage.source=this
 					this.startCooltime(s)
 					this.onAfterCopiedSkill()

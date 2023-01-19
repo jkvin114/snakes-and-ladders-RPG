@@ -371,10 +371,10 @@
 			"id": 20,
 			"name": "Card of Deception",
 			"kor_name": "속임수의 마법카드",
-			"price": 330,
+			"price": 280,
 			"itemlevel": 3,
 			"ability": [
-				{ "type": "AP", "value": 100, "type_kor": "주문력" },
+				{ "type": "AP", "value": 80, "type_kor": "주문력" },
 				{ "type": "HP", "value": 50, "type_kor": "최대체력" }
 			],
 			"children": [4, 21],

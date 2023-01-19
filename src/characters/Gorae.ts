@@ -143,10 +143,10 @@ class Gorae extends Player {
 		if(key==="wshield") return this.calculateScale(Gorae.SKILL_SCALES.wshield!)
 		return 0
 	}
-	getSkillDamage(target: Entity): SkillAttack |null {
+	getSkillDamage(target: Entity,s:number): SkillAttack |null {
 	//	console.log(target+"getSkillDamage"+this.pendingSkill)
 		let skillattr = null
-		let s: number = this.pendingSkill
+		// let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.ULT:

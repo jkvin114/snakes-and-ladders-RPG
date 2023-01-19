@@ -210,7 +210,7 @@ class Jellice extends Player {
 		//앞 3~15, 뒤 3~8
 		return 0
 	}
-	getSkillDamage(target: Entity): SkillAttack |null{
+	getSkillDamage(target: Entity,s:number): SkillAttack |null{
 		return null
 	}
 	onSkillDurationEnd(skill: number) {}

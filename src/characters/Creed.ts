@@ -143,10 +143,10 @@ class Creed extends Player {
 		return new ShieldEffect(ENUM.EFFECT.REAPER_ULT_SHIELD,3, 70)
 	}
 
-	getSkillDamage(target: Entity): SkillAttack |null{
+	getSkillDamage(target: Entity,s:number): SkillAttack |null{
 	//	console.log(target + "getSkillDamage" + this.pendingSkill)
 		let damage = null
-		let s: number = this.pendingSkill
+		// let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		switch (s) {
 			case ENUM.SKILL.Q:

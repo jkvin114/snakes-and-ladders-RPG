@@ -941,7 +941,7 @@ class Game {
 	
 	useSkillToTarget(target: number) {
 		let p = this.thisp()
-		let damage=p.getSkillDamage(this.pOfTurn(target))
+		let damage=p.getSkillDamage(this.pOfTurn(target),p.pendingSkill)
 	
 		if(!damage) return
 		this.entityMediator.skillAttackSingle(damage.source, this.turn2Id(target),damage)

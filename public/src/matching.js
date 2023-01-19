@@ -100,7 +100,7 @@ function onReceiveGameSetting(request) {
 			.find(".rangevalue_wrapper .rangevalue")
 			.html(MATCH.setting.rangeSettings[idx].getText())
 
-		$(MATCH.setting.rangeSettingElements[idx]).children(".rangeup").attr("disabled", false).css("color", "white")
+		$(MATCH.setting.rangeSettingElements[idx]).children(".settingvalue").children(".rangeup").attr("disabled", false).css("color", "white")
 	})
 
 	$(".setting_category .rangeup").click(function () {
@@ -115,7 +115,7 @@ function onReceiveGameSetting(request) {
 			.find(".rangevalue_wrapper .rangevalue")
 			.html(MATCH.setting.rangeSettings[idx].getText())
 
-		$(MATCH.setting.rangeSettingElements[idx]).children(".rangedown").attr("disabled", false).css("color", "white")
+		$(MATCH.setting.rangeSettingElements[idx]).children(".settingvalue").children(".rangedown").attr("disabled", false).css("color", "white")
 	})
 	$(".toggleallstat").click(function () {
 		if ($(this).prop("checked") == true) {

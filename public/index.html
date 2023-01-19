@@ -39,18 +39,19 @@ h1{
 
 .button{
   font-family: 'nanumB';
-  color:#c654ff;
+  color:whitesmoke;
   /* background-color: #7E00BF; */
   background: transparent;
   border: 1px solid #c654ff;
   cursor:pointer;
   text-align:center;
-  padding: 7px 20px;
+  padding: 15px 20px;
   font-size: 15px;
-  margin: 15px 5px;
+  margin: 15px 15px;
   /* border:none; */
   vertical-align: middle;
-  border-radius: 3px;
+  /* border-radius: 3px; */
+  min-width: 100px;
 }
 input{
   text-align: center;
@@ -294,9 +295,9 @@ footer{
       <br>
       <div id=buttons>
         <br>
-        <button class='button' id="open_create_room" onclick="open_createroom()">Create room</button>
+        <button class='button' id="open_create_room" onclick="open_createroom()">CREATE ROOM</button>
         <button class='button hidden' id="reconnect" onclick="toGamepage()">Reconnect</button>
-        <button class='button' id="join" onclick="join()">Join</button>
+        <button class='button' id="join" onclick="join()">JOIN</button>
         <button class='hidden button' id="simulation" onclick="simulation()">simulation</button>
         <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
       </div>
@@ -305,8 +306,8 @@ footer{
         <input type='text' name="room_name" value="" placeholder="Room Name(optional)" id="room-name-input">
         <br>
         
-        <button class=button id="create_room" onclick="createroom(false)">Start</button>
-        <button class=button id=close_createroom onclick="close_createroom()">Cancel</button>
+        <button class=button id="create_room" onclick="createroom(false)">START</button>
+        <button class=button id=close_createroom onclick="close_createroom()">CANCEL</button>
       </div>
     </div>
 

@@ -127,10 +127,10 @@ class Yangyi extends Player {
 		}
 	}
 
-	getSkillDamage(target: Entity): SkillAttack {
+	getSkillDamage(target: Entity,s:number): SkillAttack {
 		//무조건 궁
 		let skillattr = null //-1 when can`t use skill, 0 when it`s not attack skill
-		this.pendingSkill = -1
+		// this.pendingSkill = -1
 
 		this.startCooltime(ENUM.SKILL.ULT)
 		//Math.floor(0.5 * (this.game.playerSelector.get(target).MaxHP - this.game.playerSelector.get(target).HP))
