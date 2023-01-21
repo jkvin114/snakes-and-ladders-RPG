@@ -248,7 +248,7 @@ export class Game {
 	}
 
 	rollDice(dice,ismyturn) {
-	//	console.log(dice)
+	//	//console.log(dice)
 
 		if (dice.turn === 0) {
 			$("#killindicator_container").html("")
@@ -411,8 +411,8 @@ export class Game {
 		this.scene.movePlayer(dice.actualdice, 1, dice.currpos, dice.turn)
 	}
 	smoothTeleport(turn, pos, distance) {
-		console.log("smoothTeleport"+distance)
-		console.log("pos"+pos)
+		//console.log("smoothTeleport"+distance)
+		//console.log("pos"+pos)
 		this.players[turn].pos = pos+distance
 		this.scene.movePlayer(distance, 1, pos, turn)
 	}
@@ -424,12 +424,12 @@ export class Game {
 		// $("#largetext").html("")
 		// $("#largekilltext").html("")
 
-		//	console.log("move complete")
+		//	//console.log("move complete")
 
 		//move to server
 		// if (this.myturn === 0) {
 		// 	this.connection.checkObstacle()
-		// 	//console.log("checkobstacle")
+		// 	////console.log("checkobstacle")
 		// 	setTimeout(
 		// 		function () {
 		// 			this.connection.obsComplete()
@@ -689,7 +689,7 @@ export class Game {
 	}
 
 	indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount) {
-		console.log("indicatePlayerDeath" + turn)
+		//console.log("indicatePlayerDeath" + turn)
 		if($(".killframe").length>3) $("#killindicator_container").html("")
 
 		// $(this.elements.kdasections[turn]).css("background", "rgba(146, 0, 0, 0.5)")
@@ -985,7 +985,7 @@ export class Game {
 	
 	requestMap() {
 
-		console.log("requestMap")
+		//console.log("requestMap")
 		$.ajax({
 			url: "/resource/map/"+this.map,
 			type: "GET",
@@ -995,15 +995,15 @@ export class Game {
 
 				new Promise((resolve) => this.scene.drawboard(resolve))
 					.then(() => {
-						console.log("mapLoadComplete")
+						//console.log("mapLoadComplete")
 						this.mapLoadComplete()
 					})
 					.catch((e) => {
-						console.log(e)
+						//console.log(e)
 					})
 			},
 			error:  (e)=> {
-				console.log(e)
+				//console.log(e)
 			}
 		})
 	}
@@ -1298,7 +1298,7 @@ class GestureController{
 						let diffY = origY - curY
 
 						board_container.scrollBy(diffX, diffY)
-						//console.log("x" + Math.floor(board_container.scrollLeft) + "  y" + Math.floor(board_container.scrollTop))
+						////console.log("x" + Math.floor(board_container.scrollLeft) + "  y" + Math.floor(board_container.scrollTop))
 
 					}.bind(this),
 					false

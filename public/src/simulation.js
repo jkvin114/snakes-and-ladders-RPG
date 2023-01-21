@@ -265,7 +265,7 @@ function submit() {
 	set["lockedCharacters"] = Array.from(SETTING.lockedCharacters)
 	set["teamLock"] = SETTING.getTeamLock()
 
-	if (meetSubmitCondition(set)) {
+	if (meetSubmitCondition(set,false)) {
 		let count = Number($("#num").val()) + 1
 		console.log(set)
 		simulationSubmit(set, count, SETTING.isTeam)
@@ -274,12 +274,12 @@ function submit() {
 }
 function submitTrain(){
 	let set = SETTING.setting.getSimulationSummary()
-	set["mapPool"] = [3]
-	set["characterPool"] = [0,1,2,3,4,5,6,7,8]
-	set["lockedCharacters"] = []
+	set["mapPool"] = Array.from(SETTING.maps)
+	set["characterPool"] = [0,1,2,3,4,5,6,7,8,9]
+	set["lockedCharacters"] = Array.from(SETTING.lockedCharacters)
 	set["teamLock"] = SETTING.getTeamLock()
 
-	if (meetSubmitCondition(set)) {
+	if (meetSubmitCondition(set,true)) {
 		let count = Number($("#num").val()) + 1
 		console.log(set)
 		simulationSubmit(set, count, SETTING.isTeam)
@@ -287,7 +287,7 @@ function submitTrain(){
 	}
 }
 
-function meetSubmitCondition(set) {
+function meetSubmitCondition(set,istrain) {
 	let totalchar = set.characterPool.length + set.lockedCharacters.length
 	console.log(set.mapPool)
 	if (set.mapPool.length === 0) {
@@ -335,8 +335,8 @@ function meetSubmitCondition(set) {
 		alert(chooseLang("Enter a number for simulation count", "시뮬레이션 횟수에 숫자를 입력하세요"))
 		return false
 	}
-	if (count > 9999 || count < 1) {
-		alert(chooseLang("Simulation count is capped at 9999", "최대 시뮬레이션 횟수는 9999번입니다"))
+	if (!istrain && (count > 999) || count < 1) {
+		alert(chooseLang("Simulation count is capped at 999", "최대 시뮬레이션 횟수는 999번입니다"))
 		return false
 	}
 	return true
@@ -371,10 +371,12 @@ function connectSocket(){
 
 	socket.on("server:simulation_progress", function (msg) {
 		$("#progress").css("width",(400*msg)+"px")
+		$("#progresstext").html(Math.floor(msg*100)+"%")
 		console.log("simulation_progress"+msg)
 	})
 	socket.on("server:simulationover", function (msg) {
 		$("#progress").css("width","400px")
+		$("#progresstext").html("100%")
 		if(msg==='no_stat'){
 			$("#loadingtext").html("COMPLETE!")
 			setTimeout(()=>window.location.href ='index.html',2000)

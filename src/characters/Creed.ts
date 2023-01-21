@@ -153,12 +153,12 @@ class Creed extends Player {
 				if (this.usedQ) {
 					this.startCooltime(ENUM.SKILL.Q)
 					this.usedQ = false
-					this.effects.applySpecial(this.getQShield(40),Creed.Q_SHIELD)
+					//this.effects.applySpecial(this.getQShield(40),Creed.Q_SHIELD)
 
 					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),this.getSkillName(s),s,this)
 				} else {
 					this.usedQ = true
-					this.effects.applySpecial(this.getQShield(30),Creed.Q_SHIELD)
+				//	this.effects.applySpecial(this.getQShield(30),Creed.Q_SHIELD)
 					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s), 0, 0),this.getSkillName(s),s,this)
 				}
 				break

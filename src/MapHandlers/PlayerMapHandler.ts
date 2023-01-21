@@ -83,7 +83,7 @@ abstract class PlayerMapHandler {
 	 *
 	 * @returns died
 	 */
-	doMineDamage() {
+	onChangePos() {
 		let died = false
 		if (this.nextdmg !== 0) {
 			died = this.player.doObstacleDamage(this.nextdmg, "explode")

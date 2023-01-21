@@ -92,6 +92,7 @@ class Indicator{
         \n위치 가중치: ${(this.end_position-40)/40}\n`
     }
     getReward(){
+        return 0
         let average=TRAINAVG[this.character][0]
         let weight=TRAINAVG[this.character][2]
         let position_weight= Math.max(1,this.end_position-40)/40
@@ -169,6 +170,7 @@ class TrainData{
     }
 
     calcAverageIndicatorForCharacters(){
+      //  console.log("calcAverageIndicatorForCharacters"+this.gameRecords.length)
         let total=0
         let all_ind=new Indicator(-1)
 
@@ -299,10 +301,12 @@ class TrainData{
         this.characterWinRates=win_rates
 
     }
-    saveTrainData(){
-        let str=""
+    saveTrainData(maps:number[]){
+        
+        let str="맵:"+["기본","바다","카지노","신속난투전","실험"][maps[0]]+"\n"
         str+=(`게임 횟수:${this.gameRecords.length}, 아이템 랜덤:${TRAIN_SETTINGS.random_item}\n`)
         this.calcAverageIndicatorForCharacters()
+       // console.log("saveTrainData")
         str+=("전체 평균=======================================\n")
         str+=(this.averageInd.toString())
         let data=[]
@@ -358,6 +362,7 @@ class TrainData{
         }
     }
     printRewardData(){
+        return
         let focusCharacter=TRAIN_SETTINGS.focus_character
         let total=0
         let count=0
@@ -374,9 +379,9 @@ class TrainData{
         console.log(total/count)
     }
 
-    onFinish(){
+    onFinish(maps:number[]){
         this.printRewardData()
-        this.saveTrainData()
+        this.saveTrainData(maps)
     }
 }
 

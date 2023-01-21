@@ -21,6 +21,8 @@ module.exports=function(socket:Socket){
 		let room = new RPGRoom(rname).setSimulation(true)
 		.registerSimulationClientInterface(function(roomname:string,type:string,...args:unknown[]){
 			io.to(roomname).emit(type,...args)
+		}).registerResetCallback(() => {
+			R.remove(rname)
 		})
 
 		R.setRPGRoom(rname, room)
@@ -300,7 +302,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop.user_clickNextturn()
+			room.getGameLoop.user_clickNextturn(crypt_turn)
 		})
 		// R.getRPGRoom(rname).getGameLoop().startNextTurn(false)
 	})

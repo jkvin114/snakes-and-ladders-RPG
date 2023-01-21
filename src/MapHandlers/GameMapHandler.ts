@@ -9,7 +9,7 @@ import { MAP } from "./MapStorage";
 
 
 
-export class GameMapHandler{
+export class GameLevel{
     game:Game
     mapId:MAP_TYPE
 	readonly obstaclePlacement: { obs: number; money: number }[]
@@ -42,10 +42,10 @@ export class GameMapHandler{
 	get getPendingAction(){
 		return this.pendingAction
 	}
-    static create(game:Game,mapId:MAP_TYPE,shuffleObstacle:boolean):GameMapHandler{
+    static create(game:Game,mapId:MAP_TYPE,shuffleObstacle:boolean):GameLevel{
         if(mapId===MAP_TYPE.OCEAN)
-            return new GameOceanMapHandler(game,mapId,shuffleObstacle)
-        return new GameMapHandler(game,mapId,shuffleObstacle)
+            return new OceanGameLevel(game,mapId,shuffleObstacle)
+        return new GameLevel(game,mapId,shuffleObstacle)
     }
     onTurnStart(thisturn:number){
         this.summonDicecontrolItem()
@@ -263,12 +263,12 @@ export class GameMapHandler{
 		this.roullete_result = -1
 	}
 }
-class GameTwoWayMapHandler extends GameMapHandler{
+class GameTwoWayLevel extends GameLevel{
     constructor(game:Game,mapId:MAP_TYPE,shuffleObstacle:boolean){
         super(game,mapId,shuffleObstacle)
     }
 }
-class GameOceanMapHandler extends GameTwoWayMapHandler{
+class OceanGameLevel extends GameTwoWayLevel{
     static SUBMARINE_COOLTIME=2
     private submarine_cool: number
 	private submarine_id: string
@@ -297,7 +297,7 @@ class GameOceanMapHandler extends GameTwoWayMapHandler{
 			// pos=60
 			this.placeSubmarine(pos)
 			// this.placeSubmarine(60)
-			this.submarine_cool = GameOceanMapHandler.SUBMARINE_COOLTIME
+			this.submarine_cool = OceanGameLevel.SUBMARINE_COOLTIME
 		} else {
 			this.submarine_cool = Math.max(0, this.submarine_cool - 1)
 		}

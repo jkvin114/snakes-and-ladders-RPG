@@ -10,6 +10,9 @@ import type { Entity } from "../entity/Entity"
 
 export namespace ObstacleHelper {
 	export const applyObstacle=function(player: Player, obs: number, isForceMoved: boolean) {
+		if(player.thisTurnObstacleCount>20) return ENUM.ARRIVE_SQUARE_RESULT_TYPE.NONE
+		player.thisTurnObstacleCount++
+
 		let others: string[] = []
 		const pendingObsList = SETTINGS.pendingObsList
 		const perma = StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE

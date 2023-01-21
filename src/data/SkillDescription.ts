@@ -431,9 +431,9 @@ export class SkillInfoFactory {
 			case 5:
 				str =
 					this.nameTitle(s) +
-					` ${this.rangeStr()} of ${
+					`Gain ${this.effect(ENUM.EFFECT.ROOT, 1)} and ${this.shield(50)}. ${this.rangeStr()} of ${
 						this.nameDesc(0) + " and " + this.nameDesc(2)
-					} ${this.up("doubles")}, after gaining ${this.effect(ENUM.EFFECT.ROOT, 1)}.
+					} ${this.up("doubles")}.
 				 Applies ${this.effect(
 						ENUM.EFFECT.IGNITE,
 						2
@@ -520,7 +520,7 @@ export class SkillInfoFactory {
 			case 5:
 				str =
 					this.nameTitle(s) +
-					`사용시 ${this.effect(ENUM.EFFECT.ROOT, 1)} 후 ${
+					`사용시 ${this.effect(ENUM.EFFECT.ROOT, 1)}, ${this.shield(50)} 후 ${
 						this.nameDesc(0) + " 와 " + this.nameDesc(2)
 					}의 ${this.rangeStr()}  ${this.up("2배 증가")},
 				${this.nameDesc(0)} 사용시 적중한 적에게 ${this.effect(
@@ -575,7 +575,7 @@ export class SkillInfoFactory {
 			case 0:
 				str =
 					this.nameTitle(s) +
-					`${this.emp("Teleports")} to a  ${this.target()} and deals ${this.pDmg(this.baseDmg(s), hotkey)}.
+					`${this.emp("Teleports")} to a  ${this.target()} and deals ${this.pDmg(this.baseDmg(s), hotkey)} and ${this.shield(70)}.
 				Damage decreases by 30% if the target is ${this.emp("in front")} of you.`
 				break
 			case 1:
@@ -604,7 +604,7 @@ export class SkillInfoFactory {
 					this.nameTitle(s) +
 					
 					` Selects a ${this.target()}, Automatically attacks the target ${this.emp("3 times")} for ${this.duration(3)}, 
-					dealing ${this.pDmg(this.baseDmg(s), hotkey)} each 
+					dealing ${this.pDmg(this.baseDmg(s), hotkey)} each and ${this.shield(80)}.
 				(Deals ${this.tDmg(this.baseDmg(s))} for 3rd attack, can\`t move while shooting)<br>
 				After use, you gains ${this.effect(ENUM.EFFECT.DOUBLEDICE, 1)}.`
 				break
@@ -623,7 +623,7 @@ export class SkillInfoFactory {
 			case 7:
 				str =
 					this.nameTitle(s) +
-					`${this.emp("Duration")}: ${this.duration(4)}, ${this.stat("Basic attack range")} ${this.up("+2")}, 
+					`${this.emp("Duration")}: ${this.duration(4)},${this.shield(70)}, ${this.stat("Basic attack range")} ${this.up("+2")}, 
 				${this.basicattack()} deals additional ${this.pDmg(this.skillAmt("r_aa_adamage"), "r_aa_adamage")}.
 				 Additional damage of ${this.nameDesc(1)} ${this.up("doubles")}, and 
 				 ${this.nameDesc(0)} creates an area of ${this.projsize(3)}. If enemy step on it,
@@ -664,7 +664,7 @@ export class SkillInfoFactory {
 			case 0:
 				str =
 					this.nameTitle(s) +
-					`사용시 ${this.target()}에게 ${this.emp("즉시 이동")}해 ${this.pDmg(this.baseDmg(s), hotkey)}를 입힘.
+					`사용시 ${this.target()}에게 ${this.emp("즉시 이동")}해 ${this.pDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.shield(70)}.
 				자신보다 ${this.emp("앞에 있는 상대")}에게는 70%의 피해를 입힘`
 				break
 			case 1:
@@ -697,7 +697,7 @@ export class SkillInfoFactory {
 					this.nameTitle(s) +
 					this.target() +
 					` 고정 후 ${this.duration(3)} 동안 ${this.emp("최대 3번")}
-				 발사해 각각${this.pDmg(this.baseDmg(s), hotkey)}를 입힘
+				 발사해 각각${this.pDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.shield(80)}.
 				(3번째에는 ${this.tDmg(this.baseDmg(s))}를 입힘, 사용중에는 움직일 수 없음)<br>
 				발사 후에는 ${this.effect(ENUM.EFFECT.DOUBLEDICE, 1)}을 받음`
 				break
@@ -718,7 +718,7 @@ export class SkillInfoFactory {
 			case 7:
 				str =
 					this.nameTitle(s) +
-					`${this.emp("지속시간")}: ${this.duration(4)}, 지속시간 중에 
+					`${this.emp("지속시간")}: ${this.duration(4)},${this.shield(70)}. 지속시간 중에 
 					${this.stat("기본공격 사거리")}가 ${this.up("2 증가")}하고 ${this.basicattack()}시 
 				${this.pDmg(this.skillAmt("r_aa_adamage"), "r_aa_adamage")}를 추가로 입힘.
 				 또한 ${this.nameDesc(1)}의 추가 피해가 ${this.up("2 배 증가")}하고

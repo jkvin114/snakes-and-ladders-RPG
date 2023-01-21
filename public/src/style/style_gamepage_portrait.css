@@ -2,19 +2,16 @@
     html{
         font-size: 1vh;
     }
+.basicattackbtn{
+  bottom: 140px;
 
+}
   #skillbtncontainer{
-    transform: scale(0.7);
+    width: 220px;
   }
     .show_on_portraint{
         display: block;
       }
-    #largedicebtn,#largedicebtn_pressed{
-
-        width: 32vw;
-        height: 32vw;
-        bottom: 10%;
-    }
     #infowindow{
         grid-template-columns:auto;
         top:3vh;
@@ -79,7 +76,7 @@
     }
     
   #skillbtncontainer{
-    transform: scale(0.7);
+    /* transform: scale(0.7); */
   }
     .skillbtn{
         /* margin-bottom: 10px; */
@@ -102,11 +99,14 @@
         /* top: 160px; */
     }
     #chat_enter{
-        top:40%;
-        width: 80%;
+        /* top:40%;
+        width: 80%; */
     }
     .deathinfo-source{
         grid-template-columns: auto;
+      }
+      #cancel_tileselection,#skillcancel,#confirm_tileselection{
+        bottom: 170px;
       }
     /* .store_treeitemimg {
         margin: -20px;

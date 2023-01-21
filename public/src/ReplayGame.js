@@ -22,7 +22,7 @@ export class ReplayGame extends Game {
 		this.scene.gameSpeed=this.speed
 	}
 	onCreate() {
-		console.log(this.replayId)
+		//console.log(this.replayId)
 		this.requestReplay()
 		$("#dialog").hide()
 		$("#chat").hide()
@@ -56,7 +56,7 @@ export class ReplayGame extends Game {
 	async requestReplay() {
 		try{
 			await this.requestReplayById()
-			console.log(this.replayData.setting)
+			//console.log(this.replayData.setting)
 			let setting = this.replayData.setting
 			this.init(setting, 0, "")
 		}
@@ -76,7 +76,7 @@ export class ReplayGame extends Game {
 					resolve()
 				},
 				error: (e) => {
-					console.log(e)
+					console.error(e)
 					reject()
 				},
 			})
@@ -92,7 +92,7 @@ export class ReplayGame extends Game {
 					resolve()
 				},
 				error: (e) => {
-					console.log(e)
+					console.error(e)
 					reject()
 				},
 			})
@@ -144,7 +144,7 @@ export class ReplayGame extends Game {
 	}
 
 	playEvent(event) {
-		let delay = 100
+		let delay = 200
 		switch (event.action) {
 			case "rolldice":
 				delay = 0
@@ -309,7 +309,7 @@ export class ReplayGame extends Game {
 				delay=0
 				break
 			case "delete_entity":
-				console.log("delete_entity")
+				//console.log("delete_entity")
 				this.scene.removeEntity(this.getProp(event,"id"),Boolean(this.getProp(event,"iskilled")))
 				delay=0
 				break

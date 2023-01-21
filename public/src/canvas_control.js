@@ -316,7 +316,7 @@ class HpChangeHelper {
 	startInterval() {
 		if (this.isIntervalOn) {
 			clearTimeout(this.durationTimeout)
-			//		console.log("extendtimeout")
+			//		//console.log("extendtimeout")
 			this.durationTimeout = setTimeout(
 				function () {
 					clearInterval(this.interval)
@@ -327,7 +327,7 @@ class HpChangeHelper {
 		} else {
 			this.isIntervalOn = true
 			this.dequeueHpChange()
-			//	console.log("invervalstarts")
+			//	//console.log("invervalstarts")
 			this.interval = setInterval(
 				function () {
 					this.dequeueHpChange()
@@ -353,13 +353,13 @@ class HpChangeHelper {
 
 		//already have damage data that need delay but no die data yet
 		if (changeData.killed && this.pendingDieData[changeData.turn] == null) {
-			//	console.log("no killdata yet" + changeData.turn)
+			//	//console.log("no killdata yet" + changeData.turn)
 			this.pendingDamageData[changeData.turn] = changeData
 			return
 		}
 
 		if (changeData.skillTrajectorySpeed > 0) {
-			console.log("dequeueHpChange" + changeData.skillTrajectorySpeed)
+			//console.log("dequeueHpChange" + changeData.skillTrajectorySpeed)
 			this.scene.animateTrajectory(
 				changeData.turn,
 				changeData.skillfrom,
@@ -381,8 +381,8 @@ class HpChangeHelper {
 	async enqueueHpChange(data) {
 		//damage that dont need delay
 		if (!data.needDelay) {
-			//	console.log("showdamage instant" + data.turn)
-			console.log("enqueueHpChange" + data.skillTrajectorySpeed)
+			//	//console.log("showdamage instant" + data.turn)
+			//console.log("enqueueHpChange" + data.skillTrajectorySpeed)
 			if (data.skillTrajectorySpeed > 0) {
 				this.scene.animateTrajectory(data.turn, data.skillfrom, data.type, data.skillTrajectorySpeed)
 				await sleep(data.skillTrajectorySpeed)
@@ -396,12 +396,12 @@ class HpChangeHelper {
 			if (!data.killed) return
 			let success = this.indicateDeath(data.turn) //already have die data and damage dont need delay
 			if (!success) {
-				//			console.log("waitingdiedata" + data.turn)
+				//			//console.log("waitingdiedata" + data.turn)
 				this.pendingDamageData[data.turn] = data //received die data that dont need delay and dont have die data yet
 			}
 		} //damage that need delay
 		else {
-			//	console.log("pushdmg" + data.turn)
+			//	//console.log("pushdmg" + data.turn)
 			this.hpChangeQueue.push(data)
 			this.startInterval()
 		}
@@ -409,8 +409,8 @@ class HpChangeHelper {
 	async saveDieData(info) {
 		//received damage data that dont need delay and just received die data
 		if (this.pendingDamageData[info.turn] !== null) {
-			//		console.log("show diedata instant" + info.turn)
-			console.log(this.pendingDamageData)
+			//		//console.log("show diedata instant" + info.turn)
+			//console.log(this.pendingDamageData)
 			let data = this.pendingDamageData[info.turn]
 
 			if (info.skillTrajectorySpeed > 0) {
@@ -422,15 +422,15 @@ class HpChangeHelper {
 			this.game.onPlayerDie(info.turn, info.location, info.killer, info.isShutDown, info.killerMultiKillCount)
 			this.pendingDamageData[info.turn] = null
 		} else {
-			//	console.log("save diedata" + info.turn)
+			//	//console.log("save diedata" + info.turn)
 			this.pendingDieData[info.turn] = info
 		}
 	}
 	indicateDeath(turn) {
 		let info = this.pendingDieData[turn]
 		if (info == null) return false
-		//	console.log("show diedata", turn)
-		//	console.log(info)
+		//	//console.log("show diedata", turn)
+		//	//console.log(info)
 		this.game.onPlayerDie(info.turn, info.location, info.killer, info.isShutDown, info.killerMultiKillCount)
 
 		this.pendingDieData[turn] = null
@@ -515,7 +515,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	async placeProj(proj) {
-		console.log(proj)
+		//console.log(proj)
 		if (proj.trajectorySpeed > 0 && proj.owner>0) {
 			this.animateProjTrajectory(proj,proj.trajectorySpeed)
 			await sleep(proj.trajectorySpeed)
@@ -578,7 +578,7 @@ export class Scene extends Board{
 	//delete projectile by upid
 	removeEntity(UEID, isKilled) {
 		try {
-			console.log("Destroyentity" + UEID)
+			//console.log("Destroyentity" + UEID)
 			let toDestroy = this.summonedEntityList.get(UEID)
 			if (toDestroy != null) {
 				toDestroy.remove(isKilled)
@@ -593,7 +593,7 @@ export class Scene extends Board{
 	//delete projectile by upid
 	destroyProj(UPID) {
 		try {
-			console.log("Destroyproj" + UPID)
+			//console.log("Destroyproj" + UPID)
 			let toDestroy = this.activeProjectileList.get(UPID)
 			if (toDestroy != null) {
 				toDestroy.remove()
@@ -601,7 +601,7 @@ export class Scene extends Board{
 				// this.activeProjectileList = this.activeProjectileList.filter((proj) => proj.UPID !== UPID)
 			}
 		} catch (e) {
-			console.log(e)
+			console.error(e)
 		}
 	}
 	//===========================================================================================================================
@@ -684,7 +684,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	createProjIcon(type) {
-		console.log("projicon" + type)
+		//console.log("projicon" + type)
 		let icon = 0
 		switch (type) {
 			case "submarine":
@@ -738,7 +738,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	createEntityImg(name, sourceTurn) {
-		//	console.log("projicon" + type)
+		//	//console.log("projicon" + type)
 		let icon = null
 		switch (name) {
 			case "tree_plant":
@@ -781,7 +781,7 @@ export class Scene extends Board{
 		
 		this.forceRender()
 		resolveFunc()
-		console.log("resolve")
+		//console.log("resolve")
 	}
 
 	//===========================================================================================================================
@@ -801,17 +801,17 @@ export class Scene extends Board{
 		//map image has vertically longer ratio than the viewport
 		if (win_ratio >= board_ratio) {
 			this.boardScale = winwidth/ this.boardInnerWidth
-			console.log("vertically longer map, scale" + this.boardScale)
+			//console.log("vertically longer map, scale" + this.boardScale)
 		}
 		//map image has horizontally longer ratio than the viewport
 		else {
 			this.boardScale =winheight / this.boardInnerHeight
-			console.log("horizontally longer map, scale" + this.boardScale)
+			//console.log("horizontally longer map, scale" + this.boardScale)
 		}
 		const max_boardscale=win_ratio<0.7?0.5:2
-		console.log(win_ratio)
+		//console.log(win_ratio)
 		this.boardScale=Math.min(max_boardscale,this.boardScale)
-		console.log(this.boardScale)
+		//console.log(this.boardScale)
 		$("#canvas-container").css("width", winwidth * 2)
 		$("#canvas-container").css("height", winheight * 2)
 
@@ -821,8 +821,8 @@ export class Scene extends Board{
 		this.boardOriginalWidth = (this.boardInnerWidth + BOARD_MARGIN * 2) * this.boardScale
 		this.canvas.setWidth(this.boardOriginalWidth)
 		this.canvas.setHeight(this.boardOriginalHeight)
-		// console.log(this.boardOriginalHeight)
-		// console.log(this.boardOriginalWidth)
+		// //console.log(this.boardOriginalHeight)
+		// //console.log(this.boardOriginalWidth)
 
 	//	this.canvas.forceRender()
 		this.zoomScale = 1
@@ -975,7 +975,7 @@ export class Scene extends Board{
 		
 		//공격선=================================================================
 
-		//console.log("tilelength"+this.tiles.length)
+		////console.log("tilelength"+this.tiles.length)
 		let line = new fabric.Line([0, 0, 300, 300], {
 			evented: false,
 			originX: "left",
@@ -1006,7 +1006,7 @@ export class Scene extends Board{
 		this.tooltip = tooltip
 
 		
-		console.log("showobjest")
+		//console.log("showobjest")
 
 		//힐=================================================================
 
@@ -1591,7 +1591,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	animateTrajectory(target, origin, type, speed) {
-		console.log("trajectory" + type)
+		//console.log("trajectory" + type)
 		let pos1 = this.getTilePos(origin)
 		let pos2 = this.getTilePos(target)
 		let scale = 0
@@ -1772,7 +1772,7 @@ export class Scene extends Board{
 	}
 	//===========================================================================================================================
 	showMultiPositionEffects(positions, type) {
-		console.log("showMultiPositionEffects"+type)
+		//console.log("showMultiPositionEffects"+type)
 		positions = positions.map((p) => this.getTilePos(p))
 
 		let scale = 1
@@ -1818,7 +1818,7 @@ export class Scene extends Board{
 	}
 
 	async showAttackEffect(data) {
-		console.log(this.line)
+		//console.log(this.line)
 		// switch(data.visualeffect){
 		// 	case 'kraken_w':
 		// 		this.showEffect(data.sourcePos, 'kraken_w_wave', 0, data.source)
@@ -1828,7 +1828,7 @@ export class Scene extends Board{
 
 		for (let i = 0; i < data.targets.length; ++i) {
 			let t = data.targets[i]
-			// console.log(data.visualeffect)
+			// //console.log(data.visualeffect)
 			switch(data.visualeffect){
 				case "magician_w_q":
 				case "magician_q":
@@ -1862,7 +1862,7 @@ export class Scene extends Board{
 	 * @param {*} change hp change amount (if related to hp)
 	 */
 	showEffect(position, type, change) {
-		console.log("showeffect" + type)
+		//console.log("showeffect" + type)
 		let pos = this.getTilePos(position)
 		let scale = 1
 		let addedEffectImg = null
@@ -1913,7 +1913,7 @@ export class Scene extends Board{
 			//칼
 			case "knifeslash":
 				this.game.playSound("knifeslash")
-				//	console.log("knife")
+				//	//console.log("knife")
 				addedEffectImg=this.createCroppedEffectImage('knifeslash')
 				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1,1,0.7,0)
 				this.animateOpacity(addedEffectImg,0,2000)
@@ -2163,7 +2163,7 @@ export class Scene extends Board{
 				this.animateY(addedEffectImg,pos.y-30,1000)
 
 			case "bird_r_hit":
-				// console.log(skillfrom + "bird_r_hit")
+				// //console.log(skillfrom + "bird_r_hit")
 				// pos = this.getPlayerPos(skillfrom)
 				this.game.playSound("8r_hit")
 				this.defaultEffect(position, change)
@@ -2276,7 +2276,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	changeShield(target, shield, change, indicate) {
-		//	console.log("changehield" + shield)
+		//	//console.log("changehield" + shield)
 		change = Math.floor(change)
 		this.setHp(target,this.players[target].hp,this.players[target].maxhp,shield)
 
@@ -2360,7 +2360,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	setHp(target,hp,maxhp,shield) {
-		console.log("setHP",target,hp,maxhp,shield)
+		//console.log("setHP",target,hp,maxhp,shield)
 		hp=Math.max(0,hp)
 		shield=Math.max(0,shield)
 		this.players[target].hp=hp
@@ -2416,8 +2416,8 @@ export class Scene extends Board{
 			// 	lost=0
 			// }
 
-			//console.log(health)
-			//console.log(lost)
+			////console.log(health)
+			////console.log(lost)
 			let hp_lost = this.players[target].hpIndicator.lost
 			let hp_frame = this.players[target].hpIndicator.frame
 			let hp_remain = this.players[target].hpIndicator.remain
@@ -2484,13 +2484,13 @@ export class Scene extends Board{
 				hp_lost.set({ visible: false })
 			}, this.modifyMoveSpeed(HEALTHBAR_FRAME_DISAPPEAR_DELAY))
 
-			//console.log(this.players[target].hpIndicatorFrameTimeout)
+			////console.log(this.players[target].hpIndicatorFrameTimeout)
 		}
-		console.log("animateHP" + target)
+		//console.log("animateHP" + target)
 
 		let pos = this.getPlayerPos(target)
 
-		console.log("change" + change)
+		//console.log("change" + change)
 		if (change >= 0 && change <= 10) {
 			return
 		}
@@ -2536,7 +2536,7 @@ export class Scene extends Board{
 			
 			this.removeImageAfter(dmgIndicator,3000)
 		} else {
-			console.log("heal" + change)
+			//console.log("heal" + change)
 			this.players[target].healindicator.set("fill", "green")
 			this.players[target].healindicator.set("text", "+" + String(change))
 			this.players[target].healindicator.set("fontSize", 35)
@@ -2563,7 +2563,7 @@ export class Scene extends Board{
 	{
 		let pos1 = this.getPlayerPos(turn)	
 
-		// console.log(this.players[turn].hpbar)
+		// //console.log(this.players[turn].hpbar)
 		this.players[turn].hpbar.frame.set({ visible: true, left: pos1.x - HPBAR_OFFSET_X, top: pos1.y - HPBAR_OFFSET_Y })
 		this.players[turn].hpbar.hp.set({
 			visible: true,
@@ -2598,7 +2598,7 @@ export class Scene extends Board{
 		if (money < 0) {
 			this.players[target].moneyindicator.set({ fill: "#7E00BF" })
 			this.players[target].moneyindicator.set("text", String(money) + "$")
-			//	console.log(money + "money")
+			//	//console.log(money + "money")
 		} else {
 			this.players[target].moneyindicator.set("fill", "orange")
 			this.players[target].moneyindicator.set("text", "+" + String(money) + "$")
@@ -2647,7 +2647,7 @@ export class Scene extends Board{
 		} else {
 			this.findPlayerImgInGroup(target).set({ opacity: 1 })
 		}
-		//	console.log("toggleinvisible" + isStart)
+		//	//console.log("toggleinvisible" + isStart)
 	}
 	/**	//===========================================================================================================================
 
@@ -2670,7 +2670,7 @@ export class Scene extends Board{
 			playerimg.filters = []
 			playerimg.applyFilters()
 		}
-		console.log("toggleslow" + isStart)
+		//console.log("toggleslow" + isStart)
 	}
 	//===========================================================================================================================
 
@@ -2694,7 +2694,7 @@ export class Scene extends Board{
 			playerimg.filters = []
 			playerimg.applyFilters()
 		}
-		console.log("togglespeed" + isStart)
+		//console.log("togglespeed" + isStart)
 	}
 	/**	//===========================================================================================================================
 
@@ -2717,7 +2717,7 @@ export class Scene extends Board{
 			playerimg.filters = []
 			playerimg.applyFilters()
 		}
-		console.log("togglepoison" + isStart)
+		//console.log("togglepoison" + isStart)
 	}
 
 	/**	//===========================================================================================================================
@@ -2742,7 +2742,7 @@ export class Scene extends Board{
 			playerimg.filters = []
 			playerimg.applyFilters()
 		}
-		// console.log("togglepoison" + isStart)
+		// //console.log("togglepoison" + isStart)
 	}
 	/**	//===========================================================================================================================
 
@@ -2751,7 +2751,7 @@ export class Scene extends Board{
 	 * @param {*} target 대상 턴
 	 */
 	toggleStun(isStart, target) {
-		console.log("toggle stun" + isStart + " " + target)
+		//console.log("toggle stun" + isStart + " " + target)
 		if (isStart) {
 			let pos = this.getPlayerPos(target)
 			let jail = new fabric.Image(document.getElementById("stunindicator"), {
@@ -2898,7 +2898,7 @@ export class Scene extends Board{
 
 		// this.players[target].effect_status[effect]=isStart
 
-		console.log("toggle" + isStart + " " + effect)
+		//console.log("toggle" + isStart + " " + effect)
 		if (effect === 0) {
 			this.toggleSlow(isStart, target)
 		}
@@ -2940,7 +2940,7 @@ export class Scene extends Board{
 				e.filters = []
 				e.applyFilters()
 			} else {
-				console.log("Remove" + e.id)
+				//console.log("Remove" + e.id)
 				this.players[target].playerimg.remove(e)
 				this.canvas.remove(e)
 				e = null
@@ -3117,7 +3117,7 @@ export class Scene extends Board{
 		let dups = [] //store index in targets of duplicate elements
 		let positions = targets.map((i) => this.players[i].pos)
 
-		console.log(targets)
+		//console.log(targets)
 
 		positions.forEach((item, index) => {
 			if (positions.indexOf(item) !== index) {
@@ -3126,7 +3126,7 @@ export class Scene extends Board{
 				if (!dups.includes(index)) dups.push(index)
 			}
 		})
-		console.log(dups)
+		//console.log(dups)
 
 		for (let i = 0; i < targets.length; ++i) {
 			let tr = targets[i]
@@ -3165,7 +3165,7 @@ export class Scene extends Board{
 	} //===========================================================================================================================
 
 	showOverlaySelector(turns, type, pos) {
-		console.log("showOverlaySelectors" + turns)
+		//console.log("showOverlaySelectors" + turns)
 
 		for (let p of this.players) {
 			p.targetimg.set({ hasBorders: false, visible: false })
@@ -3421,7 +3421,7 @@ export class Scene extends Board{
 	//===========================================================================================================================
 
 	showCoffin(turn) {
-		console.log("coffin" + turn)
+		//console.log("coffin" + turn)
 		let pos = this.getPlayerPos(turn)
 		this.players[turn].coffin.bringToFront()
 		this.players[turn].coffin.set({

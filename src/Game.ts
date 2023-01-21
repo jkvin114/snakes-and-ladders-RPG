@@ -21,7 +21,7 @@ import { GameRecord } from "./TrainHelper"
 import { ReplayEventRecords } from "./ReplayEventRecord"
 import { PlayerFactory } from "./player/PlayerFactory"
 import { SkillAttack } from "./core/skill"
-import { GameMapHandler } from "./MapHandlers/GameMapHandler"
+import { GameLevel } from "./MapHandlers/GameMapHandler"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -59,6 +59,7 @@ class Game {
 	private passProjectileQueue: PassProjectile[]
 	gameover: boolean
 	private winner: number
+	private winnerTeam:number
 
 	// private summonedEntityList: Map<string, SummonedEntity>
 	
@@ -83,7 +84,7 @@ class Game {
 	
 	private static readonly PLAYER_ID_SUFFIX = "P"
 	private replayRecord:ReplayEventRecords
-	mapHandler:GameMapHandler
+	mapHandler:GameLevel
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
 		this.instant = setting.instant
@@ -91,7 +92,7 @@ class Game {
 		this.rname = rname
 		if (mapid < 0 || mapid > 4) mapid = 0
 		this.mapId = mapid //0: 오리지널  1:바다  2:카지노
-		this.mapHandler=GameMapHandler.create(this,this.mapId,setting.shuffleObstacle)
+		this.mapHandler=GameLevel.create(this,this.mapId,setting.shuffleObstacle)
 		this.begun=false
 		this.totalturn = 0
 		this.isTeam = setting.isTeam
@@ -103,6 +104,7 @@ class Game {
 		// this.skillcount = 0
 		this.clientsReady = 0
 		this.winner = -1
+		this.winnerTeam=-1
 		this.itemLimit = setting.itemLimit
 		// this.nextUPID = 1
 		// this.nextPassUPID = 1
@@ -202,9 +204,11 @@ class Game {
 		this.cycle=cycle
 	}
 	getObstacleAt(pos:number){
+		if(pos>=this.mapHandler.obstaclePlacement.length || pos<0) return 0
 		return this.mapHandler.obstaclePlacement[pos].obs
 	}
 	getMoneyAt(pos:number){
+		if(pos>=this.mapHandler.obstaclePlacement.length || pos<0) return 0
 		return this.mapHandler.obstaclePlacement[pos].money * 10
 	}
 	//========================================================================================================
@@ -752,6 +756,7 @@ class Game {
 
 		if (result === ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH) {
 			this.winner = this.thisturn
+			this.winnerTeam=this.thisp().team
 			return ENUM.ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
 
@@ -1188,7 +1193,10 @@ class Game {
 	getTrainData():GameRecord {
 		let g=new GameRecord(this.totalturn)
 		for (const p of this.entityMediator.allPlayer()) {
-			g.add(p.getTrainIndicator(this.totalturn),p.getCoreItemBuild())
+			let ind=p.getTrainIndicator(this.totalturn)
+			if(p.team===this.winnerTeam) ind.isWinner=true
+
+			g.add(ind,p.getCoreItemBuild())
 		}
 		return g
 	}

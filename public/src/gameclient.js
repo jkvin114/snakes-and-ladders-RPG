@@ -336,8 +336,10 @@ export function openConnection(isInitial) {
 	})
 	socket.on("server:game_stat_ready", function (statid) {
 		setTimeout(()=>{
+
 			window.onbeforeunload=()=>{}
-			window.location.href = "statpage.html?type=game&statid="+statid
+			if(statid==="")window.location.href="index.html"
+			else window.location.href = "statpage.html?type=game&statid="+statid
 		},4000)
 	})
 

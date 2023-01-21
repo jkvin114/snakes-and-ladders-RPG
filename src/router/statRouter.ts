@@ -117,7 +117,8 @@ router.get("/result", function (req: express.Request, res: express.Response) {
 	}
 
 	if (req.query.statid == null || req.query.type == null) {
-		return
+		res.status(404).end({ err: "Statistic not found" })
+        return
 	}
 	if (req.query.type === "game") {
 		GameRecord.findById(req.query.statid)

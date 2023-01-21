@@ -9,6 +9,14 @@ import { ClientInputEventFormat } from "./data/EventFormat"
 import { TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../res/train_setting.json")
 import type { ReplayEventRecords } from "./ReplayEventRecord"
+import sizeof from 'object-sizeof'
+import process from 'process'
+var v8 = require("v8");
+var vm = require('vm');
+
+v8.setFlagsFromString('--expose_gc');
+var garbagecollect = vm.runInNewContext('gc');
+
 
 const { workerData, parentPort, isMainThread } = require("worker_threads")
 
@@ -205,7 +213,8 @@ class SimulationSetting {
 	}
 }
 
-const MAX_COUNT=999
+const MAX_COUNT=TRAIN_SETTINGS.train?1000000:999
+const GARBAGE_COLLECT_INTERVAL=5000
 class Simulation {
 	private count: number
 	private progressCount: number
@@ -259,6 +268,7 @@ class Simulation {
 	}
 
 	run(callback: Function,onError:Function) {
+		const PROGRESS_INTERVAL=Math.max(10,Math.floor(this.count/1000))
 		let consolelog = console.log
 		console.log = function () {}
 		//const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
@@ -267,9 +277,20 @@ class Simulation {
 		let i = 0
 		try{
 			for (i = 0; i < this.count - 1; ++i) {
-				if (i % 10 === 0) parentPort.postMessage({ type: "progress", value: i / this.count })
+				if (i % PROGRESS_INTERVAL === 0) parentPort.postMessage({ type: "progress", value: i / this.count })
 				this.playOneGame(i)
 		//		bar1.update(i)
+				if(i%GARBAGE_COLLECT_INTERVAL===GARBAGE_COLLECT_INTERVAL/2) {
+					for (const [key,value] of Object.entries(process.memoryUsage())){
+					//	consolelog(`Memory usage by ${key}, ${value/1000000}MB `)
+					}
+
+					if (garbagecollect) {
+					//	consolelog("garbage collected")
+						garbagecollect();
+					}
+				}
+
 			}
 		}
 		catch(e){
@@ -283,65 +304,83 @@ class Simulation {
 		console.log("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
 
 		if(this.setting.isTrain){
-			this.trainData.onFinish()
+			this.trainData.onFinish(this.setting.mapPool)
 		}
 
 		callback()
 	}
-	playOneGame(i: number) {
-		this.makeGame()
+	private playOneGame(i: number) {
+		let gameloop=this.makeGame()
+		let gc:GameCycleState=gameloop.startSimulation()
+		.getTurnInitializer() //turninitializer
 		// this.game.startTurn()
 		this.progressCount = i
 		let oneGame = true
+		let error=false
 		while (oneGame) {
 			try {
-				if (this.nextturn() || !this.gameCycle) break
-				this.gameCycle = this.gameCycle.getNext()
-				this.skill()
-				this.gameCycle = this.gameCycle.getNext()
+				gc=this.nextturn(gc)
+				if (!gc || this.isGameOver(gc)) break
+				gc = gc.getNext()
+				gc=this.skill(gc)
+				gc = gc.getNext()
 			} catch (e) {
 				console.error("Unexpected error on " + this.progressCount + "th game ")
 				console.error(e)
-				continue
+				error=true
+				break
 			}
 		}
-		if (this.setting.saveStatistics && this.gameCycle) {
-			if (!this.setting.summaryOnly) {
-				this.stats.add(this.gameCycle.game.getFinalStatistics())
+		if(!error){
+			
+			if (this.setting.saveStatistics && gc) {
+				if (!this.setting.summaryOnly) {
+					this.stats.add(gc.game.getFinalStatistics())
+				}
+				this.summaryStats.add(gc.game.getSummaryStatistics())
 			}
-			this.summaryStats.add(this.gameCycle.game.getSummaryStatistics())
-		}
 
-		if(this.setting.isTrain && this.gameCycle){
-			this.trainData.addGame(this.gameCycle.game.getTrainData())
+			if(this.setting.isTrain && gc){
+				this.trainData.addGame(gc.game.getTrainData())
+			}
+			if(gc && !this.setting.isTrain)
+				this.replayRecords.push(gc.game.retrieveReplayRecord())
 		}
-		if(this.gameCycle)
-		this.replayRecords.push(this.gameCycle.game.retrieveReplayRecord())
-		// console.table()
+		gameloop.onDestroy()
+		// this.gameCycle.game.onDestroy()
+		// this.gameCycle.onDestroy()
+		// this.gameCycle.game=null
+		// this.gameCycle=null
 	}
-	skill() {
-		if (this.gameCycle && this.gameCycle.id === GAME_CYCLE.SKILL.AI_SKILL) {
-			this.gameCycle.process()
-			this.gameCycle = this.gameCycle.getNext()
+	private skill(gameCycle:GameCycleState) {
+		if (gameCycle && gameCycle.id === GAME_CYCLE.SKILL.AI_SKILL) {
+			gameCycle.process()
+			gameCycle = gameCycle.getNext()
 		} else {
 			throw new Error("invalid game cycle state for ai skill")
 		}
+		return gameCycle
 	}
 	/**
 	 *
 	 * @returns is game over
 	 */
-	nextturn(): boolean {
+	private nextturn(gameCycle:GameCycleState): GameCycleState {
 		
-		if(this.gameCycle)
-			this.gameCycle = this.gameCycle.getNext().getNext()
-		if (this.gameCycle && this.gameCycle.id === GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE) {
-			return this.gameCycle.gameover
+		if(gameCycle)
+			gameCycle = gameCycle.getNext().getNext()
+		
+		return gameCycle
+
+	}
+	private isGameOver(gameCycle:GameCycleState){
+		if (gameCycle && gameCycle.id === GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE) {
+			return gameCycle.gameover
 		} else {
 			throw new Error("invalid game cycle state for nextturn")
 		}
 	}
-	makeGame() {
+	private makeGame():GameLoop {
 		this.setting.updateGameSetting()
 		if(this.progressCount>1) this.setting.gameSetting.replay=false
 
@@ -359,14 +398,15 @@ class Simulation {
 				userClass:0
 			})
 		}
-		this.gameCycle = GameLoop.createWithSetting(
+		let gameloop = GameLoop.createWithSetting(
 			this.setting.getMap(),
 			this.roomName,
 			this.setting.gameSetting,
 			playerlist
+		
 		)
-			.startSimulation()
-			.getTurnInitializer() //turninitializer
+			
+		return gameloop
 	}
 
 	getCount() {

@@ -2,7 +2,7 @@
 	{
 		"name":"reaper",
 		"Q": {
-			"base": 20,
+			"base": 30,
 			"scales": [
 				{
 					"ability": "AD",
@@ -35,7 +35,7 @@
 			"scales": [
 				{
 					"ability": "AP",
-					"val": 0.3
+					"val": 0.6
 				},
 				{
 					"ability": "AR",
@@ -128,7 +128,7 @@
 	{
 		"name":"sniper",
 		"Q": {
-			"base": 10,
+			"base": 40,
 			"scales": [
 				{
 					"ability": "AD",

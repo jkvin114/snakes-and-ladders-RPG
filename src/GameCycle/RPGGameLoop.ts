@@ -19,6 +19,7 @@ class EventResult {
 
 class GameLoop {
 	private idleTimeout: NodeJS.Timeout|null
+	private statePassTimeout: NodeJS.Timeout|null
 	game: Game
 	private state: GameCycleState
 	gameover: boolean
@@ -73,7 +74,7 @@ class GameLoop {
 		}
 		this.state = cycle
 		if (this.state.shouldPass()) {
-			setTimeout(this.startNextTurn.bind(this), SETTINGS.delay_state_pass)
+			this.statePassTimeout=setTimeout(()=>this.startNextTurn(false), SETTINGS.delay_state_pass)
 			return true
 		}
 		if (this.state.shouldStartTimeoutOnCreate()) {
@@ -275,8 +276,8 @@ class GameLoop {
 		}
 		//this.setGameCycle(this.state.onUserCompletePendingAction(info))
 	}
-	user_clickNextturn(){
-		if(this.state.id===GAME_CYCLE.SKILL.WAITING_SKILL)
+	user_clickNextturn(crypt_turn: string){
+		if(this.state.id===GAME_CYCLE.SKILL.WAITING_SKILL && this.state.crypt_turn===crypt_turn)
 			this.startNextTurn(false)
 		else
 			console.error("invalid nextturn input")
@@ -351,6 +352,8 @@ class GameLoop {
 			clearTimeout(this.idleTimeout)
 		if(this.resetTimeout)
 			clearTimeout(this.resetTimeout)
+		if(this.statePassTimeout)
+			clearTimeout(this.statePassTimeout)
 	}
 }
 

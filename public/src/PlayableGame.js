@@ -161,7 +161,7 @@ export class PlayableGame extends Game{
 		return text
 	}
     targetSelected(target, type) {
-		//console.log("targetselected" + target)
+		////console.log("targetselected" + target)
 		this.scene.resetTarget()
 		this.ui.hideSkillCancel()
 		if (type === "godhand") {
@@ -216,7 +216,7 @@ export class PlayableGame extends Game{
         if (t.stun) {
             this.manageStun()
         } else if (t.crypt_turn === this.crypt_turn) {
-            console.log(t.avaliablepos)
+            //console.log(t.avaliablepos)
             if (t.dc) {
                 this.scene.possiblePosList = t.avaliablepos
             }
@@ -236,7 +236,7 @@ export class PlayableGame extends Game{
 					$(".dcbtn").removeClass("unavaliable")
                   //  $("#dicecontrolbtn").css({ filter: "grayscale(0%)" })
                 }
-                //		console.log(t)
+                //		//console.log(t)
                 if (t.dc_cool === 0) {
                     $(".dcbtn .cooltime").html("x")
                 } else {
@@ -300,7 +300,7 @@ export class PlayableGame extends Game{
 			ACTIVATION=7
 		*/
 
-		console.log(result)
+		//console.log(result)
 		if (result.type === 1) {
 			this.android_toast(this.chooseLang("still in cooltime", "아직 재사용 대기시간입니다"))
 			this.ui.showSkillBtn(this.skillstatus)
@@ -377,7 +377,7 @@ export class PlayableGame extends Game{
 			case "item":
 				this.storeStatus.updateItemSlot(data)
 				this.store_ui.updateAllCurrentItem(data)
-				//	console.log(amt)
+				//	//console.log(amt)
 				// this.ui.changeItemToast()
 				break
 			case "subwayTicket":
@@ -443,7 +443,7 @@ export class PlayableGame extends Game{
 		if (!this.players[this.myturn].effect_status.has(name) ||
 			this.strRes.SPECIAL_EFFECTS.get(name)[0]!==desc) {
 			$(".se_" + String(name)).remove()
-				console.log("apply"+name)
+				//console.log("apply"+name)
 			if (data.type === "item") {
 				this.ui.addItemSpecialEffect(name, data.item_id, data.isgood)
 				this.strRes.SPECIAL_EFFECTS.set(name, [desc, data.item_id])
@@ -467,7 +467,7 @@ export class PlayableGame extends Game{
 		name=name.replaceAll(" ","_")
 		if (this.players[this.myturn].effect_status.has(name)) {
 			$(".se_" + String(name)).remove()
-			console.log("remove "+name)
+			//console.log("remove "+name)
 			this.players[this.myturn].effect_status.delete(name)
 			this.strRes.SPECIAL_EFFECTS.delete(name)
 		}
@@ -507,7 +507,7 @@ export class PlayableGame extends Game{
 		this.endSelection()
 	}
     onTileSelectionComplete(index, type) {
-		console.log("tileselected" + type + " " + index)
+		//console.log("tileselected" + type + " " + index)
 
 		if (type === "godhand") {
 			let godhand_info = {
@@ -518,7 +518,7 @@ export class PlayableGame extends Game{
 				},
 				type: "godhand"
 			}
-			//	console.log("godhand location selected" + godhand_info)
+			//	//console.log("godhand location selected" + godhand_info)
 			this.godhandtarget = -1
 
 			this.connection.sendGodHandInfo(godhand_info)
@@ -678,7 +678,7 @@ export class PlayableGame extends Game{
         this.playObstacleSound(data.obs)
     }
     onIndicateItem(turn, item) {
-		console.log("onIndicateItem")
+		//console.log("onIndicateItem")
 		if (!this.strRes.ITEMS.items[item].active_summary) return
 		let it = this.strRes.ITEMS.items[item]
 
@@ -734,7 +734,7 @@ export class PlayableGame extends Game{
     subwayComplete(type) {
 		$("#subwaywindow").css("visibility", "hidden")
 		this.playSound("store")
-		console.log("subway" + type)
+		//console.log("subway" + type)
 		this.subwayTicket = type
 		this.connection.sendSubwayType({
 			type: "subway",

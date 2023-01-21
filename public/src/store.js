@@ -34,7 +34,7 @@ export class StoreStatus {
 	}
 
 	setItemList(itemList, sortedItemList) {
-		console.log(sortedItemList)
+		//console.log(sortedItemList)
 		this.itemList = itemList
 		this.sortedItemList = sortedItemList
 		for (let it of this.itemList) {
@@ -251,6 +251,8 @@ class ItemTreeBuilder {
 	}
 }
 
+
+
 export class StoreInterface {
 	constructor(StoreStatus, storeInstance) {
 		if (StoreInterface._instance) {
@@ -266,20 +268,41 @@ export class StoreInterface {
 		this.treeBuilder = new ItemTreeBuilder(StoreStatus, storeInstance)
 		this.isGrid=false
 		this.isAuto=false
+		this.categorybtn = $(".categorybtn").toArray()
+		this.naviRecord=[]
 	}
 
+	naviBack(){
+		this.naviRecord.pop()
+		let prev=this.naviRecord.pop()
+		if(!prev) return
+		if(prev.type==="category"){
+			this.showCategory(prev.val) 
+		}
+		if(prev.type==="life"){
+			this.showLifeDetail()
+		}
+		if(prev.type==="token"){
+			this.showTokenDetail()
+		}
+		if(prev.type==="item"){
+			this.showDetail(prev.val,true)
+		}
+	}
+	saveNaviRecord(type,val){
+		if(this.naviRecord.length>1 && 
+			this.naviRecord[this.naviRecord.length-1].type===type && 
+			this.naviRecord[this.naviRecord.length-1].val===val) return
+			
+		this.naviRecord.push({
+			type:type,val:val
+		})
+	}
 	initstore() {
 		let storehometexts = $("#storehome > p").toArray()
 		$(storehometexts[0]).html(GAME.chooseLang("Special Items", "특수 아이템"))
 		$(storehometexts[1]).html(GAME.chooseLang("Recommended Items", "추천 아이템"))
 
-		let typelistbtns = $(".typelistbtn").toArray()
-		// $(typelistbtns[0]).html(GAME.chooseLang("Home", "홈으로"))
-		// $(typelistbtns[1]).html(GAME.chooseLang("Attack", "공격력"))
-		// $(typelistbtns[2]).html(GAME.chooseLang("Magic", "주문력"))
-		// $(typelistbtns[3]).html(GAME.chooseLang("Defence", "방어"))
-		// $(typelistbtns[4]).html(GAME.chooseLang("Health", "체력"))
-		// $(typelistbtns[5]).html(GAME.chooseLang("Movement", "이동"))
 		$("#store_auto_text").html(GAME.chooseLang("Item auto buy", "아이템 자동구매"))
 		$("#loweritem").html(GAME.chooseLang("Lower Level Items", "하위 아이템"))
 		$("#upperitem").html(GAME.chooseLang("Upper Level Items", "상위 아이템"))
@@ -292,6 +315,7 @@ export class StoreInterface {
 				"<div class=coinstoreimg><img src='res/img/board/obstacles.png' style='margin-left: -3350px'; > </div>" +
 				GAME.chooseLang("", "에서 매도 가능")
 		)
+		const _this=this
 
 		$(".coinstoreimg").css({
 			width: "50px",
@@ -301,16 +325,19 @@ export class StoreInterface {
 			background: "white"
 		})
 		$(".typelistbtn").click(function () {
-			GAME.store_ui.hideItemDetail()
+			_this.hideItemDetail()
 			$(".typelistbtn").removeClass("focus")
-			$(this).addClass("focus")
-			GAME.store_ui.showCategory(Number($(this).attr("value")))
+			if($(this).attr("value")==="back"){
+				_this.naviBack()
+			}
+			else
+			_this.showCategory(Number($(this).attr("value")))
 		})
 		$("#back").click(function () {
-			GAME.store_ui.goBack()
+			_this.goBack()
 		})
 		// $(".itemsummary").click(function () {
-		// 	console.log("itemsummary")
+		// 	//console.log("itemsummary")
 		// 	GAME.store_ui.showDetail(Number($(this).val()))
 		// })
 
@@ -329,10 +356,10 @@ export class StoreInterface {
 		// 	GAME.store_ui.hideItemDetail()
 		// })
 		$(".storeclose").click(function () {
-			GAME.store_ui.closeStore()
+			_this.closeStore()
 		})
 		$(".storebtn2").click(function () {
-			GAME.store_ui.openStore()
+			_this.openStore()
 
 			//$(".overlay").show(0)
 		})
@@ -344,7 +371,7 @@ export class StoreInterface {
 		// })
 
 		$("#token_buy_range").on("input", function () {
-			GAME.store_ui.updateTokenCount(this.value)
+			_this.updateTokenCount(this.value)
 		})
 		$("#store_grid").click(()=>{
 			this.isGrid=true
@@ -376,12 +403,15 @@ export class StoreInterface {
 		}
 	}
 	openNewStore(data) {
+
 		this.syncMoneyDisplay(data)
 		this.updateStoreBtnState()
 		this.updateStoreHome()
 	}
 	showCategory(category) {
-		console.log("showcat" + category)
+		this.saveNaviRecord("category",category)
+		$(this.categorybtn[category]).addClass("focus")
+		// //console.log("showcat" + category)
 		// document.getElementById("storecontent").scrollTo(0,0)
 		this.currentCategory = category
 		if (category === 0) {
@@ -469,13 +499,13 @@ export class StoreInterface {
 
 		$(".itemsummary").off()
 		$(".itemsummary").click(function () {
-			console.log("itemsummary")
+			//console.log("itemsummary")
 			_this.showDetail(Number($(this).attr("value")), true)
 		})
 	}
 
 	getItemSummaryStr(item_id) {
-		// console.log("getItemSummaryStr"+item_id)
+		// //console.log("getItemSummaryStr"+item_id)
 		let canbuy = this.storeStatus.canBuyItem(item_id)
 		let str =
 			`<div class='itemsummary ${canbuy ? "" : " cannotbuy "} ${this.isGrid? "grid":""}' value='${String(item_id)}'>
@@ -517,6 +547,7 @@ export class StoreInterface {
 		})
 	}
 	closeStore() {
+		this.naviRecord=[]
 		$("#tokentotal").html("")
 		this.isStoreOpen = false
 
@@ -558,6 +589,7 @@ export class StoreInterface {
 	}
 
 	showLifeDetail() {
+		this.saveNaviRecord("life",0)
 		$("#buylife").off()
 		$("#life_description").html(
 			GAME.chooseLang(
@@ -596,6 +628,7 @@ export class StoreInterface {
 		this.showLifeDetail()
 	}
 	showTokenDetail() {
+		this.saveNaviRecord("token",0)
 		$("#buytoken").off()
 		$("#tokentotal").html("")
 		$("#store_buytoken").css("visibility", "visible")
@@ -661,6 +694,7 @@ export class StoreInterface {
 	}
 
 	showDetail(item_id, changetree) {
+		this.saveNaviRecord("item",item_id)
 		GAME.extendTimeout()
 		this.isDetailOpen = true
 
@@ -784,11 +818,11 @@ export class StoreInterface {
 
 		$(".onetreeitem").off()
 		$(".tf-nc .onetreeitem").click(function () {
-			console.log($(this).attr("value"))
+			//console.log($(this).attr("value"))
 			_this.showDetail(Number($(this).attr("value")), false)
 		})
 		$(".tf-nc.parents .onetreeitem").click(function () {
-			console.log($(this).attr("value"))
+			//console.log($(this).attr("value"))
 			_this.showDetail(Number($(this).attr("value")), true)
 		})
 
@@ -1099,10 +1133,10 @@ export class StoreInstance {
 		while (list.length > 0) {
 			let p = list.shift()
 			list = list.concat(this.data.itemList[p].parents)
-			console.log("getAllAncestors list" + this.data.itemList[p].parents)
+			//console.log("getAllAncestors list" + this.data.itemList[p].parents)
 			ancestors.push(p)
 		}
-		console.log("getAllAncestors" + ancestors)
+		//console.log("getAllAncestors" + ancestors)
 		return ancestors
 	}
 	/**
@@ -1116,10 +1150,10 @@ export class StoreInstance {
 		while (list.length > 0) {
 			let p = list.shift()
 			list = list.concat(this.data.itemList[p].children)
-			console.log("getAllchildren list" + this.data.itemList[p].children)
+			//console.log("getAllchildren list" + this.data.itemList[p].children)
 			children.push(p)
 		}
-		console.log("getAllAncestors" + children)
+		//console.log("getAllAncestors" + children)
 		return children
 	}
 
@@ -1133,7 +1167,7 @@ export class StoreInstance {
 		if (itemslots.indexOf(EMPTY) < 0) return
 
 		itemslots[itemslots.indexOf(EMPTY)] = item
-		console.log("additem" + itemslots)
+		//console.log("additem" + itemslots)
 		return itemslots
 	}
 	/**

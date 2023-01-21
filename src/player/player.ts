@@ -118,6 +118,7 @@ abstract class Player extends Entity {
 	abstract readonly skill_ranges: number[]
 	private skillInfoKor: SkillInfoFactory
 	private skillInfo: SkillInfoFactory
+	thisTurnObstacleCount:number
 
 	abstract getSkillTrajectorySpeed(s: string): number
 	/**
@@ -201,6 +202,7 @@ abstract class Player extends Entity {
 		this.autoBuy=ai
 		this.basicAttackType=ABILITY[char].basicAttackType==="ranged"?
 		 BASICATTACK_TYPE.RANGED: BASICATTACK_TYPE.MELEE
+		 this.thisTurnObstacleCount=0
 	}
 	transfer(func: Function, ...args: any[]) {
 		this.mediator.sendToClient(func, ...args)
@@ -357,7 +359,7 @@ abstract class Player extends Entity {
 	}
 	//========================================================================================================
 	onMyTurnStart() {
-
+		this.thisTurnObstacleCount=0
 		if (!this.oneMoreDice) {
 			this.onSkillDurationCount()
 			this.decrementAllSkillDuration()
@@ -535,7 +537,7 @@ abstract class Player extends Entity {
 	 * @returns died
 	 */
 	changePos(pos: number): boolean {
-		if (this.mapHandler.doMineDamage()) return true
+		if (this.mapHandler.onChangePos()) return true
 
 		this.pos = clamp(pos, 0, MAP.getLimit(this.mapId))
 		this.checkLevelUp()
@@ -1442,8 +1444,8 @@ abstract class Player extends Entity {
 		ind.damage_reduction_rate=this.statistics.stats[7]/Math.max(1,(this.statistics.stats[7]+this.statistics.stats[0]))
 		ind.heal_per_gold=this.statistics.stats[3]/this.statistics.stats[ STAT.MONEY_EARNED]
 
-		if(this.pos >= this.mapHandler.gamemap.finish) 
-			ind.isWinner=true
+		//if(this.pos >= this.mapHandler.gamemap.finish) 
+		//	ind.isWinner=true
 
 		return ind
 	}

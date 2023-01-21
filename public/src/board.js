@@ -211,9 +211,9 @@ export class Board{
 		// $("#canvas-container").stop()
 		let pos = this.getPlayerPos(turn)
 		let rect = document.getElementById("boardwrapper").getBoundingClientRect()
-	//	console.log(pos.x * this.zoomScale, pos.y * this.zoomScale)
+	//	//console.log(pos.x * this.zoomScale, pos.y * this.zoomScale)
 		// rect = document.getElementById("canvas-container").getBoundingClientRect()
-		// console.log(rect)
+		// //console.log(rect)
 
 		let x = rect.left + pos.x * this.boardScale * this.zoomScale  - window.innerWidth / 2//+ ( )// - this.game.ui.winwidth/2)
 		let y = rect.top + pos.y * this.boardScale * this.zoomScale - window.innerHeight / 2
@@ -222,7 +222,7 @@ export class Board{
 			this.game.ui.elements.board_container.scrollBy(x, y)
 		//		 this.game.ui.elements.board_container.scrollBy((pos.x* this.zoomScale-this.game.ui.winwidth/2), 0)
 
-		// console.log("moveboard x" + Math.floor(this.game.ui.elements.board_container.scrollLeft)
+		// //console.log("moveboard x" + Math.floor(this.game.ui.elements.board_container.scrollLeft)
 		// + "  y" + Math.floor(this.game.ui.elements.board_container.scrollTop))
 	}
 	lockFabricObject(obj) {
@@ -354,7 +354,7 @@ export class Board{
 	setMap(map){
 		this.Map = map
 		this.mapname = this.Map.mapname
-		console.log(this.Map)
+		//console.log(this.Map)
 	}
 	setMapCoordinates(coord){
 		this.coordinates=coord
@@ -525,7 +525,7 @@ export class Board{
 
 	updateNameText(turn) {
 		let pos = this.getPlayerPos(turn)
-		//	console.log(pos)
+		//	//console.log(pos)
 		this.players[turn].nametext.set({ top: pos.y - 30, left: pos.x })
 		this.render()
 	}
@@ -534,7 +534,7 @@ export class Board{
 	showArrow(turn) {
 		this.playersToFront() 
 		let pos = this.getPlayerPos(turn)
-		console.log(pos)
+		//console.log(pos)
 		this.arrow.set({ top: pos.y - 70, left: pos.x, opacity: 1 }).bringToFront()
 		this.forceRender()
 	}
@@ -544,7 +544,7 @@ export class Board{
 	}
 	showPin(pos) {
 		pos = this.getTilePos(pos)
-		//	console.log(pos)
+		//	//console.log(pos)
 		this.pin.set({ top: pos.y - 20, left: pos.x, opacity: 1 }).bringToFront()
 	//	this.forceRender()
 	}
@@ -553,10 +553,10 @@ export class Board{
 		if (movetype === "simple") {
 			this.tpPlayerSimple(target, pos)
 		} else if (movetype === "levitate") {
-			// console.log("tp")
+			// //console.log("tp")
 			this.levitatePlayer(target)
 			let time = this.getMoveSpeed("tp_levitate")
-			//	console.log("tp")
+			//	//console.log("tp")
 			setTimeout(() => this.tpPlayer(target, pos), time)
 		}
 		setTimeout(() => {
@@ -603,7 +603,7 @@ export class Board{
 			this.moveComplete(turn)
 			return
 		}
-		// console.log(pos-count)
+		// //console.log(pos-count)
 		let x = this.getCoord(pos-count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
 		let y = this.getCoord(pos-count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 		const time=this.getMoveSpeed("step")
@@ -782,7 +782,7 @@ export class Board{
 			if (pos < 0 || pos > this.mapLength()) {
 				continue
 			}
-			console.log(pos)
+			//console.log(pos)
 
 			if (this.tiles[pos] != null) {
 				this.activetiles.push(pos)
@@ -821,9 +821,9 @@ export class Board{
 
 	playersToFront() {
 		for (let i = 0; i < this.players.length; ++i) {
-			// console.log(this.findPlayerImgInGroup(i))
-			// console.log(i)
-			// console.log(this.players[i])
+			// //console.log(this.findPlayerImgInGroup(i))
+			// //console.log(i)
+			// //console.log(this.players[i])
 			this.players[i].playerimg.bringToFront()
 		}
 		this.render()
@@ -831,7 +831,7 @@ export class Board{
 
 	nameTextsToFront() {
 		for (let i = 0; i < this.players.length; ++i) {
-			// console.log(this.findPlayerImgInGroup(i))
+			// //console.log(this.findPlayerImgInGroup(i))
 			this.players[i].nametext.bringToFront()
 		}
 	}

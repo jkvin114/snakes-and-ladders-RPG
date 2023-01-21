@@ -219,7 +219,7 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req: express.Re
 		let replys = []
 		for (let reply of commentreply.reply) {
 			replys.push({
-				canModify: String(reply.author) === req.session.userId,
+				canModify: req.session.isLogined && String(reply.author) === req.session.userId,
 				content: reply.content,
 				_id: String(reply._id),
 				upvotes: reply.upvote,

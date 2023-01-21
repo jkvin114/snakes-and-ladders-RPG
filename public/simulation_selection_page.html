@@ -358,6 +358,18 @@ h6{
     height: 40px;
     width: 0px;
     background-color: greenyellow;
+    position: absolute;
+    top:0;
+    z-index: 16;
+
+  }
+  #progresstext{
+    position: relative;
+
+    color: black;
+    font-size: 15px;
+    text-align: center;
+    z-index: 17;
   }
 </style>
 <body> 
@@ -493,8 +505,11 @@ h6{
   </h6>
   <div id="progressbar">
     <span id="progress"></span>
+    <p id="progresstext">0%</p>
   </div>
   <img src="res/img/ui/loading.gif" id="loadingimg">  
+
+
 </div>
 
 </body>

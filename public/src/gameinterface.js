@@ -77,6 +77,7 @@ export default class GameInterface {
 		
 
 		$(".nextturnbtn").click(() => {
+			if($(this).hasClass("unavaliable")) return
 			//if(GAME.ui.nextTurnBtnShown) 
 			GAME.onNextTurn()}
 			)
@@ -86,17 +87,17 @@ export default class GameInterface {
 		})
 
 		$(".skillbtn").click(function () {
-			if(!GAME.ui.skillBtnShown) return
+			if(!GAME.ui.skillBtnShown || $(this).hasClass("unavaliable")) return
 
 			let val = Number($(this).attr("value"))
 			GAME.onSkillBtnClick(val)
-			console.log("skill")
+			//console.log("skill")
 		})
 		$(".basicattackbtn").click(function () {
 			if($(this).hasClass("unavaliable")) return
 
 			GAME.onBasicAttackClick()
-			console.log("ba")
+			//console.log("ba")
 		})
 		
 
@@ -105,7 +106,7 @@ export default class GameInterface {
 				return
 			}
 			GAME.connection.reloadGame(Number(sessionStorage.turn))
-			//	console.log("reload")
+			//	//console.log("reload")
 		})
 
 		$("#hide").click(function () {
@@ -173,13 +174,13 @@ export default class GameInterface {
 			//clearInterval(GAME.diceHighlightInterval)
 			$("#largedicebtn").hide()
 			// $("#largedicebtnimg").show()
-			$("#largedicebtn_pressed").show()
-			setTimeout(()=>$("#largedicebtn_pressed").hide(),500)
+			//$("#largedicebtn_pressed").show()
+			//setTimeout(()=>$("#largedicebtn_pressed").hide(),500)
 			GAME.onDiceBtnClick(-1)
 		})
 
 		$(".dcbtn").click(function () {
-			if (!GAME.diceControl) {
+			if (!GAME.diceControl || $(this).hasClass("unavaliable")) {
 				return
 			}
 			GAME.dice_clicked = true
@@ -195,7 +196,7 @@ export default class GameInterface {
 		$(".diceselection").click(function () {
 			$("#diceselection").animate({ right: "-300px" }, 300)
 			setTimeout(() => $("#diceselection").hide(), 400)
-			//		console.log("dc" + Number($(this).val()))
+			//		//console.log("dc" + Number($(this).val()))
 
 		//	clearInterval(GAME.diceHighlightInterval)
 			// $("#largedicebtn").stop().css({ outline: "none" })
@@ -270,7 +271,7 @@ export default class GameInterface {
 
 		//단순 돈은 알림표시 안함
 		if (obs <= 3) return
-		let yOffset=window.matchMedia("(orientation: portrait)").matches?50:0
+		let yOffset=window.matchMedia("(orientation: portrait)").matches?0:0
 		if (this.obsNoti1.position === 0 && this.obsNoti2.position === 0) {
 			this.obsNoti1.write(obs, 1, text)
 			//write noti1
@@ -485,7 +486,7 @@ addChatDragEvent() {
 }
 
 	timeoutStart(time) {
-		//	console.log("timeoutstart")
+		//	//console.log("timeoutstart")
 		this.elements.timeoutBar.css("width", "0")
 		this.elements.timeoutBar.animate(
 			{
@@ -496,13 +497,13 @@ addChatDragEvent() {
 		)
 	}
 	timeoutStop() {
-		//	console.log("timeoutstop")
+		//	//console.log("timeoutstop")
 		this.elements.timeoutBar.css("width", "0")
 		this.elements.timeoutBar.stop()
 	}
 
 	init(setting, simulation = false) {
-		console.log("initui")
+		//console.log("initui")
 		$("#loadingtext").html("LOADING THE MAP..")
 
 		$("#skillinfobtn").show()
@@ -525,7 +526,7 @@ addChatDragEvent() {
 		$(this.elements.kdasections[GAME.myturn]).addClass("myturn")
 
 		let othercount = 1
-		console.log("simulation" + simulation)
+		//console.log("simulation" + simulation)
 		if (simulation) {
 			GAME.turnsInUI = [0, 1, 2, 3]
 			GAME.simulation = true
@@ -577,8 +578,8 @@ addChatDragEvent() {
 			// GAME.player_champlist[i] = setting[i].champ
 			//$(this.elements.charimgs[GAME.turn2ui(i)]).css("background-color", this.game.getPlayerLighterColor(i))
 			$(this.elements.kdainfos[i]).css("color", this.game.getPlayerLighterColor(i))
-			console.log(setting[i].turn)
-			console.log(this.game.getPlayerColor(setting[i].turn))
+			//console.log(setting[i].turn)
+			//console.log(this.game.getPlayerColor(setting[i].turn))
 			$(this.elements.hpspan[this.game.turn2ui(i)]).addClass(this.game.getPlayerColor(setting[i].turn))
 			// if (GAME.isTeam) {
 			// 	if (!setting[i].team) {
@@ -590,7 +591,7 @@ addChatDragEvent() {
 			// else{
 			// 	$(this.elements.kdainfos[i]).css("color", COLOR_LIST_BG[i])
 			// }
-			// console.log(setting[i])
+			// //console.log(setting[i])
 			this.changeHP(i, setting[i].HP, setting[i].MaxHP)
 			
 			//this.updatePlayerItems(i, [-1, -1, -1, -1, -1, -1])
@@ -609,7 +610,7 @@ addChatDragEvent() {
 		// }
 
 		GAME.thisui = GAME.turnsInUI[0]
-		console.log("initui")
+		//console.log("initui")
 
 		this.setDefaultSkillImgs(GAME.myturn, setting[GAME.myturn].champ)
 	}
@@ -741,7 +742,7 @@ addChatDragEvent() {
 		for(const s of scale.scales){
 
 			let name=this.game.strRes.SCALE_NAMES[s.ability]
-			console.log(name)
+			//console.log(name)
 			if(name===undefined) name=s.ability
 
 			str+=`<a class=${s.ability}>(+${s.val}${name})</a>`
@@ -758,7 +759,7 @@ addChatDragEvent() {
 	}
 
 	showSkillBtn(status) {
-		console.log("show skill btn turn:" + status.turn)
+		//console.log("show skill btn turn:" + status.turn)
 		// $(".storebtn").show()
 
 		// $(".nextturnbtn").show()
@@ -812,7 +813,7 @@ addChatDragEvent() {
 				}
 			} else {
 				if(status.duration[i]===0){
-					console.log(status.cooltimeratio[i])
+					//console.log(status.cooltimeratio[i])
 					$(this.elements.skillbtns[i]).append(`<div class="cooltime_mask" style=" background:
 					 conic-gradient(rgba(0,0,0,0.0) 0% ,rgba(0,0,0,0.0) ${100-status.cooltimeratio[i]*100}%,rgba(255, 255, 255, 0.6) 
 					 ${100-status.cooltimeratio[i]*100}%,rgba(255, 255, 255, 0.6) 100%); "></div>  `)
@@ -827,7 +828,7 @@ addChatDragEvent() {
 				}
 			}
 			if(status.duration[i]>0){
-				console.log(status.duration[i])//${status.duration[i]*100}
+				//console.log(status.duration[i])//${status.duration[i]*100}
 				$(this.elements.skillbtns[i]).append(`<div class="duration_mask" style="background: 
 				conic-gradient(rgba(0,0,0,0.6) 0% ,rgba(0,0,0,0.6) ${100-status.duration[i]*100}%,rgba(0, 0, 0, 0) ${100-status.duration[i]*100}%,rgba(0, 0, 0, 0) 100%);"></div>  `)
 
@@ -932,7 +933,7 @@ addChatDragEvent() {
 
 			// let name = $(this.elements.hpis[ui]).html()
 			// let s = name.match(/\([+0-9]+\)/)
-			// console.log(s)
+			// //console.log(s)
 			// if (!s) {
 			// 	$(this.elements.hpis[ui]).html(name + ` (+${Math.floor(shield)})`)
 			// } else if (shield === 0) {
@@ -1271,7 +1272,7 @@ addChatDragEvent() {
 	}
 
 	setEffectTooltip(e) {
-		console.log(e)
+		//console.log(e)
 		e=Number(e)
 		let desc = GAME.strRes.EFFECTS[e]
 		if (!desc.match(/\[.+\]/)) {
@@ -1355,9 +1356,9 @@ addChatDragEvent() {
 
 		if(window.matchMedia("(orientation: landscape)").matches){
 			let rect = document.getElementById("skillbtncontainer").getBoundingClientRect()
-			//console.log(rect.top, rect.right, rect.bottom, rect.left);
+			////console.log(rect.top, rect.right, rect.bottom, rect.left);
 
-			//console.log("#"+id)
+			////console.log("#"+id)
 			$("#"+id).css({bottom:"-100px",left:rect.left+"px"})
 			$("#"+id).animate({bottom:window.innerHeight- rect.top},400)
 		}
@@ -1452,7 +1453,7 @@ addChatDragEvent() {
 	}
 
 	showDeathInfo(skillfrom,damages){
-		console.log(damages)
+		//console.log(damages)
 		let totalp=0
 		let totalm=0
 		let totalf=0

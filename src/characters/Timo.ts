@@ -111,7 +111,7 @@ class Timo extends Player {
 		if(skill===ENUM.SKILL.W) this.useW()
 	}
 
-	useW() {
+	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
 		this.startDuration(ENUM.SKILL.W)
 		this.effects.apply(ENUM.EFFECT.INVISIBILITY, 1)
