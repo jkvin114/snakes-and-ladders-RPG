@@ -50,7 +50,7 @@ export const ajaxauth = (req: express.Request, res: express.Response, next: expr
 export const postRoleChecker =  async (req: express.Request, res: express.Response, next: express.NextFunction)=>{
 	const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
 	if(!post) {
-		res.status(401).end()
+		res.status(401).end("You are not allowed to view this post!")
 		return
 	}
 	let friends:mongoose.Types.ObjectId[]=[]
@@ -61,7 +61,7 @@ export const postRoleChecker =  async (req: express.Request, res: express.Respon
 		friends=user.friends
 	}
 	if(isPostVisibleToUser(post.visibility,post.author,currentUser,friends)) next()
-	else res.status(401).end()
+	else res.status(401).end("You are not allowed to view this post!")
 }
 
 export const voteController = async function (req: express.Request, res: express.Response, type: ContentType) {

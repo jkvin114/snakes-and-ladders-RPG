@@ -109,42 +109,6 @@ abstract class Room {
 		}, 0)
 
 		this.playerMatchingState.setPlayerList(playerlist)
-		//기다리는 플레이어 숫자파악
-		
-		// console.log("PLAYERLISTUPDATE hosting" + this.hosting)
-
-		//턴바뀌는 일 감지용==========
-		// for (let i = 0; i < 4; ++i) {
-		// 	//서버에 저장되있는 챔피언으로 변경함
-		// 	playerlist[i].champ = this.playerlist[i].champ
-		// 	if (playerlist[i].type !== PlayerType.EMPTY) {
-		// 		turnchange[i] = i
-		// 	}
-		// }
-		// //[-1 1 -1 3]
-		// turnchange.sort(function (a, b) {
-		// 	if (a === -1) {
-		// 		return 1
-		// 	}
-		// 	if (b === -1) {
-		// 		return -1
-		// 	}
-		// 	return 0
-		// })
-		// playerlist.sort(function (a: ProtoPlayer, b: ProtoPlayer) {
-		// 	if (a.type === PlayerType.EMPTY) {
-		// 		return 1
-		// 	}
-		// 	if (b.type === PlayerType.EMPTY) {
-		// 		return -1
-		// 	}
-		// 	return 0
-		// })
-		// playerlist.map( (p: ProtoPlayer) =>{
-		// 	if (p.type === PlayerType.EMPTY) {
-		// 		return this.createEmptyPlayer()
-		// 	}
-		// })
 	}
 
 	user_updateReady(turn: number, ready: boolean) {

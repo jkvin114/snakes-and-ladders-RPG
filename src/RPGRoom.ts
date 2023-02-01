@@ -173,7 +173,7 @@ class RPGRoom extends Room {
 				isTeam: isTeam,
 				runnerId: runnerId,
 				roomName: roomName,
-				path: "./SimulationRunner.ts"
+				path: "./RPGSimulation/SimulationRunner.ts"
 			})
 			worker.on("message", (data: unknown) => {
 			//	console.log(data)

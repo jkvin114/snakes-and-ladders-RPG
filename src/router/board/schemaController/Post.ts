@@ -34,6 +34,14 @@ export namespace PostSchema{
             .limit(count)
             .select("createdAt articleId title views upvote downvote imagedir commentCount authorName author visibility")
     }
+    export const findPublicSummaryByRange = async function (start: number, count: number) {
+        //   console.log(count)    //asc, desc  or 1, -1
+        return await Article.find({ deleted: false, uploaded: true,$or:[{visibility:{ $exists: false}},{visibility:"PUBLIC"}]})
+            .sort({ createdAt: "desc" })
+            .skip(start)
+            .limit(count)
+            .select("createdAt articleId title views upvote downvote imagedir commentCount authorName author visibility")
+    }
     export const findSummaryOfUserByRange = async function (
         start: number,
         count: number,

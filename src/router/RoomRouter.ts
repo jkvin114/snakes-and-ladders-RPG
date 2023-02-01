@@ -104,7 +104,7 @@ router.post("/join", async function (req: express.Request, res: express.Response
 	}
 
 	if (req.session) {
-		if (!req.session.username) {
+		if (!req.session.username && !req.session.isLogined) {
 			req.session.username = String(body.username)
 		}
 		req.session.turn = 1
@@ -151,7 +151,7 @@ router.post("/matching", async function (req: express.Request, res: express.Resp
 				}
 			} //no avaliable rooms
 			if (list === "") {
-				req.session.destroy((e) => console.error(e))
+				//req.session.destroy((e) => console.error(e))
 				return res.status(404).end()
 			}
 

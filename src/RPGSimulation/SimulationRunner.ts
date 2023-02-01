@@ -1,21 +1,21 @@
-import type { GameCycleState } from "./GameCycle/RPGGameCycleState"
-import { GameLoop } from "./GameCycle/RPGGameLoop"
-import { GAME_CYCLE } from "./GameCycle/StateEnum"
-import { GameSetting } from "./GameSetting"
+import type { GameCycleState } from "../GameCycle/RPGGameCycleState"
+import { GameLoop } from "../GameCycle/RPGGameLoop"
+import { GAME_CYCLE } from "../GameCycle/StateEnum"
+import { GameSetting } from "../GameSetting"
 //import cliProgress = require("cli-progress")
-import SETTINGS = require("../res/globalsettings.json")
-import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean } from "./core/Util"
-import { ClientInputEventFormat } from "./data/EventFormat"
+import SETTINGS = require("../../res/globalsettings.json")
+import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean } from "../core/Util"
+import { ClientInputEventFormat } from "../data/EventFormat"
 import { TrainData } from "./TrainHelper"
-import TRAIN_SETTINGS = require("../res/train_setting.json")
-import type { ReplayEventRecords } from "./ReplayEventRecord"
+import TRAIN_SETTINGS = require("../../res/train_setting.json")
+import type { ReplayEventRecords } from "../ReplayEventRecord"
 import sizeof from 'object-sizeof'
 import process from 'process'
-var v8 = require("v8");
-var vm = require('vm');
+const v8 = require("v8");
+const vm = require('vm');
 
 v8.setFlagsFromString('--expose_gc');
-var garbagecollect = vm.runInNewContext('gc');
+const garbagecollect = vm.runInNewContext('gc');
 
 
 const { workerData, parentPort, isMainThread } = require("worker_threads")
@@ -100,7 +100,7 @@ class SimulationSetting {
 		this.saveStatistics = !TRAIN_SETTINGS.train
 		this.isTrain=TRAIN_SETTINGS.train
 		
-		if(this.isTrain) this.lockedCharacters=[TRAIN_SETTINGS.focus_character]
+		//if(this.isTrain) this.lockedCharacters=[TRAIN_SETTINGS.focus_character]
 	}
 
 	getMap() {

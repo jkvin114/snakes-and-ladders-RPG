@@ -930,8 +930,23 @@ export class Scene extends Board{
 		t.scale(0.5)
 		o.set({ top: this.Map.coordinates[i].y + BOARD_MARGIN - 2, left: this.Map.coordinates[i].x + BOARD_MARGIN - 2 })
 		t.set({ top: this.Map.coordinates[i].y + BOARD_MARGIN, left: this.Map.coordinates[i].x + BOARD_MARGIN })
+		let group
+		
+		if(tile_id!==0 && this.Map.muststop.includes(i)){
+			let l = new fabric.Image(document.getElementById("tilelock"), {
+				originX: "center",
+				originY: "center",
+				objectCaching: false
+			})
+			l.scale(0.5)
+			l.set({ top: this.Map.coordinates[i].y + BOARD_MARGIN, left: this.Map.coordinates[i].x + BOARD_MARGIN })
 
-		let group = new fabric.Group([t, o], { evented: false })
+			group= new fabric.Group([t, o,l], { evented: false })
+		}
+		else{
+			group= new fabric.Group([t, o], { evented: false })
+		}
+		
 		this.lockFabricObjectNoOrigin(group)
 
 		this.canvas.add(group)

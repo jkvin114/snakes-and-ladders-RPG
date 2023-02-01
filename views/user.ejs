@@ -238,6 +238,9 @@ input{
   font-size: 15px;
   color: rgb(134, 176, 255);
 }
+.text-input{
+  max-width: 50vw;
+}
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -356,11 +359,11 @@ input{
           <form id="password-change-form" method="patch" action="/user/password">
             <!-- <input name="username" type="hidden" value="<%= username %> "> -->
 
-            <input type='password' name="originalpw" placeholder="previous password">
+            <input class="text-input" type='password' name="originalpw" placeholder="previous password">
             <br><a class="input_alert login_old_pw"></a><br>
-            <input type='password' name="newpw" placeholder="new password"><br>
+            <input class="text-input" type='password' name="newpw" placeholder="new password"><br>
             <a class="input_alert login_pw"></a><br>
-            <input type='password' name="newpw2" placeholder="new password check"><br>
+            <input class="text-input" type='password' name="newpw2" placeholder="new password check"><br>
 
             <button class='button' type="submit" >Change Password</button>
     

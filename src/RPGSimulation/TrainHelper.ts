@@ -1,10 +1,10 @@
-import SETTINGS = require("../res/globalsettings.json")
-import TRAINAVG = require("../res/trainavg.json")
-import TRAIN_SETTINGS = require("../res/train_setting.json")
+import SETTINGS = require("../../res/globalsettings.json")
+import TRAINAVG = require("../../res/trainavg.json")
+import TRAIN_SETTINGS = require("../../res/train_setting.json")
 
-import { makeArrayOf, roundToNearest, writeFile } from "./core/Util"
+import { makeArrayOf, roundToNearest, writeFile } from "./../core/Util"
 
-import { items as ItemList } from "../res/item.json"
+import { items as ItemList } from "../../res/item.json"
 
 
 const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)

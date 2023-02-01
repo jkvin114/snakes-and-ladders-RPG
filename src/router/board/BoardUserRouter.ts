@@ -218,7 +218,7 @@ router.get("/:username/comments",availabilityCheck, async (req: express.Request,
 
 		//	console.log(list)
 		res.status(200).render("comments", {
-			canModify: String(user._id) === req.session.userId,
+			canModify: String(user._id) === req.session.userId && req.session.isLogined,
 			user: req.params.username,
 			comments: list,
 			start:start,

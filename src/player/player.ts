@@ -19,7 +19,7 @@ import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
 import { ServerGameEventFormat } from "../data/EventFormat"
 import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../res/character_ability.json")
-import { Indicator } from "../TrainHelper"
+import { Indicator } from "../RPGSimulation/TrainHelper"
 // const { isMainThread } = require('worker_threads')
 import CONFIG from "./../../config/config.json"
 import { Damage,PercentDamage } from "../core/Damage"
@@ -28,17 +28,6 @@ import { HPChange } from "../core/health"
 import { DamageRecord, PlayerDamageRecorder } from "./PlayerDamageRecord"
 import { BASICATTACK_TYPE, ENTITY_TYPE, EFFECT, ITEM, SKILL, STAT, MAP_TYPE, ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../data/enum"
 import { clamp, decrement, removeDuplicate } from "../core/Util"
-
-// class Minion extends Entity{
-// 	constructor(){
-// 		super(null,null)
-// 	}
-// 	hi(){
-
-// 	}
-// }
-
-// let args
 
 // if(isMainThread){
 // 	args=require("minimist")(process.argv.slice(2))

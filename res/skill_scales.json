@@ -299,7 +299,7 @@
 			"scales": [
 				{
 					"ability": "AP",
-					"val": 0.08
+					"val": 0.1
 				}
 			]
 		},
@@ -308,7 +308,7 @@
 			"scales": [
 				{
 					"ability": "AP",
-					"val": 0.2
+					"val": 0.25
 				}
 			]
 		},

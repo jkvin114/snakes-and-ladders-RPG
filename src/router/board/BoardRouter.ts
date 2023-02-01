@@ -31,8 +31,8 @@ router.get("/", availabilityCheck,async (req: express.Request, res: express.Resp
 	}
 	let total=await PostSchema.countDocuments({});
  
-	let data:SchemaTypes.Article[]=(await PostSchema.findSummaryByRange(start, count))
-	data=await filterPostSummary(req.session,data,false)
+	let data:SchemaTypes.Article[]=(await PostSchema.findPublicSummaryByRange(start, count))
+	//data=await filterPostSummary(req.session,data,false)
 
 	res.render("postlist", {
 		displayType:"all",
