@@ -1,7 +1,7 @@
 import express = require("express")
 import { ajaxauth, ContentType, voteController } from "./helpers"
 
-import {CommentSchema} from "./schemaController/Comment"
+import {CommentSchema} from "../../mongodb/schemaController/Comment"
 const mongoose = require("mongoose")
 
 

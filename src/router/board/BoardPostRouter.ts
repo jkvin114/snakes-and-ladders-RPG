@@ -1,15 +1,16 @@
 import express = require("express")
 import { ajaxauth, auth, availabilityCheck, voteController ,ContentType, checkVoteRecord, postRoleChecker} from "./helpers"
 import { ImageUploader } from "../../mongodb/mutler"
-import {UserBoardDataSchema} from "./schemaController/UserData"
-import {PostSchema} from "./schemaController/Post"
-import {CommentSchema} from "./schemaController/Comment"
-import {ReplySchema} from "./schemaController/Reply"
+import {UserBoardDataSchema} from "../../mongodb/schemaController/UserData"
+import {PostSchema} from "../../mongodb/schemaController/Post"
+import {CommentSchema} from "../../mongodb/schemaController/Comment"
+import {ReplySchema} from "../../mongodb/schemaController/Reply"
 const {ObjectID} = require('mongodb');
 
 
 import mongoose from "mongoose"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
+import { UserSchema } from "../../mongodb/schemaController/User"
 
 const { User } = require("../../mongodb/DBHandler")
 
@@ -218,9 +219,11 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req: express.Re
 
 		let replys = []
 		for (let reply of commentreply.reply) {
+			const authorProfile=await UserSchema.findProfileImageById(reply.author)
 			replys.push({
 				canModify: req.session.isLogined && String(reply.author) === req.session.userId,
 				content: reply.content,
+				authorProfileImage:authorProfile,
 				_id: String(reply._id),
 				upvotes: reply.upvote,
 				downvotes: reply.downvote,
@@ -230,9 +233,10 @@ router.get("/comment/:commentId/reply",availabilityCheck, async (req: express.Re
 			})
 		}
 		replys=replys.reverse()
-
+		const authorProfile=await UserSchema.findProfileImageById(comment.author)
 		res.status(200).render("commentReply", {
 			comment: comment,
+			authorProfileImage:authorProfile,
 			reply: replys,
 			postUrl: !postUrl ? "" : postUrl.articleId,
 			logined: req.session.isLogined,
@@ -275,7 +279,7 @@ router.post("/comment/reply", auth, async (req: express.Request, res: express.Re
 router.get("/:postUrl",availabilityCheck, postRoleChecker, async (req: express.Request, res: express.Response) => {
 	try {
 
-		let post = await PostSchema.findOneByArticleIdWithComment(Number(req.params.postUrl))
+		const post = await PostSchema.findOneByArticleIdWithComment(Number(req.params.postUrl))
 		if (!post) {
 			res.status(404).redirect("/notfound")
 			return
@@ -291,12 +295,15 @@ router.get("/:postUrl",availabilityCheck, postRoleChecker, async (req: express.R
 				isBookmarked=true
 			}
 		}
+		const authorProfile=await UserSchema.findProfileImageById(post.author)
 
 		await PostSchema.incrementView(Number(req.params.postUrl))
 
 		let comment = []
 		for (let comm of post.comments) {
 			if (comm.deleted && comm.replyCount === 0) continue
+			let authorProfileImage=""
+			authorProfileImage=await UserSchema.findProfileImageById(comm.author)
 			comment.push({
 				canModify: String(comm.author) === req.session.userId && req.session.isLogined,
 				content: comm.content,
@@ -307,7 +314,8 @@ router.get("/:postUrl",availabilityCheck, postRoleChecker, async (req: express.R
 				deleted: comm.deleted,
 				author: comm.authorName,
 				createdAt: comm.createdAt,
-				myvote:checkVoteRecord(comm._id,voteRecords)
+				myvote:checkVoteRecord(comm._id,voteRecords),
+				authorProfileImage:authorProfileImage
 			})
 		}
 		res.status(200).render("post", {
@@ -326,7 +334,8 @@ router.get("/:postUrl",availabilityCheck, postRoleChecker, async (req: express.R
 			createdAt: post.createdAt,
 			myvote:checkVoteRecord(post._id,voteRecords),
 			isBookmarked:isBookmarked,
-			visibility:post.visibility
+			visibility:post.visibility,
+			authorProfileImage:authorProfile
 		})
 	} catch (e) {
 		console.error(e)

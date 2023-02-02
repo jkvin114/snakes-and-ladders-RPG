@@ -1,4 +1,4 @@
-import {CommentReply } from "../../../mongodb/BoardDBSchemas"
+import {CommentReply } from "../BoardDBSchemas"
 import type mongoose from "mongoose"
 
  

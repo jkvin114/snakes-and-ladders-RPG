@@ -199,7 +199,7 @@ simpleSimulationRecordSchema.statics.findByRangeAndVersion = function(start:numb
 gameRecordSchema.statics.create = function (payload) {
     // this === Model
     return (new GameRecord(payload)).save();// return Promise
-  };
+};
 gameRecordSchema.statics.findByRange = function(start:number,count:number) {
     console.log(count)    //asc, desc  or 1, -1
     return this.find({}).sort({createdAt:"desc"}).skip(start).limit(count)

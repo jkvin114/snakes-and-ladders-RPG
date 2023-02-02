@@ -4,11 +4,11 @@ import { Article, UserBoardData } from "../../mongodb/BoardDBSchemas"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
 import { auth, availabilityCheck, CommentSummary, COUNT_PER_PAGE, filterPostSummary, PostTitle, timestampToNumber } from "./helpers"
 
-import {CommentSchema} from "./schemaController/Comment"
+import {CommentSchema} from "../../mongodb/schemaController/Comment"
 
-import {PostSchema} from "./schemaController/Post"
-import { ReplySchema } from "./schemaController/Reply"
-import { UserBoardDataSchema } from "./schemaController/UserData"
+import {PostSchema} from "../../mongodb/schemaController/Post"
+import { ReplySchema } from "../../mongodb/schemaController/Reply"
+import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
 const { User } = require("../../mongodb/DBHandler")
 const router = express.Router()
 

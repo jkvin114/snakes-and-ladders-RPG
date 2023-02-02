@@ -3,7 +3,8 @@ import session from "express-session"
 import mongoose from "mongoose"
 import { ImageUploader } from "../mongodb/mutler"
 import { ajaxauth, auth, containsId } from "./board/helpers"
-import { UserBoardDataSchema } from "./board/schemaController/UserData"
+import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
+import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
 /**
  * https://icecokel.tistory.com/17?category=956647
  * 
@@ -80,13 +81,15 @@ router.get("/:username", async function (req: express.Request, res: express.Resp
 		res.status(404).redirect("/notfound")
 		return
 	}
-	const counts = [user.friends.length, user.follows.length,boardData.bookmarks.length,
+	const friendcount=await UserRelationSchema.friendCount(user._id)
+	const followcount=await UserRelationSchema.followCount(user._id)
+
+	const counts = [friendcount, followcount,boardData.bookmarks.length,
         boardData.articles.length,boardData.comments.length+boardData.replys.length,boardData.upvotedArticles.length]
-    console.log(counts)
+
 	if (req.session.isLogined) {
-		const me = await User.findById(req.session.userId)
-		isFriend = containsId(me.friends, user._id)
-		isFollowing = containsId(me.follows, user._id)
+		isFriend =await UserRelationSchema.isFriendWith(req.session.userId,user._id)
+		isFollowing =await UserRelationSchema.isFollowTo(req.session.userId,user._id)
 	}
 	res.render("user", {
 		isFriend: isFriend,
@@ -106,8 +109,9 @@ router.get("/:username/friend", async function (req: express.Request, res: expre
 		res.status(404).redirect("/notfound")
 		return
 	}
-	const friends = await User.findAllSummaryByIdList(user.friends)
-	console.log(friends)
+
+	const friendIds = await UserRelationSchema.findFriends(user._id)
+	const friends=await User.findAllSummaryByIdList(friendIds)
 	res.render("friends", {
 		username: user.username,
 		email: user.email,
@@ -124,8 +128,11 @@ router.get("/:username/follow", async function (req: express.Request, res: expre
 		res.status(404).redirect("/notfound")
 		return
 	}
-	const follows = await User.findAllSummaryByIdList(user.follows)
-	console.log(follows)
+	
+	const followIds = await UserRelationSchema.findFollows(user._id)
+	const follows=await User.findAllSummaryByIdList(followIds)
+
+	//console.log(follows)
 	res.render("friends", {
 		username: user.username,
 		email: user.email,

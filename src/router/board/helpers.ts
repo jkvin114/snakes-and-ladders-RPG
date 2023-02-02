@@ -1,15 +1,17 @@
 import express from "express"
 import CONFIG from "../../../config/config.json"
-import { UserBoardDataSchema } from "./schemaController/UserData"
+import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
 import session, { Session } from "express-session"
 const { ObjectID } =require('mongodb') ;
 
-import { PostSchema } from "./schemaController/Post"
-import { CommentSchema } from "./schemaController/Comment"
-import { ReplySchema } from "./schemaController/Reply"
+import { PostSchema } from "../../mongodb/schemaController/Post"
+import { CommentSchema } from "../../mongodb/schemaController/Comment"
+import { ReplySchema } from "../../mongodb/schemaController/Reply"
 const { User } = require("../../mongodb/DBHandler")
 import mongoose from "mongoose"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
+import { Friend, friendSchema } from "../../mongodb/UserRelationDBSchema";
+import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation";
 
 export const availabilityCheck = (req: express.Request, res: express.Response, next: express.NextFunction) => {
 	if (!CONFIG.board) return res.status(403).redirect("/")
@@ -53,14 +55,12 @@ export const postRoleChecker =  async (req: express.Request, res: express.Respon
 		res.status(401).end("You are not allowed to view this post!")
 		return
 	}
-	let friends:mongoose.Types.ObjectId[]=[]
+	let isfriend=false
 	let currentUser:mongoose.Types.ObjectId|null=null
 	if(req.session.isLogined){
-		currentUser=new ObjectID(req.session.userId) as mongoose.Types.ObjectId
-		const user=await User.findById(currentUser)
-		friends=user.friends
+		isfriend=await UserRelationSchema.isFriendWith(req.session.userId,post.author)
 	}
-	if(isPostVisibleToUser(post.visibility,post.author,currentUser,friends)) next()
+	if(isPostVisibleToUser(post.visibility,post.author,currentUser,isfriend)) next()
 	else res.status(401).end("You are not allowed to view this post!")
 }
 
@@ -173,23 +173,23 @@ export function isPostSummaryVisibleToUser(
 	visibility: string,
 	poster: mongoose.Types.ObjectId,
 	currentUser: mongoose.Types.ObjectId | null,
-	friends: mongoose.Types.ObjectId[],
+	isFriend: boolean,
 	isLinkOnlyAllowed:boolean
 ) {
 	if(visibility==="PUBLIC"||String(poster)===String(currentUser) || (isLinkOnlyAllowed && visibility==="LINK_ONLY")) return true
 	if(!currentUser || visibility==="LINK_ONLY") return false
-	if(visibility==="FRIENDS") return containsId(friends,poster)
+	if(visibility==="FRIENDS") return isFriend
 	return false
 }
 export function isPostVisibleToUser(
 	visibility: string,
 	poster: mongoose.Types.ObjectId,
 	currentUser: mongoose.Types.ObjectId | null,
-	friends: mongoose.Types.ObjectId[]
+	isFriend: boolean
 ) {
 	if(visibility==="PUBLIC" || visibility==="LINK_ONLY" || String(poster)===String(currentUser)) return true
 	if(!currentUser) return false
-	if(visibility==="FRIENDS") return containsId(friends,poster)
+	if(visibility==="FRIENDS") return isFriend
 	return false
 }
 /**
@@ -201,16 +201,15 @@ export function isPostVisibleToUser(
  */
 export function filterPostSummary(session:any,posts:SchemaTypes.Article[],isLinkOnlyAllowed:boolean):Promise<SchemaTypes.Article[]>{
 	return new Promise(async (resolve,reject)=>{
-		let friends:mongoose.Types.ObjectId[]=[]
+		let friends:any[]=[]
 		let currentUser:mongoose.Types.ObjectId|null=null
 		if(session.isLogined){
 			currentUser=session.userId
-			const user=await User.findById(currentUser)
-			friends=user.friends
+			friends=await UserRelationSchema.findFriends(currentUser)
 		}
 
 		resolve(posts.filter((post:SchemaTypes.Article)=>
-			isPostSummaryVisibleToUser(post.visibility,post.author,currentUser,friends,isLinkOnlyAllowed)
+			isPostSummaryVisibleToUser(post.visibility,post.author,currentUser,friends.includes(post.author),isLinkOnlyAllowed)
 		))
 	})
 }
@@ -256,4 +255,27 @@ function cleanUpComments() {
 			await CommentSchema.cleanUp(comm._id)
 		}
 	})
+}
+async function migrateFriendRelation(){
+	const users=await User.find()
+	for(const u of users){
+		for(const f of u.friends){
+			console.log("migrated friend of "+u._id+": "+f)
+			await UserRelationSchema.addFriend(u._id,f)
+			let isfriend=false
+			isfriend=await UserRelationSchema.isFriendWith(f,u._id)
+			if(!isfriend)
+			 	await UserRelationSchema.addFriend(f,u._id)
+		}
+	}
+}
+async function migrateFollowRelation(){
+	const users=await User.find()
+	for(const u of users){
+		for(const f of u.follows){
+			console.log("migrated friend of "+u._id+": "+f)
+			await UserRelationSchema.addFollow(u._id,f)
+			//await UserRelationSchema.addFollow(f,u._id)
+		}
+	}
 }

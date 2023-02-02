@@ -1,10 +1,10 @@
 import express = require("express")
 // import { R } from "../RoomStorage"
 const router = express.Router()
-import { PostSchema } from "./schemaController/Post"
+import { PostSchema } from "../../mongodb/schemaController/Post"
 import { ImageUploader } from "../../mongodb/mutler"
 import { auth, availabilityCheck, COUNT_PER_PAGE, filterPostSummary, PostTitle } from "./helpers"
-import { UserBoardDataSchema } from "./schemaController/UserData"
+import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
 const  {User}  = require("../../mongodb/DBHandler")
 

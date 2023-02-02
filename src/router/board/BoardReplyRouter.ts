@@ -1,6 +1,6 @@
 import express = require("express")
 import { ajaxauth, ContentType,  voteController } from "./helpers"
-import { ReplySchema } from "./schemaController/Reply"
+import { ReplySchema } from "../../mongodb/schemaController/Reply"
 const mongoose = require("mongoose")
 
 

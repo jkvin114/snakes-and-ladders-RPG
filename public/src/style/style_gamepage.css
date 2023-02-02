@@ -2501,7 +2501,7 @@ transform: scale(0.8, 1);
 .itemsummary p {
   margin-left: 10px;
   vertical-align: middle;
-  font-size: 1.4rem;
+  font-size: 14px;
 }
 
 .summaryprice {

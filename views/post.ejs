@@ -262,6 +262,25 @@
   .bookmark.inactive .bm-img-filled{
     display: none;
   }
+  .author-img{
+    margin-right: 5px;
+    width: 40px;
+    height: 40px;
+  }
+  .comment-author-img{
+    margin-right: 5px;
+    width: 30px;
+    height: 30px;
+    
+  }
+  .profileimg{
+    background-color: whitesmoke;
+
+    border-radius: 50%;
+    vertical-align: middle;
+    object-fit: cover;
+    cursor: pointer;
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -292,6 +311,9 @@
   </div>
   
   <div class="info_container">
+    <%if(authorProfileImage!==""){%>
+      <img src="/uploads/profile/<%= authorProfileImage %>" class="author-img profileimg" onclick="golink('/board/user/<%=author%>/posts')">
+    <%}%>
     <b class="info author" onclick="golink('/board/user/<%=author%>/posts')"><%= author %> </b><br>
     <a class="info"><%= createdAt.toString().substring(0,24) %></a>
     <a class="info"> views: <%= views %></a>
@@ -342,7 +364,10 @@
             <a> Deleted comment</a>
             <div></div>
           <%}else{%>
-           <a class="comment_info comment_author"></a> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comm.author%>/comments')"> <%= comm.author %> </u>
+            <%if(comm.authorProfileImage!==""){%>
+              <img class="profileimg comment-author-img" src="/uploads/profile/<%= comm.authorProfileImage %>" onclick="golink('/board/user/<%=comm.author%>/comments')">
+            <%}%>
+          <u class="comment_info comment_author" onclick="golink('/board/user/<%=comm.author%>/comments')"> <%= comm.author %> </u>
             <a class="comment_info"><%= comm.createdAt.toString().substring(0,24) %></a>
             <%if(comm.canModify){%>
               <button value="<%= comm._id%>" class="delete_comment"><b>&times;</b></button>

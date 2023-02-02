@@ -1,6 +1,6 @@
-import { UserBoardData } from "../../../mongodb/BoardDBSchemas"
+import { UserBoardData } from "../BoardDBSchemas"
 import type { Types } from "mongoose"
-import { SchemaTypes } from "../../../mongodb/SchemaTypes"
+import { SchemaTypes } from "../SchemaTypes"
 
 
 export namespace UserBoardDataSchema{

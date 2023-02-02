@@ -326,7 +326,6 @@ export class StoreInterface {
 		})
 		$(".typelistbtn").click(function () {
 			_this.hideItemDetail()
-			$(".typelistbtn").removeClass("focus")
 			if($(this).attr("value")==="back"){
 				_this.naviBack()
 			}
@@ -410,6 +409,8 @@ export class StoreInterface {
 	}
 	showCategory(category) {
 		this.saveNaviRecord("category",category)
+		$(".typelistbtn").removeClass("focus")
+
 		$(this.categorybtn[category]).addClass("focus")
 		// //console.log("showcat" + category)
 		// document.getElementById("storecontent").scrollTo(0,0)

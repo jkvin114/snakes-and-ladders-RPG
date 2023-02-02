@@ -1,6 +1,6 @@
-import {Article } from "../../../mongodb/BoardDBSchemas"
+import {Article } from "../BoardDBSchemas"
 import type mongoose from "mongoose"
-import { SchemaTypes } from "../../../mongodb/SchemaTypes"
+import { SchemaTypes } from "../SchemaTypes"
 
  
 export namespace PostSchema{

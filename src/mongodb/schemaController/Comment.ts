@@ -1,6 +1,6 @@
-import {Comment } from "../../../mongodb/BoardDBSchemas"
+import {Comment } from "../BoardDBSchemas"
 import type { Types } from "mongoose"
-import { SchemaTypes } from "../../../mongodb/SchemaTypes"
+import { SchemaTypes } from "../SchemaTypes"
 
  
 export namespace CommentSchema{

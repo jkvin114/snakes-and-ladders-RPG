@@ -209,6 +209,20 @@
     font-size: 40px;
     color:white;
   }
+  
+  .comment-author-img{
+    margin-right: 5px;
+    width: 30px;
+    height: 30px;
+    
+  }
+  .profileimg{
+    background-color: whitesmoke;
+    border-radius: 50%;
+    vertical-align: middle;
+    object-fit: cover;
+    cursor: pointer;
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -238,7 +252,9 @@
           <a> deleted comment</a>
           <div></div>
         <%}else{%>
-          <a class="comment_info comment_author"></a> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
+          <%if(authorProfileImage!==""){%>
+            <img src="/uploads/profile/<%= authorProfileImage %>" class="comment-author-img profileimg" onclick="golink('/board/user/<%=comment.author%>/comments')">
+          <%}%> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
           <%= comment.authorName %> </u>
           <a class="comment_info"><%= comment.createdAt.toString().substring(0,24) %></a>
 
@@ -278,7 +294,9 @@
         
       </div>
         <div class="comment">
-          <a class="comment_info comment_author"></a> 
+          <%if(r.authorProfileImage!==""){%>
+            <img src="/uploads/profile/<%= r.authorProfileImage %>" class="comment-author-img profileimg" onclick="golink('/board/user/<%=r.author%>/comments')">
+          <%}%> 
           <u class="comment_info comment_author" onclick="golink('/board/user/<%=r.author%>/comments')">
             <%=r.author %> </u>
             <a class="comment_info"><%= r.createdAt.toString().substring(0,24) %></a>
