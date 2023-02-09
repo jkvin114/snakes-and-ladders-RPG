@@ -1,8 +1,9 @@
 import SETTINGS = require("../../res/globalsettings.json")
 import TRAINAVG = require("../../res/trainavg.json")
 import TRAIN_SETTINGS = require("../../res/train_setting.json")
+import fs = require("fs")
 
-import { makeArrayOf, roundToNearest, writeFile } from "./../core/Util"
+import { getCurrentTime, makeArrayOf, roundToNearest, writeFile, writeToFile } from "./../core/Util"
 
 import { items as ItemList } from "../../res/item.json"
 
@@ -126,6 +127,8 @@ class PlayerRecord{
 class GameRecord{
     players:PlayerRecord[]
     totalturn:number
+    
+    winnerTurn:number
 
     constructor(totalturn:number){
         this.totalturn=totalturn
@@ -146,6 +149,10 @@ class TrainData{
     characterToCharacterWinRates:number[][]
     characterItemWinRates:Map<number,number>[]
     coreItemOrderWinRates:Map<number,number[]>
+    labels:string[][]
+    winners:number[]
+    writer1:fs.WriteStream
+    writer2:fs.WriteStream
     constructor(){
         this.focusedCharacter=-1
         this.gameRecords=[]
@@ -153,9 +160,22 @@ class TrainData{
         this.randomItem=true
         this.characterToCharacterWinRates=[]
         this.coreItemOrderWinRates=new Map<number,number[]>()
+        this.labels=[]
+        this.winners=[]
+        
+    }
+    createFileStream(){
+        if(!TRAIN_SETTINGS.save_label_csv) return
+        this.writer1=fs.createWriteStream("stats/csv/train_input_labels"+getCurrentTime()+".csv")
+        this.writer2=fs.createWriteStream("stats/csv/train_output_labels"+getCurrentTime()+".csv")
+        
     }
     addGame(gi:GameRecord){
         this.gameRecords.push(gi)
+    }
+    addTrainLabel(labels:string[],winner:number){
+        this.labels.push(labels)
+        this.winners.push(winner)
     }
     calcAverageIndicator(){
         let total=0
@@ -378,10 +398,46 @@ class TrainData{
         }
         console.log(total/count)
     }
+    saveTrainLabel(){
+        if(!TRAIN_SETTINGS.save_label_csv){
+            this.labels=[]
+            this.winners=[]
+            return
+        }
+        let inputstr=""
+        let outputstr=""
+        for(let i=0;i<this.labels.length;i++){
+            for(const label of this.labels[i]){
+                outputstr+=this.winners[i]+","
+                inputstr+=label+"\n"
+            }
+        }
+        this.labels=[]
+        this.winners=[]
+        // outputstr=outputstr.slice(0,outputstr.length-1)
+        // inputstr=inputstr.slice(0,inputstr.length-2)
+        try{
+            this.writer1.write(inputstr)
+            this.writer2.write(outputstr)
+            // writeToFile(inputstr,"stats/train_input_labels"+filename+".csv")
+            // writeToFile(outputstr,"stats/train_output_labels"+filename+".csv")
+        }
+        catch(e){
+            console.error("error during saving train labels")
+            console.error(e)
+        }
+    }
 
     onFinish(maps:number[]){
         this.printRewardData()
         this.saveTrainData(maps)
+        this.saveTrainLabel()
+        if(this.writer1 && this.writer2){
+
+            this.writer1.close()
+            this.writer2.close()
+        }
+
     }
 }
 

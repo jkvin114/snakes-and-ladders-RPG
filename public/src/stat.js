@@ -1292,7 +1292,7 @@ function showSingleStat(data) {
 	let gameDetailValues=$(".game-detail-value").toArray()
 	$("#train_detail").hide()
 	$("#stattable").show()
-	$("#detailbtn_container").show()
+	// $("#detailbtn_container").show()
 	if(!data.replay || data.replay===""){
 		$("#replay").hide()
 	}
@@ -1475,7 +1475,7 @@ function showSingleStat(data) {
 		$("#game_detail_content").append(`<div class="tall-dummy tall-dummy-gamedetail"></div>`)
 		
 		drawKillRecord(data)
-		$("#detailbtn_container").show()
+		// $("#detailbtn_container").show()
 		$(gameDetailValues[0]).html(data.totalturn)
 		$(gameDetailValues[2]).html(getMapName(data.map_data.name))
 
@@ -1657,7 +1657,7 @@ function showSingleStat(data) {
 			},
 			titles: [
 				{
-					text: "KDA",
+					text: "KDA Score",
 					fontSize: 30,
 					fill: "white"
 				}

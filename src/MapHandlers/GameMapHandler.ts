@@ -76,6 +76,9 @@ export class GameLevel{
         
         return pos >= MAP.getFinish(this.mapId)
     }
+	getFinishPos(){
+		return this.tempFinish==-1?MAP.getFinish(this.mapId):this.tempFinish
+	}
     applyPassProj(name:string):string{
         
         

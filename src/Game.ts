@@ -22,6 +22,7 @@ import { ReplayEventRecords } from "./ReplayEventRecord"
 import { PlayerFactory } from "./player/PlayerFactory"
 import { SkillAttack } from "./core/skill"
 import { GameLevel } from "./MapHandlers/GameMapHandler"
+import { getPrediction as fetchPrediction } from "./fetch/fetch"
 const STATISTIC_VERSION = 3
 //version 3: added kda to each category
 const crypto = require("crypto")
@@ -85,6 +86,8 @@ class Game {
 	private static readonly PLAYER_ID_SUFFIX = "P"
 	private replayRecord:ReplayEventRecords
 	mapHandler:GameLevel
+	private trainLabels:string[]
+	private winPrediction:number[]
 	constructor(mapid: number, rname: string, setting: GameSetting) {
 		this.setting = setting
 		this.instant = setting.instant
@@ -134,6 +137,8 @@ class Game {
 		this.replayRecord=new ReplayEventRecords(setting.replay)
 		this.eventEmitter.bindEventRecorder(this.replayRecord)
 		this.entityMediator.setClientInterface(this.eventEmitter)
+		this.trainLabels=[]
+		this.winPrediction=[0,0,0,0]
 	}
 	sendToClient(transfer: Function, ...args: any[]) {
 		if (!this.instant) {
@@ -387,6 +392,36 @@ class Game {
 	getNextTurn(){
 		return (this.thisturn+1) % this.totalnum
 	}
+	addStateLabel(){
+
+		let str=`${this.mapHandler.mapId},${this.totalturn},${this.totalnum},${this.isTeam?1:0},${this.mapHandler.getFinishPos()},`+
+		`${this.setting.additionalDiceAmount},${this.setting.diceControlItemFrequency},${this.setting.extraResistanceAmount},`+
+		`${this.itemLimit},`
+		let str2=`${this.totalturn}`
+		for(let i=0;i<this.totalnum;i++){
+			str2+=","+this.pOfTurn(i).getStateLabel(this.mapHandler.getFinishPos())
+		}
+		this.trainLabels.push(str2)
+		if(!this.instant)
+			this.getPrediction(str2)
+	}
+	async getPrediction(labels:string){
+		let preds=await fetchPrediction(labels,this.totalnum,this.mapId)
+		if(preds.length>0){
+			let diffs=[]
+			//this.thisp().sendConsoleMessage("Win Prediction:")
+			for(let i=0;i<this.totalnum;++i){
+				let val=Math.floor(Number(preds[i])*100)
+				let diff=val-this.winPrediction[i]
+				diffs.push(diff)
+				//this.thisp().sendConsoleMessage(`${val}%`+this.pOfTurn(i).name+`(${diff>0?"+"+diff:diff}%)`)
+				
+				//console.log(Math.floor(Number(preds[i])*100)+"% "+this.pOfTurn(i).name)
+				this.winPrediction[i]=val
+			}
+			this.eventEmitter.sendPrediction({diffs:diffs,probs:this.winPrediction})
+		}
+	}
 	goNextTurn():ServerGameEventFormat.TurnStart|null {
 		if (this.gameover) {
 			return null
@@ -458,10 +493,13 @@ class Game {
 			if (p.dead || p.waitingRevival) {
 				p.respawn()
 			}
+
 			this.entityMediator.onTurnStart(this.thisturn)
 			p.onMyTurnStart()
+
 		}
 
+		this.addStateLabel()
 		let additional_dice = p.calculateAdditionalDice(this.setting.additionalDiceAmount)
 
 		let doubledice = false
@@ -1192,13 +1230,25 @@ class Game {
 	}
 	getTrainData():GameRecord {
 		let g=new GameRecord(this.totalturn)
-		for (const p of this.entityMediator.allPlayer()) {
+		let winnerturn=0
+		for (let i=0;i<this.entityMediator.allPlayer().length;i++) {
+			const p=this.pOfTurn(i)
 			let ind=p.getTrainIndicator(this.totalturn)
-			if(p.team===this.winnerTeam) ind.isWinner=true
 
+			if(p.team===this.winnerTeam){
+				ind.isWinner=true
+				winnerturn=i
+			} 
 			g.add(ind,p.getCoreItemBuild())
 		}
+		// g.labels=Array.from(this.trainLabels)
+		// g.winnerTurn=this.winner
 		return g
+	}
+	getLabelData():[string[],number]{
+		let labels=Array.from(this.trainLabels)
+		this.trainLabels=[]
+		return [labels,this.winner]
 	}
 }
 

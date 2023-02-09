@@ -3988,3 +3988,67 @@ transform: scale(0.8, 1);
   margin-left: 4px;
   font-size: 16px;
 }
+#prediction-container{
+  z-index: 4;
+  right: 0;
+  top:60px;
+ 
+  height: fit-content;
+  background: linear-gradient(to right, #403f4e 0%, #17171c 100%);
+  border: 1px solid whitesmoke;
+  color: whitesmoke;
+  position: absolute;
+  font-family: 'nanumB';
+  /* padding: 3px; */
+  display: grid;
+  grid-template-columns: 26px 200px;
+  transition: all 1s;
+}
+#prediction-content{
+  padding: 3px;
+  width: 200px;
+}
+.prediction{
+  padding: 3px;
+}
+#prediction-close{
+  border: 1px double whitesmoke;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+#prediction-close:hover{
+  background: grey;
+}
+#prediction-close > img{
+  width: 26px;
+  height: 26px;
+  filter: invert();
+}
+#prediction-close.opened > img{
+  transform: rotate(180deg);
+}
+.prediction img{
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+.prediction.me{
+  background-color: #555555;
+}
+.prediction >b{
+  font-size: 12px;
+}
+.prediction.nochange >.change-img{
+  visibility: hidden;
+}
+.prediction .prediction-diff.bad{
+  color:rgb(255, 122, 122);
+}
+.prediction .prediction-diff.good{
+  color:rgb(83, 152, 255);
+}
+
+#prediction-content >b{
+  font-size: 15px;
+}

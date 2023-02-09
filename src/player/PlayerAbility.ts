@@ -41,6 +41,9 @@ class Ability {
 		this.amount = Math.max(0, this.amount - amt)
 		return this
 	}
+	get val(){
+		return this.amount
+	}
 	get() {
 		return this.amount
 	}
@@ -265,6 +268,14 @@ class PlayerAbility implements PlayerComponent{
 			moveSpeed: this.moveSpeed.get(),
 			basicAttackSpeed: this.basicAttackSpeed.get()
 		}
+	}
+	getStatusLabel(){
+		return `${(this.AR.val+this.MR.val)/100},${(this.AD.val+this.AP.val)/100}`
+		let str=''
+		for (const [k, v] of Object.entries(this.getAll())){
+			if(k!=="level") str+=v+","
+		}
+		return str
 	}
 	sendToClient() {
 		let info_kor = this.player.getSkillInfoKor()

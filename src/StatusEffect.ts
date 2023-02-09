@@ -311,7 +311,6 @@ class ItemPassiveEffectFactory {
 					.setData([0, 0,0])
 					break
 		}
-		console.log(effects)
 		return effects
 	}
 }

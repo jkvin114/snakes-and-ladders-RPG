@@ -207,7 +207,8 @@ export function registerSounds() {
 		"takemoney",
 		"metal",
 		"horse",
-		"step"
+		"step",
+		"hack"
 	]
 
 	for (const sound of sounds) {

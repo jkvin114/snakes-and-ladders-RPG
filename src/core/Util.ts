@@ -114,11 +114,10 @@ export const makeArrayOf = function <T>(element: T, count: number): T[] {
 	return arr
 }
 export const Normalize = function (list: number[]): number[] {
-	let max = list.reduce((prev, curr) => (curr > prev ? curr : prev))
-	let min = list.reduce((prev, curr) => (curr < prev ? curr : prev))
+	let max = Math.max(...list)
+	let min = Math.min(...list)
 	return list.map((v) => (v - min) / (max - min))
 }
-
 //export type Movement = { player: number; to: number; type: string }
 
 export const hasProp = <T>(
@@ -155,7 +154,15 @@ export function writeFile(data:string,dir:string,extension:string,onSuccess:stri
 		console.log(onSuccess)
 	})
 }
-
+export function writeToFile(data:string,filename:string){
+	fs.appendFile(__dirname + "/../../"+filename, data, (err) => {
+		if (err) {
+			console.log(err)
+			throw err
+		}
+		// console.log("successfully")
+	})
+}
 export function dot(arr1:number[],arr2:number[]):number{
 	let val=0
 	for(let i=0;i<arr1.length;++i){

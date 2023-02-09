@@ -137,11 +137,11 @@
 			]
 		},
 		"R": {
-			"base": 60,
+			"base": 40,
 			"scales": [
 				{
 					"ability": "AD",
-					"val": 0.65
+					"val": 0.6
 				}
 			]
 		}
@@ -153,12 +153,12 @@
 			"scales": [
 				{
 					"ability": "AP",
-					"val": 0.8
+					"val": 0.7
 				}
 			]
 		},
 		"W": {
-			"base": 4,
+			"base": 3,
 			"scales": [
 				{
 					"ability": "AP",
@@ -325,23 +325,23 @@
 	{
 		"name":"hacker",
 		"Q": {
-			"base": 20,
+			"base": 40,
 			"scales": [
 				{
 					"ability": "AD",
-					"val": 0.5
+					"val": 0.6
 				},
 				{
 					"ability": "AP",
-					"val": 0.75
+					"val": 0.8
 				}
 			]
 		},"W": {
-			"base": 5,
+			"base": 20,
 			"scales": [
 				{
 					"ability": "AP",
-					"val": 0.4
+					"val": 0.5
 				}
 			]
 		}

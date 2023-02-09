@@ -4,7 +4,7 @@ import { GAME_CYCLE } from "../GameCycle/StateEnum"
 import { GameSetting } from "../GameSetting"
 //import cliProgress = require("cli-progress")
 import SETTINGS = require("../../res/globalsettings.json")
-import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean } from "../core/Util"
+import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean, getCurrentTime } from "../core/Util"
 import { ClientInputEventFormat } from "../data/EventFormat"
 import { TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../../res/train_setting.json")
@@ -215,6 +215,7 @@ class SimulationSetting {
 
 const MAX_COUNT=TRAIN_SETTINGS.train?1000000:999
 const GARBAGE_COLLECT_INTERVAL=5000
+const LABEL_CSV_SAVE_INTERVAL=500
 class Simulation {
 	private count: number
 	private progressCount: number
@@ -227,6 +228,7 @@ class Simulation {
 	private runnerId: string
 	private trainData:TrainData
 	replayRecords:ReplayEventRecords[]
+	private startDateStr:string
 
 
 	constructor(roomname: string, count: number, setting: SimulationSetting, runner: string) {
@@ -239,7 +241,9 @@ class Simulation {
 		this.summaryStats = new Set<any>()
 		this.progressCount = 0
 		this.trainData=new TrainData()
+		this.trainData.createFileStream()
 		this.replayRecords=[]
+		this.startDateStr=getCurrentTime()
 	}
 
 	getFinalStatistics() {
@@ -281,16 +285,13 @@ class Simulation {
 				this.playOneGame(i)
 		//		bar1.update(i)
 				if(i%GARBAGE_COLLECT_INTERVAL===GARBAGE_COLLECT_INTERVAL/2) {
-					for (const [key,value] of Object.entries(process.memoryUsage())){
-					//	consolelog(`Memory usage by ${key}, ${value/1000000}MB `)
-					}
-
 					if (garbagecollect) {
-					//	consolelog("garbage collected")
 						garbagecollect();
 					}
 				}
-
+				if(i%LABEL_CSV_SAVE_INTERVAL===LABEL_CSV_SAVE_INTERVAL-1) {
+					this.trainData.saveTrainLabel()
+				}
 			}
 		}
 		catch(e){
@@ -342,6 +343,7 @@ class Simulation {
 
 			if(this.setting.isTrain && gc){
 				this.trainData.addGame(gc.game.getTrainData())
+				this.trainData.addTrainLabel(...gc.game.getLabelData())
 			}
 			if(gc && !this.setting.isTrain)
 				this.replayRecords.push(gc.game.retrieveReplayRecord())

@@ -13,7 +13,7 @@ module.exports=function(socket:Socket){
 			console.error("user not logined for simulation")
 			return
 		}
-
+		
 		let rname = "simulation_" + String(Math.floor(Math.random() * 1000000))
 		SocketSession.setRoomName(socket, rname)
 		socket.join(rname)

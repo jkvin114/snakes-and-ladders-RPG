@@ -301,11 +301,17 @@ abstract class AiAgent {
 			//타겟이 여러명일경우
 
 			//앞에있는플레이어 우선
-			targets.sort(function (b: Player, a: Player): number {
-				return b.pos - a.pos
+			// targets.sort(function (b: Player, a: Player): number {
+			// 	return b.pos - a.pos
+			// })
+			targets.sort(function (a, b) {
+				if (Math.abs(b.pos - a.pos) < 8) {
+					return a.HP - b.HP
+				} else {
+					return b.pos - a.pos
+				}
 			})
-
-			return Math.floor(targets[0].pos - selector.size + 1)
+			return Math.floor(targets[0].pos - Math.floor(selector.size/2))
 		}
 	}
 	willDiceControl() {

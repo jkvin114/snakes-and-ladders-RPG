@@ -72,7 +72,20 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 		Map<number, TickEffect>,
 		Map<number, OnHPBelowThresholdEffect>
 	]
-
+	static readonly labelEfffects=[EFFECT.ITEM_SHIELDSWORD,
+		EFFECT.ITEM_FRUIT,
+		EFFECT.ITEM_POWER_OF_NATURE,
+		EFFECT.ITEM_POWER_OF_MOTHER_NATURE1,
+		EFFECT.ITEM_CARD_OF_DECEPTION,
+		EFFECT.ITEM_ANCIENT_SPEAR1,
+		EFFECT.ITEM_SPEAR1,
+		EFFECT.ITEM_CROSSBOW1,
+		EFFECT.ITEM_DIAMOND_ARMOR,
+		EFFECT.ITEM_BOOTS_OF_ENDURANCE,
+		EFFECT.ITEM_INVISIBILITY_CLOAK,
+		EFFECT.ITEM_DAGGER,
+		EFFECT.ITEM_STAFF_OF_JUDGEMENT,
+		EFFECT.ITEM_FLAIL_OF_JUDGEMENT]
 	constructor(player: Player) {
 		super(player)
 		this.owner = player
@@ -451,6 +464,14 @@ class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectMana
 	onRemoveItem(item: ITEM) {
 		for(const key of this.getKeysByNamespace(PlayerInventory.getItemName(item)))
 			this.removeByKey(key)
+	}
+	getStatusLabel(){
+		let str=""
+		for(const e of PlayerStatusEffects.labelEfffects){
+			str+=(this.has(e)?1:0)+","
+
+		}
+		return str
 	}
 }
 export { PlayerStatusEffects, EntityStatusEffect }

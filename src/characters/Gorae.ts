@@ -37,7 +37,7 @@ class Gorae extends Player {
 		//hp:220, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
 		super(turn, team, game, ai, ID, name)
-		this.cooltime_list = [2, 4, 6]
+		this.cooltime_list = [1, 4, 7]
 		this.duration_list=[0,2,0]
 		this.skill_ranges=[15,0,20]
 		

@@ -73,6 +73,10 @@ export function openConnection(isInitial) {
 		if (t == null) return
 		GAME.startTurn(t)
 	})
+	socket.on("server:prediction", function (data) {
+		if (data == null) return
+		GAME.ui.showPrediction(data.probs,data.diffs)
+	})
 	socket.on("server:rolldice", function (dice) {
 		if (dice == null) return
 		console.log("rolldice")

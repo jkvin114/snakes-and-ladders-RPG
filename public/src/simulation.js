@@ -411,6 +411,10 @@ function onError(msg){
 	// setTimeout(()=>window.location.href='index.html')
 }
 function checkAuth(){
+	// $("#matchingpage").css("visibility","visible")
+	// connectSocket()
+	// requestResource()
+	// return
 	$.ajax({
         method: 'POST',
         url: '/room/simulation',

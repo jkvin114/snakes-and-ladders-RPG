@@ -3,7 +3,7 @@ import { openConnection } from "./socket.js"
 import { GameInterface } from "./interface.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 export const SOLOPLAY=true
-const BGM=false
+const BGM=true
 export var GAME
 class Game{
     constructor(){

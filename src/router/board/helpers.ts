@@ -261,8 +261,11 @@ async function migrateFriendRelation(){
 	for(const u of users){
 		for(const f of u.friends){
 			console.log("migrated friend of "+u._id+": "+f)
-			await UserRelationSchema.addFriend(u._id,f)
 			let isfriend=false
+			isfriend=await UserRelationSchema.isFriendWith(u._id,f)
+			if(!isfriend)
+				await UserRelationSchema.addFriend(u._id,f)
+			isfriend=false
 			isfriend=await UserRelationSchema.isFriendWith(f,u._id)
 			if(!isfriend)
 			 	await UserRelationSchema.addFriend(f,u._id)
@@ -273,9 +276,11 @@ async function migrateFollowRelation(){
 	const users=await User.find()
 	for(const u of users){
 		for(const f of u.follows){
-			console.log("migrated friend of "+u._id+": "+f)
+			console.log("migrated follow of "+u._id+": "+f)
 			await UserRelationSchema.addFollow(u._id,f)
 			//await UserRelationSchema.addFollow(f,u._id)
 		}
 	}
 }
+// migrateFriendRelation()
+// migrateFollowRelation()

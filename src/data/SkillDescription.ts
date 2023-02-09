@@ -648,7 +648,7 @@ export class SkillInfoFactory {
 			case 9:
 				str =
 					this.nameTitle(s) +
-					`Imitates ultimate(lv3 skill) of ${this.target()} and steals ${this.emp("(vulnerability stack x "+this.skillAmt("r_steal")+")%")} of targets attack power and magic power for 2 turns.
+					`Imitates ultimate(lv3 skill) of ${this.target()} and steals ${this.emp(this.skillAmt("r_steal_base")+"+(vulnerability stack x "+this.skillAmt("r_steal")+")%")} of targets attack power and magic power for 2 turns.
 					 Reusing this skill will use the imitated skill.`
 				break
 			default:
@@ -743,7 +743,7 @@ export class SkillInfoFactory {
 			case 9:
 				str =
 					this.nameTitle(s) +this.target()+
-					`의 궁극기(레벨 3 스킬)를 빼앗고 대상 공격력과 주문력의 ${this.emp("(취약점 중첩 x "+this.skillAmt("r_steal")+")%")}
+					`의 궁극기(레벨 3 스킬)를 빼앗고 대상 공격력과 주문력의 ${this.emp(this.skillAmt("r_steal_base")+"+(취약점 중첩 x "+this.skillAmt("r_steal")+")%")}
 					를 ${this.up("2턴간 훔침")}.
 					 스킬을 재시전하면 빼앗은 스킬이 사용됨.`
 				break

@@ -256,6 +256,19 @@ export default class GameInterface {
 		$("#deathinfo-btn").click(()=>{
 			$("#deathinfo").toggle()
 		})
+		$("#prediction-close").click(function(){
+			if($(this).hasClass("opened")){
+
+				$(this).removeClass("opened")
+				$(this).addClass("closed")
+				$("#prediction-container").css({ right: "-200px" }, 1)
+			}
+			else{
+				$(this).addClass("opened")
+				$(this).removeClass("closed")
+				$("#prediction-container").css({ right: "0" }, 1)
+			}
+		})
 	}
 
 	/**
@@ -636,7 +649,21 @@ addChatDragEvent() {
 			$(this.elements.skillinfoimgs[j]).attr("src", "res/img/skill/" + (champ + 1) + "-" + (j + 1) + ".jpg")
 		}
 	}
-
+	showPrediction(probs,diffs){
+		let str=''
+		
+		for(let i=0;i<this.game.playerCount;i++){
+			console.log(probs)
+			str+=`
+			<div class="prediction ${diffs[i]==0?"nochange":"" } ${i==this.game.myturn?"me":""}">
+				<img src="${this.game.getChampImgofTurn(i)}" style="border: 2px solid ${this.game.getPlayerLighterColor(i)};">
+				<b class="prediction-prob">${probs[i]}%</b>
+				<img class='change-img' src="res/img/svg/skillinfo/${diffs[i]>0?"up":"down"}.png">
+				<b class="prediction-diff ${diffs[i]>0?"good":"bad"}">${diffs[i]==0?"-":""+(diffs[i]>0?"+":"")+diffs[i]+"%"}</b>
+			</div>`
+		}
+		$("#prediction").html(str)
+	}
 	updateSkillImg(data) {
 		let champ=data.champ 
 		let skill_id=data.skill

@@ -28,13 +28,10 @@ class Hacker extends Player {
 	}
 	readonly duration_list: number[]
 
-	static readonly PROJ_W = "reaper_w"
-	static readonly Q_SHIELD = "reaper_q"
-	static readonly ULT_SHIELD = "reaper_ult"
-
-	static readonly ULT_ABILITY_STEAL_PERCENT = 2.5
-	static readonly Q_STACK_DAMAGE = 10
-	static readonly SKILL_EFFECT_NAME = ["magician_q", "hit", "hacker_r"]
+	static readonly ULT_ABILITY_STEAL_PERCENT = 2
+	static readonly ULT_ABILITY_STEAL_PERCENT_BASE = 10
+	static readonly Q_STACK_DAMAGE = 8
+	static readonly SKILL_EFFECT_NAME = ["hacker_q", "hit", "hacker_r"]
 
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
 	private virtualCharacter: Player | null
@@ -133,6 +130,7 @@ class Hacker extends Player {
 	getSkillAmount(key: string): number {
 		if (key === "stack_damage") return Hacker.Q_STACK_DAMAGE
 		if (key === "r_steal") return Hacker.ULT_ABILITY_STEAL_PERCENT
+		if (key === "r_steal_base") return Hacker.ULT_ABILITY_STEAL_PERCENT_BASE
 		return 0
 	}
 	getSkillScale() {
@@ -256,7 +254,7 @@ class Hacker extends Player {
 					this.startCooltime(s)
 					this.onAfterCopiedSkill()
 				} else if (target instanceof Player) {
-					let stealRatio = (Hacker.ULT_ABILITY_STEAL_PERCENT / 100) * (this.stacks[target.turn]+1)
+					let stealRatio = Hacker.ULT_ABILITY_STEAL_PERCENT_BASE+ (Hacker.ULT_ABILITY_STEAL_PERCENT / 100) * (this.stacks[target.turn]+1)
 					let dur=this.duration_list[2]
                     damage = new SkillAttack(Damage.zero(), this.getSkillName(s),s,this)
 						.setOnHit(function (this: Player, source: Player) {

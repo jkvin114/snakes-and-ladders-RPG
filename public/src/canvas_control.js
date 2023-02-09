@@ -2002,6 +2002,8 @@ export class Scene extends Board{
 				break
 			case "reaper_q":
 				this.game.playSound("stab")
+				this.game.playSound("hit")
+
 				this.defaultEffect(position, change)
 				addedEffectImg=this.createCroppedEffectImage('reaper_q')
 				this.setEffectImageAttr(addedEffectImg,pos.x-20,pos.y-50,0.7,0.7,1,0)
@@ -2062,6 +2064,8 @@ export class Scene extends Board{
 				break
 			case "gun":
 				this.game.playSound("gun")
+				this.game.playSound("hit")
+
 				this.defaultEffect(position, change)
 				addedEffectImg=this.createCroppedEffectImage('blood')
 				this.setEffectImageAttr(addedEffectImg,pos.x+30,pos.y+30,0.8,0.8,0.7,0)
@@ -2096,13 +2100,15 @@ export class Scene extends Board{
 
 
 				break
+			
 			case "magician_w_q":
 				this.game.playSound("ignite")
 				// scale = 4
 				addedEffectImg=this.createCroppedEffectImage('fire')
 				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-20,0.8,0.8,1,0)
 				this.animateOpacity(addedEffectImg,0,2000)
-
+			case "hacker_q":
+				if(type!=="magician_w_q") this.game.playSound("hack")
 			case "magician_q":
 				this.defaultEffect(position, change)
 				this.game.playSound("hit")
@@ -2110,8 +2116,6 @@ export class Scene extends Board{
 				addedEffectImg=this.createCroppedEffectImage('magician_q')
 				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.5,1.5,0.8,0)
 				this.animateOpacity(addedEffectImg,0,1600)
-
-
 				break
 			case "magician_r":
 				this.game.playSound("6r")
@@ -2232,6 +2236,8 @@ export class Scene extends Board{
 			case "hacker_r":
 				this.defaultEffect(position, change)
 				this.game.playSound("10r")
+				this.game.playSound("hit")
+
 				addedEffectImg=this.createCroppedEffectImage('magician_q')
 				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.5,1.5,0.8,0)
 				this.animateOpacity(addedEffectImg,0,1600)
@@ -3087,30 +3093,10 @@ export class Scene extends Board{
 		this.setEffectImageAttr(train,pos.x,pos.y+10,1.5,1.5,1,0)
 		this.animateX(train,pos.x+600,speed)
 		this.removeImageAfter(train,3000)
-		// let train = new fabric.Image(trainimg, {
-		// 	evented: false,
-		// 	opacity: 1,
-		// 	left: pos.x,
-		// 	top: pos.y + 10,
-		// 	objectCaching: false,
-		// 	scaleX: 1.5,
-		// 	scaleY: 1.5
-		// })
-		// this.lockFabricObject(train)
-		// this.canvas.add(train)
-		// train.animate("left", "+=600", {
-		// 	onChange: this.render.bind(this),
-		// 	duration: speed,
-		// 	easing: fabric.util.ease.easeOutCubic
-		// })
 		setTimeout(() => {
 			train.set({ opacity: 0 })
 		}, speed + 200)
 
-		// setTimeout(() => {
-		// 	this.canvas.remove(train)
-		// }, 3000)
-		// this.subwayTrain = train
 	}
 	//===========================================================================================================================
 

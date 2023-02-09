@@ -179,6 +179,10 @@ export namespace ServerGameEventFormat {
 		sourcePos:number
 		// trajectorySpeed:number
 	}
+	export interface Prediction{
+		probs:number[]
+		diffs:number[]
+	}
 }
 
 export namespace ClientInputEventFormat {

@@ -124,7 +124,7 @@ class Jellice extends Player {
 		let w_on = this.isSkillActivated(ENUM.SKILL.W)
 		let end_front = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_front"))
 		let end_back = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_back"))
-		let start = this.getSkillAmount("qrange_start") - (w_on ? 1 : 0)
+		let start = w_on?0:this.getSkillAmount("qrange_start")
 		return {end_front:end_front,end_back:end_back,start:start}
 	}
 	private useQ(): boolean {

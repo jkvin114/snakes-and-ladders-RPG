@@ -323,7 +323,7 @@ table, th, td {
     /* margin-left: 5vw;
     margin-right: 5vw; */
     /* height:30px; */
-    display: flex;
+    /* display: flex; */
     align-items:flex-end;
     justify-content: center;
     border-top: 1px solid #6a359c;
@@ -782,7 +782,6 @@ height:60vh;
     color: white;
 }
 #game-detail-graphs{
-    height: fit-content;
     /* background-color: #45455d;; */
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -936,7 +935,13 @@ height:60vh;
     text-align: center;
 }
 #game-detail-table{
-    max-width: 600px;
+    /* max-width: 1200px; */
+}
+.game-detail-table-content{
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .player-data-header b.game-detail-header b{
     font-size: 20px;

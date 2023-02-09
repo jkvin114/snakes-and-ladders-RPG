@@ -72,6 +72,9 @@ export class GameEventObserver {
 		this.emit("force_nextturn",crypt_turn)
 		// this.eventEmitter(this.rname, "server:force_nextturn", crypt_turn)
 	}
+	sendPrediction(data:ServerGameEventFormat.Prediction){
+		this.emit("prediction",data)
+	}
 	sendPendingObs(data: ServerGameEventFormat.PendingObstacle) {
 		this.emit(data.name,data.argument)
 		// this.eventEmitter(this.rname, data.name, data.argument)
