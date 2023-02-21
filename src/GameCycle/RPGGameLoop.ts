@@ -338,7 +338,8 @@ class GameLoop {
 	}
 	onGameover(isNormal: boolean) {
 		//	console.log("gameover")
-		this.gameOverCallBack(isNormal)
+		if(this.gameOverCallBack)
+			this.gameOverCallBack(isNormal)
 		if(this.resetTimeout)
 			clearTimeout(this.resetTimeout)
 	}

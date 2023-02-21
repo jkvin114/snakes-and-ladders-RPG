@@ -15,15 +15,15 @@ catch(e){
     console.log('mongodb Connection Failed!');
 }
 
-const db=mongoose.connection
+// const db=mongoose.connection
 
-db.on('error', function(){
-    console.log('Connection Failed!');
-});
-// 5. 연결 성공
-db.once('open', function() {
-    console.log('Connected to mongodb!');
-});
+// db.on('error', function(){
+//     console.log('Connection Failed!');
+// });
+// // 5. 연결 성공
+// db.once('open', function() {
+//     console.log('Connected to mongodb!');
+// });
 //=============================================================================================
 const itemRecordSchema=new mongoose.Schema({
     item_id:Number,

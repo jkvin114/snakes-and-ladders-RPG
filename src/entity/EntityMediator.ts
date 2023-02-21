@@ -4,7 +4,7 @@ import { EntityFilter } from "./EntityFilter"
 import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
 import { Entity } from "./Entity"
 import { BASICATTACK_TYPE, EFFECT, ENTITY_TYPE, FORCEMOVE_TYPE, STAT } from "../data/enum"
-import { PriorityArray, Normalize, sleep, CALC_TYPE } from "../core/Util"
+import { PriorityArray, Normalize, sleep, CALC_TYPE, AbilityUtilityScorecard } from "../core/Util"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventFormat } from "../data/EventFormat"
 import { trajectorySpeedRatio } from "../../res/globalsettings.json"
@@ -475,6 +475,26 @@ class EntityMediator {
 	}
 	count(filter: EntityFilter<Entity>): number {
 		return this.selectAllFrom(filter).length
+	}
+	getOpponentTotalTypeUtility(source:Player){
+		let util:AbilityUtilityScorecard={
+			attack:0,magic:0,defence:0,health:0,myutilRatio:0
+		}
+		let opponentCount=0
+		this.forEachPlayer(EntityFilter.ALL_ENEMY_PLAYER(source),function(source){
+			let playerutil=this.getCharacterTypeUtility()
+			util.attack+=playerutil.attack
+			util.magic+=playerutil.magic
+			util.defence+=playerutil.defence
+			util.health+=playerutil.health
+			opponentCount+=1
+		})
+		if(opponentCount===0) return util
+		let mine=source.getCharacterTypeUtility()
+		util.myutilRatio=(mine.attack+mine.magic+mine.defence+mine.health)/
+		((util.attack+util.magic+util.defence+util.health)/opponentCount)
+
+		return util
 	}
 }
 

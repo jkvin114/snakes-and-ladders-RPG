@@ -664,7 +664,7 @@
 			"unique_effect": "If HP goes below 30%, gain shield based on attack power for 2 turns and absorb increases 30%",
 			"unique_effect_kor": "체력이 30% 이하로 내려가면 2턴간 공격력 비례 방어막 획득, 모든피해 흡혈 30% 증가",
 			"active_cooltime": 7,
-			"category": ["health", "attack", "defence"]
+			"category": [ "attack","health", "defence"]
 		},
 		{
 			"id": 36,

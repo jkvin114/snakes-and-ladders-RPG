@@ -264,7 +264,7 @@ class Game {
 				name: p.name,
 				champ: p.champ,
 				champ_name: p.champ_name,
-				recommendedItem: p.AiAgent.itemtree.items,
+				recommendedItem: p.AiAgent.itemBuild.items,
 				skillScale:p.getSkillScale()
 			})
 		}
@@ -393,19 +393,20 @@ class Game {
 		return (this.thisturn+1) % this.totalnum
 	}
 	addStateLabel(){
-
-		let str=`${this.mapHandler.mapId},${this.totalturn},${this.totalnum},${this.isTeam?1:0},${this.mapHandler.getFinishPos()},`+
-		`${this.setting.additionalDiceAmount},${this.setting.diceControlItemFrequency},${this.setting.extraResistanceAmount},`+
-		`${this.itemLimit},`
+		//console.table(this.thisp().getCharacterTypeUtility())
+		// let str=`${this.mapHandler.mapId},${this.totalturn},${this.totalnum},${this.isTeam?1:0},${this.mapHandler.getFinishPos()},`+
+		// `${this.setting.additionalDiceAmount},${this.setting.diceControlItemFrequency},${this.setting.extraResistanceAmount},`+
+		// `${this.itemLimit},`
 		let str2=`${this.totalturn}`
 		for(let i=0;i<this.totalnum;i++){
 			str2+=","+this.pOfTurn(i).getStateLabel(this.mapHandler.getFinishPos())
 		}
 		this.trainLabels.push(str2)
-		if(!this.instant)
+		if(!this.instant || CONFIG.useWinPrediction)
 			this.getPrediction(str2)
 	}
-	async getPrediction(labels:string){
+	async getPrediction(labels:string){ 
+		if(!CONFIG.useWinPrediction) return
 		let preds=await fetchPrediction(labels,this.totalnum,this.mapId)
 		if(preds.length>0){
 			let diffs=[]

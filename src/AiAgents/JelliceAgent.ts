@@ -2,13 +2,34 @@ import type { Jellice } from "../characters/Jellice";
 import { ITEM, SKILL } from "../data/enum";
 import { EntityFilter } from "../entity/EntityFilter";
 import { AiAgent, ItemBuild } from "./AiAgent";
+import { ItemBuildEntry, UtilityCondition } from "./ItemBuild";
 
 class JelliceAgent extends AiAgent{
-    itemtree: ItemBuild
+    itemBuild: ItemBuild
 	player:Jellice
     constructor(player:Jellice){
         super(player)
-        this.itemtree = new ItemBuild().setItems([
+        this.itemBuild = new ItemBuild().setItemEntries([
+			new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL),
+			new ItemBuildEntry(ITEM.CARD_OF_DECEPTION),
+			new ItemBuildEntry(ITEM.STAFF_OF_JUDGEMENT).setChangeCondition(
+				ITEM.CROSSBOW_OF_PIERCING,
+				UtilityCondition.MoreTankers()
+				),
+			new ItemBuildEntry(ITEM.TIME_WARP_POTION),
+			new ItemBuildEntry(ITEM.BOOTS_OF_HASTE).setChangeCondition(
+				ITEM.INVISIBILITY_CLOAK,
+				UtilityCondition.IsAdvantageous()
+			),new ItemBuildEntry(ITEM.BOOTS_OF_PROTECTION).setChangeCondition(
+				ITEM.ANCIENT_SPEAR,
+				UtilityCondition.MoreTankers()
+				).setSecondChangeCondition(
+					ITEM.BOOTS_OF_ENDURANCE,
+					UtilityCondition.MoreAPThanAD(2)
+				)
+		],new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL))
+		
+		.setItems([
 			ITEM.EPIC_CRYSTAL_BALL,
 			ITEM.CARD_OF_DECEPTION,
 			ITEM.STAFF_OF_JUDGEMENT,

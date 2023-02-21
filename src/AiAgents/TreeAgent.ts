@@ -1,20 +1,31 @@
 import { Tree } from "../characters/Tree";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
+import { ItemBuildEntry, UtilityCondition } from "./ItemBuild";
 
 class TreeAgent extends AiAgent{
-    itemtree: ItemBuild
+    itemBuild: ItemBuild
 	player:Tree
     constructor(player:Tree){
         super(player)
-        this.itemtree = new ItemBuild().setItems([
-			ITEM.EPIC_CRYSTAL_BALL,
-			ITEM.CARD_OF_DECEPTION,
-			ITEM.TIME_WARP_POTION,
-			ITEM.ANCIENT_SPEAR,
-			ITEM.INVISIBILITY_CLOAK,
-			ITEM.BOOTS_OF_PROTECTION,
-		]).setFinal(ITEM.EPIC_CRYSTAL_BALL)
+		this.itemBuild = new ItemBuild().setItemEntries([
+			new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL),
+			new ItemBuildEntry(ITEM.CARD_OF_DECEPTION),
+			new ItemBuildEntry(ITEM.TIME_WARP_POTION),
+			new ItemBuildEntry(ITEM.INVISIBILITY_CLOAK)
+			,new ItemBuildEntry(ITEM.STAFF_OF_JUDGEMENT).setChangeCondition(
+				ITEM.CROSSBOW_OF_PIERCING,
+				UtilityCondition.MoreTankers()
+				)
+			,new ItemBuildEntry(ITEM.BOOTS_OF_PROTECTION).setChangeCondition(
+				ITEM.ANCIENT_SPEAR,
+				UtilityCondition.MoreTankers(0.3)
+				).setSecondChangeCondition(
+					ITEM.BOOTS_OF_ENDURANCE,
+					UtilityCondition.MoreAPThanAD(2)
+				)
+		],new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL))
+
 		this.gameStartMessage= "I will not be your giving tree!"
     }
 	nextSkill(): number {

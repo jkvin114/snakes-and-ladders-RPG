@@ -235,7 +235,7 @@ class PriorityArray<T> extends Array {
 		return minidx
 	}
 }
-export class ListSet<T>{
+export class Counter<T>{
 	map:Map<T,number>
 	constructor(elem?:Iterable<T>){
 		this.map=new Map<T,number>()
@@ -246,7 +246,7 @@ export class ListSet<T>{
 		}
 	}
 	copy(){
-		return new ListSet<T>(this.toArray())
+		return new Counter<T>(this.toArray())
 	}
 	add(toadd:T){
 		let val=this.map.get(toadd)
@@ -358,7 +358,10 @@ enum PlayerType {
 type ProtoPlayer = { type: PlayerType; name: string; team: boolean; champ: number; ready: boolean,
 userClass:number }
 
-//added 2021.07.07
+export type AbilityUtilityScorecard={
+	attack:number,magic:number,defence:number,health:number,myutilRatio:number
+}
+
 
 export {
 	CALC_TYPE,

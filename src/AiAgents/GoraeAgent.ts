@@ -1,25 +1,51 @@
 import { Gorae } from "../characters/Gorae"
+import { AbilityUtilityScorecard } from "../core/Util"
 import { EFFECT, ITEM, SKILL } from "../data/enum"
 import { ServerGameEventFormat } from "../data/EventFormat"
 import { EntityFilter } from "../entity/EntityFilter"
 import { Player } from "../player/player"
 import { AiAgent, ItemBuild } from "./AiAgent"
+import { ItemBuildEntry, UtilityCondition } from "./ItemBuild"
 
 class GoraeAgent extends AiAgent {
-	itemtree: ItemBuild
+	itemBuild: ItemBuild
 	player: Gorae
 	constructor(player: Gorae) {
 		super(player)
-		this.itemtree = new ItemBuild()
-			.setItems([
-				ITEM.FULL_DIAMOND_ARMOR,
-				ITEM.EPIC_FRUIT,
-				ITEM.EPIC_SHIELD,
+		this.itemBuild = new ItemBuild().setItemEntries(
+			[
+				new ItemBuildEntry(ITEM.FULL_DIAMOND_ARMOR),
+				new ItemBuildEntry(ITEM.EPIC_FRUIT),
+				new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
+					ITEM.EPIC_ARMOR,
+					UtilityCondition.MoreAPThanAD()
+				),
+				new ItemBuildEntry(ITEM.FULL_DIAMOND_ARMOR).setChangeCondition(
+					ITEM.EPIC_ARMOR,
+					UtilityCondition.MoreAPThanAD(2)
+				).setSecondChangeCondition(
+					ITEM.EPIC_SHIELD,
+					UtilityCondition.MoreADThanAP(2)
+				),
+				new ItemBuildEntry(ITEM.POWER_OF_MOTHER_NATURE).setChangeCondition(
+					ITEM.EPIC_FRUIT,
+					UtilityCondition.MoreADThanAP(2)
+				),
+				new ItemBuildEntry(ITEM.GUARDIAN_ANGEL)
+					.setChangeCondition(
+						ITEM.BOOTS_OF_PROTECTION,
+						UtilityCondition.MoreADThanAP(2)
+					)
+					.setSecondChangeCondition(
+						ITEM.BOOTS_OF_ENDURANCE,
+						UtilityCondition.MoreAPThanAD(2)
+					)
+			],
+			new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
 				ITEM.EPIC_ARMOR,
-				ITEM.POWER_OF_MOTHER_NATURE,
-				ITEM.WARRIORS_SHIELDSWORD,
-			])
-			.setFinal(ITEM.FULL_DIAMOND_ARMOR)
+				UtilityCondition.MoreAPThanAD()
+			)
+		)
 			this.gameStartMessage="I will devour you like a fish!"
 	}
 	nextSkill(): number {

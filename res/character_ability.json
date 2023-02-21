@@ -14,6 +14,7 @@
             "AR":6,
             "MR":8
         },
+        "category":["attack"],
         "basicAttackType":"melee",
         "name":"creed"
     },
@@ -32,6 +33,7 @@
             "AR":6,
             "MR":8
         },
+        "category":["defence","health"],
         "basicAttackType":"melee",
         "name":"silver"
     },
@@ -50,6 +52,7 @@
             "AR":6,
             "MR":8
         },
+        "category":["magic"],
         "basicAttackType":"ranged",
         "name":"timo"
     },
@@ -68,6 +71,7 @@
             "AR":6,
             "MR":8
         },
+        "category":["attack"],
         "basicAttackType":"melee",
         "name":"yangyi"
     },
@@ -75,7 +79,7 @@
         "initial":{
             "HP":190,
             "AD":25,
-            "AP":0,            
+            "AP":0,
             "AR":6,
             "MR":6,
             "attackRange":1
@@ -86,6 +90,7 @@
             "AR":6,
             "MR":8
         },
+        "category":["attack"],
         "basicAttackType":"ranged",
         "name":"jean"
     },
@@ -104,6 +109,7 @@
             "AR":7,
             "MR":9
         },
+        "category":["magic"],
         "basicAttackType":"ranged",
         "name":"jellice"
     },
@@ -122,6 +128,7 @@
             "AR":7,
             "MR":9
         },
+        "category":["health","defence"],
         "basicAttackType":"melee",
         "name":"gorae"
     },
@@ -140,6 +147,7 @@
             "AR":6,
             "MR":8
         },
+        "category":["magic","attack"],
         "basicAttackType":"melee",
         "name":"bird"
     },
@@ -158,6 +166,7 @@
             "AR":7,
             "MR":9
         },
+        "category":["magic"],
         "basicAttackType":"ranged",
         "name":"tree"
     } , {
@@ -175,6 +184,7 @@
             "AR":6,
             "MR":8
         },
+        "category":["attack","magic"],
         "basicAttackType":"ranged",
         "name":"hacker"
     }

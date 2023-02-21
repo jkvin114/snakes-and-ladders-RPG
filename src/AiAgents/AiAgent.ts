@@ -1,7 +1,7 @@
 import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventFormat } from "../data/EventFormat"
-import { copyElementsOnly, pickRandom, ListSet, shuffle, sleep, Stack } from "../core/Util"
+import { copyElementsOnly, pickRandom, Counter, shuffle, sleep, Stack, AbilityUtilityScorecard } from "../core/Util"
 import { items as ItemList } from "../../res/item.json"
 import PlayerInventory from "../player/PlayerInventory"
 import {trajectorySpeedRatio} from "../../res/globalsettings.json"
@@ -10,52 +10,27 @@ import { EntityFilter } from "../entity/EntityFilter"
 import SETTINGS = require("./../../res/globalsettings.json")
 import TRAIN_SETTINGS = require("./../../res/train_setting.json")
 import { SkillTargetSelector } from "../core/skill"
+import { ItemBuild, ItemBuildEntry } from "./ItemBuild"
+import { chooseRandom } from "../Marble/util"
 const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)
 const ITEMS=ItemList
 
 
-export class ItemBuild{
-	level: number
-	items: ITEM[]
-	final: ITEM
-	constructor(){
-		this.level=0
-		this.items=[]
-		this.final=0
-	}
-	setItems(items: ITEM[]){
-		this.items=items
-		return this
-	}
-	setFinal(final:ITEM){
-		this.final=final
-		return this
-	}
-	onBuyCoreItem(){
-		this.level+=1
-	}
-	nextCoreItem():number
-	{
-		if (this.level >= this.items.length) {
-			return this.final
-		} else {
-			return this.items[this.level]
-		}
-	}
-}
 
 abstract class AiAgent {
 	player: Player
 	attemptedSkills: Set<SKILL>
 	isRandomItem:boolean
-	abstract itemtree: ItemBuild
+	itemBuild: ItemBuild
 	static readonly BASICATTACK = 4
+	static readonly CHAR_TYPE_UTILITY_WEIGHTS=[[10],[6,4],[6.5,2.5,1],[5,3,1,1]]
 	gameStartMessage:string
 	constructor(player: Player) {
 		this.player = player
 		this.isRandomItem=TRAIN_SETTINGS.train && TRAIN_SETTINGS.random_item
 		this.attemptedSkills = new Set<SKILL>()
 		this.gameStartMessage=""
+		this.itemBuild=new ItemBuild()
 	}
 	onAfterCreate(){
 		if(this.isRandomItem){
@@ -64,7 +39,7 @@ abstract class AiAgent {
 
 			let randTree=shuffle(CORE_ITEMS)
 
-			this.itemtree.items=randTree
+			this.itemBuild.setItemEntries(randTree.map((item)=>new ItemBuildEntry(item)),new ItemBuildEntry(chooseRandom(CORE_ITEMS))) 
 		}
 	}
 	simulationAiSkill(){
@@ -321,24 +296,28 @@ abstract class AiAgent {
 	getDiceControlDice() {
 		return 6
 	}
-	store() {
-		new AIStoreInstance(this.player.inven, this.itemtree).setItemLimit(this.player.game.itemLimit).run()
+	applyInitialOpponentUtility(opponentUtility:AbilityUtilityScorecard){
+		this.itemBuild.setOpponentUtility(opponentUtility)
+	}
+	store(opponentUtility:AbilityUtilityScorecard) {
+		this.itemBuild.setOpponentUtility(opponentUtility)
+		new AIStoreInstance(this.player.inven, this.itemBuild).setItemLimit(this.player.game.itemLimit).run()
 	}
 }
 
 class DefaultAgent extends AiAgent {
-	itemtree: ItemBuild
+	itemBuild: ItemBuild
 	constructor(player: Player) {
 		super(player)
-		this.itemtree = new ItemBuild()
-		.setItems([
-			ITEM.EPIC_SWORD,
-			ITEM.EPIC_CRYSTAL_BALL,
-			ITEM.EPIC_WHIP,
-			ITEM.TIME_WARP_POTION,
-			ITEM.EPIC_FRUIT,
-			ITEM.BOOTS_OF_HASTE
-		]).setFinal(ITEM.EPIC_SWORD)
+		this.itemBuild = new ItemBuild()
+		.setItemEntries([
+			new ItemBuildEntry(ITEM.EPIC_SWORD),
+			new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL),
+			new ItemBuildEntry(ITEM.EPIC_WHIP),
+			new ItemBuildEntry(ITEM.TIME_WARP_POTION),
+			new ItemBuildEntry(ITEM.EPIC_FRUIT),
+			new ItemBuildEntry(ITEM.BOOTS_OF_HASTE),
+		],new ItemBuildEntry(ITEM.EPIC_SWORD))
 	}
 	getMessageOnGameStart(): string {
 		return "Hello"
@@ -346,16 +325,16 @@ class DefaultAgent extends AiAgent {
 }
 
 class AIStoreInstance {
-	build: ItemBuild
-	resultItems: ListSet<number>
-	inven: PlayerInventory
-	totalMoneySpend: number
-	itemLimit: number
-	constructor(inven: PlayerInventory, build: ItemBuild) {
+	private resultItems: Counter<number>
+	private inven: PlayerInventory
+	private totalMoneySpend: number
+	private itemLimit: number
+	private build:ItemBuild
+	constructor(inven: PlayerInventory, build:ItemBuild) {
 		this.inven = inven
 		this.build = build
 		this.totalMoneySpend = 0
-		this.resultItems = new ListSet(inven.itemSlots)
+		this.resultItems = new Counter(inven.itemSlots)
 	}
 	getChildItemCounts(target:number,itemlist:number[]):Map<number,number>{
 		let counts=new Map<number,number>()
@@ -381,7 +360,7 @@ class AIStoreInstance {
 	run() {
 		let attemptedCoreItems=new Set<number>()
 		while (this.hasEnoughMoney()) {
-			if (this.build.level >= this.itemLimit) {
+			if (this.build.isFull(this.itemLimit)) {
 				this.buyLife()
 				break
 			}
@@ -406,7 +385,7 @@ class AIStoreInstance {
 		}
 	}
 
-	isFull(temp_itemlist: ListSet<number>) {
+	isFull(temp_itemlist: Counter<number>) {
 		return !temp_itemlist.has(-1)
 	}
 	copyCurrentItems(){
@@ -482,7 +461,7 @@ class AIStoreInstance {
 			this.resultItems=temp_itemlist.copy()
 			this.addItem(tobuy)
 			if (item.itemlevel === 3) {
-				this.build.onBuyCoreItem()
+				this.build.onBuyCoreItem(item.id)
 			}
 			return price
 		}
@@ -505,12 +484,9 @@ class AIStoreInstance {
 	 * @param {*} tobuy int
 	 * @param {*} temp_itemlist copy of player`s item list
 	 */
-	calcDiscount(tobuy: number, itemslots: ListSet<number>): number {
+	calcDiscount(tobuy: number, itemslots: Counter<number>): number {
 		const thisitem = ITEMS[tobuy]
 
-		// if (thisitem.children.length === 0) {
-		// 	return 0
-		// }
 		let discount = 0
 		//c:number
 		for (const c of thisitem.children) {
@@ -524,7 +500,7 @@ class AIStoreInstance {
 		return discount
 	}
 
-	removeItem(itemslots:ListSet<number>, item:number) {
+	removeItem(itemslots:Counter<number>, item:number) {
 		if (!itemslots.has(item)) return
 
 		itemslots.delete(item).add(-1)
@@ -542,4 +518,4 @@ class AIStoreInstance {
 	}
 }
 
-export { AiAgent, DefaultAgent }
+export { AiAgent, DefaultAgent, ItemBuild }

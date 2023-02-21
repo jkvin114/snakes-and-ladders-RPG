@@ -1,21 +1,37 @@
 import { Jean } from "../characters/Jean";
+import { AbilityUtilityScorecard } from "../core/Util";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
+import { ItemBuildEntry, UtilityCondition } from "./ItemBuild";
 
 class JeanAgent extends AiAgent{
-    itemtree: ItemBuild
+    itemBuild: ItemBuild
 	player:Jean
     constructor(player:Jean){
         super(player)
-		this.itemtree = 
-		new ItemBuild().setItems([
-			ITEM.EPIC_SWORD,
-			ITEM.FLAIL_OF_JUDGEMENT,
-			ITEM.EPIC_WHIP,
-			ITEM.CROSSBOW_OF_PIERCING,
-			ITEM.WARRIORS_SHIELDSWORD,
-			ITEM.BOOTS_OF_HASTE
-		]).setFinal(ITEM.EPIC_SWORD)
+		this.itemBuild = 
+		this.itemBuild = new ItemBuild()
+			.setItemEntries(
+				[
+					new ItemBuildEntry(ITEM.EPIC_SWORD),
+					new ItemBuildEntry(ITEM.EPIC_WHIP),
+					new ItemBuildEntry(ITEM.FLAIL_OF_JUDGEMENT),
+					new ItemBuildEntry(ITEM.ANCIENT_SPEAR).setChangeCondition(
+						ITEM.CROSSBOW_OF_PIERCING,
+						UtilityCondition.MoreTankers(0.75)
+					),
+					new ItemBuildEntry(ITEM.BOOTS_OF_HASTE).setChangeCondition(
+						ITEM.ANCIENT_SPEAR,
+						UtilityCondition.MoreTankers()
+					),
+					new ItemBuildEntry(ITEM.GUARDIAN_ANGEL)
+						.setChangeCondition(
+							ITEM.WARRIORS_SHIELDSWORD,
+							UtilityCondition.IsAdvantageous()
+						)
+				],
+				new ItemBuildEntry(ITEM.EPIC_SWORD)
+			)
 		this.gameStartMessage="Everyone will be equal under my bullet!"
     }
 	nextSkill(): number {

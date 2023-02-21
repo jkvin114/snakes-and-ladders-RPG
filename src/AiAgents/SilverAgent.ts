@@ -1,26 +1,50 @@
-import { Silver } from "../characters/Silver";
-import { ITEM, SKILL } from "../data/enum";
-import { AiAgent, ItemBuild } from "./AiAgent";
+import { Silver } from "../characters/Silver"
+import { AbilityUtilityScorecard, randInt } from "../core/Util"
+import { AbilityUtilityType, ITEM, SKILL } from "../data/enum"
+import { AiAgent, ItemBuild } from "./AiAgent"
+import { ItemBuildEntry, UtilityCondition } from "./ItemBuild"
 
-class SilverAgent extends AiAgent{
-    itemtree: ItemBuild
-	player:Silver
-    constructor(player:Silver){
-        super(player)
-        this.itemtree = 
-		new ItemBuild().setItems([
-			ITEM.EPIC_SHIELD,
-			ITEM.EPIC_ARMOR,
-			ITEM.POWER_OF_MOTHER_NATURE,
-			ITEM.EPIC_FRUIT,
-			ITEM.BOOTS_OF_ENDURANCE,
-			ITEM.GUARDIAN_ANGEL
-		]).setFinal(ITEM.EPIC_SHIELD)
-		this.gameStartMessage="I will defend everything against me!"
-    }
+export class SilverAgent extends AiAgent {
+	itemBuild: ItemBuild
+	player: Silver
+
+	constructor(player: Silver) {
+		super(player)
+		this.itemBuild = new ItemBuild().setItemEntries(
+			[
+				new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
+					ITEM.EPIC_ARMOR,
+					UtilityCondition.MoreAPThanAD(2)
+				),
+				new ItemBuildEntry(ITEM.EPIC_ARMOR).setChangeCondition(
+					ITEM.EPIC_SHIELD,
+					UtilityCondition.MoreADThanAP(2)
+				),
+				new ItemBuildEntry(ITEM.EPIC_FRUIT).setChangeCondition(
+					ITEM.POWER_OF_MOTHER_NATURE,
+					UtilityCondition.MoreAPThanAD()
+				),
+				new ItemBuildEntry(ITEM.EPIC_FRUIT).setChangeCondition(
+					ITEM.FULL_DIAMOND_ARMOR,
+					UtilityCondition.MoreADThanAP()
+				),
+				new ItemBuildEntry(ITEM.GUARDIAN_ANGEL),
+				new ItemBuildEntry(ITEM.BOOTS_OF_ENDURANCE).setChangeCondition(
+					ITEM.BOOTS_OF_PROTECTION,
+					UtilityCondition.MoreADThanAP()
+				)
+			],
+			new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
+				ITEM.EPIC_ARMOR,
+				UtilityCondition.MoreAPThanAD()
+			)
+		)
+
+		this.gameStartMessage = "I will defend everything against me!"
+	}
 	nextSkill(): number {
 		if (this.player.canBasicAttack()) {
-			return  AiAgent.BASICATTACK
+			return AiAgent.BASICATTACK
 		}
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
 			return SKILL.ULT

@@ -10,6 +10,7 @@ import { PlayerComponent } from "./PlayerComponent"
 import { ActiveItem, ItemData } from "../core/ActiveItem"
 import { HPChange } from "../core/health"
 import { AblityChangeEffect } from "../StatusEffect"
+import { ItemBuild } from "../AiAgents/ItemBuild"
 
 class PlayerInventory implements PlayerComponent {
 	// player:Player
@@ -41,7 +42,6 @@ class PlayerInventory implements PlayerComponent {
 		this.activeItems = new Map<ITEM, ActiveItem>()
 		this.itemData=new Map<ITEM,ItemData>()
 		this.item = Util.makeArrayOf(0, ItemList.length)
-
 		this.itemSlots = Util.makeArrayOf(-1, player.game.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
 	}
 	onDeath: () => void
@@ -259,7 +259,7 @@ class PlayerInventory implements PlayerComponent {
 			token: this.token,
 			life: this.life,
 			lifeBought: this.lifeBought,
-			recommendeditem: this.player.AiAgent.itemtree.items,
+			recommendeditem: this.player.AiAgent.itemBuild.getRecommendedItems(3),
 			itemLimit: this.player.game.itemLimit,
 			priceMultiplier: priceMultiplier,
 		}
@@ -344,6 +344,9 @@ class PlayerInventory implements PlayerComponent {
 				continue
 			}
 			this.changeOneItem(i, diff)
+
+			if(ItemList[i].itemlevel==3) 
+				this.player.AiAgent.itemBuild.onBuyCoreItem(i)
 		}
 		this.player.ability.flushChange()
 		//	this.item = data.storedata.item
@@ -411,6 +414,26 @@ class PlayerInventory implements PlayerComponent {
 			return false
 		}
 		return true
+	}
+	getItemBuildUtility():Util.AbilityUtilityScorecard{
+		let utility={
+			attack:0,magic:0,defence:0,health:0,myutilRatio:0
+		}
+		for(const item of this.itemSlots){
+			if(item===-1) continue
+			let cat=ItemList[item].category
+			let weight=(ItemList[item].itemlevel**3)/ cat.length
+			for(const c of cat){
+				if(c==="attack") utility.attack+=weight
+				if(c==="magic") utility.magic+=weight
+				if(c==="defence"){
+					utility.defence+=weight
+					utility.health+=weight/1.5
+				} 
+				if(c==="health") utility.health+=weight
+			}
+		}
+		return utility
 	}
 
 	static getItemName(item: ITEM): string {

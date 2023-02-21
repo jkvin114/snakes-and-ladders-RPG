@@ -57,7 +57,7 @@ export default class GameInterface {
 		// $("#kdawindow").hide()
 		// $("#chat_enter").hide()
 		// $("#subwaywindow").css("visibility","hi")
-		
+		$("#prediction-container").hide()
 		$("#deathinfo-btn").html(GAME.chooseLang("Death Information","사망 정보 확인"))
 		$("#dialog").hide()
 		let subwaynames = $(".subway_name").toArray()
@@ -650,6 +650,7 @@ addChatDragEvent() {
 		}
 	}
 	showPrediction(probs,diffs){
+		$("#prediction-container").show()
 		let str=''
 		
 		for(let i=0;i<this.game.playerCount;i++){

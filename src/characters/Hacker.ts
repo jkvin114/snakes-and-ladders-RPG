@@ -254,7 +254,7 @@ class Hacker extends Player {
 					this.startCooltime(s)
 					this.onAfterCopiedSkill()
 				} else if (target instanceof Player) {
-					let stealRatio = Hacker.ULT_ABILITY_STEAL_PERCENT_BASE+ (Hacker.ULT_ABILITY_STEAL_PERCENT / 100) * (this.stacks[target.turn]+1)
+					let stealRatio = (Hacker.ULT_ABILITY_STEAL_PERCENT_BASE+Hacker.ULT_ABILITY_STEAL_PERCENT * this.stacks[target.turn])  / 100
 					let dur=this.duration_list[2]
                     damage = new SkillAttack(Damage.zero(), this.getSkillName(s),s,this)
 						.setOnHit(function (this: Player, source: Player) {

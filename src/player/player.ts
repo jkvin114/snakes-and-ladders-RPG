@@ -37,7 +37,7 @@ import {
 	ARRIVE_SQUARE_RESULT_TYPE,
 	INIT_SKILL_RESULT,
 } from "../data/enum"
-import { clamp, decrement, removeDuplicate, roundToNearest } from "../core/Util"
+import { AbilityUtilityScorecard, clamp, decrement, removeDuplicate, roundToNearest } from "../core/Util"
 
 // if(isMainThread){
 // 	args=require("minimist")(process.argv.slice(2))
@@ -241,6 +241,8 @@ abstract class Player extends Entity {
 	}
 	onGameStart() {
 		this.mapHandler.onGameStart()
+		const util=this.mediator.getOpponentTotalTypeUtility(this)
+		this.AiAgent.applyInitialOpponentUtility(util)
 	}
 	calculateAdditionalDice(amount: number): number {
 		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this), function () {
@@ -919,7 +921,8 @@ abstract class Player extends Entity {
 	goStore(priceMultiplier?: number) {
 		if (!priceMultiplier) priceMultiplier = 1
 		if (this.autoBuy) {
-			this.AiAgent.store()
+			const util=this.mediator.getOpponentTotalTypeUtility(this)
+			this.AiAgent.store(util)
 		} else {
 			this.game.eventEmitter.goStore(this.turn, this.inven.getStoreData(priceMultiplier))
 		}
@@ -1415,6 +1418,19 @@ abstract class Player extends Entity {
 	}
 	getTargetParameters() {}
 
+	getCharacterTypeUtility():AbilityUtilityScorecard{
+
+		let util=this.inven.getItemBuildUtility()
+		let cats=ABILITY[this.champ].category
+		for(let i=0;i<cats.length;i++){
+			let weight=AiAgent.CHAR_TYPE_UTILITY_WEIGHTS[cats.length-1][i]
+			if(cats[i]==="attack") util.attack=weight*(10+util.attack)
+			if(cats[i]==="magic") util.magic=weight*(10+util.magic)
+			if(cats[i]==="defence") util.defence=weight*(10+util.defence)
+			if(cats[i]==="health") util.health=weight*(10+util.health)
+		}
+		return util
+	}
 	/**
 	 * called start of every turn,
 	 * record all player`s current position of this turn
@@ -1446,36 +1462,26 @@ abstract class Player extends Entity {
 		return ind
 	}
 	getCoreItemBuild(): number[] {
-		return this.AiAgent.itemtree.items.slice(0, this.AiAgent.itemtree.level)
+		return this.AiAgent.itemBuild.coreItemBuildRecord
 	}
 	private normNRound(val:number,divide:number){
 		return roundToNearest(val / divide,-3)
 	}
-	private hasE_01(ef:EFFECT){
-		return this.effects.has(ef) ? 1 : 0
+	private hasE_01(...ef:EFFECT[]){
+		for(const e of ef){
+			if(this.effects.has(e)) return 1
+		}
+		return 0
 	}
 	getStateLabel(finish: number): string {
 		return (
 			`${this.champ},${this.normNRound(this.pos , finish) },${this.normNRound(this.HP, 500)},${this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300)},` +
 			`${this.normNRound(this.statistics.stats[STAT.MONEY_EARNED],300)},${this.normNRound(this.kill,5)},${this.normNRound(this.death , 5)},${this.normNRound(this.level , 10)},${
-				this.inven.life>0?1:0
+				(this.inven.life>0 || this.inven.isActiveItemAvailable(ITEM.GUARDIAN_ANGEL))?1:0
 			},${this.hasE_01(EFFECT.SLAVE)},${
-				(this.effects.has(EFFECT.ROOT) || this.effects.has(EFFECT.GROUNGING)) ? 1 : 0
+				this.hasE_01(EFFECT.ROOT,EFFECT.GROUNGING)
 			},${this.hasE_01(EFFECT.BACKDICE)},${this.hasE_01(EFFECT.DOUBLEDICE)},${
 				this.hasE_01(EFFECT.INVISIBILITY)},${this.hasE_01(EFFECT.SHIELD)}`
-		)
-		return `${this.champ},${this.pos},${this.HP / this.MaxHP},${this.inven.money},${this.inven.life},${this.kill},${
-			this.death
-		},`
-		return (
-			`${this.turn},${this.champ},${this.pos},${this.level},${this.MaxHP},${this.HP}` +
-			`,${this.shield},${this.inven.money},${this.inven.life},${this.kill},${this.death},${this.assist},${
-				this.dead ? 1 : 0
-			},` +
-			`${this.thisLevelDeathCount},${this.thisLifeKillCount},${
-				this.basicAttackType === BASICATTACK_TYPE.MELEE ? 0 : 1
-			},` +
-			`${this.ability.getStatusLabel()}${this.effects.getStatusLabel()}`
 		)
 	}
 }

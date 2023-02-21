@@ -1,11 +1,11 @@
 {
-    "train":true,
+    "train":false,
     "random_item":false,
     "random_item_exclude_character":[],
     "random_item_allow_duplicate":false,
     "save_indicator_text":true,
     "save_indicator_json":false,
-    "save_label_csv":false,
+    "save_label_csv":true,
     "focus_character":-1
 
 }

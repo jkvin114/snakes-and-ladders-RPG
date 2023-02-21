@@ -3,20 +3,43 @@ import { EFFECT, ITEM, SKILL } from "../data/enum";
 import { ServerGameEventFormat } from "../data/EventFormat";
 import { Player } from "../player/player";
 import { AiAgent, ItemBuild } from "./AiAgent";
+import { ItemBuildEntry, UtilityCondition } from "./ItemBuild";
 
 class YangyiAgent extends AiAgent{
-    itemtree: ItemBuild
+    itemBuild: ItemBuild
 	player:Yangyi
     constructor(player:Yangyi){
         super(player)
-        this.itemtree = new ItemBuild().setItems([
-			ITEM.EPIC_SWORD,
-			ITEM.ANCIENT_SPEAR,
-			ITEM.FLAIL_OF_JUDGEMENT,
-			ITEM.EPIC_WHIP,
-			ITEM.SWORD_OF_BLOOD,
-			ITEM.WARRIORS_SHIELDSWORD
-		]).setFinal(ITEM.EPIC_SWORD)
+        this.itemBuild = new ItemBuild().setItemEntries(
+			[
+				new ItemBuildEntry(ITEM.EPIC_SWORD),
+				new ItemBuildEntry(ITEM.ANCIENT_SPEAR).setChangeCondition(
+					ITEM.CROSSBOW_OF_PIERCING,
+					UtilityCondition.MoreTankers()
+				),
+				new ItemBuildEntry(ITEM.EPIC_WHIP),
+				new ItemBuildEntry(ITEM.FLAIL_OF_JUDGEMENT),
+				new ItemBuildEntry(ITEM.SWORD_OF_BLOOD).setChangeCondition(
+					ITEM.WARRIORS_SHIELDSWORD,
+					UtilityCondition.IsUnadvantageous()
+				),
+				new ItemBuildEntry(ITEM.GUARDIAN_ANGEL)
+					.setChangeCondition(
+						ITEM.BOOTS_OF_PROTECTION,
+						UtilityCondition.MoreADThanAP(2)
+					)
+					.setSecondChangeCondition(
+						ITEM.BOOTS_OF_ENDURANCE,
+						UtilityCondition.MoreAPThanAD(2)
+					)
+					,new ItemBuildEntry(ITEM.EPIC_WHIP).setChangeCondition(
+						ITEM.ANCIENT_SPEAR,
+						UtilityCondition.MoreTankers()
+					)
+			],
+			new ItemBuildEntry(ITEM.EPIC_SWORD)
+		)
+		
 		this.gameStartMessage= "You all will die under my claw and fire!"
     }
 	nextSkill(): number {

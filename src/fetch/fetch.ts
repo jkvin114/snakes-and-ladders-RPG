@@ -18,10 +18,9 @@ export async function getPrediction(labels:string,playercount:number,map:MAP_TYP
                 resolve(extractNumber(body).split(', ')) 
             }
             else resolve([])
-            console.log(body)
         }
         catch(e){
-            console.error(e)
+            console.error("ERROR while fetching win prediction daa")
            return resolve([])
         }
         return resolve([])
