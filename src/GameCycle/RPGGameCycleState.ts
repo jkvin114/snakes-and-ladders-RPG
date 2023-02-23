@@ -44,6 +44,10 @@ abstract class GameCycleState {
 		console.error("invalid request, id:" + this.id)
 		return new EventResult(false)
 	}
+	onUserClickNextturn():EventResult{
+		console.error("invalid nextturn input, id:" + this.id)
+		return new EventResult(false)
+	}
 	onUserClickSkill(skill: number): ServerGameEventFormat.SkillInit|null {
 		console.error("invalid request, id:" + this.id)
 
@@ -448,6 +452,9 @@ export class WaitingSkill extends GameCycleState {
 	shouldPass() {
 		//	console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)
 		return !this.canUseSkill && !this.canUseBasicAttack
+	}
+	onUserClickNextturn():EventResult{
+		return new EventResult(!this.shouldPass())
 	}
 	onUserClickSkill(skill: number): ServerGameEventFormat.SkillInit {
 		this.skillInit = this.game.onSelectSkill(skill - 1)

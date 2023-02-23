@@ -10,7 +10,7 @@ import { PlayerComponent } from "./PlayerComponent"
 import { ActiveItem, ItemData } from "../core/ActiveItem"
 import { HPChange } from "../core/health"
 import { AblityChangeEffect } from "../StatusEffect"
-import { ItemBuild } from "../AiAgents/ItemBuild"
+import { ItemBuild } from "../core/ItemBuild"
 
 class PlayerInventory implements PlayerComponent {
 	// player:Player
@@ -259,7 +259,7 @@ class PlayerInventory implements PlayerComponent {
 			token: this.token,
 			life: this.life,
 			lifeBought: this.lifeBought,
-			recommendeditem: this.player.AiAgent.itemBuild.getRecommendedItems(3),
+			recommendeditem: this.player.AiAgent.itemBuild.getRecommendedItems(),
 			itemLimit: this.player.game.itemLimit,
 			priceMultiplier: priceMultiplier,
 		}

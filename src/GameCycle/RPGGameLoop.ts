@@ -277,10 +277,8 @@ class GameLoop {
 		//this.setGameCycle(this.state.onUserCompletePendingAction(info))
 	}
 	user_clickNextturn(crypt_turn: string){
-		if(this.state.id===GAME_CYCLE.SKILL.WAITING_SKILL && this.state.crypt_turn===crypt_turn)
+		if(this.state.onUserClickNextturn() && this.state.crypt_turn === crypt_turn)
 			this.startNextTurn(false)
-		else
-			console.error("invalid nextturn input")
 	}
 	user_clickSkill(s: number, crypt_turn: string) {
 		this.restartResetTimeout()

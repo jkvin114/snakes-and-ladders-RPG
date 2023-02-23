@@ -81,7 +81,7 @@
     height: 25px;
     vertical-align: middle;
     padding: 5px;
-  
+    width: 25px;
   }
   .navbtn > a{
     padding-right: 3px;
@@ -106,6 +106,7 @@
     /* border-radius: 4px; */
     /* height: 30px; */
     height: 23px;
+    width:23px;
     padding: 5px;
     border-radius: 50%;
   }

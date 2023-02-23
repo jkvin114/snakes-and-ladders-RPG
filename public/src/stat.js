@@ -48,6 +48,7 @@ function requestStatAfterGame(params) {
 	setState(STATE_ONEGAME)
 	console.log(params)
 	$("#main").css("grid-template-columns", "auto")
+	$("#overlay").addClass("visible")
 	$.get("/stat/result?" + params).done((data) => showStat(data))
 }
 /**
@@ -56,6 +57,7 @@ function requestStatAfterGame(params) {
  * @param {*} count 
  */
 function requestSimulationSummary(start, count) {
+	$("#overlay").addClass("visible")
 	$.get("/stat/simulation/summary?start=" + start + "&count=" + count).done((data) =>
 		onReceiveSimulationSummary(data)
 	)
@@ -66,6 +68,7 @@ function requestSimulationSummary(start, count) {
  * @param {*} count 
  */
 function requestGames(start, count) {
+	$("#overlay").addClass("visible")
 	$.get("/stat/game?start=" + start + "&count=" + count).done((data) => onReceiveGames(data))
 }
 // function requestOneSimulationList(id) {
@@ -153,7 +156,7 @@ function onReceiveSimulationSummary(data) {
 					str +=
 						'<div class="summary_char_icon ' +
 						getlockedTeam(c, teamlock) +
-						'"><img src="' +
+						'"><img alt="char" src="' +
 						getCharImgUrl(c) +
 						'"></div>  '
 				}
@@ -164,7 +167,7 @@ function onReceiveSimulationSummary(data) {
 					str +=
 						'<div class="summary_char_icon locked ' +
 						getlockedTeam(c, teamlock) +
-						'"><img src="' +
+						'"><img alt="char" src="' +
 						getCharImgUrl(c) +
 						'"></div>  '
 				}
@@ -181,16 +184,16 @@ function onReceiveSimulationSummary(data) {
 			if (getSetting(s, "isTeam")) {
 				
 				if (getSetting(s, "divideTeamEqually")) {
-					str += '<img src="res/img/ui/equal.png"  title="Divided team equally">'
+					str += '<img alt="equal team" src="res/img/ui/equal.png"  title="Divided team equally">'
 				}
 				else{
-					str += '<img src="res/img/ui/team2.png"  title="Team Game">'
+					str += '<img alt="team" src="res/img/ui/team2.png"  title="Team Game">'
 				}
 			}
 			if (getSetting(s, "allowMirrorMatch")) {
-				str += '<img src="res/img/ui/mirror.png"  title="Allowed mirror match" class="invert">'
+				str += '<img alt="mirror" src="res/img/ui/mirror.png"  title="Allowed mirror match" class="invert">'
 			}
-			str += '</div><div><img src="res/img/svg/num.svg"  class="invert" title="Game count">:' + s.count + '  <img src="res/img/svg/users.svg" class="invert"  title="Player count per game">:'
+			str += '</div><div><img alt="count" src="res/img/svg/num.svg"  class="invert" title="Game count">:' + s.count + '  <img  alt="players" src="res/img/svg/users.svg" class="invert"  title="Player count per game">:'
 			if (getSetting(s, "randomizePlayerNumber")) {
 				str += "?"
 			} else {
@@ -213,6 +216,7 @@ function onReceiveSimulationSummary(data) {
 	$(".summary_to_detail").click(function () {
 		requestStatById($(this).attr("value"))
 	})
+	$("#overlay").removeClass("visible")
 }
 
 /**
@@ -223,7 +227,8 @@ function onReceiveSimulationSummary(data) {
  */
 function requestStatById(id) {
 	let xhr = $.get("/stat/simulation?statid=" + id)
-
+	
+	$("#overlay").addClass("visible")
 	xhr.done((data) => {
 		// window.location.href = "#gamelist"
 	//	location.href="#gamelist_wrapper"
@@ -724,12 +729,12 @@ function setItemList(turn, item,isZeroIndex) {
 	for (let it of item) {
 		i+=1
 		if (it === -1) {
-			text += "<div class='toast_itemimg'><img src='res/img/store/emptyslot.png'> </div>"
+			text += "<div class='toast_itemimg'><img alt='empty' src='res/img/store/emptyslot.png'> </div>"
 		} else {
 			text +=
 				"<div class='toast_itemimg item_tooltip' value=" +
 				it +
-				"><img src='res/img/store/items.png' style='margin-left: " +
+				"><img alt='item' src='res/img/store/items.png' style='margin-left: " +
 				-1 * it * 100 +
 				"px'; > </div>"
 		}
@@ -832,14 +837,14 @@ function drawKillRecord(data) {
 			count+=1
 			str+="<div class='killframewrapper'>"
 		}
-		str += "<div class='killframe'><div class='charframe'><img src='" + getChampImgofTurn(data, k.killer) + "'>"
+		str += "<div class='killframe'><div class='charframe'><img alt='char' src='" + getChampImgofTurn(data, k.killer) + "'>"
 		if (k.killer >= 0) {
 			str += "<b class='charframetxt'>" + (k.killer + 1) + "P</b>"
 		} else {
 			str += "<b class='charframetxt'>EX</b>"
 		}
 		str +=
-			"</div><img src='res/img/ui/basicattack.png'><div class='charframe2'><img src='" +
+			"</div><img alt='char' src='res/img/ui/basicattack.png'><div class='charframe2'><img src='" +
 			getChampImgofTurn(data, k.dead) +
 			"'><b class='charframetxt'>" +
 			(k.dead + 1) +
@@ -1102,7 +1107,7 @@ function showGameList(data){
 				else if (statData[i].isTeam && p.team === false) teamstr = "blue"
 				string +=
 					'<div class="character"><div class="charimg list_charimg '+
-					'"><img src="' +
+					'"><img alt="char" src="' +
 					getCharImgUrl(p.champ_id) +
 					'"></div><a class="charkda '+teamstr+'">' +
 					p.kda[0] +
@@ -1118,11 +1123,11 @@ function showGameList(data){
 		}
 		string += ""
 		if(statData[i].map_data!=null){
-			string += '<div><div class="gameinfo"><img class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '"></div>'
+			string += '<div><div class="gameinfo"><img alt="map" class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '"></div>'
 		}
-		string += '<div class="gameinfo"><img src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div>'
+		string += '<div class="gameinfo"><img alt="turns" src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div>'
 		if(statData[i].replay!=null)
-		string += '<div class="gameinfo"><img src="res/img/svg/play.svg" class="icon" title="Replay avaliable"></div>'
+		string += '<div class="gameinfo"><img alt="replay" src="res/img/svg/play.svg" class="icon" title="Replay avaliable"></div>'
 
 		string+="</div></div>"
 		
@@ -1162,7 +1167,7 @@ function showGameList(data){
 		$("#summary").html(string)
 		onGameListShow()
 	}
-
+	$("#overlay").removeClass("visible")
 }
 
 function showStat(data) {
@@ -1209,7 +1214,7 @@ function drawSmallGraph(data,graphId){
 		str+=`
 		<div class="game-detail-graph-oneplayer">
 			<div class="game-detail-graph-name">
-				<b>${player.turn+1}P</b><img src="${getCharImgUrl(player.champ)}">
+				<b>${player.turn+1}P</b><img alt="char" src="${getCharImgUrl(player.champ)}">
 			</div>
 			<div class="game-detail-graph-value">
 				<div class="game-detail-graph-amount" id='${id}'"></div>
@@ -1232,7 +1237,6 @@ function drawSmallGraph(data,graphId){
  */
 function showonestat(n) {
 	$("#holder").hide()
-
 	showSingleStat(statData[n])
 }
 
@@ -1258,6 +1262,8 @@ function multiKillText(count) {
  * @param {*} data 
  */
 function showSingleStat(data) {
+	
+	$("#overlay").addClass("visible")
 	onGameDetailShow()
 	let damagetakenC_graph = []
 	let damagetakenO_graph = []
@@ -1400,7 +1406,7 @@ function showSingleStat(data) {
 						itemstr +=
 							"<div class='toast_itemimg_itembuild item_tooltip' value=" +
 							item.item_id +
-							"><img src='res/img/store/items.png' style='margin-left: " +
+							"><img alt='item' src='res/img/store/items.png' style='margin-left: " +
 							-1 * item.item_id * 100 +
 							"px'; > </div>"
 					}
@@ -1420,7 +1426,7 @@ function showSingleStat(data) {
 			let str=`
 			<div class="player-data-container">
 				<div class="player-data-header"> 
-					<img src="${getCharImgUrl(p.champ_id)}">
+					<img alt='char' src="${getCharImgUrl(p.champ_id)}">
 					<b>${p.name}</b>
 					${teamstr}
 				</div>
@@ -1571,7 +1577,7 @@ function showSingleStat(data) {
 			else $(ranks[i]).html("4<sup>th</sup>")
 		}
 
-		charstr += '"><img src="' + getCharImgUrl(p.champ_id) + '"></div>'
+		charstr += '"><img alt="char" src="' + getCharImgUrl(p.champ_id) + '"></div>'
 
 		$(dataList[k + 1]).html(charstr)
 		$(dataList[k + 2]).html(p.name)
@@ -2092,5 +2098,6 @@ function showSingleStat(data) {
 	// location.href = "#game_detail_content"
 	$("#game_detail").show()
 	//document.getElementById("game_detail").scrollIntoView();
-
+	setTimeout(()=>$("#overlay").removeClass("visible"),400)
+	
 }

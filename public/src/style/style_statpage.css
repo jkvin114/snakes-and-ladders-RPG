@@ -1263,7 +1263,7 @@ transform: scale(1.1);
     text-align: center;
     margin: 5px;
     display: grid;
-    grid-template-columns: 0.9fr 0.9fr 1.2fr;
+    grid-template-columns: 1.1fr 0.7fr 1.2fr;
     height: 55px;
     width: 240px;
     cursor: pointer;
@@ -1556,4 +1556,25 @@ transform: scale(1.1);
     background: gray;
       /* width: 10px; */
       /* height: 10px; */
+  }
+  #overlay{
+    position: absolute;
+    top:0;
+    left:0;
+    width: 100%;
+    overflow: hidden;
+    height:0;
+    z-index: 9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  #overlay.visible{
+    height:100%;
+  }
+  #overlay img{
+    z-index: 10;
+    width: 200px;
+    height: 200px;
   }

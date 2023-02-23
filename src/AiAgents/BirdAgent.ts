@@ -2,7 +2,7 @@ import { Bird } from "../characters/Bird"
 import { AbilityUtilityScorecard, randInt, randomBoolean } from "../core/Util"
 import { ITEM, SKILL } from "../data/enum"
 import { AiAgent, ItemBuild } from "./AiAgent"
-import { ItemBuildEntry, UtilityCondition } from "./ItemBuild"
+import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild"
 
 class BirdAgent extends AiAgent {
 	itemBuild: ItemBuild
@@ -14,36 +14,36 @@ class BirdAgent extends AiAgent {
 	}
 	applyInitialOpponentUtility(ut: AbilityUtilityScorecard): void {
 		let entries = [
-			new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL),
-			new ItemBuildEntry(ITEM.EPIC_WHIP),
-			new ItemBuildEntry(ITEM.ANCIENT_SPEAR),
-			new ItemBuildEntry(ITEM.STAFF_OF_JUDGEMENT).setChangeCondition(
+			new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL),
+			new ItemBuildStage(ITEM.EPIC_WHIP),
+			new ItemBuildStage(ITEM.ANCIENT_SPEAR),
+			new ItemBuildStage(ITEM.STAFF_OF_JUDGEMENT).setChangeCondition(
 				ITEM.CROSSBOW_OF_PIERCING,
 				UtilityCondition.MoreTankers()
 				),
-				new ItemBuildEntry(ITEM.TIME_WARP_POTION),
-			new ItemBuildEntry(ITEM.GUARDIAN_ANGEL)
+				new ItemBuildStage(ITEM.TIME_WARP_POTION),
+			new ItemBuildStage(ITEM.GUARDIAN_ANGEL)
 			.setChangeCondition(
 				ITEM.BOOTS_OF_PROTECTION,UtilityCondition.MoreADThanAP(2)
 			).setSecondChangeCondition(
 				ITEM.BOOTS_OF_ENDURANCE,
 				UtilityCondition.MoreADThanAP(2)
 			),
-			new ItemBuildEntry(ITEM.INVISIBILITY_CLOAK).setChangeCondition(
+			new ItemBuildStage(ITEM.INVISIBILITY_CLOAK).setChangeCondition(
 				ITEM.WARRIORS_SHIELDSWORD,UtilityCondition.MoreADThanAP(1.5)
 			)
 		]
 
 		//ap build
 		if ((ut.defence + ut.health) ===0 && randomBoolean()) {
-			entries[1]=new ItemBuildEntry(ITEM.CARD_OF_DECEPTION)
+			entries[1]=new ItemBuildStage(ITEM.CARD_OF_DECEPTION)
 			let temp=entries[4]
 			entries[4]=entries[2]
 			entries[2]=temp
 		}
 		
 		this.itemBuild
-			.setItemEntries(entries, new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL))
+			.setItemStages(entries, new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL))
 			.addAdditionalFinalItem(ITEM.EPIC_WHIP)
 		super.applyInitialOpponentUtility(ut)
 	}

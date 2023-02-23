@@ -51,6 +51,7 @@ export class ReplayGame extends Game {
 			this.speedIndex=Math.min(SPEEDS.length-1,this.speedIndex+1)
 			this.updateSpeed()
 		})
+		$("#skillinfobtn").hide()
 		super.onCreate()
 	}
 	async requestReplay() {
@@ -135,6 +136,9 @@ export class ReplayGame extends Game {
 				if(event.action==="moveByDice") await sleep(this.modifyDelay(500))
 				let delay = this.playEvent(event)
 				await sleep(this.modifyDelay(delay))
+				if(i===this.replayData.events.length-1){
+					this.android_toast("Game Over")
+				}
 			} catch (e) {
 				console.error(e)
 				continue

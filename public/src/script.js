@@ -49,6 +49,8 @@ export class Game {
 			  $(this).data("on",false)
 			}
 		  })
+		 $("#prediction-container").hide()
+
 	}
 
 	onDisconnect() {

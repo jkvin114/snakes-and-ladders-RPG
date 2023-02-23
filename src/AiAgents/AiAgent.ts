@@ -10,7 +10,7 @@ import { EntityFilter } from "../entity/EntityFilter"
 import SETTINGS = require("./../../res/globalsettings.json")
 import TRAIN_SETTINGS = require("./../../res/train_setting.json")
 import { SkillTargetSelector } from "../core/skill"
-import { ItemBuild, ItemBuildEntry } from "./ItemBuild"
+import { ItemBuild, ItemBuildStage } from "../core/ItemBuild"
 import { chooseRandom } from "../Marble/util"
 const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)
 const ITEMS=ItemList
@@ -39,7 +39,7 @@ abstract class AiAgent {
 
 			let randTree=shuffle(CORE_ITEMS)
 
-			this.itemBuild.setItemEntries(randTree.map((item)=>new ItemBuildEntry(item)),new ItemBuildEntry(chooseRandom(CORE_ITEMS))) 
+			this.itemBuild.setItemStages(randTree.map((item)=>new ItemBuildStage(item)),new ItemBuildStage(chooseRandom(CORE_ITEMS))) 
 		}
 	}
 	simulationAiSkill(){
@@ -310,14 +310,8 @@ class DefaultAgent extends AiAgent {
 	constructor(player: Player) {
 		super(player)
 		this.itemBuild = new ItemBuild()
-		.setItemEntries([
-			new ItemBuildEntry(ITEM.EPIC_SWORD),
-			new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL),
-			new ItemBuildEntry(ITEM.EPIC_WHIP),
-			new ItemBuildEntry(ITEM.TIME_WARP_POTION),
-			new ItemBuildEntry(ITEM.EPIC_FRUIT),
-			new ItemBuildEntry(ITEM.BOOTS_OF_HASTE),
-		],new ItemBuildEntry(ITEM.EPIC_SWORD))
+		.setItemStages([
+		],new ItemBuildStage(ITEM.EPIC_SWORD))
 	}
 	getMessageOnGameStart(): string {
 		return "Hello"

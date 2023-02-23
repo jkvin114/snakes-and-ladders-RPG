@@ -264,7 +264,7 @@ class Game {
 				name: p.name,
 				champ: p.champ,
 				champ_name: p.champ_name,
-				recommendedItem: p.AiAgent.itemBuild.items,
+				recommendedItem: p.AiAgent.itemBuild.getRecommendedItems(),
 				skillScale:p.getSkillScale()
 			})
 		}

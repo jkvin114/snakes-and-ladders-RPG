@@ -372,7 +372,7 @@ function connectSocket(){
 	socket.on("server:simulation_progress", function (msg) {
 		$("#progress").css("width",(400*msg)+"px")
 		$("#progresstext").html(Math.floor(msg*100)+"%")
-		console.log("simulation_progress"+msg)
+		//console.log("simulation_progress"+msg)
 	})
 	socket.on("server:simulationover", function (msg) {
 		$("#progress").css("width","400px")

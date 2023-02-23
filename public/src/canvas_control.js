@@ -2425,7 +2425,7 @@ export class Scene extends Board{
 		// if (type === "noeffect") return
 
 		//hp bar on the board
-		if (change < -10 || change >= 50) {
+		if (change <= -20) {
 			let pos1 = this.getPlayerPos(target)
 			let health = (hp / maxhp) * 200
 			let lost = -200 * (change / maxhp)

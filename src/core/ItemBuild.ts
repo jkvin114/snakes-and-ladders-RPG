@@ -1,4 +1,4 @@
-import {  AbilityUtilityScorecard } from "../core/Util"
+import {  AbilityUtilityScorecard } from "./Util"
 import { AbilityUtilityType, ITEM } from "../data/enum"
 
 interface UtilityConditionFunction{
@@ -17,7 +17,7 @@ export namespace UtilityCondition{
 	export const MoreAPOverall =(other_mul:number=1)=>((util: AbilityUtilityScorecard)=> (util.defence + util.health + util.attack) * other_mul < util.magic)
 
 }
-export class ItemBuildEntry{
+export class ItemBuildStage{
 	readonly baseItem:ITEM
 	item:ITEM
 	complete:boolean
@@ -63,51 +63,34 @@ export class ItemBuildEntry{
 
 export class ItemBuild{
 	private coreItemCount: number
-	items: ITEM[]
-	private itemEntries:ItemBuildEntry[]
-	private finalEntry:ItemBuildEntry
-	final: ITEM
-	private currentBuilding:ItemBuildEntry|null
+	private itemStages:ItemBuildStage[]
+	private finalEntry:ItemBuildStage
+	private currentBuilding:ItemBuildStage|null
 	private opponentUtility: AbilityUtilityScorecard
 	private additionalFinalItems:Set<ITEM>
 	coreItemBuildRecord:ITEM[]
 	constructor(){
 		this.coreItemCount=0
-		this.items=[]
-		this.final=0
 		this.currentBuilding=null
 		this.additionalFinalItems=new Set<ITEM>([
 			ITEM.BOOTS_OF_HASTE,ITEM.GUARDIAN_ANGEL
 		])
-		this.finalEntry=new ItemBuildEntry(ITEM.EPIC_SWORD)
-		this.itemEntries=[]
+		this.finalEntry=new ItemBuildStage(ITEM.EPIC_SWORD)
+		this.itemStages=[]
 		this.coreItemBuildRecord=[]
 	}
 	isFull(itemLimit:number){
 		return this.coreItemCount >= itemLimit
 	}
-	setItemEntries(entries:ItemBuildEntry[],final:ItemBuildEntry){
-		this.itemEntries=entries
+	setItemStages(entries:ItemBuildStage[],final:ItemBuildStage){
+		this.itemStages=entries
 		this.finalEntry=final
-		return this
-	}
-	setItems(items: ITEM[]){
-		this.items=items
-		return this
-	}
-	setFinal(final:ITEM){
-		this.final=final
 		return this
 	}
 	addAdditionalFinalItem(item:ITEM){
 		this.additionalFinalItems.add(item)
 		return this
 	}
-	// onBuyCoreItem(){
-	// 	this.coreItemCount+=1
-	// 	this.currentBuilding.complete=true
-	// 	this.currentBuilding=null
-	// }
 
 	/**
 	 * 1. if there are more item entries left than count:
@@ -119,12 +102,14 @@ export class ItemBuild{
 	 * @param count 
 	 * @returns 
 	 */
-	getRecommendedItems(count:number):ITEM[]{
-		const matchingItems=this.itemEntries.filter((val)=>!val.complete && !val.building).map((entry)=>entry.item)
-		
-		if(matchingItems.length===0) return [this.finalEntry.item,...this.additionalFinalItems]
-		else if(matchingItems.length < count) return [...matchingItems,this.finalEntry.item]
-		else return matchingItems.slice(0,count)
+	getRecommendedItems():ITEM[]{
+		const matchingItems=this.itemStages.filter((val)=>!val.complete).map((entry)=>entry.item)
+		let items= [...new Set<ITEM>([...matchingItems,...this.additionalFinalItems])]
+		items.push(this.finalEntry.item)
+		return items
+		//if(matchingItems.length===0) return [this.finalEntry.item,...this.additionalFinalItems]
+		//else if(matchingItems.length < count) return [...matchingItems,this.finalEntry.item]
+		//else return matchingItems.slice(0,count)
 	}
 	onBuyCoreItem(item:ITEM){
 
@@ -139,7 +124,7 @@ export class ItemBuild{
 			return
 		}
 
-		const matchingItems=this.itemEntries.filter((val)=>!val.complete && !val.building && val.item==item)
+		const matchingItems=this.itemStages.filter((val)=>!val.complete && !val.building && val.item==item)
 
 		//if buying the item is currently not planned
 		if(matchingItems.length===0) return
@@ -148,11 +133,11 @@ export class ItemBuild{
 		matchingItems[0].complete=true
 		this.coreItemCount+=1
 	}
-	nextIncompleteItemEntry():ItemBuildEntry{
-		if (this.coreItemCount >= this.itemEntries.length) {
+	nextIncompleteItemEntry():ItemBuildStage{
+		if (this.coreItemCount >= this.itemStages.length) {
 			return this.finalEntry
 		}
-		for(const item of this.itemEntries){
+		for(const item of this.itemStages){
 			if(!item.complete){
 				return item
 			}
@@ -176,8 +161,7 @@ export class ItemBuild{
 
 	setOpponentUtility(opponentUtility: AbilityUtilityScorecard) {
 		this.opponentUtility=opponentUtility
-		for(const item of this.itemEntries){
-			console.log(item)
+		for(const item of this.itemStages){
 			item.applyUtility(opponentUtility)
 		}
 		this.finalEntry.applyUtility(opponentUtility)

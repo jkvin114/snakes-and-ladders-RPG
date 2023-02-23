@@ -2,9 +2,9 @@ const EMPTY = -1
 import { GAME } from "./GameMain.js"
 export class StoreStatus {
 	constructor() {
-		this.itemList
-		this.sortedItemList
-		this.item = []
+		this.itemList  //
+		this.sortedItemList  //Map
+		this.item = []  
 		this.money = 0
 		this.token = 2
 		this.life = 0
@@ -12,7 +12,7 @@ export class StoreStatus {
 		this.recommendeditem = []
 		this.itemLimit = 6
 		this.priceMultiplier = 1
-		this.itemSlots = []
+		this.itemSlots = []//int[] (item slots)
 		this.itemPrices = [] //아이템 현재가 저장용
 		this.itemAvaliablity = [] //아이템 구매가능여부 저장용
 	}
@@ -426,11 +426,7 @@ export class StoreInterface {
 		}
 	}
 	initStoreHome() {
-		let str=''
-		for (let i of this.storeStatus.recommendeditem) {
-			str+=this.getItemSummaryStr(i)
-		}
-		$(".recommendeditem").html(str)
+		this.setRecommendedItem()
 		
 		$(".cannotbuyitem img").css({ filter: " brightness(0.5)" })
 		let _this = this
@@ -440,14 +436,28 @@ export class StoreInterface {
 		})
 	}
 
+	setRecommendedItem(){
+		let str=''
+		let count=0
+		for (let i=0;i<this.storeStatus.recommendeditem.length-1;++i) {
+			let item=this.storeStatus.recommendeditem[i]
+			if(this.storeStatus.itemSlots.includes(item)) continue
+
+			str+=this.getItemSummaryStr(item)
+			count++
+			if(count>=4) break
+		}
+
+		//add final item
+		if(count<4 && this.storeStatus.recommendeditem.length>0){
+			str+=this.getItemSummaryStr(this.storeStatus.recommendeditem[this.storeStatus.recommendeditem.length-1])
+		}
+		$(".recommendeditem").html(str)
+	}
 	updateStoreHome() {
 		//if (!this.storeInstance.enabled) return
 
-		let str=''
-		for (let i of this.storeStatus.recommendeditem) {
-			str+=this.getItemSummaryStr(i)
-		}
-		$(".recommendeditem").html(str)
+		this.setRecommendedItem()
 
 		if (GAME.scene.Map.mapname === "casino") {
 			$(".store_token_summary b").html(this.storeInstance.tokenprice + "$")

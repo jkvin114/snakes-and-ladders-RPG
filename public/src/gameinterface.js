@@ -57,7 +57,6 @@ export default class GameInterface {
 		// $("#kdawindow").hide()
 		// $("#chat_enter").hide()
 		// $("#subwaywindow").css("visibility","hi")
-		$("#prediction-container").hide()
 		$("#deathinfo-btn").html(GAME.chooseLang("Death Information","사망 정보 확인"))
 		$("#dialog").hide()
 		let subwaynames = $(".subway_name").toArray()
@@ -76,7 +75,7 @@ export default class GameInterface {
 		)
 		
 
-		$(".nextturnbtn").click(() => {
+		$(".nextturnbtn").click(function(){
 			if($(this).hasClass("unavaliable")) return
 			//if(GAME.ui.nextTurnBtnShown) 
 			GAME.onNextTurn()}

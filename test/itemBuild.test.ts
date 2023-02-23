@@ -1,35 +1,35 @@
-import { ItemBuild, ItemBuildEntry } from "../src/AiAgents/ItemBuild"
+import { ItemBuild, ItemBuildStage } from "../src/core/ItemBuild"
 import { AbilityUtilityScorecard } from "../src/core/Util"
 import { ITEM } from "../src/data/enum"
 
 describe("itembuild", () => {
 
     test("utility", () => {
-        let itemBuild = new ItemBuild().setItemEntries(
+        let itemBuild = new ItemBuild().setItemStages(
 			[
-				new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_SHIELD).setChangeCondition(
 					ITEM.EPIC_ARMOR,
 					(util: AbilityUtilityScorecard) => util.magic > util.attack * 2
 				),
-				new ItemBuildEntry(ITEM.EPIC_ARMOR).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_ARMOR).setChangeCondition(
 					ITEM.EPIC_SHIELD,
 					(util: AbilityUtilityScorecard) => util.attack > util.magic * 2
 				),
-				new ItemBuildEntry(ITEM.EPIC_FRUIT).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_FRUIT).setChangeCondition(
 					ITEM.POWER_OF_MOTHER_NATURE,
 					(util: AbilityUtilityScorecard) => util.magic > util.attack
 				),
-				new ItemBuildEntry(ITEM.EPIC_FRUIT).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_FRUIT).setChangeCondition(
 					ITEM.FULL_DIAMOND_ARMOR,
 					(util: AbilityUtilityScorecard) => util.magic <= util.attack
 				),
-				new ItemBuildEntry(ITEM.GUARDIAN_ANGEL),
-				new ItemBuildEntry(ITEM.BOOTS_OF_ENDURANCE).setChangeCondition(
+				new ItemBuildStage(ITEM.GUARDIAN_ANGEL),
+				new ItemBuildStage(ITEM.BOOTS_OF_ENDURANCE).setChangeCondition(
 					ITEM.BOOTS_OF_PROTECTION,
 					(util: AbilityUtilityScorecard) => util.magic < util.attack
 				),
 			],
-			new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
+			new ItemBuildStage(ITEM.EPIC_SHIELD).setChangeCondition(
 				ITEM.EPIC_ARMOR,
 				(util: AbilityUtilityScorecard) => util.magic > util.attack
 			)
@@ -58,31 +58,31 @@ describe("itembuild", () => {
 	})
 
     test("final recommended items", () => {
-        let itemBuild = new ItemBuild().setItemEntries(
+        let itemBuild = new ItemBuild().setItemStages(
 			[
-				new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_SHIELD).setChangeCondition(
 					ITEM.EPIC_ARMOR,
 					(util: AbilityUtilityScorecard) => util.magic > util.attack * 2
 				),
-				new ItemBuildEntry(ITEM.EPIC_ARMOR).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_ARMOR).setChangeCondition(
 					ITEM.EPIC_SHIELD,
 					(util: AbilityUtilityScorecard) => util.attack > util.magic * 2
 				),
-				new ItemBuildEntry(ITEM.EPIC_FRUIT).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_FRUIT).setChangeCondition(
 					ITEM.POWER_OF_MOTHER_NATURE,
 					(util: AbilityUtilityScorecard) => util.magic > util.attack
 				),
-				new ItemBuildEntry(ITEM.EPIC_FRUIT).setChangeCondition(
+				new ItemBuildStage(ITEM.EPIC_FRUIT).setChangeCondition(
 					ITEM.FULL_DIAMOND_ARMOR,
 					(util: AbilityUtilityScorecard) => util.magic <= util.attack
 				),
-				new ItemBuildEntry(ITEM.GUARDIAN_ANGEL),
-				new ItemBuildEntry(ITEM.BOOTS_OF_ENDURANCE).setChangeCondition(
+				new ItemBuildStage(ITEM.GUARDIAN_ANGEL),
+				new ItemBuildStage(ITEM.BOOTS_OF_ENDURANCE).setChangeCondition(
 					ITEM.BOOTS_OF_PROTECTION,
 					(util: AbilityUtilityScorecard) => util.magic < util.attack
 				),
 			],
-			new ItemBuildEntry(ITEM.EPIC_SHIELD).setChangeCondition(
+			new ItemBuildStage(ITEM.EPIC_SHIELD).setChangeCondition(
 				ITEM.EPIC_ARMOR,
 				(util: AbilityUtilityScorecard) => util.magic > util.attack
 			)

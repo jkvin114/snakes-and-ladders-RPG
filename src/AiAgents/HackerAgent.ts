@@ -2,7 +2,7 @@ import { Hacker } from "../characters/Hacker";
 import { AbilityUtilityScorecard } from "../core/Util";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
-import { ItemBuildEntry, UtilityCondition } from "./ItemBuild";
+import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
 
 class HackerAgent extends AiAgent{
     itemBuild: ItemBuild
@@ -15,15 +15,15 @@ class HackerAgent extends AiAgent{
 	applyInitialOpponentUtility(ut: AbilityUtilityScorecard): void {
 
 		let entries = [
-			new ItemBuildEntry(ITEM.EPIC_SWORD),
-			new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL),
-			new ItemBuildEntry(ITEM.ANCIENT_SPEAR),
-			new ItemBuildEntry(ITEM.EPIC_WHIP),
-			new ItemBuildEntry(ITEM.FLAIL_OF_JUDGEMENT).setChangeCondition(
+			new ItemBuildStage(ITEM.EPIC_SWORD),
+			new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL),
+			new ItemBuildStage(ITEM.ANCIENT_SPEAR),
+			new ItemBuildStage(ITEM.EPIC_WHIP),
+			new ItemBuildStage(ITEM.FLAIL_OF_JUDGEMENT).setChangeCondition(
 				ITEM.CROSSBOW_OF_PIERCING,
 				UtilityCondition.MoreTankers()
 			).setSecondChangeCondition(ITEM.STAFF_OF_JUDGEMENT,UtilityCondition.MoreAPThanAD(1.5)),
-			new ItemBuildEntry(ITEM.GUARDIAN_ANGEL)
+			new ItemBuildStage(ITEM.GUARDIAN_ANGEL)
 			.setChangeCondition(
 				ITEM.BOOTS_OF_PROTECTION,
 				UtilityCondition.MoreADThanAP(2)
@@ -32,20 +32,18 @@ class HackerAgent extends AiAgent{
 				UtilityCondition.MoreAPThanAD(2)
 			)
 		]
-
+		let final=new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL)
 		//attack focus
 		if (UtilityCondition.MoreADOverall(1.5)(ut)) {
-			entries[1]=new ItemBuildEntry(ITEM.EPIC_SWORD)
+			entries[1]=new ItemBuildStage(ITEM.EPIC_SWORD)
+			final=new ItemBuildStage(ITEM.EPIC_SWORD)
 		}//magic focus
 		else if (UtilityCondition.MoreAPOverall(1.5)(ut)) {
-			entries[0]=new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL)
-			entries[3]=new ItemBuildEntry(ITEM.TIME_WARP_POTION)
+			entries[0]=new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL)
+			entries[3]=new ItemBuildStage(ITEM.TIME_WARP_POTION)
 		}
 
-		this.itemBuild.setItemEntries(entries,new ItemBuildEntry(ITEM.EPIC_CRYSTAL_BALL).setChangeCondition(
-			ITEM.EPIC_SWORD,
-			UtilityCondition.MoreADThanAP(1.5)
-		))
+		this.itemBuild.setItemStages(entries,final)
 		super.applyInitialOpponentUtility(ut)
 	}
 
