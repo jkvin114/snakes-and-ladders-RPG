@@ -10,6 +10,13 @@ function golink(link){
   window.location.href=link
 }
 $("document").ready(async function(){
+
+    let query=new URLSearchParams(window.location.search)
+    if(query.get("top500movies")==="true"){
+      window.location.port=3000
+      return
+    } 
+
     try{
 
       let response=await axios.post('/room/home')
