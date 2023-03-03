@@ -64,7 +64,8 @@ class PlayerInventory implements PlayerComponent {
 		if (this.haveItem(ITEM.FLAIL_OF_JUDGEMENT) && this.itemData.has(ITEM.FLAIL_OF_JUDGEMENT)) {
 			this.itemData.get(ITEM.FLAIL_OF_JUDGEMENT)?.addDataValue("charge", distance)
 
-			let charge = this.itemData.get(ITEM.FLAIL_OF_JUDGEMENT).getDataValue("charge")
+			let charge = this.itemData.get(ITEM.FLAIL_OF_JUDGEMENT)?.getDataValue("charge")
+			if(!charge) return
 			let range=Math.floor(charge / 6)
 			this.player.effects.applySpecial(new AblityChangeEffect(ENUM.EFFECT.ITEM_FLAIL_OF_JUDGEMENT_RANGE,4,
 				new Map().set("attackRange",range)))
@@ -76,12 +77,14 @@ class PlayerInventory implements PlayerComponent {
 		}
 		if (this.haveItem(ITEM.STAFF_OF_JUDGEMENT) && this.itemData.has(ITEM.STAFF_OF_JUDGEMENT)) {
 			this.itemData.get(ITEM.STAFF_OF_JUDGEMENT)?.addDataValue("charge", distance)
-			let charge = this.itemData.get(ITEM.STAFF_OF_JUDGEMENT).getDataValue("charge")
+			let charge = this.itemData.get(ITEM.STAFF_OF_JUDGEMENT)?.getDataValue("charge")
+			if(!charge) return
 			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_STAFF_OF_JUDGEMENT, [charge, charge * 10])
 		}
 		if (this.haveItem(ITEM.DAGGER) && this.itemData.has(ITEM.DAGGER)) {
 			this.itemData.get(ITEM.DAGGER)?.addDataValue("charge", distance)
-			let charge = this.itemData.get(ITEM.DAGGER).getDataValue("charge")
+			let charge = this.itemData.get(ITEM.DAGGER)?.getDataValue("charge")
+			if(!charge) return
 			this.player.effects.updateSpecialEffectData(ENUM.EFFECT.ITEM_DAGGER, [charge, charge * 3])
 		}
 	}
@@ -186,7 +189,7 @@ class PlayerInventory implements PlayerComponent {
 	isActiveItemAvailable(item_id: ITEM) {
 		//console.log(this.item + "avaliable" + this.activeItems)
 		if (!this.haveItem(item_id)) return false
-		return this.activeItems.has(item_id) && this.activeItems.get(item_id).cooltime === 0
+		return this.activeItems.has(item_id) && this.activeItems.get(item_id)?.cooltime === 0
 	}
 
 	/**
@@ -244,13 +247,13 @@ class PlayerInventory implements PlayerComponent {
 	}
 	getActiveItemData(item_id: ITEM, key: string) {
 		if (!this.itemData.has(item_id)) return 0
-		return this.itemData.get(item_id).getDataValue(key)
+		return this.itemData.get(item_id)?.getDataValue(key)
 	}
 	addActiveItemData(item_id: ITEM, key: string, val: number) {
-		if (this.itemData.has(item_id)) this.itemData.get(item_id).addDataValue(key, val)
+		if (this.itemData.has(item_id)) this.itemData.get(item_id)?.addDataValue(key, val)
 	}
 	resetActiveItemData(item_id: ITEM, key: string) {
-		if (this.itemData.has(item_id)) this.itemData.get(item_id).resetDataValue(key)
+		if (this.itemData.has(item_id)) this.itemData.get(item_id)?.resetDataValue(key)
 	}
 	getStoreData(priceMultiplier: number): ServerGameEventFormat.EnterStore {
 		return {

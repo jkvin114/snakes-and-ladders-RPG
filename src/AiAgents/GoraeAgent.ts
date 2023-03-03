@@ -23,7 +23,7 @@ class GoraeAgent extends AiAgent {
 				new ItemBuildStage(ITEM.FULL_DIAMOND_ARMOR).setChangeCondition(
 					ITEM.EPIC_ARMOR,
 					UtilityCondition.MoreAPThanAD(2)
-				).setSecondChangeCondition(
+				).setSecondaryChangeCondition(
 					ITEM.EPIC_SHIELD,
 					UtilityCondition.MoreADThanAP(2)
 				),
@@ -36,7 +36,7 @@ class GoraeAgent extends AiAgent {
 						ITEM.BOOTS_OF_PROTECTION,
 						UtilityCondition.MoreADThanAP(2)
 					)
-					.setSecondChangeCondition(
+					.setSecondaryChangeCondition(
 						ITEM.BOOTS_OF_ENDURANCE,
 						UtilityCondition.MoreAPThanAD(2)
 					)

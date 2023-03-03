@@ -52,7 +52,7 @@ export class ItemBuildStage{
 		this.coditionFunc=func
 		return this
 	}
-	setSecondChangeCondition(newItem:ITEM,func:UtilityConditionFunction)
+	setSecondaryChangeCondition(newItem:ITEM,func:UtilityConditionFunction)
 	{
 		this.conditionItem2=newItem
 		this.coditionFunc2=func

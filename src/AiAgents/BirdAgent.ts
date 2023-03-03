@@ -25,7 +25,7 @@ class BirdAgent extends AiAgent {
 			new ItemBuildStage(ITEM.GUARDIAN_ANGEL)
 			.setChangeCondition(
 				ITEM.BOOTS_OF_PROTECTION,UtilityCondition.MoreADThanAP(2)
-			).setSecondChangeCondition(
+			).setSecondaryChangeCondition(
 				ITEM.BOOTS_OF_ENDURANCE,
 				UtilityCondition.MoreADThanAP(2)
 			),

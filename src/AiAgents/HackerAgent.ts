@@ -22,12 +22,12 @@ class HackerAgent extends AiAgent{
 			new ItemBuildStage(ITEM.FLAIL_OF_JUDGEMENT).setChangeCondition(
 				ITEM.CROSSBOW_OF_PIERCING,
 				UtilityCondition.MoreTankers()
-			).setSecondChangeCondition(ITEM.STAFF_OF_JUDGEMENT,UtilityCondition.MoreAPThanAD(1.5)),
+			).setSecondaryChangeCondition(ITEM.STAFF_OF_JUDGEMENT,UtilityCondition.MoreAPThanAD(1.5)),
 			new ItemBuildStage(ITEM.GUARDIAN_ANGEL)
 			.setChangeCondition(
 				ITEM.BOOTS_OF_PROTECTION,
 				UtilityCondition.MoreADThanAP(2)
-			).setSecondChangeCondition(
+			).setSecondaryChangeCondition(
 				ITEM.BOOTS_OF_ENDURANCE,
 				UtilityCondition.MoreAPThanAD(2)
 			)

@@ -4,6 +4,7 @@ import { MarbleRoom } from "../Marble/MarbleRoom"
 const router = express.Router()
 import { RPGRoom } from "../RPGRoom"
 import CONFIG from "./../../config/config.json"
+import { writeFile } from "../core/Util"
 
 function isUserInRPGRoom(req:Express.Request){
 	return req.session.roomname != null &&
@@ -27,8 +28,8 @@ router.post("/create_rpg", function (req: express.Request, res: express.Response
 		res.status(400).end("room name exists")
 		return
 	}
-	console.log("createroom")
-	console.log(req.session)
+	// console.log("createroom")
+	// console.log(req.session)
 	if (
 		isUserInRPGRoom(req)
 	) {
@@ -114,6 +115,9 @@ router.post("/join", async function (req: express.Request, res: express.Response
 })
 router.post("/home", async function (req: express.Request, res: express.Response) {
 // console.log(CONFIG)
+
+	console.log(req.route.host)
+	// console.log(req)
 	if (req.session && isUserInRPGRoom(req)) {
 		// console.error("previous room exists")
 		res.status(307).json(CONFIG).end()

@@ -1,4 +1,4 @@
-import type { Player } from "./player/player"
+import { Player } from "./player/player"
 import { CALC_TYPE, decrement } from "./core/Util"
 import { EFFECT, ITEM, SKILL } from "./data/enum"
 import { PlayerAbility } from "./player/PlayerAbility"

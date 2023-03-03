@@ -208,7 +208,7 @@ class PriorityArray<T> extends Array {
 		}
 		return maxObject
 	}
-	getMaxIndex(priority: (this: T) => number): number {
+	argmax(priority: (this: T) => number): number {
 		if(this.length===0) return -1
 		let max = -Infinity
 		let maxidx = 0
@@ -221,7 +221,7 @@ class PriorityArray<T> extends Array {
 		}
 		return maxidx
 	}
-	getMinIndex(priority: (this: T) => number): number {
+	argmin(priority: (this: T) => number): number {
 		if(this.length===0) return -1
 		let min = Infinity
 		let minidx = 0

@@ -28,7 +28,7 @@ class YangyiAgent extends AiAgent{
 						ITEM.BOOTS_OF_PROTECTION,
 						UtilityCondition.MoreADThanAP(2)
 					)
-					.setSecondChangeCondition(
+					.setSecondaryChangeCondition(
 						ITEM.BOOTS_OF_ENDURANCE,
 						UtilityCondition.MoreAPThanAD(2)
 					)

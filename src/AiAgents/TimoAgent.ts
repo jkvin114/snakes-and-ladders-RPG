@@ -23,7 +23,7 @@ class TimoAgent extends AiAgent{
 			,new ItemBuildStage(ITEM.BOOTS_OF_PROTECTION).setChangeCondition(
 				ITEM.ANCIENT_SPEAR,
 				UtilityCondition.MoreTankers()
-				).setSecondChangeCondition(
+				).setSecondaryChangeCondition(
 					ITEM.BOOTS_OF_ENDURANCE,
 					UtilityCondition.MoreAPThanAD(2)
 				)

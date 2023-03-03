@@ -20,7 +20,7 @@ class TreeAgent extends AiAgent{
 			,new ItemBuildStage(ITEM.BOOTS_OF_PROTECTION).setChangeCondition(
 				ITEM.ANCIENT_SPEAR,
 				UtilityCondition.MoreTankers(0.3)
-				).setSecondChangeCondition(
+				).setSecondaryChangeCondition(
 					ITEM.BOOTS_OF_ENDURANCE,
 					UtilityCondition.MoreAPThanAD(2)
 				)

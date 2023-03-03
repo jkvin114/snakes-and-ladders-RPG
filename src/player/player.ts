@@ -1168,8 +1168,8 @@ abstract class Player extends Entity {
 			killerturn = skillfrom.turn
 			this.sendConsoleMessage(skillfrom.name + " killed " + this.name)
 			skillfrom.addKill(this)
-			this.thisLifeKillCount = 0
 		}
+		this.thisLifeKillCount = 0
 		this.game.addKillData(killerturn, this.turn, this.pos)
 
 		this.addAssist(killerturn)
@@ -1475,13 +1475,12 @@ abstract class Player extends Entity {
 	}
 	getStateLabel(finish: number): string {
 		return (
-			`${this.champ},${this.normNRound(this.pos , finish) },${this.normNRound(this.HP, 500)},${this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300)},` +
-			`${this.normNRound(this.statistics.stats[STAT.MONEY_EARNED],300)},${this.normNRound(this.kill,5)},${this.normNRound(this.death , 5)},${this.normNRound(this.level , 10)},${
+			`${this.champ},${this.normNRound(this.pos , finish) },${this.normNRound(finish-this.pos , finish)**2 },${this.normNRound(this.HP, 500)},${this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300)},` +
+			`${this.normNRound(this.statistics.stats[STAT.MONEY_EARNED],300)},${(!this.dead || this.waitingRevival)?1:0},${this.normNRound(this.kill,5)},${this.normNRound(this.death , 5)},${this.normNRound(this.level , 10)},${
 				(this.inven.life>0 || this.inven.isActiveItemAvailable(ITEM.GUARDIAN_ANGEL))?1:0
 			},${this.hasE_01(EFFECT.SLAVE)},${
-				this.hasE_01(EFFECT.ROOT,EFFECT.GROUNGING)
-			},${this.hasE_01(EFFECT.BACKDICE)},${this.hasE_01(EFFECT.DOUBLEDICE)},${
-				this.hasE_01(EFFECT.INVISIBILITY)},${this.hasE_01(EFFECT.SHIELD)}`
+				this.hasE_01(EFFECT.ROOT,EFFECT.GROUNGING,EFFECT.BACKDICE)
+			},${this.hasE_01(EFFECT.INVISIBILITY)},${this.hasE_01(EFFECT.SHIELD)}`
 		)
 	}
 }

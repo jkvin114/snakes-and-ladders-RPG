@@ -3,6 +3,7 @@ import type { Player } from "../player/player"
 import {statuseffect as statuseffect } from "../../res/string_resource.json"
 import {statuseffect as statuseffect_kor } from "../../res/string_resource_kor.json"
 import * as ENUM from "../data/enum"
+import  * as SkillDescription from"../../res/skill_description.json"
 
 
 
@@ -146,7 +147,7 @@ export class SkillInfoFactory {
 		return this.chooseLang(`heals ${txt} HP`, `${txt}의 체력을 회복`)
 	}
 	private money(amt: number|string) {
-		return `<money>${amt + this.chooseLang("$", "원")}</>`
+		return `<money>${this.chooseLang("$"+amt, amt+"원")}</>`
 	}
 	private shield(amt: number, scaleType?: string) {
 		if (scaleType == null) {
@@ -210,11 +211,30 @@ export class SkillInfoFactory {
 	private basicattack() {
 		return `<basicattack>${this.chooseLang(`basic attack`, `기본 공격`)}</>`
 	}
-	private target() {
-		return `<target>${this.chooseLang(`target`, `대상`)}</>`
+	// private target() {
+	// 	return `<target>${this.chooseLang(`target`, `대상`)}</>`
+	// }
+	private get target(){
+		return  `<target>${this.chooseLang(`target`, `대상`)}</>`
 	}
 	private emp(s: string) {
 		return `<emp>` + s + "</>"
+	}
+	private convert(data:string[],skill:ENUM.SKILL){
+		let str:string=SkillDescription.eng[this.char].skills[skill]
+		str=this.nameTitle(skill)+str
+		str=str.replace("<$target>",this.target)
+		str=str.replace("<$currhp>",this.currHp())
+		str=str.replace("<$passive>",this.passive())
+		str=str.replace("<$active>",this.active())
+		str=str.replace("<$cool>",this.cooltime())
+		for(let i=1;i<=data.length;++i){
+			str=str.replace(/<d>/,data[i-1])
+		}
+		for(let i=0;i<3;++i){
+			str=str.replace(`<$skill${i}>`,this.nameDesc(i))
+		}
+		return str
 	}
 	private getQ() {
 		if (this.lang === SkillInfoFactory.LANG_KOR) return this.getQKor()
@@ -222,79 +242,69 @@ export class SkillInfoFactory {
 		let str
 		const s = 0
 		const hotkey = this.hotkey(s)
+		let data:string[]=[]
 		switch (this.char) {
 			case 1:
-				str =
-					this.nameTitle(s) +
-					`
-				Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} and ${this.heal(this.skillAmt("qheal"))}
-				, If the target has ${this.emp("mark")} of ${this.nameDesc(ENUM.SKILL.W)}, ${this.rangeNum(this.skillAmt("w_qrange"))}
-				and deals additional ${this.tDmg(this.skillAmt("w_qdamage"), "w_qdamage")}`
+				data=[
+					this.mDmg(this.baseDmg(s), hotkey),
+					this.heal(this.skillAmt("qheal")),
+					this.rangeNum(this.skillAmt("w_qrange")),
+					this.tDmg(this.skillAmt("w_qdamage"), "w_qdamage")
+				]
 				break
 			case 0:
-				str =
-					this.nameTitle(s) +
-					`Deals ${this.pDmg(this.baseDmg(s), hotkey)} to a ${this.target()}.  
-				.Can use ${this.emp("two times")}, On second use, deals ${this.down("half")} of the damage`
+				data=[
+					this.pDmg(this.baseDmg(s), hotkey),this.down("half")
+				]
 				break
 			case 2:
-				str =
-					this.nameTitle(s) +
-					`Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} , applies ${this.effect(ENUM.EFFECT.BLIND, 1)}`
+				data=[
+					this.mDmg(this.baseDmg(s), hotkey),this.effect(ENUM.EFFECT.BLIND, 1)
+				]
 				break
 			case 3:
-				str =
-					this.nameTitle(s) +
-					`deals ${this.pDmg(this.baseDmg(s), hotkey)} to enemies ${this.radius(4)}.
-				( Damage decreases if there are multiple targets. You ${this.down("spend 5%")} of ${this.currHp()},`
+				data=[
+					this.pDmg(this.baseDmg(s), hotkey),this.radius(4),this.down("spend 5%")
+				]
 				break
 			case 4:
-				str =
-					this.nameTitle(s) +
-				`Fires a gun and deals ${this.pDmg(this.baseDmg(s), hotkey)} to a ${this.target()},If the target has ${this.effectNoDur(ENUM.EFFECT.ROOT)} or ${this.effectNoDur(ENUM.EFFECT.GROUNGING)}
-				effect, gets back ${ this.emp("2 turns of ")+"" + this.cooltime()+" for "+this.nameDesc(s)}`
+				data=[
+					this.pDmg(this.baseDmg(s), hotkey),this.effectNoDur(ENUM.EFFECT.ROOT),this.effectNoDur(ENUM.EFFECT.GROUNGING)
+				]
 				break
 			case 5:
-				str =
-					this.nameTitle(s) +
-					`Deals ${this.mDmg(this.baseDmg(s), hotkey)} to all players ${this.radiusStr(`front ${this.skillAmt("qrange_start")}~${this.skillAmt("qrange_end_front")},
-				back ${this.skillAmt("qrange_start")}~${this.skillAmt("qrange_end_back")}`)} 
-				`
+				data=[
+					this.mDmg(this.baseDmg(s), hotkey),
+					this.radiusStr(`front ${this.skillAmt("qrange_start")}~${this.skillAmt("qrange_end_front")},
+				back ${this.skillAmt("qrange_start")}~${this.skillAmt("qrange_end_back")}`)
+				]
 				break
 			case 6:
-				str =
-					this.nameTitle(s) +
-					`${this.proj("tenacle")} of ${this.projsize(2)},
-				 deals ${this.mDmg(this.baseDmg(s), hotkey)} to enemy who step on it`
+				data=[
+					this.proj("tenacle"),this.projsize(2),this.mDmg(this.baseDmg(s), hotkey)
+				]
 				break
 			case 7:
-				str =
-					this.nameTitle(s) +`Deals 
-				${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target() } and take away ${this.money(20)}.`
+				data=[
+					this.mDmg(this.baseDmg(s), hotkey),this.money(20)
+				]
 				break
 			case 8:
-				str =
-					this.nameTitle(s) +
-					this.passive() +
-					`If HP is ${this.lowerbound("lower than 40%")}, transforms to ${this.emp("Withered Tree")}, 
-				On ${this.emp("Withered Tree")} state, you can\`t heal ally with ${this.nameDesc(s)}, but 
-				 ${this.stat("damage absorbtion")} ${this.up("35% increases")} ` +
-					this.active() +
-					this.area(3) +
-					`.  Deals ${this.mDmg(this.baseDmg(s), hotkey)} to enemies inside. For allies, ${this.heal(this.skillAmt("qheal"), "qheal")}
-					and ${this.shield(this.skillAmt("qshield"), "qshield")}`
+				data=[
+					this.lowerbound("lower than 40%"),this.stat("damage absorbtion"),this.up("35% increases"),
+					this.area(3),this.mDmg(this.baseDmg(s), hotkey),this.heal(this.skillAmt("qheal"), "qheal"),this.shield(this.skillAmt("qshield"), "qshield")
+				]
 				break
 			case 9:
-				str =
-					this.nameTitle(s) +
-					`Deals ${this.pDmg(this.baseDmg(s)+"+("+this.skillAmt("stack_damage")+" per stack)",hotkey)} to a ${this.target()}, 
-					steals ${this.money("stack x 3")}, and gains a ${this.emp("'vulnerability' stack")} for that target player. 
-					Damage towards the target increases permanently with ${this.emp("vulnerability stacks")}`
+				data=[
+					this.pDmg(this.baseDmg(s)+"+("+this.skillAmt("stack_damage")+"per stack)",hotkey),
+					this.money("stack x 3"),
+				]
 					break
 			default:
 				str = ""
 		}
-		return str
+		return this.convert(data,s)
 	}
 	private getQKor() {
 		let str
@@ -305,20 +315,20 @@ export class SkillInfoFactory {
 				str =
 					this.nameTitle(s) +
 					`
-				사용시 ${this.target()}에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입힌 후 ${this.heal(this.skillAmt("qheal"))}
+				사용시 ${this.target}에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입힌 후 ${this.heal(this.skillAmt("qheal"))}
 				, <br>${this.nameDesc(1)} ${this.emp("표식")}이 있는 상대에게는 ${this.rangeNum(this.skillAmt("w_qrange"))}
 				${this.tDmg(this.skillAmt("w_qdamage"), "w_qdamage")}를 추가로 입힘`
 				break
 			case 0:
 				str =
 					this.nameTitle(s) +
-					`${this.target()}에게 ${this.pDmg(this.baseDmg(s), hotkey)}를 입힘
+					`${this.target}에게 ${this.pDmg(this.baseDmg(s), hotkey)}를 입힘
 				.${this.emp("두 번")} 시전 가능, 두번째 사용시 ${this.down("50%의 피해")}를 입힘`
 				break
 			case 2:
 				str =
 					this.nameTitle(s) +
-					this.target() +
+					this.target +
 					`에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.effect(ENUM.EFFECT.BLIND, 1)} 부여`
 				break
 			case 3:
@@ -332,7 +342,7 @@ export class SkillInfoFactory {
 			case 4:
 				str =
 					this.nameTitle(s) +
-					this.target() +
+					this.target +
 					`에게 총을 발사해 
 				${this.pDmg(this.baseDmg(s), hotkey)}를 입힘, ${this.effectNoDur(ENUM.EFFECT.ROOT)} 혹은 ${this.effectNoDur(ENUM.EFFECT.GROUNGING)}
 				상태인 대상 적중 시 ${this.nameDesc(s) + "" + this.cooltime() + this.emp(" 2턴")}을 돌려받음`
@@ -354,7 +364,7 @@ export class SkillInfoFactory {
 			case 7:
 				str =
 					this.nameTitle(s) +
-					this.target() +
+					this.target +
 					`을 공격해
 				${this.mDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.money(20)}을 빼앗음.`
 				break
@@ -374,7 +384,7 @@ export class SkillInfoFactory {
 			case 9:
 				str =
 					this.nameTitle(s) +
-					this.target() +
+					this.target +
 					`을 공격해 ${this.pDmg(this.baseDmg(s)+"+(1중첩당 "+this.skillAmt("stack_damage")+")",hotkey)}를 입히고 
 					${this.money("1중첩당 3")}를 빼앗음. 적중시 해당 대상에 대한 ${this.emp("'취약점' 중첩")}을 획득. 
 					${this.emp("취약점 중첩")} 하나당 대상에 대한 피해량 영구 증가
@@ -401,7 +411,7 @@ export class SkillInfoFactory {
 			case 1:
 				str =
 					this.nameTitle(s) +
-					`Leaves a ${this.emp("mark")} to a ${this.target()} and applies ${this.effect(ENUM.EFFECT.CURSE, 1)}`
+					`Leaves a ${this.emp("mark")} to a ${this.target} and applies ${this.effect(ENUM.EFFECT.CURSE, 1)}`
 				break
 			case 2:
 				str =
@@ -467,7 +477,7 @@ export class SkillInfoFactory {
 					str =
 					this.nameTitle(s) +this.passive()+`Deals additional  ${this.mDmg(this.baseDmg(s),hotkey)} on ${this.basicattack()}. 
 					`+this.active()+
-					`Select a ${this.target() } and forcibly moves ${this.emp("2+(1 for 3 vulnerability stacks)squares")} backwards and applies ${this.effect(ENUM.EFFECT.CURSE, 1)}.
+					`Select a ${this.target } and forcibly moves ${this.emp("2+(1 for 3 vulnerability stacks)squares")} backwards and applies ${this.effect(ENUM.EFFECT.CURSE, 1)}.
 					`
 					break
 				
@@ -489,7 +499,7 @@ export class SkillInfoFactory {
 			case 1:
 				str =
 					this.nameTitle(s) +
-					`사용시 ${this.target()}에게 ${this.emp("표식")}을 남기고 ${this.effect(ENUM.EFFECT.CURSE, 1)} 부여`
+					`사용시 ${this.target}에게 ${this.emp("표식")}을 남기고 ${this.effect(ENUM.EFFECT.CURSE, 1)} 부여`
 				break
 			case 2:
 				str =
@@ -556,7 +566,7 @@ export class SkillInfoFactory {
 				str =
 					this.nameTitle(s) +this.passive()+`${this.basicattack()}시 ${this.mDmg(this.baseDmg(s),hotkey)}를 추가로 입힘. 
 					`+this.active()+
-					this.target() +
+					this.target +
 					`을 선택해 뒤로 ${this.emp("2+(취약점 중첩 3당 1)칸")} 만큼 ${this.emp("강제이동")} 시키고 ${this.effect(ENUM.EFFECT.CURSE, 1)} 부여.
 					`
 				break
@@ -575,7 +585,7 @@ export class SkillInfoFactory {
 			case 0:
 				str =
 					this.nameTitle(s) +
-					`${this.emp("Teleports")} to a  ${this.target()} and deals ${this.pDmg(this.baseDmg(s), hotkey)} and ${this.shield(70)}.
+					`${this.emp("Teleports")} to a  ${this.target} and deals ${this.pDmg(this.baseDmg(s), hotkey)} and ${this.shield(70)}.
 				Damage decreases by 30% if the target is ${this.emp("in front")} of you.`
 				break
 			case 1:
@@ -596,14 +606,14 @@ export class SkillInfoFactory {
 			case 3:
 				str =
 					this.nameTitle(s) +
-					`Deals ${this.pDmg(this.baseDmg(s) + `(+ 50% of target\s ${this.missingHp()})`, hotkey)} to a ${this.target()}.
+					`Deals ${this.pDmg(this.baseDmg(s) + `(+ 50% of target\s ${this.missingHp()})`, hotkey)} to a ${this.target}.
 					${this.cooltime()} of ${this.nameDesc(s)} ${this.emp("resets")} if you killed the enemy.`
 				break
 			case 4:
 				str =
 					this.nameTitle(s) +
 					
-					` Selects a ${this.target()}, Automatically attacks the target ${this.emp("3 times")} for ${this.duration(3)}, 
+					` Selects a ${this.target}, Automatically attacks the target ${this.emp("3 times")} for ${this.duration(3)}, 
 					dealing ${this.pDmg(this.baseDmg(s), hotkey)} each and ${this.shield(80)}.
 				(Deals ${this.tDmg(this.baseDmg(s))} for 3rd attack, can\`t move while shooting)<br>
 				After use, you gains ${this.effect(ENUM.EFFECT.DOUBLEDICE, 1)}.`
@@ -617,7 +627,7 @@ export class SkillInfoFactory {
 			case 6:
 				str =
 					this.nameTitle(s) +
-					`Deals ${this.tDmg(this.baseDmg(s), hotkey)} to a ${this.target()},
+					`Deals ${this.tDmg(this.baseDmg(s), hotkey)} to a ${this.target},
 				Your ${this.maxHP() + this.up("increases by 50")} if you killed the target.`
 				break
 			case 7:
@@ -639,7 +649,7 @@ export class SkillInfoFactory {
 						1
 					)}. Enemy ${this.basicattack()} will kill the ${this.emp("Plant monster")}s.` +
 					this.active() +
-					` Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target()} and applies 
+					` Deals ${this.mDmg(this.baseDmg(s), hotkey)} to a ${this.target} and applies 
 				 ${this.effect(ENUM.EFFECT.ROOT, 1)}.(2 turns if you are ${this.emp("Withered Tree")} state)
 				,and increases all incoming damage by ${this.up("20%")},
 				 Also, all ${this.emp("Plant monster")}s move toward a target.`
@@ -648,7 +658,7 @@ export class SkillInfoFactory {
 			case 9:
 				str =
 					this.nameTitle(s) +
-					`Imitates ultimate(lv3 skill) of ${this.target()} and steals ${this.emp(this.skillAmt("r_steal_base")+"+(vulnerability stack x "+this.skillAmt("r_steal")+")%")} of targets attack power and magic power for 2 turns.
+					`Imitates ultimate(lv3 skill) of ${this.target} and steals ${this.emp(this.skillAmt("r_steal_base")+"+(vulnerability stack x "+this.skillAmt("r_steal")+")%")} of targets attack power and magic power for 2 turns.
 					 Reusing this skill will use the imitated skill.`
 				break
 			default:
@@ -664,7 +674,7 @@ export class SkillInfoFactory {
 			case 0:
 				str =
 					this.nameTitle(s) +
-					`사용시 ${this.target()}에게 ${this.emp("즉시 이동")}해 ${this.pDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.shield(70)}.
+					`사용시 ${this.target}에게 ${this.emp("즉시 이동")}해 ${this.pDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.shield(70)}.
 				자신보다 ${this.emp("앞에 있는 상대")}에게는 70%의 피해를 입힘`
 				break
 			case 1:
@@ -688,14 +698,14 @@ export class SkillInfoFactory {
 			case 3:
 				str =
 					this.nameTitle(s) +
-					this.target() +
+					this.target +
 					`에게 ${this.pDmg(this.baseDmg(s) + `+ 대상 ${this.missingHp()}의 50%`, hotkey)}를 입힘,
 				대상 처치시${this.nameDesc(s)} ${this.cooltime()} ${this.emp("초기화")}`
 				break
 			case 4:
 				str =
 					this.nameTitle(s) +
-					this.target() +
+					this.target+
 					` 고정 후 ${this.duration(3)} 동안 ${this.emp("최대 3번")}
 				 발사해 각각${this.pDmg(this.baseDmg(s), hotkey)}를 입히고 ${this.shield(80)}.
 				(3번째에는 ${this.tDmg(this.baseDmg(s))}를 입힘, 사용중에는 움직일 수 없음)<br>
@@ -711,7 +721,7 @@ export class SkillInfoFactory {
 			case 6:
 				str =
 					this.nameTitle(s) +
-					this.target() +
+					this.target +
 					`에게 ${this.tDmg(this.baseDmg(s), hotkey)}를 입힘,
 				대상 처치시 ${this.maxHP() + this.up("50 증가")}`
 				break
@@ -735,14 +745,14 @@ export class SkillInfoFactory {
 					)}의 적에게
 				 ${this.mDmg(this.skillAmt("plantdamage"), "plantdamage")}를 입히고 적이 ${this.basicattack()}시 사라짐` +
 					this.active() +
-					`${this.target()}에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입히고
+					`${this.target}에게 ${this.mDmg(this.baseDmg(s), hotkey)}를 입히고
 				 ${this.effect(ENUM.EFFECT.ROOT, 1)}.(${this.emp("시든 나무")} 상태이면 2턴)
 				,또한 이 상태에서 아군이 가하는 피해 ${this.up("20% 증가")},
 				 이때 맵에 있는 모든 ${this.emp("식충식물")}이 대상 주변으로 이동됨`
 				break
 			case 9:
 				str =
-					this.nameTitle(s) +this.target()+
+					this.nameTitle(s) +this.target+
 					`의 궁극기(레벨 3 스킬)를 빼앗고 대상 공격력과 주문력의 ${this.emp(this.skillAmt("r_steal_base")+"+(취약점 중첩 x "+this.skillAmt("r_steal")+")%")}
 					를 ${this.up("2턴간 훔침")}.
 					 스킬을 재시전하면 빼앗은 스킬이 사용됨.`

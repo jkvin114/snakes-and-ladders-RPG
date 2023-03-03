@@ -9,11 +9,15 @@ import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
  * https://icecokel.tistory.com/17?category=956647
  * 
  * express-session 에 f12 클릭, SessionData 에 필요 property 추가 해아됨 
- *      username:string
+		interface SessionData {
+        cookie: Cookie;
         isLogined:boolean
-        turn:number
+        userId:string
+        username:string
+        boardDataId:string
         roomname:string
-        id:string
+        turn:number
+    }
  */
 
 /**

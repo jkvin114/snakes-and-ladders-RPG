@@ -305,7 +305,7 @@ class OceanGameLevel extends GameTwoWayLevel{
 			this.submarine_cool = Math.max(0, this.submarine_cool - 1)
 		}
 	}
-    placeSubmarine(pos: number) {
+    private placeSubmarine(pos: number) {
 		let upid = this.game.placeProjectile(new ProjectileBuilder(this.game, "submarine", Projectile.TYPE_PASS).build(), pos)
 		this.submarine_id = upid
 	}
