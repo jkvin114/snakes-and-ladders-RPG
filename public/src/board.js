@@ -265,6 +265,10 @@ export class Board{
 			this.removeImage(elem)
 		}, ms)
 	}
+	extrapolate(start,end,scale)
+	{
+		return start + (end-start) * scale
+	}
 	animateOpacity(elem, opacity, duration) {
 		if(!elem) return
 		elem.animate("opacity", opacity, {
@@ -297,20 +301,33 @@ export class Board{
 			easing: fabric.util.ease.easeOutCubic
 		})
 	}
-	animateX(elem, x, duration) 
+	animateX(elem, x, duration,linearEasing) 
 	{
-		elem.animate("left",x, {
-			onChange: this.render.bind(this),
-			duration: duration,
-			easing: fabric.util.ease.easeInCubic
-		})
+		if(!linearEasing)
+			elem.animate("left",x, {
+				onChange: this.render.bind(this),
+				duration: duration,
+				easing: fabric.util.ease.easeInCubic
+			})
+		else
+			elem.animate("left",x, {
+				onChange: this.render.bind(this),
+				duration: duration,
+			})
 	}
-	animateY(elem, y, duration) {
-		elem.animate("top", y, {
-			onChange: this.render.bind(this),
-			duration: duration,
-			easing: fabric.util.ease.easeInCubic
-		})
+	animateY(elem, y, duration,linearEasing) {
+		if(!linearEasing)
+			elem.animate("top", y, {
+				onChange: this.render.bind(this),
+				duration: duration,
+				easing: fabric.util.ease.easeInCubic
+			})
+		else
+			elem.animate("top", y, {
+				onChange: this.render.bind(this),
+				duration: duration
+			})
+		
 	}
 	animateXEaseOut(elem, x, duration) 
 	{

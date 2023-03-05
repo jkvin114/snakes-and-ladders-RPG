@@ -188,5 +188,60 @@
         "sprite":{
             "x":3,"y":4
         }
+    },
+    "hacker_q_proj":{
+        "sprite":{
+            "x":2,"y":5
+        }
+    },
+    "hacker_q":{
+        "sprite":{
+            "x":3,"y":5
+        }
+    },
+    "bluescreen":{
+        "sprite":{
+            "x":4,"y":5
+        }
+    },
+    "hacker_r":{
+        "sprite":{
+            "x":5,"y":5
+        }
+    },
+    "hacker_r_syringe":{
+        "sprite":{
+            "x":6,"y":5
+        }
+    },
+    "bird_q_proj":{
+        "sprite":{
+            "x":7,"y":5
+        }
+    },
+    "data":{
+        "sprite":{
+            "x":2,"y":6
+        }
+    },
+    "sweep1":{
+        "sprite":{
+            "x":0,"y":6
+        }
+    },
+    "sweep2":{
+        "sprite":{
+            "x":1,"y":6
+        }
+    },
+    "death":{
+        "sprite":{
+            "x":0,"y":5
+        }
+    },
+    "crack":{
+        "sprite":{
+            "x":1,"y":5
+        }
     }
 }

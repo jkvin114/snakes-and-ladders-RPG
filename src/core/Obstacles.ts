@@ -365,6 +365,14 @@ export namespace ObstacleHelper {
 					} else if (player.inven.money < 100 && player.inven.token < 10) {
 						player.killplayer()
 					}
+				case 75:
+					let mypos2=player.pos
+					let target2=player.mediator.selectBestOneFrom<Player>(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),function(this:Entity){
+						return Math.abs(this.pos-mypos2)
+					},true)
+					if(!target2) break
+					player.game.playerForceMove(target2, mypos2, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
+
 			}
 		} catch (e) {
 			console.error(e)

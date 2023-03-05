@@ -1475,7 +1475,7 @@ abstract class Player extends Entity {
 	}
 	getStateLabel(finish: number): string {
 		return (
-			`${this.champ},${this.normNRound(this.pos , finish) },${this.normNRound(finish-this.pos , finish)**2 },${this.normNRound(this.HP, 500)},${this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300)},` +
+			`${this.champ},${this.normNRound(this.pos , finish) },${roundToNearest(this.normNRound(finish-this.pos , finish)**2,-3)  },${this.normNRound(this.HP, 500)},${this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300)},` +
 			`${this.normNRound(this.statistics.stats[STAT.MONEY_EARNED],300)},${(!this.dead || this.waitingRevival)?1:0},${this.normNRound(this.kill,5)},${this.normNRound(this.death , 5)},${this.normNRound(this.level , 10)},${
 				(this.inven.life>0 || this.inven.isActiveItemAvailable(ITEM.GUARDIAN_ANGEL))?1:0
 			},${this.hasE_01(EFFECT.SLAVE)},${

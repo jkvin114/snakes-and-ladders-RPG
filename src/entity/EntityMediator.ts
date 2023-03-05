@@ -23,6 +23,7 @@ class AttackHandler {
 			source: from.turn,
 			visualeffect: from.getBasicAttackName(),
 			sourcePos: from.pos,
+			extraEffect:[]
 		}
 		for (const t of targets) {
 			if (!t) continue
@@ -58,6 +59,7 @@ class AttackHandler {
 			source: from.turn,
 			visualeffect: skillattack.name,
 			sourcePos: from.pos,
+			extraEffect:[]
 		}
 
 		for (const t of targets) {
@@ -98,6 +100,7 @@ class AttackHandler {
 			source: from.turn,
 			visualeffect: skillattack.name,
 			sourcePos: from.pos,
+			extraEffect:[]
 		}
 		from.game.eventEmitter.attack(data)
 		return v.flags.includes("died")
@@ -156,11 +159,13 @@ class AttackHandler {
 					pos: target.pos,
 					flags: [],
 					damage: damage.getTotalDmg(),
+					
 				},
 			],
 			source: -1,
 			visualeffect: effectname,
 			sourcePos: 0,
+			extraEffect:[]
 		}
 
 		from.game.eventEmitter.attack(data)
@@ -464,14 +469,14 @@ class EntityMediator {
 		return this.storage.allPlayer()
 	}
 
-	selectBestOneFrom(
-		filter: EntityFilter<Entity>,
+	selectBestOneFrom<T extends Entity>(
+		filter: EntityFilter<T>,
 		pr: EntityPriorityFunction,
 		reverse: boolean = false,
 		normalize: boolean = false
-	): Entity | null {
-		if (reverse) return this.selectAllFrom<Entity>(filter).getMin(pr)
-		else return this.selectAllFrom<Entity>(filter).getMax(pr)
+	): T | null {
+		if (reverse) return this.selectAllFrom<T>(filter).getMin(pr)
+		else return this.selectAllFrom<T>(filter).getMax(pr)
 	}
 	count(filter: EntityFilter<Entity>): number {
 		return this.selectAllFrom(filter).length

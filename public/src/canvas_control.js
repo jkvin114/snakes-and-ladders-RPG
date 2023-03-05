@@ -1617,26 +1617,6 @@ export class Scene extends Board{
 				this.setEffectImageAttr(img,pos1.x,pos1.y,0.3,0.6,1,this.getBearingAngle(pos1, pos2))
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
-				// scale = 0.6
-				// this.effectlist[0]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: pos1.x,
-				// 		top: pos1.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale * 2,
-				// 		angle: this.getBearingAngle(pos1, pos2)
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[0].animate("left", pos2.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[0].animate("top", pos2.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				
 
 				break
 			case "sniper_r":
@@ -1644,54 +1624,12 @@ export class Scene extends Board{
 				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.6,1,this.getBearingAngle(pos1, pos2))
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
-				// scale = 0.8
-				// this.effectlist[18]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: pos1.x,
-				// 		top: pos1.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale * 1.5,
-				// 		angle: this.getBearingAngle(pos1, pos2)
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[18].animate("left", pos2.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[18].animate("top", pos2.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// setTimeout(() => this.effectlist[18].set({ opacity: 0 }), speed + 100)
-
 				break
 			case "gun":
 				img=this.createCroppedEffectImage('sniper_q_trajectory')
 				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.6,1,this.getBearingAngle(pos1, pos2))
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
-				// scale = 0.4
-				// this.effectlist[30]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: pos1.x,
-				// 		top: pos1.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale * 1.5,
-				// 		angle: this.getBearingAngle(pos1, pos2)
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[30].animate("left", pos2.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[30].animate("top", pos2.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// setTimeout(() => this.effectlist[30].set({ opacity: 0 }), speed + 100)
-
 				break
 			case "ghost_w_q":
 			case "ghost_q":
@@ -1699,27 +1637,6 @@ export class Scene extends Board{
 				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.4,1,this.getBearingAngle(pos1, pos2))
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
-				// scale = 0.4
-				// this.effectlist[21]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: pos1.x,
-				// 		top: pos1.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale,
-				// 		angle: this.getBearingAngle(pos1, pos2)
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[21].animate("left", pos2.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[21].animate("top", pos2.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// setTimeout(() => this.effectlist[21].set({ opacity: 0 }), speed + 100)
-
 				break
 			case "tree_q":
 				img=this.createCroppedEffectImage('tree_q_trajectory')
@@ -1727,31 +1644,6 @@ export class Scene extends Board{
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
 				this.animateAngle(img,180,speed)
-				// scale = 0.7
-				// this.effectlist[25]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: pos1.x,
-				// 		top: pos1.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale,
-				// 		angle: 0
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[25].animate("left", pos2.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[25].animate("angle", 180, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[25].animate("top", pos2.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// setTimeout(() => this.effectlist[25].set({ opacity: 0 }), speed + 100)
-
 				break
 			case "tree_r":
 			case "tree_wither_r":
@@ -1759,30 +1651,29 @@ export class Scene extends Board{
 				this.setEffectImageAttr(img,pos1.x,pos1.y,0.6,0.6,1,this.getBearingAngle(pos1, pos2))
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
-				// scale = 1.3
-				// this.effectlist[27]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: pos1.x,
-				// 		top: pos1.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale,
-				// 		angle: this.getBearingAngle(pos1, pos2)
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[27].animate("left", pos2.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[27].animate("top", pos2.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// setTimeout(() => this.effectlist[27].set({ opacity: 0 }), speed + 100)
-
+				break
+			case "hacker_q":
+				img=this.createCroppedEffectImage('hacker_q_proj')
+				this.setEffectImageAttr(img,pos1.x,pos1.y,0.3,0.3,1,0)
+				this.animateX(img,pos2.x,speed)
+				this.animateY(img,pos2.y,speed)
+				this.animateAngle(img,180,speed)
+				break
+				
+			case "bird_q":
+			case "bird_w_hit":
+				img=this.createCroppedEffectImage('bird_q_proj')
+				this.setEffectImageAttr(img,pos1.x,pos1.y,0.7,0.7,1,this.getBearingAngle(pos1, pos2))
+				speed*=3
+				this.animateX(img,this.extrapolate(pos1.x,pos2.x,3),speed,true)
+				this.animateY(img,this.extrapolate(pos1.y,pos2.y,3),speed,true)
 				break
 		}
-		setTimeout(() => img.set({ opacity: 0 }), speed + 100)
+		setTimeout(() => { 
+			if(img!=null)
+				img.set({ opacity: 0 })
+		}, speed + 100)
+
 		this.removeImageAfter(img,2000)
 	}
 	//===========================================================================================================================
@@ -1796,6 +1687,19 @@ export class Scene extends Board{
 		let pos
 		let effectImages = []
 		switch (type) {
+			case "basicattack":
+				img=this.createCroppedEffectImage('sweep1')
+				pos = midpoint(positions[0], positions[1])
+				let scale = Math.max(1.3,distance(positions[0], positions[1]) / 150)
+				let angleRange= Math.min(scale * 25,60) 
+				let angleoffset = Math.random() * 50 - 25
+				let angle = this.getBearingAngle(positions[0], positions[1])+angleoffset
+				this.setEffectImageAttr(img,pos.x,pos.y,scale,scale,1,angle - angleRange)
+				this.animateOpacity(img, 0, 1200)
+				this.animateAngle(img,angle+angleRange,250)
+				effectImages.push(img)
+				break
+
 			case "magician_w_q":
 			case "magician_q":
 				pos = midpoint(positions[0], positions[1])
@@ -1827,20 +1731,34 @@ export class Scene extends Board{
 				this.setEffectImageAttr(img2,positions[0].x,positions[0].y-30,1.5,1.5,0.8,0)
 				this.animateOpacity(img2,0,1700)
 				effectImages.push(img2)
-			break
+				break
+			case "hacker_r":
+				pos = midpoint(positions[0], positions[1])
+				img=this.createCroppedEffectImage('magician_r_lightning')
+				this.setEffectImageAttr(img,pos.x,pos.y,
+					1,
+					distance( positions[0], positions[1]) / VISUAL_EFFECT_SPRITE_SIZE,
+					1,
+					this.getBearingAngle(positions[0], positions[1]))
+				effectImages.push(img)
+				this.animateOpacity(img, 0, 1000)
+			case "hacker_q":
+				setTimeout(()=>{
+
+					let hackerData=this.createCroppedEffectImage('data')
+					let duration=distance( positions[0], positions[1])*1.5
+					this.setEffectImageAttr(hackerData,positions[1].x,positions[1].y,0.5,0.5,1,this.getBearingAngle(positions[1], positions[0]))
+					this.animateX(hackerData,positions[0].x,duration)
+					this.animateY(hackerData,positions[0].y,duration)
+					this.removeImageAfter(hackerData, duration+100)
+				},600)
+				break
 		}
 		effectImages.forEach((e) => this.removeImageAfter(e, 3000))
 	}
 
 	async showAttackEffect(data) {
-		//console.log(this.line)
-		// switch(data.visualeffect){
-		// 	case 'kraken_w':
-		// 		this.showEffect(data.sourcePos, 'kraken_w_wave', 0, data.source)
-		// 	break
-		// }
-
-
+		console.log(data)
 		for (let i = 0; i < data.targets.length; ++i) {
 			let t = data.targets[i]
 			// //console.log(data.visualeffect)
@@ -1851,17 +1769,21 @@ export class Scene extends Board{
 				break
 				case "bird_r_w_hit":
 				case "bird_r_hit":
+				case "hacker_r":
+				case "hacker_q":
+				case 'basicattack':
 					this.showMultiPositionEffects([data.sourcePos, t.pos], data.visualeffect)
 				break
+				case 'hacker_w':
 				case 'reaper_q':
-				case 'elephant_q':
-				case 'bird_w_hit':
-				case 'hit':
 					let pos1=this.getTilePos(data.sourcePos)
 					let pos2=this.getTilePos(t.pos)
 					this.line.set({ opacity: 1, x1: pos1.x, y1: pos1.y, x2: pos2.x, y2: pos2.y }).bringToFront()
 					setTimeout(() => this.line.set({ opacity: 0 }), 400)
+				
+
 				 break
+				
 			}
 			this.showEffect(t.pos, data.visualeffect, t.damage, data.source)
 			if (t.flags.includes("shield")) {
@@ -1872,7 +1794,7 @@ export class Scene extends Board{
 	}
 	/**
 	 *
-	 * @param {*} position  position of position
+	 * @param {*} position  position of target
 	 * @param {*} type type
 	 * @param {*} change hp change amount (if related to hp)
 	 */
@@ -1886,6 +1808,7 @@ export class Scene extends Board{
 		switch (type) {
 			//일반
 			case "hit":
+			case "bird_q":
 			case "reaper_w":
 				this.defaultEffect(position, change)
 				this.game.playSound("hit")
@@ -2019,6 +1942,9 @@ export class Scene extends Board{
 				this.animateOpacity(addedEffectImg,0,3000)
 				this.animateY(addedEffectImg,pos.y,500)
 
+				addedEffectImg2=this.createCroppedEffectImage('crack')
+				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,1,0)
+				this.animateOpacity(addedEffectImg2,0,2000)
 				break
 			case "ghost_w_q":
 				this.game.playSound("curse")
@@ -2107,8 +2033,7 @@ export class Scene extends Board{
 				addedEffectImg=this.createCroppedEffectImage('fire')
 				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-20,0.8,0.8,1,0)
 				this.animateOpacity(addedEffectImg,0,2000)
-			case "hacker_q":
-				if(type!=="magician_w_q") this.game.playSound("hack")
+			
 			case "magician_q":
 				this.defaultEffect(position, change)
 				this.game.playSound("hit")
@@ -2169,7 +2094,7 @@ export class Scene extends Board{
 				this.animateScaleX(addedEffectImg,0.8,400)
 				this.animateY(addedEffectImg,pos.y-30,1000)
 
-	
+				
 				break
 			case "bird_r_w_hit":
 				this.game.playSound("bird")
@@ -2187,8 +2112,9 @@ export class Scene extends Board{
 				this.game.playSound("8r_hit")
 				this.defaultEffect(position, change)
 				
-
-	
+				addedEffectImg2=this.createCroppedEffectImage('crack')
+				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,1,0)
+				this.animateOpacity(addedEffectImg2,0,2000)
 				break
 			case "bird_r":
 				this.game.playSound("8r")
@@ -2219,6 +2145,9 @@ export class Scene extends Board{
 				this.animateOpacity(addedEffectImg,0,700)
 				this.animateY(addedEffectImg,pos.y,1500)
 		
+				addedEffectImg2=this.createCroppedEffectImage('crack')
+				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,1,0)
+				this.animateOpacity(addedEffectImg2,0,2000)
 				break
 			case "tree_q":
 				this.game.playSound("fruit_crush")
@@ -2238,9 +2167,28 @@ export class Scene extends Board{
 				this.game.playSound("10r")
 				this.game.playSound("hit")
 
-				addedEffectImg=this.createCroppedEffectImage('magician_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.5,1.5,0.8,0)
+				addedEffectImg=this.createCroppedEffectImage('hacker_r')
+				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,2.5,2.5,1,0)
+				this.animateOpacity(addedEffectImg,0,2000)
+				addedEffectImg2=this.createCroppedEffectImage('hacker_r_syringe')
+				this.setEffectImageAttr(addedEffectImg2,pos.x+100,pos.y-100,1,1,0.8,0)
+				this.animateOpacity(addedEffectImg2,0,2000)
+				this.animateX(addedEffectImg2,pos.x+50,300)
+				this.animateY(addedEffectImg2,pos.y-50,300)
+				break
+			case "hacker_q":
+
+				addedEffectImg=this.createCroppedEffectImage('hacker_q')
+				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.2,2,1,0)
 				this.animateOpacity(addedEffectImg,0,1600)
+				this.animateScaleX(addedEffectImg,2,400)
+			case "hacker_w":
+				this.game.playSound("hit")
+				this.game.playSound("hack")
+				this.defaultEffect(position, change)
+				addedEffectImg2=this.createCroppedEffectImage('bluescreen')
+				this.setEffectImageAttr(addedEffectImg2,pos.x-15,pos.y-15,0.7,0.7,0.6,0)
+				this.animateOpacity(addedEffectImg2,0,1600)
 				break
 			case "revive":
 				this.game.playSound("revive")
@@ -2445,16 +2393,18 @@ export class Scene extends Board{
 			let hp_bg = this.players[target].hpIndicator.bg
 			this.players[target].clearhpIndicatorTimeout()
 
-			// hp_lost.setGradient("fill", {
-			// 	y1: 0,
-			// 	x1: 0,
-			// 	y2: 0,
-			// 	x2: lost,
-			// 	colorStops: {
-			// 		0: "yellow",
-			// 		1: "red"
-			// 	}
-			// })
+			hp_lost.setGradient("fill", {
+				y1: 0,
+				x1: 0,
+				y2: 0,
+				x2: lost,
+				colorStops: {
+					0: "yellow",
+					0.3:"yellow",
+					0.6:"orange",
+					1: "red"
+				}
+			})
 
 			hp_frame.bringToFront()
 			hp_bg.bringToFront()
@@ -3432,6 +3382,15 @@ export class Scene extends Board{
 			scaleX: 1.7,
 			scaleY: 1.7
 		})
+
+
+		let addedEffectImg=this.createCroppedEffectImage('death')
+		this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,5,5,1,0)
+		this.animateScaleX(addedEffectImg,3,200)
+		this.animateOpacity(addedEffectImg,0,1500)
+		this.removeImageAfter(addedEffectImg,2000)
+
+
 		this.players[turn].coffin.animate("top", pos.y + 10, {
 			onChange: this.render.bind(this),
 			duration: 1000,

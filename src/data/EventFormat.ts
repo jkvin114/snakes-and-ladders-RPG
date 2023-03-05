@@ -177,6 +177,7 @@ export namespace ServerGameEventFormat {
 		source: number
 		visualeffect: string
 		sourcePos:number
+		extraEffect?:string[]
 		// trajectorySpeed:number
 	}
 	export interface Prediction{

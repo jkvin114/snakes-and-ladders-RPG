@@ -31,7 +31,7 @@ class Hacker extends Player {
 	static readonly ULT_ABILITY_STEAL_PERCENT = 2
 	static readonly ULT_ABILITY_STEAL_PERCENT_BASE = 10
 	static readonly Q_STACK_DAMAGE = 8
-	static readonly SKILL_EFFECT_NAME = ["hacker_q", "hit", "hacker_r"]
+	static readonly SKILL_EFFECT_NAME = ["hacker_q", "hacker_w", "hacker_r"]
 
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
 	private virtualCharacter: Player | null
@@ -50,6 +50,7 @@ class Hacker extends Player {
 
 		this.AiAgent=new HackerAgent(this)
 	}
+	
 	/**
 	 * create dummy player that shares component with this player
 	 * @param charId
@@ -138,8 +139,8 @@ class Hacker extends Player {
 	}
 
 	getSkillTrajectorySpeed(skilltype: string): number {
+		if(skilltype==="hacker_q") return 200
 		if(this.virtualCharacter) return this.virtualCharacter.getSkillTrajectorySpeed(skilltype)
-
 		return 0
 	}
 

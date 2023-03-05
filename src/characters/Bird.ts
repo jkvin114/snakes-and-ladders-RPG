@@ -44,7 +44,7 @@ class Bird extends Player {
 
 	static SKILL_SCALES=SKILL_SCALES[ID]
 
-	static SKILL_EFFECT_NAME=["hit", "hit", "bird_r"]
+	static SKILL_EFFECT_NAME=["bird_q", "hit", "bird_r"]
 
 	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
 		//hp, ad:40, ar, mr, attackrange,ap
@@ -60,7 +60,7 @@ class Bird extends Player {
 
 
 	getSkillTrajectorySpeed(skilltype: string): number {
-		
+		if(skilltype==="bird_q" || skilltype === "bird_w_hit") return 250
 		return 0
 	}
 	getSkillScale(){
