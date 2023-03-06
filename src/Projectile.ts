@@ -29,6 +29,7 @@ abstract class Projectile {
 	protected duration: number
 	protected flags: Set<number>
 	protected targetType: number
+	abstract serialize():ServerGameEventFormat.RangeProjectile|ServerGameEventFormat.PassProjectile
 	constructor(builder: ProjectileBuilder) {
 		// this.sourceTurn = builder.sourceTurn
 		this.size = builder.size
@@ -118,7 +119,7 @@ class RangeProjectile extends Projectile {
 		this.scope = this.game.getPlaceableCoordinates(this.pos, this.size)
 	}
 
-	getTransferData() :ServerGameEventFormat.RangeProjectile {
+	serialize() :ServerGameEventFormat.RangeProjectile {
 		// console.log(this.sourcePlayer)
 		return {
 			scope: this.scope,
@@ -135,7 +136,7 @@ class PassProjectile extends Projectile {
 		this.size = 1
 	}
 
-	getTransferData():ServerGameEventFormat.PassProjectile {
+	serialize():ServerGameEventFormat.PassProjectile {
 		return {
 			name: this.name,
 			scope: [this.pos],

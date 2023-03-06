@@ -13,7 +13,7 @@ export class ActiveItem {
 		this.cooltime = 0
 		this.resetVal = resetVal
 	}
-	getTransferData():{id:number,cool:number,coolRatio:number}{
+	selialize():{id:number,cool:number,coolRatio:number}{
 		return { id: this.id, cool: this.cooltime, coolRatio: 1 - this.cooltime / this.resetVal }
 	}
 	cooldown() {
@@ -49,8 +49,8 @@ export class ItemData{
 		if(!this.data.has(key)) return 0
 		return this.data.get(key)
 	}
-	getTransferData():{kor:string,eng:string,val:number,item:number}|null{
-		let data={kor:"",eng:"",val:0,item:this.item}
+	serialize():{kor:string,eng:string,val:number,item:number}|null{
+		let data:{kor:string,eng:string,val:number,item:number}|null={kor:"",eng:"",val:0,item:this.item}
 		switch(this.item){
 			case ITEM.ANCIENT_SPEAR:
 			case ITEM.SPEAR:

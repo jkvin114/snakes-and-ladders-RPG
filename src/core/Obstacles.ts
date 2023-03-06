@@ -49,7 +49,7 @@ export namespace ObstacleHelper {
 				case 12:
 					player.effects.apply(ENUM.EFFECT.FARSIGHT, 1)
 					player.effects.applySpecial(
-						EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE).addData(player.ability.getMagicCastleDamage()),
+						EffectFactory.create(ENUM.EFFECT.MAGIC_CASTLE_ADAMAGE)?.addData(player.ability.getMagicCastleDamage()),
 						SpecialEffect.OBSTACLE.MAGIC_CASTLE_ADAMAGE.name
 					)
 					// player.message(player.name + ": skill range x3, additional damage 30")

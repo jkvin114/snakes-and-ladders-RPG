@@ -1690,10 +1690,17 @@ export class Scene extends Board{
 			case "basicattack":
 				img=this.createCroppedEffectImage('sweep1')
 				pos = midpoint(positions[0], positions[1])
-				let scale = Math.max(1.3,distance(positions[0], positions[1]) / 150)
-				let angleRange= Math.min(scale * 25,60) 
+				let scale = Math.max(1,distance(positions[0], positions[1]) / 150)
+				let angleRange= 30 + Math.random() * 30
 				let angleoffset = Math.random() * 50 - 25
 				let angle = this.getBearingAngle(positions[0], positions[1])+angleoffset
+
+				if(positions[0].x===positions[1].x && positions[0].y===positions[1].y)
+				{
+					angle = Math.random() * 180
+				}
+					
+
 				this.setEffectImageAttr(img,pos.x,pos.y,scale,scale,1,angle - angleRange)
 				this.animateOpacity(img, 0, 1200)
 				this.animateAngle(img,angle+angleRange,250)
@@ -2168,7 +2175,7 @@ export class Scene extends Board{
 				this.game.playSound("hit")
 
 				addedEffectImg=this.createCroppedEffectImage('hacker_r')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,2.5,2.5,1,0)
+				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.7,1.7,0.9,0)
 				this.animateOpacity(addedEffectImg,0,2000)
 				addedEffectImg2=this.createCroppedEffectImage('hacker_r_syringe')
 				this.setEffectImageAttr(addedEffectImg2,pos.x+100,pos.y-100,1,1,0.8,0)
@@ -3385,8 +3392,8 @@ export class Scene extends Board{
 
 
 		let addedEffectImg=this.createCroppedEffectImage('death')
-		this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,5,5,1,0)
-		this.animateScaleX(addedEffectImg,3,200)
+		this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,3,3,0.6,0)
+		this.animateScaleX(addedEffectImg,1.4,200)
 		this.animateOpacity(addedEffectImg,0,1500)
 		this.removeImageAfter(addedEffectImg,2000)
 

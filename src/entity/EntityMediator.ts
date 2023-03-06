@@ -92,7 +92,7 @@ class AttackHandler {
 		return victimData
 	}
 
-	static skillAttackAuto(from: Player, target: Entity | undefined, skillattack: SkillAttack): boolean {
+	static skillAttackAuto(from: Player, target: Entity | null, skillattack: SkillAttack): boolean {
 		if (!target) return false
 		let v = this.skillAttack(from, target, skillattack)
 		let data: ServerGameEventFormat.Attack = {
@@ -391,7 +391,9 @@ class EntityMediator {
 	 * @returns
 	 */
 	skillAttackSingle(from: Player, to: string, skillAttack: SkillAttack) {
-		AttackHandler.skillAttacks(from, [this.getPlayer(to)], skillAttack)
+		let player=this.getPlayer(to)
+		if(!player)return
+		AttackHandler.skillAttacks(from, [player], skillAttack)
 	}
 	/**
 	 * skill attack without clicking button(projectile,tickdamage...)

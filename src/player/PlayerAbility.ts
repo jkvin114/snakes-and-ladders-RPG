@@ -251,7 +251,7 @@ class PlayerAbility implements PlayerComponent{
 		this.sendToClient()
 	}
 
-	getAll() {
+	serializeAll() {
 		return {
 			level: this.player.level,
 			AD: this.AD.get(),
@@ -272,7 +272,7 @@ class PlayerAbility implements PlayerComponent{
 	getStatusLabel(){
 		return `${(this.AR.val+this.MR.val)/100},${(this.AD.val+this.AP.val)/100}`
 		let str=''
-		for (const [k, v] of Object.entries(this.getAll())){
+		for (const [k, v] of Object.entries(this.serializeAll())){
 			if(k!=="level") str+=v+","
 		}
 		return str
@@ -282,7 +282,7 @@ class PlayerAbility implements PlayerComponent{
 		let info_eng = this.player.getSkillInfoEng()
 
 		if (this.player.game.instant) return
-		this.player.game.eventEmitter.update("stat", this.player.turn, this.getAll())
+		this.player.game.eventEmitter.update("stat", this.player.turn, this.serializeAll())
 		this.player.game.eventEmitter.updateSkillInfo(this.player.turn, info_kor, info_eng)
 	}
 

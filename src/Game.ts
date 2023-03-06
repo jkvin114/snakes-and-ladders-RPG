@@ -316,7 +316,7 @@ class Game {
 		let firstplayer = this.entityMediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.thisp()),function () {
 			return this.pos
 		})
-		if(!firstplayer) return
+		if(firstplayer==null) return 0
 
 		return Util.chooseWeightedRandom(
 			this.entityMediator.allPlayer().map((p) => {
@@ -987,7 +987,7 @@ class Game {
 		let p = this.thisp()
 		let damage=p.getSkillDamage(this.pOfTurn(target),p.pendingSkill)
 	
-		if(!damage) return
+		if(!damage || !damage.source) return
 		this.entityMediator.skillAttackSingle(damage.source, this.turn2Id(target),damage)
 
 	//	return this.getSkillStatus()
@@ -1053,10 +1053,10 @@ class Game {
 
 		if (proj instanceof PassProjectile) {
 			this.passProjectiles.set(id, proj)
-			this.eventEmitter.placePassProj( proj.getTransferData())
+			this.eventEmitter.placePassProj( proj.serialize())
 		} else if (proj instanceof RangeProjectile) {
 			this.rangeProjectiles.set(id, proj)
-			this.eventEmitter.placeProj(proj.getTransferData())
+			this.eventEmitter.placeProj(proj.serialize())
 		}
 		return id
 	}
@@ -1154,7 +1154,7 @@ class Game {
 			setting: this.setting.getSummary()
 		}
 		
-		data.replay=null
+		data.replay=''
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {

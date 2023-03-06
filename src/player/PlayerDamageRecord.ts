@@ -43,7 +43,7 @@ export class PlayerDamageRecorder implements PlayerComponent{
         if(damage.fixed>0)
             this.record.add(new DamageRecord(source,2,damage.fixed,attackType))
     }
-    getTransferData(){
+    serialize(){
         return Array.from(this.record)
         .map((d)=>{return {sourceTurn:d.sourceTurn,
 			damageType:d.damageType,

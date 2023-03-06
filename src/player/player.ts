@@ -1134,7 +1134,7 @@ abstract class Player extends Entity {
 			location: this.pos,
 			isShutDown: false,
 			killerMultiKillCount: 1,
-			damages: this.damageRecord.getTransferData(),
+			damages: this.damageRecord.serialize(),
 		}
 
 		//상대에게 죽은경우

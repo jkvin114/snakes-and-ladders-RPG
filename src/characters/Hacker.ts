@@ -106,7 +106,7 @@ class Hacker extends Player {
 			if(p.turn===this.turn) continue
 			str+=p.name+":"+this.stacks[p.turn]+", "
 		}
-		return str
+		return "<emp>"+str+'</>'
 	}
 	//override
 	getSkillInfoEng(): string[] {
@@ -190,7 +190,8 @@ class Hacker extends Player {
 			this.startCooltime(s)
 			let proj = this.virtualCharacter.getSkillProjectile(pos)
 			this.onAfterCopiedSkill()
-			proj.sourcePlayer=this
+			if(proj)
+				proj.sourcePlayer=this
 			return proj
 		}
 		return null
@@ -211,7 +212,6 @@ class Hacker extends Player {
 		this.ability.sendToClient()
 	}
 	getSkillDamage(target: Entity,s:number): SkillAttack | null {
-        console.log(this.stacks)
 		//	console.log(target + "getSkillDamage" + this.pendingSkill)
 		let damage = null
 		// let s: number = this.pendingSkill
@@ -227,11 +227,11 @@ class Hacker extends Player {
                 
 				damage = new SkillAttack(new Damage(pdmg, 0, 0), this.getSkillName(s),s,this)
 					.setOnHit(function (this: Player, source: Player) {
-						if (source instanceof Hacker) {
                             this.inven.takeMoney(moneytake)
 					        source.inven.giveMoney(moneytake)
+							if(source instanceof Hacker)
 							source.addStack(this.turn)
-						}
+						
 					})
 				this.startCooltime(s)
 				break
@@ -251,7 +251,8 @@ class Hacker extends Player {
 				if (this.copiedCharId !== -1 && this.virtualCharacter) {
 					this.onBeforeCopiedSkillUse()
 					damage = this.virtualCharacter.getSkillDamage(target,this.virtualCharacter.pendingSkill)
-					damage.source=this
+					if(damage)
+						damage.source=this
 					this.startCooltime(s)
 					this.onAfterCopiedSkill()
 				} else if (target instanceof Player) {
@@ -259,7 +260,6 @@ class Hacker extends Player {
 					let dur=this.duration_list[2]
                     damage = new SkillAttack(Damage.zero(), this.getSkillName(s),s,this)
 						.setOnHit(function (this: Player, source: Player) {
-							if (source instanceof Hacker) {
 								let AP = Math.floor(this.ability.AP.get() * stealRatio)
 								let AD = Math.floor(this.ability.AD.get() * stealRatio)
 								this.effects.applySpecial(
@@ -267,7 +267,7 @@ class Hacker extends Player {
 										EFFECT.HACKER_ULT_ENEMY,
 										dur,
 										new Map().set("AP", -AP).set("AD", -AD)
-									).setSourceId(source.UEID).addData(stealRatio*100),
+									).setSourceId(source.UEID).addData(Math.floor(stealRatio*100)),
 									SpecialEffect.SKILL.HACKER_ULT_ENEMY.name
 								)
 								source.effects.applySpecial(
@@ -278,12 +278,12 @@ class Hacker extends Player {
 									).addData(AD).addData(AP),
 									SpecialEffect.SKILL.HACKER_ULT.name
 								)
-								if (source.copyCharacter(target.champ))
+								if (source instanceof Hacker && source.copyCharacter(target.champ))
 									this.sendConsoleMessage("Hacker extracted " + target.champ_name + "`s ultimate!")
-							}
 						})
 				}
 				break
+				default: return null
 		}
 
 		return damage

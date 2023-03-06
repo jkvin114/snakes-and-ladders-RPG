@@ -228,7 +228,7 @@ class PlayerInventory implements PlayerComponent {
 		let data: { id: number; cool: number; coolRatio: number }[] = []
 		for (const [id, item] of this.activeItems.entries()) {
 			if (PlayerInventory.indicateList.includes(id) && this.haveItem(id)) {
-				data.push(item.getTransferData())
+				data.push(item.selialize())
 			}
 		}
 		//	console.log(data)
@@ -239,7 +239,7 @@ class PlayerInventory implements PlayerComponent {
 			item: number;
 		}[]=[]
 		for(const itemData of this.itemData.values()){
-			let d=itemData.getTransferData()
+			let d=itemData.serialize()
 			if(!!d && ItemList[d.item].itemlevel >= 3 && this.haveItem(d.item))
 				itemdata.push(d)
 		}
