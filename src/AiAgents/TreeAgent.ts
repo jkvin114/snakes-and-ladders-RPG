@@ -2,6 +2,9 @@ import { Tree } from "../characters/Tree";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
+import type { ServerGameEventFormat } from "../data/EventFormat";
+import { EntityFilter } from "../entity/EntityFilter";
+import type { Player } from "../player/player";
 
 class TreeAgent extends AiAgent{
     itemBuild: ItemBuild
@@ -44,5 +47,22 @@ class TreeAgent extends AiAgent{
 		}
 		return -1
 	}
+	getProjectilePos(skill: SKILL, selector: ServerGameEventFormat.LocationTargetSelector): number {
+		let goal = null
+		let targets = this.playersInProjRange(selector)
+
+		//	console.log("getAiProjPos" + targets)
+		if (targets.length === 0) {
+			return -1
+		}
+		targets.sort(function (b: Player, a: Player): number {
+			return a.pos - b.pos
+		})
+
+		goal = targets.getMax(e=>e.pos)
+		
+		return goal.pos+1
+	}
+
 }
 export default TreeAgent

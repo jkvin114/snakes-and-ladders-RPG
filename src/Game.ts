@@ -313,9 +313,7 @@ class Game {
 	getDiceControlPlayer() {
 		const bias = 1.5
 
-		let firstplayer = this.entityMediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.thisp()),function () {
-			return this.pos
-		})
+		let firstplayer = this.entityMediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.thisp()),e=>e.pos)
 		if(firstplayer==null) return 0
 
 		return Util.chooseWeightedRandom(

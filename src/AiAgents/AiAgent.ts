@@ -214,16 +214,19 @@ abstract class AiAgent {
 		})
 		return ps[players[0]]
 	}
-	getProjectilePos(skill: SKILL, selector: ServerGameEventFormat.LocationTargetSelector): number {
+	protected playersInProjRange(selector: ServerGameEventFormat.LocationTargetSelector){
 		let me = this.player
-		let goal = null
-		let targets = me.mediator
-			.selectAllPlayerFrom(
-				EntityFilter.ALL_ENEMY_PLAYER(this.player).in(
-					me.pos - 3 - Math.floor(selector.range / 2),
-					me.pos - 3 + Math.floor(selector.range / 2)
-				)
+		return this.player.mediator.selectAllPlayerFrom(
+			EntityFilter.ALL_ENEMY_PLAYER(this.player).in(
+				me.pos - selector.size - Math.floor(selector.range / 2),
+				me.pos - selector.size + Math.floor(selector.range / 2)
 			)
+		)
+	}
+	getProjectilePos(skill: SKILL, selector: ServerGameEventFormat.LocationTargetSelector): number {
+		
+		let goal = null
+		let targets = this.playersInProjRange(selector)
 
 		//	console.log("getAiProjPos" + targets)
 		if (targets.length === 0) {
@@ -252,7 +255,7 @@ abstract class AiAgent {
 
 			goal = targets[0]
 		}
-		return Math.min(goal.pos + 7 - selector.size, Math.floor(me.pos + selector.range / 2))
+		return Math.min(goal.pos + 7 - selector.size, Math.floor(this.player.pos + selector.range / 2))
 	}
 	getAreaPos(skill: SKILL, selector: ServerGameEventFormat.LocationTargetSelector): number {
 		let me = this.player

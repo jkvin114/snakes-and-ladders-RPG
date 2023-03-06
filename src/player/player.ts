@@ -245,9 +245,7 @@ abstract class Player extends Entity {
 		this.AiAgent.applyInitialOpponentUtility(util)
 	}
 	calculateAdditionalDice(amount: number): number {
-		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this), function () {
-			return this.pos
-		})
+		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this),e=>e.pos)
 
 		if (!(first instanceof Player)) return 0
 

@@ -93,6 +93,7 @@ function onPageResponse(success) {
 		} else if ((InterfaceState.page_direction = "prev")) {
 			InterfaceState.current_page += 1
 		}
+		$("#overlay").removeClass("visible")
 		alert("End of page")
 	}
 	console.log(InterfaceState.page_direction, InterfaceState.current_page)

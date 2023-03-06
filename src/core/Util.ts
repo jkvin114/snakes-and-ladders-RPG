@@ -181,12 +181,12 @@ class PriorityArray<T> extends Array {
 	constructor() {
 		super()
 	}
-	getMax(priority: (this: T) => number): T|null {
+	getMax(priority: ((elem: T) => number)): T|null {
 		if(this.length===0) return null
 		let max = -Infinity
 		let maxObject: T = this[0]
 		for (let e of this) {
-			let val = priority.call(e)
+			let val = priority(e)
 			if (val > max) {
 				max = val
 				maxObject = e
@@ -194,12 +194,12 @@ class PriorityArray<T> extends Array {
 		}
 		return maxObject
 	}
-	getMin(priority: (this: T) => number): T|null {
+	getMin(priority: (elem: T) => number): T|null {
 		if(this.length===0) return null
 		let min = Infinity
 		let maxObject: T = this[0]
 		for (let e of this) {
-			let val = priority.call(e)
+			let val = priority(e)
 
 			if (val < min) {
 				min = val
@@ -208,12 +208,12 @@ class PriorityArray<T> extends Array {
 		}
 		return maxObject
 	}
-	argmax(priority: (this: T) => number): number {
+	argmax(priority: (elem: T) => number): number {
 		if(this.length===0) return -1
 		let max = -Infinity
 		let maxidx = 0
 		for (let i = 0; i < this.length; ++i) {
-			let val = priority.call(this[i])
+			let val = priority(this[i])
 			if (val > max) {
 				max = val
 				maxidx = i
@@ -221,12 +221,12 @@ class PriorityArray<T> extends Array {
 		}
 		return maxidx
 	}
-	argmin(priority: (this: T) => number): number {
+	argmin(priority: (elem: T) => number): number {
 		if(this.length===0) return -1
 		let min = Infinity
 		let minidx = 0
 		for (let i = 0; i < this.length; ++i) {
-			let val = priority.call(this[i])
+			let val = priority(this[i])
 			if (val < min) {
 				min = val
 				minidx = i

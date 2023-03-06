@@ -405,9 +405,7 @@ class CasinoMapHandler extends PlayerMapHandler {
 				break
 			}
 		}
-		let firstplayer = this.player.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.player),function () {
-			return this.pos
-		})
+		let firstplayer = this.player.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this.player),e=>e.pos)
 		if(!firstplayer) return
 		if (this.player.pos + 12 < firstplayer.pos) {
 			//1등과 격차 12~17: 급행

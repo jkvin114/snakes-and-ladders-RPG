@@ -363,9 +363,7 @@ class EntityMediator {
 	}
 
 	basicAttackRanged(from: Player, players: EntityFilter<Player>, entities: EntityFilter<Entity>, damage: Damage) {
-		let player = this.filterPlayers(this.selectAllFrom(players)).getMin(function () {
-			return this.HP
-		})
+		let player = this.filterPlayers(this.selectAllFrom(players)).getMin((e)=>e.HP)
 		let targetentities = this.selectAllFrom(entities)
 		if (!player && targetentities.length === 0) return
 		if (!!player) targetentities.push(player)
@@ -473,7 +471,7 @@ class EntityMediator {
 
 	selectBestOneFrom<T extends Entity>(
 		filter: EntityFilter<T>,
-		pr: EntityPriorityFunction,
+		pr: EntityPriorityFunction<T>,
 		reverse: boolean = false,
 		normalize: boolean = false
 	): T | null {
@@ -505,11 +503,8 @@ class EntityMediator {
 	}
 }
 
-export interface EntityPriorityFunction {
-	(this: Entity): number
-}
-export interface FilterConditionFunction {
-	(p: Entity): boolean
+export interface EntityPriorityFunction<T extends Entity> {
+	(entity: T): number
 }
 export interface EntityActionFunction<T extends Entity> {
 	(this: T, source: Entity): void

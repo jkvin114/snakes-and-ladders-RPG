@@ -106,9 +106,9 @@ export namespace ObstacleHelper {
 					break
 				case 20:
 					let mypos=player.pos
-					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),function(this:Entity){
-						return Math.abs(this.pos-mypos)
-					},true)
+					let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),
+						e=> Math.abs(e.pos-mypos)
+					,true)
 					if(!target) break
 					
 					//if target is also on change obstacle, dont swap.(prevent infinite loop)
@@ -367,9 +367,9 @@ export namespace ObstacleHelper {
 					}
 				case 75:
 					let mypos2=player.pos
-					let target2=player.mediator.selectBestOneFrom<Player>(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),function(this:Entity){
-						return Math.abs(this.pos-mypos2)
-					},true)
+					let target2=player.mediator.selectBestOneFrom<Player>(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),
+						e=> Math.abs(e.pos-mypos2)
+					,true)
 					if(!target2) break
 					player.game.playerForceMove(target2, mypos2, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
 
@@ -418,9 +418,8 @@ export namespace ObstacleHelper {
 				break
 			case 2:
 
-				let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),function(){
-					return Math.abs(this.pos-player.pos)
-				},true)
+				let target=player.mediator.selectBestOneFrom(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),(e)=> Math.abs(e.pos-player.pos)
+				,true)
 				if(!target) break
 				player.game.playerForceMove(player, target.pos, true,  ENUM.FORCEMOVE_TYPE.LEVITATE)
 				
