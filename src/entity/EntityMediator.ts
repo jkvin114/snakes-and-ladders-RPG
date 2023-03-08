@@ -38,7 +38,8 @@ class AttackHandler {
 
 	static async skillAttacks(from: Player, targets: Entity[], skillattack: SkillAttack) {
 		//	console.log(skillattack)
-		let delay = from.getSkillTrajectorySpeed(skillattack.name)
+		let delay = skillattack.trajectoryDelay
+		console.log("trajectoryDelay "+ delay)
 		if (delay > 0) {
 			delay = (MAP.getCoordinateDistance(from.mapId, from.pos, targets[0].pos) * delay) / trajectorySpeedRatio
 			let data: ServerGameEventFormat.skillTrajectory = {

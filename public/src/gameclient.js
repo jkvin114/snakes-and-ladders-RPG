@@ -156,7 +156,8 @@ export function openConnection(isInitial) {
 
 	socket.on("server:create_projectile", function (proj) {
 		if (proj == null) return
-		//		console.log(proj.UPID)
+		console.log("create_projectile")
+		console.log(proj)
 		GAME.scene.placeProj(proj)
 	})
 

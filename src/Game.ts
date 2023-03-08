@@ -400,11 +400,11 @@ class Game {
 			str2+=","+this.pOfTurn(i).getStateLabel(this.mapHandler.getFinishPos())
 		}
 		this.trainLabels.push(str2)
-		if(!this.instant || CONFIG.useWinPrediction)
+		if(!this.instant && CONFIG.useWinPrediction)
 			this.getPrediction(str2)
 	}
 	async getPrediction(labels:string){ 
-		if(!CONFIG.useWinPrediction) return
+		if(!CONFIG.useWinPrediction||this.instant) return
 		let preds=await fetchPrediction(labels,this.totalnum,this.mapId)
 		if(preds.length>0){
 			let diffs=[]
@@ -981,14 +981,16 @@ class Game {
 		return p.name
 	}
 	
-	useSkillToTarget(target: number) {
-		let p = this.thisp()
-		let damage=p.getSkillDamage(this.pOfTurn(target),p.pendingSkill)
+	useSkillToTarget(target: number):number {
+	// 	let p = this.thisp()
+	// 	let damage=p.getSkillDamage(this.pOfTurn(target),p.pendingSkill)
 	
-		if(!damage || !damage.source) return
-		this.entityMediator.skillAttackSingle(damage.source, this.turn2Id(target),damage)
+	// 	if(!damage || !damage.source) return
+	// 	this.entityMediator.skillAttackSingle(damage.source, this.turn2Id(target),damage)
+	// 	return damage.trajectoryDelay
 
-	//	return this.getSkillStatus()
+	// //	return this.getSkillStatus()
+		return this.thisp().usePendingTargetingSkill(target)
 	}
 	onSelectSkill(skill:ENUM.SKILL):ServerGameEventFormat.SkillInit{
 		return this.thisp().initSkill(skill)
@@ -1005,9 +1007,9 @@ class Game {
 
 
 	//========================================================================================================
-	useAreaSkill(pos: number) {
+	useAreaSkill(pos: number):number {
 	//	console.log("usearea"+pos)
-		this.thisp().usePendingAreaSkill(pos)
+		return this.thisp().usePendingAreaSkill(pos)
 	}
 	placeSkillProjectile(pos: number) {
 		let proj = this.thisp().getSkillProjectile(pos)

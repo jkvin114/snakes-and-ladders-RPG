@@ -54,7 +54,7 @@ class Jellice extends Player {
 		return Jellice.SKILL_SCALES
 	}
 
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		return 0
 	}
 	private buildProjectile() {
@@ -91,7 +91,7 @@ class Jellice extends Player {
 	useActivationSkill(skill: number): void {
 		if(skill===ENUM.SKILL.W) this.useW()
 	}
-	useNonTargetSkill(skill: number): boolean {
+	useInstantSkill(skill: number): boolean {
 		if(skill===ENUM.SKILL.Q) return this.useQ()
 		return false
 	}

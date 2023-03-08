@@ -138,9 +138,9 @@ class Hacker extends Player {
 		return Hacker.SKILL_SCALES
 	}
 
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		if(skilltype==="hacker_q") return 200
-		if(this.virtualCharacter) return this.virtualCharacter.getSkillTrajectorySpeed(skilltype)
+		// if(this.virtualCharacter) return this.virtualCharacter.getSkillTrajectoryDelay(skilltype)
 		return 0
 	}
 
@@ -232,7 +232,7 @@ class Hacker extends Player {
 							if(source instanceof Hacker)
 							source.addStack(this.turn)
 						
-					})
+					}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				this.startCooltime(s)
 				break
 			case SKILL.W:

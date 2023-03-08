@@ -516,7 +516,7 @@ export class Scene extends Board{
 
 	async placeProj(proj) {
 		//console.log(proj)
-		if (proj.trajectorySpeed > 0 && proj.owner>0) {
+		if (proj.trajectorySpeed > 0 && proj.owner>=0) {
 			this.animateProjTrajectory(proj,proj.trajectorySpeed)
 			await sleep(proj.trajectorySpeed)
 		}
@@ -717,23 +717,6 @@ export class Scene extends Board{
 		}
 
 		return this.createCroppedProjectileImage(icon)
-		// new fabric.Image(icon, {
-		// 	left: 0,
-		// 	top: 0,
-		// 	lockMovementX: true,
-		// 	lockMovementY: true,
-		// 	visible: false,
-		// 	hasControls: false,
-		// 	hasBorders: false,
-		// 	lockScalingX: true,
-		// 	lockScalingY: true,
-		// 	lockRotation: true,
-		// 	originX: "center",
-		// 	originY: "center",
-		// 	objectCaching: false
-		// })
-		// l.scale(0.8)
-		// return l
 	}
 	//===========================================================================================================================
 
@@ -1544,6 +1527,7 @@ export class Scene extends Board{
 		let dest = this.getTilePos(proj.scope[0])
 		let start = this.getPlayerPos(proj.owner)
 		let img=this.createProjIcon(proj.name)
+		console.log("animate projectile traj" +proj.name)
 		switch (proj.name) {
 			case "ghost_r":
 			case "reaper_w":
@@ -1551,55 +1535,16 @@ export class Scene extends Board{
 			case "tree_w":
 			case "kraken_q":
 				this.setEffectImageAttr(img,start.x,start.y,0.6,0.6,1,this.getBearingAngle(start, dest))
-				this.animateX(img,dest.x,speed)
-				this.animateY(img,dest.y,speed)
-				// scale = 0.6
-				// this.effectlist[22]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: start.x,
-				// 		top: start.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale,
-				// 		angle: 
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[22].animate("left", dest.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[22].animate("top", dest.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				setTimeout(() => img.set({ opacity: 0 }), speed + 100)
 				break
 			case "magician_r":
 				this.setEffectImageAttr(img,start.x,start.y,0.6,0.6,1,this.getBearingAngle(start, dest)+90)
-				this.animateX(img,dest.x,speed)
-				this.animateY(img,dest.y,speed)
-				// scale = 0.6
-				// this.effectlist[23]
-				// 	.set({
-				// 		opacity: 1,
-				// 		left: start.x,
-				// 		top: start.y,
-				// 		scaleX: scale,
-				// 		scaleY: scale,
-				// 		angle: this.getBearingAngle(start, dest) + 90
-				// 	})
-				// 	.bringToFront()
-				// this.effectlist[23].animate("left", dest.x, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				// this.effectlist[23].animate("top", dest.y, {
-				// 	onChange: this.render.bind(this),
-				// 	duration: speed
-				// })
-				setTimeout(() => img.set({ opacity: 0 }), speed + 100)
 				break
 		}
+		this.animateX(img,dest.x,speed)
+		this.animateY(img,dest.y,speed)
+		setTimeout(() => img.set({ opacity: 0 }), speed + 100)
+
+
 		this.removeImageAfter(img,2000)
 	}
 
@@ -1609,7 +1554,6 @@ export class Scene extends Board{
 		//console.log("trajectory" + type)
 		let pos1 = this.getTilePos(origin)
 		let pos2 = this.getTilePos(target)
-		let scale = 0
 		let img
 		switch (type) {
 			case "dinosaur_r":
@@ -1625,13 +1569,24 @@ export class Scene extends Board{
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
 				break
-			case "gun":
+			case "sniper_q":
 				img=this.createCroppedEffectImage('sniper_q_trajectory')
 				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.6,1,this.getBearingAngle(pos1, pos2))
 				this.animateX(img,pos2.x,speed)
 				this.animateY(img,pos2.y,speed)
 				break
+			case "sniper_q_root":
+				img=this.createCroppedEffectImage('sniper_q_trajectory')
+				this.setEffectImageAttr(img,pos1.x,pos1.y,0.6,0.9,1,this.getBearingAngle(pos1, pos2))
+				this.animateX(img,pos2.x,speed)
+				this.animateY(img,pos2.y,speed)
+				break
 			case "ghost_w_q":
+				img=this.createCroppedEffectImage('ghost_q_trajectory')
+				this.setEffectImageAttr(img,pos1.x,pos1.y,0.7,0.7,1,this.getBearingAngle(pos1, pos2))
+				this.animateX(img,pos2.x,speed)
+				this.animateY(img,pos2.y,speed)
+				break
 			case "ghost_q":
 				img=this.createCroppedEffectImage('ghost_q_trajectory')
 				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.4,1,this.getBearingAngle(pos1, pos2))
@@ -1669,6 +1624,8 @@ export class Scene extends Board{
 				this.animateY(img,this.extrapolate(pos1.y,pos2.y,3),speed,true)
 				break
 		}
+
+
 		setTimeout(() => { 
 			if(img!=null)
 				img.set({ opacity: 0 })
@@ -1688,10 +1645,16 @@ export class Scene extends Board{
 		let effectImages = []
 		switch (type) {
 			case "basicattack":
+				let type2=Math.random()>0.5
+
 				img=this.createCroppedEffectImage('sweep1')
+				if(type2) img=this.createCroppedEffectImage('sweep2')
+				else img=this.createCroppedEffectImage('sweep1')
 				pos = midpoint(positions[0], positions[1])
 				let scale = Math.max(1,distance(positions[0], positions[1]) / 150)
-				let angleRange= 30 + Math.random() * 30
+				let angleRange= 10 + Math.random() * 30
+				if(type2) angleRange=0
+
 				let angleoffset = Math.random() * 50 - 25
 				let angle = this.getBearingAngle(positions[0], positions[1])+angleoffset
 
@@ -1995,7 +1958,8 @@ export class Scene extends Board{
 				this.animateScaleY(addedEffectImg,2.5,1100)
 
 				break
-			case "gun":
+			case "sniper_q":
+			case "sniper_q_root":
 				this.game.playSound("gun")
 				this.game.playSound("hit")
 

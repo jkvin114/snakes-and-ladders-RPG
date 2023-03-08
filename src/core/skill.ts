@@ -11,11 +11,21 @@ export class SkillAttack{
 	name: string
 	auto:boolean
 	source:Player
+	trajectoryDelay:number
 	constructor(damage: Damage, name: string,skill: number,source:Player) {
 		this.damage = damage
 		this.name = name
 		this.skill=skill
 		this.source=source
+		this.trajectoryDelay=0
+	}
+	/**
+	 * set flying time for projectile
+	 * @param delay 
+	 */
+	setTrajectoryDelay(delay:number){
+		this.trajectoryDelay=delay
+		return this
 	}
 	setOnHit(onhit: SkillOnHitFunction) {
 		this.onHit = onhit

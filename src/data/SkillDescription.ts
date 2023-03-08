@@ -269,7 +269,10 @@ export class SkillInfoFactory {
 				break
 			case 4:
 				data=[
-					this.pDmg(this.baseDmg(s), hotkey),this.effectNoDur(ENUM.EFFECT.ROOT),this.effectNoDur(ENUM.EFFECT.GROUNGING)
+					this.pDmg(this.baseDmg(s), hotkey),this.effectNoDur(ENUM.EFFECT.ROOT),
+					this.effectNoDur(ENUM.EFFECT.GROUNGING),
+					this.rangeNum(this.skillAmt("q_root_arange")),
+					this.pDmg("50%")
 				]
 				break
 			case 5:
@@ -595,7 +598,8 @@ export class SkillInfoFactory {
 					`${this.stat("Attack and magic resistance")} ${this.up("increases by 0~60")} based on your ${this.missingHp()} 
 				${this.active()} For ${this.duration(4)},  ${this.stat("Attack and magic resistance")} ${this.up(
 						"increases by " + this.skillAmt("r_resistance")
-					)}, ${this.shield(this.skillAmt("rshield"),"rshield")},and heal amount of ${this.nameDesc(ENUM.SKILL.Q)} ${this.up("doubles")}`
+					)}, ${this.shield(this.skillAmt("rshield"),"rshield")},and gains ${this.effect(ENUM.EFFECT.SPEED,1)
+					}. Heal amount of ${this.nameDesc(ENUM.SKILL.Q)} ${this.up("doubles")}, and ${this.rangeStr()} ${this.up("increase by 4")}`
 				break
 			case 2:
 				str =

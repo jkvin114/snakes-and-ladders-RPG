@@ -54,7 +54,7 @@ class Yangyi extends Player {
 		if(key==="wheal") return this.calculateScale(Yangyi.SKILL_SCALES.wheal!)
 		return 0
 	}
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		if (skilltype === "dinosaur_r") {
 			return 500
 		}
@@ -78,7 +78,7 @@ class Yangyi extends Player {
 		}
 		return skillTargetSelector
 	}
-	useNonTargetSkill(skill: number): boolean {
+	useInstantSkill(skill: number): boolean {
 		if (skill===ENUM.SKILL.Q) {
 			return this.useQ()
 		}
@@ -89,7 +89,7 @@ class Yangyi extends Player {
 			this.useW()
 		}
 	}
-	useQ() {
+	private useQ() {
 		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q),ENUM.SKILL.Q,this)
 
 
@@ -142,7 +142,7 @@ class Yangyi extends Player {
 			this.getSkillName(ENUM.SKILL.ULT)
 		,ENUM.SKILL.ULT,this).setOnKill(function (this:Player) {
 			this.resetCooltime([ENUM.SKILL.ULT])
-		})
+		}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 
 		return skillattr
 	}
@@ -183,66 +183,5 @@ class Yangyi extends Player {
 		}
 	}
 
-	// w_end() {
-	// 	this.effects.apply(ENUM.EFFECT.SPEED, this.w_speed,ENUM.EFFECT_TIMING.BEFORE_SKILL)
-	// 	this.w_speed = 0
-	// 	this.effects.reset(ENUM.EFFECT.STUN)
-
-	// }
-	// /**
-	//  *
-	//  * @param {*} skilldata {targets:int[]}
-	//  * @param {*} skill 1~3
-	//  */
-	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	// 	if (
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-	// 	) {
-	// 		return null
-	// 	}
-	// 	switch (skill) {
-	// 		case ENUM.SKILL.Q:
-	// 			//4칸이내에 플레이어가 있으면 사용
-	// 			this.useQ()
-					
-	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-				
-	// 			return null
-	// 		case ENUM.SKILL.W:
-	// 			//체력이 50% 이하면 사용
-	// 			if (this.HP < this.MaxHP * 0.5 && this.duration[ENUM.SKILL.W] === 0) {
-	// 				this.useW()
-	// 			}
-	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-	// 		case ENUM.SKILL.ULT:
-	// 			let target = this.getUltTarget(skilldata.targets)
-	// 			if (target == null) {
-	// 				return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-	// 			}
-	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.TARGET, data: target }
-	// 	}
-	// }
-	// /**
-	//  * 체력 30%이하인 플레이어중
-	//  *  가장 앞에있는 플레이어반환
-	//  * @param {} validtargets int[]
-	//  * return int
-	//  */
-	// getUltTarget(validtargets: number[]) {
-	// 	let ps = this.mediator.allPlayer()
-
-	// 	validtargets.sort((b: number, a: number): number => {
-	// 		return ps[a].pos - ps[b].pos
-	// 	})
-
-	// 	for (let p of validtargets) {
-	// 		if (ps[p].HP / ps[p].MaxHP < 0.3 && !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
-	// 			return p
-	// 		}
-	// 	}
-	// 	return null
-	// }
 }
 export { Yangyi }

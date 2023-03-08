@@ -48,7 +48,7 @@ class Timo extends Player {
 		return Timo.SKILL_SCALES
 	}
 
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		if (skilltype === "ghost_q" || skilltype === "ghost_w_q") return 500
 		return 0
 	}
@@ -167,7 +167,7 @@ class Timo extends Player {
 					this.getSkillName(s)
 				,s,this).setOnHit(function (this: Player,source:Player) {
 					this.effects.apply(ENUM.EFFECT.BLIND, 1)
-				})
+				}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				break
 		}
 
@@ -179,41 +179,6 @@ class Timo extends Player {
 	}
 	onSkillDurationCount() {}
 	onSkillDurationEnd(skill: number) {}
-	// /**
-	//  *
-	//  * @param {*} skilldata
-	//  * @param {*} skill 0~
-	//  */
-	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	// 	if (
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-	// 	) {
-	// 		return null
-	// 	}
-	// 	switch (skill) {
-	// 		case ENUM.SKILL.Q:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-	// 				data: this.getAiTarget(skilldata.targets)
-	// 			}
-	// 		case ENUM.SKILL.W:
-	// 			if (this.cooltime[ENUM.SKILL.Q] <= 1) {
-	// 				this.useW()
-	// 			}
-
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,
-	// 				data: null
-	// 			}
-	// 		case ENUM.SKILL.ULT:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-	// 				data: this.getAiProjPos(skilldata, skill)
-	// 			}
-	// 	}
-	// }
 }
 
 export { Timo }

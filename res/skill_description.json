@@ -31,7 +31,7 @@
         {
             "char":"jean",
             "skills":[
-                "Fires a gun and deals <d> to a <$target>,If the target has<d> or <d> effect, gets back <emp>2 turns</>  of <$cool> for <$skill0>"
+                "Fires a gun and deals <d> to a <$target>,If the target has<d> or <d> effect, <d> and deals additional <d>"
                 ,"",""
             ]
         },

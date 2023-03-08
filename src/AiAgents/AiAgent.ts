@@ -66,7 +66,7 @@ abstract class AiAgent {
 			let result = false
 			switch (skillinit.type) {
 				case INIT_SKILL_RESULT.NON_TARGET:
-					result = this.useNonTargetSkill(skill)
+					result = this.useInstantSkill(skill)
 					break
 				case INIT_SKILL_RESULT.ACTIVATION:
 					result = this.useActivationSkill(skill)
@@ -128,12 +128,12 @@ abstract class AiAgent {
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
 				continue
 			}
-			let delay = this.player.getSkillTrajectorySpeed(this.player.getSkillName(skill))
+			// let delay = this.player.getSkillTrajectoryDelay(this.player.getSkillName(skill))
 
 			let result = false
 			switch (skillinit.type) {
 				case INIT_SKILL_RESULT.NON_TARGET:
-					result = this.useNonTargetSkill(skill)
+					result = this.useInstantSkill(skill)
 
 					break
 				case INIT_SKILL_RESULT.ACTIVATION:
@@ -145,7 +145,7 @@ abstract class AiAgent {
 					let target = this.selectTarget(skillinit.skill, skillinit.data)
 					if(!target) break
 
-					this.player.game.useSkillToTarget(target.turn)
+					let delay=this.player.game.useSkillToTarget(target.turn)
 					if (delay > 0) {
 						delay = (MAP.getCoordinateDistance(this.player.mapId, this.player.pos, target.pos) * delay) / trajectorySpeedRatio
 						await sleep(delay)
@@ -191,8 +191,8 @@ abstract class AiAgent {
 		}
 		return -1
 	}
-	useNonTargetSkill(skill: SKILL): boolean {
-		return this.player.useNonTargetSkill(skill)
+	useInstantSkill(skill: SKILL): boolean {
+		return this.player.useInstantSkill(skill)
 	}
 	useActivationSkill(skill: SKILL): boolean {
 		this.player.useActivationSkill(skill)

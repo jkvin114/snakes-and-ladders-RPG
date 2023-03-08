@@ -169,7 +169,7 @@ export class ReplayGame extends Game {
 					actualdice: this.getProp(event, "distance"),
 					currpos: this.getProp(event, "currpos"),
 				})
-				delay = this.getProp(event, "distance")*100
+				delay = this.getProp(event, "distance")*100+500
 				break
 			case "damage":
 				this.animateDamage({
@@ -323,7 +323,8 @@ export class ReplayGame extends Game {
 				break
 			case "move_entity":
 				this.scene.moveEntityTo(this.getProp(event,"id"), this.getProp(event,"pos"))
-				delay=200
+				// delay=200
+				delay=0
 				break
 			case "appearance":
 				this.onReceiveChangeData(event.action,event.invoker,this.getProp(event,"name"))

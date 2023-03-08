@@ -44,7 +44,7 @@ class Gorae extends Player {
 		this.AiAgent=new GoraeAgent(this)
 	}
 
-	getSkillTrajectorySpeed(skilltype:string):number{
+	getSkillTrajectoryDelay(skilltype:string):number{
 		return 0
 	}
 
@@ -89,7 +89,7 @@ class Gorae extends Player {
 		}
 		return skillTargetSelector
 	}
-	useNonTargetSkill(skill: number): boolean {
+	useInstantSkill(skill: number): boolean {
 		if(skill===ENUM.SKILL.W) this.useW()
 		return true
 	}
@@ -166,58 +166,6 @@ class Gorae extends Player {
 	}
 	onSkillDurationCount() {}
 	onSkillDurationEnd(skill: number) {}
-	/**
-	 *
-	 * @param {*} skilldata
-	 * @param {*} skill 0~
-	//  */
-	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	// 	if (
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-	// 	) {
-	// 		return null
-	// 	}
-    //     switch (skill) {
-	// 		case ENUM.SKILL.Q:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-	// 				data: this.getAiProjPos(skilldata, skill),
-	// 			}
-	// 		case ENUM.SKILL.W:
-	// 			//사거리내에 1~3 명이상 있으면 사용
-	// 			if (
-	// 				this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(5)).length >=
-	// 				this.game.totalnum- 1 || (this.HP/this.MaxHP < 0.3)
-	// 			) {
-	// 				this.useW()
-	// 				return {type:ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET,data:null}
-	// 			}
-	// 			return null
-
-	// 		case ENUM.SKILL.ULT:
-	// 			let target = this.getUltTarget(skilldata.targets)
-	// 			if (target == null) {
-	// 				return null
-	// 			}
-	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.TARGET, data: target }
-	// 	}
-	// }
-    // getUltTarget(validtargets:number[]) {
-	// 	let ps = this.mediator.allPlayer()
-	// 	validtargets.sort((b:number, a:number):number => {
-	// 		return ps[a].pos - ps[b].pos
-	// 	})
-
-	// 	for (let p of validtargets) {
-	// 		if (ps[p].HP+ ps[p].shield < this.getSkillBaseDamage(ENUM.SKILL.ULT) 
-	// 		&& !ps[p].effects.has(ENUM.EFFECT.SHIELD)) {
-	// 			return p
-	// 		}
-	// 	}
-	// 	return null
-	// }
 
 }
 

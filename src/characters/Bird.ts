@@ -59,7 +59,7 @@ class Bird extends Player {
 	}
 
 
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		if(skilltype==="bird_q" || skilltype === "bird_w_hit") return 250
 		return 0
 	}
@@ -227,6 +227,7 @@ class Bird extends Player {
 					this.game.placeProjNoSelection(proj, target.pos - 1)
 				}
 				skillattr =new SkillAttack(damage,this.getSkillName(s),s,this).setOnHit(onhit)
+				.setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				break
 		}
 
@@ -244,36 +245,5 @@ class Bird extends Player {
 	}
 	passive() {}
 	onSkillDurationCount() {}
-	/**
-	//  *
-	//  * @param {*} skilldata
-	//  * @param {*} skill 0~
-	//  */
-	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	// //	console.log("aiSkillFinalSelection" + skill + "" + skilldata)
-	// 	if (
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-	// 	) {
-	// 		return null
-	// 	}
-	// 	switch (skill) {
-	// 		case ENUM.SKILL.Q:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-	// 				data: this.getAiTarget(skilldata.targets)
-	// 			}
-	// 		case ENUM.SKILL.W:
-	// 			if (this.cooltime[ENUM.SKILL.Q] < 1) {
-	// 				this.useW()
-	// 			}
-	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-	// 		case ENUM.SKILL.ULT:
-	// 			this.useUlt()
-	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-	// 	}
-	// 	return null
-	// }
 }
 export { Bird }

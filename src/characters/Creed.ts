@@ -65,7 +65,7 @@ class Creed extends Player {
 		return Creed.SKILL_SCALES
 	}
 
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		return 0
 	}
 
@@ -182,111 +182,7 @@ class Creed extends Player {
 	}
 	onSkillDurationCount() {
 	}
-	onSkillDurationEnd(skill: number) {
-	}
-	/**
-	//  *
-	//  * @param {*} skilldata
-	//  * @param {*} skill 0~
-	//  */
-	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	// 	if (
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-	// 	) {
-	// 		return null
-	// 	}
-	// 	switch (skill) {
-	// 		case ENUM.SKILL.Q:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-	// 				data: this.getAiTarget(skilldata.targets)
-	// 			}
-	// 		case ENUM.SKILL.W:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-	// 				data: this.getAiProjPos(skilldata, skill)
-	// 			}
-	// 		case ENUM.SKILL.ULT:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-	// 				data: this.getAiTarget(skilldata.targets)
-	// 			}
-	// 	}
-	// }
-	/*
-
-	aiSkillFinalSelection_Q(skilldata,targets): { type: number; data: number }{
-		return {
-			type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-			data: this.getAiTarget(skilldata.targets)
-		}
-	}
-	aiSkillFinalSelection_W(){
-		return {
-			type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-			data: this.getAiProjPos(skilldata, ENUM.SKILL.W)
-		}
-	}
-	aiSkillFinalSelection_Ult(){
-		return {
-			type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-			data: this.getAiTarget(skilldata.targets)
-		}
-	}
-
-
-
-	aiUseSkills(){
-		for (let i of [ENUM.SKILL.Q,ENUM.SKILL.W,ENUM.SKILL.ULT]) {
-			//let slist = ["Q", "W", "ult"]
-			let skillatr=this.game.initSkill(i)
-			if (
-				skillatr === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-				skillatr === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-				skillatr === ENUM.INIT_SKILL_RESULT.NO_TARGET
-			){
-				return
-			}
-
-			if(i===ENUM.SKILL.Q){
-				let skillresult=aiSkillFinalSelection_Q()
-
-
-			}
-			else if(i===ENUM.SKILL.W){
-
-
-
-			}
-			else if(i===ENUM.SKILL.ULT){
-
-
-
-			}
-			
-
-
-			let skillresult = p.aiSkillFinalSelection(this.initSkill(i), i)
-			if (!skillresult) {
-				continue
-			}
-
-			if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.LOCATION) {
-				console.log(skillresult)
-				if (skillresult.data === -1) {
-					return
-				}
-				this.game.placeProj(skillresult.data)
-			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.TARGET) {
-
-				this.game.useSkillToTarget(skillresult.data)
-			} else if (skillresult.type === ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET) {
-			}
-		}
-	}
-	*/
+	onSkillDurationEnd(skill: number) {}
 }
 
 export { Creed }

@@ -121,7 +121,7 @@ abstract class Player extends Entity {
 	private skillInfo: SkillInfoFactory
 	thisTurnObstacleCount: number //variable to prevent infinite recursion error
 
-	abstract getSkillTrajectorySpeed(s: string): number
+	abstract getSkillTrajectoryDelay(s: string): number
 	/**
 	 * for targeting, projectile, area targeting skill,
 	 * return SkillTargetSelector to ask client about where to use the skill
@@ -1262,7 +1262,7 @@ abstract class Player extends Entity {
 	 * @param skill
 	 * @returns
 	 */
-	useNonTargetSkill(skill: number): boolean {
+	useInstantSkill(skill: number): boolean {
 		return false
 	}
 	/**
@@ -1289,7 +1289,7 @@ abstract class Player extends Entity {
 		if (skillTargetSelector.isNonTarget()) {
 			payload.type = INIT_SKILL_RESULT.NON_TARGET
 			if (!this.AI) {
-				let result = this.useNonTargetSkill(skill)
+				let result = this.useInstantSkill(skill)
 				if (!result) payload.type = INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
 			}
 			return payload
@@ -1360,8 +1360,15 @@ abstract class Player extends Entity {
 	 * similar with useNonTargetSkill() but contains targeted position
 	 * @param pos
 	 */
-	usePendingAreaSkill(pos: number) {}
+	usePendingAreaSkill(pos: number):number { return 0}
 
+	usePendingTargetingSkill(target:number):number {
+		let damage=this.getSkillDamage(this.game.pOfTurn(target),this.pendingSkill)
+	
+		if(!damage || !damage.source) return
+		this.mediator.skillAttackSingle(damage.source, this.game.turn2Id(target),damage)
+		return damage.trajectoryDelay
+	}
 	/**
 	 *
 	 * @returns default entityfilter fo basic attack

@@ -60,7 +60,7 @@ class Tree extends Player {
 		return Tree.SKILL_SCALES
 	}
 
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		if (skilltype === "tree_q") {
 			return 300
 		}
@@ -195,7 +195,7 @@ class Tree extends Player {
 							this.effects.applySpecial(source.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
 							this.effects.apply(ENUM.EFFECT.ROOT, source.isWithered ? 2 : 1)
 						}
-					})
+					}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				this.moveAllPlantTo(target.pos)
 				// setTimeout(()=>this.plantAttack(),200)
 
@@ -204,7 +204,7 @@ class Tree extends Player {
 
 		return skillattr
 	}
-	usePendingAreaSkill(pos: number): void {
+	usePendingAreaSkill(pos: number): number {
 		let skillattr = null
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
@@ -214,6 +214,7 @@ class Tree extends Player {
 
 			// let opponents = this.game.playerSelector.getPlayersIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
 			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), this.getSkillName(s),s,this)
+			.setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 
 			this.mediator.skillAttack(this, EntityFilter.ALL_ATTACKABLE_PLAYER(this).in(pos, pos + Tree.Q_AREA_SIZE - 1), dmg)
 
@@ -225,20 +226,13 @@ class Tree extends Player {
 					.excludeEnemy()
 					.in(pos, pos + Tree.Q_AREA_SIZE - 1)
 			,function (source) {
-				console.log("tree Q " + this.turn)
 				this.heal(healamt)
 				this.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD, 2, shieldamt))
 			})
-
-			// let allies = this.game.playerSelector.getAlliesIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
-
-			// for (let p of allies) {
-			// 	this.game.playerSelector.get(p).heal(this.getSkillAmount("qheal"))
-			// 	this.game.playerSelector
-			// 		.get(p)
-			// 		.effects.applySpecial(new ShieldEffect(ENUM.EFFECT.TREE_Q_SHIELD, 2, this.getSkillAmount("qshield")))
-			// }
-		}
+			
+			return this.getSkillTrajectoryDelay(this.getSkillName(s))
+		}	
+		return 0
 	}
 
 	onMyTurnStart() {
@@ -292,37 +286,6 @@ class Tree extends Player {
 	}
 	onSkillDurationCount() {}
 	onSkillDurationEnd(skill: number) {}
-	// /**
-	//  *
-	//  * @param {*} skilldata
-	//  * @param {*} skill 0~
-	//  */
-	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	// 	if (
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-	// 	) {
-	// 		return null
-	// 	}
-	// 	switch (skill) {
-	// 		case ENUM.SKILL.Q:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.AREA_TARGET,
-	// 				data: this.getAiAreaPos(skilldata, skill)
-	// 			}
-	// 		case ENUM.SKILL.W:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.LOCATION,
-	// 				data: this.getAiProjPos(skilldata, skill)
-	// 			}
-	// 		case ENUM.SKILL.ULT:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-	// 				data: this.getAiTarget(skilldata.targets)
-	// 			}
-	// 	}
-	// }
 }
 
 export { Tree }

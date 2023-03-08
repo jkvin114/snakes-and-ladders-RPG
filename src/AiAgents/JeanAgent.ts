@@ -1,8 +1,9 @@
 import { Jean } from "../characters/Jean";
 import { AbilityUtilityScorecard } from "../core/Util";
-import { ITEM, SKILL } from "../data/enum";
+import { EFFECT, ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
+import { ServerGameEventFormat } from "../data/EventFormat";
 
 class JeanAgent extends AiAgent{
     itemBuild: ItemBuild
@@ -48,6 +49,28 @@ class JeanAgent extends AiAgent{
 			return SKILL.ULT
 		}
 		return -1
+	}
+	selectTarget(skill: SKILL, targets: ServerGameEventFormat.PlayerTargetSelector){
+		let players = targets.targets
+		if (players.length === 1) {
+			return this.player.game.pOfTurn(players[0])
+		}
+		let ps = this.player.mediator.allPlayer()
+		players.sort(function (b, a) {
+			if (Math.abs(ps[a].pos - ps[b].pos) < 8) {
+				return ps[b].HP - ps[a].HP
+			} else {
+				return ps[a].pos - ps[b].pos
+			}
+		})
+
+		//priotize rooted or grounded player
+		for(const p of players){
+			let plyr=this.player.game.pOfTurn(p)
+			if(plyr.effects.has(EFFECT.ROOT) || plyr.effects.has(EFFECT.GROUNGING)) 
+				return plyr
+		}
+		return ps[players[0]]
 	}
 }
 export default JeanAgent

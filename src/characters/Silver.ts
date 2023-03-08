@@ -53,7 +53,7 @@ class Silver extends Player {
 	getSkillScale(){
 		return Silver.SKILL_SCALES
 	}
-	getSkillTrajectorySpeed(skilltype: string): number {
+	getSkillTrajectoryDelay(skilltype: string): number {
 		return 0
 	}
 	/**
@@ -67,12 +67,14 @@ class Silver extends Player {
 		this.pendingSkill=s
 		switch (s) {
 			case ENUM.SKILL.Q:
+				let baserange=this.skill_ranges[s]
+				let arange=this.isSkillActivated(ENUM.SKILL.ULT)? 4:0
 				skillTargetSelector
 					.setType(ENUM.SKILL_INIT_TYPE.TARGETING)
-					.setRange(this.skill_ranges[s])
+					.setRange(baserange+arange)
 					.setConditionedRange(function(this: Entity){
 						return this.effects.has(ENUM.EFFECT.ELEPHANT_W_SIGN)
-					}, this.getSkillAmount("w_qrange"))
+					}, this.getSkillAmount("w_qrange")+arange)
 
 				break
 			case ENUM.SKILL.W:
@@ -96,6 +98,7 @@ class Silver extends Player {
 		this.effects.applySpecial(this.getUltShield(),Silver.EFFECT_ULT_SHIELD)
 
 		this.effects.applySpecial(this.getUltResistance(),SpecialEffect.SKILL.ELEPHANT_ULT.name)
+		this.effects.apply(ENUM.EFFECT.SPEED,1)
 
 		this.showEffect(Silver.VISUALEFFECT_ULT, this.turn)
 		this.changeApperance(Silver.APPERANCE_ULT)
@@ -222,36 +225,5 @@ class Silver extends Player {
 		}
 	}
 
-	// /**
-	//  * ai actually uses the skill
-	//  * chooses target or location and returns it
-	//  * @param {*} skilldata
-	//  * @param {*} skill 0~
-	//  */
-	// aiSkillFinalSelection(skilldata: any, skill: number): { type: number; data: number } {
-	// 	if (
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NOT_LEARNED ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_COOL ||
-	// 		skilldata === ENUM.INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-	// 	) {
-	// 		return null
-	// 	}
-	// 	switch (skill) {
-	// 		case ENUM.SKILL.Q:
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-	// 				data: this.getAiTarget(skilldata.targets)
-	// 			}
-	// 		case ENUM.SKILL.W:
-	// 			//  return {type:"location",data:1}
-	// 			return {
-	// 				type: ENUM.AI_SKILL_RESULT_TYPE.TARGET,
-	// 				data: this.getAiTarget(skilldata.targets)
-	// 			}
-	// 		case ENUM.SKILL.ULT:
-	// 			this.useUlt()
-	// 			return { type: ENUM.AI_SKILL_RESULT_TYPE.NON_TARGET, data: null }
-	// 	}
-	// }
 }
 export { Silver }
