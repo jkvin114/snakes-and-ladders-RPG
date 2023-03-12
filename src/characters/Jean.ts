@@ -27,7 +27,7 @@ class Jean extends Player {
 	static readonly PROJ_W = "sniper_w"
 	static readonly EFFECT_ULT = "sniper_r"
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
-	static readonly Q_ROOT="sniper_q_root"
+	static readonly Q_ROOT = "sniper_q_root"
 	static readonly SKILL_EFFECT_NAME = ["sniper_q", "sniper_w", "sniper_r"]
 
 	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
@@ -48,7 +48,7 @@ class Jean extends Player {
 	}
 
 	getSkillTrajectoryDelay(skilltype: string): number {
-		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.Q] || skilltype===Jean.Q_ROOT) return 150
+		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.Q] || skilltype === Jean.Q_ROOT) return 150
 
 		if (skilltype === Jean.SKILL_EFFECT_NAME[ENUM.SKILL.ULT]) return 170
 
@@ -78,7 +78,7 @@ class Jean extends Player {
 					.setRange(this.skill_ranges[s])
 					.setConditionedRange(function (this: Entity) {
 						return this.effects.has(ENUM.EFFECT.ROOT) || this.effects.has(ENUM.EFFECT.GROUNGING)
-					},this.getSkillAmount("q_root_arange"))
+					}, this.getSkillAmount("q_root_arange"))
 
 				break
 			case ENUM.SKILL.W:
@@ -123,7 +123,7 @@ class Jean extends Player {
 	}
 	getSkillAmount(key: string): number {
 		if (key === "rshield") return 80
-		if(key==="q_root_arange") return this.skill_ranges[ENUM.SKILL.Q]+ 10
+		if (key === "q_root_arange") return this.skill_ranges[ENUM.SKILL.Q] + 10
 
 		return 0
 	}

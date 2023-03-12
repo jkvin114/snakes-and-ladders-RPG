@@ -278,7 +278,9 @@ html{
     position: absolute;
     bottom: 20px;
     width: 50px;
-    
+    left: 50%;
+    transform: translate(-50%,0);
+
   }
   .window-content-text1{
     background-color: #e9d49a;
@@ -1049,7 +1051,7 @@ html{
     margin-right: 10px;
   }
   .player-ability-title{
-   
+    color: #f7c109;
     font-size: 12px;
   }
   .player-ability-desc{

@@ -944,7 +944,6 @@ class Game {
 
 		for (let proj of this.rangeProjectiles.values()) {
 			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
-			//	console.log("proj hit" + proj.UPID)
 				let died=false
 				if(proj.sourcePlayer){
 					let skillattack = new SkillAttack(proj.damage, proj.name,-1,proj.sourcePlayer).setOnHit(proj.action)
@@ -953,7 +952,6 @@ class Game {
 						this.turn2Id(player.turn)
 					,skillattack)
 				}
-				//player.hitBySkill(proj.damage, proj.name, proj.sourceTurn, proj.action)
 
 				if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
 
@@ -963,12 +961,6 @@ class Game {
 				if (died) return true
 			}
 		}
-		// let other = this.playerSelector.getPlayersByCondition(player, -1, false, true, false, false)
-		// for (let o of other) {
-		// 	for (let p of o.projectile) {
-
-		// 	}
-		// }
 		return ignoreObstacle
 	}
 	getNameByTurn(turn: number) {
@@ -982,14 +974,6 @@ class Game {
 	}
 	
 	useSkillToTarget(target: number):number {
-	// 	let p = this.thisp()
-	// 	let damage=p.getSkillDamage(this.pOfTurn(target),p.pendingSkill)
-	
-	// 	if(!damage || !damage.source) return
-	// 	this.entityMediator.skillAttackSingle(damage.source, this.turn2Id(target),damage)
-	// 	return damage.trajectoryDelay
-
-	// //	return this.getSkillStatus()
 		return this.thisp().usePendingTargetingSkill(target)
 	}
 	onSelectSkill(skill:ENUM.SKILL):ServerGameEventFormat.SkillInit{

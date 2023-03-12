@@ -2,7 +2,7 @@ import { Game } from "./script.js"
 // import { REPLAY } from "./replays/replay_test.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
-const SPEEDS=[0.25,0.5,0.75,1,1.5,2,3,4]
+const SPEEDS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4]
 
 export class ReplayGame extends Game {
 	constructor(id) {
@@ -12,14 +12,14 @@ export class ReplayGame extends Game {
 		this.format
 		this.running = false
 		this.currentIndex = 0
-		this.pause=false
-		this.speed=1
-		this.myturn=undefined
-		this.speedIndex=3
+		this.pause = false
+		this.speed = 1
+		this.myturn = undefined
+		this.speedIndex = 3
 	}
-	setSpeed(speed){
-		this.speed=Math.min(4,speed)
-		this.scene.gameSpeed=this.speed
+	setSpeed(speed) {
+		this.speed = Math.min(4, speed)
+		this.scene.gameSpeed = this.speed
 	}
 	onCreate() {
 		//console.log(this.replayId)
@@ -32,45 +32,44 @@ export class ReplayGame extends Game {
 		$("#replay-control").show()
 		$("#replaystart").click(() => {
 			this.start()
-			this.running=true
+			this.running = true
 			$("#replaypause").show()
 			$("#replaystart").hide()
 			$("#replayprogress").show()
 		})
 		$("#replaypause").click(() => {
-			this.pause=true
-			this.running=false
+			this.pause = true
+			this.running = false
 			$("#replaypause").hide()
 			$("#replaystart").show()
 		})
 		$("#replayslow").click(() => {
-			this.speedIndex=Math.max(0,this.speedIndex-1)
+			this.speedIndex = Math.max(0, this.speedIndex - 1)
 			this.updateSpeed()
 		})
 		$("#replayfast").click(() => {
-			this.speedIndex=Math.min(SPEEDS.length-1,this.speedIndex+1)
+			this.speedIndex = Math.min(SPEEDS.length - 1, this.speedIndex + 1)
 			this.updateSpeed()
 		})
 		$("#skillinfobtn").hide()
 		super.onCreate()
 	}
 	async requestReplay() {
-		try{
+		try {
 			await this.requestReplayById()
 			//console.log(this.replayData.setting)
 			let setting = this.replayData.setting
 			this.init(setting, 0, "")
-		}
-		catch(e){
+		} catch (e) {
 			alert("error while loading replay data")
-			window.location.href="index.html"
+			window.location.href = "index.html"
 		}
 		//this.loadResource()
 	}
 	requestReplayById() {
 		return new Promise((resolve, reject) => {
 			$.ajax({
-				url: "/resource/replay/"+this.replayId,
+				url: "/resource/replay/" + this.replayId,
 				type: "GET",
 				success: (data) => {
 					this.replayData = JSON.parse(data)
@@ -103,11 +102,11 @@ export class ReplayGame extends Game {
 		await this.requestFormat()
 		super.loadResource()
 	}
-	updateSpeed(){
+	updateSpeed() {
 		this.setSpeed(SPEEDS[this.speedIndex])
-		$("#replay-speed").html("&times;"+SPEEDS[this.speedIndex])
+		$("#replay-speed").html("&times;" + SPEEDS[this.speedIndex])
 	}
-	isMyTeam(turn){
+	isMyTeam(turn) {
 		return !this.players[turn].team
 	}
 	//start playing game
@@ -115,35 +114,32 @@ export class ReplayGame extends Game {
 		super.mapLoadComplete()
 		$("#replaystart").show()
 		this.updateSpeed()
-		
 	}
-	modifyDelay(val){
-		return Math.floor(val/Math.min(4,this.speed))
+	modifyDelay(val) {
+		return Math.floor(val / Math.min(4, this.speed))
 	}
 	async start() {
-		
-
 		if (this.running) return
-		this.pause=false
+		this.pause = false
 		this.running = true
 		for (let i = this.currentIndex; i < this.replayData.events.length; ++i) {
 			const event = this.replayData.events[i]
 			this.currentIndex += 1
 			try {
-				$(".replayprogress").html("Playing... "+i+"/"+(this.replayData.events.length-1))
-				$(".replay-progress-value").css("width",(i/this.replayData.events.length)*100+"%")
-				
-				if(event.action==="moveByDice") await sleep(this.modifyDelay(500))
+				$(".replayprogress").html("Playing... " + i + "/" + (this.replayData.events.length - 1))
+				$(".replay-progress-value").css("width", (i / this.replayData.events.length) * 100 + "%")
+
+				if (event.action === "moveByDice") await sleep(this.modifyDelay(500))
 				let delay = this.playEvent(event)
 				await sleep(this.modifyDelay(delay))
-				if(i===this.replayData.events.length-1){
+				if (i === this.replayData.events.length - 1) {
 					this.android_toast("Game Over")
 				}
 			} catch (e) {
 				console.error(e)
 				continue
 			}
-			if(this.pause) break
+			if (this.pause) break
 		}
 	}
 
@@ -169,7 +165,7 @@ export class ReplayGame extends Game {
 					actualdice: this.getProp(event, "distance"),
 					currpos: this.getProp(event, "currpos"),
 				})
-				delay = this.getProp(event, "distance")*100+500
+				delay = this.getProp(event, "distance") * 100 + 250
 				break
 			case "damage":
 				this.animateDamage({
@@ -230,113 +226,103 @@ export class ReplayGame extends Game {
 				break
 			case "shield":
 				this.changeShield({
-					turn:this.getProp(event, "turn"),
-					change:this.getProp(event, "change"),
-					shield:this.getProp(event, "shield"),
-					indicate:Boolean(this.getProp(event, "indicate")),
+					turn: this.getProp(event, "turn"),
+					change: this.getProp(event, "change"),
+					shield: this.getProp(event, "shield"),
+					indicate: Boolean(this.getProp(event, "indicate")),
 				})
 				delay = 0
 				break
 			case "status_effect":
-				this.giveEffect(
-					this.getProp(event,"effect"),
-					this.getProp(event, "turn"),
-					this.getProp(event, "num")
-				)
-				delay=0
+				this.giveEffect(this.getProp(event, "effect"), this.getProp(event, "turn"), this.getProp(event, "num"))
+				delay = 0
 				break
 			case "teleport_pos":
 				this.teleportPlayer({
-					turn:this.getProp(event, "turn"),
-					pos:this.getProp(event, "pos"),
-					movetype:this.getProp(event, "movetype")
+					turn: this.getProp(event, "turn"),
+					pos: this.getProp(event, "pos"),
+					movetype: this.getProp(event, "movetype"),
 				})
-				if(this.getProp(event, "movetype") ==="simple")
-					delay = 500
-				else
-					delay=1000
+				if (this.getProp(event, "movetype") === "simple") delay = 500
+				else delay = 1000
 				break
 			case "smooth_teleport":
-				this.smoothTeleport(
-					this.getProp(event, "turn"),
-					this.getProp(event,"pos"),
-					this.getProp(event, "distance")
-				)
-				delay=500
+				this.smoothTeleport(this.getProp(event, "turn"), this.getProp(event, "pos"), this.getProp(event, "distance"))
+				delay = 500
 				break
 			case "delete_projectile":
-				this.scene.destroyProj(this.getProp(event,"id"))
-				delay=0
+				this.scene.destroyProj(this.getProp(event, "id"))
+				delay = 0
 				break
 			case "death":
 				this.onPlayerDie(
 					this.getProp(event, "turn"),
-					this.getProp(event,"location"),
+					this.getProp(event, "location"),
 					this.getProp(event, "killer"),
 					this.getProp(event, "isShutDown"),
 					this.getProp(event, "killerMultiKillCount")
 				)
-				delay=0
+				delay = 0
 				break
 			case "create_projectile":
 				this.scene.placeProj({
-					name:this.getProp(event, "name"),
-					owner:this.getProp(event, "owner"),
-					UPID:this.getProp(event, "id"),
-					trajectorySpeed:this.modifyDelay(this.getProp(event, "trajectorySpeed")),
-					scope:this.getProp(event, "scope",true),
+					name: this.getProp(event, "name"),
+					owner: this.getProp(event, "owner"),
+					UPID: this.getProp(event, "id"),
+					trajectorySpeed: this.modifyDelay(this.getProp(event, "trajectorySpeed")),
+					scope: this.getProp(event, "scope", true),
 				})
 				delay = this.getProp(event, "trajectorySpeed")
 				break
 			case "removeEffect":
-				this.onReceiveChangeData(event.action,event.invoker,this.getProp(event,"id"))
+				this.onReceiveChangeData(event.action, event.invoker, this.getProp(event, "id"))
 				delay = 0
 				break
 			case "create_passprojectile":
 				this.scene.placePassProj({
-					name:this.getProp(event, "name"),
-					owner:this.getProp(event, "owner"),
-					UPID:this.getProp(event, "id"),
-					trajectorySpeed:this.modifyDelay(this.getProp(event, "trajectorySpeed")),
-					scope:this.getProp(event, "scope",true),
-					stopPlayer:Boolean(this.getProp(event,"stopPlayer"))
+					name: this.getProp(event, "name"),
+					owner: this.getProp(event, "owner"),
+					UPID: this.getProp(event, "id"),
+					trajectorySpeed: this.modifyDelay(this.getProp(event, "trajectorySpeed")),
+					scope: this.getProp(event, "scope", true),
+					stopPlayer: Boolean(this.getProp(event, "stopPlayer")),
 				})
 				delay = this.getProp(event, "trajectorySpeed")
 				break
 			case "create_entity":
 				this.scene.summonEntity({
-					UEID:this.getProp(event,"id"),
-					sourceTurn:this.getProp(event,"sourceTurn"),
-					name:this.getProp(event,"name"),
-					pos:this.getProp(event,"pos")
+					UEID: this.getProp(event, "id"),
+					sourceTurn: this.getProp(event, "sourceTurn"),
+					name: this.getProp(event, "name"),
+					pos: this.getProp(event, "pos"),
 				})
-				delay=0
+				delay = 0
 				break
 			case "delete_entity":
 				//console.log("delete_entity")
-				this.scene.removeEntity(this.getProp(event,"id"),Boolean(this.getProp(event,"iskilled")))
-				delay=0
+				this.scene.removeEntity(this.getProp(event, "id"), Boolean(this.getProp(event, "iskilled")))
+				delay = 0
 				break
 			case "finish_pos":
-				this.onReceiveChangeData(event.action,0,this.getProp(event,"pos"))
-				delay=0
+				this.onReceiveChangeData(event.action, 0, this.getProp(event, "pos"))
+				delay = 0
 				break
 			case "move_entity":
-				this.scene.moveEntityTo(this.getProp(event,"id"), this.getProp(event,"pos"))
+				this.scene.moveEntityTo(this.getProp(event, "id"), this.getProp(event, "pos"))
 				// delay=200
-				delay=0
+				delay = 0
 				break
 			case "appearance":
-				this.onReceiveChangeData(event.action,event.invoker,this.getProp(event,"name"))
-				delay=0
+				this.onReceiveChangeData(event.action, event.invoker, this.getProp(event, "name"))
+				delay = 0
 				break
 			case "waiting_revival":
-				this.onReceiveChangeData(event.action,event.invoker)
-				delay=0
+				this.onReceiveChangeData(event.action, event.invoker)
+				delay = 0
 				break
 			default:
-				delay=0
-			break
+				delay = 0
+				break
 		}
 		return delay
 	}

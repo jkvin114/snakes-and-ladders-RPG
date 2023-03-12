@@ -175,11 +175,11 @@ export class SkillInfoFactory {
 		try {
 			if (str[0] === "{") {
 				let name = str.match(/\{(.+)\}/)
-				if(!name) return `<badeffect${e}>STRING RESOURCE ERROR`
+				if(!name) return `<badeffect${e}>??`
 				return `<badeffect${e}>` + name[1]
 			} else {
 				let name = str.match(/\[(.+)\]/)
-				if(!name) return`<goodeffect${e}>STRING RESOURCE ERROR`
+				if(!name) return`<goodeffect${e}>??`
 				return `<goodeffect${e}>` + name[1]
 			}
 		} catch (e) {

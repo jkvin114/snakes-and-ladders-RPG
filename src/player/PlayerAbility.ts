@@ -138,20 +138,20 @@ class PlayerAbility implements PlayerComponent{
 	transfer(func: Function, ...args: any[]) {
 		this.player.mediator.sendToClient(func, ...args)
 	}
-	get(ability: string): number {
+	getByStr(ability: string): number {
 		switch (ability) {
 			case "AD":
-				return this.AD.get()
+				return this.AD.val
 			case "AP":
-				return this.AP.get()
+				return this.AP.val
 			case "AR":
-				return this.AR.get()
+				return this.AR.val
 			case "MR":
-				return this.MR.get()
+				return this.MR.val
 			case "arP":
-				return this.arP.get()
+				return this.arP.val
 			case "MP":
-				return this.MP.get()
+				return this.MP.val
 			case "extraHP":
 				return this.extraHP
 			case "HP":
@@ -173,17 +173,17 @@ class PlayerAbility implements PlayerComponent{
 				break
 			case "AD":
 				this.AD.update(change_amt)
-				if (this.AD.get() > this.AP.get() && this.adaptativeStat.get() > 0 && !this.adStatAD) {
-					this.AP.update(-this.adaptativeStat.get())
-					this.AD.update(this.adaptativeStat.get())
+				if (this.AD.val > this.AP.val && this.adaptativeStat.val > 0 && !this.adStatAD) {
+					this.AP.update(-this.adaptativeStat.val)
+					this.AD.update(this.adaptativeStat.val)
 					this.adStatAD = true
 				}
 				break
 			case "AP":
 				this.AP.update(change_amt)
-				if (this.AD.get() < this.AP.get() && this.adaptativeStat.get() > 0 && this.adStatAD) {
-					this.AD.update(-this.adaptativeStat.get())
-					this.AP.update(this.adaptativeStat.get())
+				if (this.AD.val < this.AP.val && this.adaptativeStat.val > 0 && this.adStatAD) {
+					this.AD.update(-this.adaptativeStat.val)
+					this.AP.update(this.adaptativeStat.val)
 					this.adStatAD = false
 				}
 				break
@@ -254,19 +254,19 @@ class PlayerAbility implements PlayerComponent{
 	serializeAll() {
 		return {
 			level: this.player.level,
-			AD: this.AD.get(),
-			AP: this.AP.get(),
-			AR: this.AR.get(),
-			MR: this.MR.get(),
-			regen: this.regen.get(),
-			absorb: this.absorb.get(),
-			arP: this.arP.get(),
-			MP: this.MP.get(),
-			attackRange: this.attackRange.get(),
-			obsR: this.obsR.get(),
-			ultHaste: this.ultHaste.get(),
-			moveSpeed: this.moveSpeed.get(),
-			basicAttackSpeed: this.basicAttackSpeed.get()
+			AD: this.AD.val,
+			AP: this.AP.val,
+			AR: this.AR.val,
+			MR: this.MR.val,
+			regen: this.regen.val,
+			absorb: this.absorb.val,
+			arP: this.arP.val,
+			MP: this.MP.val,
+			attackRange: this.attackRange.val,
+			obsR: this.obsR.val,
+			ultHaste: this.ultHaste.val,
+			moveSpeed: this.moveSpeed.val,
+			basicAttackSpeed: this.basicAttackSpeed.val
 		}
 	}
 	getStatusLabel(){
@@ -300,7 +300,7 @@ class PlayerAbility implements PlayerComponent{
 	}
 	//모든피해 흡혈
 	absorb_hp(damage: number) {
-		this.player.changeHP_heal(new HPChange(Math.floor((damage * this.absorb.get()) / 100)))
+		this.player.changeHP_heal(new HPChange(Math.floor((damage * this.absorb.val) / 100)))
 	}
 	/**
 	 * 공격속도 비례 데미지 감소
@@ -310,7 +310,7 @@ class PlayerAbility implements PlayerComponent{
 	 * @returns
 	 */
 	basicAttackMultiplier() {
-		return 1 / (1 + (this.basicAttackSpeed.get() - 1) * 0.75)
+		return 1 / (1 + (this.basicAttackSpeed.val - 1) * 0.75)
 	}
 
 	basicAttackDamage() {
@@ -331,22 +331,22 @@ class PlayerAbility implements PlayerComponent{
 
 		return damage
 			.applyResistance({
-				AR: target.AR.get(),
-				MR: target.MR.get(),
-				arP: this.arP.get(),
-				MP: this.MP.get(),
+				AR: target.AR.val,
+				MR: target.MR.val,
+				arP: this.arP.val,
+				MP: this.MP.val,
 				percentPenetration: pp
 			})
 	}
 
 	getMagicCastleDamage() {
-		return Math.floor(this.AD.get() * 0.3 + this.AP.get() * 0.24 + this.extraHP * 0.3) 
+		return Math.floor(this.AD.val * 0.3 + this.AP.val * 0.24 + this.extraHP * 0.3) 
 	}
 	calculateScale(data: ValueScale): number {
 		let v =
 			data.base +
 			data.scales.reduce((prev, curr) => {
-				return prev + this.get(curr.ability) * curr.val
+				return prev + this.getByStr(curr.ability) * curr.val
 			}, 0)
 
 		return Math.floor(v)

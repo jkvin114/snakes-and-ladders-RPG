@@ -62,8 +62,8 @@ $("document").ready(async function(){
   $("input[name='ip']" ).val(window.location.href.split("://")[1].split("/")[0])
   
 
-  $("#open_create_room").html(chooseLang("CREATE ROOM","방 만들기"))
-  $("#join").html(chooseLang("JOIN","방 참가"))
+  $("#open_create_room").html(chooseLang("CREATE GAME","게임 만들기"))
+  $("#join").html(chooseLang("JOIN","게임 참가"))
 
   $("#simulation").html(chooseLang("Simulation","시뮬레이션"))
   $("#reconnect").html(chooseLang("Reconnect","재접속"))

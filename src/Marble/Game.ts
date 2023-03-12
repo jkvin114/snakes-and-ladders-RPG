@@ -191,10 +191,6 @@ class MarbleGame {
 		)
 
 		let pkg = new TurnStartActionBuilder(this, new ActionTrace(ACTION_TYPE.TURN_START), this.thisPlayer()).build()
-		//  new ActionPackage(this, new ActionTrace(ACTION_TYPE.TURN_START))
-		// .applyAbilityTurnStart(
-		// 	this.thisPlayer()
-		// )
 
 		this.thisPlayer().clearPendingAction()
 		this.pushActions(pkg)
@@ -335,9 +331,6 @@ class MarbleGame {
 	requestForceWalkMove(moverTurn: number, newpos: number, source: ActionTrace) {
 		let pos = this.mediator.pOfTurn(moverTurn).pos
 		if (this.thisturn !== moverTurn) this.mediator.pOfTurn(moverTurn).clearPendingAction()
-
-		// this.checkPassedTiles(pos, newpos, this.mediator.pOfTurn(moverTurn), source, MOVETYPE.FORCE_WALK)
-		// this.checkPassedPlayers(pos, newpos, this.mediator.pOfTurn(moverTurn), source, MOVETYPE.FORCE_WALK)
 
 		this.pushSingleAction(
 			new MoveAction(ACTION_TYPE.FORCE_WALK_MOVE, moverTurn, pos, forwardDistance(pos, newpos), MOVETYPE.FORCE_WALK),
@@ -656,10 +649,6 @@ class MarbleGame {
 		if (targetTiles.length === 0) return
 
 		let source = action.source.reset().addTag(ActionTraceTag.TRAVEL)
-
-		// let pkg = new ActionPackage(this, source)
-		// 	.addMain(new MoveTileSelectionAction(moverTurn, targetTiles, "travel", MOVETYPE.WALK))
-		// 	.applyAbilityPrepareTravel(player)
 
 		this.pushActions(new PrepareTravelActionBuilder(this, source, player, targetTiles).build())
 	}
@@ -991,9 +980,6 @@ class MarbleGame {
 		if (!(tile instanceof BuildableTile) || tile.owner === -1) return
 		this.mediator.attemptBuyOut(buyer, tile.owner, tile, price, source)
 	}
-	// getAvaliableBuild(player: MarblePlayer, tile: BuildableTile, event: ActionSource): BUILDING[] {
-	// //	return player.getAvaliableBuild(tile.getBuildables(), event)
-	// }
 	landBuyOut(buyer: MarblePlayer, landOwner: MarblePlayer, tile: BuildableTile) {
 		this.setLandOwner(tile, buyer)
 	}

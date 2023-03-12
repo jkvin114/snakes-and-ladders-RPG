@@ -13,7 +13,7 @@ class PercentDamage {
 		else this.type = type
 	}
 
-	getTotal(maxhp:number,hp:number) {
+	getTotal(maxhp: number, hp: number) {
 		if (this.base === PercentDamage.MAX_HP) {
 			return Math.floor((maxhp * this.percent) / 100)
 		}
@@ -30,13 +30,13 @@ class PercentDamage {
 	 * @param target
 	 * @returns Damage
 	 */
-	pack(maxhp:number,hp:number) {
+	pack(maxhp: number, hp: number) {
 		if (this.type === Damage.ATTACK) {
-			return new Damage(this.getTotal(maxhp,hp), 0, 0)
+			return new Damage(this.getTotal(maxhp, hp), 0, 0)
 		} else if (this.type === Damage.MAGIC) {
-			return new Damage(0, this.getTotal(maxhp,hp), 0)
+			return new Damage(0, this.getTotal(maxhp, hp), 0)
 		} else {
-			return new Damage(0, 0, this.getTotal(maxhp,hp))
+			return new Damage(0, 0, this.getTotal(maxhp, hp))
 		}
 	}
 }
@@ -54,13 +54,13 @@ class Damage {
 		this.magic = Math.floor(magic)
 		this.fixed = Math.floor(fixed)
 	}
-	static zero():Damage{
-        return new Damage(0,0,0)
-    }
-	copy():Damage{
-		return new Damage(this.attack,this.magic,this.fixed)
+	static zero(): Damage {
+		return new Damage(0, 0, 0)
 	}
-	get total():number{
+	copy(): Damage {
+		return new Damage(this.attack, this.magic, this.fixed)
+	}
+	get total(): number {
 		return this.getTotalDmg()
 	}
 	getTotalDmg(): number {
@@ -73,8 +73,8 @@ class Damage {
 		return this
 	}
 
-	updateDamages(calctype: Function, val: number, type: number[]):number {
-		let prev=this.total
+	updateDamages(calctype: Function, val: number, type: number[]): number {
+		let prev = this.total
 		for (const t of type) {
 			if (t == Damage.ATTACK) {
 				this.attack = Math.floor(calctype(this.attack, val))
@@ -86,23 +86,23 @@ class Damage {
 				this.fixed = Math.floor(calctype(this.fixed, val))
 			}
 		}
-		return this.total-prev
+		return this.total - prev
 	}
 
-	updateMagicDamage(calctype: Function, val: number):number {
-		let prev=this.total
+	updateMagicDamage(calctype: Function, val: number): number {
+		let prev = this.total
 		this.magic = Math.floor(calctype(this.magic, val))
-		return this.total-prev
+		return this.total - prev
 	}
-	updateAttackDamage(calctype: Function, val: number):number {
-		let prev=this.total
+	updateAttackDamage(calctype: Function, val: number): number {
+		let prev = this.total
 		this.attack = Math.floor(calctype(this.attack, val))
-		return this.total-prev
+		return this.total - prev
 	}
-	updateTrueDamage(calctype: Function, val: number):number {
-		let prev=this.total
+	updateTrueDamage(calctype: Function, val: number): number {
+		let prev = this.total
 		this.fixed = Math.floor(calctype(this.fixed, val))
-		return this.total-prev
+		return this.total - prev
 	}
 	/**
 	 * update attack and magic damage
@@ -110,20 +110,20 @@ class Damage {
 	 * @param val
 	 * @returns
 	 */
-	updateNormalDamage(calctype: Function, val: number) :number{
-		let prev=this.total
+	updateNormalDamage(calctype: Function, val: number): number {
+		let prev = this.total
 		this.magic = Math.floor(calctype(this.magic, val))
 		this.attack = Math.floor(calctype(this.attack, val))
-		return this.total-prev
+		return this.total - prev
 	}
 
-	updateAllDamage(calctype: Function, val: number) :number{
-		let prev=this.total
+	updateAllDamage(calctype: Function, val: number): number {
+		let prev = this.total
 		this.magic = Math.floor(calctype(this.magic, val))
 		this.attack = Math.floor(calctype(this.attack, val))
 		this.fixed = Math.floor(calctype(this.fixed, val))
 
-		return this.total-prev
+		return this.total - prev
 	}
 
 	applyResistance(data: { AR: number; MR: number; arP: number; MP: number; percentPenetration: number }): Damage {
@@ -142,4 +142,4 @@ class Damage {
 		return this
 	}
 }
-export{Damage,PercentDamage}
+export { Damage, PercentDamage }

@@ -847,7 +847,7 @@ input:checked + .slider {
 .marble-item{
   /* outline: 4px solid white; */
   border-radius: 15px;
-  margin: 10px;
+  margin: 4px;
   padding: 6px;
 
   /* height: 100px; */
@@ -935,7 +935,7 @@ input:checked + .slider {
 .marble-item-header{
   display: grid;
   grid-template-columns: auto 25px;
-  height: 25px;
+  margin-bottom: 4px;
 }
 .marble-item-name{
   font-size: 15px;

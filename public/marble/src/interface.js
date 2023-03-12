@@ -10,7 +10,7 @@ class BuildingSelector {
 			buildingSelections: $(".building-selection").toArray(),
 			buildingSelectionChecks: $(".building-selection-check").toArray(),
 			buildingSelectionDescriptions: $(".building-selection-desc").toArray(),
-			buildingSelectionPrices: $(".building-selection-price").toArray()
+			buildingSelectionPrices: $(".building-selection-price").toArray(),
 		}
 		this.state = [false, false, false, false, false]
 		Object.freeze(this.doms)
@@ -121,9 +121,9 @@ class BuildingSelector {
 	}
 }
 
-const NO_DUPLICATE_ABILITIES=["perfume","badge","agreement","reverse_agreement"]//두번연속 알림 안뜨는 능력들
-const abilitySound=new Howl({
-	src: ["res/sound/ability.mp3"]
+const NO_DUPLICATE_ABILITIES = ["perfume", "badge", "agreement", "reverse_agreement"] //두번연속 알림 안뜨는 능력들
+const abilitySound = new Howl({
+	src: ["res/sound/ability.mp3"],
 })
 class AbilityBuffer {
 	static TOP = 0
@@ -135,13 +135,12 @@ class AbilityBuffer {
 		this.secondId = ""
 		this.interval = null
 		this.queue = []
-		this.prevAbility=""  //능력 중복알림 방지용 저장
-		
+		this.prevAbility = "" //능력 중복알림 방지용 저장
 	}
 	enqueue(ui, name, itemName, desc, isblocked) {
-		if(name===this.prevAbility && NO_DUPLICATE_ABILITIES.includes(name)) return
+		if (name === this.prevAbility && NO_DUPLICATE_ABILITIES.includes(name)) return
 
-		this.prevAbility=name
+		this.prevAbility = name
 
 		this.queue.push([ui, name, itemName, desc, isblocked])
 		//if(ui===3) console.log(this.queue)
@@ -154,7 +153,7 @@ class AbilityBuffer {
 		if (this.queue.length === 0) {
 			clearInterval(this.interval)
 			this.interval = null
-			this.prevAbility=""
+			this.prevAbility = ""
 			return
 		}
 		abilitySound.play()
@@ -162,13 +161,13 @@ class AbilityBuffer {
 		const [ui, name, itemName, desc, isblocked] = this.queue.shift()
 		this.hideThird(this.secondId)
 		this.moveSecond(this.firstId)
-		this.secondId=this.firstId
-		this.firstId=id
+		this.secondId = this.firstId
+		this.firstId = id
 
-		this.display(id,ui, name, itemName, desc, isblocked)
+		this.display(id, ui, name, itemName, desc, isblocked)
 	}
 
-	display(id,ui, name, itemName, desc, isblocked){
+	display(id, ui, name, itemName, desc, isblocked) {
 		// let ui = this.turnToUi.get(turn)
 		let pos = ["top-left", "bottom-left", "top-right", "bottom-right"][ui]
 
@@ -209,18 +208,16 @@ class AbilityBuffer {
 		}
 		setTimeout(() => $("#" + id).remove(), 3000)
 	}
-	moveSecond(id)
-	{
-		if(id==="" || $("#" + id).length===0) return
-		if(this.pos===AbilityBuffer.TOP){
+	moveSecond(id) {
+		if (id === "" || $("#" + id).length === 0) return
+		if (this.pos === AbilityBuffer.TOP) {
 			$("#" + id).animate({ top: 120 }, 200)
-		}
-		else{
+		} else {
 			$("#" + id).animate({ bottom: 120 }, 200)
 		}
 	}
-	hideThird(id){
-		if(id==="" || $("#" + id).length===0) return
+	hideThird(id) {
+		if (id === "" || $("#" + id).length === 0) return
 
 		$("#" + id).hide()
 	}
@@ -228,151 +225,152 @@ class AbilityBuffer {
 const TILE_SELECTIONS = {
 	godhand_special_build: {
 		title: "특수 지역",
-		desc: "건설할 땅을 선택하세요"
+		desc: "건설할 땅을 선택하세요",
 	},
 	start_build: {
 		title: "시작지점 혜택",
-		desc: "건설할 땅을 선택하세요"
+		desc: "건설할 땅을 선택하세요",
 	},
 	travel: {
 		title: "세계여행",
-		desc: "이동할 땅을 선택하세요"
+		desc: "이동할 땅을 선택하세요",
 	},
 	olympic: {
 		title: "올림픽 개최",
-		desc: "올림픽을 개최할 땅을 선택하세요"
+		desc: "올림픽을 개최할 땅을 선택하세요",
 	},
 	selloff: {
 		title: "강제 매각",
-		desc: "강제 매각할 땅을 선택하세요"
+		desc: "강제 매각할 땅을 선택하세요",
 	},
 	land_change: {
 		title: "도시 체인지",
-		desc: "교환할 땅을 선택하세요"
+		desc: "교환할 땅을 선택하세요",
 	},
 	earthquake: {
 		title: "지진",
-		desc: "지진을 일으켜 건물 1단계 파괴"
+		desc: "지진을 일으켜 건물 1단계 파괴",
 	},
 	pandemic: {
 		title: "전염병",
-		desc: "전염병을 일으켜 통행료 50% 감소"
+		desc: "전염병을 일으켜 통행료 50% 감소",
 	},
 	blackout: {
 		title: "정전",
-		desc: "정전을 일으켜 통행료 무료"
+		desc: "정전을 일으켜 통행료 무료",
 	},
 	land_change_1: {
 		title: "도시 체인지",
-		desc: "상대에게 줄 땅 선택"
+		desc: "상대에게 줄 땅 선택",
 	},
 	land_change_2: {
 		title: "도시 체인지",
-		desc: "상대에게서 가져올 땅 선택"
+		desc: "상대에게서 가져올 땅 선택",
 	},
 	donate_land: {
 		title: "도시 기부",
-		desc: "기부할 땅을 선택하세요"
+		desc: "기부할 땅을 선택하세요",
 	},
 	go_special: {
 		title: "특수지역 이동",
-		desc: "이동할 특수지역을 선택하세요"
+		desc: "이동할 특수지역을 선택하세요",
 	},
-	godhand_special_tile_lift:{
+	godhand_special_tile_lift: {
 		title: "블록 상승",
-		desc: "상승시킬 블록 선택"
+		desc: "상승시킬 블록 선택",
 	},
-	blackhole:{
+	blackhole: {
 		title: "블랙홀 발생",
-		desc: "블랙홀을 발생시킬 곳 선택"
+		desc: "블랙홀을 발생시킬 곳 선택",
 	},
-	buyout:{
+	buyout: {
 		title: "인수하기",
-		desc: "인수할 땅을 선택하세요"
+		desc: "인수할 땅을 선택하세요",
 	},
-	free_move:{
+	free_move: {
 		title: "이동하기",
-		desc: "이동할 곳을 선택하세요"
-	}
+		desc: "이동할 곳을 선택하세요",
+	},
 }
 const FORTUNECARD = {
 	shield: {
 		title: "방어",
 		desc: "상대의 공격 방어",
-		image: "shield.png"
+		image: "shield.png",
 	},
 	discount: {
 		title: "할인쿠폰",
 		desc: "통행료 절반 할인",
-		image: "coupon.png"
+		image: "coupon.png",
 	},
 	angel: {
 		title: "천사",
 		desc: "통행료 면제 혹은 공격방어",
-		image: "angel.png"
+		image: "angel.png",
 	},
 	go_start: {
 		title: "새 출발",
 		desc: "즉시 출발지로 이동!",
-		image: "start.png"
+		image: "start.png",
 	},
 	olympic: {
 		title: "올림픽 개최",
 		desc: "원하는 도시에 올림픽 개최!",
-		image: "olympic.png"
+		image: "olympic.png",
 	},
 	go_olympic: {
 		title: "올림픽 관람",
 		desc: "즉시 올림픽 개최지로 이동!",
-		image: "olympic.png"
+		image: "olympic.png",
 	},
 	go_special: {
 		title: "특수지역 이동",
 		desc: "원하는 특수지역으로 이동!",
-		image: "column.png"
+		image: "column.png",
 	},
 	go_travel: {
 		title: "여행 초대권",
 		desc: "즉시 세계여행으로 이동!",
-		image: "travel.png"
+		image: "travel.png",
 	},
 	donate_land: {
 		title: "도시 기부",
 		desc: "통큰 기부! 랜덤 상대에게 내 도시 기부",
-		image: ""
+		image: "",
 	},
 	go_island: {
 		title: "무인도",
 		desc: "즉시 무인도로 이동!",
-		image: "island.png"
+		image: "island.png",
 	},
 	selloff: {
 		title: "강제 매각",
 		desc: "원하는 상대의 도시를 강제로 매각",
-		image: "judgement.png"
+		image: "judgement.png",
 	},
 	land_change: {
 		title: "도시 체인지",
 		desc: "원하는 상대의 도시와 내 도시를 교환",
-		image: ""
+		image: "",
 	},
 	earthquake: {
 		title: "지진",
 		desc: "도시에 지진을 일으켜 건물 1단계 파괴",
-		image: ""
+		image: "",
 	},
 	pandemic: {
 		title: "전염병",
 		desc: "도시에 전염병을 퍼뜨려 통행료 하락",
-		image: ""
+		image: "",
 	},
 	blackout: {
 		title: "도시 정전",
 		desc: "도시에 정전을 일으켜 무료 통과",
-		image: ""
-	}
+		image: "",
+	},
 }
-const dices=[0,1,6,4,5,2,3]
+const dices = [0, 1, 6, 4, 5, 2, 3]
+const stat_names = ["통행료할인", "건설비용할인", "인수비용할인", "주사위컨트롤", "황금포춘획득"]
 export class GameInterface {
 	constructor(game) {
 		this.game = game
@@ -390,7 +388,7 @@ export class GameInterface {
 			playerCard: $(".player-ui-card").toArray(),
 			playerName: $(".player-ui-name").toArray(),
 			playerTimeout: $(".player-ui-timeout span").toArray(),
-			playerMoney: $(".player-ui-money-text").toArray()
+			playerMoney: $(".player-ui-money-text").toArray(),
 		}
 		Object.freeze(this.doms)
 		this.onCreate()
@@ -402,7 +400,7 @@ export class GameInterface {
 			new AbilityBuffer(AbilityBuffer.TOP),
 			new AbilityBuffer(AbilityBuffer.BOTTOM),
 			new AbilityBuffer(AbilityBuffer.TOP),
-			new AbilityBuffer(AbilityBuffer.BOTTOM)
+			new AbilityBuffer(AbilityBuffer.BOTTOM),
 		]
 	}
 	onCreate() {
@@ -448,13 +446,12 @@ export class GameInterface {
 		$("#fortunecard-cancel").click(() => {
 			this.game.finishObtainCard(false)
 		})
-		$(".fortunecard-button").click(()=>{
+		$(".fortunecard-button").click(() => {
 			$("#fortunecard").hide()
 		})
 		$("#fortunecard-confirm").click(() => {
 			this.game.finishObtainCard(true)
 		})
-
 
 		$("#confirmwindow-cancel").click(() => {
 			$("#confirmwindow").hide()
@@ -466,12 +463,10 @@ export class GameInterface {
 		})
 		$("#selecttruebutton").click(() => this.game.selectGodHandSpecial(true))
 		$("#selectfalsebutton").click(() => this.game.selectGodHandSpecial(false))
-		$("#rolldice").click(()=>{
-			
-		})
-		$(".island-window-option").click(function(){
-			let option=$(this).data("option")
-			GAME.islandChooseComplete(option==="pay")
+		$("#rolldice").click(() => {})
+		$(".island-window-option").click(function () {
+			let option = $(this).data("option")
+			GAME.islandChooseComplete(option === "pay")
 			$("#islandwindow").hide()
 		})
 	}
@@ -507,7 +502,9 @@ export class GameInterface {
 			$(this.doms.playerChar[ui_index]).attr(
 				"src",
 				"./../res/img/character/" +
-					["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree", "hacker"][p.char] +
+					["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree", "hacker"][
+						p.char
+					] +
 					".png"
 			)
 			$(this.doms.playerMoney[ui_index]).html(moneyToString(p.money))
@@ -523,16 +520,24 @@ export class GameInterface {
 		$(this.doms.playerUi[this.turnToUi.get(turn)]).removeClass("inactive")
 		$(this.doms.playerUi[this.turnToUi.get(turn)]).addClass("active")
 	}
-	setTurnIndicator(turn){
+	setTurnIndicator(turn) {
 		$("#turn-indicator").show()
-		$("#turn-indicator").html(`${this.game.players[turn].name}(${turn+1}P) 선택`)
+		$("#turn-indicator").html(`${this.game.players[turn].name}(${turn + 1}P) 선택`)
 	}
-	resetTurnIndicator(){
+	resetTurnIndicator() {
 		$("#turn-indicator").hide()
 	}
 	showPlayerWindow(turn) {
 		let abilities = this.game.getAbilities(turn)
-		let str = ""
+		let stats = this.game.getPlayerStats(turn)
+
+		let str = "<p>"
+		for (let i = 0; i < 5; ++i) {
+			str += `${stat_names[i]} : ${stats[i]} <br>`
+		}
+
+		str += "</p>"
+
 		for (const ab of abilities) {
 			str += `<div class="player-ability">
             <a class="player-ability-title">${ab.name}</a>
@@ -558,7 +563,7 @@ export class GameInterface {
 	}
 	clickOdd() {
 		GAME.scene.clearTileHighlight("yellow")
-		if(this.oddeven===1){
+		if (this.oddeven === 1) {
 			$("#dicebtn").html("ROLL")
 			this.oddeven = 0
 			return
@@ -569,17 +574,17 @@ export class GameInterface {
 		for (let i = 0; i < 5; ++i) {
 			positions.push((this.diceThrowerPos + 3 + 2 * i) % 32)
 		}
-		
+
 		GAME.scene.showTileHighlight(positions, "yellow")
 	}
 	clickEven() {
 		GAME.scene.clearTileHighlight("yellow")
-		if(this.oddeven===2){
+		if (this.oddeven === 2) {
 			$("#dicebtn").html("ROLL")
 			this.oddeven = 0
 			return
 		}
-		
+
 		$("#dicebtn").html("짝")
 		this.oddeven = 2
 		let positions = []
@@ -588,115 +593,117 @@ export class GameInterface {
 		}
 		GAME.scene.showTileHighlight(positions, "yellow")
 	}
-	rollDice(d1,d2,turn,dc){
+	rollDice(d1, d2, turn, dc) {
 		//1->1, 2->5, 3->6, 4->3,5->4, 6->2
-		
-		this.beforeRolldice(d1,d2,turn)
-		setTimeout(()=>this.animateDice(d1,d2,dc),300)
+
+		this.beforeRolldice(d1, d2, turn)
+		setTimeout(() => this.animateDice(d1, d2, dc), 300)
 	}
-	askIsland(turn,canEscape,escapePrice){
-		if(canEscape){
+	askIsland(turn, canEscape, escapePrice) {
+		if (canEscape) {
 			$("#island-window-escape").removeClass("disabled")
 			$("#island-window-escape-desc").html(moneyToString(escapePrice))
-		}
-		else{
+		} else {
 			$("#island-window-escape").addClass("disabled")
 			$("#island-window-escape-desc").html("비용부족")
 		}
 		$("#islandwindow").show()
 	}
-	beforeRolldice(dice1,dice2,thrower){
-		$("#dice-container").css({opacity:1})
-		let ui=this.turnToUi.get(thrower)
-		let pos={top:0,left:0}
-		if(ui===0)
-			pos={top:"100%",left:0}
-		if(ui===2)
-			pos={top:0,left:"100%"}
-		if(ui===3)
-			pos={top:"100%",left:"100%"}
+	beforeRolldice(dice1, dice2, thrower) {
+		$("#dice-container").css({ opacity: 1 })
+		let ui = this.turnToUi.get(thrower)
+		let pos = { top: 0, left: 0 }
+		if (ui === 0) pos = { top: "100%", left: 0 }
+		if (ui === 2) pos = { top: 0, left: "100%" }
+		if (ui === 3) pos = { top: "100%", left: "100%" }
 
 		$(".dice").addClass("no-animate")
-		const elDiceOne = document.getElementById('dice1');
-		const elDiceTwo = document.getElementById('dice2');
+		const elDiceOne = document.getElementById("dice1")
+		const elDiceTwo = document.getElementById("dice2")
 
-		dice1=dices[dice1]
-		dice2=dices[dice2]
+		dice1 = dices[dice1]
+		dice2 = dices[dice2]
 
-		let other=(dice1+3 + Math.floor(Math.random()*2))%6
-		let other2=(dice2+3+ Math.floor(Math.random()*2))%6
+		let other = (dice1 + 3 + Math.floor(Math.random() * 2)) % 6
+		let other2 = (dice2 + 3 + Math.floor(Math.random() * 2)) % 6
 
 		for (let i = 1; i <= 6; i++) {
-			elDiceOne.classList.remove('show-' + i);
+			elDiceOne.classList.remove("show-" + i)
 			if (other === i) {
-				elDiceOne.classList.add('show-' + i);
+				elDiceOne.classList.add("show-" + i)
 			}
 		}
 		for (let k = 1; k <= 6; k++) {
-			elDiceTwo.classList.remove('show-' + k);
+			elDiceTwo.classList.remove("show-" + k)
 			if (other2 === k) {
-				elDiceTwo.classList.add('show-' + k);
+				elDiceTwo.classList.add("show-" + k)
 			}
 		}
 		$("#dice-wrapper1").css(pos)
 		$("#dice-wrapper2").css(pos)
 	}
-	animateDice(diceOne,dice2,dc){
+	animateDice(diceOne, dice2, dc) {
 		this.game.playsound("dice")
 		$(".dice").removeClass("no-animate")
-		const elDiceOne = document.getElementById('dice1');
-			// let diceOne   = Math.floor(Math.random()*6)+1
-			// let other=(diceOne+1)%6
-			for (let i = 1; i <= 6; i++) {
-				elDiceOne.classList.remove('show-' + i);
-				if (dices[diceOne] === i) {
-				elDiceOne.classList.add('show-' + i);
-				}
+		const elDiceOne = document.getElementById("dice1")
+		// let diceOne   = Math.floor(Math.random()*6)+1
+		// let other=(diceOne+1)%6
+		for (let i = 1; i <= 6; i++) {
+			elDiceOne.classList.remove("show-" + i)
+			if (dices[diceOne] === i) {
+				elDiceOne.classList.add("show-" + i)
 			}
-		let mul1=Math.floor(Math.random()*6)-2
-		let mul2=Math.floor(Math.random()*6)-2
-		
-		setTimeout(()=>this.animateDice2(diceOne,dice2,mul1,mul2,dc),200)
-		if((mul1<=1 && mul1 >=-1) && (mul2<=1 && mul2 >=-1))
-			$("#dice-wrapper1").animate({top:window.innerHeight/2-80,left:window.innerWidth/2-80},1000,"easeOutBounce")
+		}
+		let mul1 = Math.floor(Math.random() * 6) - 2
+		let mul2 = Math.floor(Math.random() * 6) - 2
+
+		setTimeout(() => this.animateDice2(diceOne, dice2, mul1, mul2, dc), 200)
+		if (mul1 <= 1 && mul1 >= -1 && mul2 <= 1 && mul2 >= -1)
+			$("#dice-wrapper1").animate(
+				{ top: window.innerHeight / 2 - 80, left: window.innerWidth / 2 - 80 },
+				1000,
+				"easeOutBounce"
+			)
 		else
-			$("#dice-wrapper1").animate({top:window.innerHeight/2,left:window.innerWidth/2},1000,"easeOutBounce")
+			$("#dice-wrapper1").animate({ top: window.innerHeight / 2, left: window.innerWidth / 2 }, 1000, "easeOutBounce")
 	}
-	animateDice2(diceOne,diceTwo,mul1,mul2,dc){
+	animateDice2(diceOne, diceTwo, mul1, mul2, dc) {
 		this.game.playsound("dice")
 		// let diceTwo   = Math.floor(Math.random()*6)+1
-		const elDiceTwo = document.getElementById('dice2');
+		const elDiceTwo = document.getElementById("dice2")
 		// let other=(diceTwo+1)%6
 		for (let k = 1; k <= 6; k++) {
-				elDiceTwo.classList.remove('show-' + k);
+			elDiceTwo.classList.remove("show-" + k)
 			if (dices[diceTwo] === k) {
-				elDiceTwo.classList.add('show-' + k);
+				elDiceTwo.classList.add("show-" + k)
 			}
 		}
 
-		$("#dice-wrapper2").animate({top:window.innerHeight/2-35*mul1,left:window.innerWidth/2-35*mul2},1000,"easeOutBounce")
-		setTimeout(()=>{
-			this.diceRollComplete(diceOne,diceTwo,dc)
-
-		},1000)
+		$("#dice-wrapper2").animate(
+			{ top: window.innerHeight / 2 - 35 * mul1, left: window.innerWidth / 2 - 35 * mul2 },
+			1000,
+			"easeOutBounce"
+		)
+		setTimeout(() => {
+			this.diceRollComplete(diceOne, diceTwo, dc)
+		}, 1000)
 	}
-	diceRollComplete(d1,d2,dc){
-		$("#dice-container").animate({opacity:0},1000)
+	diceRollComplete(d1, d2, dc) {
+		$("#dice-container").animate({ opacity: 0 }, 1000)
 
 		$("#dice-number-container").removeClass("double")
 		$("#dice-number-container").removeClass("gold")
-		
 
-		if(dc)	$("#dice-number-container").addClass("gold")
-		if(d1===d2)	$("#dice-number-container").addClass("double")
+		if (dc) $("#dice-number-container").addClass("gold")
+		if (d1 === d2) $("#dice-number-container").addClass("double")
 
-		$("#dice-number").html(String(d1+d2))
+		$("#dice-number").html(String(d1 + d2))
 		$("#dice-number-container").show()
 		$("#dice-number").toggleClass("shown")
-		setTimeout(()=>{
+		setTimeout(() => {
 			$("#dice-number-container").hide()
 			$("#dice-number").removeClass("shown")
-		},1300)
+		}, 1300)
 	}
 	onSelectLoan(result) {
 		$("#overlay").hide()
@@ -778,7 +785,7 @@ export class GameInterface {
 			selector.setButtons()
 
 			$(this.doms.buildingSelections[0]).off()
-			
+
 			$("#landwindow .window-confirm-btn").click(() => {
 				$("#landwindow").hide()
 				this.game.buildChooseComplete(selector.result())
@@ -790,7 +797,7 @@ export class GameInterface {
 		$("#landwindow .window-header-content").html(landname)
 		$("#landwindow .window-close").off()
 		$("#landwindow .window-confirm-btn").off()
-		
+
 		$("#landwindow .window-close").click(function () {
 			$("#landwindow").hide()
 			onCancel()
@@ -816,20 +823,19 @@ export class GameInterface {
 		$("#selection-cancel").off()
 
 		//도시 기부는 취소 불가
-		if(source==="donate_land"){
+		if (source === "donate_land") {
 			$("#selection-cancel").hide()
-		}
-		else{
+		} else {
 			$("#selection-cancel").show()
 			$("#selection-cancel").click(() => {
 				this.game.onTileSelectCancel(source)
 			})
-		}		
+		}
 	}
 	hideSelectionTitle() {
 		$(".selectiontitle").hide()
 	}
-	obtainCard(name, level, type,isMyCard) {
+	obtainCard(name, level, type, isMyCard) {
 		$("#fortunecard").removeClass("gold")
 		$("#fortunecard").removeClass("trash")
 		$("#fortunecard").removeClass("silver")
@@ -844,7 +850,7 @@ export class GameInterface {
 		if (level === 1) $("#fortunecard").addClass("silver")
 		if (level === 2) $("#fortunecard").addClass("gold")
 
-		if(isMyCard || SOLOPLAY){
+		if (isMyCard || SOLOPLAY) {
 			//공격, 명령
 			if (type === 0 || type === 2) {
 				$("#fortunecard-confirm").html("확인")
@@ -855,12 +861,10 @@ export class GameInterface {
 				$("#fortunecard-cancel").show()
 			}
 			$("#fortunecard-confirm").show()
-
-		}
-		else{
+		} else {
 			$("#fortunecard-check").show()
 		}
-		
+
 		$("#fortunecard").show()
 	}
 	setSavedCard(turn, name, level) {
@@ -896,20 +900,20 @@ export class GameInterface {
 		$("#confirmwindow .window-content-text-nobackground").html(FORTUNECARD[cardname].title + "카드를 사용할까요?")
 		$("#confirmwindow").show()
 	}
-	showGodHandSpecial(canlift){
+	showGodHandSpecial(canlift) {
 		$("#select h3").html("특수 지역")
 		$("#selecttruebutton a").html("건설")
 		$("#selectfalsebutton a").html("블록 상승")
 		$("#selectfalsebutton").show()
 
-		if(!canlift) $("#selectfalsebutton").hide()
-		
+		if (!canlift) $("#selectfalsebutton").hide()
+
 		$("#select").show()
 	}
 
 	indicateAbility(turn, name, itemName, desc, isblocked) {
 		let ui = this.turnToUi.get(turn)
-		this.abilityBuffer[ui].enqueue(ui,name, itemName, desc, isblocked)
+		this.abilityBuffer[ui].enqueue(ui, name, itemName, desc, isblocked)
 	}
 	showLoanSelection(amount) {
 		$("#overlay").show()

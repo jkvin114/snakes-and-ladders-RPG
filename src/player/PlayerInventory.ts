@@ -315,7 +315,8 @@ class PlayerInventory implements PlayerComponent {
 		if(!this.itemData.has(item) && count>0) 
 			this.itemData.set(item,new ItemData(item))
 
-		if (this.item[item] <= 0 && this.item[item] - count > 0) {
+		if (this.item[item] <= 0 && count < 0) {
+		
 			this.player.effects.onRemoveItem(item)
 			if (PlayerInventory.indicateList.includes(item)) this.sendActiveItemStatus()
 		} else if (this.item[item] > 0 && this.item[item] - count <= 0) {

@@ -1,46 +1,43 @@
-
 import { Game } from "./script.js"
 import { StoreStatus, StoreInstance, StoreInterface } from "./store.js"
 import GameInterface from "./gameinterface.js"
 import { openConnection } from "./gameclient.js"
 
-export class PlayableGame extends Game{
-
-    constructor(){
-        super()
-        this.thisui = 0 //현제 턴의 ui
+export class PlayableGame extends Game {
+	constructor() {
+		super()
+		this.thisui = 0 //현제 턴의 ui
 		this.skillstatus = null //쿨타임, 침묵 등 스킬관련 정보 저장
-        this.gameSettings = {
+		this.gameSettings = {
 			//	autoNextTurnOnStore: false,
-			autoNextTurnOnSilent: true
+			autoNextTurnOnSilent: true,
 		}
-        this.ismyturn = false //자신의 턴인지
-        this.myturn = 0 //Number(sessionStorage.turn) //내 턴
+		this.ismyturn = false //자신의 턴인지
+		this.myturn = 0 //Number(sessionStorage.turn) //내 턴
 		this.crypt_turn = "" //encrypted my turn
-        this.rname = sessionStorage.roomName //방제
-        this.godhandtarget = -1 //신의손 대상 저장용
+		this.rname = sessionStorage.roomName //방제
+		this.godhandtarget = -1 //신의손 대상 저장용
 
 		this.dice_clicked = false //주사위 클릭했지
-        this.myStat = {}
+		this.myStat = {}
 		this.onMainWay = true //메인 길에 있는지
 		this.diceControl = false //주컨 사용가능여부
 
-        this.pendingSelection = { type: "", name: "" }
+		this.pendingSelection = { type: "", name: "" }
 		this.ui
 		this.storeStatus
 
-        this.subwayPrices = [0, 50, 100]
+		this.subwayPrices = [0, 50, 100]
 		this.subwayTicket = -1
-        this.connection
+		this.connection
 		this.store
 		this.store_ui
-		this.speed=1
-        this.skillScale={}
-
-    }
-    onCreate() {
-        $("#loadingtext").html("CONNECTING WITH SERVER..")
-	    openConnection(true)
+		this.speed = 1
+		this.skillScale = {}
+	}
+	onCreate() {
+		$("#loadingtext").html("CONNECTING WITH SERVER..")
+		openConnection(true)
 
 		this.ui = new GameInterface(this)
 		this.ui.onCreate()
@@ -55,8 +52,8 @@ export class PlayableGame extends Game{
 	onDisconnect() {
 		this.showDialog(
 			this.chooseLang("Unable to connect server, do you wish to reconnect?", "서버 연결 불가, 재접속 하시겠습니까?"),
-			()=>this.tryReconnect(),
-			()=>this.onQuit()
+			() => this.tryReconnect(),
+			() => this.onQuit()
 		)
 	}
 
@@ -67,33 +64,32 @@ export class PlayableGame extends Game{
 			success: function () {
 				//	openConnection(false)
 			},
-			error: (e) =>{
+			error: (e) => {
 				this.onDisconnect()
-			}
+			},
 		})
 	}
-    extendTimeout() {
+	extendTimeout() {
 		this.connection.extendTimeout()
 	}
-    turn2ui(turn) {
+	turn2ui(turn) {
 		return this.turnsInUI[turn]
 	}
-    updateTurn(t) {
+	updateTurn(t) {
 		super.updateTurn(t)
 		this.thisui = this.turn2ui(t)
 		this.ismyturn = t === this.myturn
 	}
-    isMyTeam(turn){
-        if(turn<0) return false
+	isMyTeam(turn) {
+		if (turn < 0) return false
 		return this.isTeam && this.players[turn].team === this.players[this.myturn].team
 	}
-    init(setting, turn, cturn) {
-        super.init(setting, turn, cturn)
+	init(setting, turn, cturn) {
+		super.init(setting, turn, cturn)
 
 		// this.begun = true
 		this.myturn = turn
 		this.crypt_turn = cturn
-
 
 		// this.skill_description = setting[this.myturn].description
 		//this.playerCount = setting.playerSettings.length //total number of player
@@ -122,37 +118,36 @@ export class PlayableGame extends Game{
 			// 		setting.playerSettings[i].name
 			// 	)
 			// )
-			if(i===this.myturn) this.skillScale=setting.playerSettings[i].skillScale
-
+			if (i === this.myturn) this.skillScale = setting.playerSettings[i].skillScale
 		}
 
 		this.ui.init(setting.playerSettings)
 		//requestObstacles()
 		//registerSounds()
 	}
-    changeShield(val) {
-        super.changeShield(val)
+	changeShield(val) {
+		super.changeShield(val)
 		this.ui.changeShield(val.shield, val.turn)
 		//this.scene.changeShield(val.turn, val.shield, val.change, val.indicate)
 	}
 
 	sendMessage() {
-		window.scrollTo(0,0)
+		window.scrollTo(0, 0)
 		let msg = $("#text").val()
 		$("#chat_enter").css("visibility", "hidden")
 		if (msg === "") {
 			return
 		}
 		$("#text").val("")
-		this.connection.sendChat(this.myturn,msg)
+		this.connection.sendChat(this.myturn, msg)
 	}
-    mapLoadComplete() {
-        super.mapLoadComplete()
+	mapLoadComplete() {
+		super.mapLoadComplete()
 		this.connection.setupComplete()
-		
+
 		this.ui.onGameReady()
 	}
-    getInventoryTooltip() {
+	getInventoryTooltip() {
 		let text = "<img src='res/img/store/life.png'><a> x" + (this.storeStatus.life + 1) + "</a> <br> "
 
 		if (this.scene.mapname === "casino") {
@@ -160,7 +155,7 @@ export class PlayableGame extends Game{
 		}
 		return text
 	}
-    targetSelected(target, type) {
+	targetSelected(target, type) {
 		////console.log("targetselected" + target)
 		this.scene.resetTarget()
 		this.ui.hideSkillCancel()
@@ -172,19 +167,19 @@ export class PlayableGame extends Game{
 			this.connection.sendTarget(target)
 		}
 	}
-    onNextTurn() {
+	onNextTurn() {
 		this.ui.hideSkillBtn()
 		this.connection.goNextTurn()
 	}
-    onSkillBtnClick(val) {
+	onSkillBtnClick(val) {
 		this.ui.hideSkillBtn()
 		this.connection.getSkill(val)
 	}
-    onBasicAttackClick() {
+	onBasicAttackClick() {
 		this.ui.hideSkillBtn()
 		this.connection.basicAttack()
 	}
-    onDiceBtnClick(dice) {
+	onDiceBtnClick(dice) {
 		if (!this.dice_clicked) {
 			this.connection.pressDice(dice)
 			// document.getElementById('sound_dice').play()
@@ -193,7 +188,7 @@ export class PlayableGame extends Game{
 		this.dice_clicked = true
 	}
 
-    startTurn(turnUpdateData) {
+	startTurn(turnUpdateData) {
 		// if (!isMapLoaded) {
 		// 	this.android_toast("Error while loading the map, please reconnect.")
 		// }
@@ -204,53 +199,51 @@ export class PlayableGame extends Game{
 
 		this.showDiceBtn(turnUpdateData)
 	}
-    //turn:number,stun:boolean
-    showDiceBtn(t) {
-        if (t.crypt_turn === this.crypt_turn) this.scene.moveBoardToPlayer(t.turn)
+	//turn:number,stun:boolean
+	showDiceBtn(t) {
+		if (t.crypt_turn === this.crypt_turn) this.scene.moveBoardToPlayer(t.turn)
 
-        this.scene.showArrow(t.turn)
-        this.dice_clicked = false
+		this.scene.showArrow(t.turn)
+		this.dice_clicked = false
 
-        this.ui.showChangeDiceInfo(t)
-        //주사위 변화 표시
-        if (t.stun) {
-            this.manageStun()
-        } else if (t.crypt_turn === this.crypt_turn) {
-            //console.log(t.avaliablepos)
-            if (t.dc) {
-                this.scene.possiblePosList = t.avaliablepos
-            }
+		this.ui.showChangeDiceInfo(t)
+		//주사위 변화 표시
+		if (t.stun) {
+			this.manageStun()
+		} else if (t.crypt_turn === this.crypt_turn) {
+			//console.log(t.avaliablepos)
+			if (t.dc) {
+				this.scene.possiblePosList = t.avaliablepos
+			}
 
-            $("#largedicebtn").show()
+			$("#largedicebtn").show()
 			$(".dcbtn .cooltime").html("x")
-            if (this.myStat.level < this.scene.Map.dc_limit_level) {
-                this.diceControl = t.dc
-                // $(".dc").css("visibility", "visible")
-				
-                if (!t.dc) {
-					$(".dcbtn").attr("disabled",true)
+			if (this.myStat.level < this.scene.Map.dc_limit_level) {
+				this.diceControl = t.dc
+				// $(".dc").css("visibility", "visible")
+
+				if (!t.dc) {
+					$(".dcbtn").attr("disabled", true)
 					$(".dcbtn").addClass("unavaliable")
-                  //  $("#dicecontrolbtn").css({ filter: "grayscale(100%)" })
-                } else {
-					$(".dcbtn").attr("disabled",false)
+					//  $("#dicecontrolbtn").css({ filter: "grayscale(100%)" })
+				} else {
+					$(".dcbtn").attr("disabled", false)
 					$(".dcbtn").removeClass("unavaliable")
-                  //  $("#dicecontrolbtn").css({ filter: "grayscale(0%)" })
-                }
-                //		//console.log(t)
-                if (t.dc_cool === 0) {
-                    $(".dcbtn .cooltime").html("x")
-                } else {
-                    $(".dcbtn .cooltime").html(String(t.dc_cool))
-                }
-            }
-			else{
-				
-				$(".dcbtn").attr("disabled",true)
+					//  $("#dicecontrolbtn").css({ filter: "grayscale(0%)" })
+				}
+				//		//console.log(t)
+				if (t.dc_cool === 0) {
+					$(".dcbtn .cooltime").html("x")
+				} else {
+					$(".dcbtn .cooltime").html(String(t.dc_cool))
+				}
+			} else {
+				$(".dcbtn").attr("disabled", true)
 				$(".dcbtn").addClass("unavaliable")
 			}
-        }
-    }
-    manageStun() {
+		}
+	}
+	manageStun() {
 		if (this.ismyturn) {
 			this.dice_clicked = false
 			$("#largedicestun").show()
@@ -265,11 +258,11 @@ export class PlayableGame extends Game{
 			time
 		)
 	}
-    rollDice(dice) {
-        // $(".dc").css("visibility", "hidden")
-		$(".dcbtn").attr("disabled",true)
+	rollDice(dice) {
+		// $(".dc").css("visibility", "hidden")
+		$(".dcbtn").attr("disabled", true)
 		$(".dcbtn").addClass("unavaliable")
-        if (this.crypt_turn === dice.crypt_turn && !dice.died) {
+		if (this.crypt_turn === dice.crypt_turn && !dice.died) {
 			this.store.disable()
 			this.store_ui.updateStoreBtnState()
 
@@ -281,9 +274,9 @@ export class PlayableGame extends Game{
 			// $("#largekilltext").html("")
 		}
 
-        super.rollDice(dice,dice.turn===this.myturn)
-    }
-    onSkillAvaliable(status) {
+		super.rollDice(dice, dice.turn === this.myturn)
+	}
+	onSkillAvaliable(status) {
 		this.ui.showSkillBtn(status)
 		this.scene.showArrow(status.turn)
 	}
@@ -323,35 +316,35 @@ export class PlayableGame extends Game{
 		}
 	}
 
-    onReceiveGodhandTarget(targets) {
+	onReceiveGodhandTarget(targets) {
 		$("#selectionname").html(this.chooseLang("god`s hand", "신의 손")).show()
 		$("#selectiondesc").html(this.chooseLang("Choose a player to move", "이동시킬 플레이어 선택")).show()
 
 		this.scene.showTarget(targets, "godhand")
 	}
-    onReceiveChangeData(type, turn, data) {
-        super.onReceiveChangeData(type,turn,data)
-		
+	onReceiveChangeData(type, turn, data) {
+		super.onReceiveChangeData(type, turn, data)
+
 		if (type === "isInSubway") {
 			this.players[turn].isInSubway = data
 		}
 		if (type === "dc_item") {
 			this.scene.indicateDcItem(turn, data)
 		}
-        if (type === "appearance") {
+		if (type === "appearance") {
 			this.ui.updateCharacterApperance(data, turn)
 		}
 		if (type === "item") {
 			this.ui.updatePlayerItems(turn, data)
 		}
 		if (type === "reconnect") {
-			this.ui.playerReconnect(turn,this.players[turn].name)
+			this.ui.playerReconnect(turn, this.players[turn].name)
 		}
 		if (type === "disconnect") {
-			this.ui.playerDisconnect(turn,this.players[turn].name)
+			this.ui.playerDisconnect(turn, this.players[turn].name)
 		}
-		if(type==="itemData"){
-			this.updateItemData(turn,data)
+		if (type === "itemData") {
+			this.updateItemData(turn, data)
 		}
 		if (this.myturn !== turn) {
 			return
@@ -384,6 +377,8 @@ export class PlayableGame extends Game{
 				this.subwayTicket = data
 				break
 			case "removeSpecialEffect":
+				console.log("removeSpecialEffect")
+				console.log(data)
 				this.removeSpecialEffect(data)
 				break
 			case "skillImg":
@@ -394,40 +389,37 @@ export class PlayableGame extends Game{
 				break
 		}
 	}
-	updateItemData(turn,itemData){
-		for(const data of itemData){
+	updateItemData(turn, itemData) {
+		for (const data of itemData) {
 			let it = this.strRes.ITEMS.items[data.item]
-			let str=`<p class='item-tooltip-data'>${this.chooseLang(data.eng,data.kor)}<b>${data.val}</b></p>`
-			this.strRes.ITEM_DATA[turn].set(it,str)
+			let str = `<p class='item-tooltip-data'>${this.chooseLang(data.eng, data.kor)}<b>${data.val}</b></p>`
+			this.strRes.ITEM_DATA[turn].set(it, str)
 		}
 	}
-    animateDamage(data){
-		super.animateDamage(data) 
+	animateDamage(data) {
+		super.animateDamage(data)
 		this.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
 		if (data.turn === this.myturn) {
-			this.ui.lostHP(Math.max(0,data.currhp), data.change)
+			this.ui.lostHP(Math.max(0, data.currhp), data.change)
 		}
 	}
-	animateHeal(data){
-
+	animateHeal(data) {
 		super.animateHeal(data)
 
 		this.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
 		if (data.turn === this.myturn) {
-			this.ui.lostHP(Math.max(0,data.currhp), data.change)
+			this.ui.lostHP(Math.max(0, data.currhp), data.change)
 		}
-
 	}
-    giveEffect(e, turn, num) {
-
+	giveEffect(e, turn, num) {
 		if (!this.players[turn].effect_status.has(e)) {
-            super.giveEffect(e,turn,num)
+			super.giveEffect(e, turn, num)
 			if (turn === this.myturn) {
 				this.ui.addEffect(e)
 			}
 		}
 	}
-    /**
+	/**
 	 * 
 	 * @param {*} name name of the effect
 	 * @param {*} data description data, img src
@@ -437,13 +429,12 @@ export class PlayableGame extends Game{
 		if (turn !== this.myturn) {
 			return
 		}
-		name=name.replaceAll(" ","_")
-		let desc=this.chooseLang(data.desc, data.desc_kor)
+		name = name.replaceAll(" ", "_")
+		let desc = this.chooseLang(data.desc, data.desc_kor)
 		//if the effect is currently not applied or has different description, update the effect icon
-		if (!this.players[this.myturn].effect_status.has(name) ||
-			this.strRes.SPECIAL_EFFECTS.get(name)[0]!==desc) {
+		if (!this.players[this.myturn].effect_status.has(name) || this.strRes.SPECIAL_EFFECTS.get(name)[0] !== desc) {
 			$(".se_" + String(name)).remove()
-				//console.log("apply"+name)
+			//console.log("apply"+name)
 			if (data.type === "item") {
 				this.ui.addItemSpecialEffect(name, data.item_id, data.isgood)
 				this.strRes.SPECIAL_EFFECTS.set(name, [desc, data.item_id])
@@ -455,16 +446,16 @@ export class PlayableGame extends Game{
 			this.players[this.myturn].effect_status.add(name)
 		}
 	}
-    removeEffect(e, turn) {
-        if (this.players[turn].effect_status.has(e)) {
-            super.removeEffect(e,turn)
+	removeEffect(e, turn) {
+		if (this.players[turn].effect_status.has(e)) {
+			super.removeEffect(e, turn)
 			if (turn === this.myturn) {
 				$("#e" + String(e)).remove()
 			}
 		}
 	}
-    removeSpecialEffect(name) {
-		name=name.replaceAll(" ","_")
+	removeSpecialEffect(name) {
+		name = name.replaceAll(" ", "_")
 		if (this.players[this.myturn].effect_status.has(name)) {
 			$(".se_" + String(name)).remove()
 			//console.log("remove "+name)
@@ -472,20 +463,20 @@ export class PlayableGame extends Game{
 			this.strRes.SPECIAL_EFFECTS.delete(name)
 		}
 	}
-    removeAllEffects(turn) {
-        super.removeAllEffects(turn)
+	removeAllEffects(turn) {
+		super.removeAllEffects(turn)
 		if (turn === this.myturn) {
 			$(".effect").remove()
 		}
 	}
-    onTileSelectionCancel(type) {
+	onTileSelectionCancel(type) {
 		if (type === "submarine") {
 			// sendSubmarineDest(0, false)
 			$(".mystatus").show()
 			this.connection.sendSubmarineDest({
 				type: "submarine",
 				result: 0,
-				complete: false
+				complete: false,
 			})
 		}
 		if (type === "godhand") {
@@ -506,7 +497,7 @@ export class PlayableGame extends Game{
 		this.ui.onTileReset()
 		this.endSelection()
 	}
-    onTileSelectionComplete(index, type) {
+	onTileSelectionComplete(index, type) {
 		//console.log("tileselected" + type + " " + index)
 
 		if (type === "godhand") {
@@ -514,9 +505,9 @@ export class PlayableGame extends Game{
 				complete: true,
 				objectResult: {
 					target: this.godhandtarget,
-					location: index
+					location: index,
 				},
-				type: "godhand"
+				type: "godhand",
 			}
 			//	//console.log("godhand location selected" + godhand_info)
 			this.godhandtarget = -1
@@ -532,27 +523,27 @@ export class PlayableGame extends Game{
 			this.connection.sendSubmarineDest({
 				type: "submarine",
 				result: index,
-				complete: true
+				complete: true,
 			})
 		}
 
 		// $("#largetext").html("")
 		$("#selectionname").html("").hide()
 		$("#selectiondesc").html("").hide()
-        
+
 		this.ui.onTileReset()
 		// this.endSelection()
 	}
-    /**
+	/**
 	 * 타겟 혹은 타일 선택 준비시 호출
 	 */
 	prepareSelection() {
-	//	moveBoardInstant(this.scene.getPlayerPos(this.myturn), 1)
+		//	moveBoardInstant(this.scene.getPlayerPos(this.myturn), 1)
 		this.ui.hideChat()
 		this.ui.disableAllSkillBtn()
 		$(".mystatus").hide()
 	}
-    /**
+	/**
 	 * 타겟 또는 타일 선택 완료시ㅣ 호출
 	 */
 	endSelection() {
@@ -561,7 +552,7 @@ export class PlayableGame extends Game{
 		$("#selectionname").html("").hide()
 		$("#selectiondesc").html("").hide()
 	}
-    showRangeTiles(pos, range, size, type) {
+	showRangeTiles(pos, range, size, type) {
 		$(".storebtn").hide()
 
 		if (type === "godhand") {
@@ -598,7 +589,7 @@ export class PlayableGame extends Game{
 		}
 		this.scene.showRangeTiles(start, end, type, size)
 	}
-    onSkillCancel() {
+	onSkillCancel() {
 		// $("#largetext").html("")
 		$("#selectionname").html("").hide()
 		$("#selectiondesc").html("").hide()
@@ -608,7 +599,7 @@ export class PlayableGame extends Game{
 		//this.ui.showSkillBtn(GAME.skillstatus)
 		this.connection.sendTarget(-1)
 	}
-    syncPlayerVisibility(data) {
+	syncPlayerVisibility(data) {
 		for (let d of data) {
 			if (d.alive) {
 				this.scene.showPlayer(d.turn, d.pos)
@@ -617,67 +608,63 @@ export class PlayableGame extends Game{
 			this.players[d.turn].pos = d.pos
 		}
 	}
-    isEnemy(turn) {
+	isEnemy(turn) {
 		if (turn < 0 || turn > 3) return true
 		if (this.myturn === turn || (this.isTeam && this.players[this.myturn].team === this.players[turn].team)) {
 			return false
 		}
 		return true
 	}
-    onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount,damages) {
+	onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount, damages) {
 		if (!this.players[turn].alive) return
-        super.onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount,damages)
+		super.onPlayerDie(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount, damages)
 
 		if (turn === this.myturn) {
 			this.scene.canvas.bringToFront(this.scene.shadow)
 			this.scene.canvas.discardActiveObject()
 			this.scene.shadow.set({ visible: true })
-			this.ui.showDeathInfo(skillfrom,damages)
+			this.ui.showDeathInfo(skillfrom, damages)
 		}
 		//this.ui.indicatePlayerDeath(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount)
-
 	}
-    openNewStore(data) {
+	openNewStore(data) {
 		this.storeStatus.set(data)
 		this.store = new StoreInstance(this.storeStatus)
 		this.store_ui.storeInstance = this.store
 		this.store_ui.openNewStore(data)
-
 	}
-    playerRespawn(turn, respawnPos, isRevived) {
-        super.playerRespawn(turn, respawnPos, isRevived)
+	playerRespawn(turn, respawnPos, isRevived) {
+		super.playerRespawn(turn, respawnPos, isRevived)
 		$(this.ui.elements.kdasections[turn]).css("background", "none")
-		
 	}
-    changeKda(turn, str) {
+	changeKda(turn, str) {
 		$(this.ui.elements.kdainfos[turn]).html(str)
 	}
-    //주사위를 굴려 상점에 간 경우
+	//주사위를 굴려 상점에 간 경우
 	arriveStore(turn, storeData) {
 		if (turn === this.myturn) {
 			this.openNewStore(storeData)
 		}
 	}
-    updateMoney(val) {
+	updateMoney(val) {
 		if (val.turn === this.myturn) {
 			$("#money").html(val.result + "$")
 		}
-        super.updateMoney(val)
+		super.updateMoney(val)
 	}
-    /**
-         * data: {turn,obs,globalEventName}
-         */
-    onIndicateObstacle(data) {
-        if (this.myturn === data.turn || data.turn===-1) {
-            if(!data.globalEventName)
-                this.ui.showObsNotification(data.obs)
-            else{
-                this.ui.showObsNotification(data.obs,this.strRes.GLOBAL_OBSTACLE_EVENT[data.globalEventName])
-            }
-        }
-        this.playObstacleSound(data.obs)
-    }
-    onIndicateItem(turn, item) {
+	/**
+	 * data: {turn,obs,globalEventName}
+	 */
+	onIndicateObstacle(data) {
+		if (this.myturn === data.turn || data.turn === -1) {
+			if (!data.globalEventName) this.ui.showObsNotification(data.obs)
+			else {
+				this.ui.showObsNotification(data.obs, this.strRes.GLOBAL_OBSTACLE_EVENT[data.globalEventName])
+			}
+		}
+		this.playObstacleSound(data.obs)
+	}
+	onIndicateItem(turn, item) {
 		//console.log("onIndicateItem")
 		if (!this.strRes.ITEMS.items[item].active_summary) return
 		let it = this.strRes.ITEMS.items[item]
@@ -696,7 +683,7 @@ export class PlayableGame extends Game{
 			)
 		}
 	}
-    playObstacleSound(obs) {
+	playObstacleSound(obs) {
 		if (obs === 41 || obs === 28 || obs === 13) {
 			this.playSound("web")
 		}
@@ -704,8 +691,8 @@ export class PlayableGame extends Game{
 			this.playSound("wind")
 		}
 	}
-    hideEveryWindow() {
-        super.hideEveryWindow()
+	hideEveryWindow() {
+		super.hideEveryWindow()
 		this.ui.hideAll()
 		//this.scene.resetTarget()
 		this.ui.hideSkillCancel()
@@ -713,14 +700,14 @@ export class PlayableGame extends Game{
 		this.ui.onTileReset()
 		//$("#randomobs").hide()
 	}
-    roulleteEnd() {
-        super.roulleteEnd()
+	roulleteEnd() {
+		super.roulleteEnd()
 		if (this.ismyturn) {
 			this.connection.roulleteComplete()
 		}
 	}
-    onGameOver(winner) {
-        super.onGameOver(winner)
+	onGameOver(winner) {
+		super.onGameOver(winner)
 
 		if (this.myturn === winner) {
 			$(".victory").show()
@@ -729,9 +716,8 @@ export class PlayableGame extends Game{
 		} else {
 			$(".defeat").show()
 		}
-
 	}
-    subwayComplete(type) {
+	subwayComplete(type) {
 		$("#subwaywindow").css("visibility", "hidden")
 		this.playSound("store")
 		//console.log("subway" + type)
@@ -741,42 +727,40 @@ export class PlayableGame extends Game{
 			complete: true,
 			objectResult: {
 				type: type,
-				price: this.subwayPrices[type]
-			}
+				price: this.subwayPrices[type],
+			},
 		})
 	}
-	indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount) {
-
-		this.ui.indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount)
-		super.indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount)
+	indicatePlayerDeath(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount) {
+		this.ui.indicatePlayerDeath(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount)
+		super.indicatePlayerDeath(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount)
 	}
 
-
-    onItemResponse(items){
-        this.strRes.ITEMS = items
-        this.sortItems()
-        this.store_ui.initStoreHome()
+	onItemResponse(items) {
+		this.strRes.ITEMS = items
+		this.sortItems()
+		this.store_ui.initStoreHome()
 	}
-    
-    getItemByCatAndLevel(cat, level) {
-        return this.strRes.ITEMS.items
-            .filter((item) => {
-                return item.category.includes(cat) && item.itemlevel === level
-            })
-            .map((item) => item.id)
-    }
 
-    sortItems() {
-        let sorted = new Map() //<string,int[]>
-        for (let i = 0; i < 3; ++i) {
-            let lvl = String(i + 1)
-            sorted.set("attack_lv" + lvl, this.getItemByCatAndLevel("attack", i + 1))
-            sorted.set("magic_lv" + lvl, this.getItemByCatAndLevel("magic", i + 1))
-            sorted.set("defence_lv" + lvl, this.getItemByCatAndLevel("defence", i + 1))
-            sorted.set("health_lv" + lvl, this.getItemByCatAndLevel("health", i + 1))
-            sorted.set("utility_lv" + lvl, this.getItemByCatAndLevel("utility", i + 1))
-        }
-        this.strRes.ITEMS_SORTED = sorted
-        this.storeStatus.setItemList(this.strRes.ITEMS.items, sorted)
-    }
+	getItemByCatAndLevel(cat, level) {
+		return this.strRes.ITEMS.items
+			.filter((item) => {
+				return item.category.includes(cat) && item.itemlevel === level
+			})
+			.map((item) => item.id)
+	}
+
+	sortItems() {
+		let sorted = new Map() //<string,int[]>
+		for (let i = 0; i < 3; ++i) {
+			let lvl = String(i + 1)
+			sorted.set("attack_lv" + lvl, this.getItemByCatAndLevel("attack", i + 1))
+			sorted.set("magic_lv" + lvl, this.getItemByCatAndLevel("magic", i + 1))
+			sorted.set("defence_lv" + lvl, this.getItemByCatAndLevel("defence", i + 1))
+			sorted.set("health_lv" + lvl, this.getItemByCatAndLevel("health", i + 1))
+			sorted.set("utility_lv" + lvl, this.getItemByCatAndLevel("utility", i + 1))
+		}
+		this.strRes.ITEMS_SORTED = sorted
+		this.storeStatus.setItemList(this.strRes.ITEMS.items, sorted)
+	}
 }

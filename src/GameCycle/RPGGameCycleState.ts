@@ -5,7 +5,7 @@ import type { Game } from "../Game"
 import { GAME_CYCLE } from "./StateEnum"
 import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat"
 import { ARRIVE_SQUARE_RESULT_TYPE, INIT_SKILL_RESULT } from "../data/enum"
-import {sleep } from "../core/Util"
+import { sleep } from "../core/Util"
 import { EventResult } from "./RPGGameLoop"
 
 abstract class GameCycleState {
@@ -44,11 +44,11 @@ abstract class GameCycleState {
 		console.error("invalid request, id:" + this.id)
 		return new EventResult(false)
 	}
-	onUserClickNextturn():EventResult{
+	onUserClickNextturn(): EventResult {
 		console.error("invalid nextturn input, id:" + this.id)
 		return new EventResult(false)
 	}
-	onUserClickSkill(skill: number): ServerGameEventFormat.SkillInit|null {
+	onUserClickSkill(skill: number): ServerGameEventFormat.SkillInit | null {
 		console.error("invalid request, id:" + this.id)
 
 		return null
@@ -93,7 +93,7 @@ abstract class GameCycleState {
 
 		return this
 	}
-	getData<T>(): T|null {
+	getData<T>(): T | null {
 		console.error("invalid data request, state id:" + this.id)
 
 		return null
@@ -107,7 +107,7 @@ abstract class GameCycleState {
 		return new TurnTerminator(this.game)
 	}
 	getOnTimeout(): Function {
-		return ()=>{}
+		return () => {}
 	}
 	getPromise(): Promise<unknown> {
 		console.error("this state doesn`t have a promise, state id:" + this.id)
@@ -129,13 +129,12 @@ class GameInitializer extends GameCycleState {
 
 class TurnInitializer extends GameCycleState {
 	static id = GAME_CYCLE.BEFORE_OBS.INITIALIZE
-	turnUpdateData: ServerGameEventFormat.TurnStart|null
+	turnUpdateData: ServerGameEventFormat.TurnStart | null
 	constructor(game: Game) {
 		let turnUpdateData = game.goNextTurn()
 		super(game, TurnInitializer.id)
 		this.turnUpdateData = turnUpdateData
-		if(turnUpdateData)
-			this.game.eventEmitter.updateNextTurn(turnUpdateData)
+		if (turnUpdateData) this.game.eventEmitter.updateNextTurn(turnUpdateData)
 	}
 	onCreate(): void {
 		if (this.game.thisturn === 0) {
@@ -152,8 +151,8 @@ class TurnInitializer extends GameCycleState {
 		}
 		if (this.turnUpdateData.ai && !this.turnUpdateData.stun) {
 			return new AiThrowDice(this.game)
-		}
-		else {//if (this.turnUpdateData.stun) {
+		} else {
+			//if (this.turnUpdateData.stun) {
 			return new RootedHandler(this.game)
 		}
 	}
@@ -453,7 +452,7 @@ export class WaitingSkill extends GameCycleState {
 		//	console.log("shouldpass", this.canUseSkill, this.canUseBasicAttack)
 		return !this.canUseSkill && !this.canUseBasicAttack
 	}
-	onUserClickNextturn():EventResult{
+	onUserClickNextturn(): EventResult {
 		return new EventResult(!this.shouldPass())
 	}
 	onUserClickSkill(skill: number): ServerGameEventFormat.SkillInit {
@@ -566,4 +565,4 @@ class TurnTerminator extends GameCycleState {
 }
 export { PendingObstacle, PendingAction }
 export { AiThrowDice, AiSkill, AiSimulationSkill }
-export {  GameCycleState,GameInitializer, TurnInitializer, WaitingDice, ThrowDice, ArriveSquare }
+export { GameCycleState, GameInitializer, TurnInitializer, WaitingDice, ThrowDice, ArriveSquare }

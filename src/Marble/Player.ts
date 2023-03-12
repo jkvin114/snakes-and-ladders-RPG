@@ -221,5 +221,8 @@ class MarblePlayerStat{
         this.diceControl=stats[3]
         this.goldenCard=stats[4]
     }
+    serialize(){
+        return [this.tollDiscount,this.buildingPriceDiscount,this.buyoutDiscount,this.diceControl,this.goldenCard]
+    }
 }
 export {MarblePlayer,MarblePlayerStat}

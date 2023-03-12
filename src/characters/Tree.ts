@@ -76,7 +76,7 @@ class Tree extends Player {
 			.setSource(this)
 			.setAction(function (this: Player) {
 				if (!this.isEnemyOf(_this)) {
-					this.effects.apply(ENUM.EFFECT.SPEED, 1)
+					this.effects.apply(ENUM.EFFECT.SPEED, 2)
 				}
 			})
 			.setDuration(3)
