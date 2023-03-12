@@ -6,7 +6,8 @@ html{
       /* background: linear-gradient(to bottom, rgba(248,255,232,1) 0%,
       rgba(227,245,171,1) 61%,rgba(193,219,100,1) 100%); */
       font-family: 'cookierun';
-      background-color: rgb(36, 36, 36);
+      /* background-color: rgb(36, 36, 36); */
+      background-color: #200f33;
       color: white;
         text-align: center;
     /* overflow: hidden; */
@@ -40,7 +41,8 @@ html{
     grid-template-columns: 50% 50%;
     visibility: hidden;
     
-    background-color: rgb(44, 44, 44);
+    /* background-color: rgb(44, 44, 44); */
+    background-color: #2a1343;
     border-radius: 2vw;
     position: relative;
     /* position: absolute;
@@ -81,7 +83,7 @@ html{
     border-radius: 4px;
   }
   .playercard.waiting{
-    border-left: 4px solid #e62424;
+    border-left: 5px solid #e62424;
   }
   .playercard.logined .iname{
     color:gold;
@@ -155,6 +157,9 @@ html{
     display:inline-block;
     cursor:pointer;
     /* border:2px solid rgb(121, 121, 121); */
+    background-color: gray;
+    padding: 2px;
+    border-radius: 2px;;
   }
   .aichamp{
     width:40px;
@@ -274,7 +279,9 @@ html{
 
   #character_selection{
     text-align: left;
-    background-color: #31313C;  
+    /* background-color: #31313C;   */
+    background-color: #1f0e32;
+    /* border: 1px solid #c654ff; */
     height: 160px;
     overflow: auto;
   }
@@ -393,7 +400,9 @@ text-align: center;
       #choicecontainer{
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 1fr;
-        background-color: rgb(44, 44, 44);
+        /* background-color: rgb(44, 44, 44); */
+        background-color: #2a1343;
+
         margin-left: 2vh;
         margin-right: 2vh;
         justify-content: center;
@@ -554,7 +563,8 @@ text-align: center;
     top:50px;
     left:50%;
     transform: translate(-50%, 0);
-    background:rgb(50, 50, 50);
+    /* background:rgb(50, 50, 50); */
+    background-color: #200f33;
     border: 2px solid rgb(97, 97, 97);
     overflow: auto;
     word-break: keep-all;
@@ -568,13 +578,13 @@ text-align: center;
     overflow: auto;
   } */
   #settingclose{
-  width:50px;
-  height:50px;
+  width:30px;
+  height:30px;
   margin:0;
   right: 0;
   border:none;
-  font-size:45px;
-  line-height: 50px;
+  font-size:25px;
+  line-height: 30px;
   /* background-color: rgb(34, 34, 34); */
   background: none;
   color: white;
@@ -620,7 +630,7 @@ text-align: center;
   
   margin:5px 20% ;
   text-align: center;
-  background:linear-gradient(to right,rgb(50, 50, 50) 0%, rgb(83, 83, 83) 50% ,rgb(50, 50, 50) 100%);
+  background:linear-gradient(to right,#200f33 0%, #552686 50% ,#200f33 100%);
 }
 .setting_category{
   display: inline-block;
@@ -665,6 +675,7 @@ text-align: center;
   border-right: 1px solid whitesmoke;
   text-align: right;
   padding-right: 10px;
+  padding-top: 7px;
 }
 .onesetting  .settingname-container a{
   text-align: right;
@@ -724,7 +735,7 @@ input:checked + .slider:before {
   transform: translateX(19px);
 }
 input:checked + .slider {
-  background-color: #21b4f3;
+  background-color: #804fb3;
 }
 .slider{
   border-radius: 10px;
@@ -761,7 +772,8 @@ input:checked + .slider {
   background-color: #575757;
 }
 .rangevalue{
-  color: rgb(248, 255, 143);
+  /* color: rgb(248, 255, 143); */
+  color: #dfbdff;
   margin-left: 5px;
   margin-right: 5px;
   font-size: 10px;

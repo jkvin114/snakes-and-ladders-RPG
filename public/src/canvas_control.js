@@ -3,7 +3,7 @@ const PLAYER_POS_DIFF = [
 	[8, 9],
 	[-17, 2],
 	[6, -5],
-	[-12, -9]
+	[-12, -9],
 ] //플레이어별 위치 차이
 export const COLOR_LIST = ["blue", "red", "green", "yellow"] //플레이어별 색상
 const PROJ_DIFF = [-2, 4, 2, -4] //플레이어별 투사체범위 위치 차이
@@ -12,12 +12,12 @@ const BOARD_MARGIN = 200
 const FRAME = 30 //milisecond
 const TILE_SHADOW_THICKNESS_RIGHT = 5
 const TILE_SHADOW_THICKNESS_BOTTOM = 10
-const VISUAL_EFFECT_SPRITE_SIZE=128
+const VISUAL_EFFECT_SPRITE_SIZE = 128
 export const sleep = (m) => new Promise((r) => setTimeout(r, m))
 export const COLOR_LIST_BG = ["#a6c8ff", "#ff7070", "#95ff80", "#fdff80"] //플레이어별 연한 색상
 
-const BIGGER_OBSTACLES=[9,12,13,14,17,38,46,58,74]
-const DEFAULT_PROJ_TRAJECTORY_SPEED=300
+const BIGGER_OBSTACLES = [9, 12, 13, 14, 17, 38, 46, 58, 74]
+const DEFAULT_PROJ_TRAJECTORY_SPEED = 300
 const HEALTHBAR_OFFSET_Y = 48
 const HEALTHBAR_OFFSET_X = 78
 const HEALTHBAR_FRAME_OFFSET_Y = 50
@@ -26,7 +26,7 @@ const HEALTHBAR_FRAME_OFFSET_X = 80
 const HPBAR_OFFSET_Y = 30
 const HPBAR_OFFSET_X = 30
 
-const HEALTHBAR_LOST_DISAPPEAR_DELAY = 600
+const HEALTHBAR_LOST_DISAPPEAR_DELAY = 400
 const HEALTHBAR_FRAME_DISAPPEAR_DELAY = 1300
 const ATTACK_EFFECT_INTERVAL = 100
 import { Board } from "./board.js"
@@ -62,7 +62,7 @@ class SummonedEntity {
 			left: origin.x,
 			top: origin.y,
 			visible: true,
-			evented: true
+			evented: true,
 		})
 		this.moveTo(this.pos)
 		this.scene.render()
@@ -73,37 +73,18 @@ class SummonedEntity {
 		this.pos = pos
 		this.coordX = this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN + PLAYER_POS_DIFF[source][0] + randoffset
 		this.coordY = this.scene.Map.coordinates[this.pos].y + 20 + BOARD_MARGIN + PLAYER_POS_DIFF[source][1] + randoffset
-		const time=this.scene.getMoveSpeed("entity_move")
-		this.scene.animateX(this.img,this.coordX,time)
-		this.scene.animateY(this.img,this.coordY,time)
+		const time = this.scene.getMoveSpeed("entity_move")
+		this.scene.animateX(this.img, this.coordX, time)
+		this.scene.animateY(this.img, this.coordY, time)
 
-		// this.img.animate("left", this.coordX, {
-		// 	onChange: this.scene.render(),
-		// 	duration: 500,
-		// 	easing: fabric.util.ease.easeOutCubic
-		// })
-		// this.img.animate("top", this.coordY, {
-		// 	onChange: this.scene.render(),
-		// 	duration: 500,
-		// 	easing: fabric.util.ease.easeOutCubic
-		// })
 		this.scene.canvas.bringToFront(this.img)
 	}
 	setDeathEffectTreePlant() {
 		this.deathEffect = this.scene.createCroppedEffectImage("tree_plant_death")
-		this.scene.setEffectImageAttr(this.deathEffect,0,0,1,1,0,0)
-		// new fabric.Image(document.getElementById(), {
-		// 	evented: false,
-		// 	opacity: 0,
-		// 	left: 0,
-		// 	top: 0,
-		// 	objectCaching: false
-		// })
-		// this.scene.lockFabricObject(deathEffect)
-		// this.scene.canvas.add(deathEffect)
+		this.scene.setEffectImageAttr(this.deathEffect, 0, 0, 1, 1, 0, 0)
 
 		this.defaultEffect = this.scene.createCroppedEffectImage("hit")
-		this.scene.setEffectImageAttr(this.defaultEffect,0,0,0.8,0.8,0,0)
+		this.scene.setEffectImageAttr(this.defaultEffect, 0, 0, 0.8, 0.8, 0, 0)
 
 		return this
 	}
@@ -117,38 +98,13 @@ class SummonedEntity {
 			this.scene.defaultEffectAt(this.defaultEffect, this.coordX, this.coordY)
 			this.scene.game.playSound("hit")
 			this.scene.game.playSound("tree_plant")
-			this.scene.setEffectImageAttr(this.deathEffect,this.coordX,this.coordY,0.6,0.6,0.9,0)
-			this.scene.animateOpacity(this.deathEffect,0,2500)
+			this.scene.setEffectImageAttr(this.deathEffect, this.coordX, this.coordY, 0.6, 0.6, 0.9, 0)
+			this.scene.animateOpacity(this.deathEffect, 0, 2500)
 
-			this.scene.animateScaleX(this.deathEffect,1.6,1000)
-			this.scene.animateScaleY(this.deathEffect,1.6,1000)
-			this.scene.removeImageAfter(this.deathEffect,2500)
-			this.scene.removeImageAfter(this.defaultEffect,2500)
-			// let scale = 0.6
-			// this.deathEffect
-			// 	.set({
-			// 		opacity: 0.9,
-			// 		left: this.coordX,
-			// 		top: this.coordY,
-			// 		scaleX: scale,
-			// 		scaleY: scale
-			// 	})
-			// 	.bringToFront()
-			// this.deathEffect.animate("opacity", 0, {
-			// 	onChange: this.scene.render.bind(this),
-			// 	duration: 2500,
-			// 	easing: fabric.util.ease.easeOutCubic
-			// })
-			// this.deathEffect.animate("scaleX", scale + 1, {
-			// 	onChange: this.scene.render.bind(this),
-			// 	duration: 1000,
-			// 	easing: fabric.util.ease.easeOutCubic
-			// })
-			// this.deathEffect.animate("scaleY", scale + 1, {
-			// 	onChange: this.scene.render.bind(this),
-			// 	duration: 1000,
-			// 	easing: fabric.util.ease.easeOutCubic
-			// })
+			this.scene.animateScaleX(this.deathEffect, 1.6, 1000)
+			this.scene.animateScaleY(this.deathEffect, 1.6, 1000)
+			this.scene.removeImageAfter(this.deathEffect, 2500)
+			this.scene.removeImageAfter(this.defaultEffect, 2500)
 			setTimeout(() => {
 				this.scene.render()
 			}, 2600)
@@ -191,21 +147,21 @@ class PassProjectile {
 			left: this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN,
 			top: this.scene.Map.coordinates[this.pos].y + BOARD_MARGIN,
 			visible: true,
-			evented: true
+			evented: true,
 		})
 
 		this.icon.set({
 			left: this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN,
 			top: this.scene.Map.coordinates[this.pos].y + 25 + BOARD_MARGIN,
 			visible: true,
-			evented: true
+			evented: true,
 		})
 		if (this.stop) {
 			this.stop.set({
 				left: this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN,
 				top: this.scene.Map.coordinates[this.pos].y + BOARD_MARGIN,
 				visible: true,
-				evented: true
+				evented: true,
 			})
 		}
 		this.bringToFront()
@@ -250,21 +206,21 @@ class ActiveProjectile {
 
 	show() {
 		this.scene.game.playSound("place")
-		
+
 		for (let i = 0; i < this.scope.length; ++i) {
 			if (this.scene.Map.coordinates.length <= this.scope[i]) continue
 			this.scopeTiles[i].set({
 				left: this.scene.Map.coordinates[this.scope[i]].x + BOARD_MARGIN + PROJ_DIFF[this.owner],
 				top: this.scene.Map.coordinates[this.scope[i]].y + BOARD_MARGIN + PROJ_DIFF[this.owner],
 				visible: true,
-				evented: true
+				evented: true,
 			})
 		}
 		this.icon.set({
 			left: this.scene.Map.coordinates[this.scope[0]].x + BOARD_MARGIN + PROJ_DIFF[this.owner],
 			top: this.scene.Map.coordinates[this.scope[0]].y + 25 + BOARD_MARGIN + PROJ_DIFF[this.owner],
 			visible: true,
-			evented: true
+			evented: true,
 		})
 		this.bringToFront()
 		this.scene.playersToFront()
@@ -441,27 +397,25 @@ class HpChangeHelper {
 	}
 }
 
-
-
-export class Scene extends Board{
+export class Scene extends Board {
 	constructor(game) {
 		super(game)
 		this.effectindicator = []
-		
+
 		this.line = null //스킬사용시 선
 		this.heal = null //힐 효과
 		this.tooltip = null //장애물 설명 툴팁
 		this.tileselectimgs = [] //타일 선택시 뜨는 효과
-		
+
 		this.activeProjectileList = new Map()
 		this.summonedEntityList = new Map()
 		// this.effectlist = [] //이펙트이미지 리스트
 		// this.visualEffects = new Map()
 		this.overlapSelectorImgs = []
-		
+
 		this.dcItemIndicator = null
 		this.subwayTrain = null
-		this.tempFinish=null
+		this.tempFinish = null
 		//this.hpChanger = new HpChangeHelper(this)
 	}
 
@@ -477,9 +431,6 @@ export class Scene extends Board{
 		if (c >= coor.length || coor[c].obs === -1 || coor[c].obs === 0) {
 			return false
 		}
-		// if(this.Map.mapname==="casino" && this.Map.subway!=null && isInSubwayRange(coor[c])){
-		// 	return false
-		// }
 		return true
 	}
 	//===========================================================================================================================
@@ -487,12 +438,6 @@ export class Scene extends Board{
 	isInSubwayRange(c) {
 		return c > this.Map.subway.start && c < this.Map.subway.end
 	}
-	//===========================================================================================================================
-
-	
-	//===========================================================================================================================
-
-	
 	//===========================================================================================================================
 
 	summonEntity(entity) {
@@ -516,8 +461,8 @@ export class Scene extends Board{
 
 	async placeProj(proj) {
 		//console.log(proj)
-		if (proj.trajectorySpeed > 0 && proj.owner>=0) {
-			this.animateProjTrajectory(proj,proj.trajectorySpeed)
+		if (proj.trajectorySpeed > 0 && proj.owner >= 0) {
+			this.animateProjTrajectory(proj, proj.trajectorySpeed)
 			await sleep(proj.trajectorySpeed)
 		}
 
@@ -537,7 +482,7 @@ export class Scene extends Board{
 
 	async placePassProj(proj) {
 		if (proj.trajectorySpeed > 0) {
-			this.animateProjTrajectory(proj,proj.trajectorySpeed)
+			this.animateProjTrajectory(proj, proj.trajectorySpeed)
 			await sleep(proj.trajectorySpeed)
 		}
 
@@ -547,8 +492,6 @@ export class Scene extends Board{
 		} else if (proj.name === "dicecontrol") {
 			color = "blackwhite"
 		} else if (proj.owner >= 0) {
-
-			
 			color = this.game.getPlayerColor(proj.owner)
 		}
 
@@ -620,7 +563,7 @@ export class Scene extends Board{
 			lockRotation: true,
 			originX: "center",
 			originY: "center",
-			objectCaching: false
+			objectCaching: false,
 		})
 
 		this.canvas.add(l)
@@ -638,7 +581,7 @@ export class Scene extends Board{
 				tileImage = 4
 				break
 			case "green":
-				tileImage =6
+				tileImage = 6
 				break
 			case "yellow":
 				tileImage = 7
@@ -647,7 +590,7 @@ export class Scene extends Board{
 				tileImage = 9
 				break
 			case "blackwhite":
-				tileImage =8
+				tileImage = 8
 				break
 		}
 
@@ -670,7 +613,7 @@ export class Scene extends Board{
 				tileImage = 2
 				break
 			case "yellow":
-				tileImage =3
+				tileImage = 3
 				break
 		}
 
@@ -688,7 +631,7 @@ export class Scene extends Board{
 		let icon = 0
 		switch (type) {
 			case "submarine":
-				icon =1
+				icon = 1
 				break
 			case "reaper_w":
 				icon = 2
@@ -712,7 +655,7 @@ export class Scene extends Board{
 				icon = 0
 				break
 			case "tree_w":
-				icon =8
+				icon = 8
 				break
 		}
 
@@ -747,21 +690,19 @@ export class Scene extends Board{
 			lockRotation: true,
 			originX: "center",
 			originY: "center",
-			objectCaching: false
+			objectCaching: false,
 		})
 		l.scale(0.4)
 		return l
 	}
 	//===========================================================================================================================
 
-	
 	drawboard(resolveFunc) {
 		if (this.board_drawn) return
 
 		this.board_drawn = true
 		super.drawBoard(resolveFunc)
 
-		
 		this.forceRender()
 		resolveFunc()
 		//console.log("resolve")
@@ -769,13 +710,11 @@ export class Scene extends Board{
 
 	//===========================================================================================================================
 
-	
-	setBoardScale(boardimg){
-		
+	setBoardScale(boardimg) {
 		this.boardInnerWidth = boardimg.naturalWidth - BOARD_MARGIN * 2
 		this.boardInnerHeight = boardimg.naturalHeight - BOARD_MARGIN * 2
-		const winwidth=window.innerWidth
-		const winheight=window.innerHeight
+		const winwidth = window.innerWidth
+		const winheight = window.innerHeight
 
 		let win_ratio = winwidth / winheight
 		// if(win_ratio <1) win_ratio=1.3
@@ -783,17 +722,17 @@ export class Scene extends Board{
 
 		//map image has vertically longer ratio than the viewport
 		if (win_ratio >= board_ratio) {
-			this.boardScale = winwidth/ this.boardInnerWidth
+			this.boardScale = winwidth / this.boardInnerWidth
 			//console.log("vertically longer map, scale" + this.boardScale)
 		}
 		//map image has horizontally longer ratio than the viewport
 		else {
-			this.boardScale =winheight / this.boardInnerHeight
+			this.boardScale = winheight / this.boardInnerHeight
 			//console.log("horizontally longer map, scale" + this.boardScale)
 		}
-		const max_boardscale=win_ratio<0.7?0.5:2
+		const max_boardscale = win_ratio < 0.7 ? 0.5 : 2
 		//console.log(win_ratio)
-		this.boardScale=Math.min(max_boardscale,this.boardScale)
+		this.boardScale = Math.min(max_boardscale, this.boardScale)
 		//console.log(this.boardScale)
 		$("#canvas-container").css("width", winwidth * 2)
 		$("#canvas-container").css("height", winheight * 2)
@@ -807,27 +746,25 @@ export class Scene extends Board{
 		// //console.log(this.boardOriginalHeight)
 		// //console.log(this.boardOriginalWidth)
 
-	//	this.canvas.forceRender()
+		//	this.canvas.forceRender()
 		this.zoomScale = 1
 		$("#boardwrapper").css("margin", "1300px")
 
-		document.getElementById("canvas-container").scrollTo(
-			BOARD_MARGIN * this.boardScale + 1200,
-			BOARD_MARGIN * this.boardScale + 1200
-		)
+		document
+			.getElementById("canvas-container")
+			.scrollTo(BOARD_MARGIN * this.boardScale + 1200, BOARD_MARGIN * this.boardScale + 1200)
 	}
 
-	drawTiles(){
+	drawTiles() {
 		let obsimg = document.getElementById("obstacles")
 
 		let tile_img
 		if (this.mapname === "ocean") {
 			tile_img = document.getElementById("tiles_ocean")
 		}
-		if (this.mapname === "casino" || this.mapname === "marble" || this.mapname==="rapid") {
+		if (this.mapname === "casino" || this.mapname === "marble" || this.mapname === "rapid") {
 			tile_img = document.getElementById("tiles_casino")
-		}
-		else{
+		} else {
 			tile_img = document.getElementById("tiles_3d")
 		}
 		let tileshadows = []
@@ -839,7 +776,6 @@ export class Scene extends Board{
 		// this.lockFabricObject(tileshadowgroup)
 		this.canvas.add(tileshadowgroup)
 		this.tile_shadows = tileshadowgroup
-
 	}
 	/**	//===========================================================================================================================
 
@@ -863,7 +799,7 @@ export class Scene extends Board{
 					objectCaching: false,
 					evented: false,
 					top: this.Map.coordinates[i].y + BOARD_MARGIN,
-					left: this.Map.coordinates[i].x + BOARD_MARGIN
+					left: this.Map.coordinates[i].x + BOARD_MARGIN,
 				})
 				this.lockFabricObject(storeimg)
 				this.canvas.add(storeimg)
@@ -884,13 +820,11 @@ export class Scene extends Board{
 			height: 50,
 			cropX: 50 * obs_id,
 			cropY: 0,
-			objectCaching: false
+			objectCaching: false,
 		})
 
 		//열매, 마법성, 흡혈귀, 카지노,빙산, 어뢰는 확대
-		if (
-			BIGGER_OBSTACLES.includes(obs_id)
-		) {
+		if (BIGGER_OBSTACLES.includes(obs_id)) {
 			o.scale(0.55)
 		} else {
 			o.scale(0.45)
@@ -898,7 +832,6 @@ export class Scene extends Board{
 
 		let tile_id = this.chooseTile(i)
 
-		
 		let t = new fabric.Image(tileimg, {
 			originX: "center",
 			originY: "center",
@@ -908,28 +841,27 @@ export class Scene extends Board{
 			cropY: 0,
 			objectCaching: false,
 			top: this.Map.coordinates[i].y + BOARD_MARGIN,
-			left: this.Map.coordinates[i].x + BOARD_MARGIN
+			left: this.Map.coordinates[i].x + BOARD_MARGIN,
 		})
 		t.scale(0.5)
 		o.set({ top: this.Map.coordinates[i].y + BOARD_MARGIN - 2, left: this.Map.coordinates[i].x + BOARD_MARGIN - 2 })
 		t.set({ top: this.Map.coordinates[i].y + BOARD_MARGIN, left: this.Map.coordinates[i].x + BOARD_MARGIN })
 		let group
-		
-		if(tile_id!==0 && this.Map.muststop.includes(i)){
+
+		if (tile_id !== 0 && this.Map.muststop.includes(i)) {
 			let l = new fabric.Image(document.getElementById("tilelock"), {
 				originX: "center",
 				originY: "center",
-				objectCaching: false
+				objectCaching: false,
 			})
 			l.scale(0.5)
 			l.set({ top: this.Map.coordinates[i].y + BOARD_MARGIN, left: this.Map.coordinates[i].x + BOARD_MARGIN })
 
-			group= new fabric.Group([t, o,l], { evented: false })
+			group = new fabric.Group([t, o, l], { evented: false })
+		} else {
+			group = new fabric.Group([t, o], { evented: false })
 		}
-		else{
-			group= new fabric.Group([t, o], { evented: false })
-		}
-		
+
 		this.lockFabricObjectNoOrigin(group)
 
 		this.canvas.add(group)
@@ -944,15 +876,7 @@ export class Scene extends Board{
 		//주컨아이템 표시 ================================
 		let diceimg = this.createCroppedProjectileImage(0)
 		this.setEffectImageAttr(diceimg, -20, 15, 0.7, 0.7, 1, 0)
-		// new fabric.Image(document.getElementById("proj_dicecontrol"), {
-		// 	evented: false,
-		// 	opacity: 1,
-		// 	left: 35,
-		// 	top: -7,
-		// 	scaleX: 0.7,
-		// 	scaleY: 0.7,
-		// 	objectCaching: false
-		// })
+
 		let indicator = new fabric.Text("", {
 			fontSize: 30,
 			fill: "white",
@@ -962,7 +886,7 @@ export class Scene extends Board{
 			strokeWidth: 1,
 			top: 0,
 			left: 0,
-			fontFamily: "Cookierun Black"
+			fontFamily: "Cookierun Black",
 		})
 		let group = new fabric.Group([indicator, diceimg])
 		this.lockFabricObject(group)
@@ -970,7 +894,6 @@ export class Scene extends Board{
 		this.dcItemIndicator = group
 		this.dcItemIndicator.set({ opacity: 0 })
 
-		
 		//공격선=================================================================
 
 		////console.log("tilelength"+this.tiles.length)
@@ -981,7 +904,7 @@ export class Scene extends Board{
 			stroke: "red",
 			strokeWidth: 6,
 			opacity: 0,
-			objectCaching: false
+			objectCaching: false,
 		})
 		this.lockFabricObject(line)
 		this.canvas.add(line)
@@ -997,13 +920,12 @@ export class Scene extends Board{
 			strokeWidth: 1,
 			top: 0,
 			left: 0,
-			fontFamily: "Do Hyeon"
+			fontFamily: "Do Hyeon",
 		})
 		this.lockFabricObject(tooltip)
 		this.canvas.add(tooltip)
 		this.tooltip = tooltip
 
-		
 		//console.log("showobjest")
 
 		//힐=================================================================
@@ -1014,7 +936,7 @@ export class Scene extends Board{
 			opacity: 0,
 			left: 0,
 			top: 0,
-			objectCaching: false
+			objectCaching: false,
 		})
 
 		this.lockFabricObject(heal)
@@ -1029,7 +951,7 @@ export class Scene extends Board{
 				opacity: 0,
 				left: 0,
 				top: 0,
-				objectCaching: false
+				objectCaching: false,
 			})
 
 			this.lockFabricObject(tileselectimg)
@@ -1060,7 +982,7 @@ export class Scene extends Board{
 				left: this.Map.coordinates[0].x + PLAYER_POS_DIFF[i][0] + BOARD_MARGIN,
 				top: this.Map.coordinates[0].y + PLAYER_POS_DIFF[i][1] + BOARD_MARGIN,
 				objectCaching: false,
-				evented: false
+				evented: false,
 				// scaleX:0.35,
 				// scaleY:0.35
 			})
@@ -1080,7 +1002,7 @@ export class Scene extends Board{
 				evented: false,
 				top: 10,
 				left: 10,
-				opacity: 0
+				opacity: 0,
 			})
 			this.lockFabricObject(e)
 			this.canvas.add(e.scale(0.8))
@@ -1095,7 +1017,7 @@ export class Scene extends Board{
 				top: 10,
 				left: 10,
 				opacity: 0.8,
-				visible: false
+				visible: false,
 			})
 			this.lockFabricObject(sl)
 			this.canvas.add(sl.scale(0.7))
@@ -1110,7 +1032,7 @@ export class Scene extends Board{
 				top: 10,
 				left: 10,
 				opacity: 0.6,
-				visible: false
+				visible: false,
 			})
 			this.lockFabricObject(cf)
 			this.canvas.add(cf.scale(0.5))
@@ -1128,7 +1050,7 @@ export class Scene extends Board{
 				strokeWidth: 1,
 				top: 0,
 				left: 0,
-				fontFamily: "nanumB"
+				fontFamily: "nanumB",
 			})
 			this.lockFabricObject(name)
 			this.canvas.add(name)
@@ -1144,7 +1066,7 @@ export class Scene extends Board{
 				height: 128,
 				visible: false,
 				hoverCursor: "pointer",
-				objectCaching: false
+				objectCaching: false,
 			})
 			this.lockFabricObject(target)
 
@@ -1152,27 +1074,7 @@ export class Scene extends Board{
 			// this.targetimgs.push(target)
 			player.targetimg = target
 			target.bringToFront()
-			//데미지=================================================================
 
-			// let d = new fabric.Text("", {
-			// 	fontSize: 20,
-			// 	fill: "#D81B60",
-			// 	opacity: 1,
-			// 	fontWeight: "bold",
-			// 	width: 500,
-			// 	height: 500,
-			// 	evented: false,
-			// 	top: 100,
-			// 	left: 100,
-			// 	fontFamily: "Cookierun Black",
-			// 	stroke: "black",
-			// 	strokeWidth: 1
-			// })
-			// this.lockFabricObject(d)
-			// this.canvas.add(d)
-			// d.bringToFront()
-			// // this.dmgindicator.push(d)
-			// player.dmgindicator = d
 			//heal=================================================================
 
 			let heal = new fabric.Text("", {
@@ -1187,7 +1089,7 @@ export class Scene extends Board{
 				left: 100,
 				fontFamily: "Cookierun Black",
 				stroke: "black",
-				strokeWidth: 1
+				strokeWidth: 1,
 			})
 			this.lockFabricObject(heal)
 			this.canvas.add(heal)
@@ -1208,7 +1110,7 @@ export class Scene extends Board{
 				left: 100,
 				fontFamily: "Cookierun Black",
 				stroke: "black",
-				strokeWidth: 1
+				strokeWidth: 1,
 			})
 			this.lockFabricObject(sd)
 			this.canvas.add(sd)
@@ -1229,7 +1131,7 @@ export class Scene extends Board{
 				left: 100,
 				fontFamily: "Cookierun Black",
 				stroke: "black",
-				strokeWidth: 1
+				strokeWidth: 1,
 			})
 			this.lockFabricObject(m)
 			this.canvas.add(m)
@@ -1239,69 +1141,89 @@ export class Scene extends Board{
 			//HP frame=================================================================
 
 			let hp_frame = new fabric.Rect({
-				left: 300,
-				top: 300,
+				left: 0,
+				top: 0,
 				width: 204,
 				height: 20,
 				fill: "black",
+				id: "hp_frame" + i,
 				lockMovementX: true,
 				lockMovementY: true,
-				visible: false,
+				visible: true,
 				hasControls: false,
 				hasBorders: false,
 				evented: false,
 				lockScalingX: true,
 				lockScalingY: true,
-				lockRotation: true
+				lockRotation: true,
 			})
 			let hp_remain = new fabric.Rect({
-				left: 302,
-				top: 302,
+				left: 2,
+				top: 2,
 				width: 200,
 				height: 16,
-				fill: "#059400",
+				id: "hp_remain" + i,
+				fill: "#08a803",
 				lockMovementX: true,
 				lockMovementY: true,
-				visible: false,
+				visible: true,
 				hasControls: false,
 				hasBorders: false,
 				evented: false,
 				lockScalingX: true,
 				lockScalingY: true,
-				lockRotation: true
+				lockRotation: true,
 			})
 			let hp_lost = new fabric.Rect({
-				left: 302,
-				top: 302,
+				left: 2,
+				top: 2,
 				width: 0,
 				height: 16,
 				fill: "#ff5c21",
+				id: "hp_lost" + i,
 				lockMovementX: true,
 				lockMovementY: true,
-				visible: false,
+				visible: true,
 				hasControls: false,
 				hasBorders: false,
 				evented: false,
 				lockScalingX: true,
 				lockScalingY: true,
-				lockRotation: true
+				lockRotation: true,
 			})
-
+			let hp_lost_bg = new fabric.Rect({
+				left: 2,
+				top: 2,
+				width: 0,
+				height: 16,
+				fill: "#ffe699",
+				id: "hp_lost_bg" + i,
+				lockMovementX: true,
+				lockMovementY: true,
+				visible: true,
+				hasControls: false,
+				hasBorders: false,
+				evented: false,
+				lockScalingX: true,
+				lockScalingY: true,
+				lockRotation: true,
+			})
 			let hp_bg = new fabric.Rect({
-				left: 302,
-				top: 302,
+				left: 2,
+				top: 2,
 				width: 200,
 				height: 16,
 				fill: "black",
+				id: "hp_bg" + i,
 				lockMovementX: true,
 				lockMovementY: true,
-				visible: false,
+				visible: true,
 				hasControls: false,
 				hasBorders: false,
 				evented: false,
 				lockScalingX: true,
 				lockScalingY: true,
-				lockRotation: true
+				lockRotation: true,
 			})
 			this.canvas.add(hp_frame)
 			this.canvas.add(hp_remain)
@@ -1309,15 +1231,21 @@ export class Scene extends Board{
 			this.canvas.add(hp_bg)
 			hp_frame.bringToFront()
 			hp_bg.bringToFront()
-			hp_remain.bringToFront()
 			hp_lost.bringToFront()
+			hp_remain.bringToFront()
 
-			player.hpIndicator = {
-				remain: hp_remain,
-				lost: hp_lost,
-				frame: hp_frame,
-				bg: hp_bg
-			}
+			// player.hpIndicator = {
+			// 	remain: hp_remain,
+			// 	lost: hp_lost,
+			// 	frame: hp_frame,
+			// 	bg: hp_bg,
+			// }
+			let hpindicatorGroup = new fabric.Group([hp_frame, hp_bg, hp_lost, hp_lost_bg, hp_remain], { evented: false })
+			this.lockFabricObject(hpindicatorGroup)
+			this.canvas.add(hpindicatorGroup)
+			player.hpIndicatorGroup = hpindicatorGroup
+			hpindicatorGroup.set({ left: 100, top: 100, opacity: 0 })
+
 			//hp bar=================================================================
 			let hpbar_frame = new fabric.Rect({
 				left: 300,
@@ -1326,7 +1254,7 @@ export class Scene extends Board{
 				height: 5,
 				fill: "black",
 				visible: false,
-				evented:false
+				evented: false,
 			})
 			this.lockFabricObjectNoOrigin(hpbar_frame)
 			let hpbar_hp = new fabric.Rect({
@@ -1362,7 +1290,7 @@ export class Scene extends Board{
 			player.hpbar = {
 				shield: hpbar_shield,
 				hp: hpbar_hp,
-				frame: hpbar_frame
+				frame: hpbar_frame,
 			}
 			//이름=================================================================
 
@@ -1391,7 +1319,7 @@ export class Scene extends Board{
 				left: 100,
 				fontFamily: "Cookierun Black",
 				stroke: "black",
-				strokeWidth: 1
+				strokeWidth: 1,
 			})
 			this.lockFabricObject(e)
 			this.canvas.add(e)
@@ -1403,7 +1331,7 @@ export class Scene extends Board{
 				hoverCursor: "pointer",
 				opacity: 1,
 				width: 128,
-				height: 128
+				height: 128,
 			})
 			this.lockFabricObject(overlayimg)
 			this.canvas.add(overlayimg)
@@ -1413,13 +1341,13 @@ export class Scene extends Board{
 
 		let finish = new fabric.Image(document.getElementById("finish"), {
 			objectCaching: false,
-			visible:false,
-			evented:false
+			visible: false,
+			evented: false,
 		})
 		finish.scale(0.6)
 		this.canvas.add(finish)
 		this.lockFabricObject(finish)
-		this.tempFinish=finish
+		this.tempFinish = finish
 		finish.bringToFront()
 	}
 	//===========================================================================================================================
@@ -1440,7 +1368,7 @@ export class Scene extends Board{
 				lockRotation: true,
 				originX: "center",
 				originY: "center",
-				objectCaching: false
+				objectCaching: false,
 			})
 			projrange.push(l)
 			this.canvas.add(l)
@@ -1450,12 +1378,12 @@ export class Scene extends Board{
 
 	//===========================================================================================================================
 
-	createCroppedEffectImage(name){
-		if(!this.game.strRes.VISUAL_EFFECTS[name]) return
+	createCroppedEffectImage(name) {
+		if (!this.game.strRes.VISUAL_EFFECTS[name]) return
 
-		let spritePos=this.game.strRes.VISUAL_EFFECTS[name].sprite
+		let spritePos = this.game.strRes.VISUAL_EFFECTS[name].sprite
 
-		let img = new fabric.Image(document.getElementById('visual_effect_sprite'), {
+		let img = new fabric.Image(document.getElementById("visual_effect_sprite"), {
 			evented: false,
 			objectCaching: false,
 			width: VISUAL_EFFECT_SPRITE_SIZE,
@@ -1467,32 +1395,33 @@ export class Scene extends Board{
 		this.canvas.add(img)
 		return img
 	}
-	createCroppedProjectileImage(pos){
-		const size=64
-		let img = new fabric.Image(document.getElementById('projectile_sprite'), {
+	createCroppedProjectileImage(pos) {
+		const size = 64
+		let img = new fabric.Image(document.getElementById("projectile_sprite"), {
 			evented: false,
 			objectCaching: false,
 			width: size,
 			height: size,
 			cropX: size * pos,
 			cropY: 0,
-			scaleX:0.8,scaleY:0.8
+			scaleX: 0.8,
+			scaleY: 0.8,
 		})
 		this.lockFabricObject(img)
 		this.canvas.add(img)
 		img.bringToFront()
 		return img
 	}
-	createCroppedProjectileRangeImage(pos){
-		const size=55
-		let img = new fabric.Image(document.getElementById('projectile_range_sprite'), {
+	createCroppedProjectileRangeImage(pos) {
+		const size = 55
+		let img = new fabric.Image(document.getElementById("projectile_range_sprite"), {
 			evented: false,
 			objectCaching: false,
 			width: size,
 			height: size,
 			cropX: size * pos,
 			cropY: 0,
-			visible:false
+			visible: false,
 		})
 		this.lockFabricObject(img)
 		this.canvas.add(img)
@@ -1501,11 +1430,11 @@ export class Scene extends Board{
 	createEffectImageFromId(elementId, pos, scaleX, scaleY, opacity, angle) {
 		let img = new fabric.Image(document.getElementById(elementId), {
 			evented: false,
-			objectCaching: false
+			objectCaching: false,
 		})
 		this.lockFabricObject(img)
 		this.canvas.add(img)
-		this.setEffectImageAttr(img, pos.x,pos.y, scaleX, scaleY, opacity, angle)
+		this.setEffectImageAttr(img, pos.x, pos.y, scaleX, scaleY, opacity, angle)
 		return img
 	}
 	//===========================================================================================================================
@@ -1523,29 +1452,28 @@ export class Scene extends Board{
 	}
 	//===========================================================================================================================
 
-	animateProjTrajectory(proj,speed) {
+	animateProjTrajectory(proj, speed) {
 		let dest = this.getTilePos(proj.scope[0])
 		let start = this.getPlayerPos(proj.owner)
-		let img=this.createProjIcon(proj.name)
-		console.log("animate projectile traj" +proj.name)
+		let img = this.createProjIcon(proj.name)
+		console.log("animate projectile traj" + proj.name)
 		switch (proj.name) {
 			case "ghost_r":
 			case "reaper_w":
 			case "sniper_w":
 			case "tree_w":
 			case "kraken_q":
-				this.setEffectImageAttr(img,start.x,start.y,0.6,0.6,1,this.getBearingAngle(start, dest))
+				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, this.getBearingAngle(start, dest))
 				break
 			case "magician_r":
-				this.setEffectImageAttr(img,start.x,start.y,0.6,0.6,1,this.getBearingAngle(start, dest)+90)
+				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, this.getBearingAngle(start, dest) + 90)
 				break
 		}
-		this.animateX(img,dest.x,speed)
-		this.animateY(img,dest.y,speed)
+		this.animateX(img, dest.x, speed)
+		this.animateY(img, dest.y, speed)
 		setTimeout(() => img.set({ opacity: 0 }), speed + 100)
 
-
-		this.removeImageAfter(img,2000)
+		this.removeImageAfter(img, 2000)
 	}
 
 	//===========================================================================================================================
@@ -1557,81 +1485,79 @@ export class Scene extends Board{
 		let img
 		switch (type) {
 			case "dinosaur_r":
-				img=this.createCroppedEffectImage('dinosaur_r')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.3,0.6,1,this.getBearingAngle(pos1, pos2))
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
+				img = this.createCroppedEffectImage("dinosaur_r")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.3, 0.6, 1, this.getBearingAngle(pos1, pos2))
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
 
 				break
 			case "sniper_r":
-				img=this.createCroppedEffectImage('sniper_r_trajectory')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.6,1,this.getBearingAngle(pos1, pos2))
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
+				img = this.createCroppedEffectImage("sniper_r_trajectory")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.6, 1, this.getBearingAngle(pos1, pos2))
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
 				break
 			case "sniper_q":
-				img=this.createCroppedEffectImage('sniper_q_trajectory')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.6,1,this.getBearingAngle(pos1, pos2))
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
+				img = this.createCroppedEffectImage("sniper_q_trajectory")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.6, 1, this.getBearingAngle(pos1, pos2))
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
 				break
 			case "sniper_q_root":
-				img=this.createCroppedEffectImage('sniper_q_trajectory')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.6,0.9,1,this.getBearingAngle(pos1, pos2))
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
+				img = this.createCroppedEffectImage("sniper_q_trajectory")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.6, 0.9, 1, this.getBearingAngle(pos1, pos2))
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
 				break
 			case "ghost_w_q":
-				img=this.createCroppedEffectImage('ghost_q_trajectory')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.7,0.7,1,this.getBearingAngle(pos1, pos2))
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
+				img = this.createCroppedEffectImage("ghost_q_trajectory")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.7, 0.7, 1, this.getBearingAngle(pos1, pos2))
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
 				break
 			case "ghost_q":
-				img=this.createCroppedEffectImage('ghost_q_trajectory')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.4,1,this.getBearingAngle(pos1, pos2))
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
+				img = this.createCroppedEffectImage("ghost_q_trajectory")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.4, 1, this.getBearingAngle(pos1, pos2))
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
 				break
 			case "tree_q":
-				img=this.createCroppedEffectImage('tree_q_trajectory')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.4,0.4,1,0)
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
-				this.animateAngle(img,180,speed)
+				img = this.createCroppedEffectImage("tree_q_trajectory")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.4, 1, 0)
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
+				this.animateAngle(img, 180, speed)
 				break
 			case "tree_r":
 			case "tree_wither_r":
-				img=this.createCroppedEffectImage('tree_r')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.6,0.6,1,this.getBearingAngle(pos1, pos2))
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
+				img = this.createCroppedEffectImage("tree_r")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.6, 0.6, 1, this.getBearingAngle(pos1, pos2))
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
 				break
 			case "hacker_q":
-				img=this.createCroppedEffectImage('hacker_q_proj')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.3,0.3,1,0)
-				this.animateX(img,pos2.x,speed)
-				this.animateY(img,pos2.y,speed)
-				this.animateAngle(img,180,speed)
+				img = this.createCroppedEffectImage("hacker_q_proj")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.3, 0.3, 1, 0)
+				this.animateX(img, pos2.x, speed)
+				this.animateY(img, pos2.y, speed)
+				this.animateAngle(img, 180, speed)
 				break
-				
+
 			case "bird_q":
 			case "bird_w_hit":
-				img=this.createCroppedEffectImage('bird_q_proj')
-				this.setEffectImageAttr(img,pos1.x,pos1.y,0.7,0.7,1,this.getBearingAngle(pos1, pos2))
-				speed*=3
-				this.animateX(img,this.extrapolate(pos1.x,pos2.x,3),speed,true)
-				this.animateY(img,this.extrapolate(pos1.y,pos2.y,3),speed,true)
+				img = this.createCroppedEffectImage("bird_q_proj")
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.7, 0.7, 1, this.getBearingAngle(pos1, pos2))
+				speed *= 3
+				this.animateX(img, this.extrapolate(pos1.x, pos2.x, 3), speed, true)
+				this.animateY(img, this.extrapolate(pos1.y, pos2.y, 3), speed, true)
 				break
 		}
 
-
-		setTimeout(() => { 
-			if(img!=null)
-				img.set({ opacity: 0 })
+		setTimeout(() => {
+			if (img != null) img.set({ opacity: 0 })
 		}, speed + 100)
 
-		this.removeImageAfter(img,2000)
+		this.removeImageAfter(img, 2000)
 	}
 	//===========================================================================================================================
 	showMultiPositionEffects(positions, type) {
@@ -1645,83 +1571,100 @@ export class Scene extends Board{
 		let effectImages = []
 		switch (type) {
 			case "basicattack":
-				let type2=Math.random()>0.5
+				let type2 = Math.random() > 0.5
 
-				img=this.createCroppedEffectImage('sweep1')
-				if(type2) img=this.createCroppedEffectImage('sweep2')
-				else img=this.createCroppedEffectImage('sweep1')
+				img = this.createCroppedEffectImage("sweep1")
+				if (type2) img = this.createCroppedEffectImage("sweep2")
+				else img = this.createCroppedEffectImage("sweep1")
 				pos = midpoint(positions[0], positions[1])
-				let scale = Math.max(1,distance(positions[0], positions[1]) / 150)
-				let angleRange= 10 + Math.random() * 30
-				if(type2) angleRange=0
+				let scale = Math.max(1, distance(positions[0], positions[1]) / 150)
+				let angleRange = 10 + Math.random() * 30
+				if (type2) angleRange = 0
 
 				let angleoffset = Math.random() * 50 - 25
-				let angle = this.getBearingAngle(positions[0], positions[1])+angleoffset
+				let angle = this.getBearingAngle(positions[0], positions[1]) + angleoffset
 
-				if(positions[0].x===positions[1].x && positions[0].y===positions[1].y)
-				{
+				if (positions[0].x === positions[1].x && positions[0].y === positions[1].y) {
 					angle = Math.random() * 180
 				}
-					
 
-				this.setEffectImageAttr(img,pos.x,pos.y,scale,scale,1,angle - angleRange)
+				this.setEffectImageAttr(img, pos.x, pos.y, scale, scale, 1, angle - angleRange)
 				this.animateOpacity(img, 0, 1200)
-				this.animateAngle(img,angle+angleRange,250)
+				this.animateAngle(img, angle + angleRange, 250)
 				effectImages.push(img)
 				break
 
 			case "magician_w_q":
 			case "magician_q":
 				pos = midpoint(positions[0], positions[1])
-				img=this.createCroppedEffectImage('lightning')
-				this.setEffectImageAttr(img,pos.x,pos.y,
+				img = this.createCroppedEffectImage("lightning")
+				this.setEffectImageAttr(
+					img,
+					pos.x,
+					pos.y,
 					1,
 					distance(positions[0], positions[1]) / VISUAL_EFFECT_SPRITE_SIZE,
 					1,
-					this.getBearingAngle(positions[0], positions[1]))
+					this.getBearingAngle(positions[0], positions[1])
+				)
 
 				effectImages.push(img)
 				this.animateOpacity(img, 0, 1200)
 				break
 			case "bird_r_w_hit":
 			case "bird_r_hit":
-				let sourcepos={x:positions[0].x,y:positions[0].y-50}
+				let sourcepos = { x: positions[0].x, y: positions[0].y - 50 }
 				pos = midpoint(sourcepos, positions[1])
-				img=this.createCroppedEffectImage('bird_r_fire')
-				this.setEffectImageAttr(img,pos.x,pos.y,
+				img = this.createCroppedEffectImage("bird_r_fire")
+				this.setEffectImageAttr(
+					img,
+					pos.x,
+					pos.y,
 					1,
 					distance(sourcepos, positions[1]) / VISUAL_EFFECT_SPRITE_SIZE,
 					1,
-					this.getBearingAngle(sourcepos, positions[1]))
+					this.getBearingAngle(sourcepos, positions[1])
+				)
 
 				effectImages.push(img)
 				this.animateOpacity(img, 0, 1200)
 
-				img2=this.createCroppedEffectImage('bird_r')
-				this.setEffectImageAttr(img2,positions[0].x,positions[0].y-30,1.5,1.5,0.8,0)
-				this.animateOpacity(img2,0,1700)
+				img2 = this.createCroppedEffectImage("bird_r")
+				this.setEffectImageAttr(img2, positions[0].x, positions[0].y - 30, 1.5, 1.5, 0.8, 0)
+				this.animateOpacity(img2, 0, 1700)
 				effectImages.push(img2)
 				break
 			case "hacker_r":
 				pos = midpoint(positions[0], positions[1])
-				img=this.createCroppedEffectImage('magician_r_lightning')
-				this.setEffectImageAttr(img,pos.x,pos.y,
+				img = this.createCroppedEffectImage("magician_r_lightning")
+				this.setEffectImageAttr(
+					img,
+					pos.x,
+					pos.y,
 					1,
-					distance( positions[0], positions[1]) / VISUAL_EFFECT_SPRITE_SIZE,
+					distance(positions[0], positions[1]) / VISUAL_EFFECT_SPRITE_SIZE,
 					1,
-					this.getBearingAngle(positions[0], positions[1]))
+					this.getBearingAngle(positions[0], positions[1])
+				)
 				effectImages.push(img)
 				this.animateOpacity(img, 0, 1000)
 			case "hacker_q":
-				setTimeout(()=>{
-
-					let hackerData=this.createCroppedEffectImage('data')
-					let duration=distance( positions[0], positions[1])*1.5
-					this.setEffectImageAttr(hackerData,positions[1].x,positions[1].y,0.5,0.5,1,this.getBearingAngle(positions[1], positions[0]))
-					this.animateX(hackerData,positions[0].x,duration)
-					this.animateY(hackerData,positions[0].y,duration)
-					this.removeImageAfter(hackerData, duration+100)
-				},600)
+				setTimeout(() => {
+					let hackerData = this.createCroppedEffectImage("data")
+					let duration = distance(positions[0], positions[1]) * 1.5
+					this.setEffectImageAttr(
+						hackerData,
+						positions[1].x,
+						positions[1].y,
+						0.5,
+						0.5,
+						1,
+						this.getBearingAngle(positions[1], positions[0])
+					)
+					this.animateX(hackerData, positions[0].x, duration)
+					this.animateY(hackerData, positions[0].y, duration)
+					this.removeImageAfter(hackerData, duration + 100)
+				}, 600)
 				break
 		}
 		effectImages.forEach((e) => this.removeImageAfter(e, 3000))
@@ -1732,28 +1675,29 @@ export class Scene extends Board{
 		for (let i = 0; i < data.targets.length; ++i) {
 			let t = data.targets[i]
 			// //console.log(data.visualeffect)
-			switch(data.visualeffect){
+			switch (data.visualeffect) {
 				case "magician_w_q":
 				case "magician_q":
-				this.showMultiPositionEffects(i === 0 ? [data.sourcePos, t.pos] : [data.targets[i - 1].pos, t.pos], data.visualeffect)
-				break
+					this.showMultiPositionEffects(
+						i === 0 ? [data.sourcePos, t.pos] : [data.targets[i - 1].pos, t.pos],
+						data.visualeffect
+					)
+					break
 				case "bird_r_w_hit":
 				case "bird_r_hit":
 				case "hacker_r":
 				case "hacker_q":
-				case 'basicattack':
+				case "basicattack":
 					this.showMultiPositionEffects([data.sourcePos, t.pos], data.visualeffect)
-				break
-				case 'hacker_w':
-				case 'reaper_q':
-					let pos1=this.getTilePos(data.sourcePos)
-					let pos2=this.getTilePos(t.pos)
+					break
+				case "hacker_w":
+				case "reaper_q":
+					let pos1 = this.getTilePos(data.sourcePos)
+					let pos2 = this.getTilePos(t.pos)
 					this.line.set({ opacity: 1, x1: pos1.x, y1: pos1.y, x2: pos2.x, y2: pos2.y }).bringToFront()
 					setTimeout(() => this.line.set({ opacity: 0 }), 400)
-				
 
-				 break
-				
+					break
 			}
 			this.showEffect(t.pos, data.visualeffect, t.damage, data.source)
 			if (t.flags.includes("shield")) {
@@ -1800,9 +1744,9 @@ export class Scene extends Board{
 			case "magician_w_burn":
 			case "bird_r_burn":
 			case "fire":
-				addedEffectImg=this.createCroppedEffectImage('fire')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.5,0.5,0.9,0)
-				this.animateOpacity(addedEffectImg,0,1200)
+				addedEffectImg = this.createCroppedEffectImage("fire")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.5, 0.5, 0.9, 0)
+				this.animateOpacity(addedEffectImg, 0, 1200)
 				break
 			//폭발
 			case "explode":
@@ -1811,34 +1755,34 @@ export class Scene extends Board{
 				if (change < -50) {
 					scale = 2
 				}
-				addedEffectImg=this.createCroppedEffectImage('explode')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-20,scale,scale,0.9,0)
-				this.animateOpacity(addedEffectImg,0,1700)
-				this.animateScaleX(addedEffectImg,scale+1,1700)
-				this.animateScaleY(addedEffectImg,scale+1,1700)
+				addedEffectImg = this.createCroppedEffectImage("explode")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 20, scale, scale, 0.9, 0)
+				this.animateOpacity(addedEffectImg, 0, 1700)
+				this.animateScaleX(addedEffectImg, scale + 1, 1700)
+				this.animateScaleY(addedEffectImg, scale + 1, 1700)
 
 				break
 			//칼
 			case "knifeslash":
 				this.game.playSound("knifeslash")
 				//	//console.log("knife")
-				addedEffectImg=this.createCroppedEffectImage('knifeslash')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1,1,0.7,0)
-				this.animateOpacity(addedEffectImg,0,2000)
+				addedEffectImg = this.createCroppedEffectImage("knifeslash")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 1, 1, 0.7, 0)
+				this.animateOpacity(addedEffectImg, 0, 2000)
 				break
 			//처형
 			case "stab":
 				this.game.playSound("stab")
-				addedEffectImg=this.createCroppedEffectImage('knifeslash')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.5,1.5,0.7,0)
-				this.animateOpacity(addedEffectImg,0,2000)
+				addedEffectImg = this.createCroppedEffectImage("knifeslash")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 1.5, 1.5, 0.7, 0)
+				this.animateOpacity(addedEffectImg, 0, 2000)
 				break
 			//방어막 깨질때
 			case "shield":
 				this.game.playSound("glassbreak")
-				addedEffectImg=this.createCroppedEffectImage('shield')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1,1,0.7,0)
-				this.animateOpacity(addedEffectImg,0,2000)
+				addedEffectImg = this.createCroppedEffectImage("shield")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 1, 1, 0.7, 0)
+				this.animateOpacity(addedEffectImg, 0, 2000)
 				break
 			//쓰나미
 			case "wave":
@@ -1855,9 +1799,9 @@ export class Scene extends Board{
 				this.game.playSound("lightning")
 				this.game.playSound("hit")
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('lightning')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-90,1.6,1.6,1,0)
-				this.animateOpacity(addedEffectImg,0,1000)
+				addedEffectImg = this.createCroppedEffectImage("lightning")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 90, 1.6, 1.6, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 1000)
 
 				break
 			case "elephant_q":
@@ -1865,32 +1809,30 @@ export class Scene extends Board{
 				this.game.playSound("hit")
 
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('elephant_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x-50,pos.y,1,1,1,-90)
-				this.animateOpacity(addedEffectImg,0,1000)
-				this.animateAngle(addedEffectImg,0,200)
+				addedEffectImg = this.createCroppedEffectImage("elephant_q")
+				this.setEffectImageAttr(addedEffectImg, pos.x - 50, pos.y, 1, 1, 1, -90)
+				this.animateOpacity(addedEffectImg, 0, 1000)
+				this.animateAngle(addedEffectImg, 0, 200)
 
 				break
 			case "elephant_r":
 				this.game.playSound("2r")
 				this.game.playSound("horse")
-				addedEffectImg3=this.createCroppedEffectImage('elephant_r_horse')
-				this.setEffectImageAttr(addedEffectImg3,pos.x-200,pos.y,0.7,0.7,0.9,0)
-				this.animateX(addedEffectImg3,pos.x,700)
-				setTimeout(()=>{
+				addedEffectImg3 = this.createCroppedEffectImage("elephant_r_horse")
+				this.setEffectImageAttr(addedEffectImg3, pos.x - 200, pos.y, 0.7, 0.7, 0.9, 0)
+				this.animateX(addedEffectImg3, pos.x, 700)
+				setTimeout(() => {
 					this.removeImage(addedEffectImg3)
-				},700)
+				}, 700)
 
-				addedEffectImg=this.createCroppedEffectImage('elephant_r_energy')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-50,1.5,0.5,1,0)
-				this.animateOpacity(addedEffectImg,0,1000)
-				this.animateScaleY(addedEffectImg,5.5,700)
+				addedEffectImg = this.createCroppedEffectImage("elephant_r_energy")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 50, 1.5, 0.5, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 1000)
+				this.animateScaleY(addedEffectImg, 5.5, 700)
 
-				addedEffectImg2=this.createCroppedEffectImage('elephant_r_shield')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,0.9,0)
-				this.animateOpacity(addedEffectImg2,0,3000)
-
-				
+				addedEffectImg2 = this.createCroppedEffectImage("elephant_r_shield")
+				this.setEffectImageAttr(addedEffectImg2, pos.x, pos.y, 1.5, 1.5, 0.9, 0)
+				this.animateOpacity(addedEffectImg2, 0, 3000)
 
 				break
 			case "reaper_q":
@@ -1898,23 +1840,23 @@ export class Scene extends Board{
 				this.game.playSound("hit")
 
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('reaper_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x-20,pos.y-50,0.7,0.7,1,0)
-				this.animateOpacity(addedEffectImg,0,1500)
-				this.animateAngle(addedEffectImg,90,300)
+				addedEffectImg = this.createCroppedEffectImage("reaper_q")
+				this.setEffectImageAttr(addedEffectImg, pos.x - 20, pos.y - 50, 0.7, 0.7, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 1500)
+				this.animateAngle(addedEffectImg, 90, 300)
 
 				break
 			case "reaper_r":
 				this.game.playSound("1r")
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('reaper_r')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-300,0.6,0.6,0.7,0)
-				this.animateOpacity(addedEffectImg,0,3000)
-				this.animateY(addedEffectImg,pos.y,500)
+				addedEffectImg = this.createCroppedEffectImage("reaper_r")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 300, 0.6, 0.6, 0.7, 0)
+				this.animateOpacity(addedEffectImg, 0, 3000)
+				this.animateY(addedEffectImg, pos.y, 500)
 
-				addedEffectImg2=this.createCroppedEffectImage('crack')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,1,0)
-				this.animateOpacity(addedEffectImg2,0,2000)
+				addedEffectImg2 = this.createCroppedEffectImage("crack")
+				this.setEffectImageAttr(addedEffectImg2, pos.x, pos.y, 1.5, 1.5, 1, 0)
+				this.animateOpacity(addedEffectImg2, 0, 2000)
 				break
 			case "ghost_w_q":
 				this.game.playSound("curse")
@@ -1922,40 +1864,38 @@ export class Scene extends Board{
 				this.defaultEffect(position, change)
 				this.game.playSound("hit")
 				this.game.playSound("ghost")
-				addedEffectImg=this.createCroppedEffectImage('ghost_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.8,0.8,0.8,0)
-				this.animateOpacity(addedEffectImg,0,1500)
-
+				addedEffectImg = this.createCroppedEffectImage("ghost_q")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.8, 0.8, 0.8, 0)
+				this.animateOpacity(addedEffectImg, 0, 1500)
 
 				break
 			case "ghost_r":
 				this.game.playSound("3r")
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('ghost_r')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,2,2,0.7,0)
-				this.animateOpacity(addedEffectImg,0,1500)
+				addedEffectImg = this.createCroppedEffectImage("ghost_r")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 2, 2, 0.7, 0)
+				this.animateOpacity(addedEffectImg, 0, 1500)
 
 				break
 			case "dinosaur_q":
 				this.defaultEffect(position, change)
 				this.game.playSound("hit")
 				this.game.playSound("knifeslash")
-				addedEffectImg=this.createCroppedEffectImage('dinosaur_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.6,0.8,0.7,Math.random() * 180)
-				this.animateOpacity(addedEffectImg,0,1500)
+				addedEffectImg = this.createCroppedEffectImage("dinosaur_q")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.6, 0.8, 0.7, Math.random() * 180)
+				this.animateOpacity(addedEffectImg, 0, 1500)
 
-	
 				break
 			case "dinosaur_r":
 				this.game.playSound("4r")
 				scale = 2
-				addedEffectImg=this.createCroppedEffectImage('dinosaur_r')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y+20,1,1,0.9,0)
+				addedEffectImg = this.createCroppedEffectImage("dinosaur_r")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y + 20, 1, 1, 0.9, 0)
 				addedEffectImg.set({
-					originY: "bottom"
+					originY: "bottom",
 				})
-				this.animateOpacity(addedEffectImg,0,2700)
-				this.animateScaleY(addedEffectImg,2.5,1100)
+				this.animateOpacity(addedEffectImg, 0, 2700)
+				this.animateScaleY(addedEffectImg, 2.5, 1100)
 
 				break
 			case "sniper_q":
@@ -1964,11 +1904,11 @@ export class Scene extends Board{
 				this.game.playSound("hit")
 
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('blood')
-				this.setEffectImageAttr(addedEffectImg,pos.x+30,pos.y+30,0.8,0.8,0.7,0)
-				this.animateOpacity(addedEffectImg,0,400)
-				this.animateScaleX(addedEffectImg,1.8,200)
-				this.animateScaleY(addedEffectImg,1.8,200)
+				addedEffectImg = this.createCroppedEffectImage("blood")
+				this.setEffectImageAttr(addedEffectImg, pos.x + 30, pos.y + 30, 0.8, 0.8, 0.7, 0)
+				this.animateOpacity(addedEffectImg, 0, 400)
+				this.animateScaleX(addedEffectImg, 1.8, 200)
+				this.animateScaleY(addedEffectImg, 1.8, 200)
 
 				break
 			case "tree_w":
@@ -1983,47 +1923,45 @@ export class Scene extends Board{
 				this.defaultEffect(position, change)
 				scale = 3
 
-				addedEffectImg=this.createCroppedEffectImage('blood')
-				this.setEffectImageAttr(addedEffectImg,pos.x+30,pos.y+30,1.5,1.5,0.7,0)
-				this.animateOpacity(addedEffectImg,0,400)
-				this.animateScaleX(addedEffectImg,2.5,200)
-				this.animateScaleY(addedEffectImg,2.5,200)
+				addedEffectImg = this.createCroppedEffectImage("blood")
+				this.setEffectImageAttr(addedEffectImg, pos.x + 30, pos.y + 30, 1.5, 1.5, 0.7, 0)
+				this.animateOpacity(addedEffectImg, 0, 400)
+				this.animateScaleX(addedEffectImg, 2.5, 200)
+				this.animateScaleY(addedEffectImg, 2.5, 200)
 
-				addedEffectImg2=this.createCroppedEffectImage('explode')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y-20,2,2,0.7,0)
-				this.animateOpacity(addedEffectImg2,0,1700)
-				this.animateScaleX(addedEffectImg2,4,1700)
-				this.animateScaleY(addedEffectImg2,4,1700)
-
+				addedEffectImg2 = this.createCroppedEffectImage("explode")
+				this.setEffectImageAttr(addedEffectImg2, pos.x, pos.y - 20, 2, 2, 0.7, 0)
+				this.animateOpacity(addedEffectImg2, 0, 1700)
+				this.animateScaleX(addedEffectImg2, 4, 1700)
+				this.animateScaleY(addedEffectImg2, 4, 1700)
 
 				break
-			
+
 			case "magician_w_q":
 				this.game.playSound("ignite")
 				// scale = 4
-				addedEffectImg=this.createCroppedEffectImage('fire')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-20,0.8,0.8,1,0)
-				this.animateOpacity(addedEffectImg,0,2000)
-			
+				addedEffectImg = this.createCroppedEffectImage("fire")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 20, 0.8, 0.8, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 2000)
+
 			case "magician_q":
 				this.defaultEffect(position, change)
 				this.game.playSound("hit")
 				this.game.playSound("magic")
-				addedEffectImg=this.createCroppedEffectImage('magician_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.5,1.5,0.8,0)
-				this.animateOpacity(addedEffectImg,0,1600)
+				addedEffectImg = this.createCroppedEffectImage("magician_q")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 1.5, 1.5, 0.8, 0)
+				this.animateOpacity(addedEffectImg, 0, 1600)
 				break
 			case "magician_r":
 				this.game.playSound("6r")
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('magician_r_lightning')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-80,1.3,1.3,1,0)
-				this.animateOpacity(addedEffectImg,0,700)
-				addedEffectImg2=this.createCroppedEffectImage('magician_r_circle')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,1,0)
-				this.animateOpacity(addedEffectImg2,0,1500)
+				addedEffectImg = this.createCroppedEffectImage("magician_r_lightning")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 80, 1.3, 1.3, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 700)
+				addedEffectImg2 = this.createCroppedEffectImage("magician_r_circle")
+				this.setEffectImageAttr(addedEffectImg2, pos.x, pos.y, 1.5, 1.5, 1, 0)
+				this.animateOpacity(addedEffectImg2, 0, 1500)
 
-			
 				break
 			case "kraken_q":
 			case "kraken_w":
@@ -2031,78 +1969,77 @@ export class Scene extends Board{
 				this.game.playSound("hit")
 				this.defaultEffect(position, change)
 				break
-			case 'kraken_w_wave':
-				addedEffectImg=this.createCroppedEffectImage('kraken_w_wave')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.3,0.3,1,0)
-				this.animateScaleY(addedEffectImg,3,700)
-				this.animateScaleX(addedEffectImg,3,700)
-				this.animateOpacity(addedEffectImg,0,900)
+			case "kraken_w_wave":
+				addedEffectImg = this.createCroppedEffectImage("kraken_w_wave")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.3, 0.3, 1, 0)
+				this.animateScaleY(addedEffectImg, 3, 700)
+				this.animateScaleX(addedEffectImg, 3, 700)
+				this.animateOpacity(addedEffectImg, 0, 900)
 				break
 			case "kraken_r":
 				this.game.playSound("water")
 				this.game.playSound("7r")
-				addedEffectImg=this.createCroppedEffectImage('kraken_r_tenacle')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y+20,0.9,0.9,1,0)
-				this.animateScaleY(addedEffectImg,1.5,600)
-				this.animateY(addedEffectImg,pos.y-20,600)
+				addedEffectImg = this.createCroppedEffectImage("kraken_r_tenacle")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y + 20, 0.9, 0.9, 1, 0)
+				this.animateScaleY(addedEffectImg, 1.5, 600)
+				this.animateY(addedEffectImg, pos.y - 20, 600)
 				setTimeout(() => {
 					addedEffectImg.set({ opacity: 0 })
 				}, 1000)
 
-				addedEffectImg2=this.createCroppedEffectImage('kraken_r_water')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,0.9,0.9,1,0)
-				this.animateOpacity(addedEffectImg2,0,2000)
-		
+				addedEffectImg2 = this.createCroppedEffectImage("kraken_r_water")
+				this.setEffectImageAttr(addedEffectImg2, pos.x, pos.y, 0.9, 0.9, 1, 0)
+				this.animateOpacity(addedEffectImg2, 0, 2000)
+
 				break
 			case "bird_w_hit":
 				this.game.playSound("hit")
 				this.game.playSound("bird")
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('bird_w')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.5,0.5,1,0)
-				this.animateOpacity(addedEffectImg,0,1000)
-				this.animateScaleY(addedEffectImg,0.8,400)
-				this.animateScaleX(addedEffectImg,0.8,400)
-				this.animateY(addedEffectImg,pos.y-30,1000)
+				addedEffectImg = this.createCroppedEffectImage("bird_w")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.5, 0.5, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 1000)
+				this.animateScaleY(addedEffectImg, 0.8, 400)
+				this.animateScaleX(addedEffectImg, 0.8, 400)
+				this.animateY(addedEffectImg, pos.y - 30, 1000)
 
-				
 				break
 			case "bird_r_w_hit":
 				this.game.playSound("bird")
 				// this.game.playSound("8r_hit")
-				addedEffectImg=this.createCroppedEffectImage('bird_w')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.5,0.5,1,0)
-				this.animateOpacity(addedEffectImg,0,1000)
-				this.animateScaleY(addedEffectImg,0.8,400)
-				this.animateScaleX(addedEffectImg,0.8,400)
-				this.animateY(addedEffectImg,pos.y-30,1000)
+				addedEffectImg = this.createCroppedEffectImage("bird_w")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.5, 0.5, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 1000)
+				this.animateScaleY(addedEffectImg, 0.8, 400)
+				this.animateScaleX(addedEffectImg, 0.8, 400)
+				this.animateY(addedEffectImg, pos.y - 30, 1000)
 
 			case "bird_r_hit":
 				// //console.log(skillfrom + "bird_r_hit")
 				// pos = this.getPlayerPos(skillfrom)
 				this.game.playSound("8r_hit")
 				this.defaultEffect(position, change)
-				
-				addedEffectImg2=this.createCroppedEffectImage('crack')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,1,0)
-				this.animateOpacity(addedEffectImg2,0,2000)
+
+				addedEffectImg2 = this.createCroppedEffectImage("crack")
+				this.setEffectImageAttr(addedEffectImg2, pos.x, pos.y, 1.5, 1.5, 1, 0)
+				this.animateOpacity(addedEffectImg2, 0, 2000)
 				break
 			case "bird_r":
 				this.game.playSound("8r")
 				// this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('bird_r')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y-30,2.3,2.3,0.8,0)
-				this.animateOpacity(addedEffectImg,0,1700)
+				addedEffectImg = this.createCroppedEffectImage("bird_r")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 30, 2.3, 2.3, 0.8, 0)
+				this.animateOpacity(addedEffectImg, 0, 1700)
 
 				break
 			case "tree_plant":
 				this.game.playSound("tree_plant_hit")
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('tree_plant')
-				this.setEffectImageAttr(addedEffectImg,pos.x+(Math.random()*20)-10,pos.y+30,0.8,0.8,0.8,0)
-				this.animateOpacity(addedEffectImg,0,700)
-				this.animateY(addedEffectImg,pos.y,300)
-	
+				addedEffectImg = this.createCroppedEffectImage("tree_plant")
+				this.setEffectImageAttr(addedEffectImg, pos.x + Math.random() * 20 - 10, pos.y + 30, 0.8, 0.8, 0.8, 0)
+				this.animateOpacity(addedEffectImg, 0, 700)
+				this.animateY(addedEffectImg, pos.y, 300)
+
 				break
 			case "tree_wither_r":
 				this.game.playSound("tree_plant_hit")
@@ -2111,14 +2048,14 @@ export class Scene extends Board{
 				this.game.playSound("hit")
 				this.game.playSound("9r")
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('tree_r')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y+30,0.7,0.7,0.8,0)
-				this.animateOpacity(addedEffectImg,0,700)
-				this.animateY(addedEffectImg,pos.y,1500)
-		
-				addedEffectImg2=this.createCroppedEffectImage('crack')
-				this.setEffectImageAttr(addedEffectImg2,pos.x,pos.y,1.5,1.5,1,0)
-				this.animateOpacity(addedEffectImg2,0,2000)
+				addedEffectImg = this.createCroppedEffectImage("tree_r")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y + 30, 0.7, 0.7, 0.8, 0)
+				this.animateOpacity(addedEffectImg, 0, 700)
+				this.animateY(addedEffectImg, pos.y, 1500)
+
+				addedEffectImg2 = this.createCroppedEffectImage("crack")
+				this.setEffectImageAttr(addedEffectImg2, pos.x, pos.y, 1.5, 1.5, 1, 0)
+				this.animateOpacity(addedEffectImg2, 0, 2000)
 				break
 			case "tree_q":
 				this.game.playSound("fruit_crush")
@@ -2126,11 +2063,11 @@ export class Scene extends Board{
 				this.game.playSound("hit")
 
 				this.defaultEffect(position, change)
-				addedEffectImg=this.createCroppedEffectImage('tree_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.5,0.5,0.8,0)
-				this.animateOpacity(addedEffectImg,0,1600)
-				this.animateScaleY(addedEffectImg,1.5,700)
-				this.animateScaleX(addedEffectImg,1.5,700)
+				addedEffectImg = this.createCroppedEffectImage("tree_q")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.5, 0.5, 0.8, 0)
+				this.animateOpacity(addedEffectImg, 0, 1600)
+				this.animateScaleY(addedEffectImg, 1.5, 700)
+				this.animateScaleX(addedEffectImg, 1.5, 700)
 
 				break
 			case "hacker_r":
@@ -2138,36 +2075,35 @@ export class Scene extends Board{
 				this.game.playSound("10r")
 				this.game.playSound("hit")
 
-				addedEffectImg=this.createCroppedEffectImage('hacker_r')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.7,1.7,0.9,0)
-				this.animateOpacity(addedEffectImg,0,2000)
-				addedEffectImg2=this.createCroppedEffectImage('hacker_r_syringe')
-				this.setEffectImageAttr(addedEffectImg2,pos.x+100,pos.y-100,1,1,0.8,0)
-				this.animateOpacity(addedEffectImg2,0,2000)
-				this.animateX(addedEffectImg2,pos.x+50,300)
-				this.animateY(addedEffectImg2,pos.y-50,300)
+				addedEffectImg = this.createCroppedEffectImage("hacker_r")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 1.7, 1.7, 0.9, 0)
+				this.animateOpacity(addedEffectImg, 0, 2000)
+				addedEffectImg2 = this.createCroppedEffectImage("hacker_r_syringe")
+				this.setEffectImageAttr(addedEffectImg2, pos.x + 100, pos.y - 100, 1, 1, 0.8, 0)
+				this.animateOpacity(addedEffectImg2, 0, 2000)
+				this.animateX(addedEffectImg2, pos.x + 50, 300)
+				this.animateY(addedEffectImg2, pos.y - 50, 300)
 				break
 			case "hacker_q":
-
-				addedEffectImg=this.createCroppedEffectImage('hacker_q')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,1.2,2,1,0)
-				this.animateOpacity(addedEffectImg,0,1600)
-				this.animateScaleX(addedEffectImg,2,400)
+				addedEffectImg = this.createCroppedEffectImage("hacker_q")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 1.2, 2, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 1600)
+				this.animateScaleX(addedEffectImg, 2, 400)
 			case "hacker_w":
 				this.game.playSound("hit")
 				this.game.playSound("hack")
 				this.defaultEffect(position, change)
-				addedEffectImg2=this.createCroppedEffectImage('bluescreen')
-				this.setEffectImageAttr(addedEffectImg2,pos.x-15,pos.y-15,0.7,0.7,0.6,0)
-				this.animateOpacity(addedEffectImg2,0,1600)
+				addedEffectImg2 = this.createCroppedEffectImage("bluescreen")
+				this.setEffectImageAttr(addedEffectImg2, pos.x - 15, pos.y - 15, 0.7, 0.7, 0.6, 0)
+				this.animateOpacity(addedEffectImg2, 0, 1600)
 				break
 			case "revive":
 				this.game.playSound("revive")
-				addedEffectImg=this.createCroppedEffectImage('revive')
-				this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,0.5,0.5,1,0)
-				this.animateOpacity(addedEffectImg,0,1300)
-				this.animateScaleY(addedEffectImg,1.4,400)
-				this.animateScaleX(addedEffectImg,1.4,400)
+				addedEffectImg = this.createCroppedEffectImage("revive")
+				this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 0.5, 0.5, 1, 0)
+				this.animateOpacity(addedEffectImg, 0, 1300)
+				this.animateScaleY(addedEffectImg, 1.4, 400)
+				this.animateScaleX(addedEffectImg, 1.4, 400)
 
 				break
 			case "subway_local":
@@ -2179,10 +2115,10 @@ export class Scene extends Board{
 				this.game.playSound(type)
 				break
 		}
-		
-		this.removeImageAfter(addedEffectImg,3000)
-		this.removeImageAfter(addedEffectImg2,3000)
-		this.removeImageAfter(addedEffectImg3,3000)
+
+		this.removeImageAfter(addedEffectImg, 3000)
+		this.removeImageAfter(addedEffectImg2, 3000)
+		this.removeImageAfter(addedEffectImg3, 3000)
 	}
 	//===========================================================================================================================
 
@@ -2196,21 +2132,21 @@ export class Scene extends Board{
 		if (change < -299) {
 			scale = 2.3
 		}
-		let boomeffect = this.createCroppedEffectImage('hit')
-		this.setEffectImageAttr(boomeffect,pos.x,pos.y,scale,scale,0.7,0)
-		this.animateOpacity(boomeffect,0,700)
-		this.animateScaleX(boomeffect,scale + 0.7,700)
-		this.animateScaleY(boomeffect,scale + 0.7,700)
-		this.removeImageAfter(boomeffect,1000)
+		let boomeffect = this.createCroppedEffectImage("hit")
+		this.setEffectImageAttr(boomeffect, pos.x, pos.y, scale, scale, 0.7, 0)
+		this.animateOpacity(boomeffect, 0, 700)
+		this.animateScaleX(boomeffect, scale + 0.7, 700)
+		this.animateScaleY(boomeffect, scale + 0.7, 700)
+		this.removeImageAfter(boomeffect, 1000)
 	}
 	//===========================================================================================================================
 
 	defaultEffectAt(effectImg, posX, posY) {
 		let scale = 0.7
-		this.setEffectImageAttr(effectImg,posX,posY,scale,scale,1,0)
-		this.animateOpacity(effectImg,0,700)
-		this.animateScaleX(effectImg,scale + 0.5,700)
-		this.animateScaleY(effectImg,scale + 0.5,700)
+		this.setEffectImageAttr(effectImg, posX, posY, scale, scale, 1, 0)
+		this.animateOpacity(effectImg, 0, 700)
+		this.animateScaleX(effectImg, scale + 0.5, 700)
+		this.animateScaleY(effectImg, scale + 0.5, 700)
 		// this.removeImageAfter(boomeffect,1000)
 	}
 	//===========================================================================================================================
@@ -2218,7 +2154,7 @@ export class Scene extends Board{
 	changeShield(target, shield, change, indicate) {
 		//	//console.log("changehield" + shield)
 		change = Math.floor(change)
-		this.setHp(target,this.players[target].hp,this.players[target].maxhp,shield)
+		this.setHp(target, this.players[target].hp, this.players[target].maxhp, shield)
 
 		if (!indicate) return
 
@@ -2234,8 +2170,8 @@ export class Scene extends Board{
 			this.players[target].shieldindicator.set("text", "+" + String(change))
 		}
 		let time = this.getMoveSpeed("indicator")
-		this.animateOpacity(this.players[target].shieldindicator,0,time)
-		this.animateYEaseOut(this.players[target].shieldindicator,y - 50,time)
+		this.animateOpacity(this.players[target].shieldindicator, 0, time)
+		this.animateYEaseOut(this.players[target].shieldindicator, y - 50, time)
 	}
 	//===========================================================================================================================
 
@@ -2251,11 +2187,11 @@ export class Scene extends Board{
 			if (change > 100) {
 				sc = 2.5
 			}
-			this.setEffectImageAttr(this.heal,pos.x,pos.y-40*sc,1,sc,1,0)
-			this.animateOpacity(this.heal,0,this.modifyMoveSpeed(3000))
+			this.setEffectImageAttr(this.heal, pos.x, pos.y - 40 * sc, 1, sc, 1, 0)
+			this.animateOpacity(this.heal, 0, this.modifyMoveSpeed(3000))
 		}
 		// this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
-		this.setHp(data.turn,data.currhp,data.currmaxhp,data.currshield)
+		this.setHp(data.turn, data.currhp, data.currmaxhp, data.currshield)
 		if (type === "heal_simple" || type === "heal") this.animateHP(data)
 	}
 	//===========================================================================================================================
@@ -2271,7 +2207,7 @@ export class Scene extends Board{
 			$(".red-overlay").css("opacity", "100%")
 			$(".red-overlay").animate(
 				{
-					opacity: 0
+					opacity: 0,
 				},
 				300
 			)
@@ -2294,44 +2230,187 @@ export class Scene extends Board{
 		// 	}
 		// }
 		// this.game.ui.changeHP(data.turn, data.currhp, data.currmaxhp)
-		this.setHp(data.turn,data.currhp,data.currmaxhp,data.currshield)
+		this.setHp(data.turn, data.currhp, data.currmaxhp, data.currshield)
 		this.animateHP(data)
 	}
 	//===========================================================================================================================
 
-	setHp(target,hp,maxhp,shield) {
+	setHp(target, hp, maxhp, shield) {
 		//console.log("setHP",target,hp,maxhp,shield)
-		hp=Math.max(0,hp)
-		shield=Math.max(0,shield)
-		this.players[target].hp=hp
-		this.players[target].maxhp=maxhp
+		hp = Math.max(0, hp)
+		shield = Math.max(0, shield)
+		this.players[target].hp = hp
+		this.players[target].maxhp = maxhp
 
 		let hpbar_hp = this.players[target].hpbar.hp
 		let hpbar_frame = this.players[target].hpbar.frame
 		let hpbar_shield = this.players[target].hpbar.shield
 
 		let pos1 = this.getPlayerPos(target)
-		let healthPixels= Math.floor((hp/Math.max(maxhp,hp+shield)) * 48)
-		let shieldPixels= Math.floor((shield/Math.max(maxhp,hp+shield)) * 48)
-
+		let healthPixels = Math.floor((hp / Math.max(maxhp, hp + shield)) * 48)
+		let shieldPixels = Math.floor((shield / Math.max(maxhp, hp + shield)) * 48)
 
 		hpbar_frame.set({ visible: true, left: pos1.x - HPBAR_OFFSET_X, top: pos1.y - HPBAR_OFFSET_Y })
 		hpbar_hp.set({
 			visible: true,
 			left: pos1.x - HPBAR_OFFSET_X + 1,
 			top: pos1.y - HPBAR_OFFSET_Y + 1,
-			width: healthPixels
+			width: healthPixels,
 		})
 		hpbar_shield.set({
 			visible: true,
 			left: pos1.x - HPBAR_OFFSET_X + 1 + healthPixels,
 			top: pos1.y - HPBAR_OFFSET_Y + 1,
-			width: shieldPixels
+			width: shieldPixels,
+		})
+	}
+	onStep() {
+		this.game.playSound("step")
+	}
+	async shakeHPBar(indicators, originX, originY, magnitude) {
+		if (this.gameSpeed > 1.5) return
+		indicators.set({
+			left: originX + (20 + Math.random() * 10) * magnitude,
+			top: originY + (10 + Math.random() * 10) * magnitude,
+		})
+		await sleep(50)
+		indicators.set({
+			left: originX - (20 + Math.random() * 10) * magnitude,
+			top: originY - (10 + Math.random() * 10) * magnitude,
+		})
+		await sleep(50)
+		indicators.set({
+			left: originX + (10 + Math.random() * 5) * magnitude,
+			top: originY + (5 + Math.random() * 5) * magnitude,
+		})
+		await sleep(50)
+		indicators.set({
+			left: originX - (10 + Math.random() * 5) * magnitude,
+			top: originY - (5 + Math.random() * 5) * magnitude,
+		})
+		await sleep(50)
+		indicators.set({
+			left: originX,
+			top: originY,
+		})
+	}
+
+	async showHPBarIndicator(target, hp, maxhp, change) {
+		let health = (hp / maxhp) * 200
+		let lost = -200 * (change / maxhp)
+		if (hp < 0) {
+			lost = (200 * (-1 * change + hp)) / maxhp
+			health = 0
+		}
+
+		let pos1 = this.getPlayerPos(target)
+		const indicators = this.players[target].hpIndicatorGroup
+		indicators.set({
+			visible: true,
+			opacity: 1,
+			left: pos1.x - HEALTHBAR_FRAME_OFFSET_X,
+			top: pos1.y - HEALTHBAR_FRAME_OFFSET_Y,
 		})
 
-	}
-	onStep(){
-		this.game.playSound('step')
+		const [hp_frame, hp_bg, hp_lost, hp_lost_bg, hp_remain] = indicators._objects
+		this.players[target].clearhpIndicatorTimeout()
+
+		hp_lost.setGradient("fill", {
+			y1: 0,
+			x1: 0,
+			y2: 0,
+			x2: lost,
+			colorStops: {
+				0: "yellow",
+				0.3: "yellow",
+				0.6: "orange",
+				1: "red",
+			},
+		})
+
+		// hp_frame.bringToFront()
+		// hp_bg.bringToFront()
+		// hp_lost.bringToFront()
+		// hp_remain.bringToFront()
+		hp_frame.set({ left: 0, top: 0 })
+		hp_bg.set({ left: 2, top: 2 })
+		hp_lost_bg.set({ opacity: 0 })
+		hp_lost.set({ opacity: 0 })
+
+		hp_remain.set({
+			left: 2,
+			top: 2,
+			width: health + lost,
+		})
+		// hp_remain.bringToFront()
+		let shouldUpdateLostHp = false
+
+		if (!this.players[target].isHpIndicatorVisible) {
+			this.players[target].isHpIndicatorVisible = true
+			setTimeout(() => {
+				hp_lost.set({
+					left: 2,
+					top: 2,
+					opacity: 1,
+					width: lost + health,
+				})
+				hp_lost_bg.set({
+					left: 2,
+					top: 2,
+					width: lost + health,
+				})
+			}, 100)
+			setTimeout(() => {
+				hp_lost_bg.animate("opacity", 0, {
+					onChange: this.render.bind(this),
+					duration: this.modifyMoveSpeed(200),
+					easing: fabric.util.ease.easeOutCubic,
+				})
+			}, this.modifyMoveSpeed(500))
+		} else {
+			hp_lost.set({
+				left: 2,
+				top: 2,
+				opacity: 1,
+			})
+			hp_lost_bg.set({
+				left: 2,
+				top: 2,
+			})
+		}
+		if (-change > maxhp * 0.3) hp_lost_bg.set({ opacity: 1 })
+
+		this.players[target].hpIndicatorLostTimeout = setTimeout(async () => {
+			await sleep(this.modifyMoveSpeed(400))
+
+			hp_lost.animate("width", 0, {
+				onChange: this.render.bind(this),
+				duration: this.modifyMoveSpeed(200),
+				easing: fabric.util.ease.easeOutCubic,
+			})
+			// hp_lost.set({ opacity: 0 })
+
+			this.players[target].isHpIndicatorVisible = false
+		}, this.modifyMoveSpeed(HEALTHBAR_LOST_DISAPPEAR_DELAY))
+
+		this.players[target].hpIndicatorFrameTimeout = setTimeout(() => {
+			this.players[target].hpIndicatorGroup.set({ visible: false, opacity: 0 })
+		}, this.modifyMoveSpeed(HEALTHBAR_FRAME_DISAPPEAR_DELAY))
+
+		await sleep(this.modifyMoveSpeed(100))
+		hp_remain.set({
+			left: 2,
+			top: 2,
+			width: health,
+		})
+		if (shouldUpdateLostHp) {
+			// hp_remain.bringToFront()
+		}
+		if (-change > maxhp * 0.5) {
+			this.shakeHPBar(indicators, pos1.x - HEALTHBAR_FRAME_OFFSET_X, pos1.y - HEALTHBAR_FRAME_OFFSET_Y, 0.25)
+		} else if (-change > maxhp * 0.15) {
+			this.shakeHPBar(indicators, pos1.x - HEALTHBAR_FRAME_OFFSET_X, pos1.y - HEALTHBAR_FRAME_OFFSET_Y, 0.1)
+		}
 	}
 	animateHP(data) {
 		let target = data.turn
@@ -2345,86 +2424,18 @@ export class Scene extends Board{
 
 		//hp bar on the board
 		if (change <= -20) {
-			let pos1 = this.getPlayerPos(target)
-			let health = (hp / maxhp) * 200
-			let lost = -200 * (change / maxhp)
-			if (hp < 0) {
-				lost = (200 * (-1 * change + hp)) / maxhp
-				health = 0
-			}
+			this.showHPBarIndicator(target, hp, maxhp, change)
 			// else if(hp>0){
 			// 	lost=0
 			// }
 
 			////console.log(health)
 			////console.log(lost)
-			let hp_lost = this.players[target].hpIndicator.lost
-			let hp_frame = this.players[target].hpIndicator.frame
-			let hp_remain = this.players[target].hpIndicator.remain
-			let hp_bg = this.players[target].hpIndicator.bg
-			this.players[target].clearhpIndicatorTimeout()
-
-			hp_lost.setGradient("fill", {
-				y1: 0,
-				x1: 0,
-				y2: 0,
-				x2: lost,
-				colorStops: {
-					0: "yellow",
-					0.3:"yellow",
-					0.6:"orange",
-					1: "red"
-				}
-			})
-
-			hp_frame.bringToFront()
-			hp_bg.bringToFront()
-			hp_lost.bringToFront()
-			hp_remain.bringToFront()
-
-			hp_frame.set({ visible: true, left: pos1.x - HEALTHBAR_FRAME_OFFSET_X, top: pos1.y - HEALTHBAR_FRAME_OFFSET_Y })
-			hp_bg.set({ visible: true, left: pos1.x - HEALTHBAR_OFFSET_X, top: pos1.y - HEALTHBAR_OFFSET_Y })
-			hp_remain.set({
-				visible: true,
-				left: pos1.x - HEALTHBAR_OFFSET_X,
-				top: pos1.y - HEALTHBAR_OFFSET_Y,
-				width: health + lost
-			})
-
-			setTimeout(() => {
-				hp_remain.set({
-					visible: true,
-					left: pos1.x - HEALTHBAR_OFFSET_X,
-					top: pos1.y - HEALTHBAR_OFFSET_Y,
-					width: health
-				})
-			}, 100)
-
-			if (change < 0) {
-				if (!this.players[target].isHpIndicatorVisible) {
-					setTimeout(() => {
-						hp_lost.set({
-							visible: true,
-							left: pos1.x - HEALTHBAR_OFFSET_X,
-							top: pos1.y - HEALTHBAR_OFFSET_Y,
-							width: health + lost
-						})
-					}, 100)
-					this.players[target].isHpIndicatorVisible = true
-				}
-
-				this.players[target].hpIndicatorLostTimeout = setTimeout(() => {
-					hp_lost.set({ width: 0 })
-					this.players[target].isHpIndicatorVisible = false
-				}, this.modifyMoveSpeed(HEALTHBAR_LOST_DISAPPEAR_DELAY))
-			}
-
-			this.players[target].hpIndicatorFrameTimeout = setTimeout(() => {
-				hp_frame.set({ visible: false })
-				hp_bg.set({ visible: false })
-				hp_remain.set({ visible: false })
-				hp_lost.set({ visible: false })
-			}, this.modifyMoveSpeed(HEALTHBAR_FRAME_DISAPPEAR_DELAY))
+			//this.players[target].hpIndicatorGroup.set({ visible: true, left: pos1.x - HEALTHBAR_FRAME_OFFSET_X, top: pos1.y - HEALTHBAR_FRAME_OFFSET_Y })
+			// let hp_lost = this.players[target].hpIndicator.lost
+			// let hp_frame = this.players[target].hpIndicator.frame
+			// let hp_remain = this.players[target].hpIndicator.remain
+			// let hp_bg = this.players[target].hpIndicator.bg
 
 			////console.log(this.players[target].hpIndicatorFrameTimeout)
 		}
@@ -2440,9 +2451,8 @@ export class Scene extends Board{
 		let x = pos.x + Math.random() * 40 - 20
 		let y = pos.y + Math.random() * 40 - 20
 
-		
 		if (change < 0) {
-			let dmgIndicator=new fabric.Text(String(change), {
+			let dmgIndicator = new fabric.Text(String(change), {
 				fontSize: 20,
 				fill: "#E11900",
 				opacity: 1,
@@ -2454,7 +2464,7 @@ export class Scene extends Board{
 				left: 100,
 				fontFamily: "Cookierun Black",
 				stroke: "white",
-				strokeWidth: 1
+				strokeWidth: 1,
 			})
 			this.lockFabricObject(dmgIndicator)
 			this.canvas.add(dmgIndicator)
@@ -2473,10 +2483,10 @@ export class Scene extends Board{
 			}
 			dmgIndicator.set({ top: y, left: x, opacity: 1 }).bringToFront()
 			const time = this.getMoveSpeed("indicator")
-			setTimeout(()=>this.animateOpacity(dmgIndicator,0,time*3/4),time/4)
-			this.animateYEaseOut(dmgIndicator,y-50,time)
-			
-			this.removeImageAfter(dmgIndicator,3000)
+			setTimeout(() => this.animateOpacity(dmgIndicator, 0, (time * 3) / 4), time / 4)
+			this.animateYEaseOut(dmgIndicator, y - 50, time)
+
+			this.removeImageAfter(dmgIndicator, 3000)
 		} else {
 			//console.log("heal" + change)
 			this.players[target].healindicator.set("fill", "green")
@@ -2489,34 +2499,33 @@ export class Scene extends Board{
 			this.players[target].healindicator.set({ top: y, left: x, opacity: 1 }).bringToFront()
 
 			const time = this.getMoveSpeed("indicator")
-			setTimeout(()=>this.animateOpacity(this.players[target].healindicator,0,time*3/4),time/4)
-			this.animateYEaseOut(this.players[target].healindicator,y-50,time)
+			setTimeout(() => this.animateOpacity(this.players[target].healindicator, 0, (time * 3) / 4), time / 4)
+			this.animateYEaseOut(this.players[target].healindicator, y - 50, time)
 		}
 	}
 	//===========================================================================================================================
 	hideNameText(turn) {
-		this.players[turn].hpbar.frame.set({visible:false})
-		this.players[turn].hpbar.hp.set({visible:false})
-		this.players[turn].hpbar.shield.set({visible:false})
+		this.players[turn].hpbar.frame.set({ visible: false })
+		this.players[turn].hpbar.hp.set({ visible: false })
+		this.players[turn].hpbar.shield.set({ visible: false })
 
 		super.hideNameText(turn)
 	}
-	updateNameText(turn)
-	{
-		let pos1 = this.getPlayerPos(turn)	
+	updateNameText(turn) {
+		let pos1 = this.getPlayerPos(turn)
 
 		// //console.log(this.players[turn].hpbar)
 		this.players[turn].hpbar.frame.set({ visible: true, left: pos1.x - HPBAR_OFFSET_X, top: pos1.y - HPBAR_OFFSET_Y })
 		this.players[turn].hpbar.hp.set({
 			visible: true,
 			left: pos1.x - HPBAR_OFFSET_X + 1,
-			top: pos1.y - HPBAR_OFFSET_Y + 1
+			top: pos1.y - HPBAR_OFFSET_Y + 1,
 		})
 
 		this.players[turn].hpbar.shield.set({
 			visible: true,
-			left: pos1.x - HPBAR_OFFSET_X  + 1 +this.players[turn].hpbar.hp.width,
-			top: pos1.y - HPBAR_OFFSET_Y + 1
+			left: pos1.x - HPBAR_OFFSET_X + 1 + this.players[turn].hpbar.hp.width,
+			top: pos1.y - HPBAR_OFFSET_Y + 1,
 		})
 
 		this.players[turn].hpbar.frame.bringToFront()
@@ -2529,8 +2538,6 @@ export class Scene extends Board{
 		if (money < 10 && money >= 0) {
 			return
 		}
-
-		
 
 		let pos = this.getPlayerPos(target)
 		let x = pos.x
@@ -2555,9 +2562,8 @@ export class Scene extends Board{
 			}
 		}
 		const time = this.getMoveSpeed("indicator")
-		this.animateOpacity(this.players[target].moneyindicator,0,time)
-		this.animateYEaseOut(this.players[target].moneyindicator,y-50,time)
-	
+		this.animateOpacity(this.players[target].moneyindicator, 0, time)
+		this.animateYEaseOut(this.players[target].moneyindicator, y - 50, time)
 	}
 	//===========================================================================================================================
 
@@ -2572,9 +2578,8 @@ export class Scene extends Board{
 
 		this.dcItemIndicator.set({ opacity: 1, top: pos.y - 50, left: pos.x })
 		this.dcItemIndicator.bringToFront()
-		this.animateOpacity(this.dcItemIndicator,0,time)
-		this.animateYEaseOut(this.dcItemIndicator,pos.y-80,time)
-	
+		this.animateOpacity(this.dcItemIndicator, 0, time)
+		this.animateYEaseOut(this.dcItemIndicator, pos.y - 80, time)
 	}
 	//===========================================================================================================================
 
@@ -2604,7 +2609,7 @@ export class Scene extends Board{
 			let filter = new fabric.Image.filters.BlendColor({
 				color: "#4fa3e8",
 				mode: "tint",
-				alpha: 0.7
+				alpha: 0.7,
 			})
 			playerimg.filters = [filter]
 			playerimg.applyFilters()
@@ -2628,7 +2633,7 @@ export class Scene extends Board{
 			let filter = new fabric.Image.filters.BlendColor({
 				color: "white",
 				mode: "tint",
-				alpha: 0.5
+				alpha: 0.5,
 			})
 			playerimg.filters = [filter]
 			playerimg.applyFilters()
@@ -2651,7 +2656,7 @@ export class Scene extends Board{
 			let filter = new fabric.Image.filters.BlendColor({
 				color: "green",
 				mode: "tint",
-				alpha: 0.5
+				alpha: 0.5,
 			})
 			playerimg.filters = [filter]
 			playerimg.applyFilters()
@@ -2676,7 +2681,7 @@ export class Scene extends Board{
 			let filter = new fabric.Image.filters.BlendColor({
 				color: "red",
 				mode: "tint",
-				alpha: 0.5
+				alpha: 0.5,
 			})
 			playerimg.filters = [filter]
 			playerimg.applyFilters()
@@ -2704,7 +2709,7 @@ export class Scene extends Board{
 				scaleX: 0.8,
 				scaleY: 0.8,
 				opacity: 0.5,
-				objectCaching: false
+				objectCaching: false,
 			})
 			this.lockFabricObject(jail)
 			this.canvas.add(jail)
@@ -2729,7 +2734,7 @@ export class Scene extends Board{
 				scaleX: 0.7,
 				scaleY: 0.7,
 				opacity: 1,
-				objectCaching: false
+				objectCaching: false,
 			})
 			this.lockFabricObject(slave)
 			this.canvas.add(slave)
@@ -2756,7 +2761,7 @@ export class Scene extends Board{
 				scaleX: 0.4,
 				scaleY: 0.4,
 				opacity: 1,
-				objectCaching: false
+				objectCaching: false,
 			})
 			this.lockFabricObject(shield)
 			this.canvas.add(shield)
@@ -2781,7 +2786,7 @@ export class Scene extends Board{
 				scaleX: 0.3,
 				scaleY: 0.3,
 				opacity: 1,
-				objectCaching: false
+				objectCaching: false,
 			})
 			this.lockFabricObject(radi)
 			this.canvas.add(radi)
@@ -2807,7 +2812,7 @@ export class Scene extends Board{
 				scaleX: 0.3,
 				scaleY: 0.3,
 				opacity: 1,
-				objectCaching: false
+				objectCaching: false,
 			})
 			this.lockFabricObject(blind)
 			this.canvas.add(blind)
@@ -2979,12 +2984,12 @@ export class Scene extends Board{
 		this.effectindicator[num].animate("opacity", 0, {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 		this.effectindicator[num].animate("top", "-=50", {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
 	//===========================================================================================================================
@@ -3010,14 +3015,13 @@ export class Scene extends Board{
 			image = "subway_express"
 			speed = 900
 		}
-		let train=this.createCroppedEffectImage(image)
-		this.setEffectImageAttr(train,pos.x,pos.y+10,1.5,1.5,1,0)
-		this.animateX(train,pos.x+600,speed)
-		this.removeImageAfter(train,3000)
+		let train = this.createCroppedEffectImage(image)
+		this.setEffectImageAttr(train, pos.x, pos.y + 10, 1.5, 1.5, 1, 0)
+		this.animateX(train, pos.x + 600, speed)
+		this.removeImageAfter(train, 3000)
 		setTimeout(() => {
 			train.set({ opacity: 0 })
 		}, speed + 200)
-
 	}
 	//===========================================================================================================================
 
@@ -3073,7 +3077,7 @@ export class Scene extends Board{
 				top: y,
 				opacity: 1,
 				scaleY: 3.3,
-				visible: true
+				visible: true,
 			})
 			this.players[tr].targetimg.bringToFront()
 			// this.nameTextsToFront()
@@ -3081,7 +3085,7 @@ export class Scene extends Board{
 			this.players[tr].targetimg.animate("scaleY", 0.6, {
 				onChange: this.render.bind(this),
 				duration: 500,
-				easing: fabric.util.ease.easeOutBounce
+				easing: fabric.util.ease.easeOutBounce,
 			})
 		}
 	} //===========================================================================================================================
@@ -3109,7 +3113,7 @@ export class Scene extends Board{
 				scaleX: 0.4,
 				scaleY: 0.4,
 				evented: true,
-				hoverCursor: "pointer"
+				hoverCursor: "pointer",
 			})
 			let onclick = () => this.game.targetSelected(turns[i], type)
 
@@ -3146,13 +3150,12 @@ export class Scene extends Board{
 		this.tooltip.bringToFront()
 	}
 	//===========================================================================================================================
-	moveComplete(turn){
+	moveComplete(turn) {
 		this.game.moveComplete()
 		// let ui = this.game.turn2ui(turn)
 		// this.players[turn].nametext.set("text", "(" + String(turn + 1) + "P)" + $(this.game.ui.elements.hpis[ui]).html())
 		// this.updateNameText(turn)
 		super.moveComplete(turn)
-		
 	}
 	showSelectedTileSingle(index) {
 		let pos = this.getTilePos(index)
@@ -3224,8 +3227,7 @@ export class Scene extends Board{
 				)
 			}.bind(this)
 		}
-		this.activateTile(index,select)
-		
+		this.activateTile(index, select)
 
 		//this.tiles[t].set({'top':"-=10"})
 		// this.tiles[index].animate('top','-=10',{
@@ -3260,7 +3262,7 @@ export class Scene extends Board{
 
 		this.tileReset()
 		if (type === "godhand") {
-		//	this.teleportPlayer(this.game.godhandtarget, index, "levitate")
+			//	this.teleportPlayer(this.game.godhandtarget, index, "levitate")
 			this.tooltip.set({ opacity: 0 })
 		} else if (type === "submarine") {
 			this.tooltip.set({ opacity: 0 })
@@ -3270,14 +3272,13 @@ export class Scene extends Board{
 	}
 	//===========================================================================================================================
 
-	
 	//===========================================================================================================================
 
 	playerDeath(target, respawnpos) {
 		this.players[target].playerimg.set({
 			opacity: 0,
 			top: this.Map.coordinates[respawnpos].y + BOARD_MARGIN,
-			left: this.Map.coordinates[respawnpos].x + BOARD_MARGIN
+			left: this.Map.coordinates[respawnpos].x + BOARD_MARGIN,
 		})
 		// this.players[target].nametext.set("stroke", "red")
 		this.render()
@@ -3289,7 +3290,7 @@ export class Scene extends Board{
 		this.players[turn].playerimg.set({
 			opacity: 0,
 			top: this.Map.coordinates[respawnpos].y + BOARD_MARGIN,
-			left: this.Map.coordinates[respawnpos].x + BOARD_MARGIN
+			left: this.Map.coordinates[respawnpos].x + BOARD_MARGIN,
 		})
 		this.game.removeAllEffects(turn)
 		// this.players[turn].nametext.set("stroke", "red")
@@ -3301,19 +3302,18 @@ export class Scene extends Board{
 		// this.game.removeAllEffects(target)
 		this.showPlayer(target, pos)
 	}
-	setFinish(pos){
-		if(pos===-1) return
+	setFinish(pos) {
+		if (pos === -1) return
 
 		this.tempFinish.set({
-			visible:true,
+			visible: true,
 			top: this.Map.coordinates[pos].y + BOARD_MARGIN,
-			left: this.Map.coordinates[pos].x + BOARD_MARGIN
+			left: this.Map.coordinates[pos].x + BOARD_MARGIN,
 		})
 		this.render()
 	}
 	//===========================================================================================================================
 
-	
 	/**	//===========================================================================================================================
 
 	 * change player apperance
@@ -3351,32 +3351,30 @@ export class Scene extends Board{
 			top: pos.y - 50,
 			left: pos.x,
 			scaleX: 1.7,
-			scaleY: 1.7
+			scaleY: 1.7,
 		})
 
-
-		let addedEffectImg=this.createCroppedEffectImage('death')
-		this.setEffectImageAttr(addedEffectImg,pos.x,pos.y,3,3,0.6,0)
-		this.animateScaleX(addedEffectImg,1.4,200)
-		this.animateOpacity(addedEffectImg,0,1500)
-		this.removeImageAfter(addedEffectImg,2000)
-
+		let addedEffectImg = this.createCroppedEffectImage("death")
+		this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 3, 3, 0.6, 0)
+		this.animateScaleX(addedEffectImg, 1.4, 200)
+		this.animateOpacity(addedEffectImg, 0, 1500)
+		this.removeImageAfter(addedEffectImg, 2000)
 
 		this.players[turn].coffin.animate("top", pos.y + 10, {
 			onChange: this.render.bind(this),
 			duration: 1000,
-			easing: fabric.util.ease.easeOutBounce
+			easing: fabric.util.ease.easeOutBounce,
 		})
 		setTimeout(() => {
 			this.players[turn].coffin.animate("scaleX", 1, {
 				onChange: this.render.bind(this),
 				duration: 400,
-				easing: fabric.util.ease.easeOutElastic
+				easing: fabric.util.ease.easeOutElastic,
 			})
 			this.players[turn].coffin.animate("scaleY", 1, {
 				onChange: this.render.bind(this),
 				duration: 400,
-				easing: fabric.util.ease.easeOutElastic
+				easing: fabric.util.ease.easeOutElastic,
 			})
 		}, 300)
 		// this.forceRender()
@@ -3394,48 +3392,48 @@ export class Scene extends Board{
 			top: pos.y - 15,
 			left: pos.x,
 			scaleX: 1.5,
-			scaleY: 1.5
+			scaleY: 1.5,
 		})
 		this.players[turn].soul.animate("scaleX", 0.5, {
 			onChange: this.render.bind(this),
 			duration: 1000,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 		this.players[turn].soul.animate("scaleY", 0.5, {
 			onChange: this.render.bind(this),
 			duration: 1000,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
 	//===========================================================================================================================
 
 	hideCoffinAndSoul(turn) {
 		this.players[turn].coffin.set({
-			visible: false
+			visible: false,
 		})
 		let pos = this.getPlayerPos(turn)
 
 		this.players[turn].soul.set({
 			scaleX: 1.5,
-			scaleY: 1.5
+			scaleY: 1.5,
 		})
 		this.players[turn].soul.animate("top", pos.y - 150, {
 			onChange: this.render.bind(this),
 			duration: 500,
-			easing: fabric.util.ease.easeInCubic
+			easing: fabric.util.ease.easeInCubic,
 		})
 		this.players[turn].soul.animate("opacity", 0, {
 			onChange: this.render.bind(this),
 			duration: 1000,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 		setTimeout(() => {
 			this.players[turn].soul.set({
-				visible: false
+				visible: false,
 			})
 		}, 500)
 	}
-	
+
 	//===========================================================================================================================
 
 	chooseTile(index) {
@@ -3493,16 +3491,14 @@ export class Scene extends Board{
 			// } else if (index === 107) {
 			// 	tile = 4
 			// }
-		}
-		else if (this.mapname === "rapid") {
+		} else if (this.mapname === "rapid") {
 			if (index > 1 && index < 13) {
 				tile = 2 + (index % 2)
 			} else if (index > 13 && index < 27) {
 				tile = 3 + (index % 2)
 			} else if (index >= 27) {
-				tile = (index % 2===0?4:9)
-			}
-			else return 3
+				tile = index % 2 === 0 ? 4 : 9
+			} else return 3
 		}
 
 		return tile

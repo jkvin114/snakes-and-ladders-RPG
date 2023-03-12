@@ -1,6 +1,6 @@
 import { ReplayGame } from "./ReplayGame.js"
 import { PlayableGame } from "./PlayableGame.js"
-export const VOLUME = 0.7
+export const VOLUME = 0.4
 export class StringResource {
 	constructor() {
 		this.EFFECTS
@@ -13,20 +13,18 @@ export class StringResource {
 		this.VISUAL_EFFECTS
 		this.GLOBAL_OBSTACLE_EVENT
 		this.SPECIAL_EFFECTS = new Map()
-		this.ITEM_DATA = [new Map(),new Map(),new Map(),new Map()]
+		this.ITEM_DATA = [new Map(), new Map(), new Map(), new Map()]
 	}
 }
 
-const params = (new URL(document.location)).searchParams;
-const isReplay=params.get("isreplay");
+const params = new URL(document.location).searchParams
+const isReplay = params.get("isreplay")
 console.log(params)
-export const GAME = isReplay?new ReplayGame(params.get("replayid")):new PlayableGame()
-
+export const GAME = isReplay ? new ReplayGame(params.get("replayid")) : new PlayableGame()
 
 //when html document is loaded
 $(document).ready(function () {
-    if(!isReplay)
-	    auth()
+	if (!isReplay) auth()
 
 	extendJqueryEasing()
 	includeHTML()
@@ -34,7 +32,6 @@ $(document).ready(function () {
 		return ""
 	}
 })
-
 
 /**
  * window.onload -> socket.connect -> requestsetting -> initialsetting
@@ -47,12 +44,10 @@ $(document).ready(function () {
  * -> boardready -> setupcomplete -> startgame
  *  */
 //called when all files including images are loaded
- $(window).on("load", function (e) {
+$(window).on("load", function (e) {
 	GAME.onCreate()
 	console.log("window onload")
-	
 })
-
 
 function extendJqueryEasing() {
 	var baseEasings = {}
@@ -82,7 +77,7 @@ function extendJqueryEasing() {
 
 			while (p < ((pow2 = Math.pow(2, --bounce)) - 1) / 11) {}
 			return 1 / Math.pow(4, 3 - bounce) - 7.5625 * Math.pow((pow2 * 3 - 2) / 22 - p, 2)
-		}
+		},
 	})
 
 	$.each(baseEasings, function (name, easeIn) {
@@ -95,7 +90,6 @@ function extendJqueryEasing() {
 		}
 	})
 }
-
 
 function includeHTML() {
 	var z, i, elmnt, file, xhttp
@@ -129,12 +123,11 @@ function includeHTML() {
 	}
 }
 
-
 function auth() {
 	$.ajax({
 		method: "POST",
 		url: "/room/game",
-		data: {}
+		data: {},
 	})
 		.done(function (data, statusText, xhr) {
 			let status = xhr.status
@@ -208,14 +201,14 @@ export function registerSounds() {
 		"metal",
 		"horse",
 		"step",
-		"hack"
+		"hack",
 	]
 
 	for (const sound of sounds) {
 		GAME.sounds.set(
 			sound,
 			new Howl({
-				src: ["res/sound/" + sound + ".mp3"]
+				src: ["res/sound/" + sound + ".mp3"],
 			})
 		)
 	}

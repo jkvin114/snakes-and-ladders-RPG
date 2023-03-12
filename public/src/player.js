@@ -1,4 +1,3 @@
-
 export class Player {
 	constructor(game, turn, champ, team, name) {
 		this.game = game
@@ -9,12 +8,13 @@ export class Player {
 		this.turn = turn
 		this.name = name
 		this.isInSubway = false
-		this.hp=200
-		this.maxhp=200
+		this.hp = 200
+		this.maxhp = 200
 
 		//fabric objects
 		this.hpbar
 		this.hpIndicator
+		this.hpIndicatorGroup
 		this.dmgindicator
 		this.healindicator
 		this.shieldindicator
@@ -25,15 +25,15 @@ export class Player {
 		this.coffin //죽었을경우
 		this.boom //터지는효과
 		this.nametext
-		
+
 		this.hpIndicatorFrameTimeout = setTimeout(() => {}, 0)
 		this.hpIndicatorLostTimeout = setTimeout(() => {}, 0)
 		this.isHpIndicatorVisible = false
 		this.effect_status = new Set()
 	}
 	clearhpIndicatorTimeout() {
-		// console.log(this.hpIndicatorLostTimeout)
 		clearTimeout(this.hpIndicatorFrameTimeout)
 		clearTimeout(this.hpIndicatorLostTimeout)
+		console.log(this.hpIndicatorLostTimeout)
 	}
 }
