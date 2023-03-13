@@ -31,6 +31,14 @@ export class PlayerMatchingState{
 			userClass:0
 		}
 	}
+	getHostingCount(){
+		return this.playerlist.reduce(function (num: number, val: ProtoPlayer) {
+			if (val.type === PlayerType.PLAYER) {
+				num += 1
+			}
+			return num
+		}, 0)
+	}
 	setHostNickname(name: string, turn: number,userClass:number) {
 		this.playerlist[turn].name = name
 		this.playerlist[turn].userClass=userClass

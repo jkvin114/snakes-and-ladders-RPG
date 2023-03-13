@@ -48,7 +48,21 @@ export const ajaxauth = (req: express.Request, res: express.Response, next: expr
 		res.status(401).end("unauthorized")
 	}
 }
+export const adminauth = async(req: express.Request, res: express.Response, next: express.NextFunction) => {
 
+	try {
+		if (!req.session.isLogined) {
+			res.status(401).redirect("/")
+		} else {
+			const user = await User.findById(req.session.userId)
+			if(user.role && user.role==="admin") next()
+			else
+				res.status(401).redirect("/")
+		}
+	} catch {
+		res.status(401).redirect("/")
+	}
+}
 export const postRoleChecker =  async (req: express.Request, res: express.Response, next: express.NextFunction)=>{
 	const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
 	if(!post) {

@@ -1,4 +1,4 @@
-const CONNECTION_TIMEOUT=2000
+const CONNECTION_TIMEOUT = 2000
 import { GAME } from "./GameMain.js"
 // import { calculatePrize,randomObs } from "./roulette.js"
 export class GameClient {
@@ -25,57 +25,58 @@ export class GameClient {
 		this.selectionComplete
 		this.sellTokenComplete
 		this.extendTimeout
-
 	}
 }
 
 export function openConnection(isInitial) {
 	console.log("openconnection")
-	const socket = io("http://" + sessionStorage.ip_address)
+	const socket = io()
 	GAME.connection = new GameClient()
-	let connectionTimeout=null
-	const RNAME = sessionStorage.roomName
+	let connectionTimeout = null
+	// const RNAME = sessionStorage.roomName
 
-	function connectionChecker(){
-		connectionTimeout=setTimeout(GAME.onDisconnect.bind(GAME),CONNECTION_TIMEOUT)
+	function connectionChecker() {
+		connectionTimeout = setTimeout(GAME.onDisconnect.bind(GAME), CONNECTION_TIMEOUT)
 		socket.emit("connection_checker")
 	}
-	
 
 	socket.on("connection_checker", function () {
-	//	console.log("connection checked"+RNAME)
+		//	console.log("connection checked"+RNAME)
 
 		clearTimeout(connectionTimeout)
-		connectionTimeout=setTimeout(connectionChecker,CONNECTION_TIMEOUT*2)
+		connectionTimeout = setTimeout(connectionChecker, CONNECTION_TIMEOUT * 2)
 	})
 
 	socket.on("connect", function () {
-		console.log("game"+isInitial)
+		console.log("game" + isInitial)
 		connectionChecker()
-		if(isInitial && !GAME.begun){
-			console.log("game"+isInitial)
+		if (isInitial && !GAME.begun) {
+			console.log("game" + isInitial)
 			GAME.connection.requestsetting()
+			console.log("reqeust setting")
 			$("#loadingtext").html("REQUESTING GAME DATA..")
-		}
-		else if(GAME.begun){
-			console.log("reconnect"+RNAME)
+		} else if (GAME.begun) {
+			// console.log("reconnect" + RNAME)
 			socket.emit("user:reconnect")
 			console.log(GAME.scene.players)
 		}
+		GAME.connection.requestItemStatus()
 	})
 
-	socket.on("server:initialsetting", function (setting,turn,cturn) {
+	socket.on("server:initialsetting", function (setting, turn, cturn) {
 		console.log("initialsetting")
-		GAME.init(setting,turn,cturn)
+		GAME.init(setting, turn, cturn)
 	})
-
+	socket.on("server:item_status", function (items) {
+		GAME.setItemStatus(items)
+	})
 	socket.on("server:nextturn", function (t) {
 		if (t == null) return
 		GAME.startTurn(t)
 	})
 	socket.on("server:prediction", function (data) {
 		if (data == null) return
-		GAME.ui.showPrediction(data.probs,data.diffs)
+		GAME.ui.showPrediction(data.probs, data.diffs)
 	})
 	socket.on("server:rolldice", function (dice) {
 		if (dice == null) return
@@ -90,8 +91,8 @@ export function openConnection(isInitial) {
 
 	socket.on("server:damage", function (val) {
 		if (val == null) return
-		GAME.animateDamage(val) 
-		
+		GAME.animateDamage(val)
+
 		// GAME.scene.hpChanger.enqueueHpChange(val)
 	})
 
@@ -100,8 +101,6 @@ export function openConnection(isInitial) {
 		GAME.animateHeal(val)
 	})
 
-
-
 	socket.on("server:shield", function (val) {
 		if (val == null) return
 		GAME.changeShield(val)
@@ -109,7 +108,7 @@ export function openConnection(isInitial) {
 
 	socket.on("server:money", function (val) {
 		if (val == null) return
-		console.log("money",val)
+		console.log("money", val)
 		GAME.updateMoney(val)
 	})
 	socket.on("server:status_effect", function (val) {
@@ -120,11 +119,11 @@ export function openConnection(isInitial) {
 	socket.on("server:special_effect", function (val) {
 		if (val == null) return
 
-		GAME.applySpecialEffect(val.turn,val.name, val.data, val.sourcePlayer)
+		GAME.applySpecialEffect(val.turn, val.name, val.data, val.sourcePlayer)
 	})
 	socket.on("server:visual_effect", function (data) {
-		if (data== null) return
-		GAME.scene.showEffect(data.pos, data.type,0,data.source)
+		if (data == null) return
+		GAME.scene.showEffect(data.pos, data.type, 0, data.source)
 	})
 	// socket.on("server:obstacle_effect", function (data) {
 	// 	if (data== null) return
@@ -136,7 +135,7 @@ export function openConnection(isInitial) {
 	})
 	socket.on("server:smooth_teleport", function (val) {
 		if (val == null) return
-	//	console.log(val)
+		//	console.log(val)
 		GAME.smoothTeleport(val.turn, val.pos, val.distance)
 	})
 	socket.on("server:skills", function (status) {
@@ -173,13 +172,13 @@ export function openConnection(isInitial) {
 
 	socket.on("server:delete_projectile", function (UPID) {
 		if (UPID == null) return
-	//	console.log("upid"+UPID)
+		//	console.log("upid"+UPID)
 		GAME.scene.destroyProj(UPID)
 	})
-	socket.on("server:delete_entity", function (UEID,isKilled) {
+	socket.on("server:delete_entity", function (UEID, isKilled) {
 		if (UEID == null) return
-	//	console.log("upid"+UEID+" "+isKilled)
-		GAME.scene.removeEntity(UEID,isKilled)
+		//	console.log("upid"+UEID+" "+isKilled)
+		GAME.scene.removeEntity(UEID, isKilled)
 	})
 	socket.on("server:pending_obs:godhand", function (targets) {
 		if (GAME.ismyturn || !targets) {
@@ -190,23 +189,15 @@ export function openConnection(isInitial) {
 	socket.on("server:death", function (info) {
 		if (info == null) return
 		// GAME.scene.hpChanger.saveDieData(info)
-		GAME.onPlayerDie(
-			info.turn,
-			info.location,
-			info.killer,
-			info.isShutDown,
-			info.killerMultiKillCount,
-			info.damages
-		)
+		GAME.onPlayerDie(info.turn, info.location, info.killer, info.isShutDown, info.killerMultiKillCount, info.damages)
 	})
 	socket.on("server:attack", function (info) {
 		if (info == null) return
 		GAME.scene.showAttackEffect(info)
-		
 	})
 	socket.on("server:skill_trajectory", function (info) {
 		if (info == null) return
-		GAME.scene.animateTrajectory(info.to,info.from,info.type,info.delay)
+		GAME.scene.animateTrajectory(info.to, info.from, info.type, info.delay)
 	})
 	socket.on("server:respawn", function (data) {
 		if (data.turn == null) return
@@ -221,9 +212,9 @@ export function openConnection(isInitial) {
 		GAME.syncPlayerVisibility(data)
 	})
 
-	socket.on("server:receive_message", function (source,msg) {
+	socket.on("server:receive_message", function (source, msg) {
 		if (msg == null) return
-		GAME.receiveMessage(source,msg)
+		GAME.receiveMessage(source, msg)
 	})
 	socket.on("reload_response", function (stun) {
 		// $(dicebtn[0]).show()
@@ -232,22 +223,22 @@ export function openConnection(isInitial) {
 	socket.on("server:pending_obs:trial", function (num) {
 		if (num == null) return
 
-		GAME.spinRoullete('court', num)
+		GAME.spinRoullete("court", num)
 	})
 	socket.on("server:pending_obs:casino", function (num) {
 		if (num == null) return
-		GAME.spinRoullete('casino', num)
+		GAME.spinRoullete("casino", num)
 	})
 
 	socket.on("server:pending_obs:kidnap", function () {
-		if (!GAME.ismyturn|| !GAME.ui) {
+		if (!GAME.ismyturn || !GAME.ui) {
 			return
 		}
 		GAME.ui.showSelection("obs", "kidnap")
 	})
 
 	socket.on("server:pending_obs:threaten", function () {
-		if (!GAME.ismyturn|| !GAME.ui) {
+		if (!GAME.ismyturn || !GAME.ui) {
 			return
 		}
 		GAME.ui.showSelection("obs", "threaten")
@@ -281,28 +272,28 @@ export function openConnection(isInitial) {
 
 	socket.on("server:turn_roullete", function () {
 		if (!GAME.ismyturn) {
-		//	calculatePrize()
+			//	calculatePrize()
 		}
 	})
 	socket.on("server:update_other_data", function (data) {
 		if (data.type == null) return
-	///	console.log(data)
+		///	console.log(data)
 		GAME.onReceiveChangeData(data.type, data.turn, data.amt)
 	})
 	socket.on("server:update_skill_info", function (data) {
-		if (GAME.myturn !== data.turn || data.turn == null|| !GAME.ui) {
+		if (GAME.myturn !== data.turn || data.turn == null || !GAME.ui) {
 			return
 		}
 		GAME.ui.updateSkillInfo(data.info_kor, data.info_eng)
 	})
 	socket.on("server:start_timeout_countdown", function (crypt_turn, time) {
-		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null|| !GAME.ui) {
+		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null || !GAME.ui) {
 			return
 		}
 		GAME.ui.timeoutStart(time)
 	})
 	socket.on("server:stop_timeout_countdown", function (crypt_turn) {
-		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null|| !GAME.ui) {
+		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null || !GAME.ui) {
 			return
 		}
 		GAME.ui.timeoutStop()
@@ -324,9 +315,8 @@ export function openConnection(isInitial) {
 		GAME.onIndicateObstacle(data)
 	})
 	socket.on("server:indicate_item", function (data) {
-		if(!data) return
-		GAME.onIndicateItem(data.turn,data.item)
-		
+		if (!data) return
+		GAME.onIndicateItem(data.turn, data.item)
 	})
 	socket.on("server:quit", function (quitter) {
 		if (GAME.myturn === quitter) {
@@ -336,20 +326,22 @@ export function openConnection(isInitial) {
 		window.location.href = "/"
 	})
 	socket.on("server:gameover", function (winner) {
-		console.log('gameover')
+		console.log("gameover")
 		GAME.onGameOver(winner)
 	})
 	socket.on("server:game_stat_ready", function (statid) {
-		setTimeout(()=>{
-
-			window.onbeforeunload=()=>{}
-			if(statid==="")window.location.href="index.html"
-			else window.location.href = "statpage.html?type=game&statid="+statid
-		},4000)
+		setTimeout(() => {
+			window.onbeforeunload = () => {}
+			if (statid === "" || GAME.is_spectator) window.location.href = "index.html"
+			else window.location.href = "statpage.html?type=game&statid=" + statid
+		}, 4000)
 	})
 
 	GAME.connection.requestsetting = function () {
 		socket.emit("user:requestsetting")
+	}
+	GAME.connection.requestItemStatus = function () {
+		socket.emit("user:request_item_status")
 	}
 	// GAME.connection.startSimulation = function () {
 	// 	socket.emit("user:start_game", this.rname)
@@ -358,14 +350,14 @@ export function openConnection(isInitial) {
 		socket.emit("user:start_game")
 		socket.emit("user:reconnect")
 	}
-	GAME.connection.update = function (type,data) {
-		socket.emit("user:update",type,data)
+	GAME.connection.update = function (type, data) {
+		socket.emit("user:update", type, data)
 	}
-	GAME.connection.sendChat = function (turn,text) {
-		socket.emit("user:chat",turn,text)
+	GAME.connection.sendChat = function (turn, text) {
+		socket.emit("user:chat", turn, text)
 	}
 	GAME.connection.pressDice = function (dicenum) {
-		socket.emit("user:press_dice",GAME.crypt_turn, dicenum)
+		socket.emit("user:press_dice", GAME.crypt_turn, dicenum)
 	}
 	GAME.connection.checkObstacle = function () {
 		socket.emit("user:arrive_square")
@@ -374,7 +366,7 @@ export function openConnection(isInitial) {
 		socket.emit("user:obstacle_complete")
 	}
 	GAME.connection.goNextTurn = function () {
-		socket.emit("user:nextturn",GAME.crypt_turn)
+		socket.emit("user:nextturn", GAME.crypt_turn)
 	}
 
 	GAME.connection.getSkill = function (s) {
@@ -387,15 +379,15 @@ export function openConnection(isInitial) {
 	GAME.connection.sendTarget = function (t) {
 		//	console.log("target " + t)
 		GAME.endSelection()
-		socket.emit("user:chose_target",GAME.crypt_turn,  t)
+		socket.emit("user:chose_target", GAME.crypt_turn, t)
 	}
 	GAME.connection.sendTileLocation = function (location) {
 		GAME.endSelection()
-		socket.emit("user:chose_location",GAME.crypt_turn, location)
+		socket.emit("user:chose_location", GAME.crypt_turn, location)
 	}
 	GAME.connection.sendAreaSkillLocation = function (location) {
 		GAME.endSelection()
-		socket.emit("user:chose_area_skill_location",GAME.crypt_turn, location)
+		socket.emit("user:chose_area_skill_location", GAME.crypt_turn, location)
 	}
 	GAME.connection.resetGame = function () {
 		GAME.scene = null
@@ -409,40 +401,39 @@ export function openConnection(isInitial) {
 	}
 
 	GAME.connection.sendStoreData = function (data) {
-		socket.emit("user:store_data",  data)
+		socket.emit("user:store_data", data)
 	}
 
 	GAME.connection.sendSubmarineDest = function (data) {
 		socket.emit("user:complete_action_selection", GAME.crypt_turn, data)
 	}
 	GAME.connection.sendSubwayType = function (data) {
-		socket.emit("user:complete_obstacle_selection",GAME.crypt_turn,  data)
+		socket.emit("user:complete_obstacle_selection", GAME.crypt_turn, data)
 	}
 
 	GAME.connection.reloadGame = function () {
-		socket.emit("user:reload_game"  )
+		socket.emit("user:reload_game")
 	}
 	GAME.connection.turnRoullete = function () {
 		socket.emit("user:turn_roullete")
 	}
 
 	GAME.connection.roulleteComplete = function () {
-		socket.emit("user:complete_obstacle_selection",GAME.crypt_turn, { type: "roullete",complete:true })
+		socket.emit("user:complete_obstacle_selection", GAME.crypt_turn, { type: "roullete", complete: true })
 	}
-
 
 	GAME.connection.selectionComplete = function (type, data) {
 		if (type === "action") {
-			socket.emit("user:complete_action_selection",GAME.crypt_turn, data)
+			socket.emit("user:complete_action_selection", GAME.crypt_turn, data)
 		} else if (type === "obs") {
-			socket.emit("user:complete_obstacle_selection",GAME.crypt_turn, data)
+			socket.emit("user:complete_obstacle_selection", GAME.crypt_turn, data)
 		}
 	}
 
 	GAME.connection.sellTokenComplete = function (data) {
 		console.log("onTokenSellComplete")
 
-		socket.emit("user:complete_obstacle_selection",GAME.crypt_turn,  data)
+		socket.emit("user:complete_obstacle_selection", GAME.crypt_turn, data)
 	}
 	GAME.connection.extendTimeout = function () {
 		socket.emit("user:extend_timeout")

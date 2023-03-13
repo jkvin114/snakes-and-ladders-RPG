@@ -38,10 +38,10 @@ export namespace R{
 		if(!name) return false
 		return (ROOMS.has(name) || MARBLE_ROOMS.has(name))
 	}
-	export function allRPG():IterableIterator<Room>{
+	export function allRPG():IterableIterator<RPGRoom>{
 		return ROOMS.values()
 	}
-	export function allMarble():IterableIterator<Room>{
+	export function allMarble():IterableIterator<MarbleRoom>{
 		return MARBLE_ROOMS.values()
 	}
 	export function remove(name:string){

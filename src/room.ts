@@ -71,6 +71,14 @@ abstract class Room {
 		return this.playerMatchingState.getTurnMapping(original)
 	}
 
+	get roomStatus(){
+		return {
+			running:this.isGameRunning,
+			started:this.isGameStarted,
+			playerlist:this.playerMatchingState.playerlist,
+			hosting:this.hosting
+		}
+	}
 	
 	/**
 	 * set types of all players
@@ -101,14 +109,10 @@ abstract class Room {
 	
 	user_updatePlayerList(playerlist: ProtoPlayer[]) {
 		
-		this.hosting = playerlist.reduce(function (num: number, val: ProtoPlayer) {
-			if (val.type === PlayerType.PLAYER) {
-				num += 1
-			}
-			return num
-		}, 0)
-
+		
 		this.playerMatchingState.setPlayerList(playerlist)
+		this.hosting = this.playerMatchingState.getHostingCount()
+
 	}
 
 	user_updateReady(turn: number, ready: boolean) {
@@ -116,7 +120,7 @@ abstract class Room {
 		
 	}
 	user_guestRegister(sessionId:string):boolean{
-		if (this.hosting <= 0) {
+		if (this.playerMatchingState.getHostingCount() <= 0) {
 			return false
 		}
 		this.addSession(sessionId)

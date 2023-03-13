@@ -19,8 +19,10 @@ export class StringResource {
 
 const params = new URL(document.location).searchParams
 const isReplay = params.get("isreplay")
-console.log(params)
-export const GAME = isReplay ? new ReplayGame(params.get("replayid")) : new PlayableGame()
+
+export const GAME = isReplay
+	? new ReplayGame(params.get("replayid"))
+	: new PlayableGame(params.get("is_spectator") === "true")
 
 //when html document is loaded
 $(document).ready(function () {

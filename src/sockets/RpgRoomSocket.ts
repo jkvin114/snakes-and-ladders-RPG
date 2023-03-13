@@ -65,39 +65,39 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 
 	socket.on("user:requestsetting", function () {
-		// let rname = SocketSession.getRoomName(socket)
-		// let turn = SocketSession.getTurn(socket)
-		// if (!R.hasRPGRoom(rname)) return
-		// let room =R.getRPGRoom(rname)
 		
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			if (!room.hasGameLoop()) {
 				socket.emit("server:quit")
 				return
 			}
+			
 			socket.join(rname)
 			let setting:ServerGameEventFormat.initialSetting = room.user_requestSetting()
-			let newturn= turn
+			let newturn=-1
+			if(turn!==-1){
 
-			//do not update turn from second access
-			if(!room.registeredSessions.has(SocketSession.getId(socket))){
-
-				newturn=room.getChangedTurn(turn)
-				SocketSession.setTurn(socket,newturn)
+				newturn= turn
+				//do not update turn from second access
+				if(!room.registeredSessions.has(SocketSession.getId(socket))){
+	
+					newturn=room.getChangedTurn(turn)
+					SocketSession.setTurn(socket,newturn)
+				}
+				
+				room.registeredSessions.add(SocketSession.getId(socket))
 			}
 			
-			room.registeredSessions.add(SocketSession.getId(socket))
 			socket.emit("server:initialsetting", setting, newturn, room.getGameTurnToken(newturn))
 		})
+	})
+	//==========================================================================================
 
-		// if (!room.hasGameLoop()) {
-		// 	socket.emit("server:quit")
-		// 	return
-		// }
-		// socket.join(rname)
-		// let setting:ServerGameEventInterface.initialSetting = room.user_requestSetting()
-
-		// socket.emit("server:initialsetting", setting, turn, room.cryptTurn(turn))
+	socket.on("user:request_item_status",function(){
+		controlRPGRoom(socket,(room,rname,turn)=>{
+			let items=room.getGameLoop.game.getItemStatus()
+			socket.emit("server:item_status",items)
+		})
 	})
 	//==========================================================================================
 
@@ -108,7 +108,7 @@ module.exports=function(socket:Socket){
 			if (!canstart) {
 				console.log("connecting incomplete")
 			}
-		})
+		},true)
 		
 	})
 	//==========================================================================================
@@ -129,7 +129,7 @@ module.exports=function(socket:Socket){
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_update(SocketSession.getTurn(socket),type,data)
-		})
+		},true)
 
 		// R.getRPGRoom(rname)
 	})
@@ -176,7 +176,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_completePendingObs(info,crypt_turn)
-		})
+		},true)
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		// R.getRPGRoom(rname).getGameLoop().user_completePendingObs(info,crypt_turn)
 	})
@@ -192,14 +192,14 @@ module.exports=function(socket:Socket){
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_completePendingAction(info,crypt_turn)
-		})
+		},true)
 		// R.getRPGRoom(rname).getGameLoop().user_completePendingAction(info,crypt_turn)
 	})
 	//execute when player clicks basic attack
 	socket.on("user:basicattack", function (crypt_turn: string) {
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_basicAttack(crypt_turn)
-		})
+		},true)
 		// room.getGameLoop().user_basicAttack(crypt_turn)
 	})
 	//==========================================================================================
@@ -213,7 +213,7 @@ module.exports=function(socket:Socket){
 			room.getGameLoop.user_pressDice(dicenum,crypt_turn)
 			// if(dice!=null)
 			// io.to(rname).emit("server:rolldice", dice)
-		})
+		},true)
 
 		// let dice = R.getRPGRoom(rname).getGameLoop().user_pressDice(dicenum,crypt_turn)
 		// //console.log("press_dice" + dice)
@@ -249,7 +249,7 @@ module.exports=function(socket:Socket){
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_choseSkillTarget(target,crypt_turn)
-		})
+		},true)
 		// R.getRPGRoom(rname).getGameLoop().user_choseSkillTarget(target,crypt_turn)
 
 		// if (status != null) {
@@ -266,7 +266,7 @@ module.exports=function(socket:Socket){
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_choseSkillLocation(location,crypt_turn)
-		})
+		},true)
 		// R.getRPGRoom(rname).getGameLoop().user_choseSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
@@ -278,7 +278,7 @@ module.exports=function(socket:Socket){
 		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_choseAreaSkillLocation(location,crypt_turn)
-		})
+		},true)
 		// R.getRPGRoom(rname).getGameLoop().user_choseAreaSkillLocation(location,crypt_turn)
 		// socket.emit("server:used_skill", skillstatus)
 	})
@@ -290,7 +290,7 @@ module.exports=function(socket:Socket){
 		// if (!R.hasRPGRoom(rname)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_storeComplete(data)
-		})
+		},true)
 		// R.getRPGRoom(rname).getGameLoop().user_storeComplete(data)
 	})
 
@@ -303,7 +303,7 @@ module.exports=function(socket:Socket){
 		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_clickNextturn(crypt_turn)
-		})
+		},true)
 		// R.getRPGRoom(rname).getGameLoop().startNextTurn(false)
 	})
 
@@ -339,12 +339,12 @@ module.exports=function(socket:Socket){
 		// let rname = SocketSession.getRoomName(socket)
 		controlRPGRoom(socket,(room,rname,quitter)=>{
 			io.to(rname).emit("server:turn_roullete")
-		})
+		},true)
 	})
 	socket.on("user:chat", function (turn,message) {
 		// let rname = SocketSession.getRoomName(socket)
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			io.to(rname).emit("server:receive_message",room.getPlayerMessageHeader(turn),message)
-		})
+		},true)
 	})
 }

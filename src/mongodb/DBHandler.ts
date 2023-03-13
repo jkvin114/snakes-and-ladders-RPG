@@ -123,6 +123,7 @@ const userSchema=new mongoose.Schema({
     password:{ type: String, required: true },
     salt:{ type: String, required: true },
     simulations:[mongoose.Types.ObjectId],
+    role:String,
     boardData:{
         type:mongoose.Types.ObjectId,ref:"UserBoardData"
     },

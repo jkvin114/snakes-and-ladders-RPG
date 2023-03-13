@@ -5,6 +5,35 @@ interface CryptedTurnEventFormat extends TurnEventFormat {
 	crypt_turn: string
 }
 export namespace ServerGameEventFormat {
+	/**
+	 * simple updates:
+	 * isInSubway:boolean
+	 * dc_item
+	 * appearance
+	 * item
+	 * reconnect
+	 * disconnect
+	 * itemData
+	 * kda 
+	 * removeEffect
+	 * move_entity
+	 * waiting_revival
+	 * finish_pos
+	 * 
+	 * stat
+	 * skillstatus
+	 * way
+	 * token
+	 * life
+	 * item
+	 * subwayticket
+	 * removeSpecialEffect
+	 * skillImg
+	 * activeItem
+	 * 
+	 */
+
+
 	export interface initialSetting {
 		playerSettings: {
 			turn: number
@@ -23,6 +52,22 @@ export namespace ServerGameEventFormat {
 		map:number,
 		shuffledObstacles: number[]
 	}
+	export interface GameStatus {
+		playerSettings: {
+			turn: number
+			team: boolean
+			name: string
+			champ: number
+			kill:number
+			death:number
+			assist:number
+			pos:number
+		}[]
+		roomname:string
+		map:number
+		isTeam: boolean
+		totalturns:number
+	}
 	export interface LocationTargetSelector {
 		kind?: "location"
 		pos: number
@@ -38,7 +83,6 @@ export namespace ServerGameEventFormat {
 		data: LocationTargetSelector | PlayerTargetSelector | null
 		skill: number
 	}
-	
 	//replay
 	export interface SkillStatus extends TurnEventFormat {
 		cooltime: number[]

@@ -55,6 +55,10 @@ class RPGRoom extends Room {
 		if(!this.gameloop) return ""
 		return this.gameloop.getPlayerMessageHeader(turn)
 	}
+	get gameStatus():ServerGameEventFormat.GameStatus|null{
+		if(!this.gameloop) return null
+		return this.gameloop.game.getGameStatus()
+	}
 	get getMapId():number {
 		if(!this.gameloop) return -1
 		return this.gameloop.game.mapId
@@ -77,11 +81,11 @@ class RPGRoom extends Room {
 		return setting
 	}
 	user_reconnect(turn:number){
-		if(!this.gameloop) return
+		if(!this.gameloop || turn<0) return
 		this.gameloop.user_reconnect(turn)
 	}
 	user_disconnect(turn: number): void {
-		if(!this.gameloop) return
+		if(!this.gameloop || turn<0) return
 		this.gameloop.user_disconnect(turn)
 	}
 	hasGameLoop(){

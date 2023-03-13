@@ -5,11 +5,13 @@ const router = express.Router()
 import { RPGRoom } from "../RPGRoom"
 import CONFIG from "./../../config/config.json"
 import { writeFile } from "../core/Util"
+import { adminauth } from "./board/helpers"
 
 function isUserInRPGRoom(req:Express.Request){
 	return req.session.roomname != null &&
 	R.hasRPGRoom(req.session.roomname) &&
-	R.getRPGRoom(req.session.roomname)?.hasSession(req.session.id)
+	R.getRPGRoom(req.session.roomname)?.hasSession(req.session.id) &&
+	req.session.turn>=0
 }
 
 /**
@@ -186,6 +188,23 @@ router.post("/game", async function (req: express.Request, res: express.Response
 		return res.status(401).end()
 	}
 })
+router.post("/spectate_rpg", async function (req: express.Request, res: express.Response) {
+	console.log(req.body)
+	if (req.body.roomname) {
+
+		if (!R.hasRPGRoom(req.body.roomname) || !R.getRPGRoom(req.body.roomname).gameStatus) {
+			console.error("access to unexisting game")
+			return res.status(404).end()
+		}
+		req.session.roomname=req.body.roomname
+		req.session.turn=-1
+		
+		return res.status(200).end(req.body.roomname)
+	} else {
+		return res.status(404).end()
+	}
+})
+
 
 router.post("/simulation", async function (req: express.Request, res: express.Response) {
 	if(!CONFIG.simulation) return res.status(403).end()
@@ -204,6 +223,26 @@ router.post("/simulation", async function (req: express.Request, res: express.Re
 		console.error("unauthorized access to the simulation page")
 		return res.status(401).end()
 	}
+})
+
+router.get("/all",adminauth,function(req: express.Request, res: express.Response){
+	return res.status(200).end("admin approved")
+})
+router.get("/all_rpg_games",function(req: express.Request, res: express.Response){
+	let list=[]
+	for(const room of R.allRPG()){
+		let status=room.gameStatus
+		if(status!=null) list.push(status)
+	}
+	return res.status(200).json({games:list})
+})
+
+router.get("/rpg_game/:roomname",function(req: express.Request, res: express.Response){
+	let game=null
+	if(R.hasRPGRoom(req.params.roomname)){
+		game=R.getRPGRoom(req.params.roomname).gameStatus
+	}
+	return res.status(200).json(game)
 })
 
 module.exports = router

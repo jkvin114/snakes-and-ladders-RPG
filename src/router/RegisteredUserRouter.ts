@@ -210,6 +210,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 		salt: salt,
 		simulations: [],
 		boardData: boardData._id,
+		role:"user"
 	})
 		.then((data: any) => {
 			console.log(data)

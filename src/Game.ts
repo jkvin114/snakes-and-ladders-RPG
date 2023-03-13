@@ -191,10 +191,11 @@ class Game {
 		return Number(id[0])
 	}
 
-	getGameTurnToken(turn: number) {
+	getGameTurnToken(turn: number) :string{
 		if(turn<0 || turn>= this.totalnum){
-			turn=0
-			console.trace("Player index out or range at getGameTurnToken()!")
+			//turn=0
+			//console.trace("Player index out or range at getGameTurnToken()!")
+			return ""
 		}
 		return this.turnTokens[turn]
 	}
@@ -274,6 +275,35 @@ class Game {
 			playerSettings: setting,
 			gameSettings: this.setting.getInitialSetting(),
 			shuffledObstacles: this.mapHandler.obstaclePlacement.map((obs)=>obs.obs)
+		}
+	}
+	getItemStatus():number[][]{
+		let items:number[][]=[]
+		for (let p of this.entityMediator.allPlayer()) {
+			items.push(p.inven.itemSlots)
+		}	
+		return items
+	}
+	getGameStatus():ServerGameEventFormat.GameStatus{
+		let setting= []
+		for (let p of this.entityMediator.allPlayer()) {
+			setting.push({
+				turn: p.turn,
+				team: this.getTeamAsBool(p.team),
+				name: p.name,
+				champ: p.champ,
+				kill:p.kill,
+				death:p.death,
+				assist:p.assist,
+				pos:p.pos
+			})
+		}
+		return {
+			playerSettings: setting,
+			isTeam: this.isTeam,
+			map:this.mapId,
+			totalturns:this.totalturn,
+			roomname:this.rname
 		}
 	}
 

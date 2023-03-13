@@ -11,8 +11,8 @@ export default class GameInterface {
 		this.obsNoti2 = new ObsNotification(".obs_notification2")
 		this.winwidth = window.innerWidth
 		this.winheight = window.innerHeight
-
-		this.game=game
+		this.isSpectator = game.is_spectator
+		this.game = game
 		this.nextTurnBtnShown = false
 		this.skillBtnShown = false
 		this.messageBtnShown = false
@@ -23,7 +23,6 @@ export default class GameInterface {
 		this.mousePosY = 0
 		this.clicked = false //for drag check
 		this.chat_hidden = false
-
 
 		//important,repetedly used DOM elements
 		this.elements = {
@@ -46,19 +45,57 @@ export default class GameInterface {
 			timeoutBar: $("#timeoutbar"),
 			board_container: document.getElementById("canvas-container"),
 			_boardside: document.getElementById("boardside"),
-			multikillimg:$(".multikillimg").toArray()
+			multikillimg: $(".multikillimg").toArray(),
 		}
 		Object.freeze(this.elements)
 	}
 
 	onCreate() {
-		// $(".dc").hide()
-		// $("#skillinfowindow").css("visibility","hidden")
-		// $("#kdawindow").hide()
-		// $("#chat_enter").hide()
-		// $("#subwaywindow").css("visibility","hi")
-		$("#deathinfo-btn").html(GAME.chooseLang("Death Information","사망 정보 확인"))
+		$("#prediction-close").click(function () {
+			if ($(this).hasClass("opened")) {
+				$(this).removeClass("opened")
+				$(this).addClass("closed")
+				$("#prediction-container").css({ right: "-200px" }, 1)
+			} else {
+				$(this).addClass("opened")
+				$(this).removeClass("closed")
+				$("#prediction-container").css({ right: "0" }, 1)
+			}
+		})
+
+		$("#hide").click(function () {
+			if (GAME.ui.chat_hidden) {
+				$("#chat").css({ height: "150px", width: "200px", border: "none" })
+				GAME.ui.chat_hidden = false
+			} else {
+				$("#chat").css({
+					height: "50px",
+					width: "100px",
+					border: "2px solid black",
+				})
+
+				GAME.ui.chat_hidden = true
+			}
+			$("#writemessage").toggle()
+		})
+
+		$("#skillinfobtn").click(function () {
+			$("#infowindow").css("visibility", "visible")
+		})
+		$("#closeskillinfobtn").click(function () {
+			$("#infowindow").css("visibility", "hidden")
+		})
+
 		$("#dialog").hide()
+
+		if (this.isSpectator) {
+			$(".myui_new").hide()
+			$("#otherui_container").hide()
+			$("#skillbtncontainer").hide()
+			return
+		}
+
+		$("#deathinfo-btn").html(GAME.chooseLang("Death Information", "사망 정보 확인"))
 		let subwaynames = $(".subway_name").toArray()
 		$(subwaynames[0]).html(GAME.chooseLang("Local Train", "완행"))
 		$(subwaynames[1]).html(GAME.chooseLang("Rapid Train", "급행"))
@@ -73,58 +110,38 @@ export default class GameInterface {
 				"티켓 값 외상 가능, 지하철에서는 기본공격 피해 40% 감소"
 			)
 		)
-		
 
-		$(".nextturnbtn").click(function(){
-			if($(this).hasClass("unavaliable")) return
-			//if(GAME.ui.nextTurnBtnShown) 
-			GAME.onNextTurn()}
-			)
+		$(".nextturnbtn").click(function () {
+			if ($(this).hasClass("unavaliable")) return
+			//if(GAME.ui.nextTurnBtnShown)
+			GAME.onNextTurn()
+		})
 
 		$("#skillcancel").click(function () {
 			GAME.onSkillCancel()
 		})
 
 		$(".skillbtn").click(function () {
-			if(!GAME.ui.skillBtnShown || $(this).hasClass("unavaliable")) return
+			if (!GAME.ui.skillBtnShown || $(this).hasClass("unavaliable")) return
 
 			let val = Number($(this).attr("value"))
 			GAME.onSkillBtnClick(val)
 			//console.log("skill")
 		})
 		$(".basicattackbtn").click(function () {
-			if($(this).hasClass("unavaliable")) return
+			if ($(this).hasClass("unavaliable")) return
 
 			GAME.onBasicAttackClick()
 			//console.log("ba")
 		})
-		
 
 		$("#reload").click(function () {
 			if (GAME.ui.nextTurnBtnShown || GAME.ui.skillBtnShown) {
 				return
 			}
-			GAME.connection.reloadGame(Number(sessionStorage.turn))
+			//	GAME.connection.reloadGame(Number(sessionStorage.turn))
 			//	//console.log("reload")
 		})
-
-		$("#hide").click(function () {
-			if (GAME.ui.chat_hidden) {
-				$("#chat").css({ height: "150px", width: "200px", border: "none" })
-				GAME.ui.chat_hidden = false
-			} else {
-				$("#chat").css({
-					height: "50px",
-					width: "100px",
-					border: "2px solid black"
-				})
-
-				GAME.ui.chat_hidden = true
-			}
-			$("#writemessage").toggle()
-		})
-
-		
 
 		$("#writemessage").click(function () {
 			$("#chat_enter").css("visibility", "visible")
@@ -132,21 +149,19 @@ export default class GameInterface {
 			GAME.ui.messageBtnShown = true
 		})
 
-
 		$(".roullete_end").click(function () {
 			setTimeout(roulleteEnd, 6000)
 		})
 
-		$(".start").click(function () {
-			$(this).hide()
-			GAME.connection.startSimulation()
-		})
+		// $(".start").click(function () {
+		// 	$(this).hide()
+		// 	GAME.connection.startSimulation()
+		// })
 		$("#toggle_otherui").click(function () {
 			$("#otheruis").toggle()
-			if($(this).hasClass("otherui_hidden")){
+			if ($(this).hasClass("otherui_hidden")) {
 				$(this).removeClass("otherui_hidden")
-			}
-			else{
+			} else {
 				$(this).addClass("otherui_hidden")
 			}
 		})
@@ -161,7 +176,6 @@ export default class GameInterface {
 
 		$("#skillinfobtn").click(function () {
 			$("#infowindow").css("visibility", "visible")
-
 		})
 		$("#closeskillinfobtn").click(function () {
 			$("#infowindow").css("visibility", "hidden")
@@ -185,7 +199,7 @@ export default class GameInterface {
 			GAME.dice_clicked = true
 			// $(".dc").css("visibility", "hidden")
 			$(".dcbtn .cooltime").html("x")
-			$(".dcbtn").attr("disabled",true)
+			$(".dcbtn").attr("disabled", true)
 			$(".dcbtn").addClass("unavaliable")
 			$("#diceselection").show()
 			$("#largedicebtn").hide()
@@ -197,7 +211,7 @@ export default class GameInterface {
 			setTimeout(() => $("#diceselection").hide(), 400)
 			//		//console.log("dc" + Number($(this).val()))
 
-		//	clearInterval(GAME.diceHighlightInterval)
+			//	clearInterval(GAME.diceHighlightInterval)
 			// $("#largedicebtn").stop().css({ outline: "none" })
 			$("#largedicebtn").hide()
 			// $("#largedicebtnimg").show()
@@ -233,7 +247,7 @@ export default class GameInterface {
 		$("#show_stat").click(function () {
 			$(".stat_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 			//$("#stat_content").html(GAME.getStatToast())
@@ -242,7 +256,7 @@ export default class GameInterface {
 		$("#show_items").click(function () {
 			$(".inventory_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 
@@ -252,21 +266,8 @@ export default class GameInterface {
 		$("#selecttruebutton").click(() => this.selected(true))
 		$("#selectfalsebutton").click(() => this.selected(false))
 
-		$("#deathinfo-btn").click(()=>{
+		$("#deathinfo-btn").click(() => {
 			$("#deathinfo").toggle()
-		})
-		$("#prediction-close").click(function(){
-			if($(this).hasClass("opened")){
-
-				$(this).removeClass("opened")
-				$(this).addClass("closed")
-				$("#prediction-container").css({ right: "-200px" }, 1)
-			}
-			else{
-				$(this).addClass("opened")
-				$(this).removeClass("closed")
-				$("#prediction-container").css({ right: "0" }, 1)
-			}
 		})
 	}
 
@@ -276,18 +277,17 @@ export default class GameInterface {
 	 * @param {*} text alternate text
 	 */
 	showObsNotification(obs, text) {
-
 		let opentime = 400
 		let duration = 4000
 		let gouptime = 200
 
 		//단순 돈은 알림표시 안함
 		if (obs <= 3) return
-		let yOffset=window.matchMedia("(orientation: portrait)").matches?0:0
+		let yOffset = window.matchMedia("(orientation: portrait)").matches ? 0 : 0
 		if (this.obsNoti1.position === 0 && this.obsNoti2.position === 0) {
 			this.obsNoti1.write(obs, 1, text)
 			//write noti1
-			$(this.obsNoti1.name).css({ bottom: (4+yOffset)+"px", left: "-400px" })
+			$(this.obsNoti1.name).css({ bottom: 4 + yOffset + "px", left: "-400px" })
 			clearTimeout(this.obsNoti1.timeout)
 			$(this.obsNoti1.name).animate({ left: "5px" }, opentime)
 			this.obsNoti1.position = 1
@@ -302,9 +302,9 @@ export default class GameInterface {
 			//write noti2
 			this.obsNoti2.write(obs, 2, text)
 
-			$(this.obsNoti2.name).css({ bottom: (4+yOffset)+"px", left: "-400px" })
+			$(this.obsNoti2.name).css({ bottom: 4 + yOffset + "px", left: "-400px" })
 
-			$(this.obsNoti1.name).animate({ bottom: (95+yOffset)+"px" }, gouptime)
+			$(this.obsNoti1.name).animate({ bottom: 95 + yOffset + "px" }, gouptime)
 			this.obsNoti1.position = 2
 			clearTimeout(this.obsNoti2.timeout)
 			$(this.obsNoti2.name).animate({ left: "5px" }, opentime)
@@ -320,9 +320,9 @@ export default class GameInterface {
 			//write noti1 again
 			this.obsNoti1.write(obs, 1, text)
 
-			$(this.obsNoti1.name).css({ bottom: (4+yOffset)+"px", left: "-400px" })
+			$(this.obsNoti1.name).css({ bottom: 4 + yOffset + "px", left: "-400px" })
 
-			$(this.obsNoti2.name).animate({ bottom: (95+yOffset)+"px" }, gouptime)
+			$(this.obsNoti2.name).animate({ bottom: 95 + yOffset + "px" }, gouptime)
 			this.obsNoti2.position = 2
 			clearTimeout(this.obsNoti1.timeout)
 			$(this.obsNoti1.name).animate({ left: "5px" }, opentime)
@@ -362,23 +362,19 @@ export default class GameInterface {
 				if (keyName === "e" && this.skillBtnShown) {
 					GAME.onSkillBtnClick(3)
 				}
-				if (keyName === "Tab" ) {
-
+				if (keyName === "Tab") {
 					$("#infowindow").css("visibility", "visible")
 					event.preventDefault()
 				}
 			}).bind(this)
 		)
-		document.addEventListener(
-			"keyup",
-			((event) => {
-				const keyName = event.key
-				if (keyName === "Tab" ) {
-					$("#infowindow").css("visibility", "hidden")
-					event.preventDefault()
-				}
-			})
-		)
+		document.addEventListener("keyup", (event) => {
+			const keyName = event.key
+			if (keyName === "Tab") {
+				$("#infowindow").css("visibility", "hidden")
+				event.preventDefault()
+			}
+		})
 	}
 	hideChat() {
 		$("#chat").css({ height: "50px", width: "100px", border: "2px solid black" })
@@ -387,122 +383,123 @@ export default class GameInterface {
 
 		$("#writemessage").hide()
 	}
-//add drag event for chat window move
-addChatDragEvent() {
-	let element = $("#movechat")
-	let pos1 = 0,
-		pos2 = 0,
-		pos3 = 0,
-		pos4 = 0
-	let chat = document.getElementById("chat")
-	element.on(
-		"touchstart",
-		function (coord) {
-			coord = coord || window.event
+	//add drag event for chat window move
+	addChatDragEvent() {
+		let element = $("#movechat")
+		let pos1 = 0,
+			pos2 = 0,
+			pos3 = 0,
+			pos4 = 0
+		let chat = document.getElementById("chat")
+		element.on(
+			"touchstart",
+			function (coord) {
+				coord = coord || window.event
 
-			coord.preventDefault()
-			// get the mouse cursor position at startup:
-			pos3 = coord.changedTouches[0].pageX
-			pos4 = coord.changedTouches[0].pageY
+				coord.preventDefault()
+				// get the mouse cursor position at startup:
+				pos3 = coord.changedTouches[0].pageX
+				pos4 = coord.changedTouches[0].pageY
 
-			element.on("touchend", function () {
-				// stop moving when mouse button is released:
-				element.off("touchend")
-				element.off("touchmove")
-				element.off("cancel")
-			})
-			element.on("touchcancel", function () {
-				// stop moving when mouse button is released:
-				element.off("touchend")
-				element.off("touchmove")
-				element.off("cancel")
-			})
-			// call a function whenever the cursor moves:
-			element.on(
-				"touchmove",
-				function (coord) {
-					coord = coord || window.event
-					coord.preventDefault()
+				element.on("touchend", function () {
+					// stop moving when mouse button is released:
+					element.off("touchend")
+					element.off("touchmove")
+					element.off("cancel")
+				})
+				element.on("touchcancel", function () {
+					// stop moving when mouse button is released:
+					element.off("touchend")
+					element.off("touchmove")
+					element.off("cancel")
+				})
+				// call a function whenever the cursor moves:
+				element.on(
+					"touchmove",
+					function (coord) {
+						coord = coord || window.event
+						coord.preventDefault()
 
-					// calculate the new cursor position:
-					pos1 = pos3 - coord.changedTouches[0].pageX
-					pos2 = pos4 - coord.changedTouches[0].pageY
-					pos3 = coord.changedTouches[0].pageX
-					pos4 = coord.changedTouches[0].pageY
+						// calculate the new cursor position:
+						pos1 = pos3 - coord.changedTouches[0].pageX
+						pos2 = pos4 - coord.changedTouches[0].pageY
+						pos3 = coord.changedTouches[0].pageX
+						pos4 = coord.changedTouches[0].pageY
 
-					let marginY = this.chat_hidden ? 60 : 150
-					let marginX = this.chat_hidden ? 100 : 230
+						let marginY = this.chat_hidden ? 60 : 150
+						let marginX = this.chat_hidden ? 100 : 230
 
-					// set the element's new position:
-					chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 100)) + "px"
-					chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 100)) + "px"
-				}.bind(this)
-			)
-		}.bind(this)
-	)
+						// set the element's new position:
+						chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 100)) + "px"
+						chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 100)) + "px"
+					}.bind(this)
+				)
+			}.bind(this)
+		)
 
-	$(element).on(
-		"mousedown",
-		function (coord) {
-			coord = coord || window.event
+		$(element).on(
+			"mousedown",
+			function (coord) {
+				coord = coord || window.event
 
-			coord.preventDefault()
-			// get the mouse cursor position at startup:
-			pos3 = coord.pageX
-			pos4 = coord.pageY
+				coord.preventDefault()
+				// get the mouse cursor position at startup:
+				pos3 = coord.pageX
+				pos4 = coord.pageY
 
-			$(element).on("mouseup", function () {
-				// stop moving when mouse button is released:
-				element.off("mouseup")
-				element.off("mouseleave")
-				element.off("mousemove")
-				element.off("mouseout")
-			})
-			$(element).on("mouseleave", function () {
-				// stop moving when mouse button is released:
-				element.off("mouseup")
-				element.off("mouseleave")
-				element.off("mousemove")
-				element.off("mouseout")
-			})
-			$(element).on("mouseout", function () {
-				// stop moving when mouse button is released:
-				element.off("mouseup")
-				element.off("mouseleave")
-				element.off("mousemove")
-				element.off("mouseout")
-			})
-			// call a function whenever the cursor moves:
-			$(element).on(
-				"mousemove",
-				function (coord) {
-					coord = coord || window.event
-					coord.preventDefault()
+				$(element).on("mouseup", function () {
+					// stop moving when mouse button is released:
+					element.off("mouseup")
+					element.off("mouseleave")
+					element.off("mousemove")
+					element.off("mouseout")
+				})
+				$(element).on("mouseleave", function () {
+					// stop moving when mouse button is released:
+					element.off("mouseup")
+					element.off("mouseleave")
+					element.off("mousemove")
+					element.off("mouseout")
+				})
+				$(element).on("mouseout", function () {
+					// stop moving when mouse button is released:
+					element.off("mouseup")
+					element.off("mouseleave")
+					element.off("mousemove")
+					element.off("mouseout")
+				})
+				// call a function whenever the cursor moves:
+				$(element).on(
+					"mousemove",
+					function (coord) {
+						coord = coord || window.event
+						coord.preventDefault()
 
-					// calculate the new cursor position:
-					pos1 = pos3 - coord.pageX
-					pos2 = pos4 - coord.pageY
-					pos3 = coord.pageX
-					pos4 = coord.pageY
+						// calculate the new cursor position:
+						pos1 = pos3 - coord.pageX
+						pos2 = pos4 - coord.pageY
+						pos3 = coord.pageX
+						pos4 = coord.pageY
 
-					let marginY = this.chat_hidden ? 60 : 150
-					let marginX = this.chat_hidden ? 100 : 230
+						let marginY = this.chat_hidden ? 60 : 150
+						let marginX = this.chat_hidden ? 100 : 230
 
-					// set the element's new position:
-					chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 200)) + "px"
-					chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 200)) + "px"
-				}.bind(this)
-			)
-		}.bind(this)
-	)
-}
+						// set the element's new position:
+						chat.style.top = Math.max(10, Math.min(chat.offsetTop - pos2, this.winheight - marginY + 200)) + "px"
+						chat.style.left = Math.max(0, Math.min(chat.offsetLeft - pos1, this.winwidth - 170 + 200)) + "px"
+					}.bind(this)
+				)
+			}.bind(this)
+		)
+	}
 
 	timeoutStart(time) {
+		if (this.is_spectator) return
 		//	//console.log("timeoutstart")
 		this.elements.timeoutBar.css("width", "0")
 		this.elements.timeoutBar.animate(
 			{
-				width: "100%"
+				width: "100%",
 			},
 			time,
 			"linear"
@@ -518,16 +515,13 @@ addChatDragEvent() {
 		//console.log("initui")
 		$("#loadingtext").html("LOADING THE MAP..")
 
-		$("#skillinfobtn").show()
+		for (let i = 0; i < GAME.playerCount; ++i) {
+			$(this.elements.kdainfos[i]).html("0/0/0")
 
-		// $(this.elements.kdasections[2]).css("visibility","collapse")
-		// $(this.elements.kdasections[3]).css("visibility","collapse")
-		if (GAME.playerCount > 2) {
-			$(this.elements.otherui[1]).show()
+			$(this.elements.kdainfos[i]).css("color", this.game.getPlayerLighterColor(i))
 		}
-		if (GAME.playerCount > 3) {
-			$(this.elements.otherui[2]).show()
-		}
+
+		$("#skillinfobtn").show()
 		if (GAME.playerCount < 4) {
 			$(this.elements.kdasections[3]).hide()
 		}
@@ -535,99 +529,42 @@ addChatDragEvent() {
 			$(this.elements.kdasections[2]).hide()
 		}
 
-		$(this.elements.kdasections[GAME.myturn]).addClass("myturn")
+		if (this.isSpectator) return
+		//==============================================================================
+		if (GAME.playerCount > 2) {
+			$(this.elements.otherui[1]).show()
+		}
+		if (GAME.playerCount > 3) {
+			$(this.elements.otherui[2]).show()
+		}
+
+		if (GAME.myturn >= 0) $(this.elements.kdasections[GAME.myturn]).addClass("myturn")
 
 		let othercount = 1
-		//console.log("simulation" + simulation)
-		if (simulation) {
-			GAME.turnsInUI = [0, 1, 2, 3]
-			GAME.simulation = true
-
-			for (let i = 0; i < GAME.playerCount; ++i) {
-				$(this.elements.nameis[i]).html(setting[i].name)
-				$(this.elements.hpis[i]).html(setting[i].HP + "/" + setting[i].MaxHP)
-			}
-		} else {
-			for (let i = 0; i < GAME.playerCount; ++i) {
-				// if (setting[0].team !== "none") {
-				//     GAME.teams[i] = setting[i].team
-				// }
-
-				if (setting[i].turn === GAME.myturn) {
-					$(this.elements.nameis[0]).html(setting[i].name)
-					$(this.elements.hpis[0]).html(setting[i].HP + "/" + setting[i].MaxHP)
-
-					// if (GAME.isTeam) {
-					// 	if (!setting[i].team) {
-					// 		$(this.elements.nameis[0]).css("background", "rgba(255, 127, 127,0.5)")
-					// 	} else{
-					// 		$(this.elements.nameis[0]).css("background", "rgba(119, 169, 249,0.5)")
-					// 	}
-					// }
-
-					GAME.turnsInUI.push(0)
-				} else {
-					$(this.elements.nameis[othercount]).html(setting[i].name)
-					$(this.elements.hpis[othercount]).html(setting[i].HP + "/" + setting[i].MaxHP)
-					// if (GAME.isTeam) {
-					// 	if (!setting[i].team) {
-					// 		$(this.elements.nameis[othercount]).css("background", "rgba(255, 127, 127,0.5)")
-					// 	} else{
-					// 		$(this.elements.nameis[othercount]).css("background", "rgba(119, 169, 249,0.5)")
-					// 	}
-					// }
-
-					GAME.turnsInUI.push(othercount)
-					othercount += 1
-				}
-			}
-		}
 
 		for (let i = 0; i < GAME.playerCount; ++i) {
-			$(this.elements.kdainfos[i]).html("0/0/0")
+			if (setting[i].turn === GAME.myturn) {
+				$(this.elements.nameis[0]).html(setting[i].name)
+				$(this.elements.hpis[0]).html(setting[i].HP + "/" + setting[i].MaxHP)
 
+				GAME.turnsInUI.push(0)
+			} else {
+				$(this.elements.nameis[othercount]).html(setting[i].name)
+				$(this.elements.hpis[othercount]).html(setting[i].HP + "/" + setting[i].MaxHP)
 
-			// GAME.player_champlist[i] = setting[i].champ
-			//$(this.elements.charimgs[GAME.turn2ui(i)]).css("background-color", this.game.getPlayerLighterColor(i))
-			$(this.elements.kdainfos[i]).css("color", this.game.getPlayerLighterColor(i))
-			//console.log(setting[i].turn)
-			//console.log(this.game.getPlayerColor(setting[i].turn))
+				GAME.turnsInUI.push(othercount)
+				othercount += 1
+			}
 			$(this.elements.hpspan[this.game.turn2ui(i)]).addClass(this.game.getPlayerColor(setting[i].turn))
-			// if (GAME.isTeam) {
-			// 	if (!setting[i].team) {
-			// 		$(this.elements.kdainfos[i]).css("color", "#ff7f7f")
-			// 	} else if (setting[i].team) {
-			// 		$(this.elements.kdainfos[i]).css("color", "#77a9f9")
-			// 	}
-			// }
-			// else{
-			// 	$(this.elements.kdainfos[i]).css("color", COLOR_LIST_BG[i])
-			// }
-			// //console.log(setting[i])
+
 			this.changeHP(i, setting[i].HP, setting[i].MaxHP)
-			
-			//this.updatePlayerItems(i, [-1, -1, -1, -1, -1, -1])
 		}
-
-		//hp display
-		// for (let i = 0; i < GAME.playerCount; ++i) {
-		// 	let j = GAME.turnsInUI[i]
-		// 	if (i === 0) {
-		// 		$(this.elements.hpframe[j]).css("width", String(setting[i].MaxHP) + "px")
-		// 		$(this.elements.hpspan[j]).css("width", String(setting[i].HP) + "px")
-		// 	} else {
-		// 		$(this.elements.hpframe[j]).css("width", String(setting[i].MaxHP * 0.3 + 4) + "px")
-		// 		$(this.elements.hpspan[j]).css("width", String(setting[i].HP * 0.3) + "px")
-		// 	}
-		// }
-
 		GAME.thisui = GAME.turnsInUI[0]
 		//console.log("initui")
-
-		this.setDefaultSkillImgs(GAME.myturn, setting[GAME.myturn].champ)
+		if (GAME.myturn >= 0) this.setDefaultSkillImgs(GAME.myturn, setting[GAME.myturn].champ)
 	}
-	onGameReady(){
-		for (let i = 0; i < GAME.playerCount; ++i){
+	onGameReady() {
+		for (let i = 0; i < GAME.playerCount; ++i) {
 			this.setCharacterDefaultApperance(i, GAME.players[i].champ)
 		}
 	}
@@ -638,47 +575,45 @@ addChatDragEvent() {
 	setDefaultSkillImgs(turn, champ) {
 		//skill btn and skill description
 		for (let j = 0; j < 3; ++j) {
-			// $(this.elements.skillbtns[j]).css({
-			// 	background: "url(res/img/skill/" + (champ + 1) + "-" + (j + 1) + ".jpg)",
-			// 	"background-size": "100%",
-			// 	border: "3px solid rgb(122, 235, 255);"
-			// })
-			$(this.elements.skillbtns[j]).children("img").attr("src", "res/img/skill/" + (champ + 1) + "-" + (j + 1) + ".jpg")
+			$(this.elements.skillbtns[j])
+				.children("img")
+				.attr("src", "res/img/skill/" + (champ + 1) + "-" + (j + 1) + ".jpg")
 
 			$(this.elements.skillinfoimgs[j]).attr("src", "res/img/skill/" + (champ + 1) + "-" + (j + 1) + ".jpg")
 		}
 	}
-	showPrediction(probs,diffs){
+	showPrediction(probs, diffs) {
 		$("#prediction-container").show()
-		let str=''
-		
-		for(let i=0;i<this.game.playerCount;i++){
+		let str = ""
+
+		for (let i = 0; i < this.game.playerCount; i++) {
 			console.log(probs)
-			str+=`
-			<div class="prediction ${diffs[i]==0?"nochange":"" } ${i==this.game.myturn?"me":""}">
+			str += `
+			<div class="prediction ${diffs[i] == 0 ? "nochange" : ""} ${i == this.game.myturn ? "me" : ""}">
 				<img src="${this.game.getChampImgofTurn(i)}" style="border: 2px solid ${this.game.getPlayerLighterColor(i)};">
 				<b class="prediction-prob">${probs[i]}%</b>
-				<img class='change-img' src="res/img/svg/skillinfo/${diffs[i]>0?"up":"down"}.png">
-				<b class="prediction-diff ${diffs[i]>0?"good":"bad"}">${diffs[i]==0?"-":""+(diffs[i]>0?"+":"")+diffs[i]+"%"}</b>
+				<img class='change-img' src="res/img/svg/skillinfo/${diffs[i] > 0 ? "up" : "down"}.png">
+				<b class="prediction-diff ${diffs[i] > 0 ? "good" : "bad"}">${
+				diffs[i] == 0 ? "-" : "" + (diffs[i] > 0 ? "+" : "") + diffs[i] + "%"
+			}</b>
 			</div>`
 		}
 		$("#prediction").html(str)
 	}
 	updateSkillImg(data) {
-		let champ=data.champ 
-		let skill_id=data.skill
+		let champ = data.champ
+		let skill_id = data.skill
 		let skill_name = data.skill_name
 
 		let src = ""
 		//default skill img
-		if(skill_name===""){
-			src=(champ + 1) + "-" + (skill_id + 1) + ".jpg"
-		}
-		else if (skill_name === "bird_r_q") {
+		if (skill_name === "") {
+			src = champ + 1 + "-" + (skill_id + 1) + ".jpg"
+		} else if (skill_name === "bird_r_q") {
 			src = "8-1-1.jpg"
-		}else if (skill_name === "tree_wither_r") {
+		} else if (skill_name === "tree_wither_r") {
 			src = "9-3-1.jpg"
-		}  else {
+		} else {
 			return
 		}
 		// $(this.elements.skillbtns[skill_id]).css({
@@ -686,7 +621,9 @@ addChatDragEvent() {
 		// 	"background-size": "100%",
 		// 	border: "3px solid rgb(122, 235, 255);"
 		// })
-		$(this.elements.skillbtns[skill_id]).children("img").attr("src", "res/img/skill/" + src)
+		$(this.elements.skillbtns[skill_id])
+			.children("img")
+			.attr("src", "res/img/skill/" + src)
 
 		$(this.elements.skillinfoimgs[skill_id]).attr("src", "res/img/skill/" + src)
 	}
@@ -698,7 +635,7 @@ addChatDragEvent() {
 	setCharacterDefaultApperance(i) {
 		// let charnames = ["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree"]
 		// if (champ < 0 || champ > charnames.length - 1) return
-		$(this.elements.charimgs[this.game.turn2ui(i)]).attr("src",this.game.getChampImgofTurn(i))
+		$(this.elements.charimgs[this.game.turn2ui(i)]).attr("src", this.game.getChampImgofTurn(i))
 		$(this.elements.kdaimgs[i]).attr("src", this.game.getChampImgofTurn(i))
 	}
 
@@ -723,23 +660,22 @@ addChatDragEvent() {
 	updateSkillInfo(info_kor, info_eng) {
 		for (let i = 0; i < info_kor.length; ++i) {
 			$(this.elements.skillinfos[i]).html(
-				(i===0?"":"<hr>")+SkillInfoParser.parse(GAME.chooseLang(info_eng[i], info_kor[i])))
+				(i === 0 ? "" : "<hr>") + SkillInfoParser.parse(GAME.chooseLang(info_eng[i], info_kor[i]))
+			)
 		}
 		this.addEffectTooltipEvent()
 		this.addSkillScaleTooltipEvent()
 	}
-	addSkillScaleTooltipEvent(){
-
+	addSkillScaleTooltipEvent() {
 		$(".scaled_value").off()
 		$(".scaled_value").mouseenter(function (e) {
-			if($(this).offset().left > window.innerWidth/2){
+			if ($(this).offset().left > window.innerWidth / 2) {
 				$(".skill_scale_tooltip").addClass("rightside")
-			}
-			else $(".skill_scale_tooltip").removeClass("rightside")
+			} else $(".skill_scale_tooltip").removeClass("rightside")
 
 			$(".skill_scale_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 
@@ -751,35 +687,33 @@ addChatDragEvent() {
 		$(".scaled_value").on("touchstart", function (e) {
 			$(".skill_scale_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 			GAME.ui.setSkillScaleTooltip($(this).attr("value"))
 		})
 	}
-	setSkillScaleTooltip(name){
-		
-		let scale=GAME.skillScale[name]
+	setSkillScaleTooltip(name) {
+		let scale = GAME.skillScale[name]
 
-		if(!scale){
+		if (!scale) {
 			$(".skill_scale_tooltip p").html("??")
 			return
-		}  
-		let str=`${scale.base}`
-		for(const s of scale.scales){
-
-			let name=this.game.strRes.SCALE_NAMES[s.ability]
+		}
+		let str = `${scale.base}`
+		for (const s of scale.scales) {
+			let name = this.game.strRes.SCALE_NAMES[s.ability]
 			//console.log(name)
-			if(name===undefined) name=s.ability
+			if (name === undefined) name = s.ability
 
-			str+=`<a class=${s.ability}>(+${s.val}${name})</a>`
+			str += `<a class=${s.ability}>(+${s.val}${name})</a>`
 		}
 		$(".skill_scale_tooltip p").html(str)
 	}
-	showBasicAttackBtn(count,isAvailable){
+	showBasicAttackBtn(count, isAvailable) {
 		$(".basicattackbtn").show()
 		$(".basicattackbtn").addClass("unavaliable")
-		if(isAvailable && count>0){
+		if (isAvailable && count > 0) {
 			$(".basicattackbtn").removeClass("unavaliable")
 		}
 		$(".basicattack_count a").html(count)
@@ -799,8 +733,6 @@ addChatDragEvent() {
 
 		GAME.skillstatus = status
 
-		
-
 		//$(".skillbtn button").attr("disabled", false)
 
 		//  if(skillcount===4 || players[thisturn].effects[3]>0)
@@ -808,43 +740,40 @@ addChatDragEvent() {
 		// 	//silent or dead
 		// 	return
 		// }
-		if(status.basicAttackType==="ranged"){
-			$(".basicattackbtn").children("img").attr("src","res/img/ui/basicattack-ranged.png")
+		if (status.basicAttackType === "ranged") {
+			$(".basicattackbtn").children("img").attr("src", "res/img/ui/basicattack-ranged.png")
 		}
 		// $(".storebtn").hide()
 		// $(".skillbtn").show()
-		this.showBasicAttackBtn(status.basicAttackCount,status.canBasicAttack)
-		if(status.canUseSkill){
+		this.showBasicAttackBtn(status.basicAttackCount, status.canBasicAttack)
+		if (status.canUseSkill) {
 			this.skillBtnShown = true
 			$(".skillbtn").removeClass("unavaliable")
 		}
-			
+
 		this.updateSkillBtnStatus(status)
 	}
 
-	updateSkillBtnStatus(status){
+	updateSkillBtnStatus(status) {
 		for (let i = 0; i < 3; ++i) {
-			
 			$(this.elements.skillbtns[i]).children(".duration_mask").remove()
 			$(this.elements.skillbtns[i]).children(".cooltime_mask").remove()
 
 			if (status.cooltime[i] === 0) {
-
 				$(this.elements.skillbtns[i]).children(".cooltime").html("")
-			//	$(this.elements.skillbtns[i]).html("&nbsp;")
+				//	$(this.elements.skillbtns[i]).html("&nbsp;")
 				if (status.duration[i] > 0) {
 					$(this.elements.skillbtns[i]).addClass("activated")
 				} else {
-
 					$(this.elements.skillbtns[i]).removeClass("activated")
 				}
 			} else {
-				if(status.duration[i]===0){
+				if (status.duration[i] === 0) {
 					//console.log(status.cooltimeratio[i])
 					$(this.elements.skillbtns[i]).append(`<div class="cooltime_mask" style=" background:
-					 conic-gradient(rgba(0,0,0,0.0) 0% ,rgba(0,0,0,0.0) ${100-status.cooltimeratio[i]*100}%,rgba(255, 255, 255, 0.6) 
-					 ${100-status.cooltimeratio[i]*100}%,rgba(255, 255, 255, 0.6) 100%); "></div>  `)
-	
+					 conic-gradient(rgba(0,0,0,0.0) 0% ,rgba(0,0,0,0.0) ${100 - status.cooltimeratio[i] * 100}%,rgba(255, 255, 255, 0.6) 
+					 ${100 - status.cooltimeratio[i] * 100}%,rgba(255, 255, 255, 0.6) 100%); "></div>  `)
+
 					$(this.elements.skillbtns[i]).children(".cooltime").html(status.cooltime[i])
 				}
 				if (status.duration[i] > 0) {
@@ -854,13 +783,13 @@ addChatDragEvent() {
 					$(this.elements.skillbtns[i]).addClass("unavaliable")
 				}
 			}
-			if(status.duration[i]>0){
+			if (status.duration[i] > 0) {
 				//console.log(status.duration[i])//${status.duration[i]*100}
 				$(this.elements.skillbtns[i]).append(`<div class="duration_mask" style="background: 
-				conic-gradient(rgba(0,0,0,0.6) 0% ,rgba(0,0,0,0.6) ${100-status.duration[i]*100}%,rgba(0, 0, 0, 0) ${100-status.duration[i]*100}%,rgba(0, 0, 0, 0) 100%);"></div>  `)
-
+				conic-gradient(rgba(0,0,0,0.6) 0% ,rgba(0,0,0,0.6) ${100 - status.duration[i] * 100}%,rgba(0, 0, 0, 0) ${
+					100 - status.duration[i] * 100
+				}%,rgba(0, 0, 0, 0) 100%);"></div>  `)
 			}
-			
 		}
 		if (status.level < 3) {
 			$(this.elements.skillbtns[2]).addClass("unavaliable")
@@ -869,7 +798,7 @@ addChatDragEvent() {
 			}
 		}
 	}
-	
+
 	hideSkillBtn() {
 		$(".status").html("")
 		$(".basicattackbtn").hide()
@@ -890,7 +819,7 @@ addChatDragEvent() {
 		$("#skillcancel").hide()
 		$("#confirm_tileselection").hide()
 		$("#largedicebtn").hide()
-		$(".dcbtn").attr("disabled",true)
+		$(".dcbtn").attr("disabled", true)
 		$(".dcbtn").addClass("unavaliable")
 		$("#diceselection").hide()
 		$("#sell_token").hide()
@@ -899,17 +828,17 @@ addChatDragEvent() {
 		$(".overlay").hide()
 		$("#overlaySelector").html("")
 		this.hideSkillBtn()
-	//	clearInterval(GAME.diceHighlightInterval)
+		//	clearInterval(GAME.diceHighlightInterval)
 	}
 
 	highlightUI(t) {
 		for (let i = 0; i < GAME.playerCount; ++i) {
 			if (i === GAME.thisui) {
-				if(i===0) $(".mydisplay").addClass("highlight")
+				if (i === 0) $(".mydisplay").addClass("highlight")
 				else $(this.elements.otherchar[i - 1]).addClass("highlight")
 				// $(this.elements.otherchar[i - 1]).css("outline", "2px solid white")
 			} else {
-				if(i===0) $(".mydisplay").removeClass("highlight")
+				if (i === 0) $(".mydisplay").removeClass("highlight")
 				else $(this.elements.otherchar[i - 1]).removeClass("highlight")
 				// $(this.elements.otherchar[i - 1]).css("outline", "1px solid black")
 			}
@@ -921,42 +850,53 @@ addChatDragEvent() {
 		shield = Math.max(shield, 0)
 
 		if (ui === 0) {
-			let hp=$(".myhp-val").data("hp")
-			let maxhp=$(".myhp-val").data("maxhp")
+			let hp = $(".myhp-val").data("hp")
+			let maxhp = $(".myhp-val").data("maxhp")
 
 			$(".myshield").css({
 				width: String(shield) + "px",
-				left: String(hp) + "px"
+				left: String(hp) + "px",
 			})
 			// $("#effects").css("left", String(0.8 * shield + 30) + "px")
 			if (shield <= 0) {
 				// $(".myshieldframe-container").hide()
-				$(".myhp-val").html(hp+"/"+maxhp)
-				$(".myhp-val").data("shield",0)
+				$(".myhp-val").html(hp + "/" + maxhp)
+				$(".myhp-val").data("shield", 0)
 				$(".myhp").removeClass("withshield")
 			} else {
-				this.setMyMaxhpSpace(maxhp+shield)
+				this.setMyMaxhpSpace(maxhp + shield)
 				// $(".myshieldframe-container").css("display", "inline-block")
-				$(".myhp-val").html($(".myhp-val").data("hp")+"/"+$(".myhp-val").data("maxhp")+`
-					(+${shield})`)
-				$(".myhp-val").data("shield",shield)
+				$(".myhp-val").html(
+					$(".myhp-val").data("hp") +
+						"/" +
+						$(".myhp-val").data("maxhp") +
+						`
+					(+${shield})`
+				)
+				$(".myhp-val").data("shield", shield)
 				$(".myhp").addClass("withshield")
 			}
 		} else {
 			$(this.elements.shieldframe[ui]).css({
-				width: String(0.2 * shield) + "px"
+				width: String(0.2 * shield) + "px",
 			})
 			if (shield <= 0) {
 				$(this.elements.shieldframe[ui]).hide()
-				$(this.elements.hpis[ui]).html($(this.elements.hpis[ui]).data("hp")+"/"+$(this.elements.hpis[ui]).data("maxhp"))
-				$(this.elements.hpis[ui]).data("shield",0)
-			} else{
+				$(this.elements.hpis[ui]).html(
+					$(this.elements.hpis[ui]).data("hp") + "/" + $(this.elements.hpis[ui]).data("maxhp")
+				)
+				$(this.elements.hpis[ui]).data("shield", 0)
+			} else {
 				$(this.elements.shieldframe[ui]).css("display", "inline-block")
-				$(this.elements.hpis[ui]).html($(this.elements.hpis[ui]).data("hp")+"/"+$(this.elements.hpis[ui]).data("maxhp")+`
-				(+${shield})`)
-				$(this.elements.hpis[ui]).data("shield",shield)
-			} 
-			
+				$(this.elements.hpis[ui]).html(
+					$(this.elements.hpis[ui]).data("hp") +
+						"/" +
+						$(this.elements.hpis[ui]).data("maxhp") +
+						`
+				(+${shield})`
+				)
+				$(this.elements.hpis[ui]).data("shield", shield)
+			}
 
 			// let name = $(this.elements.hpis[ui]).html()
 			// let s = name.match(/\([+0-9]+\)/)
@@ -969,18 +909,16 @@ addChatDragEvent() {
 			// 	$(this.elements.hpis[ui]).html(name.replace(/(?<=\(\+)[0-9]+/, shield))
 			// }
 		}
-		
 	}
-	setMyMaxhpSpace(maxhp){
-		
+	setMyMaxhpSpace(maxhp) {
 		$(this.elements.hpframe[0]).css({
-			width: String(maxhp) + "px"
+			width: String(maxhp) + "px",
 		})
-		let space=window.innerWidth-80
+		let space = window.innerWidth - 80
 
-		if(maxhp > space){
+		if (maxhp > space) {
 			$(".myhpframe-container").css({
-				transform: "scale("+(space/maxhp)+",1)"
+				transform: "scale(" + space / maxhp + ",1)",
 			})
 		}
 	}
@@ -989,14 +927,14 @@ addChatDragEvent() {
 			setTimeout(function () {
 				$(".myhp_lost").animate(
 					{
-						width: String(hp) + "px"
+						width: String(hp) + "px",
 					},
 					500
 				)
 			}, 500)
 		} else {
 			$(".myhp_lost").css({
-				width: String(hp) + "px"
+				width: String(hp) + "px",
 			})
 		}
 	}
@@ -1005,64 +943,62 @@ addChatDragEvent() {
 
 		let ui = GAME.turn2ui(target)
 		if (ui === 0) {
-
 			$(this.elements.hpspan[ui]).css({
-				width: String(hp) + "px"
+				width: String(hp) + "px",
 			})
 
-			$(".myhp-val").data("hp",hp)
-			$(".myhp-val").data("maxhp",maxhp)
-			let shield=$(".myhp-val").data("shield")
-			let str=hp+"/"+maxhp
-			if(!shield) shield=0
+			$(".myhp-val").data("hp", hp)
+			$(".myhp-val").data("maxhp", maxhp)
+			let shield = $(".myhp-val").data("shield")
+			let str = hp + "/" + maxhp
+			if (!shield) shield = 0
 			else {
-				str+="(+"+shield+")"
+				str += "(+" + shield + ")"
 				$(".myshield").css({
-					left: String(hp) + "px"
+					left: String(hp) + "px",
 				})
 			}
 
-			this.setMyMaxhpSpace(maxhp+shield)
+			this.setMyMaxhpSpace(maxhp + shield)
 
 			$(this.elements.hpis[ui]).html(str)
-		
+
 			$(".myhp-val").html(str)
-		}
-		else{
+		} else {
 			$(this.elements.hpframe[ui]).css({
-				width: String(0.2 * maxhp) + "px"
+				width: String(0.2 * maxhp) + "px",
 			})
 
 			$(this.elements.hpspan[ui]).css({
-				width: String(0.2 * hp) + "px"
+				width: String(0.2 * hp) + "px",
 			})
-			let space=170
-			if(window.matchMedia("(orientation: portrait)").matches){
-				space=100
+			let space = 170
+			if (window.matchMedia("(orientation: portrait)").matches) {
+				space = 100
 			}
-			if(maxhp<250) space/=2
+			if (maxhp < 250) space /= 2
 			// if(maxhp >= 800){
-				$(this.elements.hpspan[ui]).css({
-					transform: "scale("+(5*space/maxhp)+",1)"
-				})
-				$(this.elements.hpframe[ui]).css({
-					width: String(space) + "px"
-				})
+			$(this.elements.hpspan[ui]).css({
+				transform: "scale(" + (5 * space) / maxhp + ",1)",
+			})
+			$(this.elements.hpframe[ui]).css({
+				width: String(space) + "px",
+			})
 			// }
-			
-		$(this.elements.hpis[ui]).data("hp",hp)
-		$(this.elements.hpis[ui]).data("maxhp",maxhp)
-		// let shield = $(this.elements.hpis[ui])
-		// .html()
-		// .match(/\([+0-9]+\)/)
-		let shield=$(this.elements.hpis[ui]).data("shield")
-		// let str = $(this.elements.hpis[ui])
-		// 	.html()
-		// 	.replace(/\s\([+0-9]+\)/, shield ? shield[0] : "")
-		// 	.replace(/[0-9]+(?=\/)/, String(Math.floor(hp)))
-		// 	.replace(/(?<=\/)[0-9]+/, String(Math.floor(maxhp)))
-		let str=hp+"/"+maxhp
-		if(!!shield) str+="(+"+shield+")"
+
+			$(this.elements.hpis[ui]).data("hp", hp)
+			$(this.elements.hpis[ui]).data("maxhp", maxhp)
+			// let shield = $(this.elements.hpis[ui])
+			// .html()
+			// .match(/\([+0-9]+\)/)
+			let shield = $(this.elements.hpis[ui]).data("shield")
+			// let str = $(this.elements.hpis[ui])
+			// 	.html()
+			// 	.replace(/\s\([+0-9]+\)/, shield ? shield[0] : "")
+			// 	.replace(/[0-9]+(?=\/)/, String(Math.floor(hp)))
+			// 	.replace(/(?<=\/)[0-9]+/, String(Math.floor(maxhp)))
+			let str = hp + "/" + maxhp
+			if (!!shield) str += "(+" + shield + ")"
 			$(this.elements.hpis[ui]).html(str)
 		}
 	}
@@ -1086,35 +1022,33 @@ addChatDragEvent() {
 	 * register item tooltip event
 	 */
 	addItemTooltipEvent() {
-		
-
 		$(".player_item").off()
 		$(".player_item").mouseenter(function (e) {
-			
-			let left=$(this).offset().left
-			let top=$(this).offset().top
-			let offsetX=40
-			let offsetY=40
-			if($(this).offset().left > window.innerWidth/2){
-				offsetX=-200
+			let left = $(this).offset().left
+			let top = $(this).offset().top
+			let offsetX = 40
+			let offsetY = 40
+			if ($(this).offset().left > window.innerWidth / 2) {
+				offsetX = -200
 			}
-			if($(this).offset().top > window.innerHeight/2){
+			if ($(this).offset().top > window.innerHeight / 2) {
 				// offsetY=-150
 			}
-			
-				// .css($(this).offset())
+
+			// .css($(this).offset())
 			let item = GAME.strRes.ITEMS.items[Number($(this).attr("value"))]
-			let owner=$(this).data("owner")
+			let owner = $(this).data("owner")
 			$(".item_tooltip h4").html(GAME.chooseLang(item.name, item.kor_name))
-			$(".item_tooltip p").html(GAME.ui.getItemDescription(item)+GAME.ui.getItemData(owner,item))
-			left+=offsetX
-			top+=offsetY
-			let maxtop=window.innerHeight-$(".item_tooltip").height()-10
-			let maxleft=window.innerWidth-$(".item_tooltip").width()-10
-			$(".item_tooltip")
-				.css({
-					visibility: "visible",left:Math.min(maxleft,Math.max(0,left)),top:Math.min(maxtop,Math.max(0,top))
-				})
+			$(".item_tooltip p").html(GAME.ui.getItemDescription(item) + GAME.ui.getItemData(owner, item))
+			left += offsetX
+			top += offsetY
+			let maxtop = window.innerHeight - $(".item_tooltip").height() - 10
+			let maxleft = window.innerWidth - $(".item_tooltip").width() - 10
+			$(".item_tooltip").css({
+				visibility: "visible",
+				left: Math.min(maxleft, Math.max(0, left)),
+				top: Math.min(maxtop, Math.max(0, top)),
+			})
 		})
 		$(".player_item").mouseleave(function (e) {
 			$(".item_tooltip").css("visibility", "hidden")
@@ -1139,8 +1073,8 @@ addChatDragEvent() {
 		if (item.unique_effect != null) {
 			ability += `<b class=unique_effect_name>[${GAME.chooseLang("unique passive", "고유지속효과")}]</b>:
 				${GAME.chooseLang(item.unique_effect, item.unique_effect_kor)}`
-			if(item.active_cooltime!=null){
-				ability+=GAME.chooseLang(`(cooltime ${item.active_cooltime} turns)`,`(쿨타임 ${item.active_cooltime}턴)`)
+			if (item.active_cooltime != null) {
+				ability += GAME.chooseLang(`(cooltime ${item.active_cooltime} turns)`, `(쿨타임 ${item.active_cooltime}턴)`)
 			}
 		}
 		ability += "<br><br>" + GAME.chooseLang("price: ", "가격: ") + "<b class=price>" + String(item.price) + "</b>"
@@ -1148,14 +1082,14 @@ addChatDragEvent() {
 	}
 	/**
 	 * get otem data for tooltip
-	 * @param {*} owner 
-	 * @param {*} item 
+	 * @param {*} owner
+	 * @param {*} item
 	 */
-	getItemData(owner,item){
-		if(!this.game.strRes.ITEM_DATA[owner].has(item)){
+	getItemData(owner, item) {
+		if (!this.game.strRes.ITEM_DATA[owner].has(item)) {
 			return ""
 		}
-		return "<hr>"+this.game.strRes.ITEM_DATA[owner].get(item)
+		return "<hr>" + this.game.strRes.ITEM_DATA[owner].get(item)
 	}
 	showSelection(type, name) {
 		GAME.pendingSelection.type = type
@@ -1255,13 +1189,12 @@ addChatDragEvent() {
 		$(".specialeffect").off()
 		$(".specialeffect").mouseenter(function (e) {
 			$(".effect_tooltip").css("visibility", "hidden")
-			if($(this).offset().left > window.innerWidth/2){
+			if ($(this).offset().left > window.innerWidth / 2) {
 				$(".specialeffect_tooltip").addClass("rightside")
-			}
-			else $(".specialeffect_tooltip").removeClass("rightside")
+			} else $(".specialeffect_tooltip").removeClass("rightside")
 			$(".specialeffect_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 
@@ -1274,7 +1207,7 @@ addChatDragEvent() {
 			$(".effect_tooltip").css("visibility", "hidden")
 			$(".specialeffect_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 			GAME.ui.setSpecialEffectTooltip($(this).attr("value"))
@@ -1283,7 +1216,7 @@ addChatDragEvent() {
 
 	setSpecialEffectTooltip(name) {
 		let data = GAME.strRes.SPECIAL_EFFECTS.get(name)
-		if(!data) return
+		if (!data) return
 		//item
 		if (typeof data[1] === "number") {
 			$(".specialeffect_tooltip h4").html(
@@ -1300,7 +1233,7 @@ addChatDragEvent() {
 
 	setEffectTooltip(e) {
 		//console.log(e)
-		e=Number(e)
+		e = Number(e)
 		let desc = GAME.strRes.EFFECTS[e]
 		if (!desc.match(/\[.+\]/)) {
 			$(".effect_tooltip h4").addClass("bad")
@@ -1318,15 +1251,14 @@ addChatDragEvent() {
 	addEffectTooltipEvent() {
 		$(".effect, .info_effect").off()
 		$(".effect, .info_effect").mouseenter(function (e) {
-			if($(this).offset().left > window.innerWidth/2){
+			if ($(this).offset().left > window.innerWidth / 2) {
 				$(".effect_tooltip").addClass("rightside")
-			}
-			else $(".effect_tooltip").removeClass("rightside")
+			} else $(".effect_tooltip").removeClass("rightside")
 
 			$(".specialeffect_tooltip").css("visibility", "hidden")
 			$(".effect_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 
@@ -1339,16 +1271,16 @@ addChatDragEvent() {
 			$(".specialeffect_tooltip").css("visibility", "hidden")
 			$(".effect_tooltip")
 				.css({
-					visibility: "visible"
+					visibility: "visible",
 				})
 				.css($(this).offset())
 			GAME.ui.setEffectTooltip(Number($(this).attr("value")))
 		})
 	}
-	indicateActiveItem(ui,item,desc){
-		let id=String("item_"+Math.floor(Math.random()*10000))
-		let rect = document.getElementsByClassName("otherchar")[ui-1].getBoundingClientRect()
-		let str=`
+	indicateActiveItem(ui, item, desc) {
+		let id = String("item_" + Math.floor(Math.random() * 10000))
+		let rect = document.getElementsByClassName("otherchar")[ui - 1].getBoundingClientRect()
+		let str = `
 		<div class="item_notification small" id='${id}'>
 			<div class=item_noti_text>
 				<p>${desc}</p>
@@ -1359,15 +1291,14 @@ addChatDragEvent() {
 		</div>`
 		$("#item_notification_container").append(str)
 
-		$("#"+id).css({top:(rect.top-3)+"px",left:"-300px"})
-		$("#"+id).animate({left:rect.right},400)
+		$("#" + id).css({ top: rect.top - 3 + "px", left: "-300px" })
+		$("#" + id).animate({ left: rect.right }, 400)
 
-		setTimeout(()=>$("#"+id).remove(),2000)
+		setTimeout(() => $("#" + id).remove(), 2000)
 	}
-	indicateMyActiveItem(item,name,desc){
-		
-		let id=String("item_"+Math.floor(Math.random()*10000))
-		let str=`
+	indicateMyActiveItem(item, name, desc) {
+		let id = String("item_" + Math.floor(Math.random() * 10000))
+		let str = `
 		<div class="item_notification" id='${id}'>
 			<div class=item_noti_text>
 				<b>${name}</b>
@@ -1381,56 +1312,69 @@ addChatDragEvent() {
 
 		$("#item_notification_container").append(str)
 
-		if(window.matchMedia("(orientation: landscape)").matches){
+		if (window.matchMedia("(orientation: landscape)").matches) {
 			let rect = document.getElementById("skillbtncontainer").getBoundingClientRect()
 			////console.log(rect.top, rect.right, rect.bottom, rect.left);
 
 			////console.log("#"+id)
-			$("#"+id).css({bottom:"-100px",left:rect.left+"px"})
-			$("#"+id).animate({bottom:window.innerHeight- rect.top},400)
+			$("#" + id).css({ bottom: "-100px", left: rect.left + "px" })
+			$("#" + id).animate({ bottom: window.innerHeight - rect.top }, 400)
+		} else {
+			let rect = document.getElementsByClassName("mydisplay")[0].getBoundingClientRect()
+			$("#" + id).css({ bottom: window.innerHeight - rect.bottom + "px", left: "-300px" })
+			$("#" + id).animate({ left: rect.right }, 400)
 		}
-		else{
-			let rect= document.getElementsByClassName("mydisplay")[0].getBoundingClientRect()
-			$("#"+id).css({bottom:(window.innerHeight-rect.bottom)+"px",left:"-300px"})
-			$("#"+id).animate({left:rect.right},400)
-		}
-		$("#"+id+" item_noti_img img")
+		$("#" + id + " item_noti_img img")
 
-		setTimeout(()=>$("#"+id).remove(),2000)
-
+		setTimeout(() => $("#" + id).remove(), 2000)
 	}
 	/**
-	 * 
+	 *
 	 * @param {*} items {id:number,coolRatio:number in [0,1],cool:number}[]
 	 */
-	updateActiveItem(items){
-		
-		let str=""
-		for(let i of items){
-			let coolratio=i.coolRatio
+	updateActiveItem(items) {
+		let str = ""
+		for (let i of items) {
+			let coolratio = i.coolRatio
 
-			str+=` <div class="active_item ${coolratio===1?"active":"inactive"}">
-            <img class='active_item_img' src="res/img/store/items.png"  style='margin-left: ${-1 * i.id * 100 }px';>
+			str += ` <div class="active_item ${coolratio === 1 ? "active" : "inactive"}">
+            <img class='active_item_img' src="res/img/store/items.png"  style='margin-left: ${-1 * i.id * 100}px';>
           `
 
-		  if(coolratio < 1){
-			str+=`<div class="cooltime_mask" style="  background: conic-gradient(rgba(0,0,0,0) 0% 
-            ,rgba(0,0,0,0) ${coolratio*100}%,rgba(255, 255, 255, 0.6) ${coolratio*100}%,rgba(255, 255, 255, 0.6) 100%);">
+			if (coolratio < 1) {
+				str += `<div class="cooltime_mask" style="  background: conic-gradient(rgba(0,0,0,0) 0% 
+            ,rgba(0,0,0,0) ${coolratio * 100}%,rgba(255, 255, 255, 0.6) ${
+					coolratio * 100
+				}%,rgba(255, 255, 255, 0.6) 100%);">
             ${i.cool}</div>`
-		  }
+			}
 
-		  str+='</div>'
+			str += "</div>"
 		}
 
 		$("#inventory_active_items").html(str)
 	}
-	updateStatTooltip(mystat){
-		const statkeys=["moveSpeed","AD","AP","AR","MR","regen","basicAttackSpeed","attackRange","arP","MP","absorb","obsR","ultHaste"]
-		let str=""
-		for(let s of statkeys){
-											//set tooltip wider if english
-			str+=` <div class="stat_row">
-			<a class="name ${GAME.chooseLang("wide","")}">${GAME.strRes.STATS[s]}</a><a class="value">${mystat[s]}</a>
+	updateStatTooltip(mystat) {
+		const statkeys = [
+			"moveSpeed",
+			"AD",
+			"AP",
+			"AR",
+			"MR",
+			"regen",
+			"basicAttackSpeed",
+			"attackRange",
+			"arP",
+			"MP",
+			"absorb",
+			"obsR",
+			"ultHaste",
+		]
+		let str = ""
+		for (let s of statkeys) {
+			//set tooltip wider if english
+			str += ` <div class="stat_row">
+			<a class="name ${GAME.chooseLang("wide", "")}">${GAME.strRes.STATS[s]}</a><a class="value">${mystat[s]}</a>
 			</div>`
 		}
 		$("#stat_content").html(str)
@@ -1453,7 +1397,7 @@ addChatDragEvent() {
 		GAME.connection.selectionComplete(GAME.pendingSelection.type, {
 			type: GAME.pendingSelection.name,
 			result: !result,
-			complete:true
+			complete: true,
 		})
 	}
 
@@ -1468,77 +1412,76 @@ addChatDragEvent() {
 	// 	if(!player) return ""
 	// 	return this.getCharImgUrl(player.champ)
 	// }
-	indicatePlayerDeath(turn, spawnPos,  skillfrom, isShutDown, killerMultiKillCount) {
+	indicatePlayerDeath(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount) {
 		$(this.elements.kdasections[turn]).css("background", "rgba(146, 0, 0, 0.5)")
-		
 	}
-	playerReconnect(turn,name){
-		this.game.showKillText(turn,10,GAME.chooseLang(name+" has reconnected",name+"님이 다시 연결되었습니다"))
+	playerReconnect(turn, name) {
+		this.game.showKillText(turn, 10, GAME.chooseLang(name + " has reconnected", name + "님이 다시 연결되었습니다"))
 	}
-	playerDisconnect(turn,name){
-		this.game.showKillText(turn,10,GAME.chooseLang(name+" has left the game",name+"님이 게임을 종료했습니다"))
+	playerDisconnect(turn, name) {
+		this.game.showKillText(turn, 10, GAME.chooseLang(name + " has left the game", name + "님이 게임을 종료했습니다"))
 	}
 
-	showDeathInfo(skillfrom,damages){
+	showDeathInfo(skillfrom, damages) {
 		//console.log(damages)
-		let totalp=0
-		let totalm=0
-		let totalf=0
-		let sources=new Map()
-		for(const d of damages){
-			if(!sources.has(d.sourceTurn)){
-				sources.set(d.sourceTurn,[0,0,0])
+		let totalp = 0
+		let totalm = 0
+		let totalf = 0
+		let sources = new Map()
+		for (const d of damages) {
+			if (!sources.has(d.sourceTurn)) {
+				sources.set(d.sourceTurn, [0, 0, 0])
 			}
-			sources.get(d.sourceTurn)[d.damageType]+=d.amt
-			if(d.damageType===0) totalp+=d.amt
-			if(d.damageType===1) totalm+=d.amt
-			if(d.damageType===2) totalf+=d.amt
+			sources.get(d.sourceTurn)[d.damageType] += d.amt
+			if (d.damageType === 0) totalp += d.amt
+			if (d.damageType === 1) totalm += d.amt
+			if (d.damageType === 2) totalf += d.amt
 		}
-		$(".deathinfo-header-pdmg").html(this.game.chooseLang("Attack Damage: ","물리 피해: ")+totalp)
-		$(".deathinfo-header-mdmg").html(this.game.chooseLang("Magic Damage: ","마법 피해: ")+totalm)
-		$(".deathinfo-header-fdmg").html(this.game.chooseLang("Fixed Damage: ","고정 피해: ")+totalf)
+		$(".deathinfo-header-pdmg").html(this.game.chooseLang("Attack Damage: ", "물리 피해: ") + totalp)
+		$(".deathinfo-header-mdmg").html(this.game.chooseLang("Magic Damage: ", "마법 피해: ") + totalm)
+		$(".deathinfo-header-fdmg").html(this.game.chooseLang("Fixed Damage: ", "고정 피해: ") + totalf)
 
-		let str=""
-		let list=[]
-		for(const [source,dmg] of sources.entries()){
-			list.push([source,...dmg])
+		let str = ""
+		let list = []
+		for (const [source, dmg] of sources.entries()) {
+			list.push([source, ...dmg])
 		}
-		list.sort((a,b)=>{
-			return -(a[1]+a[2]+a[3])+(b[1]+b[2]+b[3])
+		list.sort((a, b) => {
+			return -(a[1] + a[2] + a[3]) + (b[1] + b[2] + b[3])
 		})
-		let maxdmg=list[0][1]+list[0][2]+list[0][3]
-		if(maxdmg===0) return
-		for(const d of list){
-			let graphstr=""
-			let classes=['p','m','f']
-			for(let i=1;i<=3;i++){
-				if(d[i]>0)
-					graphstr+=`<div class="deathinfo-source-bar deathinfo-source-bar-${classes[i-1]}damage" style="width:
-					${(d[i]/maxdmg)*100}%;"></div>`
+		let maxdmg = list[0][1] + list[0][2] + list[0][3]
+		if (maxdmg === 0) return
+		for (const d of list) {
+			let graphstr = ""
+			let classes = ["p", "m", "f"]
+			for (let i = 1; i <= 3; i++) {
+				if (d[i] > 0)
+					graphstr += `<div class="deathinfo-source-bar deathinfo-source-bar-${classes[i - 1]}damage" style="width:
+					${(d[i] / maxdmg) * 100}%;"></div>`
 			}
-			str+=`
+			str += `
 			<div class="deathinfo-source">
 				<div>
-				<img src="${this.game.getChampImgofTurn(d[0])}" ${d[0]===skillfrom?' class="killer"':''}>
+				<img src="${this.game.getChampImgofTurn(d[0])}" ${d[0] === skillfrom ? ' class="killer"' : ""}>
 				</div>
 				<div>
-				${d[0]===-1?this.game.chooseLang("Obstacle","장애물"):this.game.players[d[0]].name}
+				${d[0] === -1 ? this.game.chooseLang("Obstacle", "장애물") : this.game.players[d[0]].name}
 				</div>
 				<div>
 
 					<div class="deathinfo-source-graph">
 						${graphstr}
-						<div class="deathinfo-source-damage">${d[1]+d[2]+d[3]}</div>
+						<div class="deathinfo-source-damage">${d[1] + d[2] + d[3]}</div>
 					</div>
 				
 				</div>
 			</div>`
-		}	
+		}
 		$(".deathinfo-content").html(str)
 		$("#deathinfo-container").show()
 		$("#deathinfo").hide()
 	}
-	hideDeathInfo(){
+	hideDeathInfo() {
 		$("#deathinfo-container").hide()
 	}
 }
@@ -1553,7 +1496,7 @@ class ObsNotification {
 	write(obs, num, text) {
 		let obstacle = GAME.strRes.OBSTACLES.obstacles[obs]
 
-		let desc=obstacle.desc
+		let desc = obstacle.desc
 		//룰렛전용
 		if (text != null) {
 			desc = text
@@ -1585,47 +1528,44 @@ class ObsNotification {
 	}
 }
 
-
-class SkillInfoParser{
-	static parse=function(str){
-	
-		return str.replace(/\<\/\>/g,'</i>')
-		.replace(/\\n/g,"<br>")
-		.replace(/\[/g,"<i class='braket'>[")
-		.replace(/\]/g,"]</i>")
-		.replace(/\{/g,"<i class='skill_name'>[")
-		.replace(/\}/g,"]&emsp; </i>")
-		.replace(/\<cool\>/g,"<i class='cooltime'><img src='res/img/svg/skillinfo/cooltime.svg'>")
-		.replace(/\<skill\>/g,"<i class='skill_name_desc'>")
-		.replace(/\<lowerbound\>/g,"<i class='down'><img src='res/img/svg/skillinfo/lower.png'>")
-		.replace(/\<upperbound\>/g,"<i class='up'><img src='res/img/svg/skillinfo/upper.png'>")
-		.replace(/\<up\>/g,"<i class='up'><img src='res/img/svg/skillinfo/up.png'>")
-		.replace(/\<down\>/g,"<i class='down'><img src='res/img/svg/skillinfo/down.png'>")
-		.replace(/\<stat\>/g,"<i class='stat'>")
-		.replace(/\<range\>/g,"<i class='range'>&ensp;<img src='res/img/svg/skillinfo/range.png'>")
-		.replace(/\<currHP\>/g,"<i class='health'><img src='res/img/svg/skillinfo/currhp.svg'>")
-		.replace(/\<maxHP\>/g,"<i class='health'><img src='res/img/svg/skillinfo/maxhp.png'>")
-		.replace(/\<missingHP\>/g,"<i class='health'><img src='res/img/svg/skillinfo/missinghp.png'>")
-		.replace(/\<area\>/g,"<i class='emphasize'><img src='res/img/svg/skillinfo/area.png'>")
-		.replace(/\<money\>/g,"<i class='money'><img src='res/img/svg/skillinfo/money.png'>")
-		.replace(/\<mdmg\>/g,"<i class='mdmg'><img src='res/img/svg/skillinfo/mdamage.png'>")
-		.replace(/\<pdmg\>/g,"<i class='pdmg'><img src='res/img/svg/skillinfo/pdamage.png'>")
-		.replace(/\<tdmg\>/g,"<i class='tdmg'><img src='res/img/svg/skillinfo/fdamage.png'>")
-		.replace(/\<heal\>/g,"<i class='heal'><img src='res/img/svg/skillinfo/heal.png'>")
-		.replace(/\<shield\>/g,"<i class='shield'><img src='res/img/svg/skillinfo/shield.svg'>")
-		.replace(/\<proj\>/g,"<i class='emphasize'><img src='res/img/svg/skillinfo/pos.png'>")
-		.replace(/\<projsize\>/g,"<i class='emphasize'><img src='res/img/svg/skillinfo/size.png'>")
-		.replace(/\<duration\>/g,"<i class='emphasize'><img src='res/img/svg/skillinfo/duration.png'>")
-		.replace(/\<radius\>/g,"<i class='emphasize'><img src='res/img/svg/skillinfo/around.svg'>")
-		.replace(/\<basicattack\>/g,"<i class='basicattack'><img src='res/img/ui/basicattack.png'>")
-		.replace(/\<target\>/g,"<i class='emphasize'><img src='res/img/svg/skillinfo/target.svg'>")
-		.replace(/\<emp\>/g,"<i class='emphasize_simple'>")
-		.replace(/\<skillimg([0-9]+-[0-9]+)>/g,"<img class='info_skillimg' src='res/img/skill/$1.jpg'>")
-		.replace(/<scale(.+?)>/g,"<i class='scaled_value' value=$1>")
-		.replace(/\<badeffect([0-9]+)\>/g,"<i class='badeffect info_effect' value='$1'>")
-		.replace(/\<goodeffect([0-9]+)\>/g,"<i class='goodeffect info_effect' value='$1'>")
-		.replace(/(?![^<>]+>)(\d+)(?!\d)/g,"<b>$1</b>")		//wraps all numbers that is not a tag attribute
-	
+class SkillInfoParser {
+	static parse = function (str) {
+		return str
+			.replace(/\<\/\>/g, "</i>")
+			.replace(/\\n/g, "<br>")
+			.replace(/\[/g, "<i class='braket'>[")
+			.replace(/\]/g, "]</i>")
+			.replace(/\{/g, "<i class='skill_name'>[")
+			.replace(/\}/g, "]&emsp; </i>")
+			.replace(/\<cool\>/g, "<i class='cooltime'><img src='res/img/svg/skillinfo/cooltime.svg'>")
+			.replace(/\<skill\>/g, "<i class='skill_name_desc'>")
+			.replace(/\<lowerbound\>/g, "<i class='down'><img src='res/img/svg/skillinfo/lower.png'>")
+			.replace(/\<upperbound\>/g, "<i class='up'><img src='res/img/svg/skillinfo/upper.png'>")
+			.replace(/\<up\>/g, "<i class='up'><img src='res/img/svg/skillinfo/up.png'>")
+			.replace(/\<down\>/g, "<i class='down'><img src='res/img/svg/skillinfo/down.png'>")
+			.replace(/\<stat\>/g, "<i class='stat'>")
+			.replace(/\<range\>/g, "<i class='range'>&ensp;<img src='res/img/svg/skillinfo/range.png'>")
+			.replace(/\<currHP\>/g, "<i class='health'><img src='res/img/svg/skillinfo/currhp.svg'>")
+			.replace(/\<maxHP\>/g, "<i class='health'><img src='res/img/svg/skillinfo/maxhp.png'>")
+			.replace(/\<missingHP\>/g, "<i class='health'><img src='res/img/svg/skillinfo/missinghp.png'>")
+			.replace(/\<area\>/g, "<i class='emphasize'><img src='res/img/svg/skillinfo/area.png'>")
+			.replace(/\<money\>/g, "<i class='money'><img src='res/img/svg/skillinfo/money.png'>")
+			.replace(/\<mdmg\>/g, "<i class='mdmg'><img src='res/img/svg/skillinfo/mdamage.png'>")
+			.replace(/\<pdmg\>/g, "<i class='pdmg'><img src='res/img/svg/skillinfo/pdamage.png'>")
+			.replace(/\<tdmg\>/g, "<i class='tdmg'><img src='res/img/svg/skillinfo/fdamage.png'>")
+			.replace(/\<heal\>/g, "<i class='heal'><img src='res/img/svg/skillinfo/heal.png'>")
+			.replace(/\<shield\>/g, "<i class='shield'><img src='res/img/svg/skillinfo/shield.svg'>")
+			.replace(/\<proj\>/g, "<i class='emphasize'><img src='res/img/svg/skillinfo/pos.png'>")
+			.replace(/\<projsize\>/g, "<i class='emphasize'><img src='res/img/svg/skillinfo/size.png'>")
+			.replace(/\<duration\>/g, "<i class='emphasize'><img src='res/img/svg/skillinfo/duration.png'>")
+			.replace(/\<radius\>/g, "<i class='emphasize'><img src='res/img/svg/skillinfo/around.svg'>")
+			.replace(/\<basicattack\>/g, "<i class='basicattack'><img src='res/img/ui/basicattack.png'>")
+			.replace(/\<target\>/g, "<i class='emphasize'><img src='res/img/svg/skillinfo/target.svg'>")
+			.replace(/\<emp\>/g, "<i class='emphasize_simple'>")
+			.replace(/\<skillimg([0-9]+-[0-9]+)>/g, "<img class='info_skillimg' src='res/img/skill/$1.jpg'>")
+			.replace(/<scale(.+?)>/g, "<i class='scaled_value' value=$1>")
+			.replace(/\<badeffect([0-9]+)\>/g, "<i class='badeffect info_effect' value='$1'>")
+			.replace(/\<goodeffect([0-9]+)\>/g, "<i class='goodeffect info_effect' value='$1'>")
+			.replace(/(?![^<>]+>)(\d+)(?!\d)/g, "<b>$1</b>") //wraps all numbers that is not a tag attribute
 	}
-	
 }

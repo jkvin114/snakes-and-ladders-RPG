@@ -27,11 +27,12 @@ export function controlRoom(socket:Socket,roomController:RoomController){
         return false
 	}
 }
-export function controlRPGRoom(socket:Socket,roomController:RPGRoomController){
+export function controlRPGRoom(socket:Socket,roomController:RPGRoomController,playeronly?:boolean){
 	let rname = SocketSession.getRoomName(socket)
     let turn = SocketSession.getTurn(socket)
 	let room=R.getRPGRoom(rname)
 	if(!room) return false
+	if(playeronly && turn<0) return false
 	try{
 		roomController(room,rname,turn)
         return true
@@ -41,12 +42,13 @@ export function controlRPGRoom(socket:Socket,roomController:RPGRoomController){
         return false
 	}
 }
-export function controlMarbleRoom(socket:Socket,roomController:MarbleRoomController){
+export function controlMarbleRoom(socket:Socket,roomController:MarbleRoomController,playeronly?:boolean){
 	let rname = SocketSession.getRoomName(socket)
     let turn = SocketSession.getTurn(socket)
 	if (!R.hasMarbleRoom(rname)) return false
 	let room=R.getMarbleRoom(rname)
 	if(!room) return false
+	if(playeronly && turn<0) return false
 	try{
 		roomController(room,rname,turn)
         return true

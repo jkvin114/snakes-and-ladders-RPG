@@ -26,7 +26,7 @@ const HEALTHBAR_FRAME_OFFSET_X = 80
 const HPBAR_OFFSET_Y = 30
 const HPBAR_OFFSET_X = 30
 
-const HEALTHBAR_LOST_DISAPPEAR_DELAY = 400
+const HEALTHBAR_LOST_DISAPPEAR_DELAY = 600
 const HEALTHBAR_FRAME_DISAPPEAR_DELAY = 1300
 const ATTACK_EFFECT_INTERVAL = 100
 import { Board } from "./board.js"
@@ -2315,19 +2315,6 @@ export class Scene extends Board {
 		const [hp_frame, hp_bg, hp_lost, hp_lost_bg, hp_remain] = indicators._objects
 		this.players[target].clearhpIndicatorTimeout()
 
-		hp_lost.setGradient("fill", {
-			y1: 0,
-			x1: 0,
-			y2: 0,
-			x2: lost,
-			colorStops: {
-				0: "yellow",
-				0.3: "yellow",
-				0.6: "orange",
-				1: "red",
-			},
-		})
-
 		// hp_frame.bringToFront()
 		// hp_bg.bringToFront()
 		// hp_lost.bringToFront()
@@ -2343,7 +2330,6 @@ export class Scene extends Board {
 			width: health + lost,
 		})
 		// hp_remain.bringToFront()
-		let shouldUpdateLostHp = false
 
 		if (!this.players[target].isHpIndicatorVisible) {
 			this.players[target].isHpIndicatorVisible = true
@@ -2358,15 +2344,9 @@ export class Scene extends Board {
 					left: 2,
 					top: 2,
 					width: lost + health,
+					opacity: 1,
 				})
 			}, 100)
-			setTimeout(() => {
-				hp_lost_bg.animate("opacity", 0, {
-					onChange: this.render.bind(this),
-					duration: this.modifyMoveSpeed(200),
-					easing: fabric.util.ease.easeOutCubic,
-				})
-			}, this.modifyMoveSpeed(500))
 		} else {
 			hp_lost.set({
 				left: 2,
@@ -2376,16 +2356,36 @@ export class Scene extends Board {
 			hp_lost_bg.set({
 				left: 2,
 				top: 2,
+				opacity: 1,
 			})
 		}
-		if (-change > maxhp * 0.3) hp_lost_bg.set({ opacity: 1 })
+		// hp_lost_bg.dispose()
 
 		this.players[target].hpIndicatorLostTimeout = setTimeout(async () => {
-			await sleep(this.modifyMoveSpeed(400))
+			hp_lost_bg.animate("opacity", 0, {
+				onChange: this.render.bind(this),
+				duration: this.modifyMoveSpeed(300),
+				easing: fabric.util.ease.easeOutCubic,
+			})
+
+			hp_lost.setGradient("fill", {
+				y1: 0,
+				x1: 0,
+				y2: 0,
+				x2: health + lost,
+				colorStops: {
+					0: "yellow",
+					0.3: "yellow",
+					0.6: "orange",
+					1: "red",
+				},
+			})
+
+			await sleep(this.modifyMoveSpeed(200))
 
 			hp_lost.animate("width", 0, {
 				onChange: this.render.bind(this),
-				duration: this.modifyMoveSpeed(200),
+				duration: this.modifyMoveSpeed(400),
 				easing: fabric.util.ease.easeOutCubic,
 			})
 			// hp_lost.set({ opacity: 0 })
@@ -2403,9 +2403,6 @@ export class Scene extends Board {
 			top: 2,
 			width: health,
 		})
-		if (shouldUpdateLostHp) {
-			// hp_remain.bringToFront()
-		}
 		if (-change > maxhp * 0.5) {
 			this.shakeHPBar(indicators, pos1.x - HEALTHBAR_FRAME_OFFSET_X, pos1.y - HEALTHBAR_FRAME_OFFSET_Y, 0.25)
 		} else if (-change > maxhp * 0.15) {

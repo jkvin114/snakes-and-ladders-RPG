@@ -37,7 +37,6 @@ app.use("/stat", require("./router/statRouter"))
 app.use("/user", require("./router/RegisteredUserRouter"))
 app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
-
 app.use("/board", require("./router/board/BoardRouter"))
 // app.use("/board/user", require("./router/board/BoardUserRouter"))
 // // app.use("/board/post", require("./router/board/BoardPostRouter"))

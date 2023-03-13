@@ -176,7 +176,7 @@ b {
   width: 32px;
   height: 32px;
   padding: 2px;
-  background-color: rgb(255, 187, 0);
+  background-color: #7b3fb3;
 }
 
 .mainhpcontainer {
@@ -1577,6 +1577,7 @@ transform: scale(0.8, 1);
   grid-column-gap: 0px;
   grid-row-gap: 0px;
   text-align: left;
+  width: 100%;
 }
 
 #skillinfowindow .skillinfo {

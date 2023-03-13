@@ -4,8 +4,9 @@ import GameInterface from "./gameinterface.js"
 import { openConnection } from "./gameclient.js"
 
 export class PlayableGame extends Game {
-	constructor() {
+	constructor(is_spectator) {
 		super()
+		this.is_spectator = is_spectator
 		this.thisui = 0 //현제 턴의 ui
 		this.skillstatus = null //쿨타임, 침묵 등 스킬관련 정보 저장
 		this.gameSettings = {
@@ -13,8 +14,8 @@ export class PlayableGame extends Game {
 			autoNextTurnOnSilent: true,
 		}
 		this.ismyturn = false //자신의 턴인지
-		this.myturn = 0 //Number(sessionStorage.turn) //내 턴
-		this.crypt_turn = "" //encrypted my turn
+		this.myturn = 0 //내 턴 , -1 if spectator mode
+		this.crypt_turn = "" //encrypted my turn, "" if spectator mode
 		this.rname = sessionStorage.roomName //방제
 		this.godhandtarget = -1 //신의손 대상 저장용
 
@@ -89,12 +90,13 @@ export class PlayableGame extends Game {
 
 		// this.begun = true
 		this.myturn = turn
+
 		this.crypt_turn = cturn
 
 		// this.skill_description = setting[this.myturn].description
 		//this.playerCount = setting.playerSettings.length //total number of player
-
-		this.storeStatus.init(setting.gameSettings.itemLimit, setting.playerSettings[this.myturn].recommendedItem)
+		if (this.myturn >= 0)
+			this.storeStatus.init(setting.gameSettings.itemLimit, setting.playerSettings[this.myturn].recommendedItem)
 
 		for (let i = 0; i < this.playerCount; ++i) {
 			this.ui.updatePlayerItems(i, this.arrayOf(-1, setting.gameSettings.itemLimit))
@@ -104,26 +106,18 @@ export class PlayableGame extends Game {
 		}
 
 		this.gameSettings.autoNextTurnOnSilent = setting.gameSettings.autoNextTurnOnSilent
-		//	this.gameSettings.autoNextTurnOnStore = setting.gameSettings.autoNextTurnOnStore
-
-		//this.isTeam = setting.isTeam
-		//this.shuffledObstacles = setting.shuffledObstacles
 		for (let i = 0; i < setting.playerSettings.length; ++i) {
-			// this.players.push(
-			// 	new Player(
-			// 		this,
-			// 		i,
-			// 		setting.playerSettings[i].champ,
-			// 		setting.playerSettings[i].team,
-			// 		setting.playerSettings[i].name
-			// 	)
-			// )
 			if (i === this.myturn) this.skillScale = setting.playerSettings[i].skillScale
 		}
 
 		this.ui.init(setting.playerSettings)
 		//requestObstacles()
 		//registerSounds()
+	}
+	setItemStatus(items) {
+		for (let i = 0; i < items.length; ++i) {
+			this.ui.updatePlayerItems(i, items[i])
+		}
 	}
 	changeShield(val) {
 		super.changeShield(val)
@@ -432,7 +426,10 @@ export class PlayableGame extends Game {
 		name = name.replaceAll(" ", "_")
 		let desc = this.chooseLang(data.desc, data.desc_kor)
 		//if the effect is currently not applied or has different description, update the effect icon
-		if (!this.players[this.myturn].effect_status.has(name) || this.strRes.SPECIAL_EFFECTS.get(name)[0] !== desc) {
+		if (
+			(this.myturn >= 0 && !this.players[this.myturn].effect_status.has(name)) ||
+			this.strRes.SPECIAL_EFFECTS.get(name)[0] !== desc
+		) {
 			$(".se_" + String(name)).remove()
 			//console.log("apply"+name)
 			if (data.type === "item") {
@@ -456,7 +453,7 @@ export class PlayableGame extends Game {
 	}
 	removeSpecialEffect(name) {
 		name = name.replaceAll(" ", "_")
-		if (this.players[this.myturn].effect_status.has(name)) {
+		if (this.myturn >= 0 && this.players[this.myturn].effect_status.has(name)) {
 			$(".se_" + String(name)).remove()
 			//console.log("remove "+name)
 			this.players[this.myturn].effect_status.delete(name)
@@ -666,6 +663,8 @@ export class PlayableGame extends Game {
 	}
 	onIndicateItem(turn, item) {
 		//console.log("onIndicateItem")
+		if (this.is_spectator) return
+
 		if (!this.strRes.ITEMS.items[item].active_summary) return
 		let it = this.strRes.ITEMS.items[item]
 
@@ -709,6 +708,10 @@ export class PlayableGame extends Game {
 	onGameOver(winner) {
 		super.onGameOver(winner)
 
+		if (this.myturn < 0) {
+			this.android_toast("Game over")
+			return
+		}
 		if (this.myturn === winner) {
 			$(".victory").show()
 		} else if (this.isTeam && this.players[this.myturn].team === this.players[winner].team) {
