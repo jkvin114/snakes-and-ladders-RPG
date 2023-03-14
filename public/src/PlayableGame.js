@@ -82,7 +82,7 @@ export class PlayableGame extends Game {
 		this.ismyturn = t === this.myturn
 	}
 	isMyTeam(turn) {
-		if (turn < 0) return false
+		if (this.myturn < 0) return false
 		return this.isTeam && this.players[turn].team === this.players[this.myturn].team
 	}
 	init(setting, turn, cturn) {

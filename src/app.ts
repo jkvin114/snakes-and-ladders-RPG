@@ -18,7 +18,19 @@ const session = require("express-session")({
 	}
 })
 import express=require("express")
-
+declare module 'express-session' {
+	interface SessionData {
+        cookie: Cookie;
+        isLogined:boolean
+        userId:string
+        username:string
+        boardDataId:string
+        roomname:string
+        turn:number
+		ip:string
+		time:Date
+	}
+  }
 // import session from 'express-session';
 
 
@@ -26,7 +38,7 @@ import express=require("express")
 
 const clientPath = `${__dirname}/../public`
 const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
-const PORT = 4000
+const PORT = 80
 const app = express()
 
 app.use(session)
@@ -34,6 +46,8 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use("/stat", require("./router/statRouter"))
+app.use("/admin", require("./router/adminRouter"))
+
 app.use("/user", require("./router/RegisteredUserRouter"))
 app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
@@ -107,6 +121,7 @@ io.on("connection", function (socket: Socket) {
 	require("./sockets/RpgRoomSocket")(socket)
 	require("./Marble/MarbleRoomSocket")(socket)
 })
+
 
 app.get("/connection_check", function (req:any, res:any) {
 	res.end()

@@ -2,7 +2,7 @@ import express = require("express")
 import session from "express-session"
 import mongoose from "mongoose"
 import { ImageUploader } from "../mongodb/mutler"
-import { ajaxauth, auth, containsId } from "./board/helpers"
+import { ajaxauth, auth, containsId, encrypt } from "./board/helpers"
 import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
 /**
@@ -34,19 +34,14 @@ import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
 
 // const { UserBoardData } = require("../mongodb/BoardDBSchemas")
 const router = express.Router()
-const crypto = require("crypto")
+
 const { User } = require("../mongodb/DBHandler")
 
 function createSalt() {
 	return Math.round(new Date().valueOf() * Math.random()) + ""
 }
 
-function encrypt(pw: string, salt: string) {
-	return crypto
-		.createHash("sha512")
-		.update(pw + salt)
-		.digest("hex")
-}
+
 
 function checkPasswordValidity(pw: string) {
 	if (pw.length <= 3) {
@@ -102,6 +97,7 @@ router.get("/:username", async function (req: express.Request, res: express.Resp
 		email: user.email,
 		profile: user.profileImgDir,
 		isme: req.session.isLogined && req.session.userId === String(user._id),
+		isadmin:user.role==="admin" && req.session.isLogined && req.session.userId === String(user._id),
 		isLogined: req.session.isLogined,
 		counts: counts,
 	})
@@ -276,6 +272,9 @@ router.post("/login", async function (req: express.Request, res: express.Respons
  */
 router.post("/logout", ajaxauth, function (req: express.Request, res: express.Response) {
 	req.session.isLogined = false
+	delete req.session.userId
+	delete req.session.username
+	delete req.session.boardDataId
 
 	console.log(req.session.username + " has logged out")
 	// req.session.destroy(function(e){

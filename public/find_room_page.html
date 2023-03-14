@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+	<script src="lib/jquery-3.6.0.min.js"></script>
+	<head>
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+		<link rel="stylesheet" href="./src/style/style_main_navbar.css" />
+		<title>Find Room</title>
+		<link rel="icon" type="image/x-icon" href="/res/img/ui/favicon.png" />
+        <link rel="stylesheet" href="./src/style/style_main_navbar.css">
+
+		<meta charset="utf-8" />
+	</head>
+
+	<style>
+		@font-face {
+			font-family: "cookierun";
+			src: url("res/font/CookieRun.ttf");
+		}
+
+		@font-face {
+			font-family: "nanumB";
+			src: url("res/font/NanumSquareB.ttf");
+		}
+		body {
+			/* background-color: #242424; */
+			background-color: #200f33;
+			color: beige;
+			margin: 0;
+
+			font-family: "nanumB";
+			text-align: center;
+		}
+        .hidden{
+            display: none;
+        }
+        #container{
+            position: relative;
+            width: 95%;
+            max-width: 1000px;
+            display: inline-block;
+            border: 2px solid #c654ff;
+            height: 70vh;
+            
+            background-color: #24242d;
+            overflow: auto;
+        }.divTable{
+            display: table;
+            width: 100%;
+        }
+        .divTableRow {
+            display: table-row;
+
+        }
+        .divTableCell, .divTableHead {
+            display: table-cell;
+            padding: 10px 10px;
+        }
+        .divTableBody {
+            display: table-row-group;
+        }
+        .tablehead{
+
+            background-color: #4d4d5e;
+        }
+        .divTableCell{
+            /* padding: 5px; */
+            word-break: break-all;
+        }
+        .tablehead .divTableCell:nth-child(1){
+            width: 100px;
+        }
+        .tablehead .divTableCell:nth-child(3){
+            width: 60px;
+        }
+
+        .oneroom{
+            cursor: pointer;
+            outline: 1px solid#3a3a47;
+            outline-offset: -2px;
+        }
+        .oneroom:hover{
+            background-color: #3f3f4e;
+        }
+        .icon-img
+        {
+            width: 25px;
+            vertical-align: middle;
+        }
+        #emptyroom,#loading,#password-window{
+            position: absolute;
+            left:50%;
+            top:50%;
+            transform: translate(-50%,-50%);
+        }
+        #password-window{
+            z-index: 1;
+            border: 2px solid #c654ff;
+            background-color: #4d4d5e;
+            width: 70%;
+            max-width: 500px;
+            padding:10px 10px;
+            transition: all 0.5s;
+        }
+        .button{
+            font-family: 'nanumB';
+            color:whitesmoke;
+            /* background-color: #7E00BF; */
+          background: transparent;
+            border: 1px solid #c654ff;
+            cursor:pointer;
+            text-align:center;
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 15px 5px;
+            /* border:none; */
+            vertical-align: middle;
+            border-radius: 3px;
+            /* min-width: 100px; */
+        }
+        .button.fill{
+            background-color: #c654ff;
+        }
+        .button:hover{
+            background-color: #8a30b7;
+        }
+        </style>
+<body>    
+    <div id="navbar">
+
+        <div id="navbar-btn-container">
+            <div class="nav-section ">
+                <div class="navbtn" onclick="golink('/index.html')">
+                    <img src="res/img/svg/home.svg" title="home">
+                    <a>Home</a>
+                </div>
+                <div class="navbtn " id="postbtn" onclick="golink('/board')">
+                    <img class='postbtn' src="res/img/svg/note.svg"  title="post board">
+                    <a>Posts</a>
+                </div>
+                <div class="navbtn"  onclick="golink('/statpage.html')">
+                    <img id="statbtn" src="res/img/svg/chart_white.svg" title="Statistics">
+                    <a>Statistics</a>
+                </div>
+            </div>
+            <div class="nav-section">
+                <img class='menubtn' id="refreshbtn" src="res/img/svg/refresh.svg"  title="refresh">
+            </div>
+        </div>
+        
+    </div>
+
+    <div id="password-window" class="hidden" data-roomname="">
+        <h5>Enter Password</h5>
+        <input type="password" id="password" >
+        <div>
+            <button id="password-confirm" class="button fill">Confirm</button>
+            <button id="password-cancel" class="button">Cancel</button>
+        </div>
+    </div>
+
+    <h2 id="title">Choose a Room to Join</h2>
+    <div id="container">
+        <h3 id="emptyroom" class="hidden">There are no rooms to enter</h3>
+        <img src="res/img/ui/loading_purple.gif" id="loading">
+        <div class="divTable">
+            <div class="divTableBody" id="table-container">
+                <div class="divTableRow tablehead">
+                    <div class="divTableCell">Game Type</div>
+                    <div class="divTableCell">Room Name</div>
+                    <div class="divTableCell">Space</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    </body>
+    <script src="src/findroom.js"></script>
+
+</html>

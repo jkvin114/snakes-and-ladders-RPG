@@ -258,6 +258,7 @@ input{
     <%if(isme) {%>
         <img onclick="setting()" src="/res/img/ui/setting.png" style="background-color: #b6b6d2;">
         <!-- <img src="/res/img/svg/out.svg" onclick="logout()" title="Logout"> -->
+       
     <% }  %>
   </div>
  <div id="post_container">
@@ -319,7 +320,9 @@ input{
         <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/comments`)">Comments <a class="count">(<%= counts[4] %>)</a></div>
         <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/likes`)">Liked Posts <a class="count">(<%= counts[5] %>)</a></div>
 
-        
+        <%if(isadmin) {%>
+            <button onclick="golink('/admin.html')">Admin page</button>
+        <% }  %>
      </div>
      
      <%if(isme){%>

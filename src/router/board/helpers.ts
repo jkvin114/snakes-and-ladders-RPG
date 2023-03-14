@@ -12,6 +12,13 @@ import mongoose from "mongoose"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
 import { Friend, friendSchema } from "../../mongodb/UserRelationDBSchema";
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation";
+import crypto from "crypto";
+export function encrypt(pw: string, salt: string) {
+	return crypto
+		.createHash("sha512")
+		.update(pw + salt)
+		.digest("hex")
+}
 
 export const availabilityCheck = (req: express.Request, res: express.Response, next: express.NextFunction) => {
 	if (!CONFIG.board) return res.status(403).redirect("/")
@@ -49,18 +56,19 @@ export const ajaxauth = (req: express.Request, res: express.Response, next: expr
 	}
 }
 export const adminauth = async(req: express.Request, res: express.Response, next: express.NextFunction) => {
-
+	// next()
+	// return
 	try {
 		if (!req.session.isLogined) {
-			res.status(401).redirect("/")
+			res.status(401).end("unauthorized")
 		} else {
 			const user = await User.findById(req.session.userId)
 			if(user.role && user.role==="admin") next()
 			else
-				res.status(401).redirect("/")
+				res.status(401).end("unauthorized")
 		}
 	} catch {
-		res.status(401).redirect("/")
+		res.status(401).end("unauthorized")
 	}
 }
 export const postRoleChecker =  async (req: express.Request, res: express.Response, next: express.NextFunction)=>{

@@ -1,6 +1,7 @@
 import { PlayerType, ProtoPlayer } from "./core/Util"
 import { GameEventEmitter } from "./GameEventObserver";
 import {PlayerMatchingState} from "./PlayerMatchingState"
+import { encrypt } from "./router/board/helpers";
 abstract class Room {
 	//simulation_total_count: number
 	simulation_count: number
@@ -22,8 +23,16 @@ abstract class Room {
 	resetCallback:Function
 	isGameStarted:boolean //true if matching is complete
 	isGameRunning:boolean // true if game is up and running
+
+	hostSessionId:string // session id of host user
+	password:string
+	isPublic:boolean
+	isLoggedInUserOnly:boolean
+	
+	
 	protected playerMatchingState:PlayerMatchingState
 	private playerSessions:Set<string>
+	abstract type:string
 	abstract user_message(turn:number,msg:string):string
 	abstract get getMapId():number
 	abstract registerClientInterface(callback:GameEventEmitter):Room
@@ -49,8 +58,26 @@ abstract class Room {
 		this.isGameStarted=false
 		this.resetCallback=()=>{}
 		this.playerMatchingState=new PlayerMatchingState()
+		this.hostSessionId=''
+		this.isPublic=true
+		this.isLoggedInUserOnly=false
+		this.password=""
 	}
-	
+
+	setHost(id:string)
+	{
+		this.hostSessionId=id
+		return this
+	}
+	setPassword(pw:string)
+	{
+		this.password=encrypt(pw,this.name)
+	}
+	setSettings(isLoggedInUserOnly:string,isPrivate:string){
+		this.isLoggedInUserOnly=isLoggedInUserOnly==="true"
+		this.isPublic=isPrivate==="false"
+		console.log(this.isPublic)
+	}
 	registerResetCallback(onreset:Function){
 		this.resetCallback=onreset
 		return this
@@ -73,13 +100,35 @@ abstract class Room {
 
 	get roomStatus(){
 		return {
+			name:this.name,
 			running:this.isGameRunning,
 			started:this.isGameStarted,
 			playerlist:this.playerMatchingState.playerlist,
-			hosting:this.hosting
+			hosting:this.hosting,
+			type:this.type,
+			password:this.password,
+			loginonly:this.isLoggedInUserOnly,
+			isPublic:this.isPublic
 		}
 	}
-	
+	checkPassword(pw:string){
+		if(this.password==="") return true
+		if(encrypt(pw,this.name)===this.password) return true
+		return false
+	}
+	canJoinPublic(loggedin:boolean){
+		if(!loggedin && this.isLoggedInUserOnly) return false
+		return this.hosting>0 && this.isPublic
+	}
+	get roomSummary(){
+		return {
+			name:this.name,
+			hosting:this.hosting,
+			type:this.type,
+			hasPassword:this.password!=="",
+			loginonly:this.isLoggedInUserOnly
+		}
+	}
 	/**
 	 * set types of all players
 	 * @param {f} types string[]
@@ -132,7 +181,9 @@ abstract class Room {
 		this.playerMatchingState.guestnum -= 1
 	}
 
-
+	removePlayer(turn:number){
+		return this.playerMatchingState.removePlayer(turn)
+	}
 	addGuestToPlayerList(username: string,userClass:number) :number{
 		return this.playerMatchingState.addGuestToPlayerList(username,userClass)
 	}

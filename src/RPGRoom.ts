@@ -15,6 +15,7 @@ function workerTs(data: unknown) {
 }
 
 class RPGRoom extends Room {
+	type: string
 	user_message(turn: number, msg: string): string {
 		throw new Error("Method not implemented.")
 	}
@@ -26,6 +27,7 @@ class RPGRoom extends Room {
 	constructor(name: string) {
 		super(name)
 		this.gameloop
+		this.type="rpg"
 		this.eventObserver=new GameEventObserver(name)
 		this.registeredSessions=new Set<string>()
 

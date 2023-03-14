@@ -6,16 +6,21 @@ import { controlRoom } from "./Controller";
 import CONFIG from "./../../config/config.json"
 
 module.exports=function(socket:Socket){
+
+
     socket.on("user:update_playerlist", function (playerlist: any) {
+		// console.table(playerlist)
 		controlRoom(socket,(room,rname)=>{
 			room.user_updatePlayerList(playerlist)
 			io.to(rname).emit("server:update_playerlist", room.getPlayerList())
 		})
 	})
 	
-	socket.on("user:host_connect", function () {
+	socket.on("user:host_create_room", function () {
 
 		controlRoom(socket,(room,rname)=>{
+			if(room.hostSessionId!==SocketSession.getId(socket)) return
+
 			room.setSimulation(false)
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
 				io.to(roomname).emit(type,...args)
@@ -23,25 +28,38 @@ module.exports=function(socket:Socket){
 
 			room.addSession(SocketSession.getId(socket))
 			socket.join(rname)
-			console.log(socket.rooms)
 		})
 		
 		//	socket.emit("server:create_room",roomName)
 	})
 	//==========================================================================================
-	socket.on("user:register", function (rname: string) {
-		SocketSession.setRoomName(socket, rname)
+	socket.on("user:guest_request_register", function (rname: string) {
+		//check if current session has room name that was set up in /room/verify_join router
+		if(SocketSession.getRoomName(socket)!==rname){
+			socket.emit("server:unavaliable_room")
+			return
+		}
+
 		let hasroom=controlRoom(socket,(room,rname)=>{
 			if(room.user_guestRegister(SocketSession.getId(socket)))
 			{
 				socket.join(rname)
-				socket.emit("server:join_room", rname)
+				let username = SocketSession.getUsername(socket)
+			
+				let turn = room.addGuestToPlayerList(username,SocketSession.getUserClass(socket))
+				SocketSession.setTurn(socket, turn)
+
+				// socket.emit("server:guest_register", turn, room.getPlayerList())
+				socket.emit("server:guest_join_room", rname, turn, room.getPlayerList())
+
+				socket.broadcast.to(rname).emit("server:update_playerlist", room.getPlayerList())
+
 			}
 			else{
-				socket.emit("server:room_full")
+				socket.emit("server:unavaliable_room")
 			}
 		})
-		if(!hasroom) socket.emit("server:room_full")
+		if(!hasroom) socket.emit("server:unavaliable_room")
 	})
 
 	//==========================================================================================
@@ -57,7 +75,7 @@ module.exports=function(socket:Socket){
 	socket.on("user:request_players", function () {
 		controlRoom(socket,(room,rname)=>{
 			let username = SocketSession.getUsername(socket)
-
+			
 			let turn = room.addGuestToPlayerList(username,SocketSession.getUserClass(socket))
 			SocketSession.setTurn(socket, turn)
 
@@ -169,7 +187,9 @@ module.exports=function(socket:Socket){
 
 				}//if guest quits in the matching page
 				else{
+
 					room.deleteSession(SocketSession.getId(socket))
+					socket.broadcast.to(rname).emit("server:update_playerlist", room.removePlayer(turn))
 				}
 				SocketSession.removeGameSession(socket)
 			}

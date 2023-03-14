@@ -85,6 +85,10 @@ export class PlayerMatchingState{
 		}
 		return names
 	}
+	removePlayer(turn:number){
+		this.playerlist[turn]=this.createEmptyPlayer()
+		return this.playerlist
+	}
 	setChamp(turn: number, champ_id: number) {
 		if (turn < 0) return
 		this.playerlist[turn].champ = champ_id

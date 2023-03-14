@@ -152,7 +152,16 @@ const marbleItemPresetSchema=new mongoose.Schema({
 
 },{timestamps:true})
 
+const accessRecordSchema=new mongoose.Schema({
+    ip:String
+},{timestamps:true})
 
+accessRecordSchema.statics.create=function(data){
+    return (new AccessRecord(data)).save()
+}
+accessRecordSchema.statics.findAll = function() {
+    return this.find({}).sort({createdAt:"desc"})
+};
 //=============================================================================================
 testschema.statics.create=function(data){
     return (new Test(data)).save()
@@ -272,6 +281,8 @@ userSchema.statics.deleteFollow = function(id,userId) {
 };
 //=============================================================================================
 const Test=mongoose.model('Test',testschema)
+const AccessRecord=mongoose.model('AccessRecord',accessRecordSchema)
+
 const MarbleItemPreset=mongoose.model('MarbleItemPreset',marbleItemPresetSchema)
 
 const GameRecord=mongoose.model('GameRecord',gameRecordSchema)

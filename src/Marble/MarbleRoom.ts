@@ -14,10 +14,11 @@ class MarbleRoom extends Room{
     }
     gameloop:MarbleGameLoop
 	clientInterface:MarbleGameEventObserver
-	
+	type: string
 
     constructor(name:string){
         super(name)
+		this.type="marble"
         this.gameloop
 		this.clientInterface=new MarbleGameEventObserver(name)
     }

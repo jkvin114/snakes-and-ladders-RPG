@@ -58,7 +58,7 @@ function genTable(game) {
             <div class="divTableCell charcell">
                 <div class="charimg list_charimg"><img src="${getCharImgUrl(p.champ)}"></div>
             </div>
-            <div class="divTableCell">${p.name}</div>
+            <div class="divTableCell namecell">${p.name}</div>
             <div class="divTableCell">${p.kill}/${p.death}/${p.assist}</div>
             <div class="divTableCell">${p.pos}</div>
         </div>`

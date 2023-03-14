@@ -115,8 +115,9 @@ input[type=password]{
 }
 #field{
   text-align: center;
-  display: none;
-
+  /* width: min(80%,500px); */
+  visibility: collapse;
+  /* display: inline-block; */
 }
 #createroom{
   display:none;
@@ -237,6 +238,88 @@ footer{
   font-size: 26px;
   font-family: 'cookierun';
 }
+.onesetting  .settingname-container a{
+  text-align: right;
+  font-size: 13px;
+  /* line-height: 50px; */
+  font-weight: normal;
+  color: whitesmoke;
+  /* padding-right: 10px; */
+  margin: 0;
+}
+/* The switch - the box around the slider */
+.switch {
+  vertical-align: middle;
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  /* -webkit-transition: .2s;
+  transition: .2s; */
+  /* box-shadow: 1px 1px 2px rgb(43, 43, 43); */
+}
+
+.slider:before {
+  border-radius: 50%;
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  /* -webkit-transition: .2s; */
+  /* transition: .2s; */
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(19px);
+  -ms-transform: translateX(19px);
+  transform: translateX(19px);
+}
+input:checked + .slider {
+  background-color: #804fb3;
+}
+.slider{
+  border-radius: 10px;
+}.onesetting{
+  padding-top: 10px;
+  text-align: center;
+}
+#room-settings{
+  text-align: center;
+}
+#room-settings label{
+  cursor: pointer;
+}
+#marble{
+  height: 50px;
+  background: transparent;
+  vertical-align: middle;
+  cursor: pointer;
+
+}
+#marble:hover{
+  transform: scale(1.1);
+}
 </style>
 <body>
 <!-- <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" data-on=false> -->
@@ -264,7 +347,7 @@ footer{
         <div class="nav-section">
         <img class='menubtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/svg/question.svg"  title="Wiki"> 
 
-          <img class='menubtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블">
+          <!-- <img class='menubtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블"> -->
           <img class='menubtn langbtn' id="langbtn" src="res/img/svg/globe.svg"  title="Language">
           <div class="lang_dropdown">
             <a class="dropitem" value="kor">한국어</a>
@@ -300,9 +383,27 @@ footer{
       </div>
       <div id=field>
         <br>
-        <input type='text' name="room_name" value="" placeholder="Room Name(optional)" id="room-name-input">
+        <input type='text' name="room_name" value="" placeholder="Room Name(optional)" id="room-name-input"><br>
+        <input type='text' name="room_password" value="" placeholder="Room Password(optional)" id="room-password-input">
+        <div id="room-settings">
+
+          <div class="onesetting">
+            <label class="switch">
+              <input type="checkbox" name="room_private" class="toggleallstat" id="room_private">
+              <span class="slider"></span>
+            </label>
+            <label for="room_private">Make private</label>
+          </div> 
+          <div class="onesetting">
+            <label class="switch">
+              <input type="checkbox" name="room_loggedin_only" class="toggleallstat" id="room_loggedin_only">
+              <span class="slider"></span>
+            </label>
+            <label for="room_loggedin_only">Logged in user only</label>
+          </div>
+        </div>
         <br>
-        
+        <img class='hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블">
         <button class=button id="create_room" onclick="createroom(false)">START</button>
         <button class=button id=close_createroom onclick="close_createroom()">CANCEL</button>
       </div>

@@ -322,18 +322,20 @@ function open_signup() {
 	$("#signuppage").show()
 }
 function open_createroom() {
-	$("#field").show()
+	$("#field").css("visibility", "visible")
 	$("#buttons").hide()
 	// $("#simulation").hide()
 	$("#lowbtns").hide()
 	$("#ip_area").hide()
+	$("#title").hide()
 	//  $("#input-username").hide()
 }
 function close_createroom() {
-	$("#field").hide()
+	$("#field").css("visibility", "collapse")
 	$("#buttons").show()
 	// $("#simulation").show()
 	$("#lowbtns").show()
+	$("#title").show()
 	// $("#input-username").show()
 
 	// $("#ip_area").show()
@@ -341,6 +343,9 @@ function close_createroom() {
 function createroom(isMarble) {
 	console.log("create room")
 	let roomName = $("input[name='room_name']").val()
+	let password = $("input[name='room_password']").val()
+	let isprivate = $("input[name='room_private']").prop("checked")
+	let loggedinOnly = $("input[name='room_loggedin_only']").prop("checked")
 
 	// if(!r || r===""){
 	//   r="room_"+String(Math.floor(Math.random()*1000000))
@@ -365,8 +370,15 @@ function createroom(isMarble) {
 
 	$.ajax({
 		method: "POST",
-		url: isMarble ? "/room/create_marble" : "/room/create_rpg",
-		data: { roomname: roomName, username: n },
+		url: "/room/create",
+		data: {
+			roomname: roomName,
+			username: n,
+			type: isMarble ? "marble" : "rpg",
+			password: password,
+			isPrivate: isprivate,
+			loggedinOnly: loggedinOnly,
+		},
 	})
 		.done(function (data, statusText, xhr) {
 			let status = xhr.status
@@ -418,6 +430,8 @@ function join() {
 	}
 
 	sessionStorage.nickName = n
+	window.location.href = "find_room_page.html"
+	return
 	let url = $("input[name='ip']").val()
 	sessionStorage.ip_address = url
 

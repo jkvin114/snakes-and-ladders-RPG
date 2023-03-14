@@ -1,4 +1,3 @@
-
 sessionStorage.status = null
 var MATCH = null
 const RANDOM_CHAR_DIR = "res/img/ui/random.png"
@@ -25,25 +24,20 @@ function onReceiveCharacters(request) {
 		</div>
 		<div class="champbtn_name">Random</div>
 	</div>`)
-	let str=""
-	let str2=""
+	let str = ""
+	let str2 = ""
 	for (let i = 0; i < characters.length; ++i) {
-
-
-		str+=`<div class=champbtn_new value=${String(i)}>
+		str += `<div class=champbtn_new value=${String(i)}>
 				<div>
 					<img src="res/img/character/illust/${characters[i].illustdir}"  style="background-color: ${characters[i].bgcolor};" >
 				</div>
 				<div class="champbtn_name">${characters[i].name}</div>
 			</div>`
 
-		
-		
-		str2+=`<img class="champmenu_item" src="res/img/character/illust/${characters[i].illustdir}"  value=${String(i)}>`
-		
+		str2 += `<img class="champmenu_item" src="res/img/character/illust/${characters[i].illustdir}"  value=${String(i)}>`
 	}
- 	$("#character_selection").append(str)
-	 $(".champmenu").append(str2)
+	$("#character_selection").append(str)
+	$(".champmenu").append(str2)
 	$(".champmenu img").click(function () {
 		let champ = Number($(this).attr("value"))
 		MATCH.ui.onAiCharacterSelect(champ)
@@ -100,7 +94,11 @@ function onReceiveGameSetting(request) {
 			.find(".rangevalue_wrapper .rangevalue")
 			.html(MATCH.setting.rangeSettings[idx].getText())
 
-		$(MATCH.setting.rangeSettingElements[idx]).children(".settingvalue").children(".rangeup").attr("disabled", false).css("color", "white")
+		$(MATCH.setting.rangeSettingElements[idx])
+			.children(".settingvalue")
+			.children(".rangeup")
+			.attr("disabled", false)
+			.css("color", "white")
 	})
 
 	$(".setting_category .rangeup").click(function () {
@@ -115,10 +113,14 @@ function onReceiveGameSetting(request) {
 			.find(".rangevalue_wrapper .rangevalue")
 			.html(MATCH.setting.rangeSettings[idx].getText())
 
-		$(MATCH.setting.rangeSettingElements[idx]).children(".settingvalue").children(".rangedown").attr("disabled", false).css("color", "white")
+		$(MATCH.setting.rangeSettingElements[idx])
+			.children(".settingvalue")
+			.children(".rangedown")
+			.attr("disabled", false)
+			.css("color", "white")
 	})
 	$(".toggleallstat").click(function () {
-		if ($(this).prop("checked") == true) {
+		if ($(this).prop("checked")) {
 			for (let set of MATCH.setting.toggleSettings) {
 				if (set.type == SettingType.STAT) set.state = true
 			}
@@ -135,8 +137,7 @@ function onReceiveRoomList(roomlist) {
 	// let roomList = request.responseText
 	roomlist = roomlist.split("||")
 	console.log(roomlist)
-	if (roomlist[0]==="") {
-		
+	if (roomlist[0] === "") {
 	} else {
 		let text = ""
 		for (let r of roomlist) {
@@ -146,14 +147,16 @@ function onReceiveRoomList(roomlist) {
 		}
 		$("#roombtn").append(text)
 		$(".room").click(function () {
-			ServerConnection.register($(this).html())
-			$("#room").hide()
-			$("#rname").html("Room name: " + $(this).html())
+			joinRoom($(this).html())
 		})
 	}
 }
 
-
+function joinRoom(roomname) {
+	ServerConnection.register(roomname)
+	$("#room").hide()
+	$("#rname").html("Room name: " + roomname)
+}
 
 class ProtoPlayer {
 	constructor(turn) {
@@ -162,20 +165,20 @@ class ProtoPlayer {
 		this.team = true
 		this.champ = -1
 		this.ready = false
-		this.userClass=0
+		this.userClass = 0
 	}
 }
 
 class MatchStatus {
 	constructor() {
-		let param=new URLSearchParams(window.location.search)
-		if(param.has('gametype'))
-			this.gametype= param.get('gametype')
-		else
-			this.gametype='rpg'
-		console.log(this.gametype)
+		let param = new URLSearchParams(window.location.search)
+		if (param.has("gametype")) {
+			if (param.get("gametype") === "marble") this.gametype = param.get("gametype")
+			else this.gametype = "rpg"
+		} else this.gametype = "rpg"
+
 		this.playerlist = this.makePlayerList()
-		this.ui = new MatchInterface(this,this.gametype)
+		this.ui = new MatchInterface(this, this.gametype)
 		this.teamSelector = new TeamSelector(this)
 		this.map = 0
 		this.myturn = -1
@@ -191,7 +194,6 @@ class MatchStatus {
 		MatchStatus._instance = this
 	}
 
-
 	makePlayerList() {
 		let p = []
 		for (let i = 0; i < 4; ++i) {
@@ -203,19 +205,16 @@ class MatchStatus {
 	}
 
 	setAsHost(roomname) {
-
-		
-
 		this.playerlist[0].name = sessionStorage.nickName
 		this.myturn = 0
 		let request = new XMLHttpRequest()
-		request.open("GET", ip + "/resource/gamesetting")
+		request.open("GET", "/resource/gamesetting")
 
 		request.onload = () => onReceiveGameSetting(request)
 		request.send()
 
 		let request2 = new XMLHttpRequest()
-		request2.open("GET", ip + "/resource/globalsetting")
+		request2.open("GET", "/resource/globalsetting")
 
 		request2.onload = () => onReceiveCharacters(request2)
 		request2.send()
@@ -235,36 +234,25 @@ class MatchStatus {
 		// }
 	}
 
-	setAsGuest(roomlist) {
+	setAsGuest() {
 		// let request = new XMLHttpRequest()
 		// request.open("GET", ip + "/room/")
 
-		// request.onload = () => 
+		// request.onload = () =>
 		// request.send()
-		console.log(roomlist)
-		onReceiveRoomList(roomlist)
+		// console.log(roomlist)
+		// onReceiveRoomList(roomlist)
 		let request2 = new XMLHttpRequest()
-		request2.open("GET", ip + "/resource/globalsetting")
+		request2.open("GET", "/resource/globalsetting")
 
 		request2.onload = () => onReceiveCharacters(request2)
 		request2.send()
 
 		this.ui.setAsGuest()
 		this.teamSelector.setAsGuest()
-
-		window.onbeforeunload =  () =>{
-			
-			this.setType("none", this.myturn)
-			this.quitted = true
-			ServerConnection.guestQuit()
-			return true
-		}
 	}
 
 	onJoinRoom(r) {
-
-		
-
 		sessionStorage.roomName = r
 		$("#renew").hide()
 		$("#roombtn").hide()
@@ -289,7 +277,7 @@ class MatchStatus {
 		$("#Hostingpage").css("visibility", "visible")
 		$("#readybtn").show()
 		$(".mapbtn").attr("disabled", true)
-	//	sessionStorage.turn = turn
+		//	sessionStorage.turn = turn
 
 		this.updatePlayerList(playerlist)
 		this.setMyTurn(turn)
@@ -320,7 +308,7 @@ class MatchStatus {
 		}
 		console.log("myturn" + turn)
 
-	//	sessionStorage.turn = this.myturn
+		//	sessionStorage.turn = this.myturn
 		// card[turn] = PlayerType.PLAYER_CONNECTED
 	}
 
@@ -343,7 +331,6 @@ class MatchStatus {
 	 * @param {*} turnchange
 	 */
 	updatePlayerList(players) {
-		
 		if (this.quitted) {
 			//window.onbeforeunload = () => {}
 			window.location.href = "index.html"
@@ -378,7 +365,7 @@ class MatchStatus {
 			$(this.ui.playercard[i]).addClass("hidden")
 			$(this.ui.addai[i]).addClass("hidden")
 			this.ui.updateOneCharacter(i, this.playerlist[i].champ)
-		//	console.log(this.playerlist[i].type)
+			//	console.log(this.playerlist[i].type)
 			switch (this.playerlist[i].type) {
 				case PlayerType.SIM_AI:
 					$(this.ui.playercard[i]).removeClass("hidden")
@@ -387,10 +374,9 @@ class MatchStatus {
 					$(this.ui.playercard[i]).removeClass("hidden")
 					console.log(this.playerlist[i].name)
 					$(this.ui.playercard[i]).find(".iname").html(this.playerlist[i].name)
-					if(this.playerlist[i].userClass === 1){
+					if (this.playerlist[i].userClass === 1) {
 						$(this.ui.playercard[i]).addClass("logined")
-					}
-					else{
+					} else {
 						$(this.ui.playercard[i]).removeClass("logined")
 					}
 
@@ -405,7 +391,7 @@ class MatchStatus {
 					$(this.ui.aicard[i]).removeClass("hidden")
 					break
 				case PlayerType.NONE:
-					if (this.myturn===0) {
+					if (this.myturn === 0) {
 						$(this.ui.addai[i]).removeClass("hidden")
 					}
 					break
@@ -446,17 +432,17 @@ class MatchStatus {
 		} else if (!this.checkReady()) {
 			return
 		} else {
-
 			window.onbeforeunload = function () {}
-			if(this.gametype==="rpg"){
-
-				ServerConnection.finalSubmit(this.setting.getSummary(),this.gametype)
-			}
-			else if(this.gametype==="marble"){
-				ServerConnection.finalSubmit({
-					randomCount:Number($("#marble-item-random-count").val()),
-					items:this.ui.marbleItemState
-				},this.gametype)
+			if (this.gametype === "rpg") {
+				ServerConnection.finalSubmit(this.setting.getSummary(), this.gametype)
+			} else if (this.gametype === "marble") {
+				ServerConnection.finalSubmit(
+					{
+						randomCount: Number($("#marble-item-random-count").val()),
+						items: this.ui.marbleItemState,
+					},
+					this.gametype
+				)
 			}
 			// ServerConnection.finalSubmit(this.setting.getSummary(),this.gametype)
 		}
@@ -479,10 +465,10 @@ class MatchStatus {
 }
 
 class MatchInterface {
-	constructor(match,gametype) {
+	constructor(match, gametype) {
 		this.match = match
-		this.gametype=gametype
-		if(this.gametype==='marble') this.setAsMarble()
+		this.gametype = gametype
+		if (this.gametype === "marble") this.setAsMarble()
 		else $("#marble-item").hide()
 		this.switch_player = $(".toplayer").toArray()
 		this.switch_ai = $(".toai").toArray()
@@ -498,15 +484,23 @@ class MatchInterface {
 		this.aiCharacterListOwner = 0
 		this.aiCharacterListShown = false
 
-		this.marbleItemState=[]
-		this.marbleItemPresets=[]
+		this.marbleItemState = []
+		this.marbleItemPresets = []
 		if (MatchInterface._instance) {
 			return MatchInterface._instance
 		}
 		MatchInterface._instance = this
 	}
+	revealContent() {
+		$("#Hostingpage.pending").css("visibility", "visible")
 
-	setAsMarble(){
+		$("#individual").attr("disabled", false)
+		$("#individual").removeClass("disabled")
+
+		$("#connection").html("")
+	}
+
+	setAsMarble() {
 		$(".mapbtn").hide()
 		$(".mapbtn-marble").show()
 		$("#setting").hide()
@@ -515,24 +509,26 @@ class MatchInterface {
 			ServerConnection.setMap(MATCH.map)
 		})
 		$("#marble-item").show()
-		fetch("/resource/marble_items").then((response) =>{
-			response.json().then((result)=>{
-				let str=""
-				for(const item of result){
+		fetch("/resource/marble_items").then((response) => {
+			response.json().then((result) => {
+				let str = ""
+				for (const item of result) {
 					this.marbleItemState.push({
-						selected:false,locked:false,code:item.code
+						selected: false,
+						locked: false,
+						code: item.code,
 					})
-					let level="common"
-					if(item.cost>1) level="rare"
-					if(item.cost>3) level="epic"
-					if(item.cost>=5) level="legendary"
-					if(item.cost>7) level="ancient"
+					let level = "common"
+					if (item.cost > 1) level = "rare"
+					if (item.cost > 3) level = "epic"
+					if (item.cost >= 5) level = "legendary"
+					if (item.cost > 7) level = "ancient"
 
-					str+=`
+					str += `
 					<div id="marble-item-${item.code}" class="marble-item ${level}" data-cost=${item.cost} data-code=${item.code}>
 						<div>
 							<div class="marble-item-header">
-								<div class='marble-item-name ${item.name.length>7?"small":""}'>${item.name}</div>
+								<div class='marble-item-name ${item.name.length > 7 ? "small" : ""}'>${item.name}</div>
 								<div class="marble-item-status">
 									<img src="res/img/ui/confirm.png" class="marble-item-select">
 									<img src="res/img/ui/lock.png" class="marble-item-lock">
@@ -546,107 +542,104 @@ class MatchInterface {
 				}
 				$("#marble-item-page-content").html(str)
 
-				$(".marble-item").click(function(){
-					let code=$(this).data("code")
-					let state=MATCH.ui.marbleItemState[code]
-					if(!state.selected && !state.locked){
-						MATCH.ui.setMarbleItemStatus(code,1)
-					}
-					else if(state.selected && !state.locked){
-						MATCH.ui.setMarbleItemStatus(code,2)
-					}
-					else{
-						MATCH.ui.setMarbleItemStatus(code,0)
+				$(".marble-item").click(function () {
+					let code = $(this).data("code")
+					let state = MATCH.ui.marbleItemState[code]
+					if (!state.selected && !state.locked) {
+						MATCH.ui.setMarbleItemStatus(code, 1)
+					} else if (state.selected && !state.locked) {
+						MATCH.ui.setMarbleItemStatus(code, 2)
+					} else {
+						MATCH.ui.setMarbleItemStatus(code, 0)
 					}
 				})
+			})
+		})
 
-			})});
+		fetch("/resource/marble_item_presets").then((response) => {
+			response.json().then((result) => {
+				let str = ""
+				console.log(result)
+				for (const [i, preset] of result.entries()) {
+					let locked = preset.items.reduce((prev, curr) => (curr === 2 ? prev + 1 : prev))
+					let selected = preset.items.reduce((prev, curr) => (curr === 1 ? prev + 1 : prev))
 
-			fetch("/resource/marble_item_presets").then(response=>{
-				response.json().then(result=>{
-					let str=""
-					console.log(result)
-					for(const [i,preset] of result.entries())
-					{
-						let locked=preset.items.reduce((prev,curr)=>curr===2?prev+1:prev)
-						let selected=preset.items.reduce((prev,curr)=>curr===1?prev+1:prev)
+					this.marbleItemPresets.push(preset)
+					str += `<option value="${i}">${preset.name}[고정:${locked},선택:${preset.randomCount}/${selected}]</option>`
+				}
+				$("#marble-item-preset").append(str)
+				$("#marble-item-preset").change(function () {
+					let index = $(this).val()
 
-						this.marbleItemPresets.push(preset)
-						str+=`<option value="${i}">${preset.name}[고정:${locked},선택:${preset.randomCount}/${selected}]</option>`
-					}
-					$("#marble-item-preset").append(str)
-					$("#marble-item-preset").change(function(){
-						let index=$(this).val()
-						
-						MATCH.ui.onPresetChange(index)
-					})
+					MATCH.ui.onPresetChange(index)
 				})
 			})
+		})
 
-			$("#save-preset").click(()=>{
-				this.saveMarbleItemPreset()
-			})
+		$("#save-preset").click(() => {
+			this.saveMarbleItemPreset()
+		})
 	}
 
-	saveMarbleItemPreset(){
-		let name=$("#save-preset-name").val()
-		if(!name || name==="") return
-		let items=[]
-		let randcount=Number($("#marble-item-random-count").val())
+	saveMarbleItemPreset() {
+		let name = $("#save-preset-name").val()
+		if (!name || name === "") return
+		let items = []
+		let randcount = Number($("#marble-item-random-count").val())
 
-		if(this.marbleItemPresets.some((preset)=>preset.name===name)){
+		if (this.marbleItemPresets.some((preset) => preset.name === name)) {
 			alert("프리셋 이름 중복!")
 			return
 		}
 
-		for(const item of this.marbleItemState){
-			if(item.selected) items.push(1)
-			else if(item.locked) items.push(2)
+		for (const item of this.marbleItemState) {
+			if (item.selected) items.push(1)
+			else if (item.locked) items.push(2)
 			else items.push(0)
 		}
 		console.log(items)
 
 		$.ajax({
-			method: 'POST',
-			url: '/resource/marble_item_presets',
-			data:{
-				name:name,items:items,randcount:randcount
-			}
+			method: "POST",
+			url: "/resource/marble_item_presets",
+			data: {
+				name: name,
+				items: items,
+				randcount: randcount,
+			},
 		})
 	}
-	onPresetChange(idx){
-		if(idx==="empty")
-		{
-			for(let i=0;i<this.marbleItemState.length;++i){
-				this.setMarbleItemStatus(i,0)
+	onPresetChange(idx) {
+		if (idx === "empty") {
+			for (let i = 0; i < this.marbleItemState.length; ++i) {
+				this.setMarbleItemStatus(i, 0)
 			}
 			return
 		}
-		let count=this.marbleItemPresets[idx].randomCount
+		let count = this.marbleItemPresets[idx].randomCount
 		$("#marble-item-random-count").val(count)
-		for(const [i,itemstatus] of this.marbleItemPresets[idx].items.entries()){
-			this.setMarbleItemStatus(i,itemstatus)
+		for (const [i, itemstatus] of this.marbleItemPresets[idx].items.entries()) {
+			this.setMarbleItemStatus(i, itemstatus)
 		}
 	}
 	/**
-	 * 
+	 *
 	 * @param {*} status 0:none, 1:selected, 2:locked
 	 */
-	setMarbleItemStatus(itemcode,status){
-		let state=this.marbleItemState[itemcode]
-		let elem=$("#marble-item-"+itemcode)
-		state.selected=false
-		state.locked=false
-		$("#marble-item-"+itemcode).removeClass("selected")
-		$("#marble-item-"+itemcode).removeClass("locked")
+	setMarbleItemStatus(itemcode, status) {
+		let state = this.marbleItemState[itemcode]
+		let elem = $("#marble-item-" + itemcode)
+		state.selected = false
+		state.locked = false
+		$("#marble-item-" + itemcode).removeClass("selected")
+		$("#marble-item-" + itemcode).removeClass("locked")
 
-		if(status===1){
-			state.selected=true
-			$("#marble-item-"+itemcode).addClass("selected")
-		}
-		else if(status===2){
-			$("#marble-item-"+itemcode).addClass("locked")
-			state.locked=true
+		if (status === 1) {
+			state.selected = true
+			$("#marble-item-" + itemcode).addClass("selected")
+		} else if (status === 2) {
+			$("#marble-item-" + itemcode).addClass("locked")
+			state.locked = true
 		}
 	}
 	setAsHost(roomname) {
@@ -682,10 +675,7 @@ class MatchInterface {
 
 	showAiCharacterList(turn, pos) {
 		console.log(pos)
-		$(".champmenu")
-		.css(pos)
-			.css({visibility: "visible" })
-			.show()
+		$(".champmenu").css(pos).css({ visibility: "visible" }).show()
 		this.aiCharacterListOwner = turn
 		let _this = this
 		setTimeout(() => (_this.aiCharacterListShown = true), 100)
@@ -709,7 +699,8 @@ class MatchInterface {
 
 	updateOneCharacter(turn, champ) {
 		console.log(turn, champ)
-		let src = champ < 0 ? "res/img/ui/random.png" : "res/img/character/illust/" + this.match.characterSetting[champ].illustdir
+		let src =
+			champ < 0 ? "res/img/ui/random.png" : "res/img/character/illust/" + this.match.characterSetting[champ].illustdir
 
 		$(this.aichamp[turn]).attr("src", src)
 		$(this.playerchamp[turn]).attr("src", src)
@@ -749,7 +740,7 @@ class TeamSelector {
 	}
 	hideTeamPage() {
 		$("#TeamSelectpage").hide()
-	//	$(this.names[this.match.myturn]).addClass("teamselection_me")
+		//	$(this.names[this.match.myturn]).addClass("teamselection_me")
 
 		//	window.onbeforeunload = function () {}
 		$("#Hostingpage").show()
@@ -760,7 +751,7 @@ class TeamSelector {
 			return false
 		}
 
-		if (this.match.myturn!==0 && this.match.playerlist[i].type === "ai") {
+		if (this.match.myturn !== 0 && this.match.playerlist[i].type === "ai") {
 			alert(chooseLang("Only a host can change computer`s team", "방장만 컴퓨터의 팀을 바꿀 수 있습니다"))
 
 			return false
@@ -791,7 +782,7 @@ class TeamSelector {
 				"src",
 				c < 0 ? RANDOM_CHAR_DIR : "res/img/character/illust/" + this.match.characterSetting[c].illustdir
 			)
-			
+
 			$(this.names[i]).html(playernames[i].name)
 		}
 	}
@@ -818,88 +809,74 @@ class TeamSelector {
 				alert("You must divide teams!!")
 			} else {
 				console.log(this.match.gametype)
-				if(this.match.gametype==="rpg"){
-
-					ServerConnection.finalSubmit(this.match.setting.getSummary(),this.match.gametype)
+				if (this.match.gametype === "rpg") {
+					ServerConnection.finalSubmit(this.match.setting.getSummary(), this.match.gametype)
+				} else if (this.match.gametype === "marble") {
+					ServerConnection.finalSubmit(
+						{
+							randomCount: Number($("#marble-item-random-count").val()),
+							items: this.match.marbleItemState,
+						},
+						this.match.gametype
+					)
 				}
-				else if(this.match.gametype==="marble"){
-					ServerConnection.finalSubmit({
-						randomCount:Number($("#marble-item-random-count").val()),
-						items:this.match.marbleItemState
-					},this.match.gametype)
-				}
-					
 			}
 		}
 	}
 }
+function auth() {
+	$.ajax({
+		method: "POST",
+		url: "/room/matching",
+		data: {},
+	})
+		.done(function (data, statusText, xhr) {
+			let status = xhr.status
+			console.log(status)
+
+			if (status === 200) {
+				MATCH.setAsHost(data)
+			}
+
+			connectSocket()
+		})
+		.fail(function (data, statusText, xhr) {
+			if (data.status == 307) {
+				alert(chooseLang("You are already in a game", "이미 게임에 참가 중입니다"))
+				window.location.href = "index.html"
+				return
+			}
+			if (data.status === 401) {
+				alert(chooseLang("unauthorized", "잘못된 접근입니다"))
+				window.location.href = "index.html"
+			}
+
+			// if (data.status === 404) {
+			// 	alert(chooseLang("There are no rooms to enter", "입장 가능한 방이 없습니다"))
+			// 	window.location.href = "index.html"
+			// }
+		})
+}
 
 $(document).ready(function () {
-	if(!sessionStorage.language){
-		sessionStorage.language='eng'
+	if (!sessionStorage.language) {
+		sessionStorage.language = "eng"
 	}
 
-	$("#toggle_fullscreen").click(()=>{
+	$("#toggle_fullscreen").click(() => {
 		console.log($(this).data("on"))
-		if(!$(this).data("on")){
-		  
-		  document.documentElement.requestFullscreen()
-		  $(this).data("on",true)
+		if (!$(this).data("on")) {
+			document.documentElement.requestFullscreen()
+			$(this).data("on", true)
+		} else {
+			document.exitFullscreen()
+			$(this).data("on", false)
 		}
-		else {
-		  document.exitFullscreen()
-		  $(this).data("on",false)
-		}
-	  })
+	})
 
 	MATCH = new MatchStatus()
-
-
-	$.ajax({
-        method: 'POST',
-        url: '/room/matching',
-		data:{}
-    })
-    .done(function(data, statusText, xhr){
-		let status = xhr.status;
-		console.log(status)
-		
-		if(status==307){
-			alert(chooseLang("You are already in a game","이미 게임에 참가 중입니다"))
-        	window.location.href="index.html"
-			return
-		}
-		if(status===201){
-			MATCH.setAsHost(data)
-		}
-		else if(status===200){
-			MATCH.setAsGuest(data)
-		}
-
-		connectSocket()
-
-    })
-    .fail(function(data, statusText, xhr){
-		console.log(data)
-		console.log(xhr)
-		console.log(statusText)
-
-		if(data.status===401){
-			alert(chooseLang("unauthorized","잘못된 접근입니다"))
-        	window.location.href="index.html"
-		}
-
-		if(data.status===404){
-			alert(chooseLang("There are no rooms to enter", "입장 가능한 방이 없습니다"))
-			window.location.href = "index.html"
-		}
-      
-    })
-
-
+	auth()
 	$("#TeamSelectpage").hide()
-
-	
 
 	// console.log(sessionStorage.host)
 	// if (!socket_connected) {
@@ -907,11 +884,11 @@ $(document).ready(function () {
 	// }
 
 	// if (sessionStorage.host === "true") {
-		
+
 	// }
 
 	// if (sessionStorage.host === "false") {
-		
+
 	// }
 
 	// if (sessionStorage.host === "simulation") {
@@ -927,9 +904,9 @@ $(document).ready(function () {
 		// 	method: 'POST',
 		// 	url: '/reset_game'
 		// })
-		
+
 		// // ServerConnection.resetGame()
-		 window.location.href = "index.html"
+		window.location.href = "index.html"
 	})
 	$("#readybtn").click(function () {
 		if (MATCH.ready) {
@@ -986,13 +963,12 @@ $(document).ready(function () {
 		}
 	})
 
-	$(".aichamp")
-		.click(function () {
-			if($(this).hasClass("disabled")) return
-			let turn = Number($(this).attr("value"))
-			let pos = $(this).offset()
-			MATCH.ui.showAiCharacterList(turn, pos)
-		})
+	$(".aichamp").click(function () {
+		if ($(this).hasClass("disabled")) return
+		let turn = Number($(this).attr("value"))
+		let pos = $(this).offset()
+		MATCH.ui.showAiCharacterList(turn, pos)
+	})
 
 	$(document).click(function () {
 		MATCH.ui.hideAiCharacterList()
@@ -1065,9 +1041,8 @@ $(document).ready(function () {
 		$("#TeamSelectpage").hide()
 		$("#Hostingpage").show()
 	})
-	$("#marble-item-page").hide()	
+	$("#marble-item-page").hide()
 	// $("#marble-item").hide()
-
 
 	$("#marble-item-close").click(function () {
 		$("#marble-item-page").hide()
@@ -1076,9 +1051,13 @@ $(document).ready(function () {
 	$("#marble-item").click(function () {
 		$("#marble-item-page").show()
 	})
+	// window.onbeforeunload = function () {
+	// 	// this.setType("none", this.myturn)
+	// 	// this.quitted = true
+	// 	// ServerConnection.guestQuit()
 
-	
-
+	// 	return ""
+	// }
 })
 
 // 게스트 표시(방장만)
