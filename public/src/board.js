@@ -3,7 +3,7 @@ const PLAYER_POS_DIFF = [
 	[8, 9],
 	[-17, 2],
 	[6, -5],
-	[-12, -9]
+	[-12, -9],
 ] //플레이어별 위치 차이
 let BOARD_MARGIN = 200
 const FRAME = 30 //milisecond
@@ -13,18 +13,15 @@ export const COLOR_LIST_BG = ["#a6c8ff", "#ff7070", "#95ff80", "#fdff80"] //플�
 
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
-
-
-export class Board{
-
-	constructor(game){
-		this.game=game
+export class Board {
+	constructor(game) {
+		this.game = game
 		this.canvas = null
 		this.zoomScale = 1 //줌 얼마나 했는지
 		this.tiles = [] //모든타일 저장
 		this.shadow = null //화면어둡게할때 사용
 		this.arrow = null //현재 턴 플레이어 표시
-		this.pin=null//플레이어 도착위치 표시
+		this.pin = null //플레이어 도착위치 표시
 		this.possiblePosList = []
 		this.possiblePosTexts = []
 		this.tile_shadows = null
@@ -40,69 +37,73 @@ export class Board{
 		this.Map
 		this.mapname
 		this.coordinates
-		this.players=[]
+		this.players = []
 		this.board_drawn = false
 		//singleton
 		if (Board._instance) {
 			return Board._instance
 		}
 		Board._instance = this
-		this.shouldRender=false
-		this.gameSpeed=1
+		this.shouldRender = false
+		this.gameSpeed = 1
+		this.frame = FRAME
 	}
 	startRenderInterval() {
 		this.renderInterval = setInterval(
 			function () {
 				// this.canRender = true
-				if(this.shouldRender){
+				if (this.shouldRender) {
 					this.canvas.renderAll()
-					this.shouldRender=false
+					this.shouldRender = false
 				}
 			}.bind(this),
-			FRAME
+			this.frame
 		)
 	}
-
 
 	//===========================================================================================================================
 	clearRenderInterval() {
 		clearInterval(this.renderInterval)
 	}
+	changeFPS(fps) {
+		this.frame = 1000 / fps
+		this.clearRenderInterval()
+		this.startRenderInterval()
+	}
 	//===========================================================================================================================
-	getMoveSpeed(type){
-		let speed=500
-		switch(type){
+	getMoveSpeed(type) {
+		let speed = 500
+		switch (type) {
 			case "step":
-				speed=100
+				speed = 100
 				break
 			case "tp_simple":
-				speed=500
+				speed = 500
 				break
 			case "tp_levitate":
-				speed=300
+				speed = 300
 				break
 			case "tp_levitate_hide":
-				speed=150
+				speed = 150
 				break
 			case "indicator":
-				speed=2000
+				speed = 2000
 				break
 			case "entity_move":
-				speed=500
+				speed = 500
 				break
 		}
 
-
 		return this.modifyMoveSpeed(speed)
 	}
-	modifyMoveSpeed(val){
-		return Math.floor(val/Math.min(4,this.gameSpeed))
+	modifyMoveSpeed(val) {
+		return Math.floor(val / Math.min(4, this.gameSpeed))
 	}
 	forceRender() {
 		this.canvas.renderAll()
 	}
 	render() {
-		this.shouldRender=true
+		this.shouldRender = true
 		return
 		//	this.canvas.renderAll.bind(this.canvas)
 		if (this.canRender) {
@@ -211,15 +212,14 @@ export class Board{
 		// $("#canvas-container").stop()
 		let pos = this.getPlayerPos(turn)
 		let rect = document.getElementById("boardwrapper").getBoundingClientRect()
-	//	//console.log(pos.x * this.zoomScale, pos.y * this.zoomScale)
+		//	//console.log(pos.x * this.zoomScale, pos.y * this.zoomScale)
 		// rect = document.getElementById("canvas-container").getBoundingClientRect()
 		// //console.log(rect)
 
-		let x = rect.left + pos.x * this.boardScale * this.zoomScale  - window.innerWidth / 2//+ ( )// - this.game.ui.winwidth/2)
+		let x = rect.left + pos.x * this.boardScale * this.zoomScale - window.innerWidth / 2 //+ ( )// - this.game.ui.winwidth/2)
 		let y = rect.top + pos.y * this.boardScale * this.zoomScale - window.innerHeight / 2
 
-		if(this.game.ui!=null)
-			this.game.ui.elements.board_container.scrollBy(x, y)
+		if (this.game.ui != null) this.game.ui.elements.board_container.scrollBy(x, y)
 		//		 this.game.ui.elements.board_container.scrollBy((pos.x* this.zoomScale-this.game.ui.winwidth/2), 0)
 
 		// //console.log("moveboard x" + Math.floor(this.game.ui.elements.board_container.scrollLeft)
@@ -235,14 +235,13 @@ export class Board{
 			lockScalingY: true,
 			lockRotation: true,
 			originX: "center",
-			originY: "center"
+			originY: "center",
 		})
 	}
 	//===========================================================================================================================
 
-	
-	setEffectImageAttr(elem, posX,posY, scaleX, scaleY, opacity, angle) {
-		if(!elem) return
+	setEffectImageAttr(elem, posX, posY, scaleX, scaleY, opacity, angle) {
+		if (!elem) return
 		elem
 			.set({
 				opacity: opacity,
@@ -250,98 +249,94 @@ export class Board{
 				top: posY,
 				scaleX: scaleX,
 				scaleY: scaleY,
-				angle: angle
+				angle: angle,
 			})
 			.bringToFront()
 	}
 	removeImage(elem) {
-		if(!elem) return
+		if (!elem) return
 		this.canvas.remove(elem)
 	}
 	removeImageAfter(elem, ms) {
-		if(!elem) return
+		if (!elem) return
 
 		setTimeout(() => {
 			this.removeImage(elem)
 		}, ms)
 	}
-	extrapolate(start,end,scale)
-	{
-		return start + (end-start) * scale
+	extrapolate(start, end, scale) {
+		return start + (end - start) * scale
 	}
 	animateOpacity(elem, opacity, duration) {
-		if(!elem) return
+		if (!elem) return
 		elem.animate("opacity", opacity, {
 			onChange: this.render.bind(this),
 			duration: duration,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
 	animateScaleY(elem, scaleY, duration) {
-		if(!elem) return
+		if (!elem) return
 		elem.animate("scaleY", scaleY, {
 			onChange: this.render.bind(this),
 			duration: duration,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
 	animateScaleX(elem, scaleX, duration) {
-		if(!elem) return
+		if (!elem) return
 		elem.animate("scaleX", scaleX, {
 			onChange: this.render.bind(this),
 			duration: duration,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
 	animateAngle(elem, angle, duration) {
-		if(!elem) return
+		if (!elem) return
 		elem.animate("angle", angle, {
 			onChange: this.render.bind(this),
 			duration: duration,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
-	animateX(elem, x, duration,linearEasing) 
-	{
-		if(!linearEasing)
-			elem.animate("left",x, {
+	animateX(elem, x, duration, linearEasing) {
+		if (!linearEasing)
+			elem.animate("left", x, {
 				onChange: this.render.bind(this),
 				duration: duration,
-				easing: fabric.util.ease.easeInCubic
+				easing: fabric.util.ease.easeInCubic,
 			})
 		else
-			elem.animate("left",x, {
+			elem.animate("left", x, {
 				onChange: this.render.bind(this),
 				duration: duration,
 			})
 	}
-	animateY(elem, y, duration,linearEasing) {
-		if(!linearEasing)
+	animateY(elem, y, duration, linearEasing) {
+		if (!linearEasing)
 			elem.animate("top", y, {
 				onChange: this.render.bind(this),
 				duration: duration,
-				easing: fabric.util.ease.easeInCubic
+				easing: fabric.util.ease.easeInCubic,
 			})
 		else
 			elem.animate("top", y, {
 				onChange: this.render.bind(this),
-				duration: duration
+				duration: duration,
 			})
-		
 	}
-	animateXEaseOut(elem, x, duration) 
-	{
-		elem.animate("left",x, {
+	animateXEaseOut(elem, x, duration) {
+		elem.animate("left", x, {
 			onChange: this.render.bind(this),
 			duration: duration,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
 	animateYEaseOut(elem, y, duration) {
 		elem.animate("top", y, {
 			onChange: this.render.bind(this),
 			duration: duration,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
 	lockFabricObjectNoOrigin(obj) {
@@ -352,42 +347,42 @@ export class Board{
 			hasBorders: false,
 			lockScalingX: true,
 			lockScalingY: true,
-			lockRotation: true
+			lockRotation: true,
 		})
 	}
 	getPlayerPos(target) {
 		return {
 			x: this.players[target].playerimg.get("left"),
-			y: this.players[target].playerimg.get("top")
+			y: this.players[target].playerimg.get("top"),
 		}
 	} //===========================================================================================================================
 
 	getTilePos(tile) {
 		return {
 			x: this.getCoord(tile).x + BOARD_MARGIN,
-			y: this.getCoord(tile).y + BOARD_MARGIN
+			y: this.getCoord(tile).y + BOARD_MARGIN,
 		}
 	}
-	setMap(map){
+	setMap(map) {
 		this.Map = map
 		this.mapname = this.Map.mapname
 		//console.log(this.Map)
 	}
-	setMapCoordinates(coord){
-		this.coordinates=coord
+	setMapCoordinates(coord) {
+		this.coordinates = coord
 	}
 
-	setToMarble(){
-		BOARD_MARGIN=0
+	setToMarble() {
+		BOARD_MARGIN = 0
 	}
 
-	getCoord(i){
-		if(!this.coordinates) return this.Map.coordinates[i]
+	getCoord(i) {
+		if (!this.coordinates) return this.Map.coordinates[i]
 
 		return this.coordinates[i]
 	}
-	mapLength(){
-		if(this.Map.coordinates!=null) return this.Map.coordinates.length
+	mapLength() {
+		if (this.Map.coordinates != null) return this.Map.coordinates.length
 
 		return this.coordinates.length
 	}
@@ -399,7 +394,7 @@ export class Board{
 			height: 55,
 			objectCaching: false,
 			top: this.getCoord(i).y + BOARD_MARGIN + TILE_SHADOW_THICKNESS_BOTTOM,
-			left: this.getCoord(i).x + BOARD_MARGIN + TILE_SHADOW_THICKNESS_RIGHT
+			left: this.getCoord(i).x + BOARD_MARGIN + TILE_SHADOW_THICKNESS_RIGHT,
 		})
 	}
 	tileShadowLarge(i) {
@@ -409,32 +404,26 @@ export class Board{
 			width: 110,
 			height: 110,
 			objectCaching: false,
-			top: this.getCoord(i).y + BOARD_MARGIN + TILE_SHADOW_THICKNESS_BOTTOM *2,
-			left: this.getCoord(i).x + BOARD_MARGIN + TILE_SHADOW_THICKNESS_RIGHT*2
+			top: this.getCoord(i).y + BOARD_MARGIN + TILE_SHADOW_THICKNESS_BOTTOM * 2,
+			left: this.getCoord(i).x + BOARD_MARGIN + TILE_SHADOW_THICKNESS_RIGHT * 2,
 		})
 	}
-	drawBoard(resolve)
-	{
+	drawBoard(resolve) {
 		this.canvas = new fabric.Canvas("board", { renderOnAddRemove: false })
 		this.canvas.preserveObjectStacking = true
 
 		this.canvas.selection = false
 
-
 		let boardimg
 		if (this.mapname === "ocean") {
 			boardimg = document.getElementById("ocean_boardimg")
-		}
-		else if (this.mapname === "casino") {
+		} else if (this.mapname === "casino") {
 			boardimg = document.getElementById("casino_boardimg")
-		}
-		else if(this.mapname==='marble_godhand' || this.mapname==='marble_world'){
+		} else if (this.mapname === "marble_godhand" || this.mapname === "marble_world") {
 			boardimg = document.getElementById("marble_boardimg")
-		}
-		else if (this.mapname === "rapid") {
+		} else if (this.mapname === "rapid") {
 			boardimg = document.getElementById("rapid_boardimg")
-		}
-		else{
+		} else {
 			boardimg = document.getElementById("boardimg")
 		}
 
@@ -450,17 +439,17 @@ export class Board{
 				lockScalingY: true,
 				lockRotation: true,
 				hoverCursor: "pointer",
-				objectCaching: false
+				objectCaching: false,
 			})
 		)
 		this.boardInnerHeight = boardimg.naturalHeight
-        this.boardInnerWidth = boardimg.naturalWidth
+		this.boardInnerWidth = boardimg.naturalWidth
 		this.setBoardScale(boardimg)
 		this.drawTiles()
-		
+
 		this.showObjects()
 	}
-	showObjects(){
+	showObjects() {
 		//화살표 =============================================================================
 		let arrow = new fabric.Image(document.getElementById("arrow"), {
 			evented: false,
@@ -469,7 +458,7 @@ export class Board{
 			top: 0,
 			scaleX: 0.5,
 			scaleY: 0.5,
-			objectCaching: false
+			objectCaching: false,
 		})
 		this.lockFabricObject(arrow)
 		this.canvas.add(arrow)
@@ -483,7 +472,7 @@ export class Board{
 			top: 0,
 			scaleX: 0.8,
 			scaleY: 0.8,
-			objectCaching: false
+			objectCaching: false,
 		})
 		this.lockFabricObject(pin)
 		this.canvas.add(pin)
@@ -501,13 +490,13 @@ export class Board{
 				top: 0,
 				left: 0,
 				visible: false,
-				fontFamily: "Do Hyeon"
+				fontFamily: "Do Hyeon",
 			})
 			this.lockFabricObject(dicenum)
 			this.canvas.add(dicenum)
 			this.possiblePosTexts.push(dicenum)
 		}
-		
+
 		this.shadow = new fabric.Rect({
 			left: 0,
 			top: 0,
@@ -522,7 +511,7 @@ export class Board{
 			lockScalingX: true,
 			lockScalingY: true,
 			lockRotation: true,
-			opacity: 0.4
+			opacity: 0.4,
 		})
 		this.canvas.add(this.shadow)
 		// this.shadow.bringForward()
@@ -531,7 +520,7 @@ export class Board{
 		this.players[target].playerimg.set({
 			opacity: 1,
 			top: this.getCoord(pos).y + BOARD_MARGIN + PLAYER_POS_DIFF[target][1],
-			left: this.getCoord(pos).x + BOARD_MARGIN + PLAYER_POS_DIFF[target][0]
+			left: this.getCoord(pos).x + BOARD_MARGIN + PLAYER_POS_DIFF[target][0],
 		})
 		this.players[target].nametext.set("stroke", "black")
 		this.updateNameText(target)
@@ -549,13 +538,13 @@ export class Board{
 	//===========================================================================================================================
 
 	showArrow(turn) {
-		this.playersToFront() 
+		this.playersToFront()
 		let pos = this.getPlayerPos(turn)
 		//console.log(pos)
 		this.arrow.set({ top: pos.y - 70, left: pos.x, opacity: 1 }).bringToFront()
 		this.forceRender()
 	}
-	hideArrow(){
+	hideArrow() {
 		this.arrow.set({ opacity: 0 })
 		this.forceRender()
 	}
@@ -563,7 +552,7 @@ export class Board{
 		pos = this.getTilePos(pos)
 		//	//console.log(pos)
 		this.pin.set({ top: pos.y - 20, left: pos.x, opacity: 1 }).bringToFront()
-	//	this.forceRender()
+		//	this.forceRender()
 	}
 	teleportPlayer(target, pos, movetype) {
 		this.hideArrow()
@@ -578,7 +567,7 @@ export class Board{
 		}
 		setTimeout(() => {
 			this.updateNameText(target)
-		}, this.getMoveSpeed("tp_simple")*2)
+		}, this.getMoveSpeed("tp_simple") * 2)
 	}
 	//===========================================================================================================================
 
@@ -593,18 +582,18 @@ export class Board{
 		this.players[target].playerimg.animate("top", y + PLAYER_POS_DIFF[target][1], {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutBack
+			easing: fabric.util.ease.easeOutBack,
 		})
 		this.players[target].playerimg.animate("left", x + PLAYER_POS_DIFF[target][0], {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutBack
+			easing: fabric.util.ease.easeOutBack,
 		})
 	}
-	
-	moveComplete(turn){
+
+	moveComplete(turn) {
 		this.updateNameText(turn)
-		this.pin.set({opacity:0})
+		this.pin.set({ opacity: 0 })
 	}
 	/**
 	 *
@@ -621,19 +610,19 @@ export class Board{
 			return
 		}
 		// //console.log(pos-count)
-		let x = this.getCoord(pos-count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
-		let y = this.getCoord(pos-count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
-		const time=this.getMoveSpeed("step")
+		let x = this.getCoord(pos - count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
+		let y = this.getCoord(pos - count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
+		const time = this.getMoveSpeed("step")
 
 		this.players[turn].playerimg.animate("left", x, {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 		this.players[turn].playerimg.animate("top", y, {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 		this.onStep()
 		setTimeout(
@@ -660,20 +649,20 @@ export class Board{
 
 			return
 		}
-		const time=this.getMoveSpeed("step")
+		const time = this.getMoveSpeed("step")
 
-		let x = this.getCoord(pos+count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
-		let y = this.getCoord(pos+count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
+		let x = this.getCoord(pos + count).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
+		let y = this.getCoord(pos + count).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 
 		this.players[turn].playerimg.animate("left", x, {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 		this.players[turn].playerimg.animate("top", y, {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutCubic
+			easing: fabric.util.ease.easeOutCubic,
 		})
 		this.onStep()
 		setTimeout(
@@ -711,37 +700,36 @@ export class Board{
 
 		this.moveForward(distance, count, pos, turn)
 	}
-	hideNameText(turn){
-		
+	hideNameText(turn) {
 		this.players[turn].nametext.set("text", "")
 	}
-	async movePlayerThrough(poslist,turn,movetype,callback){
-		if(poslist.length===0) {
+	async movePlayerThrough(poslist, turn, movetype, callback) {
+		if (poslist.length === 0) {
 			this.moveComplete(turn)
 			callback(turn)
 			return
 		}
-		const time=this.getMoveSpeed("step")
-		const speed=movetype==="travel"?time*0.4:time
+		const time = this.getMoveSpeed("step")
+		const speed = movetype === "travel" ? time * 0.4 : time
 		this.arrow.set({ opacity: 0 })
 		this.arrow.bringToFront()
 		this.hideNameText(turn)
 		// this.players[turn].nametext.set("text", "")
 		this.players[turn].playerimg.bringToFront()
-		this.showPin(poslist[poslist.length-1])
-		for(const pos of poslist){
+		this.showPin(poslist[poslist.length - 1])
+		for (const pos of poslist) {
 			let x = this.getCoord(pos).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
 			let y = this.getCoord(pos).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 
 			this.players[turn].playerimg.animate("left", x, {
 				onChange: this.render.bind(this),
 				duration: speed,
-				easing: fabric.util.ease.easeOutCubic
+				easing: fabric.util.ease.easeOutCubic,
 			})
 			this.players[turn].playerimg.animate("top", y, {
 				onChange: this.render.bind(this),
 				duration: speed,
-				easing: fabric.util.ease.easeOutCubic
+				easing: fabric.util.ease.easeOutCubic,
 			})
 			this.onStep()
 			await sleep(speed)
@@ -762,7 +750,7 @@ export class Board{
 		this.players[target].playerimg.animate("top", y + PLAYER_POS_DIFF[target][1], {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeOutBounce
+			easing: fabric.util.ease.easeOutBounce,
 		})
 		// if (target === this.game.myturn) {
 		// 	setTimeout(moveBoardInstant({ x: x, y: y }, 2), time - 100)
@@ -777,7 +765,7 @@ export class Board{
 		thisimg.animate("top", 0, {
 			onChange: this.render.bind(this),
 			duration: time,
-			easing: fabric.util.ease.easeInCubic
+			easing: fabric.util.ease.easeInCubic,
 		})
 
 		setTimeout(
@@ -872,7 +860,7 @@ export class Board{
 		this.playersToFront()
 	}
 
-	tileReset(){
+	tileReset() {
 		this.canvas.discardActiveObject()
 		this.playersToFront()
 		for (let t of this.activetiles) {
@@ -884,15 +872,13 @@ export class Board{
 			})
 		}
 		this.shadow.set({ visible: false, opacity: 0.4 })
-		
 
 		this.shadow.sendToBack()
-		if(this.tile_shadows)
-			this.tile_shadows.sendToBack()
+		if (this.tile_shadows) this.tile_shadows.sendToBack()
 		this.forceRender()
 		this.activetiles = []
 	}
-	activateTile(index,onSelect){
+	activateTile(index, onSelect) {
 		this.activetiles.push(index)
 		this.tiles[index].setCoords()
 		this.tiles[index].set({ hoverCursor: "pointer", evented: true })

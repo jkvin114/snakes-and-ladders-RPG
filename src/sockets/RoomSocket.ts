@@ -15,6 +15,7 @@ module.exports=function(socket:Socket){
 			io.to(rname).emit("server:update_playerlist", room.getPlayerList())
 		})
 	})
+
 	
 	socket.on("user:host_create_room", function () {
 
@@ -46,7 +47,7 @@ module.exports=function(socket:Socket){
 				socket.join(rname)
 				let username = SocketSession.getUsername(socket)
 			
-				let turn = room.addGuestToPlayerList(username,SocketSession.getUserClass(socket))
+				let turn = room.addGuestToPlayerList(username,SocketSession.getUserClass(socket),socket)
 				SocketSession.setTurn(socket, turn)
 
 				// socket.emit("server:guest_register", turn, room.getPlayerList())
@@ -76,7 +77,7 @@ module.exports=function(socket:Socket){
 		controlRoom(socket,(room,rname)=>{
 			let username = SocketSession.getUsername(socket)
 			
-			let turn = room.addGuestToPlayerList(username,SocketSession.getUserClass(socket))
+			let turn = room.addGuestToPlayerList(username,SocketSession.getUserClass(socket),socket)
 			SocketSession.setTurn(socket, turn)
 
 			socket.emit("server:guest_register", turn, room.getPlayerList())
@@ -86,8 +87,8 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 	socket.on("user:kick_player", function (turn: number) {
 		controlRoom(socket,(room,rname)=>{
-			room.user_guestKick(SocketSession.getId(socket))
 			io.to(rname).emit("server:kick_player", turn)
+			room.removeGuest(turn)
 		})
 		
 	})
@@ -177,6 +178,7 @@ module.exports=function(socket:Socket){
 	socket.on("disconnect", function () {
 		console.log("disconnected")
 		let turn = SocketSession.getTurn(socket)
+		if(!SocketSession.getRoomName(socket)) return
 		controlRoom(socket,(room,rname)=>{
 			
 			if(!room.isGameStarted){
@@ -188,7 +190,7 @@ module.exports=function(socket:Socket){
 				}//if guest quits in the matching page
 				else{
 
-					room.deleteSession(SocketSession.getId(socket))
+					room.removeGuest(turn)
 					socket.broadcast.to(rname).emit("server:update_playerlist", room.removePlayer(turn))
 				}
 				SocketSession.removeGameSession(socket)

@@ -180,7 +180,7 @@ class WaitingDice extends GameCycleState {
 		return true
 	}
 	onCreate(): void {}
-	onUserPressDice(dicenum: number): EventResult {
+	onUserPressDice(dicenum: number): EventResult{
 		let data = this.game.rollDice(dicenum)
 		this.onDestroy()
 		return new EventResult(true, new ThrowDice(this.game, data))

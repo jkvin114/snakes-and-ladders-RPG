@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="./src/style/style_gamepage.css">
 <link rel="stylesheet" href="./src/style/style_gamepage_portrait.css">
 
+<link rel="stylesheet" href="./src/style/input.css">
 
 <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.15, user-scalable=no" />
 <!-- <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=0;"/> -->
@@ -52,7 +53,7 @@
   
 </head>
 <body>
-  <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off">
+  <!-- <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off"> -->
 
   
 <div id="replay-control">
@@ -235,7 +236,8 @@
       </div>
       
           
-    <img src='res/img/svg/info.svg' id="skillinfobtn">
+  <img src='res/img/svg/info.svg' id="skillinfobtn">
+  <img src='res/img/ui/setting.png' id="settingbtn">
   <!-- <img src="res/img/svg/chevrons-up.svg" id="nextturn" class="hidden"> -->
   <img src="res/img/ui/cancel.png" id="cancel_tileselection" class=hidden>
   <img src="res/img/ui/cancel.png" id="skillcancel" class=hidden>
@@ -320,25 +322,25 @@
   <div id="kdawindow" class='hid2den'>
     <div class=kdasection>
       <img src="res/img/character/reaper.png" class="kdaimg">
-      <a class="kdainfo">0/0/0</a>
+      <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
     </div>
     <div class="itemsection">
     </div>
     <div class=kdasection>
       <img src="res/img/character/reaper.png" class="kdaimg">
-      <a class="kdainfo">0/0/0</a>
+     <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
     </div>  
     <div class="itemsection">
     </div>
     <div class='kdasection'>
       <img src="res/img/character/reaper.png" class="kdaimg">
-      <a class="kdainfo">0/0/0</a>
+  <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
     </div>  
     <div class="itemsection">
     </div>
     <div class='kdasection'>
       <img src="res/img/character/reaper.png" class="kdaimg">
-      <a class="kdainfo">0/0/0</a>
+      <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
 
     </div>
     <div class="itemsection">
@@ -357,7 +359,105 @@
     <br>
   </div>
 </div>
+<div id="settingwindow" style="display: none;">
+  <button id="closesettingbtn">&times;</button>
+  <div id="setting-header">
+    <b  id="setting-header-text">Game Setting</b>
+  </div>
 
+  <div id="setting-content">
+    <div class="onesetting buttons">
+      <div class="dropdown-container">
+        <span class="setting-btn"><img src="res/img/svg/globe.svg"></span>
+        <ul class="dropdown">
+          <li class="dropdown-item langbtn" data-lang="eng">English</li>
+          <li class="dropdown-item langbtn" data-lang="kor">한국어</li>
+        </ul>
+      </div>
+      <span class="setting-btn settingname setting-input"  id="toggle_fullscreen" value="off">Toggle Fullscreen</span>
+      
+    </div>
+    <div class="onesetting oneline disable-on-non-playable">
+      <div class="settingname">
+        Item Auto Buy
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1">
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="onesetting oneline disable-on-non-playable">
+      <div class="settingname">
+        Indicate Active Items
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1" checked>
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="onesetting oneline disable-on-non-playable">
+      <div class="settingname">
+        Indicate Obstacles
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1" checked>
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="onesetting oneline">
+      <div class="settingname">
+        Indicate Kill/Death
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1" checked>
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+
+    <div class="onesetting twoline">
+      <div class="settingname">
+        FPS(Frames Per Second)
+      </div>
+      <div class="settingvalue">
+          <div class="slidecontainer">
+            <a class="slider-label">10FPS</a><input class="setting-input" type="range" min="10" max="60" value="30" step="10" id="myRange" class="slider">
+            <a class="slider-label">60FPS</a><br>
+            <a class="slider-label fps"></a>
+          </div>
+      </div>
+    </div>
+
+    <div class="onesetting twoline">
+      <div class="settingname">
+        Volume
+      </div>
+      <div class="settingvalue">
+          <div class="slidecontainer">
+            <a class="slider-label">0%</a><input class="setting-input" type="range" min="0" max="10" value="7" step="1" id="myRange" class="slider"><a class="slider-label">100%</a>
+            <br>
+            <a class="slider-label volume"></a>
+          </div>
+      </div>
+    </div> 
+   
+  </div>
+</div>
 
 <div id="adicewindow">
   <img src="res/img/dice/roll5.png">

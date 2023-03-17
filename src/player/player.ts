@@ -1478,15 +1478,51 @@ abstract class Player extends Entity {
 		}
 		return 0
 	}
+	private getFinishProximity(finish:number):number{
+		let maxStep=6
+		if(this.effects.has(EFFECT.SPEED)) maxStep+=2
+		maxStep+=this.ability.moveSpeed.val
+		if(this.effects.has(EFFECT.SLOW)) maxStep-=2
+		if(this.effects.has(EFFECT.DOUBLEDICE)) maxStep*=2
+		let diff=Math.max(0.5,finish-this.pos)
+
+		let proximity=0
+
+		if(diff <= maxStep*2) proximity=maxStep/diff
+
+		
+		if(this.waitingRevival || this.effects.has(EFFECT.INVISIBILITY) || this.effects.has(EFFECT.SHIELD)) proximity *=2
+		
+		proximity *= this.hasE_01(EFFECT.ROOT,EFFECT.GROUNGING,EFFECT.BACKDICE) * 0.5
+		proximity *= this.hasE_01(EFFECT.SLAVE) *0.25
+		
+		if(this.game.thisturn===this.turn) proximity*=3
+
+		return proximity 
+
+	}
 	getStateLabel(finish: number): string {
-		return (
-			`${this.champ},${this.normNRound(this.pos , finish) },${roundToNearest(this.normNRound(finish-this.pos , finish)**2,-3)  },${this.normNRound(this.HP, 500)},${this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300)},` +
-			`${this.normNRound(this.statistics.stats[STAT.MONEY_EARNED],300)},${(!this.dead || this.waitingRevival)?1:0},${this.normNRound(this.kill,5)},${this.normNRound(this.death , 5)},${this.normNRound(this.level , 10)},${
-				(this.inven.life>0 || this.inven.isActiveItemAvailable(ITEM.GUARDIAN_ANGEL))?1:0
-			},${this.hasE_01(EFFECT.SLAVE)},${
-				this.hasE_01(EFFECT.ROOT,EFFECT.GROUNGING,EFFECT.BACKDICE)
-			},${this.hasE_01(EFFECT.INVISIBILITY)},${this.hasE_01(EFFECT.SHIELD)}`
-		)
+		let states=[
+			this.champ,
+			this.normNRound(this.pos , finish),
+			roundToNearest(this.normNRound(this.pos , finish)**2,-3) ,
+			this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300),
+			this.normNRound(this.statistics.stats[STAT.MONEY_EARNED],300),
+			(this.dead)?0:1,
+			this.normNRound(this.kill,5),
+			this.normNRound(this.death , 5),
+			this.normNRound(this.level , 10),
+			this.normNRound(this.HP, 500),
+			(this.inven.life>0 || this.inven.isActiveItemAvailable(ITEM.GUARDIAN_ANGEL))?1:0,
+			this.getFinishProximity(finish)
+		]
+
+		let str=""
+		states.forEach((val,i)=>{
+			if(i===0) str+=val
+			else return str+=","+val
+		},"")
+		return str
 	}
 }
 

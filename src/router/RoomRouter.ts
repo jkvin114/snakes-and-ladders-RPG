@@ -132,7 +132,7 @@ router.post("/join", async function (req: express.Request, res: express.Response
 	res.status(200).end()
 })
 router.post("/home", async function (req: express.Request, res: express.Response) {
-	req.session.ip = req.hostname
+ 	req.session.ip = req.socket.remoteAddress
 	req.session.time=new Date()
 	if (req.session && isUserInRPGRoom(req)) {
 		// console.error("previous room exists")

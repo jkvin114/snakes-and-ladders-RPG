@@ -38,9 +38,13 @@ export namespace SocketSession {
 		const req = socket.request as express.Request
 		delete req.session.turn 
 		delete req.session.roomname
-
+	
 		// if(!req.session.isLogined)
 		// 	delete req.session.username
 		// console.log(req.session)
+	}
+	export function print(socket: Socket){
+		const req = socket.request as express.Request
+		console.log(req.session)
 	}
 }

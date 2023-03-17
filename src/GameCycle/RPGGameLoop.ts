@@ -211,7 +211,7 @@ class GameLoop {
 
 		this.setGameCycle(result.state)
 		//this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
-		let diceRoll: ServerGameEventFormat.DiceRoll|null = this.state.getData()
+		let diceRoll: ServerGameEventFormat.DiceRoll|null = this.state.getData<ServerGameEventFormat.DiceRoll>()
 		if(diceRoll)
 			this.afterDice(diceRoll.actualdice)
 		return diceRoll

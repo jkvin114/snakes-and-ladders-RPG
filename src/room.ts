@@ -1,7 +1,9 @@
+import type { Socket } from "socket.io";
 import { PlayerType, ProtoPlayer } from "./core/Util"
 import { GameEventEmitter } from "./GameEventObserver";
 import {PlayerMatchingState} from "./PlayerMatchingState"
 import { encrypt } from "./router/board/helpers";
+import { SocketSession } from "./sockets/SocketSession";
 abstract class Room {
 	//simulation_total_count: number
 	simulation_count: number
@@ -28,7 +30,7 @@ abstract class Room {
 	password:string
 	isPublic:boolean
 	isLoggedInUserOnly:boolean
-	
+	private guestSockets:Map<number,Socket>
 	
 	protected playerMatchingState:PlayerMatchingState
 	private playerSessions:Set<string>
@@ -55,6 +57,8 @@ abstract class Room {
 		this.connectionTimeout = null
 		this.connectionTimeoutTurn = -1
 		this.playerSessions=new Set<string>()
+		this.guestSockets=new Map<number,Socket>()
+
 		this.isGameStarted=false
 		this.resetCallback=()=>{}
 		this.playerMatchingState=new PlayerMatchingState()
@@ -176,16 +180,29 @@ abstract class Room {
 		this.playerMatchingState.guestnum += 1
 		return true
 	}
-	user_guestKick(sessionId:string){
-		this.deleteSession(sessionId)
+	removeGuest(turn:number){
+		// this.deleteSession(sessionId)
+		let socket=this.guestSockets.get(turn)
+		if(socket){
+			SocketSession.removeGameSession(socket)
+			this.deleteSession(SocketSession.getId(socket))
+			console.log("removeguest")
+			SocketSession.print(socket)
+			socket.leave(this.name)
+			
+		}
+		this.guestSockets.delete(turn)
+
 		this.playerMatchingState.guestnum -= 1
 	}
 
 	removePlayer(turn:number){
 		return this.playerMatchingState.removePlayer(turn)
 	}
-	addGuestToPlayerList(username: string,userClass:number) :number{
-		return this.playerMatchingState.addGuestToPlayerList(username,userClass)
+	addGuestToPlayerList(username: string,userClass:number,socket:Socket) :number{
+		let turn= this.playerMatchingState.addGuestToPlayerList(username,userClass)
+		this.guestSockets.set(turn,socket)
+		return turn
 	}
 
 	getPlayerNamesForTeamSelection():{name:string,userClass:number}[] {

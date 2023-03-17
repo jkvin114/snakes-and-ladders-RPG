@@ -1,14 +1,9 @@
 const names = [
-	"Trump",
-	"Obama",
-	"Bush",
-	"Biden",
 	"Annonymous",
 	"Illuminati",
 	"Challenger",
 	"Iron",
 	"Grandmaster",
-	"Goinmul",
 	"NoobMaster",
 	"Newbie",
 	"Hacker",
@@ -54,7 +49,6 @@ const names = [
 	"Thanos",
 	"Thor",
 	"Loki",
-	"Valkyrie",
 	"Wanda",
 	"Odin",
 	"Yangyi",
@@ -64,8 +58,6 @@ const names = [
 	"Jean",
 	"Timo",
 	"Jellice",
-	"Emiya",
-	"Muljomdao",
 	"Faker",
 	"Undefined",
 	"Null",
@@ -129,11 +121,11 @@ $("document").ready(async function () {
 	let registerbtns = $(".regpage_btn").toArray()
 
 	$(loginbtns[0]).html(chooseLang("Login", "로그인"))
-	$(loginbtns[1]).html(chooseLang("Register", "회원가입"))
+	$(loginbtns[1]).html(chooseLang("Sign Up", "회원가입"))
 	$(loginbtns[2]).html(chooseLang("Home", "홈으로"))
 
 	$(registerbtns[1]).html(chooseLang("Login", "로그인"))
-	$(registerbtns[0]).html(chooseLang("Register", "회원가입"))
+	$(registerbtns[0]).html(chooseLang("Sign Up", "회원가입"))
 	$(registerbtns[2]).html(chooseLang("Home", "홈으로"))
 
 	$("#langbtn").click(function () {
@@ -177,7 +169,7 @@ $("#loginform").submit(function (e) {
 	let username = $(this).find("input[name='username']").val()
 	let password = $(this).find("input[name='password']").val()
 	if (username === "" || password === "") {
-		alert("Empty")
+		// alert("")
 		return
 	}
 	$(".input_alert").html("")
@@ -213,7 +205,7 @@ $("#registerform").submit(function (e) {
 	let password2 = $(this).find("input[name='password2']").val()
 	let email = $(this).find("input[name='email']").val()
 	if (username === "" || password === "" || password2 === "" || email === "") {
-		alert("Empty")
+		// alert("Empty")
 		return
 	}
 	if (password !== password2) {
@@ -314,15 +306,15 @@ function open_firstpage() {
 function open_login() {
 	$(".page").hide()
 
-	$("#loginpage").show()
+	$("#loginpage").css("display", "inline-block")
 }
 function open_signup() {
 	$(".page").hide()
 
-	$("#signuppage").show()
+	$("#signuppage").css("display", "inline-block")
 }
 function open_createroom() {
-	$("#field").css("visibility", "visible")
+	$("#field").css("display", "inherit")
 	$("#buttons").hide()
 	// $("#simulation").hide()
 	$("#lowbtns").hide()
@@ -331,7 +323,7 @@ function open_createroom() {
 	//  $("#input-username").hide()
 }
 function close_createroom() {
-	$("#field").css("visibility", "collapse")
+	$("#field").css("display", "none")
 	$("#buttons").show()
 	// $("#simulation").show()
 	$("#lowbtns").show()

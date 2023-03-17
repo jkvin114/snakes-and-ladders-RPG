@@ -246,6 +246,7 @@ async function fetchdata(){
         $("#room-table").html(str)
         str=""
         for(const us of users){
+            if(!us.ip) continue
             str+=`
             <tr>
                 <td>${us.username}</td>

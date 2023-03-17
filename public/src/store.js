@@ -2,9 +2,9 @@ const EMPTY = -1
 import { GAME } from "./GameMain.js"
 export class StoreStatus {
 	constructor() {
-		this.itemList  //
-		this.sortedItemList  //Map
-		this.item = []  
+		this.itemList //
+		this.sortedItemList //Map
+		this.item = []
 		this.money = 0
 		this.token = 2
 		this.life = 0
@@ -12,7 +12,7 @@ export class StoreStatus {
 		this.recommendeditem = []
 		this.itemLimit = 6
 		this.priceMultiplier = 1
-		this.itemSlots = []//int[] (item slots)
+		this.itemSlots = [] //int[] (item slots)
 		this.itemPrices = [] //아이템 현재가 저장용
 		this.itemAvaliablity = [] //아이템 구매가능여부 저장용
 	}
@@ -65,7 +65,6 @@ export class StoreStatus {
 	}
 	updateItemSlot(items) {
 		this.itemSlots = Array.from(items)
-		
 	}
 
 	canBuyItem(item_id) {
@@ -96,8 +95,8 @@ export class StoreStatus {
 				complete: true,
 				objectResult: {
 					money: moneyspent,
-					token: token
-				}
+					token: token,
+				},
 			})
 		}
 	}
@@ -251,8 +250,6 @@ class ItemTreeBuilder {
 	}
 }
 
-
-
 export class StoreInterface {
 	constructor(StoreStatus, storeInstance) {
 		if (StoreInterface._instance) {
@@ -266,36 +263,40 @@ export class StoreInterface {
 		this.currentCategory = 0
 		this.currentTreeItem = 0
 		this.treeBuilder = new ItemTreeBuilder(StoreStatus, storeInstance)
-		this.isGrid=false
-		this.isAuto=false
+		this.isGrid = false
+		this.isAuto = false
 		this.categorybtn = $(".categorybtn").toArray()
-		this.naviRecord=[]
+		this.naviRecord = []
 	}
 
-	naviBack(){
+	naviBack() {
 		this.naviRecord.pop()
-		let prev=this.naviRecord.pop()
-		if(!prev) return
-		if(prev.type==="category"){
-			this.showCategory(prev.val) 
+		let prev = this.naviRecord.pop()
+		if (!prev) return
+		if (prev.type === "category") {
+			this.showCategory(prev.val)
 		}
-		if(prev.type==="life"){
+		if (prev.type === "life") {
 			this.showLifeDetail()
 		}
-		if(prev.type==="token"){
+		if (prev.type === "token") {
 			this.showTokenDetail()
 		}
-		if(prev.type==="item"){
-			this.showDetail(prev.val,true)
+		if (prev.type === "item") {
+			this.showDetail(prev.val, true)
 		}
 	}
-	saveNaviRecord(type,val){
-		if(this.naviRecord.length>1 && 
-			this.naviRecord[this.naviRecord.length-1].type===type && 
-			this.naviRecord[this.naviRecord.length-1].val===val) return
-			
+	saveNaviRecord(type, val) {
+		if (
+			this.naviRecord.length > 1 &&
+			this.naviRecord[this.naviRecord.length - 1].type === type &&
+			this.naviRecord[this.naviRecord.length - 1].val === val
+		)
+			return
+
 		this.naviRecord.push({
-			type:type,val:val
+			type: type,
+			val: val,
 		})
 	}
 	initstore() {
@@ -315,22 +316,20 @@ export class StoreInterface {
 				"<div class=coinstoreimg><img src='res/img/board/obstacles.png' style='margin-left: -3350px'; > </div>" +
 				GAME.chooseLang("", "에서 매도 가능")
 		)
-		const _this=this
+		const _this = this
 
 		$(".coinstoreimg").css({
 			width: "50px",
 			overflow: "hidden",
 			height: "50px",
 			display: "inline-block",
-			background: "white"
+			background: "white",
 		})
 		$(".typelistbtn").click(function () {
 			_this.hideItemDetail()
-			if($(this).attr("value")==="back"){
+			if ($(this).attr("value") === "back") {
 				_this.naviBack()
-			}
-			else
-			_this.showCategory(Number($(this).attr("value")))
+			} else _this.showCategory(Number($(this).attr("value")))
 		})
 		$("#back").click(function () {
 			_this.goBack()
@@ -372,19 +371,19 @@ export class StoreInterface {
 		$("#token_buy_range").on("input", function () {
 			_this.updateTokenCount(this.value)
 		})
-		$("#store_grid").click(()=>{
-			this.isGrid=true
+		$("#store_grid").click(() => {
+			this.isGrid = true
 			this.updateStoreContent()
 		})
-		$("#store_list").click(()=>{
-			this.isGrid=false
+		$("#store_list").click(() => {
+			this.isGrid = false
 			this.updateStoreContent()
 		})
-		$("#store_auto").click(function(){
-			this.isAuto=$(this).is(':checked');
-			GAME.connection.update("auto_store",this.isAuto)
-			// GAME.android_toast(this.isAuto)
-		})
+		// $("#store_auto").click(function(){
+		// 	this.isAuto=$(this).is(':checked');
+		// 	GAME.connection.update("auto_store",this.isAuto)
+		// 	// GAME.android_toast(this.isAuto)
+		// })
 	}
 	syncMoneyDisplay(data) {
 		this.storeStatus.updateMoney(data.money)
@@ -402,13 +401,12 @@ export class StoreInterface {
 		}
 	}
 	openNewStore(data) {
-
 		this.syncMoneyDisplay(data)
 		this.updateStoreBtnState()
 		this.updateStoreHome()
 	}
 	showCategory(category) {
-		this.saveNaviRecord("category",category)
+		this.saveNaviRecord("category", category)
 		$(".typelistbtn").removeClass("focus")
 
 		$(this.categorybtn[category]).addClass("focus")
@@ -427,7 +425,7 @@ export class StoreInterface {
 	}
 	initStoreHome() {
 		this.setRecommendedItem()
-		
+
 		$(".cannotbuyitem img").css({ filter: " brightness(0.5)" })
 		let _this = this
 
@@ -436,21 +434,21 @@ export class StoreInterface {
 		})
 	}
 
-	setRecommendedItem(){
-		let str=''
-		let count=0
-		for (let i=0;i<this.storeStatus.recommendeditem.length-1;++i) {
-			let item=this.storeStatus.recommendeditem[i]
-			if(this.storeStatus.itemSlots.includes(item)) continue
+	setRecommendedItem() {
+		let str = ""
+		let count = 0
+		for (let i = 0; i < this.storeStatus.recommendeditem.length - 1; ++i) {
+			let item = this.storeStatus.recommendeditem[i]
+			if (this.storeStatus.itemSlots.includes(item)) continue
 
-			str+=this.getItemSummaryStr(item)
+			str += this.getItemSummaryStr(item)
 			count++
-			if(count>=4) break
+			if (count >= 4) break
 		}
 
 		//add final item
-		if(count<4 && this.storeStatus.recommendeditem.length>0){
-			str+=this.getItemSummaryStr(this.storeStatus.recommendeditem[this.storeStatus.recommendeditem.length-1])
+		if (count < 4 && this.storeStatus.recommendeditem.length > 0) {
+			str += this.getItemSummaryStr(this.storeStatus.recommendeditem[this.storeStatus.recommendeditem.length - 1])
 		}
 		$(".recommendeditem").html(str)
 	}
@@ -495,9 +493,9 @@ export class StoreInterface {
 		for (let i = 0; i < 3; ++i) {
 			let lvl = String(i + 1)
 			let item_ids = this.storeStatus.sortedItemList.get(categories[category - 1] + lvl)
-			let str=''
+			let str = ""
 			for (let item_id of item_ids) {
-				str+=(this.getItemSummaryStr(item_id))
+				str += this.getItemSummaryStr(item_id)
 			}
 			if (isReversed) {
 				$(levels[i]).html(str)
@@ -518,12 +516,11 @@ export class StoreInterface {
 	getItemSummaryStr(item_id) {
 		// //console.log("getItemSummaryStr"+item_id)
 		let canbuy = this.storeStatus.canBuyItem(item_id)
-		let str =
-			`<div class='itemsummary ${canbuy ? "" : " cannotbuy "} ${this.isGrid? "grid":""}' value='${String(item_id)}'>
+		let str = `<div class='itemsummary ${canbuy ? "" : " cannotbuy "} ${this.isGrid ? "grid" : ""}' value='${String(
+			item_id
+		)}'>
 				<div>
-					<div class=store_curritemimg ><img src='res/img/store/items.png' style='margin-left:${
-						-1 * item_id * 100
-					}px';> 
+					<div class=store_curritemimg ><img src='res/img/store/items.png' style='margin-left:${-1 * item_id * 100}px';> 
 					</div><b class='summaryprice ${canbuy ? "" : " cannotbuyitem "}'> $${this.storeStatus.itemPrices[item_id]}</b>
 				</div>
 				<p>${GAME.chooseLang(this.storeStatus.itemList[item_id].summary.eng, this.storeStatus.itemList[item_id].summary.kor)}
@@ -558,7 +555,7 @@ export class StoreInterface {
 		})
 	}
 	closeStore() {
-		this.naviRecord=[]
+		this.naviRecord = []
 		$("#tokentotal").html("")
 		this.isStoreOpen = false
 
@@ -600,7 +597,7 @@ export class StoreInterface {
 	}
 
 	showLifeDetail() {
-		this.saveNaviRecord("life",0)
+		this.saveNaviRecord("life", 0)
 		$("#buylife").off()
 		$("#life_description").html(
 			GAME.chooseLang(
@@ -617,18 +614,18 @@ export class StoreInterface {
 
 		let price = this.storeInstance.getLifePrice()
 
-		$("#buylife").html("$"+price)
+		$("#buylife").html("$" + price)
 
 		if (price > this.storeStatus.money || !this.storeInstance.enabled) {
 			$("#buylife").off()
 			$("#buylife").css({
 				filter: "grayscale(90%)",
-				color: "gray"
+				color: "gray",
 			})
 		} else {
 			$("#buylife").css({
 				filter: "none",
-				color: "#f4d142"
+				color: "#f4d142",
 			})
 		}
 	}
@@ -639,7 +636,7 @@ export class StoreInterface {
 		this.showLifeDetail()
 	}
 	showTokenDetail() {
-		this.saveNaviRecord("token",0)
+		this.saveNaviRecord("token", 0)
 		$("#buytoken").off()
 		$("#tokentotal").html("")
 		$("#store_buytoken").css("visibility", "visible")
@@ -661,12 +658,12 @@ export class StoreInterface {
 			$("#buytoken").off()
 			$("#buytoken").html(GAME.chooseLang("Purchase", "매수")).css({
 				filter: "grayscale(90%)",
-				color: "gray"
+				color: "gray",
 			})
 		} else {
 			$("#buytoken").html(GAME.chooseLang("Purchase", "매수")).css({
 				filter: "none",
-				color: "#f4d142"
+				color: "#f4d142",
 			})
 		}
 	}
@@ -689,7 +686,7 @@ export class StoreInterface {
 				"$"
 		)
 	}
-	updateStoreContent(){
+	updateStoreContent() {
 		if (this.currentCategory === 0) {
 			this.updateStoreHome()
 		} else {
@@ -705,7 +702,7 @@ export class StoreInterface {
 	}
 
 	showDetail(item_id, changetree) {
-		this.saveNaviRecord("item",item_id)
+		this.saveNaviRecord("item", item_id)
 		GAME.extendTimeout()
 		this.isDetailOpen = true
 
@@ -734,7 +731,7 @@ export class StoreInterface {
 		)
 		let needinfobtn = false
 		let ability = ""
-		let statinfopopup=''
+		let statinfopopup = ""
 		for (let a of thisitem.ability) {
 			let ab = `<a class='ability_name'>${GAME.strRes.STATS[a.type]}</a> + ${a.value}`
 
@@ -747,9 +744,9 @@ export class StoreInterface {
 			// 	$("#statinfopopup").append("&#8251;" + GAME.strRes.STAT_DETAIL[0] + "<br>")
 			// 	needinfobtn = true
 			// }
-			
+
 			if (a.type === "attackRange") {
-				statinfopopup+=("&#8251;" + GAME.strRes.STAT_DETAIL.attackRange + "<br>")
+				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.attackRange + "<br>"
 				needinfobtn = true
 			}
 			// if (a.type === "regen") {
@@ -757,19 +754,19 @@ export class StoreInterface {
 			// 	needinfobtn = true
 			// }
 			if (a.type === "ultHaste") {
-				statinfopopup+=("&#8251;" + GAME.strRes.STAT_DETAIL.ultHaste + "<br>")
+				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.ultHaste + "<br>"
 				needinfobtn = true
 			}
 			if (a.type === "moveSpeed") {
-				statinfopopup+=("&#8251;" + GAME.strRes.STAT_DETAIL.moveSpeed + "<br>")
+				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.moveSpeed + "<br>"
 				needinfobtn = true
 			}
 			if (a.type === "adStat") {
-				statinfopopup+=("&#8251;" + GAME.strRes.STAT_DETAIL.adStat + "<br>")
+				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.adStat + "<br>"
 				needinfobtn = true
 			}
 			if (a.type === "basicAttackSpeed") {
-				statinfopopup+=("&#8251;" + GAME.strRes.STAT_DETAIL.basicAttackSpeed + "<br>")
+				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.basicAttackSpeed + "<br>"
 				needinfobtn = true
 			}
 		}
@@ -784,8 +781,11 @@ export class StoreInterface {
 				GAME.chooseLang("unique passive", "고유지속효과") +
 				"]</b>:" +
 				GAME.chooseLang(thisitem.unique_effect, thisitem.unique_effect_kor)
-			if(thisitem.active_cooltime!=null){
-				ability+=GAME.chooseLang(`(cooltime ${thisitem.active_cooltime} turns)`,`(쿨타임 ${thisitem.active_cooltime}턴)`)
+			if (thisitem.active_cooltime != null) {
+				ability += GAME.chooseLang(
+					`(cooltime ${thisitem.active_cooltime} turns)`,
+					`(쿨타임 ${thisitem.active_cooltime}턴)`
+				)
 			}
 		}
 		$("#thisitem .item_description").html(ability)
@@ -796,19 +796,19 @@ export class StoreInterface {
 			(thisitem.price - this.storeInstance.calcDiscount(item_id, predicted_itemlist)) * this.storeStatus.priceMultiplier
 		)
 
-		$("#buyitem").html( "$"+actual_price )
+		$("#buyitem").html("$" + actual_price)
 
 		let _this = this
 		if (this.storeStatus.canBuyItem(item_id) && this.storeInstance.enabled) {
 			$("#buyitem").css("color", "#f4d142")
 			$("#buyitem").css({
-				filter: "none"
+				filter: "none",
 			})
 			$("#buyitem").click(() => _this.onItemBuy(item_id, predicted_itemlist, actual_price))
 		} else {
 			$("#buyitem").css("color", "gray")
 			$("#buyitem").css({
-				filter: "grayscale(90%)"
+				filter: "grayscale(90%)",
 			})
 		}
 
@@ -848,10 +848,10 @@ export class StoreInterface {
 		if (!this.storeInstance.enabled) return
 		let price = Math.floor(this.storeStatus.itemList[item_id].price / 2.5)
 
-		if(GAME.ui!=null)
+		if (GAME.ui != null)
 			GAME.showDialog(
-				GAME.chooseLang(this.storeStatus.itemList[item_id].name,this.storeStatus.itemList[item_id].kor_name)
-					+'<br>'+
+				GAME.chooseLang(this.storeStatus.itemList[item_id].name, this.storeStatus.itemList[item_id].kor_name) +
+					"<br>" +
 					GAME.chooseLang("price:", "가격:") +
 					price +
 					"$<br>" +
@@ -929,7 +929,7 @@ export class StoreInstance {
 	popRecord() {
 		return {
 			itemSlots: this.itemRecord.pop(),
-			money: this.moneyRecord.pop()
+			money: this.moneyRecord.pop(),
 		}
 	}
 
@@ -965,7 +965,7 @@ export class StoreInstance {
 			crypt_turn: GAME.crypt_turn,
 			tokenbought: this.tokenbought,
 			tokenprice: this.tokenprice,
-			life: this.lifecount
+			life: this.lifecount,
 		}
 	}
 
@@ -1102,7 +1102,7 @@ export class StoreInstance {
 		let actual_price = this.getPrice(item_id, predicted_itemlist)
 		return {
 			price: actual_price,
-			canbuy: !this.isItemLimitExceeded(predicted_itemlist) && this.checkStoreLevel(thisitem)
+			canbuy: !this.isItemLimitExceeded(predicted_itemlist) && this.checkStoreLevel(thisitem),
 		}
 	}
 

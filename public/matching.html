@@ -52,12 +52,14 @@
   <div id=Hostingpage>
     <div id=player_choice>
       
-      <div class="playercard connected me">
+      <div class="playercard connected ready me">
         <div class="card-buttons">
           <img class="playerchamp" src="res/img/ui/random.png">
-          <p class="iname">1P</p>
+          <p class="iname">1P</p><img src="res/img/ui/crown.png" style="width: 20px;" title="Host">
         </div>
-        
+        <span class="ready-text">
+          Ready
+        </span>
       </div>
 
       <div class="waiting"></div>
@@ -80,6 +82,9 @@
           
           <button class="kick_player" value=1> &times; </button>
         </div>
+        <span class="ready-text">
+          Ready
+        </span>
       </div>
 
       <div class="playercard waiting hidden">
@@ -92,6 +97,7 @@
           <img class="toai" src="res/img/svg/cpu.svg" value=1 title="Change to computer">
           <button class="kick" value=1>  &times; </button>
         </div>
+       
       </div>
 
       <div class="aicard hidden">
@@ -105,6 +111,7 @@
           <img class="toplayer" src="res/img/svg/user.svg" value=1 title="Host another player">
           <button class="kick" value=1>  &times; </button>
         </div>
+        
       </div>
 <!-- 3P================================================================ -->
 
@@ -118,7 +125,9 @@
 
           <button class="kick_player" value=2> &times; </button>
         </div>
-
+        <span class="ready-text">
+          Ready
+        </span>
       </div>
 
       <div class="playercard waiting hidden">
@@ -224,8 +233,8 @@
       <!-- <img class="mapbtn" src="res/img/map_thumbnail\default.jpg" value=0>
       <img class="mapbtn" src="res/img/map_thumbnail\ocean.jpg"  value=1>
       <img class="mapbtn" src="res/img/map_thumbnail\casino.jpg" value=2>     -->
-      <button class="mapbtn-marble hidden" value=0>월드맵</button>  
-      <button class="mapbtn-marble hidden" value=1>신의손</button>  
+      <button class="mapbtn-marble mapbtn hidden" value=0>월드맵</button>  
+      <button class="mapbtn-marble mapbtn hidden" value=1>신의손</button>  
       <br>
       <div id="character_selection">
 
@@ -250,8 +259,9 @@
       <img id="setting" src="./res/img/ui/setting.png">
       <img id="marble-item" src="./res/img/ui/setting.png" >
       <button id=readybtn class="mainbtn hidden">
-        Ready
+        READY<img src="res/img/ui/confirm.png">
       </button>
+
       <!-- <button type='submit' id="instant" name="gamemode" value="instant" class="mainbtn hidden">
         Warp to result
       </button>
@@ -313,8 +323,8 @@
     </div>
     <div id="teambuttons">
       
-      <button id="submitTeam"> Start</button>
-      <button id="back"> Back</button>
+      <button id="submitTeam" style="background-color: #8000ca;"> Start Game</button>
+      <button id="back"> Cancel</button>
     </div>
 
     
@@ -382,7 +392,7 @@
 
   <button id="marble-item-close"> &times; </button>
   랜덤아이템 갯수:<input type="number" value="1" id="marble-item-random-count">
-  <div>
+  <div style="font-size: 15px;"><br>
     프리셋:
     <select name="marble-item-preset" id="marble-item-preset">
       <option value="empty" selected>없음</option>
@@ -414,7 +424,7 @@
   </div>
 
 </div>
-
+<div id="overlay"></div>
 </body>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
 

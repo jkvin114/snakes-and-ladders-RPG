@@ -536,7 +536,7 @@ export class PlayableGame extends Game {
 	 */
 	prepareSelection() {
 		//	moveBoardInstant(this.scene.getPlayerPos(this.myturn), 1)
-		this.ui.hideChat()
+		// this.ui.hideChat()
 		this.ui.disableAllSkillBtn()
 		$(".mystatus").hide()
 	}
@@ -653,6 +653,8 @@ export class PlayableGame extends Game {
 	 * data: {turn,obs,globalEventName}
 	 */
 	onIndicateObstacle(data) {
+		if (!this.setting.indicateObstacle) return
+
 		if (this.myturn === data.turn || data.turn === -1) {
 			if (!data.globalEventName) this.ui.showObsNotification(data.obs)
 			else {
@@ -664,6 +666,8 @@ export class PlayableGame extends Game {
 	onIndicateItem(turn, item) {
 		//console.log("onIndicateItem")
 		if (this.is_spectator) return
+
+		if (!this.setting.indicateItem) return
 
 		if (!this.strRes.ITEMS.items[item].active_summary) return
 		let it = this.strRes.ITEMS.items[item]

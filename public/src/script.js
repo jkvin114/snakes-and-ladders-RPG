@@ -1,7 +1,97 @@
 import { Scene, sleep, COLOR_LIST } from "./canvas_control.js"
 import { COLOR_LIST_BG } from "./board.js"
 import { Player } from "./player.js"
-import { GAME, VOLUME, StringResource, registerSounds } from "./GameMain.js"
+import { GAME, StringResource, registerSounds } from "./GameMain.js"
+const SettingNames = [
+	"Toggle Fullscreen",
+	"Item Auto Buy",
+	"Indicate Active Items",
+	"Indicate Obstacles",
+	"Indicate Kill/Death",
+	"FPS(Frames Per Second)",
+	"Volume",
+]
+const SettingNamesKor = [
+	"전체화면",
+	"아이템 자동구매",
+	"아이템 알림",
+	"장애물 알림",
+	"킬/데스 알림",
+	"FPS(초당 프레임)",
+	"음량",
+]
+class Setting {
+	constructor(game) {
+		//singleton
+		if (Setting._instance) {
+			return Setting._instance
+		}
+		Setting._instance = this
+
+		this.game = game
+		this.volume = 0.7
+		this.lang = sessionStorage.language
+		this.indicateItem = true
+		this.indicateObstacle = true
+		this.indicateKill = true
+
+		this.fullScreen = false
+		this.fps = 33.3
+		this.inputs = $(".setting-input").toArray()
+		this.names = $(".settingname").toArray()
+	}
+	init() {
+		this.setLang(this.lang)
+
+		let _this = this
+		if (this.game.is_replay || this.game.is_spectator) {
+			$(".disable-on-non-playable").addClass("disabled")
+		} else {
+			$(this.inputs[1]).change(function () {
+				let autobuy = $(this).is(":checked")
+				_this.game.connection.update("auto_store", autobuy)
+			})
+		}
+
+		$(".langbtn").click(function () {
+			_this.setLang($(this).data("lang"))
+		})
+		$(this.inputs[2]).change(function () {
+			_this.indicateItem = $(this).is(":checked")
+		})
+		$(this.inputs[3]).change(function () {
+			_this.indicateObstacle = $(this).is(":checked")
+		})
+		$(this.inputs[4]).change(function () {
+			_this.indicateKill = $(this).is(":checked")
+		})
+		$(this.inputs[5]).change(function () {
+			_this.setFPS($(this).val())
+			$(".fps").html($(this).val() + "FPS")
+		})
+		$(this.inputs[6]).change(function () {
+			_this.setVolume($(this).val() / 10)
+			$(".volume").html($(this).val() * 10 + "%")
+		})
+	}
+	setLang(lang) {
+		$("#setting-header-text").html(lang === "kor" ? "게임 설정" : "Game Settings")
+		this.lang = lang
+		for (let i = 0; i < SettingNames.length; ++i) {
+			$(this.names[i]).html(lang === "kor" ? SettingNamesKor[i] : SettingNames[i])
+		}
+	}
+	setFPS(fps) {
+		fps = Math.min(60, fps)
+		this.fps = fps
+		if (this.game.scene) this.game.scene.changeFPS(fps)
+	}
+	setVolume(volume) {
+		volume = Math.min(1, volume)
+		this.volume = volume
+		Howler.volume(this.volume)
+	}
+}
 
 export class Game {
 	constructor() {
@@ -14,7 +104,8 @@ export class Game {
 		this.turnsInUI = [] //turn 으로  ui 위치 찾을때 사용
 
 		this.simulation = false
-
+		this.is_spectator = false
+		this.is_replay = false
 		this.thisturn = 0 //현재 턴
 		this.isTeam = false
 		this.playerCount = 0 //total number of player
@@ -31,8 +122,10 @@ export class Game {
 		this.multikillAlertTimeout = null
 		this.killTextTimeout = null
 		this.gestureController = new GestureController()
+		this.setting = new Setting(this)
 	}
 	onCreate() {
+		this.setting.init()
 		this.gestureController.addWheelEvent()
 		this.gestureController.addTouchEvent()
 		this.gestureController.addMouseEvent()
@@ -48,6 +141,15 @@ export class Game {
 			}
 		})
 		$("#prediction-container").hide()
+		$("#closesettingbtn").click(function () {
+			$("#settingwindow").css("display", "none")
+		})
+		$("#settingbtn").click(function () {
+			$("#settingwindow").css("display", "inherit")
+		})
+	}
+	resetSetting() {
+		this.setting.reset()
 	}
 
 	onDisconnect() {}
@@ -91,7 +193,7 @@ export class Game {
 	}
 
 	chooseLang(eng, kor) {
-		if (this.LANG === "kor") return kor
+		if (this.setting.lang === "kor") return kor
 		return eng
 	}
 	zeroArray(count) {
@@ -520,6 +622,8 @@ export class Game {
 	}
 
 	indicatePlayerDeath(turn, spawnPos, skillfrom, isShutDown, killerMultiKillCount) {
+		if (!this.setting.indicateKill) return
+
 		//console.log("indicatePlayerDeath" + turn)
 		if ($(".killframe").length > 3) $("#killindicator_container").html("")
 
@@ -535,7 +639,7 @@ export class Game {
 			str += "whitekill"
 		}
 
-		str += "'><div class='charframe' style='background:"
+		str += `'><div class='charframe ${skillfrom === this.myturn ? "me" : ""}' style='background:`
 		if (skillfrom === -1) {
 			str += "white"
 		} else {
@@ -544,7 +648,9 @@ export class Game {
 
 		str += ";'><img src='" + this.getChampImgofTurn(skillfrom) + "'>"
 
-		str += "</div><img src='res/img/ui/kill.png'><div class='charframe2' style='background:"
+		str += `</div><img src='res/img/ui/kill.png'><div class='charframe2 ${
+			turn === this.myturn ? "me" : ""
+		}' style='background:`
 		str += this.getPlayerLighterColor(turn)
 		str += ";'><img src='" + this.getChampImgofTurn(turn) + "'></div></div><br>"
 

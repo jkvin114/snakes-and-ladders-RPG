@@ -138,7 +138,7 @@ function auth() {
 		.fail(function (data, statusText, xhr) {
 			if (data.status === 401) {
 				console.error("unauthorized")
-				alert("unauthorized access")
+				alert("Invalid access!")
 				window.location.href = "index.html"
 			}
 		})
@@ -152,7 +152,7 @@ function backBtnPressed() {
 }
 
 export function registerSounds() {
-	Howler.volume(VOLUME)
+	Howler.volume(0.7)
 	const sounds = [
 		"hit",
 		"hit2",

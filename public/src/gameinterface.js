@@ -41,6 +41,7 @@ export default class GameInterface {
 			kdasections: $(".kdasection").toArray(),
 			kdaimgs: $(".kdaimg").toArray(),
 			kdainfos: $(".kdainfo").toArray(),
+			kdanames: $(".kdaname").toArray(),
 			iteminfosections: $(".itemsection").toArray(),
 			timeoutBar: $("#timeoutbar"),
 			board_container: document.getElementById("canvas-container"),
@@ -171,7 +172,7 @@ export default class GameInterface {
 
 		$("#select h3").html(GAME.chooseLang("Select between two", "둘 중 하나 선택"))
 		if (GAME.LANG === "kor") {
-			$(".skillinfo").css("font-size", "1.6rem")
+			// $(".skillinfo").css("font-size", "1.6rem")
 		}
 
 		$("#skillinfobtn").click(function () {
@@ -517,8 +518,8 @@ export default class GameInterface {
 
 		for (let i = 0; i < GAME.playerCount; ++i) {
 			$(this.elements.kdainfos[i]).html("0/0/0")
-
-			$(this.elements.kdainfos[i]).css("color", this.game.getPlayerLighterColor(i))
+			$(this.elements.kdanames[i]).html(setting[i].name)
+			$(this.elements.kdanames[i]).css("color", this.game.getPlayerLighterColor(i))
 		}
 
 		$("#skillinfobtn").show()

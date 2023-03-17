@@ -419,8 +419,11 @@ class MatchStatus {
 		}
 	}
 	onReceiveReady(turn, ready) {
-		console.log(turn + "ready" + ready)
 		this.playerlist[turn].ready = ready
+		if (ready) $(this.ui.playercard[turn]).addClass("ready")
+		else {
+			$(this.ui.playercard[turn]).removeClass("ready")
+		}
 	}
 	selectCharacter(champ) {
 		this.playerlist[Number(this.myturn)].champ = champ
@@ -460,6 +463,19 @@ class MatchStatus {
 			ServerConnection.showTeamToGuest()
 			this.teamSelector.showTeamPage(false)
 			ServerConnection.requestNamesForTeamSelection()
+		}
+	}
+	validateTeamSubmit() {
+		if (this.playerlist.some((c) => c.type === "player")) {
+			alert("Please check players")
+			return false
+		} else if (this.PNUM + this.CNUM < 4) {
+			alert("there should be 4 players for team game")
+			return false
+		} else if (!this.checkReady()) {
+			return false
+		} else {
+			return true
 		}
 	}
 }
@@ -504,6 +520,7 @@ class MatchInterface {
 		$(".mapbtn").hide()
 		$(".mapbtn-marble").show()
 		$("#setting").hide()
+		$("#team").hide()
 		$(".mapbtn-marble").click(function () {
 			MATCH.map = Number($(this).val())
 			ServerConnection.setMap(MATCH.map)
@@ -669,7 +686,7 @@ class MatchInterface {
 		$(".mapbtn").hide()
 		$("#individual").hide()
 		$("#setting").hide()
-		$("#map_choice a").hide()
+		// $("#map_choice a").hide()
 		$(this.mapbtn[0]).show()
 	}
 
@@ -704,6 +721,7 @@ class MatchInterface {
 
 		$(this.aichamp[turn]).attr("src", src)
 		$(this.playerchamp[turn]).attr("src", src)
+		this.match.playerlist[turn].champ = champ
 	}
 }
 
@@ -723,15 +741,25 @@ class TeamSelector {
 		}
 		TeamSelector._instance = this
 	}
+	initButtons() {
+		for (let i = 0; i < 4; ++i) {
+			if (!this.canChange(i)) {
+				$(this.redcheckbox[i]).addClass("disabled")
+				$(this.bluecheckbox[i]).addClass("disabled")
+			}
+		}
+	}
 
 	setAsGuest() {
 		$("#team").hide()
 		$("#submitTeam").hide()
 		$("#back").hide()
+		// this.initButtons()
 	}
 
 	showTeamPage(isforguest) {
 		$("#Hostingpage").hide()
+		this.initButtons()
 		if (isforguest && sessionStorage.host === "true") return
 		$(this.names[this.match.myturn]).addClass("teamselection_me")
 
@@ -747,12 +775,12 @@ class TeamSelector {
 	}
 	canChange(i) {
 		if (i !== this.match.myturn && this.match.playerlist[i].type !== "ai") {
-			alert(chooseLang("You cannot change other player`s team", "다른 플레이어의 팀은 바꿀 수 없습니다"))
+			//	alert(chooseLang("You cannot change other player`s team", "다른 플레이어의 팀은 바꿀 수 없습니다"))
 			return false
 		}
 
 		if (this.match.myturn !== 0 && this.match.playerlist[i].type === "ai") {
-			alert(chooseLang("Only a host can change computer`s team", "방장만 컴퓨터의 팀을 바꿀 수 있습니다"))
+			//	alert(chooseLang("Only a host can change computer`s team", "방장만 컴퓨터의 팀을 바꿀 수 있습니다"))
 
 			return false
 		}
@@ -803,12 +831,13 @@ class TeamSelector {
 
 	submit() {
 		if (this.match.myturn === 0) {
+			if (!this.match.validateTeamSubmit()) return
+
 			if (this.check_status.some((c) => c === null)) {
 				alert("Every player must select teams!!")
 			} else if (this.check_status.every((c) => c) || this.check_status.every((c) => !c)) {
 				alert("You must divide teams!!")
 			} else {
-				console.log(this.match.gametype)
 				if (this.match.gametype === "rpg") {
 					ServerConnection.finalSubmit(this.match.setting.getSummary(), this.match.gametype)
 				} else if (this.match.gametype === "marble") {
@@ -847,7 +876,7 @@ function auth() {
 				return
 			}
 			if (data.status === 401) {
-				alert(chooseLang("unauthorized", "잘못된 접근입니다"))
+				alert(chooseLang("Invalid access!", "잘못된 접근입니다"))
 				window.location.href = "index.html"
 			}
 
@@ -910,9 +939,9 @@ $(document).ready(function () {
 	})
 	$("#readybtn").click(function () {
 		if (MATCH.ready) {
-			$(this).css("background-color", "transparent")
+			$(this).removeClass("active")
 		} else {
-			$(this).css("background-color", "#ff5656")
+			$(this).addClass("active")
 		}
 		MATCH.ready = !MATCH.ready
 		ServerConnection.sendReady(MATCH.myturn, MATCH.ready)
@@ -1029,12 +1058,13 @@ $(document).ready(function () {
 
 	$("#settingclose").click(function () {
 		$("#settingpage").hide()
+		$("#overlay").hide()
 		// console.log(MATCH.setting.getSummary())
 	})
 	$("#setting").click(function () {
 		$("#settingpage").show()
+		$("#overlay").show()
 	})
-	$("#settingpage").hide()
 	$("#settingpage").hide()
 	$("#back").click(function () {
 		ServerConnection.hideTeamToGuest()
@@ -1046,10 +1076,12 @@ $(document).ready(function () {
 
 	$("#marble-item-close").click(function () {
 		$("#marble-item-page").hide()
+		$("#overlay").hide()
 		// console.log(MATCH.setting.getSummary())
 	})
 	$("#marble-item").click(function () {
 		$("#marble-item-page").show()
+		$("#overlay").show()
 	})
 	// window.onbeforeunload = function () {
 	// 	// this.setType("none", this.myturn)

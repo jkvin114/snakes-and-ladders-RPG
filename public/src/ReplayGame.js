@@ -16,6 +16,7 @@ export class ReplayGame extends Game {
 		this.speed = 1
 		this.myturn = undefined
 		this.speedIndex = 3
+		this.is_replay = true
 	}
 	setSpeed(speed) {
 		this.speed = Math.min(4, speed)

@@ -5,7 +5,7 @@ import { SocketSession } from "../sockets/SocketSession";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";
 
 const prefix="marble:user:"
-const USER_EVENTS={
+const userEvents={
 	REQUEST_SETTING:`${prefix}request_setting`,
 	GAMEREADY:`${prefix}gameready`,
 	START_GAME:`${prefix}start_game`,
@@ -26,7 +26,7 @@ function getRoom(socket:Socket){
 module.exports=function(socket:Socket){
 
 
-    socket.on(USER_EVENTS.GAMEREADY, function (itemsetting:ServerPayloadInterface.ItemSetting) {
+    socket.on(userEvents.GAMEREADY, function (itemsetting:ServerPayloadInterface.ItemSetting) {
 
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.user_gameReady(rname,itemsetting)
@@ -34,7 +34,7 @@ module.exports=function(socket:Socket){
 		})
 	})
 
-	socket.on(USER_EVENTS.REQUEST_SETTING, function () {
+	socket.on(userEvents.REQUEST_SETTING, function () {
 
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			if (!room.gameloop) {
@@ -52,7 +52,7 @@ module.exports=function(socket:Socket){
 
 	})
 
-	socket.on(USER_EVENTS.START_GAME, function () {
+	socket.on(userEvents.START_GAME, function () {
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			let canstart=room.user_startGame()
 			if (!canstart) {
@@ -60,7 +60,7 @@ module.exports=function(socket:Socket){
 			}
 		})
 	})
-	socket.on(USER_EVENTS.PRESS_DICE, function (invoker:number,target:number,oddeven:number) {
+	socket.on(userEvents.PRESS_DICE, function (invoker:number,target:number,oddeven:number) {
 
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("press_dice",invoker,target,oddeven)
@@ -68,45 +68,45 @@ module.exports=function(socket:Socket){
 
 
 	})
-	socket.on(USER_EVENTS.SELECT_BUILD, function (invoker:number,builds:number[]) {
+	socket.on(userEvents.SELECT_BUILD, function (invoker:number,builds:number[]) {
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("select_build",invoker,builds)
 		})
 	})
-	socket.on(USER_EVENTS.SELECT_BUYOUT, function (invoker:number,result:boolean) {
+	socket.on(userEvents.SELECT_BUYOUT, function (invoker:number,result:boolean) {
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("select_buyout",invoker,result)
 		})
 	})
-	socket.on(USER_EVENTS.SELECT_LOAN, function (invoker:number,result:boolean) {
+	socket.on(userEvents.SELECT_LOAN, function (invoker:number,result:boolean) {
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("select_loan",invoker,result)
 		})
 	})
-	socket.on(USER_EVENTS.SELECT_TILE, function (invoker:number,pos:number,source:string,result:boolean) {
+	socket.on(userEvents.SELECT_TILE, function (invoker:number,pos:number,source:string,result:boolean) {
 	
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("select_tile",invoker,pos,source,result)
 		})
 	})
-	socket.on(USER_EVENTS.OBTAIN_CARD, function (invoker:number,result:boolean) {
+	socket.on(userEvents.OBTAIN_CARD, function (invoker:number,result:boolean) {
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("obtain_card",invoker,result)
 		})
 	})
-	socket.on(USER_EVENTS.CONFIRM_CARD_USE, function (invoker:number,result:boolean,cardname:string) {
+	socket.on(userEvents.CONFIRM_CARD_USE, function (invoker:number,result:boolean,cardname:string) {
 
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("confirm_card_use",invoker,result,cardname)
 		})
 	})
-	socket.on(USER_EVENTS.SELECT_GODHAND_SPECIAL, function (invoker:number,result:boolean) {
+	socket.on(userEvents.SELECT_GODHAND_SPECIAL, function (invoker:number,result:boolean) {
 
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("select_godhand_special",invoker,result)
 		})
 	})
-	socket.on(USER_EVENTS.SELECT_ISLAND, function (invoker:number,result:boolean) {
+	socket.on(userEvents.SELECT_ISLAND, function (invoker:number,result:boolean) {
 
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.onClientEvent("select_island",invoker,result)

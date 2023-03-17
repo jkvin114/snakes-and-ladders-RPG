@@ -23,20 +23,6 @@ button{
 .show_on_portraint{
   display: none;
 }
-#toggle_fullscreen {
-  position: fixed;
-  z-index: 99;
-  background-color: rgba(255, 255, 255, 0.5);
-  width: 40px;
-  height: 20px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  top: 0;
-  cursor: pointer;
-}
-
 button,
 p,
 a,
@@ -178,7 +164,100 @@ b {
   padding: 2px;
   background-color: #7b3fb3;
 }
+#skillinfobtn:hover ,#settingbtn:hover{
+  filter: brightness(0.7);
+}
+#settingbtn{
+  margin-bottom: 5px;
+  right: 15px;
+  border: 2px solid gray;
+  position: absolute;
+  top: 70px;
+  z-index: 6;
+  float: right;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  background-color: #d8d8d8;
 
+}
+#settingwindow
+{
+  
+  border: 2px solid rgb(230, 230, 230);
+  left: 50%;
+  transform:translate(-50%,-50%) ;
+  top: 50%;
+  width: min(90vw,800px);
+  height: 90vh;
+  overflow: auto;
+  position: absolute;
+  z-index: 6;
+  background: linear-gradient(45deg, #383744 0%, #17171c 100%);
+  color: whitesmoke;
+}
+#setting-header{
+  height: 4rem;
+  border-bottom: 2px solid #74728a;
+  background: linear-gradient(to left, #383744 0%, #545466 50%,#383744 100%);
+  line-height: 4rem;
+  font-size: min(3rem,30px);
+  text-align: center;
+}
+#settong-content{
+  font-family: 'nanumB';
+}
+.onesetting{
+  padding: 15px 5px;
+  position: relative;
+  border-bottom: 2px solid #74728a;
+  font-size: 16px;
+}
+.onesetting.disabled{
+  filter: brightness(0.7);
+  pointer-events: none;
+}
+.onesetting.oneline{
+  display: grid;
+  grid-template-columns: auto 120px;
+}
+.onesetting.twoline{
+  text-align: center;
+}
+.onesetting.buttons{
+  display: flex;
+  justify-content:space-around;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.onesetting .dropdown{
+  z-index: 7;
+}
+.setting-btn{
+  margin: 0px 10px;
+  background:#545466;
+    padding: 4px 14px;
+    cursor: pointer;
+    display: inline-block;
+    border-radius: 4px;
+
+}
+.setting-btn:hover{
+  background:#444452;
+}
+.slider-label{
+  font-size: 14px;
+  padding: 3px;
+}
+.settingvalue{
+  text-align: center;
+}
+.onesetting.oneline .settingname{
+  text-align: left;
+  padding-left: 30px;
+}
 .mainhpcontainer {
   /* overflow:auto; */
 }
@@ -1583,7 +1662,7 @@ transform: scale(0.8, 1);
 #skillinfowindow .skillinfo {
   /* color: #e0c9ff; */
   color: rgb(153, 153, 153);
-  font-size: 1.5rem;
+  font-size: min(1.5rem,17px);
   opacity: 1.0;
   margin-bottom: -0.5vw;
   font-weight: normal;
@@ -1596,7 +1675,7 @@ transform: scale(0.8, 1);
 
 .skillinfo>img {
   display: inline;
-  height: 2rem;
+  font-size: min(2rem,22px);
   margin: 0;
   vertical-align: middle;
   border: 1px solid gray;
@@ -1604,7 +1683,7 @@ transform: scale(0.8, 1);
 
 .skillinfo>i img {
   display: inline;
-  height: 2rem;
+  height: min(2rem,22px);
   margin: 0;
   vertical-align: middle;
   clear: both;
@@ -1626,7 +1705,7 @@ transform: scale(0.8, 1);
 }
 
 .skillinfo>i.skill_name {
-  font-size: 1.7rem;
+  font-size: min(1.7rem,20px);
   font-family: "cookierun";
   color: rgb(226, 211, 0);
 
@@ -1740,18 +1819,20 @@ transform: scale(0.8, 1);
 
 #skillinfowindow>img {
   width: 6rem;
+  max-width: 60px;
+  max-height: 60px;
   height: 6rem;
   margin: 1vw;
   opacity: 1.0;
   /* border: 2px solid #e0c9ff; */
 }
 
-#closeskillinfobtn {
+#closeskillinfobtn,#closesettingbtn {
   display: inline;
-  line-height: 6rem;
-  right: 4rem;
+  line-height: 4rem;
+  right: 2rem;
   border: none;
-  font-size: 6rem;
+  font-size: 4rem;
   position: absolute;
   top: 0;
   width: 2rem;
@@ -1789,7 +1870,13 @@ transform: scale(0.8, 1);
   /* border: 3px solid #a86aff; */
   background-color: white;
 }
-
+.kdaname{
+  width: 150px;
+  overflow: hidden;
+  margin-left: 10px;
+  color: rgb(203, 203, 203);
+  font-size: 14px !important; 
+}
 .otherplayeritemimg {
   display: inline-block;
   margin: -30px;
@@ -2768,7 +2855,10 @@ transform: scale(0.8, 1);
   border-radius: 3px;
   margin: 3px;
 }
-
+.killframe .me{
+  outline: 2px solid gold;
+  outline-offset: -1px;
+}
 #killindicator_container .bluekill {
   background: linear-gradient(to bottom, rgba(143, 135, 255, 0.7) 0%, rgba(82, 74, 189, 0.7) 100%);
 }
@@ -2807,6 +2897,8 @@ transform: scale(0.8, 1);
   height: 26px;
   /* margin: 1px; */
 }
+
+
 
 .killframe>img {
   width: 20px;
@@ -2940,66 +3032,9 @@ transform: scale(0.8, 1);
   font-size: 25px;
 }
 
-.slidecontainer {
-  width: 40%;
-  /* Width of the outside container */
-}
-
 .buytokentoken_slidecontainer {
   width: 80%;
   margin-left: 20px;
-}
-
-/* The slider itself */
-.slider {
-  -webkit-appearance: none;
-  /* Override default CSS styles */
-  appearance: none;
-  width: 100%;
-  /* Full-width */
-  height: 15px;
-  /* Specified height */
-  background: #d3d3d3;
-  /* Grey background */
-  outline: none;
-  /* Remove outline */
-  opacity: 0.7;
-  /* Set transparency (for mouse-over effects on hover) */
-  -webkit-transition: .2s;
-  /* 0.2 seconds transition on hover */
-  transition: opacity .2s;
-}
-
-/* Mouse-over effects */
-.slider:hover {
-  opacity: 1;
-  /* Fully shown on mouse-over */
-}
-
-/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  /* Override default look */
-  appearance: none;
-  width: 20px;
-  /* Set a specific slider handle width */
-  height: 20px;
-  /* Slider handle height */
-  background: rgb(201, 159, 23);
-  /* Green background */
-  cursor: pointer;
-  /* Cursor on hover */
-}
-
-.slider::-moz-range-thumb {
-  width: 20px;
-  /* Set a specific slider handle width */
-  height: 20px;
-  /* Slider handle height */
-  background: rgb(201, 159, 23);
-  /* Green background */
-  cursor: pointer;
-  /* Cursor on hover */
 }
 
 .tooltip {

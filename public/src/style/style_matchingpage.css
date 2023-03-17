@@ -7,7 +7,9 @@ html{
       rgba(227,245,171,1) 61%,rgba(193,219,100,1) 100%); */
       font-family: 'cookierun';
       /* background-color: rgb(36, 36, 36); */
-      background-color: #200f33;
+      /* background-color: #200f33; */
+      background: linear-gradient(45deg, #41295a, #2f0743);
+
       color: white;
         text-align: center;
     /* overflow: hidden; */
@@ -40,10 +42,11 @@ html{
     display: grid;
     grid-template-columns: 50% 50%;
     visibility: hidden;
-    
+    background: rgba(0, 0, 0, 0.1);
     /* background-color: rgb(44, 44, 44); */
-    background-color: #2a1343;
-    border-radius: 2vw;
+    /* background-color: #2a1343; */
+    /* border: 1px solid #9158ce; */
+    /* border-radius: 2vw; */
     position: relative;
     /* position: absolute;
     left:50%;
@@ -79,12 +82,44 @@ html{
     justify-content: space-between;
     height: 48px;
     background-color: #4d4d5e;
-    border-left: 5px solid #a821b7;
     border-radius: 4px;
+    box-sizing: border-box;
+    position: relative;    
+    border-left: 5px solid #c654ff;
+  }
+  .playercard.ready{
+    border: 2px solid #c654ff;
+    border-left: 5px solid #c654ff;
   }
   .playercard.waiting{
     border-left: 5px solid #e62424;
+    background: linear-gradient(70deg, #4d4d5e, #864848,#4d4d5e, #864848,#4d4d5e);
+    background-size: 200% 200%;
+    animation: gradient 2s linear infinite;
   }
+  
+@keyframes gradient {
+  0% { background-position: 0 0; }
+  100% { background-position: -200% 0; }
+  /* 100% { background-position: 0 0; } */
+}
+.ready-text{
+  position: absolute;
+  bottom: 0;
+  left: 0px;
+  background:#c654ff ;
+  border-top-right-radius: 5px;
+  /* border-top-left-radius: 5px; */
+  padding: 2px;
+  padding-bottom: 0px;
+  color: whitesmoke;
+  font-size: 10px;
+  font-family: 'nanumB';
+  display: none;
+}
+.playercard.ready .ready-text{
+  display: inline-block;
+}
   .playercard.logined .iname{
     color:gold;
     font-weight: bold;
@@ -157,7 +192,8 @@ html{
     display:inline-block;
     cursor:pointer;
     /* border:2px solid rgb(121, 121, 121); */
-    background-color: gray;
+    /* background-color: gray; */
+    border:1px solid rgb(214, 214, 214);
     padding: 2px;
     border-radius: 2px;;
   }
@@ -166,15 +202,19 @@ html{
     height:40px;
     display:inline-block;
     cursor:pointer;
-    /* border:2px solid rgb(121, 121, 121); */
+    border:1px solid rgb(214, 214, 214);
+    
     /* background-color: white; */
     background: radial-gradient(white,rgb(0 0 0 / 0%) 70%,rgb(0 0 0 / 0%));
+
   }
   .aichamp.disabled{
     /* background-color: rgb(147, 147, 147); */
     border: none;
     height:40px;
     width: 40px;
+    cursor:unset;
+    background: radial-gradient(rgb(108, 108, 108),rgb(0 0 0 / 0%) 70%,rgb(0 0 0 / 0%));
   }
 
  
@@ -185,11 +225,11 @@ html{
     width:40px;
     height:40px;
     display:inline-block;
-    cursor:pointer;
+    /* cursor:pointer; */
     border: none;
     background: transparent;
     /* background-color: rgb(255, 255, 255); */
-    background: radial-gradient(white,rgb(0 0 0 / 0%) 70%,rgb(0 0 0 / 0%));
+    background: radial-gradient(rgb(108, 108, 108),rgb(0 0 0 / 0%) 70%,rgb(0 0 0 / 0%));
   }
   .mainbtn{
     /* width:150px;
@@ -250,6 +290,7 @@ html{
   .mapbtn > img{
     width: 40px;
   }
+  
   .mapbtn > a{
     margin-left: 5px;
     color:#9e9ec9;
@@ -265,6 +306,9 @@ html{
   }
   .mapbtn:hover,.champbtn:hover{
     transform: scale(1.05);
+  }
+  .mapbtn-marble{
+    padding: 10px 10px;
   }
   /* .champbtn{
     border: rgb(0, 102, 255) solid 2px;
@@ -382,7 +426,25 @@ text-align: center;
   #readybtn{
     color: white;
     border: 1px solid #ff5656;;
+    padding: 15px 70px;
+    background: transparent;
     /* background-color: darkgrey; */
+    border-radius: 10px;
+    font-size:   max(1.8rem,18px);;
+  }
+  #readybtn.active{
+    background-color: #ff5656;
+  }
+  #readybtn img{
+    width: max(1.8rem,18px);
+    vertical-align: sub;
+    visibility: hidden;
+  }
+  #readybtn.active img{
+    visibility: visible;
+  }
+  #readybtn:hover{
+    filter: brightness(0.8);
   }
 /* teamselection start   ============================================================== */
       #TeamSelectpage{
@@ -394,6 +456,7 @@ text-align: center;
         /* max-height: 600px; */
         /* height: min(800px,90vh); */
         display: grid;
+        border: 1px solid #9158ce;
         font-family: 'nanumB';
         grid-template-columns: 85% 15%;
       }
@@ -401,10 +464,8 @@ text-align: center;
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 1fr;
         /* background-color: rgb(44, 44, 44); */
-        background-color: #2a1343;
-
-        margin-left: 2vh;
-        margin-right: 2vh;
+        /* background-color: #2a1343; */
+        margin: 6px;
         justify-content: center;
         align-items: center;
         
@@ -434,7 +495,10 @@ text-align: center;
         cursor: pointer;
         border-radius: 1rem;
       }
-      .teamchoice:hover{
+      .teamchoice.disabled{
+        background: transparent;
+      }
+      .teamchoice:not(.disabled):hover{
         transform: scale(1.1);
       }
       .teamchoice > a{
@@ -473,7 +537,7 @@ text-align: center;
       }
       .red{
           /* background-color: #ff5252; */
-          background: rgba(255, 0, 0, 0.2);
+          background: rgba(255, 0, 0, 0.4);
           border: 2px solid #ff8484;
 
       }
@@ -482,7 +546,7 @@ text-align: center;
       }
       .blue{
         /* background-color: #2093ff; */
-        background: rgba(17,130,193,0.2);
+        background: rgba(17,130,193,0.5);
         border: 2px solid #84bdff;
       }
       .blue > a{
@@ -490,8 +554,8 @@ text-align: center;
       }
       
       .not_chosen{
-        filter: brightness(0.7);
-        background: transparent;
+        filter: brightness(0.6);
+        /* background: transparent; */
       }
       #teambuttons{
         display: flex;
@@ -512,8 +576,11 @@ text-align: center;
         margin: 7px 5px;
         /* border:none; */
         /* border-radius: 10px; */
-        height: 15%;
+        /* height: 15%; */
         padding: 10px;
+      }
+      #submitTeam{
+        
       }
       #teambuttons > button:hover{
         background-color: #3b0058;
@@ -554,10 +621,21 @@ text-align: center;
   #setting:hover{
     transform: scale(1.1);
   }
+  #overlay{
+    z-index: 2;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top:0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.3);
+    display: none;
+  }
   #settingpage{
     position: absolute;
     z-index: 3;
-    width: min(90%,900px);
+    /* width: min(90%,900px); */
+    padding-left: 10px;
     height: 80%;
     /* height: fit-content; */
     top:50px;
@@ -623,7 +701,7 @@ text-align: center;
   margin: 10px 20px;
 }
 #settingpage h5{
-  font-size: max(18px,2.3rem);
+  font-size: clamp(18px,2.3rem,25px);
 
   /* font-weight: bold; */
   font-family: "nanumEB";
@@ -633,7 +711,7 @@ text-align: center;
   background:linear-gradient(to right,#200f33 0%, #552686 50% ,#200f33 100%);
 }
 .setting_category{
-  display: inline-block;
+  /* display: inline-block; */
   /* display: grid;
   grid-template-columns: auto auto auto; */
   /* display: flex;

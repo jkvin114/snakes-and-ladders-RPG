@@ -3,7 +3,7 @@ import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { ServerPayloadInterface } from "./ServerPayloadInterface"
 import { BUILDING } from "./tile/Tile"
 const prefix="server:"
-const SERVER_EVENTS={
+const serverEvents={
     NEXTTURN:prefix+"nextturn",
     SHOW_DICE:prefix+"show_dice",
     THROW_DICE:prefix+"throwdice",
@@ -58,77 +58,77 @@ export class MarbleGameEventObserver {
             this.eventEmitter = callback
     }
     turnStart(turn:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.NEXTTURN, turn)
+        this.eventEmitter(this.rname, serverEvents.NEXTTURN, turn)
     }
     showDiceBtn(player:number,data:any){
-        this.eventEmitter(this.rname, SERVER_EVENTS.SHOW_DICE, player,data)
+        this.eventEmitter(this.rname, serverEvents.SHOW_DICE, player,data)
     }
     throwDice(player:number,data:ServerPayloadInterface.ThrowDiceData){
-        this.eventEmitter(this.rname,SERVER_EVENTS.THROW_DICE, player,data)
+        this.eventEmitter(this.rname,serverEvents.THROW_DICE, player,data)
     }
     walkMovePlayer(player:number,from:number,distance:number,movetype:string){
-        this.eventEmitter(this.rname, SERVER_EVENTS.WALK_MOVE, player,from,distance,movetype)
+        this.eventEmitter(this.rname, serverEvents.WALK_MOVE, player,from,distance,movetype)
     }
     teleportPlayer(player:number,pos:number,movetype:string){
-        this.eventEmitter(this.rname, SERVER_EVENTS.TELEPORT, player,pos,movetype)
+        this.eventEmitter(this.rname, serverEvents.TELEPORT, player,pos,movetype)
     }
     chooseBuild(pos:number,player:number,builds:ServerPayloadInterface.buildAvaliability[],buildsHave:BUILDING[],discount:number,money:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.CHOOSE_BUILD,player,pos,builds,buildsHave,discount,money)
+        this.eventEmitter(this.rname, serverEvents.CHOOSE_BUILD,player,pos,builds,buildsHave,discount,money)
     }
     askLoan(player:number,amount:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.ASK_LOAN, player,amount)
+        this.eventEmitter(this.rname, serverEvents.ASK_LOAN, player,amount)
     }
     askBuyout(player:number,pos:number,price:number,originalPrice:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.ASK_BUYOUT, player,pos,price,originalPrice)
+        this.eventEmitter(this.rname, serverEvents.ASK_BUYOUT, player,pos,price,originalPrice)
     }
     askTileSelection(turn:number,tiles:number[],source:string){
-        this.eventEmitter(this.rname, SERVER_EVENTS.ASK_TILE_SELECTION, turn,tiles,source)
+        this.eventEmitter(this.rname, serverEvents.ASK_TILE_SELECTION, turn,tiles,source)
     }
     askAttackDefenceCard(turn:number,cardname:string,attackName:string){
-        this.eventEmitter(this.rname, SERVER_EVENTS.ASK_ATTACK_DEFENCE_CARD, turn,cardname,attackName)
+        this.eventEmitter(this.rname, serverEvents.ASK_ATTACK_DEFENCE_CARD, turn,cardname,attackName)
     }
     askTollDefenceCard(turn:number,cardname:string,before:number,after:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.ASK_TOLL_DEFENCE_CARD, turn,cardname,before,after)
+        this.eventEmitter(this.rname, serverEvents.ASK_TOLL_DEFENCE_CARD, turn,cardname,before,after)
     }
     askGodHandSpecial(turn:number,canLiftTile:boolean){
-        this.eventEmitter(this.rname,SERVER_EVENTS.ASK_GODHAND_SPECIAL,turn,canLiftTile)
+        this.eventEmitter(this.rname,serverEvents.ASK_GODHAND_SPECIAL,turn,canLiftTile)
     }
     askIsland(turn:number,canEscape:boolean,escapePrice:number){
-        this.eventEmitter(this.rname,SERVER_EVENTS.ASK_ISLAND,turn,canEscape,escapePrice)
+        this.eventEmitter(this.rname,serverEvents.ASK_ISLAND,turn,canEscape,escapePrice)
     }
     setLandOwner(pos:number,player:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.SET_LANDOWNER, pos,player)
+        this.eventEmitter(this.rname, serverEvents.SET_LANDOWNER, pos,player)
     }
     updateToll(pos:number,toll:number,multiplier:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.UPDATE_TOLL, pos,toll,multiplier)
+        this.eventEmitter(this.rname, serverEvents.UPDATE_TOLL, pos,toll,multiplier)
     }
     updateMultipliers(change:{pos:number,toll:number,mul:number}[]){
-        this.eventEmitter(this.rname, SERVER_EVENTS.UPDATE_MULTIPLIERS, change)
+        this.eventEmitter(this.rname, serverEvents.UPDATE_MULTIPLIERS, change)
     }
     setOlympic(pos:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.UPDATE_OLYMPIC, pos)
+        this.eventEmitter(this.rname, serverEvents.UPDATE_OLYMPIC, pos)
     }
     setSavedCard(turn:number,name:string,level:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.SAVE_CARD, turn,name,level)
+        this.eventEmitter(this.rname, serverEvents.SAVE_CARD, turn,name,level)
     }
     ability(turn:number,name:ABILITY_NAME,itemName:string,desc:string,isblocked:boolean){
-        this.eventEmitter(this.rname, SERVER_EVENTS.ABILITY, turn,name,itemName,desc,isblocked)
+        this.eventEmitter(this.rname, serverEvents.ABILITY, turn,name,itemName,desc,isblocked)
     }
     indicatePull(tiles:number[]){
-        this.eventEmitter(this.rname, SERVER_EVENTS.PULL, tiles)
+        this.eventEmitter(this.rname, serverEvents.PULL, tiles)
     }
     setPlayerEffect(turn:number,effect:string,pos:number,status:boolean){
-        this.eventEmitter(this.rname,SERVER_EVENTS.PLAYER_EFFECT,turn,effect,pos,status)
+        this.eventEmitter(this.rname,serverEvents.PLAYER_EFFECT,turn,effect,pos,status)
     }
     createBlackHole(blackpos:number,whitepos:number){
-        this.eventEmitter(this.rname,SERVER_EVENTS.BLACKHOLE,blackpos,whitepos)
+        this.eventEmitter(this.rname,serverEvents.BLACKHOLE,blackpos,whitepos)
     }
     removeBlackHole(){
-        this.eventEmitter(this.rname,SERVER_EVENTS.REMOVE_BLACKHOLE)
+        this.eventEmitter(this.rname,serverEvents.REMOVE_BLACKHOLE)
 
     }
     modifyLand(pos:number,type:string,val:number){
-        this.eventEmitter(this.rname,SERVER_EVENTS.MODIFY_LAND,pos,type,val)
+        this.eventEmitter(this.rname,serverEvents.MODIFY_LAND,pos,type,val)
     }
     /**
      * 
@@ -138,46 +138,46 @@ export class MarbleGameEventObserver {
      */
     payMoney(payer:number,receiver:number,amount:number,type:string)
     {
-        this.eventEmitter(this.rname, SERVER_EVENTS.PAY, payer,receiver,amount,type)
+        this.eventEmitter(this.rname, serverEvents.PAY, payer,receiver,amount,type)
     }
     build(pos:number,builds:BUILDING[],player:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.BUILD, pos,builds,player)
+        this.eventEmitter(this.rname, serverEvents.BUILD, pos,builds,player)
     }
     monopolyAlert(player:number,type:number,pos:number[]){
-        this.eventEmitter(this.rname, SERVER_EVENTS.MONOPOLY_ALERT, player,type,pos)
+        this.eventEmitter(this.rname, serverEvents.MONOPOLY_ALERT, player,type,pos)
     }
     buyout(player:number,pos:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.BUYOUT, player,pos)
+        this.eventEmitter(this.rname, serverEvents.BUYOUT, player,pos)
     }
     obtainCard(player:number,cardname:string,cardLevel:number,cardType:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.OBTAIN_CARD, player,cardname,cardLevel,cardType)
+        this.eventEmitter(this.rname, serverEvents.OBTAIN_CARD, player,cardname,cardLevel,cardType)
     }
     changeMoney(player:number,money:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.UPDATE_MONEY, player,money)
+        this.eventEmitter(this.rname, serverEvents.UPDATE_MONEY, player,money)
     }
     clearBuildings(toremove:number[]){
-        this.eventEmitter(this.rname, SERVER_EVENTS.CLEAR_BUILDINGS, toremove)
+        this.eventEmitter(this.rname, serverEvents.CLEAR_BUILDINGS, toremove)
     }
     removeBuilding(toremove:number[],pos:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.REMOVE_BUILDNIG, pos,toremove)
+        this.eventEmitter(this.rname, serverEvents.REMOVE_BUILDNIG, pos,toremove)
     }
     setStatusEffect(pos:number,name:string,dur:number){
-        this.eventEmitter(this.rname, SERVER_EVENTS.TILE_STATUS_EFFECT, pos,name,dur)
+        this.eventEmitter(this.rname, serverEvents.TILE_STATUS_EFFECT, pos,name,dur)
     }
     setTileState(change:ServerPayloadInterface.tileStateChange){
-        this.eventEmitter(this.rname, SERVER_EVENTS.TILE_STATE_UPDATE, change)
+        this.eventEmitter(this.rname, serverEvents.TILE_STATE_UPDATE, change)
     }
     
     bankrupt(player:number)
     {
-        this.eventEmitter(this.rname, SERVER_EVENTS.BANKRUPT, player)
+        this.eventEmitter(this.rname, serverEvents.BANKRUPT, player)
     }
     gameOverWithMonopoly(player:number,monopoly:number)
     {
-        this.eventEmitter(this.rname, SERVER_EVENTS.GAMEOVER_MONOPOLY, player,monopoly)
+        this.eventEmitter(this.rname, serverEvents.GAMEOVER_MONOPOLY, player,monopoly)
     }
     gameoverWithBankrupt(player:number)
     {
-        this.eventEmitter(this.rname, SERVER_EVENTS.GAMEOVER_BANKRUPT, player)
+        this.eventEmitter(this.rname, serverEvents.GAMEOVER_BANKRUPT, player)
     }
 }
