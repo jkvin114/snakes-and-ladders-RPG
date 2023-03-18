@@ -8,6 +8,7 @@ const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./mong
 import { hasProp, writeFile } from "./core/Util"
 import { Worker, isMainThread } from "worker_threads"
 import { GameEventObserver, GameEventEmitter } from "./GameEventObserver"
+import { SimulationEvalGenerator } from "./RPGSimulation/SimulationEvalGenerator"
 const path = require("path")
 
 function workerTs(data: unknown) {
@@ -185,7 +186,6 @@ class RPGRoom extends Room {
 			//	console.log(data)
 				if (hasProp(data, "type") && hasProp(data, "value")) {
 					if (data.type === "progress") {
-						//console.log("progress " + isMainThread)
 						this.eventObserver.simulationProgress(data.value)
 					} else if (data.type === "end") {
 						resolve(data.value)
@@ -211,6 +211,21 @@ class RPGRoom extends Room {
 		let simple_stat = resultStat.simple_stat
 
 		this.reset()	
+
+		if(resultStat.gameRecords!=null && resultStat.gameRecords.length>0){
+			try{
+				let simEval=new SimulationEvalGenerator()
+				for(const game of resultStat.gameRecords){
+					simEval.addGame(game)
+				}
+				simEval.save()
+			}
+			catch(e){
+				console.error(e)
+				this.eventObserver.simulationStatReady("error",(e as any).toString())
+			}
+			
+		}
 
 		if (!stat) {
 			if (!simple_stat) {

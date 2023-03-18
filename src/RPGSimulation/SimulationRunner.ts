@@ -6,11 +6,12 @@ import { GameSetting } from "../GameSetting"
 import SETTINGS = require("../../res/globalsettings.json")
 import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean, getCurrentTime } from "../core/Util"
 import { ClientInputEventFormat } from "../data/EventFormat"
-import { TrainData } from "./TrainHelper"
+import { GameRecord, TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../../res/train_setting.json")
 import type { ReplayEventRecords } from "../ReplayEventRecord"
 import sizeof from 'object-sizeof'
 import process from 'process'
+import type { SimulationEvalGenerator } from "./SimulationEvalGenerator"
 const v8 = require("v8");
 const vm = require('vm');
 
@@ -213,7 +214,7 @@ class SimulationSetting {
 	}
 }
 
-const MAX_COUNT=TRAIN_SETTINGS.train?1000000:999
+const MAX_COUNT=TRAIN_SETTINGS.train?100000:300
 const GARBAGE_COLLECT_INTERVAL=5000
 const LABEL_CSV_SAVE_INTERVAL=500
 class Simulation {
@@ -226,7 +227,8 @@ class Simulation {
 	private roomName: string
 	private setting: SimulationSetting
 	private runnerId: string
-	private trainData:TrainData
+	trainData:TrainData
+	gameRecords:GameRecord[]
 	replayRecords:ReplayEventRecords[]
 	private startDateStr:string
 
@@ -272,6 +274,7 @@ class Simulation {
 	}
 
 	run(callback: Function,onError:Function) {
+		console.log("run"+this.count)
 		const PROGRESS_INTERVAL=Math.max(10,Math.floor(this.count/1000))
 		let consolelog = console.log
 		console.log = function () {}
@@ -281,6 +284,7 @@ class Simulation {
 		let i = 0
 		try{
 			for (i = 0; i < this.count - 1; ++i) {
+				
 				if (i % PROGRESS_INTERVAL === 0) parentPort.postMessage({ type: "progress", value: i / this.count })
 				this.playOneGame(i)
 		//		bar1.update(i)
@@ -305,9 +309,8 @@ class Simulation {
 		console.log("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
 
 		if(this.setting.isTrain){
-			this.trainData.onFinish(this.setting.mapPool)
+			this.gameRecords=this.trainData.onFinish(this.setting.mapPool)
 		}
-
 		callback()
 	}
 	private playOneGame(i: number) {
@@ -340,7 +343,6 @@ class Simulation {
 				}
 				this.summaryStats.add(gc.game.getSummaryStatistics())
 			}
-
 			if(this.setting.isTrain && gc){
 				this.trainData.addGame(gc.game.getTrainData())
 				this.trainData.addTrainLabel(...gc.game.getLabelData())
@@ -429,7 +431,8 @@ function runSimulation(data: SimulationInit): Promise<any> {
 			resolve({
 				replay:simulation.replayRecords,
 				stat: simulation.isSummaryOnly() ? null : simulation.getFinalStatistics(),
-				simple_stat: simulation.getSimpleResults()
+				simple_stat: simulation.getSimpleResults(),
+				gameRecords:simulation.gameRecords
 			})
 			reject(new Error("Request is failed"))
 		},

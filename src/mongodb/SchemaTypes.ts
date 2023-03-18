@@ -9,5 +9,5 @@ export namespace SchemaTypes{
     export type CommentReply = InferSchemaType<typeof commentReplySchema>;
     export type Friend = InferSchemaType<typeof friendSchema>;
     export type Follow = InferSchemaType<typeof followSchema>;
-
+    
 }

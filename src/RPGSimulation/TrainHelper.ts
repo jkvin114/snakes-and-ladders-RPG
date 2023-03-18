@@ -6,6 +6,7 @@ import fs = require("fs")
 import { getCurrentTime, makeArrayOf, roundToNearest, writeFile, writeToFile } from "./../core/Util"
 
 import { items as ItemList } from "../../res/item.json"
+import { SimulationEvalGenerator } from "./SimulationEvalGenerator"
 
 
 const CORE_ITEMS=ItemList.filter((i)=>i.itemlevel===3).map((i)=>i.id)
@@ -50,24 +51,25 @@ class Indicator{
         this.end_position=0
         this.damage_reduction_rate=0
     }
-    add(ind:Indicator){
-        this.damage_per_death+=ind.damage_per_death
-        this.damage_per_gold+=ind.damage_per_gold
-        this.damage_reduction_per_gold+=ind.damage_reduction_per_gold
-        this.damage_reduction_per_turn+=ind.damage_reduction_per_turn
-        this.heal_per_gold+=ind.heal_per_gold
-        this.end_position+=ind.end_position
-        this.damage_reduction_rate+=ind.damage_reduction_rate
+    static add(original:Indicator,ind:Indicator){
+        original.damage_per_death+=ind.damage_per_death
+        original.damage_per_gold+=ind.damage_per_gold
+        original.damage_reduction_per_gold+=ind.damage_reduction_per_gold
+        original.damage_reduction_per_turn+=ind.damage_reduction_per_turn
+        original.heal_per_gold+=ind.heal_per_gold
+        original.end_position+=ind.end_position
+        original.damage_reduction_rate+=ind.damage_reduction_rate
+        return original
     }
-    divide(count:number){
-        this.damage_per_death/=count
-        this.damage_per_gold/=count
-        this.damage_reduction_per_gold/=count
-        this.damage_reduction_per_turn/=count
-        this.heal_per_gold/=count
-        this.end_position/=count
-        this.damage_reduction_rate/=count
-        return this
+    static divide(ind:Indicator,count:number){
+        ind.damage_per_death/=count
+        ind.damage_per_gold/=count
+        ind.damage_reduction_per_gold/=count
+        ind.damage_reduction_per_turn/=count
+        ind.heal_per_gold/=count
+        ind.end_position/=count
+        ind.damage_reduction_rate/=count
+        return ind
     }
     getDiffRatio(other:Indicator){
         let ind=new Indicator(this.character)
@@ -79,6 +81,41 @@ class Indicator{
         ind.heal_per_gold=(other.heal_per_gold-this.heal_per_gold)/this.heal_per_gold 
         ind.end_position=(other.end_position-this.end_position)/this.end_position 
         return ind
+    }
+    static getEvalScores(totalavg:Indicator,winavg:Indicator):{name:string,average:number,winAverage:number}[]{
+        let arr=[]
+        arr.push({
+            name:"damage_per_death",
+            average:totalavg.damage_per_death,
+            winAverage:winavg.damage_per_death
+        })
+        arr.push({
+            name:"damage_reduction_per_turn",
+            average:totalavg.damage_reduction_per_turn,
+            winAverage:winavg.damage_reduction_per_turn
+        })
+        arr.push({
+            name:"damage_reduction_per_gold",
+            average:totalavg.damage_reduction_per_gold,
+            winAverage:winavg.damage_reduction_per_gold
+        })
+        arr.push({
+            name:"damage_reduction_rate",
+            average:totalavg.damage_reduction_rate,
+            winAverage:winavg.damage_reduction_rate
+        })
+        arr.push({
+            name:"damage_per_gold",
+            average:totalavg.damage_per_gold,
+            winAverage:winavg.damage_per_gold
+        })
+        arr.push({
+            name:"heal_per_gold",
+            average:totalavg.heal_per_gold,
+            winAverage:winavg.heal_per_gold
+        })
+
+        return arr
     }
     toString(){
         if(this.end_position===0) return ""
@@ -111,31 +148,35 @@ class Indicator{
 }
 
 
-class PlayerRecord{
+export class PlayerRecord{
     indicator:Indicator
     character:number
     isWinner:boolean
     coreItemBuild:number[]
-    constructor(indicator:Indicator,items:number[]){
+    team:boolean
+    constructor(indicator:Indicator,items:number[],team:boolean){
         this.indicator=indicator
         this.coreItemBuild=items
         this.character=indicator.character
         this.isWinner=indicator.isWinner
+        this.team=team
     }
 }
 
 class GameRecord{
     players:PlayerRecord[]
     totalturn:number
-    
-    winnerTurn:number
+    map:string
+    isTeam:boolean
 
-    constructor(totalturn:number){
+    constructor(totalturn:number,map:string,isTeam:boolean){
         this.totalturn=totalturn
+        this.map=map
         this.players=[]
+        this.isTeam=isTeam
     }
-    add(indicator:Indicator,items:number[]){
-        this.players.push(new PlayerRecord(indicator,items))
+    add(indicator:Indicator,items:number[],team:boolean){
+        this.players.push(new PlayerRecord(indicator,items,team))
     }
 }
 class TrainData{
@@ -183,10 +224,10 @@ class TrainData{
         for(let game of this.gameRecords){
             for(let p of game.players){
                 total+=1
-                ind.add(p.indicator)
+                Indicator.add(ind,p.indicator)
             }
         }
-        this.averageInd = ind.divide(total)
+        this.averageInd = Indicator.divide(ind,total)
     }
 
     calcAverageIndicatorForCharacters(){
@@ -237,10 +278,10 @@ class TrainData{
 
             for(const p of game.players){
                 total+=1
-                all_ind.add(p.indicator)
+                Indicator.add(all_ind,p.indicator)
 
                 character_total[p.character]+=1
-                character_ind[p.character].add(p.indicator)
+                Indicator.add(character_ind[p.character],p.indicator)
 
                 for(const [i,item] of p.coreItemBuild.entries()){
                     character_item_total[p.character].set(item,character_item_total[p.character].get(item)+1)
@@ -256,7 +297,7 @@ class TrainData{
 
                 if(p.isWinner){
                     winner_character_total[p.character]+=1
-                    winner_character_ind[p.character].add(p.indicator)
+                    Indicator.add(winner_character_ind[p.character],p.indicator)
                     win_rates[p.character]+=1
                     for(const [i,item] of p.coreItemBuild.entries()){
                         character_item_win_count[p.character].set(item,character_item_win_count[p.character].get(item)+1)
@@ -278,11 +319,11 @@ class TrainData{
         for(let i=0;i<COUNT;++i){
             if(character_total[i]>0){
                 win_rates[i]=win_rates[i]/character_total[i]
-                character_ind[i]=character_ind[i].divide(character_total[i])
+                character_ind[i]=Indicator.divide(character_ind[i],character_total[i])
             }
 
             if(winner_character_total[i]>0)
-                winner_character_ind[i]=winner_character_ind[i].divide(winner_character_total[i])
+                winner_character_ind[i]=Indicator.divide(winner_character_ind[i],winner_character_total[i])
             
             this.characterItemWinRates.push(defaultCoreItemMap())
 
@@ -316,7 +357,7 @@ class TrainData{
         }
 
         this.characterAverageInd=character_ind
-        this.averageInd = all_ind.divide(total)
+        this.averageInd = Indicator.divide(all_ind,total)
         this.winnerCharacterAverageInd=winner_character_ind
         this.characterWinRates=win_rates
 
@@ -427,17 +468,19 @@ class TrainData{
             console.error(e)
         }
     }
-
+    
     onFinish(maps:number[]){
         this.printRewardData()
         this.saveTrainData(maps)
         this.saveTrainLabel()
         if(this.writer1 && this.writer2){
-
+            
             this.writer1.close()
             this.writer2.close()
         }
-
+        if(!TRAIN_SETTINGS.save_eval) return []
+        
+        return this.gameRecords
     }
 }
 

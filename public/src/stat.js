@@ -1,4 +1,3 @@
-
 const ip = "http://" + sessionStorage.ip_address
 let table = []
 let othertable = []
@@ -7,15 +6,15 @@ let statData = []
 let LANG = sessionStorage.language
 let itemLists = []
 let playerNameLists = []
-let toolbarButtons=[]
+let toolbarButtons = []
 let SETTING = null
 let ITEMS = null
-function golink(link){
-	window.location.href=link
-  }
-const STATE_GAMES=0
-const STATE_SIMULATION=1
-const STATE_ONEGAME=2
+function golink(link) {
+	window.location.href = link
+}
+const STATE_GAMES = 0
+const STATE_SIMULATION = 1
+const STATE_ONEGAME = 2
 
 class InterfaceState {
 	constructor() {
@@ -27,8 +26,8 @@ class InterfaceState {
 		InterfaceState.page_max = 12
 		InterfaceState.current_page = 0
 		InterfaceState.page_direction = "next"
-		InterfaceState.sidebar_shown=false
-		InterfaceState.state=STATE_GAMES
+		InterfaceState.sidebar_shown = false
+		InterfaceState.state = STATE_GAMES
 	}
 }
 const chooseLang = function (kor, eng) {
@@ -36,7 +35,7 @@ const chooseLang = function (kor, eng) {
 	return eng
 }
 function changelang() {
-	$(".lang_dropdown").toggle()	
+	$(".lang_dropdown").toggle()
 }
 
 /**
@@ -53,19 +52,17 @@ function requestStatAfterGame(params) {
 }
 /**
  * request simulation list as summary
- * @param {*} start 
- * @param {*} count 
+ * @param {*} start
+ * @param {*} count
  */
 function requestSimulationSummary(start, count) {
 	$("#overlay").addClass("visible")
-	$.get("/stat/simulation/summary?start=" + start + "&count=" + count).done((data) =>
-		onReceiveSimulationSummary(data)
-	)
+	$.get("/stat/simulation/summary?start=" + start + "&count=" + count).done((data) => onReceiveSimulationSummary(data))
 }
 /**
  * request gamelist for normal games(not simulation games)
- * @param {*} start 
- * @param {*} count 
+ * @param {*} start
+ * @param {*} count
  */
 function requestGames(start, count) {
 	$("#overlay").addClass("visible")
@@ -104,7 +101,7 @@ function onPageResponse(success) {
  * called on changing gamelist page
  * on success,update page number and display the gamelist
  * @param {*} data is null if the page ended
- * @returns 
+ * @returns
  */
 function onReceiveGames(data) {
 	if (!data) {
@@ -119,9 +116,9 @@ function onReceiveGames(data) {
 
 /**
  * check if a character is included in team lock array
- * @param {*} char 
- * @param {*} teamlock 
- * @returns 
+ * @param {*} char
+ * @param {*} teamlock
+ * @returns
  */
 function getlockedTeam(char, teamlock) {
 	if (teamlock[0].includes(char)) return "red"
@@ -151,8 +148,8 @@ function onReceiveSimulationSummary(data) {
 
 		str += `<div class="summary_item summary_to_detail" value=${s.id}><div class="summary_characters">`
 		if (s.setting.length > 0) {
-			let charpools=getSetting(s, "characterPool")
-			if(charpools!=null){
+			let charpools = getSetting(s, "characterPool")
+			if (charpools != null) {
 				for (let c of getSetting(s, "characterPool")) {
 					str +=
 						'<div class="summary_char_icon ' +
@@ -162,8 +159,8 @@ function onReceiveSimulationSummary(data) {
 						'"></div>  '
 				}
 			}
-			let lockedCharacters=getSetting(s, "lockedCharacters")
-			if(lockedCharacters!=null){
+			let lockedCharacters = getSetting(s, "lockedCharacters")
+			if (lockedCharacters != null) {
 				for (let c of getSetting(s, "lockedCharacters")) {
 					str +=
 						'<div class="summary_char_icon locked ' +
@@ -173,28 +170,32 @@ function onReceiveSimulationSummary(data) {
 						'"></div>  '
 				}
 			}
-			
 
-			str +=
-				'</div><div>'
+			str += "</div><div>"
 
 			for (let m of getSetting(s, "mapPool")) {
-				str += '<div class="summary_map_icon" title="Map Type: '+getMapName(m)+'"><img src="' + getMapIconUrl(m) + '"></div>  '
+				str +=
+					'<div class="summary_map_icon" title="Map Type: ' +
+					getMapName(m) +
+					'"><img src="' +
+					getMapIconUrl(m) +
+					'"></div>  '
 			}
 			str += "</div><div>"
 			if (getSetting(s, "isTeam")) {
-				
 				if (getSetting(s, "divideTeamEqually")) {
 					str += '<img alt="equal team" src="res/img/ui/equal.png"  title="Divided team equally">'
-				}
-				else{
+				} else {
 					str += '<img alt="team" src="res/img/ui/team2.png"  title="Team Game">'
 				}
 			}
 			if (getSetting(s, "allowMirrorMatch")) {
 				str += '<img alt="mirror" src="res/img/ui/mirror.png"  title="Allowed mirror match" class="invert">'
 			}
-			str += '</div><div><img alt="count" src="res/img/svg/num.svg"  class="invert" title="Game count">:' + s.count + '  <img  alt="players" src="res/img/svg/users.svg" class="invert"  title="Player count per game">:'
+			str +=
+				'</div><div><img alt="count" src="res/img/svg/num.svg"  class="invert" title="Game count">:' +
+				s.count +
+				'  <img  alt="players" src="res/img/svg/users.svg" class="invert"  title="Player count per game">:'
 			if (getSetting(s, "randomizePlayerNumber")) {
 				str += "?"
 			} else {
@@ -203,11 +204,7 @@ function onReceiveSimulationSummary(data) {
 			str += "</div></div>"
 		} else {
 			//if there is no setting stored in data
-			str +=
-				'</div>' +
-				'<div><img src="res/img/svg/num.svg" class="invert">:' +
-				s.count +
-				"</div></div>"
+			str += "</div>" + '<div><img src="res/img/svg/num.svg" class="invert">:' + s.count + "</div></div>"
 		}
 	}
 	for (let i = 0; i < 10; ++i) {
@@ -222,18 +219,18 @@ function onReceiveSimulationSummary(data) {
 
 /**
  * invoked on clicking one entry in simulation list
- * 
+ *
  * fetches one whole simulation data by DB id
- * @param {*} id 
+ * @param {*} id
  */
 function requestStatById(id) {
 	let xhr = $.get("/stat/simulation?statid=" + id)
-	
+
 	$("#overlay").addClass("visible")
 	xhr.done((data) => {
 		// window.location.href = "#gamelist"
-	//	location.href="#gamelist_wrapper"
-		
+		//	location.href="#gamelist_wrapper"
+
 		showStat(data)
 	})
 }
@@ -256,7 +253,6 @@ function requestGlobalSetting() {
 		let params = document.location.href.split("?")[1]
 		if (params) requestStatAfterGame(params)
 		else requestGames(0, InterfaceState.page_max)
-
 	})
 }
 /**
@@ -269,7 +265,7 @@ function requestResource() {
 	xhr.done((data) => {
 		data = JSON.parse(data)
 		ITEMS = data.items
-		
+
 		addItemTooltipEvent()
 		requestGlobalSetting()
 	})
@@ -293,8 +289,8 @@ function getItemDescription(item) {
 	if (item.unique_effect != null) {
 		ability += `<b class=unique_effect_name>[${chooseLang("고유지속효과", "unique passive")}]</b>:
 			 ${chooseLang(item.unique_effect_kor, item.unique_effect)}`
-		if(item.active_cooltime!=null){
-			ability+=chooseLang(`(쿨타임 ${item.active_cooltime}턴)`,`(cooltime ${item.active_cooltime} turns)`)
+		if (item.active_cooltime != null) {
+			ability += chooseLang(`(쿨타임 ${item.active_cooltime}턴)`, `(cooltime ${item.active_cooltime} turns)`)
 		}
 	}
 	ability += "<br><br>" + chooseLang("가격: ", "price: ") + "<b class=price>" + String(item.price) + "</b>"
@@ -308,16 +304,14 @@ function addItemTooltipEvent() {
 	$(".item_tooltip").mouseenter(function (e) {
 		$(".tooltiptext")
 			.css({
-				visibility: "visible"
+				visibility: "visible",
 			})
 			.css($(this).offset())
-		
 
-		if($(this).offset().left < window.innerWidth/2){
+		if ($(this).offset().left < window.innerWidth / 2) {
 			$(".tooltiptext").removeClass("rightside")
 			$(".tooltiptext").addClass("leftside")
-		}
-		else{
+		} else {
 			$(".tooltiptext").removeClass("leftside")
 			$(".tooltiptext").addClass("rightside")
 		}
@@ -330,7 +324,7 @@ function addItemTooltipEvent() {
 		$(".tooltiptext").css("visibility", "hidden")
 	})
 }
-function hideDetail(){
+function hideDetail() {
 	return
 	$("#otherstattable").css({ visibility: "collapse" })
 	$("#itembuildTable").css({ visibility: "collapse" })
@@ -338,12 +332,10 @@ function hideDetail(){
 	$("#money_chart").hide()
 	$("#killRecordTable").css({ display: "none" })
 }
-function updateSimulationGridLayout(){
+function updateSimulationGridLayout() {
 	if (window.innerWidth > 1300) {
-
 		//$("#main").css("grid-template-columns", "auto 1000px")
-	} 
-	else{
+	} else {
 		//$("#main").css("grid-template-columns", "auto")
 	}
 }
@@ -351,27 +343,23 @@ function updateSimulationGridLayout(){
 /**
  * collapse summary section(gamelist/simulationlist) and change button state
  */
-function collapseSummary(){
-
+function collapseSummary() {
 	$("#summary").hide()
 	$("#summary_navbar").hide()
 	$("#summary-collapse").html("&#9660; expand")
-	$("#summary-collapse").data("collapsed","true")
+	$("#summary-collapse").data("collapsed", "true")
 }
 /**
  * expand summary section(gamelist/simulationlist) and change button state
  */
-function expandSummary(){
-
+function expandSummary() {
 	$("#summary-collapse").html("&#9650; collapse")
-	$("#summary-collapse").data("collapsed","false")
+	$("#summary-collapse").data("collapsed", "false")
 	$("#summary").show()
 	$("#summary_navbar").show()
 }
 
-
-function prevPage(){
-
+function prevPage() {
 	if (InterfaceState.current_page === 0) {
 		return
 	}
@@ -383,8 +371,7 @@ function prevPage(){
 		requestGames(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
 	}
 }
-function nextPage(){
-
+function nextPage() {
 	InterfaceState.page_direction = "next"
 	InterfaceState.current_page += 1
 	if (InterfaceState.state === STATE_SIMULATION) {
@@ -393,9 +380,8 @@ function nextPage(){
 		requestGames(InterfaceState.current_page * InterfaceState.page_max, InterfaceState.page_max)
 	}
 }
-function showSimulationPage(){
-
-	InterfaceState.current_page=0
+function showSimulationPage() {
+	InterfaceState.current_page = 0
 	$("#pagenum").html("1")
 	$(".intro_simulation").addClass("active")
 	$(".intro_game").removeClass("active")
@@ -405,13 +391,12 @@ function showSimulationPage(){
 	//$("#summary_navbar").show()
 	expandSummary()
 }
-function showNormalGamePage(){
-
-	InterfaceState.current_page=0
+function showNormalGamePage() {
+	InterfaceState.current_page = 0
 	$("#pagenum").html("1")
 	setState(STATE_GAMES)
 	requestGames(0, InterfaceState.page_max)
-//	window.scrollTo(0,0)
+	//	window.scrollTo(0,0)
 	$(".intro_simulation").removeClass("active")
 	$(".intro_game").addClass("active")
 	// $("#sidebar").css({left:"-50%"})
@@ -420,16 +405,17 @@ function showNormalGamePage(){
 }
 /**
  * set current page state and change overall layout ot page
- * @param {*} state 
+ * @param {*} state
  */
-function setState(state){
-	InterfaceState.state=state
+function setState(state) {
+	InterfaceState.state = state
 	$(".toolbar_item").hide()
-	switch(state){
+	switch (state) {
 		case STATE_ONEGAME:
 			$("#gamelist_wrapper").hide()
 			$("#summary-container").hide()
 			$("#summary-collapse").hide()
+			$("#stat-navbar").hide()
 			break
 		case STATE_GAMES:
 			$("#summary-container").show()
@@ -442,98 +428,90 @@ function setState(state){
 			$("#gamelist_wrapper").show()
 			$(toolbarButtons[0]).show()
 
-
-			
-			
 			break
 	}
 }
-function onSimulationGameListShow(){
-	
-
+function onSimulationGameListShow() {
 	collapseSummary()
 	$("#gamelist_wrapper").show()
 	$(".toolbar_item").hide()
 	if (window.innerWidth < 900) {
-		
 		// $(toolbarButtons[2]).show()
-	}
-	else{
+	} else {
 		$(toolbarButtons[0]).show()
 	}
 }
-function onGameListShow(){
-
+function onGameListShow() {
 	$("#summary").removeClass("hidden")
 }
-function onGameDetailShow(){
-
+function onGameDetailShow() {
 	collapseSummary()
 	$("#detail_side").show()
-	
-	$(".toolbar_item").hide()
-	if(InterfaceState.state===STATE_SIMULATION){
 
+	$(".toolbar_item").hide()
+	if (InterfaceState.state === STATE_SIMULATION) {
 		if (window.innerWidth < 900) {
 			$(toolbarButtons[2]).show()
 			$("#gamelist_wrapper").hide()
-		}
-		else{
+		} else {
 			$(toolbarButtons[0]).show()
 		}
-	}
-	else{
+	} else {
 		$("#gamelist_wrapper").hide()
 	}
 }
-$(window).on("load",function(){
-})
+$(window).on("load", function () {})
 $(document).ready(function () {
 	itemLists = $(".itemlist").toArray()
 	playerNameLists = $(".playername").toArray()
 	table = $(".statTableRow").toArray()
 	othertable = $(".otherTableRow").toArray()
 	itembuildTable = $(".itembuildTableRow").toArray()
-	toolbarButtons=$(".toolbar_item").toArray()
+	toolbarButtons = $(".toolbar_item").toArray()
 	$(".toolbar_item").hide()
 	let is = new InterfaceState()
 	$("#stattable").hide()
 	$("#detailbtn_container").hide()
 	// $("#summary_navbar").hide()
-	
+
 	requestResource()
+	document.getElementById("game_detail").onscroll = function () {
+		// console.log("scroll" + document.getElementById("game_detail").scrollTop)
+		if (document.getElementById("game_detail").scrollTop > 150) {
+			document.getElementById("root").scrollTo(0, 1000)
+		} else {
+			document.getElementById("root").scrollTo(0, 0)
+		}
+	}
 
-
-	  
-	$("#langbtn").click(function(){
+	$("#langbtn").click(function () {
 		$(".lang_dropdown").show()
 	})
-	
-	$(".dropitem").click(function(){
-	  $(".lang_dropdown").hide()
-	  let lang=$(this).attr("value")
-	  LANG=lang
+
+	$(".dropitem").click(function () {
+		$(".lang_dropdown").hide()
+		let lang = $(this).attr("value")
+		LANG = lang
 	})
-	$("#summary-collapse").click(function(){
-		let collapsed=$(this).data("collapsed")
-		if(collapsed==="true"){
+	$("#summary-collapse").click(function () {
+		let collapsed = $(this).data("collapsed")
+		if (collapsed === "true") {
 			expandSummary()
-		}
-		else{
+		} else {
 			collapseSummary()
 		}
 	})
-	$(toolbarButtons[0]).click(function(){
+	$(toolbarButtons[0]).click(function () {
 		$("#gamelist_wrapper").hide()
 		$(this).hide()
 		$(toolbarButtons[1]).show()
 	})
-	$(toolbarButtons[1]).click(function(){
+	$(toolbarButtons[1]).click(function () {
 		$("#gamelist_wrapper").show()
 		$(this).hide()
 		$(toolbarButtons[0]).show()
 	})
-	$(toolbarButtons[2]).click(function(){
+	$(toolbarButtons[2]).click(function () {
 		$("#gamelist_wrapper").show()
 		$("#detail_side").hide()
 		$(this).hide()
@@ -544,22 +522,19 @@ $(document).ready(function () {
 	// 	LANG=lang
 	//   })
 
-	  $("#toggle_fullscreen").click(()=>{
-	//	console.log($(this).data("on"))
-		if(!$(this).data("on")){
-		  
-		  document.documentElement.requestFullscreen()
-		  $(this).data("on",true)
+	$("#toggle_fullscreen").click(() => {
+		//	console.log($(this).data("on"))
+		if (!$(this).data("on")) {
+			document.documentElement.requestFullscreen()
+			$(this).data("on", true)
+		} else {
+			document.exitFullscreen()
+			$(this).data("on", false)
 		}
-		else {
-		  document.exitFullscreen()
-		  $(this).data("on",false)
-		}
-	  })
+	})
 
 	$(".intro_simulation").click(showSimulationPage)
 	$(".intro_game").click(showNormalGamePage)
-
 
 	$(".quit").click(function () {
 		window.location.href = "index.html"
@@ -580,7 +555,7 @@ $(document).ready(function () {
 	// 		if (window.innerWidth > 1300) {
 	// 			$(this).css("right", "1000px")
 
-	// 		} 
+	// 		}
 	// 		InterfaceState.gamelist_hidden = false
 	// 	} else {
 	// 		$("#gamelist_wrapper").hide()
@@ -588,7 +563,7 @@ $(document).ready(function () {
 	// 		InterfaceState.gamelist_hidden = true
 	// 	}
 	// })
-	$("#show-holder").click(function(){
+	$("#show-holder").click(function () {
 		$("#holder").toggle()
 	})
 
@@ -607,7 +582,6 @@ $(document).ready(function () {
 		}
 	})
 	$("#maximize_list_btn").click(function () {
-		
 		if (InterfaceState.gamelist_maximized) {
 			updateSimulationGridLayout()
 			InterfaceState.gamelist_maximized = false
@@ -621,7 +595,7 @@ $(document).ready(function () {
 		}
 	})
 	$(".detailbtn").click(function () {
-		if($(this).hasClass("active")){
+		if ($(this).hasClass("active")) {
 			hideDetail()
 			$(this).removeClass("active")
 			return
@@ -677,20 +651,16 @@ $(document).ready(function () {
 
 		return false
 	}
-	$("#sidebarbtn").click(function(){
-		if(InterfaceState.sidebar_shown){
-			InterfaceState.sidebar_shown=false
-			$("#sidebar").animate({left:-150},200)
+	$("#sidebarbtn").click(function () {
+		if (InterfaceState.sidebar_shown) {
+			InterfaceState.sidebar_shown = false
+			$("#sidebar").animate({ left: -150 }, 200)
+		} else {
+			$("#sidebar").animate({ left: 0 }, 200)
+			InterfaceState.sidebar_shown = true
 		}
-		else{
-			$("#sidebar").animate({left:0},200)
-			InterfaceState.sidebar_shown=true
-		}
-		
 	})
-	$("#close_sidebar").click(function(){
-		
-	})
+	$("#close_sidebar").click(function () {})
 })
 
 /**
@@ -706,29 +676,29 @@ function setItem(num, list, names) {
 	$(".itemlist").append(num + 1 + "P Items have: " + str + "<br>")
 }
 
-function convertCountToItemSlots(items,isZeroIndex) {
+function convertCountToItemSlots(items, isZeroIndex) {
 	let itemslot = []
 	for (let i = 0; i < items.length; ++i) {
 		for (let j = 0; j < items[i]; ++j) {
-			itemslot.push(isZeroIndex?i:i-1)
+			itemslot.push(isZeroIndex ? i : i - 1)
 		}
 	}
 	return itemslot
 }
 /**
- * set player table`s item list 
- * @param {*} turn 
- * @param {*} item 
+ * set player table`s item list
+ * @param {*} turn
+ * @param {*} item
  */
-function setItemList(turn, item,isZeroIndex) {
+function setItemList(turn, item, isZeroIndex) {
 	//console.log(turn)
 	let text = ""
 	if (item.length > 20) {
-		item = convertCountToItemSlots(item,isZeroIndex)
+		item = convertCountToItemSlots(item, isZeroIndex)
 	}
-	let i=0
+	let i = 0
 	for (let it of item) {
-		i+=1
+		i += 1
 		if (it === -1) {
 			text += "<div class='toast_itemimg'><img alt='empty' src='res/img/store/emptyslot.png'> </div>"
 		} else {
@@ -739,16 +709,15 @@ function setItemList(turn, item,isZeroIndex) {
 				-1 * it * 100 +
 				"px'; > </div>"
 		}
-		if(i>0 && i%6===0) text+="<br>"
+		if (i > 0 && i % 6 === 0) text += "<br>"
 	}
 
-	$(itemLists[turn]).html('<div class=itemlist_container>'+text+'</div>')
-
+	$(itemLists[turn]).html("<div class=itemlist_container>" + text + "</div>")
 }
 /**
- * 
- * @param {*} rank 
- * @param {*} data 
+ *
+ * @param {*} rank
+ * @param {*} data
  * @returns player name of the rank(index)
  */
 function getPlayerName(rank, data) {
@@ -764,7 +733,7 @@ function getPlayerName(rank, data) {
  * @returns
  */
 function getCharImgUrl(champ_id) {
-	if(champ_id===undefined) return ""
+	if (champ_id === undefined) return ""
 	return "res/img/character/illust/" + SETTING.characters[champ_id].illustdir
 }
 function getMapIconUrl(map_id) {
@@ -784,7 +753,7 @@ function getMapIconUrl(map_id) {
 		return "res/img/ui/setting.png"
 	}
 }
-function getMapName(map_id){
+function getMapName(map_id) {
 	if (map_id === 0 || map_id === "default") {
 		return "Default"
 	}
@@ -809,13 +778,13 @@ function getChampImgofTurn(data, turn) {
 	return ""
 }
 
-function writeTrainStats(totalturn,playerdata){
-	str=`${playerdata.name}<br> 데스당 피해량: ${Math.floor(playerdata.stats[2]/Math.max(playerdata.death,0.5))}
-	<br> 턴당 피해감소량: ${Math.floor(playerdata.stats[7]/totalturn)}
-	<br> 피해감소율: ${playerdata.stats[7]/(playerdata.stats[7]+playerdata.stats[0])}<br>
-	골드당 피해량: ${playerdata.stats[2]/(playerdata.stats[4])}<br>
-	골드당 피해감소량: ${playerdata.stats[7]/(playerdata.stats[4])}<br>
-	골드당 회복량: ${playerdata.stats[3]/(playerdata.stats[4])}<br>`
+function writeTrainStats(totalturn, playerdata) {
+	str = `${playerdata.name}<br> 데스당 피해량: ${Math.floor(playerdata.stats[2] / Math.max(playerdata.death, 0.5))}
+	<br> 턴당 피해감소량: ${Math.floor(playerdata.stats[7] / totalturn)}
+	<br> 피해감소율: ${playerdata.stats[7] / (playerdata.stats[7] + playerdata.stats[0])}<br>
+	골드당 피해량: ${playerdata.stats[2] / playerdata.stats[4]}<br>
+	골드당 피해감소량: ${playerdata.stats[7] / playerdata.stats[4]}<br>
+	골드당 회복량: ${playerdata.stats[3] / playerdata.stats[4]}<br>`
 	$("#train_detail p").append(str)
 	$("#train_detail").show()
 }
@@ -825,20 +794,21 @@ function drawKillRecord(data) {
 	if (data.killRecord.length === 0) {
 		$(".detailbtn:nth-child(3)").hide()
 		return
-	}//<b>&#10140;</b>
-	let count=1
+	} //<b>&#10140;</b>
+	let count = 1
 	$(".detailbtn:nth-child(3)").show()
 	let turn = data.killRecord[0].turn
 	let str = "<div class='killframewrapper'>"
 	for (let k of data.killRecord) {
 		if (k.turn !== turn) {
-			str += "<b>"+chooseLang("턴 ","Turn ") + String(turn) + "</b>"+"</div>"
+			str += "<b>" + chooseLang("턴 ", "Turn ") + String(turn) + "</b>" + "</div>"
 			turn = k.turn
-			if(count%12===0) str+="<br>"
-			count+=1
-			str+="<div class='killframewrapper'>"
+			if (count % 12 === 0) str += "<br>"
+			count += 1
+			str += "<div class='killframewrapper'>"
 		}
-		str += "<div class='killframe'><div class='charframe'><img alt='char' src='" + getChampImgofTurn(data, k.killer) + "'>"
+		str +=
+			"<div class='killframe'><div class='charframe'><img alt='char' src='" + getChampImgofTurn(data, k.killer) + "'>"
 		if (k.killer >= 0) {
 			str += "<b class='charframetxt'>" + (k.killer + 1) + "P</b>"
 		} else {
@@ -851,8 +821,8 @@ function drawKillRecord(data) {
 			(k.dead + 1) +
 			"P</b></div></div><br>"
 	}
-	
-	str += "<b>"+chooseLang("턴 ","Turn ") + String(turn) + "</b>"+"</div>"
+
+	str += "<b>" + chooseLang("턴 ", "Turn ") + String(turn) + "</b>" + "</div>"
 
 	$("#killRecordContent").html(str)
 }
@@ -864,7 +834,7 @@ function drawKillRecord(data) {
 
 */
 function getSetting(game, setting) {
-	if (!game ||!game.setting || game.setting.length === 0 || !game.setting[0].name) return null
+	if (!game || !game.setting || game.setting.length === 0 || !game.setting[0].name) return null
 	let s = game.setting.filter((s) => s.name === setting)
 	if (s && s.length > 0) return s[0].value
 	return null
@@ -879,28 +849,28 @@ function drawSimulationGraph(winRateList, avgDamageList) {
 				{
 					text: chooseLang("평균 딜량", "Average Damage Dealt"),
 					fontSize: 30,
-					fill: "white"
-				}
+					fill: "white",
+				},
 			],
 			xAxes: [
 				{
 					type: "CategoryAxis",
 					dataFields: {
-						category: "category"
+						category: "category",
 					},
 					renderer: {
 						labels: {
 							fill: "#ffffff",
-							fontSize: 10
+							fontSize: 10,
 						},
 						grid: {
 							template: {
-								disabled: true
-							}
+								disabled: true,
+							},
 						},
-						minGridDistance: 20
-					}
-				}
+						minGridDistance: 20,
+					},
+				},
 			],
 			yAxes: [
 				{
@@ -909,16 +879,16 @@ function drawSimulationGraph(winRateList, avgDamageList) {
 					renderer: {
 						labels: {
 							fill: "#ffffff",
-							fontSize: 15
+							fontSize: 15,
 						},
 						maxLabelPosition: 1,
 						grid: {
 							template: {
-								disabled: true
-							}
-						}
-					}
-				}
+								disabled: true,
+							},
+						},
+					},
+				},
 			],
 			series: [
 				{
@@ -931,22 +901,22 @@ function drawSimulationGraph(winRateList, avgDamageList) {
 								fill: "white",
 								truncate: false,
 								hideOversized: false,
-								dy: 15
-							}
-						}
+								dy: 15,
+							},
+						},
 					],
 					type: "ColumnSeries",
 					columns: {
 						fill: "#6593F5",
 						width: "50%",
-						stroke: "none"
+						stroke: "none",
 					},
 					dataFields: {
 						valueY: "value",
-						categoryX: "category"
-					}
-				}
-			]
+						categoryX: "category",
+					},
+				},
+			],
 		},
 		document.getElementById("avgdamageGraph")
 	)
@@ -957,8 +927,8 @@ function drawSimulationGraph(winRateList, avgDamageList) {
 				{
 					text: chooseLang("승리횟수", "Wins"),
 					fontSize: 30,
-					fill: "white"
-				}
+					fill: "white",
+				},
 			],
 			type: "PieChart",
 			data: winRateList,
@@ -967,38 +937,37 @@ function drawSimulationGraph(winRateList, avgDamageList) {
 					slices: {
 						stroke: "#4a2abb",
 						strokeWidth: 2,
-						strokeOpacity: 1
+						strokeOpacity: 1,
 					},
 					ticks: {
 						stroke: "white",
 						fill: "white",
-						strokeWidth: "3px"
+						strokeWidth: "3px",
 					},
 					labels: {
 						fontSize: "1.3vw",
 						fill: "white",
 						maxWidth: 200,
-						wrap: true
+						wrap: true,
 					},
 					type: "PieSeries",
 					dataFields: {
 						value: "value",
-						category: "category"
-					}
-				}
+						category: "category",
+					},
+				},
 			],
 			radius: "70%",
-			innerRadius: "30%"
+			innerRadius: "30%",
 		},
 		document.getElementById("winrateGraph")
 	)
 }
-function showGameList(data){
-	
+function showGameList(data) {
 	updateSimulationGridLayout()
 	$("#simulation_detail").show()
 	statData = data.stat
-	if(statData.length <=0){
+	if (statData.length <= 0) {
 		alert("empty statistics")
 		return
 	}
@@ -1011,7 +980,7 @@ function showGameList(data){
 			{ kill: 0, death: 0, assist: 0 },
 			{ kill: 0, death: 0, assist: 0 },
 			{ kill: 0, death: 0, assist: 0 },
-			{ kill: 0, death: 0, assist: 0 }
+			{ kill: 0, death: 0, assist: 0 },
 		]
 		let avgDamageList = []
 		let avgKdaList = []
@@ -1057,17 +1026,17 @@ function showGameList(data){
 		for (let i = 0; i < plist.length; ++i) {
 			avgDamageList.push({
 				category: plist[i].name,
-				value: Math.floor(dealamt[i] / data.count)
+				value: Math.floor(dealamt[i] / data.count),
 			})
 			avgKdaList.push({
 				category: plist[i].name,
 				k: Math.floor(100 * kdas[i].kill) / 100,
 				d: Math.floor(100 * kdas[i].death) / 100,
-				a: Math.floor(100 * kdas[i].assist) / 100
+				a: Math.floor(100 * kdas[i].assist) / 100,
 			})
 			winRateList.push({
 				category: plist[i].name,
-				value: wins[i]
+				value: wins[i],
 			})
 		}
 
@@ -1077,7 +1046,9 @@ function showGameList(data){
 			.html("")
 			.append("Count:" + statData.length)
 		if (data.version != null && data.createdAt != null) {
-			$("#simulation_info").append("<br>version:" + data.version + "<br>Time:" + data.createdAt.slice(0, 16)+"<br>Average turn:"+ totalturn)
+			$("#simulation_info").append(
+				"<br>version:" + data.version + "<br>Time:" + data.createdAt.slice(0, 16) + "<br>Average turn:" + totalturn
+			)
 		}
 
 		// $("#simulation_result").html("Simulation average Turn:" + totalturn+", ")
@@ -1094,12 +1065,10 @@ function showGameList(data){
 
 	let string = ""
 	for (let i = 0; i < statData.length; ++i) {
-		string += '<div class="onegame_container" onclick=showonestat(' +
-		String(i) +
-		')>'
+		string += '<div class="onegame_container" onclick=showonestat(' + String(i) + ")>"
 
 		for (let j = 0; j < 4; ++j) {
-			if(j==0 || j==2) string+="<div>"
+			if (j == 0 || j == 2) string += "<div>"
 
 			if (j < statData[i].players.length) {
 				let p = statData[i].players[j]
@@ -1107,10 +1076,12 @@ function showGameList(data){
 				if (statData[i].isTeam && p.team === true) teamstr = "red"
 				else if (statData[i].isTeam && p.team === false) teamstr = "blue"
 				string +=
-					'<div class="character"><div class="charimg list_charimg '+
+					'<div class="character"><div class="charimg list_charimg ' +
 					'"><img alt="char" src="' +
 					getCharImgUrl(p.champ_id) +
-					'"></div><a class="charkda '+teamstr+'">' +
+					'"></div><a class="charkda ' +
+					teamstr +
+					'">' +
 					p.kda[0] +
 					"/" +
 					p.kda[1] +
@@ -1120,18 +1091,26 @@ function showGameList(data){
 			} else {
 				string += "<div></div>"
 			}
-			if(j==1 || j==3) string+="</div>"
+			if (j == 1 || j == 3) string += "</div>"
 		}
 		string += ""
-		if(statData[i].map_data!=null){
-			string += '<div><div class="gameinfo"><img alt="map" class="detail_map_icon" title="Map Type: '+getMapName(statData[i].map_data.name)+'" src="' + getMapIconUrl(statData[i].map_data.name) + '"></div>'
+		if (statData[i].map_data != null) {
+			string +=
+				'<div><div class="gameinfo"><img alt="map" class="detail_map_icon" title="Map Type: ' +
+				getMapName(statData[i].map_data.name) +
+				'" src="' +
+				getMapIconUrl(statData[i].map_data.name) +
+				'"></div>'
 		}
-		string += '<div class="gameinfo"><img alt="turns" src="res/img/svg/dice.svg" class="icon" title="total turns">' + statData[i].totalturn + '</div>'
-		if(statData[i].replay!=null)
-		string += '<div class="gameinfo"><img alt="replay" src="res/img/svg/play.svg" class="icon" title="Replay avaliable"></div>'
+		string +=
+			'<div class="gameinfo"><img alt="turns" src="res/img/svg/dice.svg" class="icon" title="total turns">' +
+			statData[i].totalturn +
+			"</div>"
+		if (statData[i].replay != null)
+			string +=
+				'<div class="gameinfo"><img alt="replay" src="res/img/svg/play.svg" class="icon" title="Replay avaliable"></div>'
 
-		string+="</div></div>"
-		
+		string += "</div></div>"
 
 		if (statData[i].setting != null && statData[i].setting.length > 0 && statData[i].setting[0].name != null) {
 			// string +=
@@ -1153,18 +1132,17 @@ function showGameList(data){
 		// 	'<img src="res/img/svg/zoom-in.svg" class="show_detail" ' +
 		// 	"></div></div>"
 	}
-	for(let i=0;i<10;++i){
-		string+='<div class="onegame_container dummy"></div>'
+	for (let i = 0; i < 10; ++i) {
+		string += '<div class="onegame_container dummy"></div>'
 	}
 
 	//simulation gamelist
 	if (!data.isGamelist) {
-		$("#gamelist_side").html(string+`<div class="tall-dummy"></div>`)
-		
-		onSimulationGameListShow()
-		
+		$("#gamelist_side").html(string + `<div class="tall-dummy"></div>`)
 
-	} else {//gamelist
+		onSimulationGameListShow()
+	} else {
+		//gamelist
 		$("#summary").html(string)
 		onGameListShow()
 	}
@@ -1179,7 +1157,7 @@ function showStat(data) {
 	$("#detail_side").hide()
 	if (!data.multiple) {
 		$("#gamelist_wrapper").css("height", "0")
-		$("#gamelist_wrapper").addClass('collapse')
+		$("#gamelist_wrapper").addClass("collapse")
 		$("#holder").hide()
 
 		$(".simulationGraph").hide()
@@ -1190,32 +1168,27 @@ function showStat(data) {
 	}
 }
 
+const randomHex = (length) =>
+	("0".repeat(length) + Math.floor(Math.random() * 16 ** length).toString(16)).slice(-length)
 
-const randomHex = length => (
-	'0'.repeat(length) 
-	+ Math.floor((Math.random() * 16 ** length))
-	.toString(16)
-).slice(-length);
-
-
-function drawSmallGraph(data,graphId){
-	let max=-Infinity
-	let smallgraphs=$(".game-detail-graph-players").toArray()
-	for(let d of data){
-		max=Math.max(max,d.value)
+function drawSmallGraph(data, graphId) {
+	let max = -Infinity
+	let smallgraphs = $(".game-detail-graph-players").toArray()
+	for (let d of data) {
+		max = Math.max(max, d.value)
 	}
 
-	let str=""
-	let sorted=data.sort((a,b)=>a.turn-b.turn)
+	let str = ""
+	let sorted = data.sort((a, b) => a.turn - b.turn)
 	console.log(sorted)
-	let widths=new Map()
-	for(const player of sorted){
-		let id=randomHex(4)
-		widths.set(id,100 * (player.value/max))
-		str+=`
+	let widths = new Map()
+	for (const player of sorted) {
+		let id = randomHex(4)
+		widths.set(id, 100 * (player.value / max))
+		str += `
 		<div class="game-detail-graph-oneplayer">
 			<div class="game-detail-graph-name">
-				<b>${player.turn+1}P</b><img alt="char" src="${getCharImgUrl(player.champ)}">
+				<b>${player.turn + 1}P</b><img alt="char" src="${getCharImgUrl(player.champ)}">
 			</div>
 			<div class="game-detail-graph-value">
 				<div class="game-detail-graph-amount" id='${id}'"></div>
@@ -1226,15 +1199,14 @@ function drawSmallGraph(data,graphId){
 	}
 
 	$(smallgraphs[graphId]).html(str)
-	for(const [id,val] of widths.entries()){
-		$("#"+id).animate({width:val+"%"},1000)
+	for (const [id, val] of widths.entries()) {
+		$("#" + id).animate({ width: val + "%" }, 1000)
 	}
-
 }
 
 /**
  * only called from selecting one of simulation games
- * @param {*} n 
+ * @param {*} n
  */
 function showonestat(n) {
 	$("#holder").hide()
@@ -1260,10 +1232,9 @@ function multiKillText(count) {
 
 /**
  * display single game data
- * @param {*} data 
+ * @param {*} data
  */
 function showSingleStat(data) {
-	
 	$("#overlay").addClass("visible")
 	onGameDetailShow()
 	let damagetakenC_graph = []
@@ -1289,28 +1260,27 @@ function showSingleStat(data) {
 	$(".detailbtn:nth-child(3)").html(chooseLang("킬/데스", "Kill/Death"))
 	$(".detailbtn:nth-child(4)").html(chooseLang("위치", "Position"))
 	$(".detailbtn:nth-child(5)").html(chooseLang("돈", "Money"))
-	let smallGraphTypes=$(".game-detail-graph-type").toArray()
-	$(smallGraphTypes[0]).html(chooseLang("입힌 피해량","Damage Dealt"))
-	$(smallGraphTypes[1]).html(chooseLang("플레이어에게 받은 피해","Damage From Players"))
-	$(smallGraphTypes[2]).html(chooseLang("장애물에게 받은 피해","Damage From Obstacle"))
-	$(smallGraphTypes[3]).html(chooseLang("회복량","Heal Amount"))
-	$(smallGraphTypes[4]).html(chooseLang("획득한 돈","Money Earned"))
-	$(smallGraphTypes[5]).html(chooseLang("피해 감소량","Damage Reduced"))
-	let gameDetailValues=$(".game-detail-value").toArray()
+	let smallGraphTypes = $(".game-detail-graph-type").toArray()
+	$(smallGraphTypes[0]).html(chooseLang("입힌 피해량", "Damage Dealt"))
+	$(smallGraphTypes[1]).html(chooseLang("플레이어에게 받은 피해", "Damage From Players"))
+	$(smallGraphTypes[2]).html(chooseLang("장애물에게 받은 피해", "Damage From Obstacle"))
+	$(smallGraphTypes[3]).html(chooseLang("회복량", "Heal Amount"))
+	$(smallGraphTypes[4]).html(chooseLang("획득한 돈", "Money Earned"))
+	$(smallGraphTypes[5]).html(chooseLang("피해 감소량", "Damage Reduced"))
+	let gameDetailValues = $(".game-detail-value").toArray()
 	$("#train_detail").hide()
 	$("#stattable").show()
 	// $("#detailbtn_container").show()
-	if(!data.replay || data.replay===""){
+	if (!data.replay || data.replay === "") {
 		$("#replay").hide()
-	}
-	else{
+	} else {
 		$("#replay").show()
-		$("#replay-btn").click(()=>{
-			window.location.href="gamepage.html?isreplay=true&replayid="+data.replay
+		$("#replay-btn").click(() => {
+			window.location.href = "gamepage.html?isreplay=true&replayid=" + data.replay
 		})
 	}
 	$("#train_detail p").html("")
-	let isLegacy=false
+	let isLegacy = false
 
 	if (data.version >= 2) {
 		$(".detailbtn:nth-child(4)").show()
@@ -1329,7 +1299,7 @@ function showSingleStat(data) {
 				value1: -10,
 				value2: -10,
 				value3: -10,
-				value4: -10
+				value4: -10,
 			}
 			for (let j = 0; j < data.players.length; ++j) {
 				let p = data.players[j].positionRecord[i]
@@ -1344,7 +1314,7 @@ function showSingleStat(data) {
 				value1: -1000,
 				value2: -1000,
 				value3: -1000,
-				value4: -1000
+				value4: -1000,
 			}
 			for (let j = 0; j < data.players.length; ++j) {
 				let p = data.players[j].moneyRecord[i]
@@ -1364,13 +1334,13 @@ function showSingleStat(data) {
 						value: value,
 						label: {
 							text: String(value),
-							fill: "#ffffff"
+							fill: "#ffffff",
 						},
 						grid: {
 							strokeOpacity: 1,
 							stroke: "#707070",
-							strokeWidth: 1
-						}
+							strokeWidth: 1,
+						},
 					})
 				}
 			}
@@ -1378,29 +1348,33 @@ function showSingleStat(data) {
 				value: data.map_data.finish,
 				label: {
 					text: String(data.map_data.finish),
-					fill: "#ffffff"
+					fill: "#ffffff",
 				},
 				grid: {
 					strokeOpacity: 1,
 					stroke: "#707070",
-					strokeWidth: 1
-				}
+					strokeWidth: 1,
+				},
 			})
 		}
 		$(".player-data-container").remove()
 		$(".tall-dummy-gamedetail").remove()
 		for (let i = 0; i < data.players.length; ++i) {
 			// $(itembuildTable[i]).children(".itembuildTableName").html(data.players[i].name)
-			const p=data.players[i]
+			const p = data.players[i]
 			//if there is no record
-			let itemstr=""
-			if (p.itemRecord.length>0) {
+			let itemstr = ""
+			if (p.itemRecord.length > 0) {
 				$(".detailbtn:nth-child(2)").show()
 				let turn = p.itemRecord[0].turn
 				itemstr = "<a class='itemrecord-text'>" + turn + chooseLang("턴", "T") + "</a><div class='itemrecord-item'>"
 				for (let item of p.itemRecord) {
 					if (item.turn !== turn) {
-						itemstr += "</div><a class='itemrecord-text'>&#10140;  " + item.turn + chooseLang("턴", "T") + "</a><div class='itemrecord-item'>"
+						itemstr +=
+							"</div><a class='itemrecord-text'>&#10140;  " +
+							item.turn +
+							chooseLang("턴", "T") +
+							"</a><div class='itemrecord-item'>"
 						turn = item.turn
 					}
 					for (let j = 0; j < item.count; ++j) {
@@ -1412,19 +1386,17 @@ function showSingleStat(data) {
 							"px'; > </div>"
 					}
 				}
-				itemstr+="</div>"
-			}
-			else{
+				itemstr += "</div>"
+			} else {
 				$(".detailbtn:nth-child(2)").hide()
 			}
 
-
 			// $(".itembuildTableContent").html(str)
-			let teamstr=""
-			if(data.isTeam){
-				teamstr=`<b class='player-data-header-team ${p.team?"red":"blue"}'>${p.team?"Red":"Blue"} Team</b>`
+			let teamstr = ""
+			if (data.isTeam) {
+				teamstr = `<b class='player-data-header-team ${p.team ? "red" : "blue"}'>${p.team ? "Red" : "Blue"} Team</b>`
 			}
-			let str=`
+			let str = `
 			<div class="player-data-container">
 				<div class="player-data-header"> 
 					<img alt='char' src="${getCharImgUrl(p.champ_id)}">
@@ -1435,34 +1407,42 @@ function showSingleStat(data) {
 					<div class="player-data-otherstat">
 						<div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("소모한 돈","Money Spent")}: </b><b class="otherstat-value">${p.stats[5]} </b>
+								<b class="otherstat-name"> ${chooseLang("소모한 돈", "Money Spent")}: </b><b class="otherstat-value">${p.stats[5]} </b>
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("빼앗긴 돈","Money Taken")}: </b><b class="otherstat-value">${p.stats[6]} </b>
+								<b class="otherstat-name"> ${chooseLang("빼앗긴 돈", "Money Taken")}: </b><b class="otherstat-value">${p.stats[6]} </b>
 
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("부활한 횟수","Revived")}: </b><b class="otherstat-value">${p.stats[8]} </b>
+								<b class="otherstat-name"> ${chooseLang("부활한 횟수", "Revived")}: </b><b class="otherstat-value">${p.stats[8]} </b>
 							</div>
 						</div>
 						<div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("강제이동","Forcemoved")}: </b><b class="otherstat-value">${p.stats[9]} </b>
+								<b class="otherstat-name"> ${chooseLang("강제이동", "Forcemoved")}: </b><b class="otherstat-value">${p.stats[9]} </b>
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("기본공격 횟수","Basic attack")}: </b><b class="otherstat-value">${p.stats[10]} </b>
+								<b class="otherstat-name"> ${chooseLang("기본공격 횟수", "Basic attack")}: </b><b class="otherstat-value">${
+				p.stats[10]
+			} </b>
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("처형당한 횟수","Executed")}: </b><b class="otherstat-value">${p.stats[11]} </b>
+								<b class="otherstat-name"> ${chooseLang("처형당한 횟수", "Executed")}: </b><b class="otherstat-value">${
+				p.stats[11]
+			} </b>
 							</div>
 						</div>
 					</div>
-					${itemstr===""?"":`
-						<div class="player-data-label">${chooseLang("아이템 빌드","Item Build")}</div>
+					${
+						itemstr === ""
+							? ""
+							: `
+						<div class="player-data-label">${chooseLang("아이템 빌드", "Item Build")}</div>
 						<div class="itembuildTableContent">
 							${itemstr}
 						</div>
-					`}
+					`
+					}
 				</div>
 			</div>
 			`
@@ -1480,28 +1460,25 @@ function showSingleStat(data) {
 			//player-detail-content
 		}
 		$("#game_detail_content").append(`<div class="tall-dummy tall-dummy-gamedetail"></div>`)
-		
+
 		drawKillRecord(data)
 		// $("#detailbtn_container").show()
 		$(gameDetailValues[0]).html(data.totalturn)
 		$(gameDetailValues[2]).html(getMapName(data.map_data.name))
 
-
-		let itemlimit=getSetting(data, "itemLimit")
-		$(gameDetailValues[3]).html(!itemlimit?6:itemlimit)
-		let coldGame=getSetting(data, "coldGame")
-		$(gameDetailValues[4]).html(!coldGame?chooseLang("미사용","Disabled"):chooseLang("사용","Enabled"))
-		let useAdditionalLife=getSetting(data, "useAdditionalLife")
-		$(gameDetailValues[5]).html(!useAdditionalLife?chooseLang("미사용","Disabled"):chooseLang("사용","Enabled"))
+		let itemlimit = getSetting(data, "itemLimit")
+		$(gameDetailValues[3]).html(!itemlimit ? 6 : itemlimit)
+		let coldGame = getSetting(data, "coldGame")
+		$(gameDetailValues[4]).html(!coldGame ? chooseLang("미사용", "Disabled") : chooseLang("사용", "Enabled"))
+		let useAdditionalLife = getSetting(data, "useAdditionalLife")
+		$(gameDetailValues[5]).html(!useAdditionalLife ? chooseLang("미사용", "Disabled") : chooseLang("사용", "Enabled"))
 		// $("#game_resulttext").html("Total turn:" + data.totalturn + ", Map: "+getMapName(data.map_data.name))
-	}
-	else{
+	} else {
 		$("#game_resulttext").html("Total turn:" + data.totalturn)
 		$("#detailbtn_container").hide()
-		isLegacy=true
+		isLegacy = true
 	}
 
-	
 	if (data.players.length < 4) {
 		$(table[4]).hide()
 		// $(othertable[4]).hide()
@@ -1520,7 +1497,6 @@ function showSingleStat(data) {
 	} else if (data.isTeam !== null && data.players[0].team === false) {
 		// $("#resulttext").html("Red Team Victory!")
 		$(gameDetailValues[1]).html("Blue Team")
-
 	} else {
 		$(gameDetailValues[1]).html(data.players[0].name)
 		$("#resulttext").html("")
@@ -1531,15 +1507,14 @@ function showSingleStat(data) {
 	$(".statTableCell").removeClass("blue")
 	let winner_team = true
 	for (let i = 0, k = 0; i < data.players.length; ++i, k += 5) {
-		if(data.map_data!=null && data.map_data.name==='train')
-		{
-			writeTrainStats(data.totalturn,data.players[i])
+		if (data.map_data != null && data.map_data.name === "train") {
+			writeTrainStats(data.totalturn, data.players[i])
 		}
 
 		let p = data.players[i]
-		visiblePlayerNames.push((p.turn+1)+ "P(" + p.champ + ")")
+		visiblePlayerNames.push(p.turn + 1 + "P(" + p.champ + ")")
 
-		setItemList(i, p.items,data.version>=2)
+		setItemList(i, p.items, data.version >= 2)
 
 		let charstr = '<div class="charimg table_charimg '
 
@@ -1549,13 +1524,11 @@ function showSingleStat(data) {
 				charstr += "red"
 				$(dataList[k + 2]).addClass("red")
 				$(dataList[k + 3]).addClass("red")
-
-			}
-			else{
+			} else {
 				charstr += "blue"
 				$(dataList[k + 2]).addClass("blue")
 				$(dataList[k + 3]).addClass("blue")
-			} 
+			}
 
 			if (i === 0) {
 				winner_team = p.team
@@ -1572,9 +1545,8 @@ function showSingleStat(data) {
 			if (i === 0) {
 				$(ranks[i]).html("<img class=winimg src='res/img/svg/trophy.svg'>")
 				// charstr += " winner"
-			}
-			else if(i===1) $(ranks[i]).html("2<sup>nd</sup>")
-			else if(i===2) $(ranks[i]).html("3<sup>rd</sup>")
+			} else if (i === 1) $(ranks[i]).html("2<sup>nd</sup>")
+			else if (i === 2) $(ranks[i]).html("3<sup>rd</sup>")
 			else $(ranks[i]).html("4<sup>th</sup>")
 		}
 
@@ -1588,20 +1560,22 @@ function showSingleStat(data) {
 				p.kda[1] +
 				"/" +
 				p.kda[2] +
-				(multiKillText(p.bestMultiKill)===""?"":" <br><b class='multikill-text'>" + multiKillText(p.bestMultiKill)+"</b>")
+				(multiKillText(p.bestMultiKill) === ""
+					? ""
+					: " <br><b class='multikill-text'>" + multiKillText(p.bestMultiKill) + "</b>")
 		)
 
 		kda_graph.push({
-			category: (p.turn+1)+ "P(" + p.champ + ")",
-			k: (p.kda[0]+p.kda[2])/Math.max(1,p.kda[1])
+			category: p.turn + 1 + "P(" + p.champ + ")",
+			k: (p.kda[0] + p.kda[2]) / Math.max(1, p.kda[1]),
 		})
 		for (let j = 0; j < p.stats.length; ++j) {
 			//$(dataList[k + j + 4]).html(p.stats[j])
 
 			let graphData = {
 				turn: p.turn,
-				champ:p.champ_id,
-				value:p.stats[j]
+				champ: p.champ_id,
+				value: p.stats[j],
 			}
 			switch (j) {
 				case 0:
@@ -1625,14 +1599,14 @@ function showSingleStat(data) {
 			}
 		}
 	}
-	
-	$(".game-detail-graph-amount").css("width","0")
-	drawSmallGraph(damagedealt_graph,0)
-	drawSmallGraph(damagetakenC_graph,1)
-	drawSmallGraph(damagetakenO_graph,2)
-	drawSmallGraph(heal_graph,3)
-	drawSmallGraph(gold_graph,4)
-	drawSmallGraph(damageabsorbed_graph,5)
+
+	$(".game-detail-graph-amount").css("width", "0")
+	drawSmallGraph(damagedealt_graph, 0)
+	drawSmallGraph(damagetakenC_graph, 1)
+	drawSmallGraph(damagetakenO_graph, 2)
+	drawSmallGraph(heal_graph, 3)
+	drawSmallGraph(gold_graph, 4)
+	drawSmallGraph(damageabsorbed_graph, 5)
 
 	// let otherDataList = $(".otherTableCell").toArray()
 
@@ -1641,7 +1615,7 @@ function showSingleStat(data) {
 	// 	if (p.stats.length < 9) continue
 
 	// 	$(otherDataList[k]).html(p.name)
-		
+
 	// 	$(otherDataList[k + 1]).html(p.stats[5])
 	// 	$(otherDataList[k + 2]).html(p.stats[6])
 	// 	$(otherDataList[k + 3]).html(p.stats[8])
@@ -1659,35 +1633,35 @@ function showSingleStat(data) {
 				position: "bottom",
 				labels: {
 					textDecoration: "none",
-					fill: "#ffffff"
-				}
+					fill: "#ffffff",
+				},
 			},
 			titles: [
 				{
 					text: "KDA Score",
 					fontSize: 30,
-					fill: "white"
-				}
+					fill: "white",
+				},
 			],
 			xAxes: [
 				{
 					type: "CategoryAxis",
 					dataFields: {
-						category: "category"
+						category: "category",
 					},
 					renderer: {
 						labels: {
 							fill: "#ffffff",
-							fontSize: 10
+							fontSize: 10,
 						},
 						grid: {
 							template: {
-								disabled: true
-							}
+								disabled: true,
+							},
 						},
-						minGridDistance: 20
-					}
-				}
+						minGridDistance: 20,
+					},
+				},
 			],
 			yAxes: [
 				{
@@ -1696,16 +1670,16 @@ function showSingleStat(data) {
 					renderer: {
 						labels: {
 							fill: "#ffffff",
-							fontSize: 15
+							fontSize: 15,
 						},
 						maxLabelPosition: 1.2,
 						grid: {
 							template: {
-								disabled: true
-							}
-						}
-					}
-				}
+								disabled: true,
+							},
+						},
+					},
+				},
 			],
 			series: [
 				{
@@ -1718,20 +1692,20 @@ function showSingleStat(data) {
 								fontSize: 10,
 								fill: "white",
 								truncate: false,
-								dy: 10
-							}
-						}
+								dy: 10,
+							},
+						},
 					],
 					type: "ColumnSeries",
 					columns: {
 						width: "25",
 						fill: "#6593F5",
-						stroke: "none"
+						stroke: "none",
 					},
 					dataFields: {
 						valueY: "k",
-						categoryX: "category"
-					}
+						categoryX: "category",
+					},
 				},
 				// {
 				// 	name: "Death",
@@ -1783,7 +1757,7 @@ function showSingleStat(data) {
 				// 		categoryX: "category"
 				// 	}
 				// }
-			]
+			],
 		},
 		document.getElementById("kdaGraph")
 	)
@@ -1793,16 +1767,16 @@ function showSingleStat(data) {
 			position: "bottom",
 			labels: {
 				textDecoration: "none",
-				fill: "#ffffff"
+				fill: "#ffffff",
 				// text: "[bold {stroke}]{name}[/]",
-			}
+			},
 		},
 		titles: [
 			{
 				text: chooseLang("위치", "Positions"),
 				fontSize: 30,
-				fill: "white"
-			}
+				fill: "white",
+			},
 		],
 		type: "XYChart",
 		data: position_list,
@@ -1810,21 +1784,21 @@ function showSingleStat(data) {
 			{
 				type: "CategoryAxis",
 				dataFields: {
-					category: "category"
+					category: "category",
 				},
 				renderer: {
 					labels: {
 						fill: "#ffffff",
-						fontSize: 10
+						fontSize: 10,
 					},
 					grid: {
 						template: {
-							disabled: true
-						}
+							disabled: true,
+						},
 					},
-					minGridDistance: 20
-				}
-			}
+					minGridDistance: 20,
+				},
+			},
 		],
 		yAxes: [
 			{
@@ -1836,17 +1810,17 @@ function showSingleStat(data) {
 						fill: "#ffffff",
 						fontSize: 20,
 						template: {
-							disabled: true
-						}
+							disabled: true,
+						},
 					},
 					maxLabelPosition: 1,
 					grid: {
 						template: {
-							disabled: true
-						}
-					}
-				}
-			}
+							disabled: true,
+						},
+					},
+				},
+			},
 		],
 		series: [
 			{
@@ -1863,22 +1837,22 @@ function showSingleStat(data) {
 									width: 2,
 									height: 2,
 									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
+									verticalCenter: "middle",
+								},
+							],
+						},
 					],
 					template: {
 						type: "Bullet",
-						fill: "#0077b6"
-					}
+						fill: "#0077b6",
+					},
 				},
 				dataFields: {
 					valueY: "value1",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
+				sequencedInterpolationDelay: 100,
 			},
 			{
 				type: "LineSeries",
@@ -1894,22 +1868,22 @@ function showSingleStat(data) {
 									width: 2,
 									height: 2,
 									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
+									verticalCenter: "middle",
+								},
+							],
+						},
 					],
 					template: {
 						type: "Bullet",
-						fill: "#d54a48"
-					}
+						fill: "#d54a48",
+					},
 				},
 				dataFields: {
 					valueY: "value2",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
+				sequencedInterpolationDelay: 100,
 			},
 			{
 				type: "LineSeries",
@@ -1925,22 +1899,22 @@ function showSingleStat(data) {
 									width: 2,
 									height: 2,
 									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
+									verticalCenter: "middle",
+								},
+							],
+						},
 					],
 					template: {
 						type: "Bullet",
-						fill: "#72cc50"
-					}
+						fill: "#72cc50",
+					},
 				},
 				dataFields: {
 					valueY: "value3",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
+				sequencedInterpolationDelay: 100,
 			},
 			{
 				type: "LineSeries",
@@ -1956,24 +1930,24 @@ function showSingleStat(data) {
 									width: 2,
 									height: 2,
 									horizontalCenter: "middle",
-									verticalCenter: "middle"
-								}
-							]
-						}
+									verticalCenter: "middle",
+								},
+							],
+						},
 					],
 					template: {
 						type: "Bullet",
-						fill: "#fff989"
-					}
+						fill: "#fff989",
+					},
 				},
 				dataFields: {
 					valueY: "value4",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
-			}
-		]
+				sequencedInterpolationDelay: 100,
+			},
+		],
 	}
 
 	let money_chart = {
@@ -1981,16 +1955,16 @@ function showSingleStat(data) {
 			position: "bottom",
 			labels: {
 				textDecoration: "none",
-				fill: "#ffffff"
+				fill: "#ffffff",
 				// text: "[bold {stroke}]{name}[/]",
-			}
+			},
 		},
 		titles: [
 			{
 				text: chooseLang("돈 획득", "Money Obtain"),
 				fontSize: 30,
-				fill: "white"
-			}
+				fill: "white",
+			},
 		],
 		type: "XYChart",
 		data: money_list,
@@ -1998,21 +1972,21 @@ function showSingleStat(data) {
 			{
 				type: "CategoryAxis",
 				dataFields: {
-					category: "category"
+					category: "category",
 				},
 				renderer: {
 					labels: {
 						fill: "#ffffff",
-						fontSize: 10
+						fontSize: 10,
 					},
 					grid: {
 						template: {
-							disabled: true
-						}
+							disabled: true,
+						},
 					},
-					minGridDistance: 25
-				}
-			}
+					minGridDistance: 25,
+				},
+			},
 		],
 		yAxes: [
 			{
@@ -2021,13 +1995,13 @@ function showSingleStat(data) {
 				renderer: {
 					labels: {
 						fill: "#ffffff",
-						fontSize: 13
+						fontSize: 13,
 					},
 					maxLabelPosition: 1,
-					grid: {
-					},minGridDistance: 25
-				}
-			}
+					grid: {},
+					minGridDistance: 25,
+				},
+			},
 		],
 		series: [
 			{
@@ -2035,58 +2009,54 @@ function showSingleStat(data) {
 				name: "",
 				fill: "#0077b6",
 				stroke: "#0077b6",
-				bullets: {
-				},
+				bullets: {},
 				dataFields: {
 					valueY: "value1",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
+				sequencedInterpolationDelay: 100,
 			},
 			{
 				type: "LineSeries",
 				name: "",
 				fill: "#d54a48",
 				stroke: "#d54a48",
-				bullets: {
-				},
+				bullets: {},
 				dataFields: {
 					valueY: "value2",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
+				sequencedInterpolationDelay: 100,
 			},
 			{
 				type: "LineSeries",
 				name: "",
 				fill: "#72cc50",
 				stroke: "#72cc50",
-				bullets: {
-				},
+				bullets: {},
 				dataFields: {
 					valueY: "value3",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
+				sequencedInterpolationDelay: 100,
 			},
 			{
 				type: "LineSeries",
 				name: "",
 				fill: "#fff989",
 				stroke: "#fff989",
-				bullets: {
-				},
+				bullets: {},
 				dataFields: {
 					valueY: "value4",
-					categoryX: "category"
+					categoryX: "category",
 				},
 				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100
-			}
-		]
+				sequencedInterpolationDelay: 100,
+			},
+		],
 	}
 	for (let i = 0; i < 4; ++i) {
 		position_chart.series[i].name = visiblePlayerNames[i]
@@ -2097,8 +2067,8 @@ function showSingleStat(data) {
 	am4core.createFromConfig(position_chart, document.getElementById("position_chart"))
 	am4core.createFromConfig(money_chart, document.getElementById("money_chart"))
 	// location.href = "#game_detail_content"
+	document.getElementById("game_detail").scrollTo(0, 0)
 	$("#game_detail").show()
 	//document.getElementById("game_detail").scrollIntoView();
-	setTimeout(()=>$("#overlay").removeClass("visible"),400)
-	
+	setTimeout(() => $("#overlay").removeClass("visible"), 400)
 }

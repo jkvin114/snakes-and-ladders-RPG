@@ -1244,7 +1244,7 @@ class Game {
 		return gameresult
 	}
 	getTrainData():GameRecord {
-		let g=new GameRecord(this.totalturn)
+		let g=new GameRecord(this.totalturn,MAP.get(this.mapId).mapname,this.isTeam)
 		let winnerturn=0
 		for (let i=0;i<this.entityMediator.allPlayer().length;i++) {
 			const p=this.pOfTurn(i)
@@ -1254,7 +1254,7 @@ class Game {
 				ind.isWinner=true
 				winnerturn=i
 			} 
-			g.add(ind,p.getCoreItemBuild())
+			g.add(ind,p.getCoreItemBuild(),this.getTeamAsBool(p.team))
 		}
 		// g.labels=Array.from(this.trainLabels)
 		// g.winnerTurn=this.winner
