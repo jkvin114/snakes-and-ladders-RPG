@@ -15,7 +15,8 @@ function golink(link) {
 const STATE_GAMES = 0
 const STATE_SIMULATION = 1
 const STATE_ONEGAME = 2
-
+const STATE_ANALYSIS = 3
+const STATE_CHARACTER_ANALYSIS = 4
 class InterfaceState {
 	constructor() {
 		InterfaceState.gamelist_hidden = false
@@ -38,6 +39,80 @@ function changelang() {
 	$(".lang_dropdown").toggle()
 }
 
+function onResourceLoad() {
+	let params = document.location.href.split("?")[1]
+	let query = new URLSearchParams(window.location.search)
+	// if (params) requestStatAfterGame(params)
+
+	if ((query.get("type") === "game" || query.get("type") === "simulation") && query.has("statid"))
+		requestStatAfterGame(params)
+	else if (query.get("page") === "character" && query.has("charid")) setState(STATE_CHARACTER_ANALYSIS)
+	else if (query.get("page") === "game") setState(STATE_GAMES)
+	else if (query.get("page") === "simulation") setState(STATE_SIMULATION)
+	else if (query.get("page") === "analysis") setState(STATE_ANALYSIS)
+	else setState(STATE_ANALYSIS)
+}
+/**
+ * set current page state and change overall layout ot page
+ * @param {*} state
+ */
+function setState(state) {
+	InterfaceState.state = state
+	$(".toolbar_item").hide()
+	$(".stat-navbar-btn").removeClass("active")
+	$("#analysis").hide()
+	switch (state) {
+		case STATE_ONEGAME:
+			$("#gamelist_wrapper").hide()
+			$("#summary-container").hide()
+			$("#summary-collapse").hide()
+			$("#stat-navbar").hide()
+			$("#detail_side").show()
+
+			break
+		case STATE_GAMES:
+			$("#summary-container").show()
+			$("#summary-collapse").show()
+			$("#gamelist_wrapper").hide()
+			$("#detail_side").show()
+			showNormalGamePage()
+			$(".intro_game").addClass("active")
+			break
+		case STATE_SIMULATION:
+			$("#summary-container").show()
+			$("#summary-collapse").show()
+			$("#gamelist_wrapper").show()
+			$(toolbarButtons[0]).show()
+			$("#detail_side").show()
+			$(".intro_simulation").addClass("active")
+			$("#holder").hide()
+			showSimulationPage()
+			break
+		case STATE_ANALYSIS:
+			$("#summary-container").hide()
+			$("#summary-collapse").hide()
+			$("#gamelist_wrapper").hide()
+			$("#detail_side").hide()
+			$("#analysis").show()
+			$(".intro_analysis").addClass("active")
+			$("#holder").hide()
+			showAnalysisPage("recent")
+			break
+		case STATE_CHARACTER_ANALYSIS:
+			$("#summary-container").hide()
+			$("#summary-collapse").hide()
+			$("#gamelist_wrapper").hide()
+			$("#detail_side").hide()
+			$(".intro_analysis").addClass("active")
+			$("#holder").hide()
+			openCharacterAnalysis(window.location.search, true)
+			break
+	}
+}
+function openCharacterAnalysis(queryString, full) {
+	let query = new URLSearchParams(queryString)
+	if (!query.get("page") === "character" || !query.has("charid")) return
+}
 /**
  * called right after finishing simulation or game
  * used to display immediate results
@@ -250,9 +325,7 @@ function requestGlobalSetting() {
 		data = JSON.parse(data)
 		SETTING = data
 
-		let params = document.location.href.split("?")[1]
-		if (params) requestStatAfterGame(params)
-		else requestGames(0, InterfaceState.page_max)
+		onResourceLoad()
 	})
 }
 /**
@@ -381,11 +454,12 @@ function nextPage() {
 	}
 }
 function showSimulationPage() {
+	console.log("showSimulationPage")
 	InterfaceState.current_page = 0
 	$("#pagenum").html("1")
 	$(".intro_simulation").addClass("active")
 	$(".intro_game").removeClass("active")
-	setState(STATE_SIMULATION)
+	// setState(STATE_SIMULATION)
 	// $("#sidebar").css({left:"-50%"})
 	requestSimulationSummary(0, InterfaceState.page_max)
 	//$("#summary_navbar").show()
@@ -394,7 +468,7 @@ function showSimulationPage() {
 function showNormalGamePage() {
 	InterfaceState.current_page = 0
 	$("#pagenum").html("1")
-	setState(STATE_GAMES)
+	// setState(STATE_GAMES)
 	requestGames(0, InterfaceState.page_max)
 	//	window.scrollTo(0,0)
 	$(".intro_simulation").removeClass("active")
@@ -403,34 +477,7 @@ function showNormalGamePage() {
 	//$("#summary_navbar").show()
 	expandSummary()
 }
-/**
- * set current page state and change overall layout ot page
- * @param {*} state
- */
-function setState(state) {
-	InterfaceState.state = state
-	$(".toolbar_item").hide()
-	switch (state) {
-		case STATE_ONEGAME:
-			$("#gamelist_wrapper").hide()
-			$("#summary-container").hide()
-			$("#summary-collapse").hide()
-			$("#stat-navbar").hide()
-			break
-		case STATE_GAMES:
-			$("#summary-container").show()
-			$("#summary-collapse").show()
-			$("#gamelist_wrapper").hide()
-			break
-		case STATE_SIMULATION:
-			$("#summary-container").show()
-			$("#summary-collapse").show()
-			$("#gamelist_wrapper").show()
-			$(toolbarButtons[0]).show()
 
-			break
-	}
-}
 function onSimulationGameListShow() {
 	collapseSummary()
 	$("#gamelist_wrapper").show()
@@ -459,6 +506,154 @@ function onGameDetailShow() {
 	} else {
 		$("#gamelist_wrapper").hide()
 	}
+}
+async function showAnalysisPage(version) {
+	$("#overlay").addClass("visible")
+	try {
+		let maps = await (await fetch(`/stat/eval/list/map/${version}`)).json()
+		console.log(maps)
+		let versions = await (await fetch(`/stat/eval/list/version`)).json()
+		let str = ' <li class="dropdown-item version-item" data-version="recent">Recent</li>'
+		for (const v of versions.versions) {
+			str += ` <li class="dropdown-item version-item" data-version="${v}">${v}</li>`
+		}
+		$("#version-dropdown").html(str)
+
+		str = ""
+		let map = ""
+		for (const m of maps.maps) {
+			if (map === "") map = m
+			str += `
+			<div class="character-table-mapbtn ${
+				map === m ? "selected" : ""
+			}" id="mapbtn-${m}" data-map="${m}" data-version="${version}">
+				<img src="${getMapIconUrl(m)}">
+				<a>${m}</a>
+			</div>`
+		}
+		$("#character-table-maps").html(str)
+		$(".version-item").click(function () {
+			showAnalysisPage($(this).data("version"))
+			$(".version-dropdown-btn").html("&#9660;" + $(this).data("version"))
+		})
+		$(".character-table-mapbtn").click(function () {
+			$(".character-table-mapbtn").removeClass("selected")
+			$(this).addClass("selected")
+			showAnalysisTable($(this).data("version"), $(this).data("map"))
+		})
+
+		showAnalysisTable(version, map)
+	} catch (e) {
+		console.error(e)
+		$("#overlay").removeClass("visible")
+		return
+	}
+}
+
+async function showAnalysisTable(version, map) {
+	let data
+
+	try {
+		data = await (await fetch(`/stat/eval/${map}/${version}`)).json()
+	} catch (e) {
+		console.error(e)
+		$("#overlay").removeClass("visible")
+		return
+	}
+
+	let str = ""
+	for (let i = 0; i < SETTING.characters.length; ++i) {
+		str += `
+		<div class="character-list-card">
+			<div class="card-charimg">
+				<img src="${getCharImgUrl(i)}">
+			</div>
+			<b>${SETTING.characters[i].name}</b>
+		</div>`
+	}
+	$("#character-list").html(str)
+
+	function charDataList() {
+		let list = []
+		for (let i = 0; i < SETTING.characters.length; ++i) {
+			list.push({
+				id: i,
+				total: 0,
+				wins: 0,
+				winrate: -1,
+			})
+		}
+		return list
+	}
+	let characters = new Map()
+	//0~length: total wins, length~2*length: total games
+	characters.set("2P", charDataList())
+	characters.set("3P", charDataList())
+	characters.set("4P", charDataList())
+	characters.set("TEAM", charDataList())
+
+	let metadata = new Map()
+	metadata.set("2P", [0, 0]) //[totalgame,totalturn]
+	metadata.set("3P", [0, 0])
+	metadata.set("4P", [0, 0])
+	metadata.set("TEAM", [0, 0])
+
+	for (const eval of data) {
+		let arr = metadata.get(eval.gameType)
+		arr[0] += eval.count
+		arr[1] += eval.averageTotalTurn * eval.count
+
+		metadata.set(eval.gameType, arr)
+
+		for (const char of eval.characters) {
+			characters.get(eval.gameType)[char.charId].total += char.count
+			characters.get(eval.gameType)[char.charId].wins += char.wins
+		}
+
+		// break
+	}
+
+	for (const [key, val] of characters.entries()) {
+		let arr = metadata.get(key)
+		if (arr[0] > 0) arr[1] = Math.round(arr[1] / arr[0])
+		else {
+			$("#character-table-" + key).html("No data")
+
+			$("#character-table-totalgames-" + key).html("-")
+			$("#character-table-avgturns-" + key).html("-")
+			continue
+		}
+		$("#character-table-totalgames-" + key).html(arr[0])
+		$("#character-table-avgturns-" + key).html(arr[1])
+
+		for (let i = 0; i < SETTING.characters.length; ++i) {
+			if (val[i].total > 0) {
+				val[i].winrate = val[i].wins / val[i].total
+			}
+		}
+		let sorted = val.sort((a, b) => b.winrate - a.winrate)
+		let s = ""
+		sorted.forEach((element, i) => {
+			s += `
+			<div class="character-winrate-card">
+				<div>
+					<span class="table-char-rank ${i > 2 ? (i > 6 ? "bronze" : "silver") : ""}">${i + 1}</span>
+					<div class="table-charimg">
+						<img src="${getCharImgUrl(element.id)}">
+					</div>
+					<b class="table-charname">${SETTING.characters[element.id].name}</b>
+				</div>
+				<div class="winrate">
+					<b>${Math.round(element.winrate * 100)}%</b><br>
+					<b class="subtext">${element.wins}/${element.total} games</b>
+				</div>
+			</div>`
+		})
+
+		$("#character-table-" + key).html(s)
+	}
+
+	$("#overlay").removeClass("visible")
 }
 $(window).on("load", function () {})
 $(document).ready(function () {
@@ -533,8 +728,9 @@ $(document).ready(function () {
 		}
 	})
 
-	$(".intro_simulation").click(showSimulationPage)
-	$(".intro_game").click(showNormalGamePage)
+	$(".intro_simulation").click(() => (window.location.search = "page=simulation"))
+	$(".intro_game").click(() => (window.location.search = "page=game"))
+	$(".intro_analysis").click(() => (window.location.search = "page=analysis"))
 
 	$(".quit").click(function () {
 		window.location.href = "index.html"

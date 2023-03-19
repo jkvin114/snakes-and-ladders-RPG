@@ -638,11 +638,12 @@ height:60vh;
     grid-template-columns: auto; */
     display: flex;
     flex-wrap: nowrap;
-
+    position: relative;
     text-align: right;
     overflow-y: hidden;
     height: 100%;;
     }
+    
 #gamelist_side{
     
     display: flex;
@@ -1593,3 +1594,4 @@ transform: scale(1.1);
     width: 200px;
     height: 200px;
   }
+  

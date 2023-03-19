@@ -39,6 +39,7 @@ class Indicator{
     damage_reduction_per_gold:number
     heal_per_gold:number
     end_position:number
+    kda:number
     isWinner:boolean
     constructor(char:number){
         this.isWinner=false
@@ -50,6 +51,7 @@ class Indicator{
         this.heal_per_gold=0
         this.end_position=0
         this.damage_reduction_rate=0
+        this.kda=0
     }
     static add(original:Indicator,ind:Indicator){
         original.damage_per_death+=ind.damage_per_death
@@ -59,6 +61,7 @@ class Indicator{
         original.heal_per_gold+=ind.heal_per_gold
         original.end_position+=ind.end_position
         original.damage_reduction_rate+=ind.damage_reduction_rate
+        original.kda+=ind.kda
         return original
     }
     static divide(ind:Indicator,count:number){
@@ -69,6 +72,7 @@ class Indicator{
         ind.heal_per_gold/=count
         ind.end_position/=count
         ind.damage_reduction_rate/=count
+        ind.kda/=count
         return ind
     }
     getDiffRatio(other:Indicator){
@@ -113,6 +117,11 @@ class Indicator{
             name:"heal_per_gold",
             average:totalavg.heal_per_gold,
             winAverage:winavg.heal_per_gold
+        })
+        arr.push({
+            name:"kda",
+            average:totalavg.kda,
+            winAverage:winavg.kda
         })
 
         return arr

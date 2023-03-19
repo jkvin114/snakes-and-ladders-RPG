@@ -144,5 +144,7 @@ router.get("/result", function (req: express.Request, res: express.Response) {
 
 	//res.end()
 })
+
+router.use("/eval", require("./statEvalRouter"))
 module.exports=router
 

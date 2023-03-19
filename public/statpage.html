@@ -19,6 +19,8 @@
 	<script src="https://cdn.amcharts.com/lib/4/themes/dark.js" defer></script>
 	<link rel="stylesheet" href="./src/style/style_statpage.css">
 	<link rel="stylesheet" href="./src/style/style_main_navbar.css">
+	<link rel="stylesheet" href="./src/style/style_statpage_analysis.css">
+	<link rel="stylesheet" href="./src/style/input.css">
 
 	<style>
 
@@ -154,7 +156,7 @@
 		<!-- <button id="togglelist" ><img src="res/img/svg/chevron-left.svg"></button> -->
 		<div id="main_start"></div>
 
-		<div id="main" class="hidden">
+		<div id="main" class="hidd2en">
 			
 			<div id="gamelist_wrapper" class="game-detail-item nopadding">	
 			<!-- <div class="onegame_container">
@@ -515,10 +517,121 @@
 						<div id="chartdiv5" class="graph"></div>
 					</div>-->
 			</div>
-			
+			<div id="analysis">
+				<div style="display: inline-block;">
+
+				
+					<div id="character-list">
+						<!-- <div class="character-list-card">
+							<div class="card-charimg">
+								<img src="res/img/character/illust/dinosaur.jpg">
+							</div>
+							<b>Yangyi</b>
+						</div> -->
+					</div>
+					<div id="character-table">
+						<div id="character-table-toolbar">
+							<div class="dropdown-container">
+								<div class="version-dropdown-btn">&#9660;Versions</div>
+								<ul class="dropdown" id="version-dropdown">
+								  <!-- <li class="dropdown-item version-item" data-version="recent">Recent</li> -->
+								</ul>
+							  </div>
+							<div id="character-table-maps">
+								<!-- <div class="character-table-mapbtn selected" id="mapbtn-default">
+									<img src="res/img/map_thumbnail/default_icon.jpg">
+									<a>Default</a>
+								  </div> -->
+								  
+							</div>
+						</div>
+						<div id="character-table-container">
+							<div class="character-table-item">
+								<div class="character-table-header">
+									<h2 class="character-table-gametype">2 Player Game</h2>
+								</div>
+								<div class="character-table-metadata">
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-2P">12</b>
+									</div>
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-2P">12</b>
+									</div>
+								</div>
+								<div class="character-table-content" id="character-table-2P">
+									<!-- <div class="character-winrate-card">
+										<div>
+											<span class="table-char-rank">1</span>
+											<div class="table-charimg">
+												<img src="res/img/character/illust/dinosaur.jpg">
+											</div>
+											<b class="table-charname">Creed</b>
+										</div>
+										<div class="winrate">
+											<b>50%</b><br>
+											<b class="subtext">10/20 games</b>
+										</div>
+									</div> -->
+								</div>
+							</div>
+							<div class="character-table-item">
+								<div class="character-table-header">
+									<h2 class="character-table-gametype">3 Player Game</h2>
+								</div>
+								<div class="character-table-metadata">
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-3P">12</b>
+									</div>
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value"  id="character-table-totalgames-3P">12</b>
+									</div>
+								</div>
+								<div class="character-table-content"  id="character-table-3P">
+								
+								</div>
+							</div>
+							<div class="character-table-item">
+								<div class="character-table-header">
+									<h2 class="character-table-gametype">4 Player Game</h2>
+								</div>
+								<div class="character-table-metadata">
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-4P">12</b>
+									</div>
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-4P">12</b>
+									</div>
+								</div>
+								<div class="character-table-content"  id="character-table-4P">
+									
+								</div>
+							</div>
+							<div class="character-table-item">
+								<div class="character-table-header">
+									<h2 class="character-table-gametype">2 vs 2 Game</h2>
+								</div>
+								<div class="character-table-metadata">
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-TEAM">12</b>
+									</div>
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-TEAM">12</b>
+									</div>
+								</div>
+								<div class="character-table-content"  id="character-table-TEAM">
+								
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="character" class="hidden">
+				character
+				<img src="res/img/character/coffin.png"> 
+			</div>
 		<!-- <button id="show-holder">Use legacy file</button> -->
 		</div>
-		
 	</div><div class='tooltiptext'>
 		<h4>name</h4>
 		<p>description.<a>unique effect:</a>blah</p>

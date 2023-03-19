@@ -1460,7 +1460,7 @@ abstract class Player extends Entity {
 		ind.damage_reduction_rate =
 			this.statistics.stats[7] / Math.max(1, this.statistics.stats[7] + this.statistics.stats[0])
 		ind.heal_per_gold = this.statistics.stats[3] / this.statistics.stats[STAT.MONEY_EARNED]
-
+		ind.kda =(this.kill+this.assist)/Math.max(0.5,this.death)
 		//if(this.pos >= this.mapHandler.gamemap.finish)
 		//	ind.isWinner=true
 

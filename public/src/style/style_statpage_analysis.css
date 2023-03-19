@@ -1,0 +1,232 @@
+/*
+#200f33
+#351954
+#552686
+#6a359c
+#804fb3
+#9969c7
+*/
+pattete{
+   color: #200f33;
+   color:#351954;
+   color:#552686;
+   color:#6a359c;
+   color:#804fb3;
+   color:#9969c7;
+}
+
+#character{
+    position: absolute;
+    top:0;left:0;
+    width: 100%;
+    height: 100%;;
+    z-index: 3;
+    background-color: #200f33;
+
+}
+#analysis,#character{
+    text-align: center;
+    width: 100%;
+    overflow: auto;
+    padding-bottom: 200px;
+}
+#character-list{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items:stretch;
+    padding: 30px;
+}
+.character-list-card{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    margin: 5px;
+    background-color: #351954;
+    border-radius: 10px;
+    width: 85px;
+}
+.character-list-card:hover,.character-winrate-card:hover{
+
+    background-color: #45246c;
+}
+.card-charimg{
+    border: 2px solid #9969c7;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+}
+.card-charimg img{
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+}
+
+.table-charimg{
+    /* border: 2px solid #9969c7; */
+    /* border-radius: 50%; */
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    vertical-align: middle;
+}
+.table-charimg img{
+    /* border-radius: 50%; */
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+}
+
+.character-list-card b{
+    font-size: 16px;
+ 
+    padding: 6px;
+}
+#character-table-toolbar{
+    /* height: 100px; */
+}
+#character-table{
+    display: inline-block;
+    width: 90%;
+}
+#character-table-container{
+    
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+/* Screen smaller than 1100px */
+@media (max-width: 1100px){
+    #character-table-container{
+        grid-template-columns: 1fr 1fr;
+    }
+} 
+/* Screen smaller than 600px */
+@media (max-width: 600px){
+    #character-table-container{
+        grid-template-columns: 1fr;
+    }
+}
+.character-table-header h2{
+    margin: 0;
+    padding: 7px;
+    font-size: 18px;
+}
+.character-table-header{
+    background-color: #45246c;
+    margin: 0;
+    margin-top: 5px;
+}
+.character-table-metadata{
+  
+    margin-top: 4px;
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-bottom: 0;
+}
+.character-table-metadata .player-data-otherstat-item
+{
+    background-color: #45246c;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.character-table-content{
+
+    margin-top: 4px;
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-bottom: 0;
+}
+.character-winrate-card{
+    padding: 6px;
+    background-color: #351954;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    height: 50px;
+    margin-top: 4px;
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-bottom: 0;
+    /* padding-left: 5px; */
+}
+.table-charname{
+    padding-left: 10px;
+}
+.subtext{
+    color: rgb(195, 195, 195);
+    font-size: 11px;
+}
+.table-char-rank{
+    background-color: goldenrod;
+    font-size: 15px;
+    padding: 3px;
+    margin-right: 6px;
+    border-radius: 4px;
+}
+.table-char-rank.silver{
+    background-color: rgb(96, 96, 96);
+}
+.table-char-rank.bronze{
+    background-color: rgb(130, 80, 34);
+}
+.character-table-metadata b{
+    font-size: 13px;
+}
+#character-table-maps{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+.character-table-mapbtn{
+    /* border: rgb(247, 197, 70) solid 3px; */
+    color:#9e9ec9;
+    background: #484857;
+    width:27%;
+    min-width: 100px;
+    max-width: 200px;
+    cursor: pointer;
+    margin: 2px;
+    border-radius: 5px;
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 3px;
+    text-align: left;
+  }
+  .character-table-mapbtn > img{
+    width: 40px;
+  }
+  
+  .character-table-mapbtn > a{
+    margin-left: 5px;
+   
+    font-size: 15px;
+    vertical-align: middle;
+  }
+  .character-table-mapbtn.selected{
+    outline: white solid 2px;
+    outline-offset: -2px;
+    color:#f5f5ff;
+  }
+  .character-table-mapbtn:hover,.champbtn:hover{
+    transform: scale(1.05);
+  }
+  .version-dropdown-btn{
+    background:#371f52;
+    display: inline-block;
+    min-width: 150px;
+    border: 1px solid white;
+    padding: 12px;
+    /* margin: 10px; */
+  }
+  .dropdown-container{
+    margin: 10px;
+    font-size: 14px;
+  }
