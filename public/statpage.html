@@ -3,17 +3,6 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 	<!-- jQuery library -->
 	<script src="./lib/jquery-3.6.0.min.js"></script>
-
-	<!-- amCharts javascript sources -->
-	<!-- <script
-		type="text/javascript"
-		src="https://www.amcharts.com/lib/3/amcharts.js"
-	></script>
-	
-	<script
-		type="text/javascript"
-		src="https://www.amcharts.com/lib/3/serial.js"
-	></script>  -->
 	<script src="https://cdn.amcharts.com/lib/4/core.js" defer></script>
 	<script src="https://cdn.amcharts.com/lib/4/charts.js" defer></script>
 	<script src="https://cdn.amcharts.com/lib/4/themes/dark.js" defer></script>
@@ -149,14 +138,14 @@
 		
 		<div id="holder">
 			<a>
-				drag and drop txt file to see the statistics(legacy)
+				drag and drop statistics txt file (legacy)
 			</a>
 		</div>
 		<!-- <img id="gotop" src="res/img/svg/chevrons-up.svg" title="go top"> -->
 		<!-- <button id="togglelist" ><img src="res/img/svg/chevron-left.svg"></button> -->
 		<div id="main_start"></div>
 
-		<div id="main" class="hidd2en">
+		<div id="main">
 			
 			<div id="gamelist_wrapper" class="game-detail-item nopadding">	
 			<!-- <div class="onegame_container">
@@ -183,8 +172,6 @@
 
 				<!-- <div id="listhidebar"><img src="res/img/svg/chevron-left.svg" id="listhidebtn"></div> -->
 			</div>
-
-
 			<div id="detail_side">
 				<!-- <div id="simulation_detail">
 					<a id="resulttext"></a>
@@ -517,22 +504,12 @@
 						<div id="chartdiv5" class="graph"></div>
 					</div>-->
 			</div>
-			<div id="analysis">
-				<div style="display: inline-block;">
-
-				
-					<div id="character-list">
-						<!-- <div class="character-list-card">
-							<div class="card-charimg">
-								<img src="res/img/character/illust/dinosaur.jpg">
-							</div>
-							<b>Yangyi</b>
-						</div> -->
-					</div>
+			<div id="analysis" class="hidden">
+				<div>
 					<div id="character-table">
 						<div id="character-table-toolbar">
 							<div class="dropdown-container">
-								<div class="version-dropdown-btn">&#9660;Versions</div>
+								<div class="version-dropdown-btn">Versions<b style="float: right;">&#9660;</b></div>
 								<ul class="dropdown" id="version-dropdown">
 								  <!-- <li class="dropdown-item version-item" data-version="recent">Recent</li> -->
 								</ul>
@@ -545,17 +522,38 @@
 								  
 							</div>
 						</div>
+						<div id="character-list-container" class="character-list-container">
+							<div class="character-content-title">
+								Overall Performance Score
+							</div>
+							<div id="character-list" class="character-list"></div>
+							<!-- <div class="character-list-card">
+								<div class="card-charimg">
+									<img src="res/img/character/illust/dinosaur.jpg">
+								</div>
+								<b>Yangyi</b>
+							</div> -->
+						</div>
 						<div id="character-table-container">
 							<div class="character-table-item">
 								<div class="character-table-header">
 									<h2 class="character-table-gametype">2 Player Game</h2>
 								</div>
 								<div class="character-table-metadata">
+									
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-2P">12</b>
+									</div>
 									<div class="player-data-otherstat-item">
 										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-2P">12</b>
 									</div>
-									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-2P">12</b>
+									<div class="player-data-otherstat-item character-table-header-small">
+										<div style="text-align: center;">
+											<b>Name</b>
+										</div>
+										<div>
+											<b>Win rate</b>
+										</div>
 									</div>
 								</div>
 								<div class="character-table-content" id="character-table-2P">
@@ -579,11 +577,20 @@
 									<h2 class="character-table-gametype">3 Player Game</h2>
 								</div>
 								<div class="character-table-metadata">
+									
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value"  id="character-table-totalgames-3P">12</b>
+									</div>
 									<div class="player-data-otherstat-item">
 										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-3P">12</b>
 									</div>
-									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value"  id="character-table-totalgames-3P">12</b>
+									<div class="player-data-otherstat-item character-table-header-small">
+										<div style="text-align: center;">
+											<b>Name</b>
+										</div>
+										<div>
+											<b>Win rate</b>
+										</div>
 									</div>
 								</div>
 								<div class="character-table-content"  id="character-table-3P">
@@ -595,11 +602,20 @@
 									<h2 class="character-table-gametype">4 Player Game</h2>
 								</div>
 								<div class="character-table-metadata">
+									
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-4P">12</b>
+									</div>
 									<div class="player-data-otherstat-item">
 										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-4P">12</b>
 									</div>
-									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-4P">12</b>
+									<div class="player-data-otherstat-item character-table-header-small">
+										<div style="text-align: center;">
+											<b>Name</b>
+										</div>
+										<div>
+											<b>Win rate</b>
+										</div>
 									</div>
 								</div>
 								<div class="character-table-content"  id="character-table-4P">
@@ -611,11 +627,20 @@
 									<h2 class="character-table-gametype">2 vs 2 Game</h2>
 								</div>
 								<div class="character-table-metadata">
+									
+									<div class="player-data-otherstat-item">
+										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-TEAM">12</b>
+									</div>
 									<div class="player-data-otherstat-item">
 										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-TEAM">12</b>
 									</div>
-									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-TEAM">12</b>
+									<div class="player-data-otherstat-item character-table-header-small">
+										<div>
+											<b>Name</b>
+										</div>
+										<div>
+											<b>Win rate</b>
+										</div>
 									</div>
 								</div>
 								<div class="character-table-content"  id="character-table-TEAM">
@@ -627,8 +652,145 @@
 				</div>
 			</div>
 			<div id="character" class="hidden">
-				character
-				<img src="res/img/character/coffin.png"> 
+				<div id="character-close-btn" class="hidden">
+					<img src="res/img/svg/chevron-left.svg">
+				</div>
+				<div id="character-header">
+					<div id="character-summary" class="">
+	
+						<div class="character-summary-section-left character-summary-section" >
+							<div>
+								<img class="summary-charimg" src="res/img/character/illust/dinosaur.jpg">
+							</div>
+							<div style="text-align: left;">
+								<b class="summary-charname"></b><br>
+								<b class="summary-subtext summary-gametype">2 Player game</b><br>
+								<b class="summary-subtext summary-map">Default map</b>
+							</div>
+						</div>
+						<div class="character-summary-section-right character-summary-section">
+							<div class="character-summary-item">
+								<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-totalgame" >12</b>
+							</div>
+							<div class="character-summary-item">
+								<b class="otherstat-name">Win Rate: </b><b class="otherstat-value" id="character-winrate">12</b>
+							</div>
+							<div class="character-skills">
+								<img src="res/img/skill/1-1.jpg">
+								<img src="res/img/skill/1-1.jpg">
+								<img src="res/img/skill/1-1.jpg">
+							</div>
+						</div>
+					</div>
+
+					<div class="character-toolbar">
+						<div class="dropdown-container">
+							<div class="character-dropdown-btn"></div>
+							<ul class="dropdown" id="character-gametype-dropdown">
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="2P">2 Player</li>
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="3P">3 Player</li>
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="4P">4 Player</li>
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="TEAM">Team Game</li>
+							</ul>
+						  </div>
+						  <div class="dropdown-container">
+							<div class="character-dropdown-btn"></div>
+							<ul class="dropdown" id="character-map-dropdown">
+							  <li class="dropdown-item character-map-dropdown" data-map="default">
+								<img src="res/img/map_thumbnail/default_icon.jpg">Default</li>
+							<li class="dropdown-item character-map-dropdown" data-map="ocean">
+								<img src="res/img/map_thumbnail/ocean_icon.jpg">Ocean</li>
+							<li class="dropdown-item character-map-dropdown" data-map="casino">
+								<img src="res/img/map_thumbnail/casino_icon.jpg">Casino</li>
+							<li class="dropdown-item character-map-dropdown" data-map="rapid">
+								<img src="res/img/map_thumbnail/rapid_icon.jpg">Rapid</li>
+							</ul>
+						  </div>
+						  <div class="dropdown-container">
+							<div class="character-dropdown-btn"></div>
+							<ul class="dropdown" id="character-version-dropdown">
+							  <!-- <li class="dropdown-item character-version-dropdown" data-version="">Recent</li> -->
+							</ul>
+						  </div>
+					</div>
+				</div>
+				<div id="character-content">
+					<div class="character-section-characters">
+						<div class="character-list-container"> 
+							<div class="character-content-title">Opponent Win Rates</div>
+							<div id="character-opponents" class="character-list">
+								<!-- <div class="character-list-card">
+									<div class="card-charimg">
+										<img src="res/img/character/illust/bird.jpg">
+									</div>
+									<b>50%</b>
+									<a class="subtext">10/20 games</a>
+								</div> -->
+							</div>
+						</div>
+						<div class="character-list-container" id="character-duos-container"> 
+							<div class="character-content-title">Teammate Win Rates</div>
+							<div id="character-duos" class="character-list">
+								<!-- <div class="character-list-card">
+									<div class="card-charimg">
+										<img src="res/img/character/illust/bird.jpg">
+									</div>
+									<b>50%</b>
+									<a class="subtext">10/20 games</a>
+								</div> -->
+							</div>
+						</div>
+					</div>
+					
+
+					<div class="character-section-container">
+					
+						<div class="character-section-item">
+							<div class="character-list-container" >
+								<div class="character-content-title" >Item Builds</div>
+								<div class="character-content-header-small" style="grid-template-columns: 2fr 0.7fr 0.7fr;">
+									<div>
+										<b>Item Build</b>
+									</div>
+									<div>
+										<b>Pick rate</b>
+									</div>
+									<div>
+										<b>Win rate</b>
+									</div>
+								</div>
+								<div id="character-itembuilds" >
+								</div>
+							</div>
+						
+							<div class="character-list-container" >
+								<div class="character-content-title">Items</div>
+								<div class="character-content-header-small " >
+									<div>
+										<b>Item</b>
+									</div>
+									<div>
+										<b>Pick rate</b>
+									</div>
+									<div>
+										<b>Win rate</b>
+									</div>
+								</div>
+								<div id="character-items" >
+								</div>
+							</div>
+		
+							
+						
+						</div>
+						<div class="character-section-right">
+							<div id="character-trend-graph">
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<h3 style="font-size: 30px;" id="character-nodata">No data</h3>
 			</div>
 		<!-- <button id="show-holder">Use legacy file</button> -->
 		</div>
@@ -641,5 +803,7 @@
 			<img src="res/img/ui/loading_purple.gif"> 
 		</div>
 	</body>
+	<script type="text/javascript" src="src/statChartConfig.js"></script>
+
 	<script type="text/javascript" src="src/stat.js"></script>
 </html>

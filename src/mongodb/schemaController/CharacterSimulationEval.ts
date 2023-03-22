@@ -6,13 +6,16 @@ export namespace CharacterSimulationEvalSchema{
         return await new CharacterSimulationEval(data).save()
     }
     export const findByVersion=async function(version:string,char:number) {
-        return await CharacterSimulationEval.find({serverVersion:version,charId:char})
+        return await CharacterSimulationEval.find({patchVersion:version,charId:char})
     }
 
     export const findTrend=async function(char:number,map:string,gametype:string) {
-        return await CharacterSimulationEval.find({charId:char,mapName:map,gameType:gametype}).select("count wins serverVersion")
+        return await CharacterSimulationEval.find({charId:char,mapName:map,gameType:gametype}).select("count wins patchVersion")
     }
     export const findByMapAndGameType=async function(version:string,char:number,map:string,gametype:string) {
-        return await CharacterSimulationEval.find({serverVersion:version,charId:char,mapName:map,gameType:gametype})
+        return await CharacterSimulationEval.find({patchVersion:version,charId:char,mapName:map,gameType:gametype})
+    }
+    export const  findCharacterApperances=async function(char:number){
+        return await CharacterSimulationEval.find({charId:char}).select("mapName gameType patchVersion")
     }
 }

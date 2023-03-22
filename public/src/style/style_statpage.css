@@ -815,8 +815,8 @@ height:60vh;
 .game-detail-graph-value{
     background:#572a81;
     border-radius: 5px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: 2px;
+    margin-bottom: 2px;
     position: relative;
 
 }
@@ -832,7 +832,7 @@ height:60vh;
     position: absolute;
     right: 45%;
     top: 0px;
-    line-height: 15px;
+    line-height: 21px;
 }
 .game-detail-graph:nth-child(1) .game-detail-graph-value >div{
     background-color: #9b33cf;
@@ -1476,14 +1476,14 @@ transform: scale(1.1);
       .player-data-otherstat-item{
         font-size: 10px;
     }
-      .toast_itemimg{
+      .toast_itemimg.scalable{
         transform: scale(0.3);
         margin: -34px;
       }
       .game-detail-item{
         width: 90vw !important;
       }
-      .toast_itemimg_itembuild {
+      .toast_itemimg_itembuild.scalable {
         transform: scale(0.3);
         margin: -34px;
       }
@@ -1584,7 +1584,8 @@ transform: scale(1.1);
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.3);
+    /* background-color: rgba(255, 255, 255, 0.3); */
+    background: none;
   }
   #overlay.visible{
     height:100%;

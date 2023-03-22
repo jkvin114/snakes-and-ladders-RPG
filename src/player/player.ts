@@ -247,8 +247,6 @@ abstract class Player extends Entity {
 	calculateAdditionalDice(amount: number): number {
 		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this),e=>e.pos)
 
-		if (!(first instanceof Player)) return 0
-
 		//자신이 1등보다 15칸이상 뒤쳐져있으면 주사위숫자 2 추가,
 		//자신이 1등보다 30칸이상 뒤쳐져있으면 주사위숫자 4 추가
 		//자신이 1등보다 레벨이 2 낮으면 주사위숫자 5 추가
@@ -262,7 +260,7 @@ abstract class Player extends Entity {
 				this.adice += Math.floor(amount * 1.5)
 			}
 		}
-		this.adice += this.ability.moveSpeed.get()
+		this.adice += this.ability.moveSpeed.val
 
 		//장화 아이템
 		if (

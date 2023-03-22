@@ -188,12 +188,13 @@ class Tree extends Player {
 			case ENUM.SKILL.ULT:
 				this.summonPlantAt(target.pos)
 				this.startCooltime(ENUM.SKILL.ULT)
+				let rootDur=this.isWithered ? 2 : 1
 				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0), this.getSkillName(s),s,this)
 					.setOnHit(function (this: Player,source:Player) {
+						this.effects.apply(ENUM.EFFECT.ROOT, rootDur)
+						
 						if(source instanceof Tree){
-
 							this.effects.applySpecial(source.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
-							this.effects.apply(ENUM.EFFECT.ROOT, source.isWithered ? 2 : 1)
 						}
 					}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				this.moveAllPlantTo(target.pos)

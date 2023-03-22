@@ -149,11 +149,11 @@
 	{
 		"name":"magician",
 		"Q": {
-			"base": 10,
+			"base": 30,
 			"scales": [
 				{
 					"ability": "AP",
-					"val": 0.7
+					"val": 0.75
 				}
 			]
 		},
@@ -325,7 +325,7 @@
 	{
 		"name":"hacker",
 		"Q": {
-			"base": 40,
+			"base": 20,
 			"scales": [
 				{
 					"ability": "AD",

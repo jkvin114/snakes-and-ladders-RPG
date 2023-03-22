@@ -300,7 +300,7 @@ export class SkillInfoFactory {
 				break
 			case 9:
 				data=[
-					this.pDmg(this.baseDmg(s)+"+("+this.skillAmt("stack_damage")+"per stack)",hotkey),
+					this.pDmg(this.baseDmg(s)+"+("+this.skillAmt("stack_damage")+"x total stacks)",hotkey),
 					this.money("stack x 3"),
 				]
 					break
@@ -388,7 +388,7 @@ export class SkillInfoFactory {
 				str =
 					this.nameTitle(s) +
 					this.target +
-					`을 공격해 ${this.pDmg(this.baseDmg(s)+"+(1중첩당 "+this.skillAmt("stack_damage")+")",hotkey)}를 입히고 
+					`을 공격해 ${this.pDmg(this.baseDmg(s)+"+("+this.skillAmt("stack_damage")+"x 총 중첩)",hotkey)}를 입히고 
 					${this.money("1중첩당 3")}를 빼앗음. 적중시 해당 대상에 대한 ${this.emp("'취약점' 중첩")}을 획득. 
 					${this.emp("취약점 중첩")} 하나당 대상에 대한 피해량 영구 증가
 					`
@@ -662,7 +662,7 @@ export class SkillInfoFactory {
 			case 9:
 				str =
 					this.nameTitle(s) +
-					`Imitates ultimate(lv3 skill) of ${this.target} and steals ${this.emp(this.skillAmt("r_steal_base")+"+(vulnerability stack x "+this.skillAmt("r_steal")+")%")} of targets attack power and magic power for 2 turns.
+					`Imitates ultimate(lv3 skill) of ${this.target} and steals ${this.emp(this.skillAmt("r_steal_base")+"+(total vulnerability stacks x "+this.skillAmt("r_steal")+")%")} of targets attack power and magic power for 2 turns.
 					 Reusing this skill will use the imitated skill.`
 				break
 			default:
@@ -757,7 +757,7 @@ export class SkillInfoFactory {
 			case 9:
 				str =
 					this.nameTitle(s) +this.target+
-					`의 궁극기(레벨 3 스킬)를 빼앗고 대상 공격력과 주문력의 ${this.emp(this.skillAmt("r_steal_base")+"+(취약점 중첩 x "+this.skillAmt("r_steal")+")%")}
+					`의 궁극기(레벨 3 스킬)를 빼앗고 대상 공격력과 주문력의 ${this.emp(this.skillAmt("r_steal_base")+"+(총 취약점 중첩 x "+this.skillAmt("r_steal")+")%")}
 					를 ${this.up("2턴간 훔침")}.
 					 스킬을 재시전하면 빼앗은 스킬이 사용됨.`
 				break

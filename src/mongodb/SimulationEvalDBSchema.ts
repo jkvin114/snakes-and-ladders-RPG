@@ -25,7 +25,7 @@ const characterEvalSchema=new mongoose.Schema({
     mapName:{ type: String, required: true },
     version:Number,
     serverVersion:{ type: String, required: true },
-
+    patchVersion:String,
     charId:{ type: Number, required: true },
     opponents:[characterIndexSchema],
     duos:[characterIndexSchema],
@@ -46,6 +46,7 @@ const simulationEvalSchema=new mongoose.Schema({
     mapName:{ type: String, required: true },
     version:Number,
     serverVersion:{ type: String, required: true },
+    patchVersion:String,
     count:{ type: Number, required: true },
     averageTotalTurn:{ type: Number, required: true },
     characters:{ type: [{
@@ -55,6 +56,33 @@ const simulationEvalSchema=new mongoose.Schema({
 
 },{timestamps:true})
 
+const characterCommentSchema = new mongoose.Schema(
+	{
+		content: {
+			required: true,
+			type: String
+		},
+		charId: {
+            required: true,
+			type: Number
+		},
+		author: {
+			required: true,
+			type: Schema.Types.ObjectId,
+			ref: "User"
+		},parent: {
+			type: Schema.Types.ObjectId,
+			ref: "CharacterComment"
+		},
+		authorName: String,
+		upvote: Number,
+		downvote: Number,
+		deleted: Boolean,
+        patchVersion:String,
+	},
+	{ timestamps: true }
+)
+
 
 simulationEvalSchema.statics.create=function(data:ISimulationEval){
     return (new SimulationEval(data)).save()
@@ -62,9 +90,14 @@ simulationEvalSchema.statics.create=function(data:ISimulationEval){
 characterEvalSchema.statics.create=function(data:ICharacterSimulationEval){
     return (new CharacterSimulationEval(data)).save()
 }
+characterCommentSchema.statics.create=function(data:ICharacterComment){
+    return (new CharacterComment(data)).save()
+}
 export type ICharacterSimulationEval = InferSchemaType<typeof characterEvalSchema>;
 export type ISimulationEval = InferSchemaType<typeof simulationEvalSchema>;
+export type ICharacterComment = InferSchemaType<typeof characterCommentSchema>;
 
+export const CharacterComment=mongoose.model('CharacterComment',characterCommentSchema)
 export const CharacterSimulationEval=mongoose.model('CharacterSimulationEval',characterEvalSchema)
 export const SimulationEval=mongoose.model('SimulationEval',simulationEvalSchema)
 

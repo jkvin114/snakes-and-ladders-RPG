@@ -82,7 +82,7 @@ app.on("error", (err: any) => {
 console.log("start server")
 // console.log("IP Address:" + addresses[0])
 console.log("version " + SETTINGS.version)
-
+console.log("patch " + SETTINGS.patch_version)
 // function ROOMS.get(name: string): Room {
 // 	return ROOMS.get(name)
 // }

@@ -73,6 +73,7 @@ $("document").ready(async function () {
 		window.location.port = 3000
 		return
 	}
+	updateLocale("home")
 
 	try {
 		let response = await axios.post("/room/home")
@@ -111,22 +112,22 @@ $("document").ready(async function () {
 
 	$("input[name='ip']").val(window.location.href.split("://")[1].split("/")[0])
 
-	$("#open_create_room").html(chooseLang("CREATE GAME", "게임 만들기"))
-	$("#join").html(chooseLang("JOIN", "게임 참가"))
-	$("#spectate").html(chooseLang("SPECTATE", "관전하기"))
-	$("#simulation").html(chooseLang("Simulation", "시뮬레이션"))
-	$("#reconnect").html(chooseLang("Reconnect", "재접속"))
+	// $("#open_create_room").html(chooseLang("CREATE GAME", "게임 만들기"))
+	// $("#join").html(chooseLang("JOIN", "게임 참가"))
+	// $("#spectate").html(chooseLang("SPECTATE", "관전하기"))
+	// $("#simulation").html(chooseLang("Simulation", "시뮬레이션"))
+	// $("#reconnect").html(chooseLang("Reconnect", "재접속"))
 
 	let loginbtns = $(".loginpage_btn").toArray()
 	let registerbtns = $(".regpage_btn").toArray()
 
-	$(loginbtns[0]).html(chooseLang("Login", "로그인"))
-	$(loginbtns[1]).html(chooseLang("Sign Up", "회원가입"))
-	$(loginbtns[2]).html(chooseLang("Home", "홈으로"))
+	// $(loginbtns[0]).html(chooseLang("Login", "로그인"))
+	// $(loginbtns[1]).html(chooseLang("Sign Up", "회원가입"))
+	// $(loginbtns[2]).html(chooseLang("Home", "홈으로"))
 
-	$(registerbtns[1]).html(chooseLang("Login", "로그인"))
-	$(registerbtns[0]).html(chooseLang("Sign Up", "회원가입"))
-	$(registerbtns[2]).html(chooseLang("Home", "홈으로"))
+	// $(registerbtns[1]).html(chooseLang("Login", "로그인"))
+	// $(registerbtns[0]).html(chooseLang("Sign Up", "회원가입"))
+	// $(registerbtns[2]).html(chooseLang("Home", "홈으로"))
 
 	$("#langbtn").click(function () {
 		$(".lang_dropdown").toggle()
@@ -136,7 +137,8 @@ $("document").ready(async function () {
 		$(".lang_dropdown").hide()
 		let lang = $(this).attr("value")
 		sessionStorage.language = lang
-		window.location.reload()
+		updateLocale("home", lang)
+		//	window.location.reload()
 	})
 	$("#quitbtn").click(function () {
 		try {

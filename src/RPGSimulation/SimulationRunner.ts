@@ -256,6 +256,7 @@ class Simulation {
 			count: this.count - 1,
 			multiple: true,
 			version: SETTINGS.version,
+			patchVersion:SETTINGS.patch_version,
 			setting: this.setting.getSummary()
 		}
 	}
@@ -267,6 +268,7 @@ class Simulation {
 			stat: Array.from(this.summaryStats),
 			count: this.count - 1,
 			serverVersion: SETTINGS.version,
+			patchVersion:SETTINGS.patch_version,
 			setting: this.setting.getSummary(),
 			simulation: "",
 			runner: this.runnerId

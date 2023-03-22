@@ -15,13 +15,14 @@ class BirdAgent extends AiAgent {
 	applyInitialOpponentUtility(ut: AbilityUtilityScorecard): void {
 		let entries = [
 			new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL),
+			new ItemBuildStage(ITEM.STAFF_OF_JUDGEMENT)
+			.setChangeCondition(ITEM.CARD_OF_DECEPTION,UtilityCondition.IsUnadvantageous()),
+			new ItemBuildStage(ITEM.TIME_WARP_POTION),
 			new ItemBuildStage(ITEM.EPIC_WHIP),
-			new ItemBuildStage(ITEM.ANCIENT_SPEAR),
-			new ItemBuildStage(ITEM.STAFF_OF_JUDGEMENT).setChangeCondition(
+			new ItemBuildStage(ITEM.ANCIENT_SPEAR).setChangeCondition(
 				ITEM.CROSSBOW_OF_PIERCING,
 				UtilityCondition.MoreTankers()
 				),
-				new ItemBuildStage(ITEM.TIME_WARP_POTION),
 			new ItemBuildStage(ITEM.GUARDIAN_ANGEL)
 			.setChangeCondition(
 				ITEM.BOOTS_OF_PROTECTION,UtilityCondition.MoreADThanAP(2)
@@ -30,16 +31,14 @@ class BirdAgent extends AiAgent {
 				UtilityCondition.MoreADThanAP(2)
 			),
 			new ItemBuildStage(ITEM.INVISIBILITY_CLOAK).setChangeCondition(
-				ITEM.WARRIORS_SHIELDSWORD,UtilityCondition.MoreADThanAP(1.5)
+				ITEM.WARRIORS_SHIELDSWORD,UtilityCondition.MoreAPOverall(1.5)
 			)
 		]
 
-		//ap build
+		//full ap build
 		if ((ut.defence + ut.health) ===0 && randomBoolean()) {
-			entries[1]=new ItemBuildStage(ITEM.CARD_OF_DECEPTION)
-			let temp=entries[4]
-			entries[4]=entries[2]
-			entries[2]=temp
+			entries[2]=new ItemBuildStage(ITEM.CARD_OF_DECEPTION)
+			entries[4]=new ItemBuildStage(ITEM.STAFF_OF_JUDGEMENT)
 		}
 		
 		this.itemBuild

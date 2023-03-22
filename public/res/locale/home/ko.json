@@ -1,0 +1,18 @@
+{
+    "startgame":"게임 시작",
+    "reconnect":"재접속",
+    "spectate":"관전",
+    "join":"방 참가",
+    "simulation":"시뮬레이션",
+    "ph":{
+        "room":{
+            "name":"방제(선택)",
+            "pw":"방 비밀번호(선택)"
+        }
+    },"login":{
+        "login":"로그인",
+        "error":{
+            "password":"비밀번호가 틀립니다"
+        }
+    }
+}

@@ -86,6 +86,7 @@ const simulationRecordSchema=new mongoose.Schema({
     count:Number,
     multiple:Boolean,
     version:String,
+    patchVersion:String,
     setting:[simulationSettingSchema]
 },{timestamps:true})
 
@@ -113,6 +114,7 @@ const simpleSimulationRecordSchema=new mongoose.Schema({
     serverVersion:String,
     setting:[simulationSettingSchema],
     simulation:String,
+    patchVersion:String,
     runner:String
 },{timestamps:true})
 

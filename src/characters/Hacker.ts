@@ -28,25 +28,27 @@ class Hacker extends Player {
 	}
 	readonly duration_list: number[]
 
-	static readonly ULT_ABILITY_STEAL_PERCENT = 2
+	static readonly ULT_ABILITY_STEAL_PERCENT = 1
 	static readonly ULT_ABILITY_STEAL_PERCENT_BASE = 10
-	static readonly Q_STACK_DAMAGE = 8
+	static readonly Q_STACK_DAMAGE = 6
 	static readonly SKILL_EFFECT_NAME = ["hacker_q", "hacker_w", "hacker_r"]
 
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
 	private virtualCharacter: Player | null
 	private copiedCharId: number
 	private stacks: number[]
+	private totalstacks:number
 
 	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
 		super(turn, team, game, ai, ID, name)
-		this.skill_ranges = [12, 40, 25]
+		this.skill_ranges = [12, 15, 25]
 
-		this.cooltime_list = [2, 5, 6]
+		this.cooltime_list = [2, 6, 6]
 		this.duration_list = [0, 0, 2]
 		this.virtualCharacter = null
 		this.copiedCharId = -1
 		this.stacks = [0, 0, 0, 0]
+		this.totalstacks=0
 
 		this.AiAgent = new HackerAgent(this)
 	}
@@ -105,7 +107,7 @@ class Hacker extends Player {
 			if (p.turn === this.turn) continue
 			str += p.name + ":" + this.stacks[p.turn] + ", "
 		}
-		return "<emp>" + str + "</>"
+		return "<emp>" + str + "</>" +"<br>Total: <emp>"+this.totalstacks+"</>"
 	}
 	//override
 	getSkillInfoEng(): string[] {
@@ -207,6 +209,7 @@ class Hacker extends Player {
 	}
 	addStack(turn: number) {
 		this.stacks[turn] += 1
+		this.totalstacks+=1
 		this.ability.sendToClient()
 	}
 	getSkillDamage(target: Entity, s: number): SkillAttack | null {
@@ -219,7 +222,7 @@ class Hacker extends Player {
 				let pdmg = this.getSkillBaseDamage(s)
 				let moneytake = 0
 				if (target instanceof Player) {
-					pdmg += this.stacks[target.turn] * Hacker.Q_STACK_DAMAGE
+					pdmg += this.totalstacks * Hacker.Q_STACK_DAMAGE
 					moneytake = 3 * this.stacks[target.turn]
 				}
 
@@ -252,7 +255,7 @@ class Hacker extends Player {
 					this.onAfterCopiedSkill()
 				} else if (target instanceof Player) {
 					let stealRatio =
-						(Hacker.ULT_ABILITY_STEAL_PERCENT_BASE + Hacker.ULT_ABILITY_STEAL_PERCENT * this.stacks[target.turn]) / 100
+						(Hacker.ULT_ABILITY_STEAL_PERCENT_BASE + Hacker.ULT_ABILITY_STEAL_PERCENT * this.totalstacks) / 100
 					let dur = this.duration_list[2]
 					damage = new SkillAttack(Damage.zero(), this.getSkillName(s), s, this).setOnHit(function (
 						this: Player,

@@ -66,7 +66,7 @@
         {
             "char":"hacker",
             "skills":[
-                "Deals <d> to a <$target>, steals <d>, and gains a <emp>'vulnerability' stack</> for that target player. Damage towards the target increases permanently with <emp>vulnerability stacks</>"
+                "Deals <d> to a <$target>, steals <d>, and gains a <emp>'vulnerability' stack</> for that target player. Damage towards the target increases permanently with <emp>total vulnerability stacks</>"
                 ,"",""
             ]
         }

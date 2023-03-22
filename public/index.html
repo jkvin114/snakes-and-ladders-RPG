@@ -31,7 +31,8 @@ html{
 body{     
    /* background-color: #242424; */
    /* background-color: #200f33; */
-   background: linear-gradient(45deg, #41295a, #2f0743);
+   /* background: linear-gradient(45deg, #41295a, #2f0743); */
+   background-color: #2b282c;
    color: beige;
     margin: 0;
   height: 100vh;
@@ -346,8 +347,8 @@ footer{
           <!-- <img class='menubtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블"> -->
           <img class='menubtn langbtn' id="langbtn" src="res/img/svg/globe.svg"  title="Language">
           <div class="lang_dropdown">
-            <a class="dropitem" value="kor">한국어</a>
-            <a class="dropitem" value="eng">English</a>
+            <a class="dropitem" value="ko">한국어</a>
+            <a class="dropitem" value="en">English</a>
           </div>
           <img class="menubtn" id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login">
           <img class="menubtn hidden" id="mypagebtn" onclick="mypage()" src="./res/img/svg/user.svg" title="Mypage">
@@ -364,7 +365,7 @@ footer{
      <div id="title"><img style="width: 90%;max-width: 700px;" src="res/img/ui/logo3.png"></div>
      <div id="logged_in_username"><p></p></div>
       <br>
-      <input id="input-username" type='text' name="nickname" value="" placeholder=" Username(optional)">
+      <input id="input-username" type='text' name="nickname" value="" lkey-ph="ph.username" placeholder=" Username(optional)">
       <div id="ip_area" class="hidden">
         <input type='text' id="ip-input" name="ip" value="" placeholder="Server ip address " >
       </div>
@@ -373,20 +374,20 @@ footer{
       <br>
       <div id=buttons>
         <br>
-        <button class='button' id="open_create_room" onclick="open_createroom()">
+        <button class='button' id="open_create_room" onclick="open_createroom()" lkey="startgame">
          
           CREATE GAME</button>
         <br>
-        <button class='button hidden' id="reconnect" onclick="toGamepage()">Reconnect</button>
-        <button class='button' id="join" onclick="join()">JOIN</button>
-        <button class='button' id="spectate" onclick="golink('/spectatepage.html')">SPECTATE</button>
-        <button class='hidden button' id="simulation" onclick="simulation()">simulation</button>
+        <button class='button hidden' id="reconnect" onclick="toGamepage()" lkey="reconnect">Recoect</button>
+        <button class='button' id="join" onclick="join()"  lkey="join">IN</button>
+        <button class='button' id="spectate" onclick="golink('/spectatepage.html')"  lkey="spectate">SPTATE</button>
+        <button class='hidden button' id="simulation" onclick="simulation()" lkey="simulation">simution</button>
         <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
       </div>
       <div id=field style="display: none;">
         <br>
-        <input type='text' name="room_name" value="" placeholder="Room Name(optional)" id="room-name-input"><br>
-        <input type='text' name="room_password" value="" placeholder="Room Password(optional)" id="room-password-input">
+        <input type='text' name="room_name" value="" lkey-ph="ph.room.name" placeholder="Room Name(optional)" id="room-name-input"><br>
+        <input type='text' name="room_password" value="" lkey-ph="ph.room.pw" placeholder="Room Password(optional)" id="room-password-input">
         <div id="room-settings">
 
           <div class="onesetting">
@@ -479,4 +480,6 @@ footer{
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 
 <script src="src/homepage.js"></script>
+<script src="src/localeManager.js"></script>
+
 </html>

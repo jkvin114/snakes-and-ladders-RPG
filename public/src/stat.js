@@ -52,6 +52,7 @@ function onResourceLoad() {
 	else if (query.get("page") === "analysis") setState(STATE_ANALYSIS)
 	else setState(STATE_ANALYSIS)
 }
+
 /**
  * set current page state and change overall layout ot page
  * @param {*} state
@@ -112,6 +113,7 @@ function setState(state) {
 function openCharacterAnalysis(queryString, full) {
 	let query = new URLSearchParams(queryString)
 	if (!query.get("page") === "character" || !query.has("charid")) return
+	showCharacterPage(query.get("version"), query.get("map"), query.get("gametype"), query.get("charid"), false)
 }
 /**
  * called right after finishing simulation or game
@@ -339,7 +341,7 @@ function requestResource() {
 		data = JSON.parse(data)
 		ITEMS = data.items
 
-		addItemTooltipEvent()
+		// addItemTooltipEvent()
 		requestGlobalSetting()
 	})
 }
@@ -509,19 +511,22 @@ function onGameDetailShow() {
 }
 async function showAnalysisPage(version) {
 	$("#overlay").addClass("visible")
+	$("#character-table-container").addClass("hidden")
 	try {
 		let maps = await (await fetch(`/stat/eval/list/map/${version}`)).json()
-		console.log(maps)
 		let versions = await (await fetch(`/stat/eval/list/version`)).json()
 		let str = ' <li class="dropdown-item version-item" data-version="recent">Recent</li>'
-		for (const v of versions.versions) {
-			str += ` <li class="dropdown-item version-item" data-version="${v}">${v}</li>`
+		versions = versions.versions.reverse()
+		for (const v of versions) {
+			str += ` <li class="dropdown-item version-item" data-version="${v}">v${v}</li>`
 		}
 		$("#version-dropdown").html(str)
 
 		str = ""
 		let map = ""
+
 		for (const m of maps.maps) {
+			//select first appearing map as default
 			if (map === "") map = m
 			str += `
 			<div class="character-table-mapbtn ${
@@ -531,10 +536,14 @@ async function showAnalysisPage(version) {
 				<a>${m}</a>
 			</div>`
 		}
+		if (map === "") {
+			$("#character-table-maps").html("No data")
+			return
+		}
 		$("#character-table-maps").html(str)
 		$(".version-item").click(function () {
 			showAnalysisPage($(this).data("version"))
-			$(".version-dropdown-btn").html("&#9660;" + $(this).data("version"))
+			$(".version-dropdown-btn").html($(this).data("version") + "<b style='float: right;'>&#9660;</b")
 		})
 		$(".character-table-mapbtn").click(function () {
 			$(".character-table-mapbtn").removeClass("selected")
@@ -543,6 +552,7 @@ async function showAnalysisPage(version) {
 		})
 
 		showAnalysisTable(version, map)
+		$("#analysis").removeClass("hidden")
 	} catch (e) {
 		console.error(e)
 		$("#overlay").removeClass("visible")
@@ -550,43 +560,30 @@ async function showAnalysisPage(version) {
 	}
 }
 
+function charDataList() {
+	let list = []
+	for (let i = 0; i < SETTING.characters.length; ++i) {
+		list.push({
+			id: i,
+			total: 0,
+			wins: 0,
+			winrate: -1,
+		})
+	}
+	return list
+}
 async function showAnalysisTable(version, map) {
 	let data
 
 	try {
-		data = await (await fetch(`/stat/eval/${map}/${version}`)).json()
+		data = await (await fetch(`/stat/eval/overview/${map}/${version}`)).json()
 	} catch (e) {
 		console.error(e)
 		$("#overlay").removeClass("visible")
 		return
 	}
 
-	let str = ""
-	for (let i = 0; i < SETTING.characters.length; ++i) {
-		str += `
-		<div class="character-list-card">
-			<div class="card-charimg">
-				<img src="${getCharImgUrl(i)}">
-			</div>
-			<b>${SETTING.characters[i].name}</b>
-		</div>`
-	}
-	$("#character-list").html(str)
-
-	function charDataList() {
-		let list = []
-		for (let i = 0; i < SETTING.characters.length; ++i) {
-			list.push({
-				id: i,
-				total: 0,
-				wins: 0,
-				winrate: -1,
-			})
-		}
-		return list
-	}
 	let characters = new Map()
-	//0~length: total wins, length~2*length: total games
 	characters.set("2P", charDataList())
 	characters.set("3P", charDataList())
 	characters.set("4P", charDataList())
@@ -597,6 +594,7 @@ async function showAnalysisTable(version, map) {
 	metadata.set("3P", [0, 0])
 	metadata.set("4P", [0, 0])
 	metadata.set("TEAM", [0, 0])
+	const charscores = charDataList()
 
 	for (const eval of data) {
 		let arr = metadata.get(eval.gameType)
@@ -608,10 +606,36 @@ async function showAnalysisTable(version, map) {
 		for (const char of eval.characters) {
 			characters.get(eval.gameType)[char.charId].total += char.count
 			characters.get(eval.gameType)[char.charId].wins += char.wins
+			charscores[char.charId].total += char.count
+			if (eval.gameType === "4P") {
+				charscores[char.charId].wins += char.wins * 4
+			} else if (eval.gameType === "3P") {
+				charscores[char.charId].wins += char.wins * 3
+			} else {
+				charscores[char.charId].wins += char.wins * 2
+			}
 		}
-
-		// break
 	}
+	charscores.forEach((val) => {
+		if (val.total > 0) val.winrate = val.wins / val.total
+	})
+	charscores.sort((a, b) => b.winrate - a.winrate)
+
+	let str = ""
+	for (const char of charscores) {
+		if (char.winrate > 0)
+			str += `
+			<div class="character-list-card">
+				<div class="card-charimg">
+				<img src="${getCharImgUrl(char.id)}">
+				</div>
+				<b>${SETTING.characters[char.id].name}</b>
+				<b  class="${char.winrate >= 1 ? "redlabel" : "bluelabel"}" style="font-size:15px;">${Math.round(
+				char.winrate * 100
+			)}</b>
+			</div>`
+	}
+	$("#character-list").html(str)
 
 	for (const [key, val] of characters.entries()) {
 		let arr = metadata.get(key)
@@ -635,7 +659,9 @@ async function showAnalysisTable(version, map) {
 		let s = ""
 		sorted.forEach((element, i) => {
 			s += `
-			<div class="character-winrate-card">
+			<div class="character-winrate-card" data-map="${map}"  data-version="${version}"  data-gametype="${key}"  data-id="${
+				element.id
+			}" >
 				<div>
 					<span class="table-char-rank ${i > 2 ? (i > 6 ? "bronze" : "silver") : ""}">${i + 1}</span>
 					<div class="table-charimg">
@@ -644,7 +670,7 @@ async function showAnalysisTable(version, map) {
 					<b class="table-charname">${SETTING.characters[element.id].name}</b>
 				</div>
 				<div class="winrate">
-					<b>${Math.round(element.winrate * 100)}%</b><br>
+					<b>${element.winrate === -1 ? "-" : Math.round(element.winrate * 100) + "%"}</b><br>
 					<b class="subtext">${element.wins}/${element.total} games</b>
 				</div>
 			</div>`
@@ -652,9 +678,323 @@ async function showAnalysisTable(version, map) {
 
 		$("#character-table-" + key).html(s)
 	}
+	$(".character-winrate-card").click(function () {
+		window.history.pushState({ page: "analysis" }, "", window.location.href)
+		showCharacterPage($(this).data("version"), $(this).data("map"), $(this).data("gametype"), $(this).data("id"), true)
+	})
 
+	$("#character-table-container").removeClass("hidden")
 	$("#overlay").removeClass("visible")
 }
+
+function compareVersion(v1, v2) {
+	v1 = v1.split(".").map((s) => Number(s))
+	v2 = v2.split(".").map((s) => Number(s))
+
+	return v1[0] !== v2[0] ? v2[0] - v1[0] : v1[1] !== v2[1] ? v2[1] - v1[1] : v2[2] - v1[2]
+}
+function pushCharacterPageState(version, map, gametype, charId) {
+	let querystr = `page=character&charid=${charId}&version=${version}&map=${map}&gametype=${gametype}`
+	const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + querystr
+	window.history.pushState(
+		{ version: version, map: map, gametype: gametype, charId: charId, page: "character" },
+		"",
+		newurl
+	)
+}
+function pushState(state, querystr) {
+	const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + querystr
+	window.history.pushState(state, "", newurl)
+}
+function getBrightness(hexcolor) {
+	let r = parseInt(hexcolor.substring(1, 3), 16)
+	let g = parseInt(hexcolor.substring(3, 5), 16)
+	let b = parseInt(hexcolor.substring(5, 7), 16)
+	let yiq = (r * 299 + g * 587 + b * 114) / 256000
+	console.log(yiq)
+	return yiq
+}
+
+async function showCharacterPage(version, map, gametype, charId, isModal, isback) {
+	$("#overlay").addClass("visible")
+
+	if (!version) version = "recent"
+	if (!map) map = "rapid"
+	if (!gametype) gametype = "4P"
+
+	if (gametype === "TEAM") {
+		$("#character-duos-container").show()
+	} else {
+		$("#character-duos-container").hide()
+	}
+	// pushCharacterPageState(version, map, gametype, charId)
+	$(".summary-gametype").html(gametype + " Game")
+	$(".summary-map").html(map + " Map")
+
+	let dropdowns = $(".character-dropdown-btn").toArray()
+	$(dropdowns[0]).html(gametype + `<b style="float: right;">&#9660;</b>`)
+	$(dropdowns[1]).html(map + `<b style="float: right;">&#9660;</b>`)
+	$(dropdowns[2]).html((version === "recent" ? "" : "v") + version + `<b style="float: right;">&#9660;</b>`)
+
+	let data
+	let trend
+	try {
+		data = await fetch(`/stat/eval/character/${charId}?version=${version}&map=${map}&gametype=${gametype}`)
+		if (data.status === 400) {
+			alert("invalid query")
+		}
+
+		data = await data.json()
+		if (data.length === 0) {
+			$("#character-content").hide()
+			$("#character").removeClass("hidden")
+			$("#character-nodata").show()
+			$("#overlay").removeClass("visible")
+			$("#character-winrate").html("-")
+			$("#character-totalgame").html("0")
+			return
+		}
+		$("#character-nodata").hide()
+		$("#character-content").show()
+		trend = await fetch(`/stat/eval/character/${charId}/trend?map=${map}&gametype=${gametype}`)
+		if (trend.status === 400) {
+			alert("invalid query")
+		}
+
+		trend = await trend.json()
+	} catch (e) {
+		console.error(e)
+		$("#overlay").removeClass("visible")
+		return
+	}
+	if (isModal) {
+		$("#character-close-btn").removeClass("hidden")
+	}
+	if (InterfaceState.state === STATE_CHARACTER_ANALYSIS && !isback) {
+		pushCharacterPageState(version, map, gametype, charId)
+	}
+	const colors = SETTING.characters[charId].bgcolors
+
+	document.getElementById(
+		"character-header"
+	).style.background = `linear-gradient(to top,#200f33 0px,rgba(0,0,0,0) 20px),
+	linear-gradient(45deg,${colors[0]},${colors[1]})`
+
+	if (getBrightness(colors[0]) + getBrightness(colors[1]) > 1.1) {
+		$("#character-header").addClass("light")
+		$("#character-close-btn").addClass("light")
+	} else {
+		$("#character-header").removeClass("light")
+		$("#character-close-btn").removeClass("light")
+	}
+
+	$(".summary-charimg").attr("src", getCharImgUrl(charId))
+	$(".summary-charname").html(SETTING.characters[charId].name)
+	$(".character-skills").html("")
+	for (let i = 1; i < 4; ++i) {
+		$(".character-skills").append(`<img src="res/img/skill/${Number(charId) + 1}-${i}.jpg">`)
+	}
+	let versionWinrates = new Map()
+	let vstr = ""
+	for (const ver of trend) {
+		if (!versionWinrates.has(ver.patchVersion)) {
+			//version,count,wins,winrates
+			versionWinrates.set(ver.patchVersion, [ver.patchVersion, ver.count, ver.wins, -1])
+		} else {
+			let arr = versionWinrates.get(ver.patchVersion)
+			arr[1] += ver.count
+			arr[2] += ver.wins
+			versionWinrates.set(ver.patchVersion, arr)
+		}
+	}
+
+	// versionWinrates.set("3.14.2", ["3.14.2", 20, 10, -1])
+	// versionWinrates.set("3.14.3", ["3.14.3", 20, 8, -1])
+	// versionWinrates.set("3.14.3", ["3.14.3", 20, 5, -1])
+	const versionlist = [...versionWinrates.values()].sort((v1, v2) => compareVersion(v2[0], v1[0]))
+	versionlist.forEach((v) => {
+		if (v[1] > 0) v[3] = v[2] / v[1]
+		vstr += `<li class="dropdown-item character-version-dropdown" data-version="${v[0]}">v${v[0]}</li>`
+	})
+	$("#character-version-dropdown").html(vstr)
+	const storage = {
+		enemy: charDataList(),
+		duo: charDataList(),
+		item: new Map(),
+		itembuild: new Map(),
+	}
+	let totalgames = 0
+	let totalwins = 0
+	for (const eval of data) {
+		totalgames += eval.count
+		totalwins += eval.wins
+		for (const char of eval.opponents) {
+			storage.enemy[char.for].total += char.count
+			storage.enemy[char.for].wins += char.wins
+		}
+		for (const item of eval.items) {
+			if (storage.item.has(item.for)) {
+				let arr = storage.item.get(item.for)
+				arr[0] += item.count
+				arr[1] += item.wins
+				storage.item.set(item.for, arr)
+			} else {
+				storage.item.set(item.for, [item.count, item.wins, -1])
+			}
+		}
+		for (const item of eval.itembuilds) {
+			if (storage.itembuild.has(item.for)) {
+				let arr = storage.itembuild.get(item.for)
+				arr[0] += item.count
+				arr[1] += item.wins
+				storage.itembuild.set(item.for, arr)
+			} else {
+				storage.itembuild.set(item.for, [item.count, item.wins, -1])
+			}
+		}
+		if (eval.gameType !== "TEAM") continue
+		for (const char of eval.duos) {
+			storage.duo[char.for].total += char.count
+			storage.duo[char.for].wins += char.wins
+		}
+	}
+
+	for (let i = 0; i < SETTING.characters.length; ++i) {
+		if (storage.enemy[i].total > 0) {
+			storage.enemy[i].winrate = storage.enemy[i].wins / storage.enemy[i].total
+		}
+		if (storage.duo[i].total > 0) {
+			storage.duo[i].winrate = storage.duo[i].wins / storage.duo[i].total
+		}
+	}
+	const itemlist = []
+	const itembuildlist = []
+	for (const [key, val] of storage.item.entries()) {
+		if (val[0] > 0) {
+			val[2] = val[1] / val[0]
+		}
+		itemlist.push([key, ...val])
+	}
+	for (const [key, val] of storage.itembuild.entries()) {
+		if (val[0] > 0) {
+			val[2] = val[1] / val[0]
+		}
+		itembuildlist.push([key, ...val])
+	}
+	storage.enemy.sort((a, b) => b.winrate - a.winrate)
+	storage.duo.sort((a, b) => b.winrate - a.winrate)
+	itemlist.sort((a, b) => b[1] / totalgames - a[1] / totalgames)
+	itembuildlist.sort((a, b) => b[1] / totalgames - a[1] / totalgames)
+	$("#character-winrate").html(totalgames === 0 ? "-" : Math.round((totalwins / totalgames) * 100) + "%")
+	$("#character-totalgame").html(totalgames)
+	let str = ""
+	let str2 = ""
+	for (let i = 0; i < SETTING.characters.length; ++i) {
+		if (storage.enemy[i].winrate > 0)
+			str += `
+			<div class="character-list-card character-ref" data-id="${storage.enemy[i].id}">
+				<div class="card-charimg">
+					<img src="${getCharImgUrl(storage.enemy[i].id)}">
+				</div>
+				<b class="${storage.enemy[i].winrate >= totalwins / totalgames ? "redlabel" : "bluelabel"}">${
+				storage.enemy[i].winrate === -1 ? "-" : Math.round(storage.enemy[i].winrate * 100) + "%"
+			}</b>
+				<a class="subtext">${storage.enemy[i].wins}/${storage.enemy[i].total} games</a>
+			</div>`
+		if (gametype === "TEAM" && storage.duo[i].winrate > 0)
+			str2 += `
+			<div class="character-list-card character-ref" data-id="${storage.duo[i].id}">
+				<div class="card-charimg">
+					<img src="${getCharImgUrl(storage.duo[i].id)}">
+				</div>
+				<b class="${storage.enemy[i].winrate >= totalwins / totalgames ? "redlabel" : "bluelabel"}">${
+				storage.duo[i].winrate === -1 ? "-" : Math.round(storage.duo[i].winrate * 100) + "%"
+			}</b>
+				<a class="subtext">${storage.duo[i].wins}/${storage.duo[i].total} games</a>
+			</div>`
+	}
+
+	$("#character-opponents").html(str)
+	$("#character-duos").html(str2)
+	str = ""
+	str2 = ""
+	for (const item of itemlist) {
+		str += `
+		<div class=" character-content-item-list">
+			<div>
+				<div class='toast_itemimg_itembuild item_tooltip' value="${
+					item[0]
+				}"><img alt='item' src='res/img/store/items.png' style='margin-left: ${-1 * item[0] * 100}px'; > </div>
+			</div>
+			<div class="pickrate">
+				<b>${Math.round((item[1] / totalgames) * 100)}%</b><br>
+				<a class="subtext">${item[1]}/${totalgames} games</a>
+			</div>
+			<div class="winrate">
+				<b>${Math.round(item[3] * 100)}%</b><br>
+			</div>
+		</div>`
+	}
+
+	for (const item of itembuildlist) {
+		let itemstr = ""
+		let li = item[0].split(",")
+		for (let i = 0; i < li.length; ++i) {
+			if (i > 0) itemstr += "&#10140;"
+			itemstr += `
+			<div class='toast_itemimg_itembuild item_tooltip' value="${li[i]}">
+				<img src='res/img/store/items.png' style='margin-left: ${-1 * li[i] * 100}px'; > 
+			</div>`
+		}
+		str2 += `
+		<div class=" character-content-item-list">
+			<div>${itemstr}
+				
+			</div>
+			<div class="pickrate">
+				<b>${Math.round((item[1] / totalgames) * 100)}%</b><br>
+				<a class="subtext">${item[1]}/${totalgames} games</a>
+			</div>
+			<div class="winrate">
+				<b>${Math.round(item[3] * 100)}%</b><br>
+			</div>
+		</div>`
+	}
+	$(".character-gametype-dropdown").off()
+	$(".character-map-dropdown").off()
+	$(".character-version-dropdown").off()
+
+	$(".character-gametype-dropdown").click(function () {
+		showCharacterPage(version, map, $(this).data("gametype"), charId, false)
+	})
+	$(".character-map-dropdown").click(function () {
+		showCharacterPage(version, $(this).data("map"), gametype, charId, false)
+	})
+	$(".character-version-dropdown").click(function () {
+		showCharacterPage($(this).data("version"), map, gametype, charId, false)
+	})
+	$(".character-ref").off()
+	$(".character-ref").click(function () {
+		showCharacterPage(version, map, gametype, $(this).data("id"), false)
+	})
+
+	$("#character-items").html(str)
+	$("#character-itembuilds").html(str2)
+	addItemTooltipEvent()
+	$("#character").removeClass("hidden")
+	$("#stat-navbar").hide()
+	$("#overlay").removeClass("visible")
+	console.log(versionlist)
+	const chartconfig = structuredClone(CharacterTrendChartConfig)
+	chartconfig.data = versionlist.map((v, i) => {
+		return {
+			category: "v" + v[0],
+			value: Math.round(v[3] * 100),
+		}
+	})
+	am4core.createFromConfig(chartconfig, document.getElementById("character-trend-graph"))
+}
+
 $(window).on("load", function () {})
 $(document).ready(function () {
 	itemLists = $(".itemlist").toArray()
@@ -678,7 +1018,15 @@ $(document).ready(function () {
 			document.getElementById("root").scrollTo(0, 0)
 		}
 	}
-
+	window.onpopstate = function (e) {
+		console.log(e)
+		if (!e.state && InterfaceState.state === STATE_ANALYSIS) {
+			$("#character").addClass("hidden")
+			$("#stat-navbar").show()
+		} else if (InterfaceState.state === STATE_CHARACTER_ANALYSIS && e.state && e.state.page === "character") {
+			showCharacterPage(e.state.version, e.state.map, e.state.gametype, e.state.charId, false, true)
+		}
+	}
 	$("#langbtn").click(function () {
 		$(".lang_dropdown").show()
 	})
@@ -740,6 +1088,11 @@ $(document).ready(function () {
 	})
 	$("#gotop").click(function () {
 		location.href = "#"
+	})
+	$("#character-close-btn").click(function () {
+		window.history.back()
+		$("#character").addClass("hidden")
+		$("#stat-navbar").show()
 	})
 	$(".prevpage").click(prevPage)
 	$(".nextpage").click(nextPage)
@@ -889,6 +1242,8 @@ function convertCountToItemSlots(items, isZeroIndex) {
 function setItemList(turn, item, isZeroIndex) {
 	//console.log(turn)
 	let text = ""
+
+	//for legacy format support
 	if (item.length > 20) {
 		item = convertCountToItemSlots(item, isZeroIndex)
 	}
@@ -896,10 +1251,10 @@ function setItemList(turn, item, isZeroIndex) {
 	for (let it of item) {
 		i += 1
 		if (it === -1) {
-			text += "<div class='toast_itemimg'><img alt='empty' src='res/img/store/emptyslot.png'> </div>"
+			text += "<div class='toast_itemimg scalable'><img alt='empty' src='res/img/store/emptyslot.png'> </div>"
 		} else {
 			text +=
-				"<div class='toast_itemimg item_tooltip' value=" +
+				"<div class='toast_itemimg item_tooltip scalable' value=" +
 				it +
 				"><img alt='item' src='res/img/store/items.png' style='margin-left: " +
 				-1 * it * 100 +
@@ -1036,6 +1391,7 @@ function getSetting(game, setting) {
 	return null
 }
 
+//unused
 function drawSimulationGraph(winRateList, avgDamageList) {
 	am4core.createFromConfig(
 		{
@@ -1168,7 +1524,7 @@ function showGameList(data) {
 		return
 	}
 
-	//only simulation
+	//unused
 	if (!data.isGamelist) {
 		$("#holder").hide()
 		let wins = [0, 0, 0, 0]
@@ -1253,7 +1609,7 @@ function showGameList(data) {
 		// }
 		// $("#simulation_result").css("font-size", "20px")
 
-		drawSimulationGraph(winRateList, avgDamageList)
+		//drawSimulationGraph(winRateList, avgDamageList)
 	} else {
 		//on receive game list
 		$("#simulation_detail").hide()
@@ -1376,7 +1732,7 @@ function drawSmallGraph(data, graphId) {
 
 	let str = ""
 	let sorted = data.sort((a, b) => a.turn - b.turn)
-	console.log(sorted)
+	//console.log(sorted)
 	let widths = new Map()
 	for (const player of sorted) {
 		let id = randomHex(4)
@@ -1575,7 +1931,7 @@ function showSingleStat(data) {
 					}
 					for (let j = 0; j < item.count; ++j) {
 						itemstr +=
-							"<div class='toast_itemimg_itembuild item_tooltip' value=" +
+							"<div class='toast_itemimg_itembuild item_tooltip scalable' value=" +
 							item.item_id +
 							"><img alt='item' src='res/img/store/items.png' style='margin-left: " +
 							-1 * item.item_id * 100 +
@@ -1643,15 +1999,6 @@ function showSingleStat(data) {
 			</div>
 			`
 			$("#game_detail_content").append(str)
-			// $(".toast_itemimg_itembuild").css({
-			// 	margin: "-30px",
-			// 	width: "100px",
-			// 	overflow: "hidden",
-			// 	height: "100px",
-			// 	display: "inline-block",
-			// 	transform: "scale(0.4)",
-			// 	"vertical-align": "middle"
-			// })
 
 			//player-detail-content
 		}
@@ -1821,450 +2168,27 @@ function showSingleStat(data) {
 	// }
 	addItemTooltipEvent()
 	$(".itemlist").css("font-size", "20px")
-	am4core.createFromConfig(
-		{
-			type: "XYChart",
-			data: kda_graph,
-			legend: {
-				position: "bottom",
-				labels: {
-					textDecoration: "none",
-					fill: "#ffffff",
-				},
-			},
-			titles: [
-				{
-					text: "KDA Score",
-					fontSize: 30,
-					fill: "white",
-				},
-			],
-			xAxes: [
-				{
-					type: "CategoryAxis",
-					dataFields: {
-						category: "category",
-					},
-					renderer: {
-						labels: {
-							fill: "#ffffff",
-							fontSize: 10,
-						},
-						grid: {
-							template: {
-								disabled: true,
-							},
-						},
-						minGridDistance: 20,
-					},
-				},
-			],
-			yAxes: [
-				{
-					type: "ValueAxis",
-					min: 0,
-					renderer: {
-						labels: {
-							fill: "#ffffff",
-							fontSize: 15,
-						},
-						maxLabelPosition: 1.2,
-						grid: {
-							template: {
-								disabled: true,
-							},
-						},
-					},
-				},
-			],
-			series: [
-				{
-					name: "KDA",
-					bullets: [
-						{
-							type: "LabelBullet",
-							label: {
-								text: "{k}",
-								fontSize: 10,
-								fill: "white",
-								truncate: false,
-								dy: 10,
-							},
-						},
-					],
-					type: "ColumnSeries",
-					columns: {
-						width: "25",
-						fill: "#6593F5",
-						stroke: "none",
-					},
-					dataFields: {
-						valueY: "k",
-						categoryX: "category",
-					},
-				},
-				// {
-				// 	name: "Death",
-				// 	bullets: [
-				// 		{
-				// 			type: "LabelBullet",
-				// 			label: {
-				// 				text: "{d}",
-				// 				fontSize: 10,
-				// 				fill: "white",
-				// 				truncate: false,
-				// 				dy: 10
-				// 			}
-				// 		}
-				// 	],
-				// 	type: "ColumnSeries",
-				// 	columns: {
-				// 		width: "60%",
-				// 		fill: "#fc5060",
-				// 		stroke: "none"
-				// 	},
-				// 	dataFields: {
-				// 		valueY: "d",
-				// 		categoryX: "category"
-				// 	}
-				// },
-				// {
-				// 	name: "Assist",
-				// 	bullets: [
-				// 		{
-				// 			type: "LabelBullet",
-				// 			label: {
-				// 				text: "{a}",
-				// 				fontSize: 10,
-				// 				fill: "white",
-				// 				truncate: false,
-				// 				dy: 10
-				// 			}
-				// 		}
-				// 	],
-				// 	type: "ColumnSeries",
-				// 	columns: {
-				// 		width: "60%",
-				// 		fill: "#32cd32",
-				// 		stroke: "none"
-				// 	},
-				// 	dataFields: {
-				// 		valueY: "a",
-				// 		categoryX: "category"
-				// 	}
-				// }
-			],
-		},
-		document.getElementById("kdaGraph")
-	)
 
-	let position_chart = {
-		legend: {
-			position: "bottom",
-			labels: {
-				textDecoration: "none",
-				fill: "#ffffff",
-				// text: "[bold {stroke}]{name}[/]",
-			},
-		},
-		titles: [
-			{
-				text: chooseLang("위치", "Positions"),
-				fontSize: 30,
-				fill: "white",
-			},
-		],
-		type: "XYChart",
-		data: position_list,
-		xAxes: [
-			{
-				type: "CategoryAxis",
-				dataFields: {
-					category: "category",
-				},
-				renderer: {
-					labels: {
-						fill: "#ffffff",
-						fontSize: 10,
-					},
-					grid: {
-						template: {
-							disabled: true,
-						},
-					},
-					minGridDistance: 20,
-				},
-			},
-		],
-		yAxes: [
-			{
-				axisRanges: respawnpos_list,
-				min: 0,
-				type: "ValueAxis",
-				renderer: {
-					labels: {
-						fill: "#ffffff",
-						fontSize: 20,
-						template: {
-							disabled: true,
-						},
-					},
-					maxLabelPosition: 1,
-					grid: {
-						template: {
-							disabled: true,
-						},
-					},
-				},
-			},
-		],
-		series: [
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#0077b6",
-				stroke: "#0077b6",
-				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 2,
-									height: 2,
-									horizontalCenter: "middle",
-									verticalCenter: "middle",
-								},
-							],
-						},
-					],
-					template: {
-						type: "Bullet",
-						fill: "#0077b6",
-					},
-				},
-				dataFields: {
-					valueY: "value1",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#d54a48",
-				stroke: "#d54a48",
-				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 2,
-									height: 2,
-									horizontalCenter: "middle",
-									verticalCenter: "middle",
-								},
-							],
-						},
-					],
-					template: {
-						type: "Bullet",
-						fill: "#d54a48",
-					},
-				},
-				dataFields: {
-					valueY: "value2",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#72cc50",
-				stroke: "#72cc50",
-				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 2,
-									height: 2,
-									horizontalCenter: "middle",
-									verticalCenter: "middle",
-								},
-							],
-						},
-					],
-					template: {
-						type: "Bullet",
-						fill: "#72cc50",
-					},
-				},
-				dataFields: {
-					valueY: "value3",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#fff989",
-				stroke: "#fff989",
-				bullets: {
-					values: [
-						{
-							children: [
-								{
-									type: "Circle",
-									width: 2,
-									height: 2,
-									horizontalCenter: "middle",
-									verticalCenter: "middle",
-								},
-							],
-						},
-					],
-					template: {
-						type: "Bullet",
-						fill: "#fff989",
-					},
-				},
-				dataFields: {
-					valueY: "value4",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-		],
-	}
+	const pchartconfig = structuredClone(PositionChartConfig)
 
-	let money_chart = {
-		legend: {
-			position: "bottom",
-			labels: {
-				textDecoration: "none",
-				fill: "#ffffff",
-				// text: "[bold {stroke}]{name}[/]",
-			},
-		},
-		titles: [
-			{
-				text: chooseLang("돈 획득", "Money Obtain"),
-				fontSize: 30,
-				fill: "white",
-			},
-		],
-		type: "XYChart",
-		data: money_list,
-		xAxes: [
-			{
-				type: "CategoryAxis",
-				dataFields: {
-					category: "category",
-				},
-				renderer: {
-					labels: {
-						fill: "#ffffff",
-						fontSize: 10,
-					},
-					grid: {
-						template: {
-							disabled: true,
-						},
-					},
-					minGridDistance: 25,
-				},
-			},
-		],
-		yAxes: [
-			{
-				min: 0,
-				type: "ValueAxis",
-				renderer: {
-					labels: {
-						fill: "#ffffff",
-						fontSize: 13,
-					},
-					maxLabelPosition: 1,
-					grid: {},
-					minGridDistance: 25,
-				},
-			},
-		],
-		series: [
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#0077b6",
-				stroke: "#0077b6",
-				bullets: {},
-				dataFields: {
-					valueY: "value1",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#d54a48",
-				stroke: "#d54a48",
-				bullets: {},
-				dataFields: {
-					valueY: "value2",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#72cc50",
-				stroke: "#72cc50",
-				bullets: {},
-				dataFields: {
-					valueY: "value3",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-			{
-				type: "LineSeries",
-				name: "",
-				fill: "#fff989",
-				stroke: "#fff989",
-				bullets: {},
-				dataFields: {
-					valueY: "value4",
-					categoryX: "category",
-				},
-				sequencedInterpolation: false,
-				sequencedInterpolationDelay: 100,
-			},
-		],
+	const mchartconfig = structuredClone(MoneyChartConfig)
+
+	const kchartconfig = structuredClone(KDAChartConfig)
+
+	pchartconfig.yAxes[0].axisRanges = respawnpos_list
+	pchartconfig.data = position_list
+	mchartconfig.data = money_list
+	kchartconfig.data = kda_graph
+	for (let i = 0; i < 4; ++i) {
+		pchartconfig.series[i].name = visiblePlayerNames[i]
 	}
 	for (let i = 0; i < 4; ++i) {
-		position_chart.series[i].name = visiblePlayerNames[i]
+		mchartconfig.series[i].name = visiblePlayerNames[i]
 	}
-	for (let i = 0; i < 4; ++i) {
-		money_chart.series[i].name = visiblePlayerNames[i]
-	}
-	am4core.createFromConfig(position_chart, document.getElementById("position_chart"))
-	am4core.createFromConfig(money_chart, document.getElementById("money_chart"))
-	// location.href = "#game_detail_content"
+	am4core.createFromConfig(kchartconfig, document.getElementById("kdaGraph"))
+	am4core.createFromConfig(pchartconfig, document.getElementById("position_chart"))
+	am4core.createFromConfig(mchartconfig, document.getElementById("money_chart"))
 	document.getElementById("game_detail").scrollTo(0, 0)
 	$("#game_detail").show()
-	//document.getElementById("game_detail").scrollIntoView();
 	setTimeout(() => $("#overlay").removeClass("visible"), 400)
 }

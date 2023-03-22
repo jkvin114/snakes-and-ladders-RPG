@@ -8,8 +8,8 @@ html{
       font-family: 'cookierun';
       /* background-color: rgb(36, 36, 36); */
       /* background-color: #200f33; */
-      background: linear-gradient(45deg, #41295a, #2f0743);
-
+      /* background: linear-gradient(45deg, #41295a, #2f0743); */
+background-color: #2b282c  ;
       color: white;
         text-align: center;
     /* overflow: hidden; */
@@ -42,7 +42,8 @@ html{
     display: grid;
     grid-template-columns: 50% 50%;
     visibility: hidden;
-    background: rgba(0, 0, 0, 0.1);
+    /* background: rgba(0, 0, 0, 0.1); */
+    background-color: #372c44;
     /* background-color: rgb(44, 44, 44); */
     /* background-color: #2a1343; */
     /* border: 1px solid #9158ce; */

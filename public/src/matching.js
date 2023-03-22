@@ -29,7 +29,7 @@ function onReceiveCharacters(request) {
 	for (let i = 0; i < characters.length; ++i) {
 		str += `<div class=champbtn_new value=${String(i)}>
 				<div>
-					<img src="res/img/character/illust/${characters[i].illustdir}"  style="background-color: ${characters[i].bgcolor};" >
+					<img src="res/img/character/illust/${characters[i].illustdir}"" >
 				</div>
 				<div class="champbtn_name">${characters[i].name}</div>
 			</div>`

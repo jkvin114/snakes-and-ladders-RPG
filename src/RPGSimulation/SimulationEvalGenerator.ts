@@ -6,7 +6,11 @@ import { SimulationEvalSchema } from "../mongodb/schemaController/SimulationEval
 import { CharacterSimulationEvalSchema } from "../mongodb/schemaController/CharacterSimulationEval";
 import type {Types} from "mongoose";
 import { GameRecord, Indicator, PlayerRecord } from "./TrainHelper";
-const EVAL_VERSION=1
+const EVAL_VERSION=2
+/**
+ * version 2: added patchVersion 
+ */
+
 
 enum GameType{
     P2="2P",P3="3P",P4="4P",TEAM="TEAM"
@@ -22,6 +26,7 @@ interface ICharacterEval{
     mapName:MapName,
     version:number,
     serverVersion:string,
+    patchVersion:string,
     charId:CHARACTER,
     opponents:characterIndex<CHARACTER>[],
     duos:characterIndex<CHARACTER>[],
@@ -76,6 +81,7 @@ class CharacterEval{
             mapName:mapname,
             version:EVAL_VERSION,
             serverVersion:SETTINGS.version,
+            patchVersion:SETTINGS.patch_version,
             count:this.count,
             wins:this.wins,
             opponents:this.selializeMap<CHARACTER>(this.opponents),
@@ -119,6 +125,7 @@ class SimulationEval{
             mapName:this.mapName,
             version:EVAL_VERSION,
             serverVersion:SETTINGS.version,
+            patchVersion:SETTINGS.patch_version,
             count:this.count,
             averageTotalTurn:avgturn,
             characters:chars

@@ -1,0 +1,20 @@
+{
+    "startgame":"CREATE GAME",
+    "reconnect":"Reconnect",
+    "spectate":"SPECTATE",
+    "join":"JOIN",
+    "simulation":"Simulation",
+    "ph":{
+        "username":"Username(optional)",
+        "room":{
+            "name":"Room Name(optional)",
+            "pw":"Room Password(optional)"
+        }
+    },
+    "login":{
+        "login":"Log In",
+        "error":{
+            "password":"Wrong password"
+        }
+    }
+}

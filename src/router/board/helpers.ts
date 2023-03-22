@@ -13,6 +13,7 @@ import { SchemaTypes } from "../../mongodb/SchemaTypes"
 import { Friend, friendSchema } from "../../mongodb/UserRelationDBSchema";
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation";
 import crypto from "crypto";
+import { CharacterSimulationEval, SimulationEval } from "../../mongodb/SimulationEvalDBSchema";
 export function encrypt(pw: string, salt: string) {
 	return crypto
 		.createHash("sha512")
@@ -303,6 +304,13 @@ async function migrateFollowRelation(){
 			//await UserRelationSchema.addFollow(f,u._id)
 		}
 	}
+}
+async function populatePatchVersion() {
+	console.log("update patch version")
+	CharacterSimulationEval.updateMany({serverVersion:"3.14.0"},{'$set' :{patchVersion:"1.0"}})
+	CharacterSimulationEval.updateMany({serverVersion:"3.14.1"},{'$set' :{patchVersion:"1.1"}})
+	SimulationEval.updateMany({serverVersion:"3.14.0"},{'$set' :{patchVersion:"1.0"}})
+	SimulationEval.updateMany({serverVersion:"3.14.1"},{'$set' :{patchVersion:"1.1"}})
 }
 // migrateFriendRelation()
 // migrateFollowRelation()
