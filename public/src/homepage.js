@@ -77,16 +77,18 @@ $("document").ready(async function () {
 
 	try {
 		let response = await axios.post("/room/home")
-		if (response.data) {
+		if (response.data.config) {
 			if (response.data.board) $("#postbtn").show()
 			if (response.data.simulation) $("#simulation").show()
 			if (response.data.marble) $("#marble").show()
 		}
-	} catch (e) {
-		console.log(e)
-		if (e.request.status == 307) {
+		if (response.data.reconnect) {
 			showReconnectBtn()
 		}
+		$("footer").html(` <a>version: ${response.data.version}</a>, <a>patch: ${response.data.patch}</a>
+		<br><a>Created by Yejoon Jung, jkvin114@gmail.com</a>`)
+	} catch (e) {
+		console.log(e)
 	}
 
 	//checks if user is also maintaing login status in server

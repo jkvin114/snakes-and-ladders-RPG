@@ -18,6 +18,7 @@ const ITEMS = ItemList
 abstract class AiAgent {
 	player: Player
 	attemptedSkills: Set<SKILL>
+	skillUseCounter:Counter<SKILL>
 	isRandomItem: boolean
 	itemBuild: ItemBuild
 	static readonly BASICATTACK = 4
@@ -27,6 +28,7 @@ abstract class AiAgent {
 		this.player = player
 		this.isRandomItem = TRAIN_SETTINGS.train && TRAIN_SETTINGS.random_item
 		this.attemptedSkills = new Set<SKILL>()
+		this.skillUseCounter=new Counter<SKILL>()
 		this.gameStartMessage = ""
 		this.itemBuild = new ItemBuild()
 	}
@@ -44,6 +46,7 @@ abstract class AiAgent {
 	}
 	simulationAiSkill() {
 		this.attemptedSkills.clear()
+		this.skillUseCounter.clear()
 		if (this.player.game.gameover || !(this.player.canUseSkill() || this.player.canBasicAttack())) {
 			return
 		}
@@ -56,7 +59,7 @@ abstract class AiAgent {
 				continue
 			}
 			this.attemptedSkills.add(skill)
-
+			this.skillUseCounter.add(skill)
 			let skillinit = this.player.initSkill(skill)
 			//	console.log(skillinit)
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
@@ -103,6 +106,7 @@ abstract class AiAgent {
 	}
 	async aiSkill(callback: Function) {
 		this.attemptedSkills.clear()
+		this.skillUseCounter.clear()
 		//await sleep(ONE_SKILL_DELAY)
 		if (this.player.game.gameover || !(this.player.canUseSkill() || this.player.canBasicAttack())) {
 			callback()
@@ -120,6 +124,7 @@ abstract class AiAgent {
 				continue
 			}
 			this.attemptedSkills.add(skill)
+			this.skillUseCounter.add(skill)
 			//console.log(player.AiAgent.attemptedSkills)
 			let skillinit = this.player.initSkill(skill)
 			//	console.log(skillinit)

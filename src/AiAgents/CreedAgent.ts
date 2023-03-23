@@ -54,7 +54,7 @@ class CreedAgent extends AiAgent {
 		if (!this.attemptedSkills.has(SKILL.W)) {
 			return SKILL.W
 		}
-		if (!this.attemptedSkills.has(SKILL.Q)) {
+		if (this.skillUseCounter.countItem(SKILL.Q)<2) {
 			return SKILL.Q
 		}
 		return -1

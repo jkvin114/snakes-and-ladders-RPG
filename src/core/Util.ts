@@ -275,6 +275,9 @@ export class Counter<T>{
 		let val=this.map.get(e)
 		return val!==undefined && val>count
 	}
+	clear(){
+		this.map.clear()
+	}
 	toArray(){
 		let list=[]
 		for(const [e,count] of this.map.entries()){

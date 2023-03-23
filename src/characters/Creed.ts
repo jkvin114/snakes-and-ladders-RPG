@@ -41,7 +41,7 @@ class Creed extends Player {
 		super(turn, team, game, ai, ID, name)
 		this.skill_ranges=[7,30,20]
 
-		this.cooltime_list = [3, 4, 9]
+		this.cooltime_list = [3, 4, 8]
 		this.duration_list=[0,0,0]
 		this.itemtree = {
 			level: 0,
