@@ -1,5 +1,7 @@
 <html>
   <script src="/lib/jquery-3.6.0.min.js"></script>
+  <script src="/src/localeManager.js"></script>
+  <link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
   @font-face {
@@ -7,7 +9,7 @@
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
-   background-color: rgb(36, 36, 36);
+   background-color: var(--bg);
    color:white;
    margin: 0;
     margin-bottom: 20px;
@@ -65,7 +67,7 @@
     width: min(95%,900px);
     display: inline-block;
     padding: 5px;
-    background-color: rgb(83, 83, 83);
+    background-color: var(--bg3);
   }
   .comment{
     min-height: 70px;
@@ -145,7 +147,8 @@
   }
   .comment_info{
     font-size: 12px;
-    color: #d2d2d2;
+    /* color: #d2d2d2; */
+    color: var(--font-light);
     
   }
   .comment_author{
@@ -199,7 +202,7 @@
     margin: 10px;
     border: 0;
     height: 1px;
-    background: gray;
+    background: var(--font-light);
   }
   #reply-container{
     display: grid;
@@ -277,14 +280,14 @@
        <form action="/board/post/comment/reply" method="post"> 
         <input type="hidden" name="commentId" value="<%= comment._id %>">  
         <div class="commententer">
-          <input class="enter_comment" type="text" name="content" placeholder="reply" required>
-          <input class="submit_comment" type="submit" value="Submit">
+          <input class="enter_comment" type="text" name="content" placeholder="reply" lkey-ph="ph.reply" required>
+          <input class="submit_comment" type="submit" value="Submit"></input>
         </div>
       </form>
   <%}else if(comment.deleted){%>
-    <p>Can`t reply on deleted comment</p>
+    <p lkey="reply.deleted">Can`t reply on deleted comment</p>
   <% }else{%>
-      <p><button class="submit_comment" onclick="goLoginPage()">Log in</button> to reply</p>
+      <p><button class="submit_comment" onclick="goLoginPage()"lkey="login">Log in</button><a lkey="reply.login">to reply</a> </p>
  <% }%>
 
 
@@ -292,7 +295,7 @@
     <%for(let i=reply.length-1;i>=0;--i){%>
       <% const r=reply[i]%>
       <div class="reply-indicator">
-        <!-- &#8618; -->
+        &#8618;
         
       </div>
         <div class="comment">
@@ -324,6 +327,9 @@
 
 </body>
 <script>
+
+updateLocale("board")
+
 function golink(link){
   window.location.href=link
 }
@@ -372,7 +378,7 @@ function sendVote(kind,type,id,elem){
     .done((data, statusText, xhr)=>{
       let status = xhr.status;
       if(status==200){
-        if(data.change===0) alert(`You already ${type==="up"?"down":"up"}voted.`)
+        if(data.change===0) alert(type==="up"?LOCALE.already_like:LOCALE.already_dislike)
         else $(vote_count).html(Number($(vote_count).html()) +  data.change)
 
         if(data.change===1){

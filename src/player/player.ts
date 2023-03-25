@@ -1,8 +1,5 @@
-import obsInfo = require("../../res/obstacles.json")
+import {obstacles} from "../../res/obstacle_data.json"
 import SETTINGS = require("../../res/globalsettings.json")
-// import * as ENUM from "../data/enum"
-// import * as Util from "../core/Util"
-// import { PlayerClientInterface, testSetting } from "../app"
 import type { Game } from "../Game"
 import { EntityFilter } from "../entity/EntityFilter"
 import { Projectile } from "../Projectile"
@@ -802,8 +799,8 @@ abstract class Player extends Entity {
 			}
 
 			if (list[i] > 0) {
-				if (obsInfo.obstacles[obs].val < worst) {
-					worst = obsInfo.obstacles[obs].val
+				if (obstacles[obs].val < worst) {
+					worst = obstacles[obs].val
 					dice = i + 1
 				}
 			}
@@ -893,8 +890,8 @@ abstract class Player extends Entity {
 		} else if (obs === -1) {
 			obs = ARRIVE_SQUARE_RESULT_TYPE.FINISH
 		}
-		//투명화:   해로운 장애물일경우만 무시
-		else if (isInvisible && obsInfo.obstacles[obs].val < 0) {
+		//투명화:  장애물 무시
+		else if (isInvisible) {
 			obs = ARRIVE_SQUARE_RESULT_TYPE.NONE
 		} else {
 			let money = this.game.getMoneyAt(this.pos)

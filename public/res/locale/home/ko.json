@@ -1,18 +1,35 @@
 {
-    "startgame":"게임 시작",
+    "startgame":"게임 만들기",
     "reconnect":"재접속",
     "spectate":"관전",
     "join":"방 참가",
     "simulation":"시뮬레이션",
+    "start":"게임 시작",
+    "cancel":"취소",
     "ph":{
         "room":{
+            "username":"닉네임(선택)",
             "name":"방제(선택)",
             "pw":"방 비밀번호(선택)"
-        }
-    },"login":{
-        "login":"로그인",
-        "error":{
-            "password":"비밀번호가 틀립니다"
-        }
+        },"username":"아이디",
+        "password":"비밀번호",
+        "verify_password":"비밀번호 확인",
+        "email":"이메일"
+    },
+    "room":{
+        "private":"비공개",
+        "loginonly":"로그인한 유저만 받기"
+    }
+    ,"login":"로그인",
+    "signup":"회원가입",
+    "home":"홈으로",
+    "error":{
+        "username":"존재하지 않는 아이디입니다",
+        "password":"비밀번호가 틀립니다",
+        "email":"유효한 이메일을 입력하세요",
+        "username_length":"아이디는 2~15글자 사이여야 합니다",
+        "password_condition":"비밀번호는 숫자와 영문포함 3글자 이상이어야 합니다",
+        "username_duplicate":"아이디 중복",
+        "roomname_duplicate":"방 이름 중복"
     }
 }

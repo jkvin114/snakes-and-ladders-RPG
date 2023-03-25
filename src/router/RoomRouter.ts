@@ -133,10 +133,11 @@ router.post("/join", async function (req: express.Request, res: express.Response
 router.post("/home", async function (req: express.Request, res: express.Response) {
  	req.session.ip = req.socket.remoteAddress
 	req.session.time=new Date()
+	let data={config:CONFIG,reconnect:false,version:SETTINGS.version,patch:SETTINGS.patch_version,locale:CONFIG.defaultLocale}
 	if (req.session && isUserInRPGRoom(req)) {
-		// console.error("previous room exists")
-		res.status(200).json({config:CONFIG,reconnect:true,version:SETTINGS.version,patch:SETTINGS.patch_version}).end()
-	} else res.status(200).json({config:CONFIG,reconnect:false,version:SETTINGS.version,patch:SETTINGS.patch_version})
+		data.reconnect=true
+	} 
+	return res.status(200).json(data)
 })
 router.post("/matching", async function (req: express.Request, res: express.Response) {
 	console.log(req.session)

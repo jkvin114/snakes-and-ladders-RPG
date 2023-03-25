@@ -1,4 +1,7 @@
 <script src="/lib/jquery-3.6.0.min.js"></script>
+<script src="/src/localeManager.js"></script>
+<link rel="stylesheet" href="/src/style/board-global.css">
+
 <html>
 <style>
     @font-face {
@@ -11,7 +14,7 @@
   }
   
   body{     
-   background-color: rgb(36, 36, 36);
+   background-color: var(--bg);
    color:white;
    margin: 0;
     margin-bottom: 20px;
@@ -29,7 +32,7 @@
   #write_post{
     display: inline-block;
     width: min(95%,900px);
-    background-color: rgb(65, 65, 65);
+    background-color: var(--bg2);
     border-radius: 10px;
   }
   #navbar-container{
@@ -143,8 +146,8 @@
   }
   #filebtn{
     width: 40px;
-    /* background-color: #7E00BF; */
-    background: transparent;
+    background-color: #4c4c4c;
+    /* background: transparent; */
 
     cursor:pointer;
     text-align:center;
@@ -161,7 +164,7 @@
     cursor: pointer;
   }
 #visibility{
-  background: #404040;
+  background: var(--bg2);
   display: inline-block;
   padding: 6px;
 }
@@ -177,13 +180,13 @@
 </head>
  
 <body>
-  <img src="/res/img/svg/save.svg" id="savebtn"  onclick="save()">
+  <img src="/res/img/svg/save.svg" id="savebtn"  onclick="save()" title="save">
 
   <div id="navbar-container">
     <div id="navbar">
-      <img src="/res/img/svg/out.svg" id="cancelbtn"  onclick="cancel()">
+      <img src="/res/img/svg/out.svg" id="cancelbtn"  onclick="cancel()" title="quit">
 
-      <label for="file" id="filebtn-container">
+      <label for="file" id="filebtn-container" title="attatch image">
         <img id="filebtn" src="/res/img/svg/image.svg">
       </label>
       
@@ -193,9 +196,9 @@
  
   <div>
     <%if(isEdit){%>
-      <h1>Edit post</h1>
+      <h1 lkey="editpost">Edit post</h1>
     <%}else{%>
-      <h1>Write post</h1>
+      <h1 lkey="writepost">Write post</h1>
     <%}%>
   </div>
     <form id="form" action="/board/post/<%= isEdit?'edit':'write'%>" method="post" enctype="multipart/form-data">
@@ -214,19 +217,19 @@
    
   <div id="visibility">
 
-    <p>Visilibity</p>
+    <p lkey="visibility.name">Visilibity</p>
     <input type="radio" class="radiobtn" id="vs1" name="visibility" value="PUBLIC" checked>
-    <label for="vs1">Public</label>
+    <label lkey="visibility.public" for="vs1">Public</label>
     <input type="radio" class="radiobtn" id="vs2" name="visibility" value="FRIENDS">
-    <label for="vs2">Visible to friends</label>
+    <label lkey="visibility.friend" for="vs2">Visible to friends</label>
     <input type="radio" class="radiobtn" id="vs3" name="visibility" value="LINK_ONLY">
-    <label for="vs3">Partially visible</label>
+    <label lkey="visibility.link" for="vs3">Partially visible</label>
     <input type="radio" class="radiobtn" id="vs4" name="visibility" value="PRIVATE">
-    <label for="vs4">Private</label>
+    <label lkey="visibility.private" for="vs4">Private</label>
   </div>
   </form>
     <div id="write_post">
-        <div class="textarea" id="title-input" placeholder="Title" contenteditable><%= title %></div>
+        <div class="textarea" lkey-ph="ph.title" id="title-input" placeholder="Title" contenteditable><%= title %></div>
         
        <hr> 
        <div id="imagearea">
@@ -235,7 +238,7 @@
           <hr>
         <% } %>
         </div>
-       <div  class="textarea"  id="content-input" placeholder="Content" contenteditable><%- content %></div>
+       <div  class="textarea"lkey-ph="ph.content"  id="content-input" placeholder="Content" contenteditable><%- content %></div>
       </div>
       
 </body>
@@ -243,11 +246,13 @@
  function cancel(){
   history.back()
   }
+  
+updateLocale("board")
   function save(){
     let title=$("#title-input").html()
     let content=$("#content-input").html()
     if(title==="" || content===""){
-      alert("enter content")
+      alert(LOCALE.entercontent)
       return
     }
     // console.log(content)

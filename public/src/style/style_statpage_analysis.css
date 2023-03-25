@@ -530,3 +530,6 @@ color: #ff6e6e;
   .character-ref{
     cursor: pointer;
   }
+  #analysis .player-data-otherstat-item{
+    width: unset;
+  }

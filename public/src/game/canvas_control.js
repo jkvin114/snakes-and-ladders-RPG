@@ -2900,70 +2900,61 @@ export class Scene extends Board {
 		if (!num) {
 			num = 0
 		}
-		let e = ""
+		let e = this.game.PAGELOCALE.board.effects[effect]
+		if (!e || e === "") return
 		switch (effect) {
 			case 0:
-				e = this.game.chooseLang("Slow!", "둔화!")
 				this.effectindicator[num].set({ fill: "blue" })
 				break
 			case 1:
-				e = this.game.chooseLang("Speed!", "신속!")
 				this.effectindicator[num].set({ fill: "blue" })
 				break
 			case 2:
-				e = this.game.chooseLang("Grounded!", "고정!")
 				this.effectindicator[num].set({ fill: "purple" })
 				break
 			case 3:
-				e = this.game.chooseLang("Silenced!", "침묵!")
 				this.effectindicator[num].set({ fill: "purple" })
 				break
 			case 4:
-				e = this.game.chooseLang("Shield!", "방어막!")
 				this.effectindicator[num].set({ fill: "green" })
 				break
 			case 5:
-				e = this.game.chooseLang("Poison!", "독!")
 				this.effectindicator[num].set({ fill: "green" })
 				break
 			case 6:
-				e = this.game.chooseLang("Radiation!", "방사능!")
 				this.effectindicator[num].set({ fill: "green" })
 				break
 			case 7:
-				e = this.game.chooseLang("Annuity!", "연금!")
 				this.effectindicator[num].set({ fill: "green" })
 				break
 			case 8:
-				e = this.game.chooseLang("Slaved!", "노예계약!")
 				this.effectindicator[num].set({ fill: "red" })
 				break
+			case 9:
+				this.effectindicator[num].set({ fill: "red" })
+				break
+			case 10:
+				this.effectindicator[num].set({ fill: "green" })
+				break
 			case 11:
-				e = this.game.chooseLang("Blind!", "실명!")
 				this.effectindicator[num].set({ fill: "purple" })
 				break
 			case 12:
-				e = this.game.chooseLang("Ignite!", "점화!")
 				this.effectindicator[num].set({ fill: "orange" })
 				break
 			case 13:
-				e = this.game.chooseLang("Invisible!", "투명화!")
 				this.effectindicator[num].set({ fill: "green" })
 				break
 			case 14:
-				e = this.game.chooseLang("Private Loan!", "사채!")
 				this.effectindicator[num].set({ fill: "purple" })
 				break
 			case 15:
-				e = this.game.chooseLang("Annuity Lottery!", "연금복권!")
 				this.effectindicator[num].set({ fill: "green" })
 				break
 			case 16:
-				e = this.game.chooseLang("Cursed!", "주작걸림!")
 				this.effectindicator[num].set({ fill: "red" })
 				break
 			case 18:
-				e = this.game.chooseLang("Rooted!", "속박!")
 				this.effectindicator[num].set({ fill: "purple" })
 				break
 		}
@@ -3140,7 +3131,7 @@ export class Scene extends Board {
 
 	showTooltip(index) {
 		let i = this.game.shuffledObstacles[index]
-		let desc = this.game.strRes.OBSTACLES.obstacles[i].desc
+		let desc = this.game.LOCALE.obstacle[i].desc
 		let pos = this.getTilePos(index)
 
 		this.tooltip.set({ text: desc, opacity: 1, top: pos.y + 40, left: pos.x })

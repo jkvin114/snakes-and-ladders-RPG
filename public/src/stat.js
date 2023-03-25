@@ -17,6 +17,7 @@ const STATE_SIMULATION = 1
 const STATE_ONEGAME = 2
 const STATE_ANALYSIS = 3
 const STATE_CHARACTER_ANALYSIS = 4
+let LOCALE_GAME = {}
 class InterfaceState {
 	constructor() {
 		InterfaceState.gamelist_hidden = false
@@ -31,8 +32,15 @@ class InterfaceState {
 		InterfaceState.state = STATE_GAMES
 	}
 }
+async function updateGameLocale() {
+	let la = "en"
+	if (sessionStorage.language === "eng" || sessionStorage.language === "en") la = "en"
+	else if (sessionStorage.language === "kor" || sessionStorage.language === "ko") la = "ko"
+
+	LOCALE_GAME = await fetch(`/res/locale/game/${la}.json`).then((response) => response.json())
+}
 const chooseLang = function (kor, eng) {
-	if (LANG === "kor") return kor
+	if (sessionStorage.language === "ko") return kor
 	return eng
 }
 function changelang() {
@@ -352,8 +360,9 @@ function requestResource() {
  */
 function getItemDescription(item) {
 	let ability = ""
+	const id = item.id
 	for (let a of item.ability) {
-		let ab = "<a class=ability_name>" + chooseLang(a.type_kor, a.type) + "</a> +" + a.value
+		let ab = "<a class=ability_name>" + LOCALE_GAME.stat[a.type] + "</a> +" + a.value
 
 		if (a.type === "addMdmg" || a.type === "skillDmgReduction" || a.type === "absorb" || a.type === "obsR") {
 			ab += "%"
@@ -361,14 +370,14 @@ function getItemDescription(item) {
 		ability += ab
 		ability += "<br>"
 	}
-	if (item.unique_effect != null) {
-		ability += `<b class=unique_effect_name>[${chooseLang("고유지속효과", "unique passive")}]</b>:
-			 ${chooseLang(item.unique_effect_kor, item.unique_effect)}`
+	if (item.hasPassive) {
+		ability += `<b class=unique_effect_name>[${LOCALE.item.passive}]</b>:
+			 ${LOCALE_GAME.item[id].unique_effect}`
 		if (item.active_cooltime != null) {
-			ability += chooseLang(`(쿨타임 ${item.active_cooltime}턴)`, `(cooltime ${item.active_cooltime} turns)`)
+			ability += `(${LOCALE.item.cool} ${item.active_cooltime} ${LOCALE.turn})`
 		}
 	}
-	ability += "<br><br>" + chooseLang("가격: ", "price: ") + "<b class=price>" + String(item.price) + "</b>"
+	ability += `<br><br>${LOCALE.item.price} :<b class=price>` + String(item.price) + "</b>"
 	return ability
 }
 /**
@@ -392,7 +401,8 @@ function addItemTooltipEvent() {
 		}
 
 		let item = ITEMS[Number($(this).attr("value"))]
-		$(".tooltiptext h4").html(chooseLang(item.kor_name, item.name))
+		console.log(chooseLang("ko", "en"))
+		$(".tooltiptext h4").html(LOCALE_GAME.item[Number($(this).attr("value"))].name)
 		$(".tooltiptext p").html(getItemDescription(item))
 	})
 	$(".item_tooltip").mouseleave(function (e) {
@@ -515,7 +525,7 @@ async function showAnalysisPage(version) {
 	try {
 		let maps = await (await fetch(`/stat/eval/list/map/${version}`)).json()
 		let versions = await (await fetch(`/stat/eval/list/version`)).json()
-		let str = ' <li class="dropdown-item version-item" data-version="recent">Recent</li>'
+		let str = ` <li class="dropdown-item version-item" data-version="recent">${LOCALE.recent}</li>`
 		versions = versions.versions.reverse()
 		for (const v of versions) {
 			str += ` <li class="dropdown-item version-item" data-version="${v}">v${v}</li>`
@@ -536,10 +546,21 @@ async function showAnalysisPage(version) {
 				<a>${m}</a>
 			</div>`
 		}
+		console.log(maps)
+		console.log(versions)
 		if (map === "") {
 			$("#character-table-maps").html("No data")
+			$("#overlay").removeClass("visible")
+			$("#analysis").removeClass("hidden")
+
+			$(".version-item").click(function () {
+				showAnalysisPage($(this).data("version"))
+				$(".version-dropdown-btn").html($(this).data("version") + "<b style='float: right;'>&#9660;</b")
+			})
+
 			return
 		}
+
 		$("#character-table-maps").html(str)
 		$(".version-item").click(function () {
 			showAnalysisPage($(this).data("version"))
@@ -581,6 +602,9 @@ async function showAnalysisTable(version, map) {
 		console.error(e)
 		$("#overlay").removeClass("visible")
 		return
+	}
+	if (data.length === 0) {
+		$("#overlay").removeClass("visible")
 	}
 
 	let characters = new Map()
@@ -714,6 +738,19 @@ function getBrightness(hexcolor) {
 	console.log(yiq)
 	return yiq
 }
+function getGameTypeStr(gametype) {
+	switch (gametype) {
+		case "2P":
+			return LOCALE.game_2p
+		case "3P":
+			return LOCALE.game_3p
+		case "4P":
+			return LOCALE.game_4p
+		case "TEAM":
+			return LOCALE.game_team
+	}
+	return ""
+}
 
 async function showCharacterPage(version, map, gametype, charId, isModal, isback) {
 	$("#overlay").addClass("visible")
@@ -728,8 +765,10 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 		$("#character-duos-container").hide()
 	}
 	// pushCharacterPageState(version, map, gametype, charId)
-	$(".summary-gametype").html(gametype + " Game")
-	$(".summary-map").html(map + " Map")
+	$(".summary-gametype").html(getGameTypeStr(gametype))
+	$(".summary-map").html(
+		"<img src=" + getMapIconUrl(map) + " style='width:20px;vertical-align:middle;'>" + map + " Map"
+	)
 
 	let dropdowns = $(".character-dropdown-btn").toArray()
 	$(dropdowns[0]).html(gametype + `<b style="float: right;">&#9660;</b>`)
@@ -896,7 +935,7 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 				<div class="card-charimg">
 					<img src="${getCharImgUrl(storage.enemy[i].id)}">
 				</div>
-				<b class="${storage.enemy[i].winrate >= totalwins / totalgames ? "redlabel" : "bluelabel"}">${
+				<b class="${storage.enemy[i].winrate <= totalwins / totalgames ? "redlabel" : "bluelabel"}">${
 				storage.enemy[i].winrate === -1 ? "-" : Math.round(storage.enemy[i].winrate * 100) + "%"
 			}</b>
 				<a class="subtext">${storage.enemy[i].wins}/${storage.enemy[i].total} games</a>
@@ -907,7 +946,7 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 				<div class="card-charimg">
 					<img src="${getCharImgUrl(storage.duo[i].id)}">
 				</div>
-				<b class="${storage.enemy[i].winrate >= totalwins / totalgames ? "redlabel" : "bluelabel"}">${
+				<b class="${storage.enemy[i].winrate <= totalwins / totalgames ? "redlabel" : "bluelabel"}">${
 				storage.duo[i].winrate === -1 ? "-" : Math.round(storage.duo[i].winrate * 100) + "%"
 			}</b>
 				<a class="subtext">${storage.duo[i].wins}/${storage.duo[i].total} games</a>
@@ -986,6 +1025,8 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 	$("#overlay").removeClass("visible")
 	console.log(versionlist)
 	const chartconfig = structuredClone(CharacterTrendChartConfig)
+	chartconfig.titles[0].text = LOCALE.graph.trend
+
 	chartconfig.data = versionlist.map((v, i) => {
 		return {
 			category: "v" + v[0],
@@ -997,6 +1038,8 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 
 $(window).on("load", function () {})
 $(document).ready(function () {
+	updateLocale("stat")
+	updateGameLocale()
 	itemLists = $(".itemlist").toArray()
 	playerNameLists = $(".playername").toArray()
 	table = $(".statTableRow").toArray()
@@ -1034,7 +1077,9 @@ $(document).ready(function () {
 	$(".dropitem").click(function () {
 		$(".lang_dropdown").hide()
 		let lang = $(this).attr("value")
-		LANG = lang
+		sessionStorage.language = lang
+		updateLocale("stat")
+		updateGameLocale()
 	})
 	$("#summary-collapse").click(function () {
 		let collapsed = $(this).data("collapsed")
@@ -1599,7 +1644,7 @@ function showGameList(data) {
 			.append("Count:" + statData.length)
 		if (data.version != null && data.createdAt != null) {
 			$("#simulation_info").append(
-				"<br>version:" + data.version + "<br>Time:" + data.createdAt.slice(0, 16) + "<br>Average turn:" + totalturn
+				"<br>version:" + data.version + "<br>Time:" + data.createdAt.slice(0, 16) + "<br>" + LOCALE.avgturn + totalturn
 			)
 		}
 
@@ -1768,16 +1813,16 @@ function showonestat(n) {
 function multiKillText(count) {
 	let multiKillText = ""
 	if (count >= 2) {
-		multiKillText = chooseLang("더블킬", "Double kill")
+		multiKillText = "<br><b class='multikill-text' lkey='multikill.double'>" + LOCALE.multikill.double + "</b>" // chooseLang("더블킬", "Double kill")
 	}
 	if (count >= 3) {
-		multiKillText = chooseLang("트리플킬", "Triple kill")
+		multiKillText = "<br><b class='multikill-text' lkey='multikill.triple'>" + LOCALE.multikill.triple + "</b>" //chooseLang("트리플킬", "Triple kill")
 	}
 	if (count >= 4) {
-		multiKillText = chooseLang("쿼드라킬", "Quadra kill")
+		multiKillText = "<br><b class='multikill-text' lkey='multikill.quad'>" + LOCALE.multikill.quad + "</b>" //chooseLang("쿼드라킬", "Quadra kill")
 	}
 	if (count >= 5) {
-		multiKillText = chooseLang("펜타킬", "Penta kill")
+		multiKillText = "<br><b class='multikill-text' lkey='multikill.penta'>" + LOCALE.multikill.penta + "</b>" //chooseLang("펜타킬", "Penta kill")
 	}
 	return multiKillText
 }
@@ -1807,18 +1852,18 @@ function showSingleStat(data) {
 	$(othertable[4]).show()
 	$(itembuildTable[2]).show()
 	$(itembuildTable[3]).show()
-	$(".detailbtn:nth-child(1)").html(chooseLang("상세 통계", "Details"))
-	$(".detailbtn:nth-child(2)").html(chooseLang("아이템 빌드", "Item Build"))
-	$(".detailbtn:nth-child(3)").html(chooseLang("킬/데스", "Kill/Death"))
-	$(".detailbtn:nth-child(4)").html(chooseLang("위치", "Position"))
-	$(".detailbtn:nth-child(5)").html(chooseLang("돈", "Money"))
+	// $(".detailbtn:nth-child(1)").html(chooseLang("상세 통계", "Details"))
+	// $(".detailbtn:nth-child(2)").html(chooseLang("아이템 빌드", "Item Build"))
+	// $(".detailbtn:nth-child(3)").html(chooseLang("킬/데스", "Kill/Death"))
+	// $(".detailbtn:nth-child(4)").html(chooseLang("위치", "Position"))
+	// $(".detailbtn:nth-child(5)").html(chooseLang("돈", "Money"))
 	let smallGraphTypes = $(".game-detail-graph-type").toArray()
-	$(smallGraphTypes[0]).html(chooseLang("입힌 피해량", "Damage Dealt"))
-	$(smallGraphTypes[1]).html(chooseLang("플레이어에게 받은 피해", "Damage From Players"))
-	$(smallGraphTypes[2]).html(chooseLang("장애물에게 받은 피해", "Damage From Obstacle"))
-	$(smallGraphTypes[3]).html(chooseLang("회복량", "Heal Amount"))
-	$(smallGraphTypes[4]).html(chooseLang("획득한 돈", "Money Earned"))
-	$(smallGraphTypes[5]).html(chooseLang("피해 감소량", "Damage Reduced"))
+	$(smallGraphTypes[0]).html(LOCALE.smallgraph.dmgdealt)
+	$(smallGraphTypes[1]).html(LOCALE.smallgraph.playerdmg)
+	$(smallGraphTypes[2]).html(LOCALE.smallgraph.obsdmg)
+	$(smallGraphTypes[3]).html(LOCALE.smallgraph.heal)
+	$(smallGraphTypes[4]).html(LOCALE.smallgraph.money)
+	$(smallGraphTypes[5]).html(LOCALE.smallgraph.reduce)
 	let gameDetailValues = $(".game-detail-value").toArray()
 	$("#train_detail").hide()
 	$("#stattable").show()
@@ -1959,29 +2004,37 @@ function showSingleStat(data) {
 					<div class="player-data-otherstat">
 						<div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("소모한 돈", "Money Spent")}: </b><b class="otherstat-value">${p.stats[5]} </b>
+								<b class="otherstat-name" lkey="playerdetail_data.moneyspent"> ${
+									LOCALE.playerdetail_data.moneyspent
+								}: </b><b class="otherstat-value">${p.stats[5]} </b>
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("빼앗긴 돈", "Money Taken")}: </b><b class="otherstat-value">${p.stats[6]} </b>
+								<b class="otherstat-name" lkey="playerdetail_data.moneytaken"> ${
+									LOCALE.playerdetail_data.moneytaken
+								}: </b><b class="otherstat-value">${p.stats[6]} </b>
 
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("부활한 횟수", "Revived")}: </b><b class="otherstat-value">${p.stats[8]} </b>
+								<b class="otherstat-name" lkey="playerdetail_data.revive"> ${
+									LOCALE.playerdetail_data.revive
+								}: </b><b class="otherstat-value">${p.stats[8]} </b>
 							</div>
 						</div>
 						<div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("강제이동", "Forcemoved")}: </b><b class="otherstat-value">${p.stats[9]} </b>
+								<b class="otherstat-name" lkey="playerdetail_data.forcemove"> ${
+									LOCALE.playerdetail_data.forcemove
+								}: </b><b class="otherstat-value">${p.stats[9]} </b>
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("기본공격 횟수", "Basic attack")}: </b><b class="otherstat-value">${
-				p.stats[10]
-			} </b>
+								<b class="otherstat-name" lkey="playerdetail_data.basicattack"> ${
+									LOCALE.playerdetail_data.basicattack
+								}: </b><b class="otherstat-value">${p.stats[10]} </b>
 							</div>
 							<div class="player-data-otherstat-item">
-								<b class="otherstat-name"> ${chooseLang("처형당한 횟수", "Executed")}: </b><b class="otherstat-value">${
-				p.stats[11]
-			} </b>
+								<b class="otherstat-name" lkey="playerdetail_data.execute"> ${
+									LOCALE.playerdetail_data.execute
+								}: </b><b class="otherstat-value">${p.stats[11]} </b>
 							</div>
 						</div>
 					</div>
@@ -1989,7 +2042,7 @@ function showSingleStat(data) {
 						itemstr === ""
 							? ""
 							: `
-						<div class="player-data-label">${chooseLang("아이템 빌드", "Item Build")}</div>
+						<div class="player-data-label" lkey="charpage.itembuild">${LOCALE.charpage.itembuild}</div>
 						<div class="itembuildTableContent">
 							${itemstr}
 						</div>
@@ -2012,9 +2065,9 @@ function showSingleStat(data) {
 		let itemlimit = getSetting(data, "itemLimit")
 		$(gameDetailValues[3]).html(!itemlimit ? 6 : itemlimit)
 		let coldGame = getSetting(data, "coldGame")
-		$(gameDetailValues[4]).html(!coldGame ? chooseLang("미사용", "Disabled") : chooseLang("사용", "Enabled"))
+		$(gameDetailValues[4]).html(!coldGame ? LOCALE.disabled : LOCALE.enabled)
 		let useAdditionalLife = getSetting(data, "useAdditionalLife")
-		$(gameDetailValues[5]).html(!useAdditionalLife ? chooseLang("미사용", "Disabled") : chooseLang("사용", "Enabled"))
+		$(gameDetailValues[5]).html(!useAdditionalLife ? LOCALE.disabled : LOCALE.enabled)
 		// $("#game_resulttext").html("Total turn:" + data.totalturn + ", Map: "+getMapName(data.map_data.name))
 	} else {
 		$("#game_resulttext").html("Total turn:" + data.totalturn)
@@ -2103,9 +2156,7 @@ function showSingleStat(data) {
 				p.kda[1] +
 				"/" +
 				p.kda[2] +
-				(multiKillText(p.bestMultiKill) === ""
-					? ""
-					: " <br><b class='multikill-text'>" + multiKillText(p.bestMultiKill) + "</b>")
+				(multiKillText(p.bestMultiKill) === "" ? "" : multiKillText(p.bestMultiKill))
 		)
 
 		kda_graph.push({
@@ -2177,8 +2228,11 @@ function showSingleStat(data) {
 
 	pchartconfig.yAxes[0].axisRanges = respawnpos_list
 	pchartconfig.data = position_list
+	pchartconfig.titles[0].text = LOCALE.graph.position
 	mchartconfig.data = money_list
+	mchartconfig.titles[0].text = LOCALE.graph.money
 	kchartconfig.data = kda_graph
+	kchartconfig.titles[0].text = LOCALE.graph.kda
 	for (let i = 0; i < 4; ++i) {
 		pchartconfig.series[i].name = visiblePlayerNames[i]
 	}

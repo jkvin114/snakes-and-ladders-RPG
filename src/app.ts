@@ -216,3 +216,19 @@ function writeStat(stat: any, isSimulation: boolean) {
 //     }
 //     console.log("saved")
 // })
+/*
+let list=[]
+let korlist=[]
+for(let i=0;i<obs.obstacles.length;++i){
+	list.push({
+		name:obs.obstacles[i].name,
+		desc:obs.obstacles[i].desc,
+	})
+	korlist.push({
+		name:kor.obstacles[i].name,
+		desc:kor.obstacles[i].desc,
+	})
+}
+console.log(JSON.stringify(list))
+console.log(JSON.stringify(korlist))
+*/

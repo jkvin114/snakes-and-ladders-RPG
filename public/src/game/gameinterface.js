@@ -96,7 +96,7 @@ export default class GameInterface {
 			return
 		}
 
-		$("#deathinfo-btn").html(GAME.chooseLang("Death Information", "사망 정보 확인"))
+		$("#deathinfo-btn").html(GAME.PAGELOCALE.deathinfo.name)
 		let subwaynames = $(".subway_name").toArray()
 		$(subwaynames[0]).html(GAME.chooseLang("Local Train", "완행"))
 		$(subwaynames[1]).html(GAME.chooseLang("Rapid Train", "급행"))
@@ -170,7 +170,7 @@ export default class GameInterface {
 			GAME.sendMessage()
 		})
 
-		$("#select h3").html(GAME.chooseLang("Select between two", "둘 중 하나 선택"))
+		$("#select h3").html(GAME.PAGELOCALE.select)
 		if (GAME.LANG === "kor") {
 			// $(".skillinfo").css("font-size", "1.6rem")
 		}
@@ -703,7 +703,7 @@ export default class GameInterface {
 		}
 		let str = `${scale.base}`
 		for (const s of scale.scales) {
-			let name = this.game.strRes.SCALE_NAMES[s.ability]
+			let name = this.game.LOCALE.scale_stat[s.ability]
 			//console.log(name)
 			if (name === undefined) name = s.ability
 
@@ -1037,9 +1037,11 @@ export default class GameInterface {
 			}
 
 			// .css($(this).offset())
-			let item = GAME.strRes.ITEMS.items[Number($(this).attr("value"))]
+			const id = Number($(this).attr("value"))
+			const itemlocale = GAME.LOCALE.item[id]
+			const item = GAME.strRes.ITEMS.items[id]
 			let owner = $(this).data("owner")
-			$(".item_tooltip h4").html(GAME.chooseLang(item.name, item.kor_name))
+			$(".item_tooltip h4").html(itemlocale.name)
 			$(".item_tooltip p").html(GAME.ui.getItemDescription(item) + GAME.ui.getItemData(owner, item))
 			left += offsetX
 			top += offsetY
@@ -1063,7 +1065,7 @@ export default class GameInterface {
 	getItemDescription(item) {
 		let ability = ""
 		for (let a of item.ability) {
-			let ab = "<a class=ability_name>" + GAME.chooseLang(a.type, a.type_kor) + "</a> +" + a.value
+			let ab = "<a class=ability_name>" + this.game.LOCALE.stat[a.type] + "</a> +" + a.value
 
 			if (a.type === "addMdmg" || a.type === "skillDmgReduction" || a.type === "absorb" || a.type === "obsR") {
 				ab += "%"
@@ -1071,14 +1073,17 @@ export default class GameInterface {
 			ability += ab
 			ability += "<br>"
 		}
-		if (item.unique_effect != null) {
-			ability += `<b class=unique_effect_name>[${GAME.chooseLang("unique passive", "고유지속효과")}]</b>:
-				${GAME.chooseLang(item.unique_effect, item.unique_effect_kor)}`
+
+		const id = item.id
+
+		if (item.hasPassive) {
+			ability += `<b class=unique_effect_name>[${GAME.PAGELOCALE.item.passive}]</b>:
+				${this.game.LOCALE.item[id].unique_effect}`
 			if (item.active_cooltime != null) {
-				ability += GAME.chooseLang(`(cooltime ${item.active_cooltime} turns)`, `(쿨타임 ${item.active_cooltime}턴)`)
+				ability += `(${GAME.PAGELOCALE.item.cool} ${item.active_cooltime} ${GAME.PAGELOCALE.item.turn})`
 			}
 		}
-		ability += "<br><br>" + GAME.chooseLang("price: ", "가격: ") + "<b class=price>" + String(item.price) + "</b>"
+		ability += `<br><br>${GAME.PAGELOCALE.item.price}: <b class=price>` + String(item.price) + "</b>"
 		return ability
 	}
 	/**
@@ -1096,14 +1101,14 @@ export default class GameInterface {
 		GAME.pendingSelection.type = type
 		GAME.pendingSelection.name = name
 		if (name === "kidnap") {
-			$("#selectfalsebutton").html(GAME.chooseLang("2 turn stun", "속박 2턴"))
+			$("#selectfalsebutton").html(GAME.PAGELOCALE.selection.kidnap1)
 			$("#selecttruebutton").html("HP -300")
 		} else if (name === "threaten") {
 			$("#selectfalsebutton").html("-50$")
 			$("#selecttruebutton").html("Coin -3")
 		} else if (name === "ask_way2") {
-			$("#selecttruebutton").html(GAME.chooseLang("Go upper way", "윗길로 가기"))
-			$("#selectfalsebutton").html(GAME.chooseLang("Go lower way", "아래길로 가기"))
+			$("#selecttruebutton").html(GAME.PAGELOCALE.selection.way2_up)
+			$("#selectfalsebutton").html(GAME.PAGELOCALE.selection.way2_down)
 		}
 		$("#select").show()
 	}
@@ -1220,12 +1225,10 @@ export default class GameInterface {
 		if (!data) return
 		//item
 		if (typeof data[1] === "number") {
-			$(".specialeffect_tooltip h4").html(
-				GAME.chooseLang(GAME.strRes.ITEMS.items[data[1]].name, GAME.strRes.ITEMS.items[data[1]].kor_name)
-			)
+			$(".specialeffect_tooltip h4").html(GAME.LOCALE.item[data[1]].name)
 		} //effect with source player
 		else if (data[1] !== "") {
-			$(".specialeffect_tooltip h4").html(GAME.chooseLang("Source: ", "시전자: ") + data[1])
+			$(".specialeffect_tooltip h4").html(GAME.PAGELOCALE.effectsource + ": " + data[1])
 		} else {
 			$(".specialeffect_tooltip h4").html("")
 		}
@@ -1235,7 +1238,7 @@ export default class GameInterface {
 	setEffectTooltip(e) {
 		//console.log(e)
 		e = Number(e)
-		let desc = GAME.strRes.EFFECTS[e]
+		let desc = GAME.LOCALE.statuseffect[e]
 		if (!desc.match(/\[.+\]/)) {
 			$(".effect_tooltip h4").addClass("bad")
 			$(".effect_tooltip h4").html(desc.match(/\{.+\}/)[0])
@@ -1375,7 +1378,7 @@ export default class GameInterface {
 		for (let s of statkeys) {
 			//set tooltip wider if english
 			str += ` <div class="stat_row">
-			<a class="name ${GAME.chooseLang("wide", "")}">${GAME.strRes.STATS[s]}</a><a class="value">${mystat[s]}</a>
+			<a class="name ${GAME.chooseLang("wide", "")}">${GAME.LOCALE.stat[s]}</a><a class="value">${mystat[s]}</a>
 			</div>`
 		}
 		$("#stat_content").html(str)
@@ -1384,11 +1387,11 @@ export default class GameInterface {
 		GAME.subwayPrices = prices
 		$("#subwaywindow").css("visibility", "visible")
 		let subwaybtns = $(".subway_select").toArray()
-		$(subwaybtns[0]).html(GAME.chooseLang("FREE", "무료"))
+		$(subwaybtns[0]).html(GAME.PAGELOCALE.subway.free)
 		if (prices[1] > 0) {
 			$(subwaybtns[1]).html(prices[1] + "$")
 		} else {
-			$(subwaybtns[1]).html(GAME.chooseLang("FREE", "무료"))
+			$(subwaybtns[1]).html(GAME.PAGELOCALE.subway.free)
 		}
 		$(subwaybtns[2]).html(prices[2] + "$")
 	}
@@ -1417,10 +1420,10 @@ export default class GameInterface {
 		$(this.elements.kdasections[turn]).css("background", "rgba(146, 0, 0, 0.5)")
 	}
 	playerReconnect(turn, name) {
-		this.game.showKillText(turn, 10, GAME.chooseLang(name + " has reconnected", name + "님이 다시 연결되었습니다"))
+		this.game.showKillText(turn, 10, name + GAME.PAGELOCALE.reconnect)
 	}
 	playerDisconnect(turn, name) {
-		this.game.showKillText(turn, 10, GAME.chooseLang(name + " has left the game", name + "님이 게임을 종료했습니다"))
+		this.game.showKillText(turn, 10, name + GAME.PAGELOCALE.disconnect)
 	}
 
 	showDeathInfo(skillfrom, damages) {
@@ -1438,9 +1441,9 @@ export default class GameInterface {
 			if (d.damageType === 1) totalm += d.amt
 			if (d.damageType === 2) totalf += d.amt
 		}
-		$(".deathinfo-header-pdmg").html(this.game.chooseLang("Attack Damage: ", "물리 피해: ") + totalp)
-		$(".deathinfo-header-mdmg").html(this.game.chooseLang("Magic Damage: ", "마법 피해: ") + totalm)
-		$(".deathinfo-header-fdmg").html(this.game.chooseLang("Fixed Damage: ", "고정 피해: ") + totalf)
+		$(".deathinfo-header-pdmg").html(this.game.PAGELOCALE.deathinfo.pdmg + ": " + totalp)
+		$(".deathinfo-header-mdmg").html(this.game.PAGELOCALE.deathinfo.mdmg + ": " + totalm)
+		$(".deathinfo-header-fdmg").html(this.game.PAGELOCALE.deathinfo.fdmg + ": " + totalf)
 
 		let str = ""
 		let list = []
@@ -1466,7 +1469,7 @@ export default class GameInterface {
 				<img src="${this.game.getChampImgofTurn(d[0])}" ${d[0] === skillfrom ? ' class="killer"' : ""}>
 				</div>
 				<div>
-				${d[0] === -1 ? this.game.chooseLang("Obstacle", "장애물") : this.game.players[d[0]].name}
+				${d[0] === -1 ? this.game.PAGELOCALE.obstacle : this.game.players[d[0]].name}
 				</div>
 				<div>
 
@@ -1497,13 +1500,13 @@ class ObsNotification {
 	write(obs, num, text) {
 		let obstacle = GAME.strRes.OBSTACLES.obstacles[obs]
 
-		let desc = obstacle.desc
+		let desc = GAME.LOCALE.obstacle[obs].desc
 		//룰렛전용
 		if (text != null) {
 			desc = text
 		}
 		$(".obs_notification" + num + " p").html(desc)
-		$(".obs_notification" + num + " b").html(obstacle.name)
+		$(".obs_notification" + num + " b").html(GAME.LOCALE.obstacle[obs].name)
 		$(".obs_notification" + num).removeClass("good")
 		$(".obs_notification" + num).removeClass("bad")
 		if (obstacle.val > 0) {

@@ -1,0 +1,1102 @@
+{"items":[
+    {
+        "id": 0,
+        "name": "Epic Sword",
+        "price": 300,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AD",
+                "value": 80
+            },
+            {
+                "type": "arP",
+                "value": 10
+            }
+        ],
+        "children": [
+            1,
+            1
+        ],
+        "parents": [],
+        "category": [
+            "attack"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 1,
+        "name": "Rare Sword",
+        "price": 80,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "AD",
+                "value": 30
+            }
+        ],
+        "children": [
+            2,
+            2
+        ],
+        "parents": [
+            0,
+            17,
+            23,
+            35,
+            42
+        ],
+        "category": [
+            "attack"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 2,
+        "name": "Common Sword",
+        "price": 30,
+        "itemlevel": 1,
+        "ability": [
+            {
+                "type": "AD",
+                "value": 10
+            }
+        ],
+        "children": [],
+        "parents": [
+            1,
+            16
+        ],
+        "category": [
+            "attack"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 3,
+        "name": "Epic Crystal Ball",
+        "price": 320,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 120
+            },
+            {
+                "type": "MP",
+                "value": 12
+            }
+        ],
+        "children": [
+            4,
+            4
+        ],
+        "parents": [],
+        "category": [
+            "magic"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 4,
+        "name": "Rare Crystal Ball",
+        "price": 120,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 50
+            }
+        ],
+        "children": [
+            5,
+            5
+        ],
+        "parents": [
+            3,
+            20,
+            33,
+            38
+        ],
+        "category": [
+            "magic"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 5,
+        "name": "Common Crystal Ball",
+        "price": 40,
+        "itemlevel": 1,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 15
+            }
+        ],
+        "children": [],
+        "parents": [
+            4,
+            38
+        ],
+        "category": [
+            "magic"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 6,
+        "name": "Epic Shield",
+        "price": 300,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 80
+            },
+            {
+                "type": "AR",
+                "value": 60
+            },
+            {
+                "type": "obsR",
+                "value": 10
+            }
+        ],
+        "children": [
+            7,
+            7
+        ],
+        "parents": [],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 7,
+        "name": "Rare Shield",
+        "price": 80,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 30
+            },
+            {
+                "type": "AR",
+                "value": 20
+            }
+        ],
+        "children": [
+            8,
+            8
+        ],
+        "parents": [
+            6,
+            15,
+            33,
+            36
+        ],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 8,
+        "name": "Common Shield",
+        "price": 30,
+        "itemlevel": 1,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 10
+            },
+            {
+                "type": "AR",
+                "value": 7
+            }
+        ],
+        "children": [],
+        "parents": [
+            7
+        ],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 9,
+        "name": "Epic Fruit",
+        "price": 330,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 100
+            },
+            {
+                "type": "regen",
+                "value": 50
+            }
+        ],
+        "children": [
+            10,
+            21
+        ],
+        "parents": [],
+        "category": [
+            "health"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 10,
+        "name": "Rare Fruit",
+        "price": 120,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 40
+            },
+            {
+                "type": "regen",
+                "value": 30
+            }
+        ],
+        "children": [
+            11,
+            11
+        ],
+        "parents": [
+            9
+        ],
+        "category": [
+            "health"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 11,
+        "name": "Common Fruit",
+        "price": 25,
+        "itemlevel": 1,
+        "ability": [
+            {
+                "type": "regen",
+                "value": 10
+            }
+        ],
+        "children": [],
+        "parents": [
+            10,
+            32
+        ],
+        "category": [
+            "health"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 12,
+        "name": "Epic Armor",
+        "price": 300,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 90
+            },
+            {
+                "type": "MR",
+                "value": 80
+            },
+            {
+                "type": "obsR",
+                "value": 10
+            }
+        ],
+        "children": [
+            13,
+            13
+        ],
+        "parents": [],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 13,
+        "name": "Rare Armor",
+        "price": 100,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 30
+            },
+            {
+                "type": "MR",
+                "value": 30
+            }
+        ],
+        "children": [
+            14,
+            14
+        ],
+        "parents": [
+            12,
+            15,
+            37
+        ],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 14,
+        "name": "Common Armor",
+        "price": 40,
+        "itemlevel": 1,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 10
+            },
+            {
+                "type": "MR",
+                "value": 10
+            }
+        ],
+        "children": [],
+        "parents": [
+            13,
+            19
+        ],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 15,
+        "name": "Guardian Angel",
+        "price": 350,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 60
+            },
+            {
+                "type": "AR",
+                "value": 25
+            },
+            {
+                "type": "MR",
+                "value": 35
+            }
+        ],
+        "children": [
+            7,
+            13
+        ],
+        "parents": [],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 8
+    },
+    {
+        "id": 16,
+        "name": "Bloodsucker",
+        "price": 140,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "absorb",
+                "value": 6
+            },
+            {
+                "type": "AD",
+                "value": 15
+            }
+        ],
+        "children": [
+            2
+        ],
+        "parents": [
+            17
+        ],
+        "category": [
+            "health",
+            "attack"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 17,
+        "name": "Sword of Blood",
+        "price": 280,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AD",
+                "value": 50
+            },
+            {
+                "type": "absorb",
+                "value": 15
+            }
+        ],
+        "children": [
+            1,
+            16
+        ],
+        "parents": [],
+        "category": [
+            "health",
+            "attack"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 18,
+        "name": "Power of Mother Nature",
+        "price": 280,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 60
+            },
+            {
+                "type": "MR",
+                "value": 30
+            },
+            {
+                "type": "ultHaste",
+                "value": 1
+            }
+        ],
+        "children": [
+            19,
+            21
+        ],
+        "parents": [],
+        "category": [
+            "defence",
+            "utility"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 3
+    },
+    {
+        "id": 19,
+        "name": "Power of Nature",
+        "price": 110,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "MR",
+                "value": 20
+            },
+            {
+                "type": "HP",
+                "value": 10
+            }
+        ],
+        "children": [
+            14
+        ],
+        "parents": [
+            18
+        ],
+        "category": [
+            "defence"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 20,
+        "name": "Card of Deception",
+        "price": 280,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 80
+            },
+            {
+                "type": "HP",
+                "value": 50
+            }
+        ],
+        "children": [
+            4,
+            21
+        ],
+        "parents": [],
+        "category": [
+            "magic",
+            "utility"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 3
+    },
+    {
+        "id": 21,
+        "name": "Diamond Crystal",
+        "price": 90,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 50
+            }
+        ],
+        "children": [
+            34
+        ],
+        "parents": [
+            18,
+            9,
+            20,
+            32,
+            35
+        ],
+        "category": [
+            "health"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 22,
+        "name": "Ancient Spear",
+        "price": 325,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "adStat",
+                "value": 60
+            },
+            {
+                "type": "ultHaste",
+                "value": 1
+            }
+        ],
+        "children": [
+            25,
+            27
+        ],
+        "parents": [],
+        "category": [
+            "attack",
+            "magic"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 23,
+        "name": "Fury Whip",
+        "price": 340,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AD",
+                "value": 45
+            },
+            {
+                "type": "attackRange",
+                "value": 2
+            },
+            {
+                "type": "basicAttackSpeed",
+                "value": 1
+            }
+        ],
+        "children": [
+            24,
+            1
+        ],
+        "parents": [],
+        "category": [
+            "attack"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 24,
+        "name": "Reach Whip",
+        "price": 145,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "attackRange",
+                "value": 1
+            }
+        ],
+        "children": [],
+        "parents": [
+            23,
+            42
+        ],
+        "category": [
+            "attack"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 25,
+        "name": "Rare Magic Axe",
+        "price": 110,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "adStat",
+                "value": 40
+            }
+        ],
+        "children": [
+            26,
+            26
+        ],
+        "parents": [
+            22,
+            31
+        ],
+        "category": [
+            "attack",
+            "magic"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 26,
+        "name": "Common Magic Axe",
+        "price": 35,
+        "itemlevel": 1,
+        "ability": [
+            {
+                "type": "adStat",
+                "value": 10
+            }
+        ],
+        "children": [],
+        "parents": [
+            25
+        ],
+        "category": [
+            "attack",
+            "magic"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 27,
+        "name": "Piercing Spear",
+        "price": 90,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "adStat",
+                "value": 20
+            }
+        ],
+        "children": [],
+        "parents": [
+            22,
+            31
+        ],
+        "category": [
+            "attack",
+            "magic"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 28,
+        "name": "Boots",
+        "price": 100,
+        "itemlevel": 2,
+        "ability": [],
+        "children": [],
+        "parents": [
+            29,
+            36,
+            37
+        ],
+        "category": [
+            "utility"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 29,
+        "name": "Boots of Haste",
+        "price": 300,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "ultHaste",
+                "value": 1
+            },
+            {
+                "type": "moveSpeed",
+                "value": 1
+            }
+        ],
+        "children": [
+            28
+        ],
+        "parents": [],
+        "category": [
+            "utility"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 30,
+        "name": "Medieval Bow",
+        "price": 120,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "arP",
+                "value": 15
+            },
+            {
+                "type": "MP",
+                "value": 15
+            }
+        ],
+        "children": [],
+        "parents": [
+            31
+        ],
+        "category": [
+            "attack",
+            "magic"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 31,
+        "name": "Crossbow of Piercing",
+        "price": 350,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "adStat",
+                "value": 60
+            }
+        ],
+        "children": [
+            30,
+            27,
+            25
+        ],
+        "parents": [],
+        "category": [
+            "attack",
+            "magic"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 32,
+        "name": "Full Diamond Armour",
+        "price": 330,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 160
+            },
+            {
+                "type": "regen",
+                "value": 25
+            }
+        ],
+        "children": [
+            21,
+            21,
+            11
+        ],
+        "parents": [],
+        "category": [
+            "health"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 33,
+        "name": "Invisibility Cloak",
+        "price": 280,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 60
+            },
+            {
+                "type": "AR",
+                "value": 40
+            },
+            {
+                "type": "HP",
+                "value": 25
+            }
+        ],
+        "children": [
+            7,
+            4
+        ],
+        "parents": [],
+        "category": [
+            "defence",
+            "magic"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 6
+    },
+    {
+        "id": 34,
+        "name": "Diamond Shard",
+        "price": 40,
+        "itemlevel": 1,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 20
+            }
+        ],
+        "children": [],
+        "parents": [
+            21
+        ],
+        "category": [
+            "health"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 35,
+        "name": "Fortitude Shieldsword",
+        "price": 300,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "HP",
+                "value": 70
+            },
+            {
+                "type": "AD",
+                "value": 40
+            }
+        ],
+        "children": [
+            1,
+            21
+        ],
+        "parents": [],
+        "category": [
+            "attack",
+            "health",
+            "defence"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 7
+    },
+    {
+        "id": 36,
+        "name": "Boots of Preservation",
+        "price": 270,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "moveSpeed",
+                "value": 1
+            },
+            {
+                "type": "AR",
+                "value": 30
+            },
+            {
+                "type": "obsR",
+                "value": 10
+            }
+        ],
+        "children": [
+            28,
+            7
+        ],
+        "parents": [],
+        "category": [
+            "utility",
+            "defence"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 37,
+        "name": "Boots of Endurance",
+        "price": 270,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "moveSpeed",
+                "value": 1
+            },
+            {
+                "type": "MR",
+                "value": 40
+            },
+            {
+                "type": "obsR",
+                "value": 10
+            }
+        ],
+        "children": [
+            28,
+            13
+        ],
+        "parents": [],
+        "category": [
+            "utility",
+            "defence"
+        ],
+        "hasPassive": true
+    },
+    {
+        "id": 38,
+        "name": "Time Warp Potion",
+        "price": 350,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 70
+            },
+            {
+                "type": "ultHaste",
+                "value": 1
+            }
+        ],
+        "children": [
+            5,
+            39
+        ],
+        "parents": [],
+        "category": [
+            "magic"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 1
+    },
+    {
+        "id": 39,
+        "name": "Mystic Wand",
+        "price": 80,
+        "itemlevel": 2,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 35
+            }
+        ],
+        "children": [
+            5
+        ],
+        "parents": [
+            38,
+            41
+        ],
+        "category": [
+            "magic"
+        ],
+        "hasPassive": false
+    },
+    {
+        "id": 40,
+        "name": "Charged Dagger",
+        "price": 70,
+        "itemlevel": 2,
+        "ability": [],
+        "children": [],
+        "parents": [
+            41,
+            42
+        ],
+        "category": [
+            "attack",
+            "magic"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 1
+    },
+    {
+        "id": 41,
+        "name": "Thunderbolt Staff",
+        "price": 280,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AP",
+                "value": 70
+            },
+            {
+                "type": "MP",
+                "value": 10
+            }
+        ],
+        "children": [
+            39,
+            40
+        ],
+        "parents": [],
+        "category": [
+            "magic"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 1
+    },
+    {
+        "id": 42,
+        "name": "Energized Flail of Reach",
+        "price": 310,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AD",
+                "value": 40
+            },
+            {
+                "type": "attackRange",
+                "value": 1
+            },
+            {
+                "type": "arP",
+                "value": 8
+            }
+        ],
+        "children": [
+            1,
+            40,
+            24
+        ],
+        "parents": [],
+        "category": [
+            "attack"
+        ],
+        "hasPassive": true,
+        "active_cooltime": 1
+    }
+]
+}

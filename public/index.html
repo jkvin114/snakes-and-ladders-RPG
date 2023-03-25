@@ -74,6 +74,7 @@ h1{
 }
 .button.filled{
   background-color: #7a2acb;;
+  border: none;
 }
 .button.wide{
   padding: 10px 60px;
@@ -87,12 +88,6 @@ h1{
   border: none;  
   border-radius: 17px;
 }
-
-@keyframes glowing {
-    0% { background-position: 0 0; }
-    50% { background-position: 100% 0; }
-    100% { background-position: 0 0; }
-}
 #open_create_room:hover{
   transform: scale(1.1);
 }
@@ -101,7 +96,7 @@ input{
   text-align: center;
 }
 .button:hover{
-  background-color: rgb(52, 7, 74);
+  filter: brightness(0.8);
 }
 #startgame{
   display:block;
@@ -360,7 +355,7 @@ input[type=password]{
      <div id="title"><img style="width: 90%;max-width: 700px;" src="res/img/ui/logo3.png"></div>
      <div id="logged_in_username"><p></p></div>
       <br>
-      <input id="input-username" type='text' name="nickname" value="" lkey-ph="ph.username" placeholder=" Username(optional)">
+      <input id="input-username" type='text' name="nickname" value="" lkey-ph="ph.room.username" placeholder=" Username(optional)">
       <div id="ip_area" class="hidden">
         <input type='text' id="ip-input" name="ip" value="" placeholder="Server ip address " >
       </div>
@@ -390,38 +385,38 @@ input[type=password]{
               <input type="checkbox" name="room_private" class="toggleallstat" id="room_private">
               <span class="switchslider"></span>
             </label>
-            <label for="room_private">Make private</label>
+            <label for="room_private" lkey="room.private">Make private</label>
           </div> 
           <div class="onesetting">
             <label class="switch">
               <input type="checkbox" name="room_loggedin_only" class="toggleallstat" id="room_loggedin_only">
               <span class="switchslider"></span>
             </label>
-            <label for="room_loggedin_only">Logged in user only</label>
+            <label for="room_loggedin_only" lkey="room.loginonly">Logged in user only</label>
           </div>
         </div>
         <br>
         <img class='hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블">
-        <button class='button filled' id="create_room" onclick="createroom(false)">START</button>
-        <button class=button id=close_createroom onclick="close_createroom()">CANCEL</button>
+        <button class='button filled' id="create_room" onclick="createroom(false)" lkey="start">START</button>
+        <button class=button id=close_createroom onclick="close_createroom()" lkey="cancel">CANCEL</button>
       </div>
     </div>
 
 
     <div id="loginpage" class="hidden page area">
       <form id="loginform" method="post" action="/user/login">
-         <h2>Login</h2>
+         <h2 lkey="login">Login</h2>
         <br>
         
 
-        <input type='text' name="username" placeholder="Username">
+        <input type='text' name="username" placeholder="Username" lkey-ph="ph.username">
         <br><a class="input_alert login_id"></a><br>
         
-        <input type='password' name="password" placeholder="Password"><br>
+        <input type='password' name="password" placeholder="Password" lkey-ph="ph.password"><br>
         <a class="input_alert login_pw"></a><br>
-        <button class='button loginpage_btn filled wide' type="submit" >Login</button><br>
-        <button class='button loginpage_btn' type="button" onclick="open_signup()">Sign up</button>
-        <button class='button loginpage_btn' type="button" onclick="open_firstpage()">Home</button>
+        <button class='button loginpage_btn filled wide' type="submit" lkey="login">Login</button><br>
+        <button class='button loginpage_btn' type="button" onclick="open_signup()" lkey="signup">Sign up</button>
+        <button class='button loginpage_btn' type="button" onclick="open_firstpage()" lkey="home">Home</button>
 
       </form>
 
@@ -430,24 +425,24 @@ input[type=password]{
     <br>
     <div id="signuppage" class="hidden page area">
       <form id="registerform" method="post" action="/user/register">
-        <h2>Sign Up</h2>
+        <h2 lkey="signup">Sign Up</h2>
          
         <br>
-        <input type='text' name="username" placeholder="Username">
+        <input type='text' name="username" placeholder="Username" lkey-ph="ph.username">
         <br><a class="input_alert register_id"></a><br>
          
         <br>
-        <input type='password' name="password" placeholder="Password"><br><a class="input_alert register_pw" ></a><br>
+        <input type='password' name="password" placeholder="Password" lkey-ph="ph.password"><br><a class="input_alert register_pw" ></a><br>
         
         <br>
-        <input type='password' name="password2" placeholder="Verify Password "><br><a class="input_alert"></a><br>
+        <input type='password' name="password2" placeholder="Verify Password " lkey-ph="ph.verify_password"><br><a class="input_alert"></a><br>
         
         <br>
-        <input type='email' name="email" placeholder="Email">
+        <input type='email' name="email" placeholder="Email"  lkey-ph="ph.email">
         <br><a class="input_alert register_email"></a><br>
-        <button class='button regpage_btn filled wide' type="submit" >Sign up</button><br>
-        <button class='button regpage_btn' type="button" onclick="open_login()">Login</button>
-        <button class='button regpage_btn' type="button" onclick="open_firstpage()">Home</button>
+        <button class='button regpage_btn filled wide' type="submit" lkey="signup">Sign up</button><br>
+        <button class='button regpage_btn' type="button" onclick="open_login()"lkey="login">Login</button>
+        <button class='button regpage_btn' type="button" onclick="open_firstpage()"lkey="home">Home</button>
 
       </form>
      

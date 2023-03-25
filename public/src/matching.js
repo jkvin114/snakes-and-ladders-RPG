@@ -3,7 +3,7 @@ var MATCH = null
 const RANDOM_CHAR_DIR = "res/img/ui/random.png"
 
 const chooseLang = function (eng, kor) {
-	if (sessionStorage.language === "kor") return kor
+	if (sessionStorage.language === "ko") return kor
 	return eng
 }
 
@@ -260,7 +260,7 @@ class MatchStatus {
 	onKick(turn) {
 		if (this.myturn === turn) {
 			sessionStorage.status = null
-			alert("You have been kicked!")
+			alert(LOCALE.kick)
 			ServerConnection.guestQuit()
 			window.onbeforeunload = () => {}
 			window.location.href = "index.html"
@@ -406,7 +406,7 @@ class MatchStatus {
 	checkReady() {
 		for (let i = 0; i < 4; ++i) {
 			if (this.playerlist[i].type === PlayerType.PLAYER_CONNECTED && !this.playerlist[i].ready) {
-				alert(i + 1 + "P is not ready")
+				alert(i + 1 + "P " + LOCALE.error.not_ready)
 				return false
 			}
 		}
@@ -430,8 +430,10 @@ class MatchStatus {
 	}
 
 	startIndividual() {
-		if (this.PNUM + this.CNUM < 2 || this.playerlist.some((c) => c.type === PlayerType.PLAYER)) {
-			alert("Please check players")
+		if (this.PNUM + this.CNUM < 2) {
+			alert(LOCALE.error.oneplayer)
+		} else if (this.playerlist.some((c) => c.type === PlayerType.PLAYER)) {
+			alert(LOCALE.error.players)
 		} else if (!this.checkReady()) {
 			return
 		} else {
@@ -453,9 +455,9 @@ class MatchStatus {
 
 	showTeamSelection() {
 		if (this.playerlist.some((c) => c.type === "player")) {
-			alert("Please check players")
+			alert(LOCALE.error.players)
 		} else if (this.PNUM + this.CNUM < 4) {
-			alert("there should be 4 players for team game")
+			alert(LOCALE.error.team_not_4)
 		} else if (!this.checkReady()) {
 			return
 		} else {
@@ -467,10 +469,10 @@ class MatchStatus {
 	}
 	validateTeamSubmit() {
 		if (this.playerlist.some((c) => c.type === "player")) {
-			alert("Please check players")
+			alert(LOCALE.error.players)
 			return false
 		} else if (this.PNUM + this.CNUM < 4) {
-			alert("there should be 4 players for team game")
+			alert(LOCALE.error.team_not_4)
 			return false
 		} else if (!this.checkReady()) {
 			return false
@@ -834,9 +836,9 @@ class TeamSelector {
 			if (!this.match.validateTeamSubmit()) return
 
 			if (this.check_status.some((c) => c === null)) {
-				alert("Every player must select teams!!")
+				alert(LOCALE.error.team_incomplete)
 			} else if (this.check_status.every((c) => c) || this.check_status.every((c) => !c)) {
-				alert("You must divide teams!!")
+				alert(LOCALE.error.team_same)
 			} else {
 				if (this.match.gametype === "rpg") {
 					ServerConnection.finalSubmit(this.match.setting.getSummary(), this.match.gametype)
@@ -871,12 +873,12 @@ function auth() {
 		})
 		.fail(function (data, statusText, xhr) {
 			if (data.status == 307) {
-				alert(chooseLang("You are already in a game", "이미 게임에 참가 중입니다"))
+				alert("You are already in a game")
 				window.location.href = "index.html"
 				return
 			}
 			if (data.status === 401) {
-				alert(chooseLang("Invalid access!", "잘못된 접근입니다"))
+				alert("Invalid access!")
 				window.location.href = "index.html"
 			}
 
@@ -905,6 +907,7 @@ $(document).ready(function () {
 
 	MATCH = new MatchStatus()
 	auth()
+	updateLocale("matching")
 	$("#TeamSelectpage").hide()
 
 	// console.log(sessionStorage.host)
@@ -1048,9 +1051,9 @@ $(document).ready(function () {
 		num += 1
 
 		if (check_status.some((c) => c === null)) {
-			alert("Every player must select teams!!")
+			alert(LOCALE.error.team_not_4)
 		} else if (check_status.every((c) => c === 0) || check_status.every((c) => c === 1)) {
-			alert("You must divide teams!!")
+			alert(LOCALE.error.team_same)
 		} else {
 			finalSubmit(this.setting.getSummary(), num)
 		}

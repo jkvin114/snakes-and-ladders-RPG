@@ -47,7 +47,7 @@
     border-radius: 2vw;
     cursor: pointer;
     user-select: none;
-    width: 13vw;
+    width: 70px;
     filter: brightness(0.7);
   }
   .mapbtn:hover,.champbtn:hover{
@@ -84,11 +84,11 @@
 
 }
 .mapcheck{
-    width: 8vw;
-    height: 8vw;
+    width: 60px;
+    height: 60px;
     /* left: -50%;
     top:25%; */
-    transform: translate(-150%,0);
+    transform: translate(-85px,25px);
     position: absolute;
     z-index: inherit+1;
     user-select: none;
@@ -274,10 +274,14 @@ h6{
   width: 30px;
   height:30px;
 }
-#run_simulation{
-  width: 20vw;
-  font-size: 5vh;
-  background-color: #58d0ff;
+.mainbtn{
+  /* width: 15vw; */
+  /* font-size: 4vh; */
+  /* background-color: #2180a5; */
+  /* border: none; */
+  /* border-radius: 10px; */
+  min-width: 130px;
+  font-family: "Cookierun";
 }
 .teamlockbtn{
   display: inline;
@@ -391,15 +395,15 @@ h6{
     <div id=map_choice>
       <a class="maintxt">Choose Maps</a><br>
       <div class="mapbtnwrapper">
-        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail\default.jpg" value=0>
+        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail/default_icon.jpg" value=0>
         <img class="mapcheck hidden" draggable="false"  src="res/img/ui/confirm.png">
       </div>
       <div class="mapbtnwrapper">
-        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail\ocean.jpg" value=1>
+        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail/ocean_icon.jpg" value=1>
         <img class="mapcheck hidden" draggable="false" src="res/img/ui/confirm.png">
       </div>
       <div class="mapbtnwrapper">
-        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail\casino.jpg" value=2>
+        <img class="mapbtn" draggable="false" src="res/img/map_thumbnail/casino_icon.jpg" value=2>
         <img class="mapcheck hidden" draggable="false" src="res/img/ui/confirm.png">
       </div>
       <div class="mapbtnwrapper">
@@ -407,7 +411,8 @@ h6{
         <img class="mapcheck hidden" draggable="false" src="res/img/ui/confirm.png">
       </div><br>
       <div id="map_char_gap">
-        <a class="maintxt">Choose Characters</a><button onclick="submitTrain()">train</button>
+        <a class="maintxt">Choose Characters</a>
+        <!-- <button onclick="submitTrain()">train</button> -->
         <img class="teamlockbtn" id="lockredteam" src="res/img/svg/lock.svg">
         <img class="teamlockbtn" id="lockblueteam" src="res/img/svg/lock.svg">
       </div>
@@ -448,6 +453,8 @@ h6{
         <div class="setting_category">
         </div>
         <button id="run_simulation" class="mainbtn">Run</button>
+        <button class="mainbtn" onclick="submitTrain()">Run Train Mode</button>
+
       </div>
       <!-- <a class="maintxt">Gameplay Settings</a><br> -->
     </div>

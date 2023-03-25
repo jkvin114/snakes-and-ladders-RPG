@@ -5,7 +5,7 @@ import fs = require("fs")
 
 import { getCurrentTime, makeArrayOf, roundToNearest, writeFile, writeToFile } from "./../core/Util"
 
-import { items as ItemList } from "../../res/item.json"
+import { items as ItemList } from "../../res/item_new.json"
 import { SimulationEvalGenerator } from "./SimulationEvalGenerator"
 
 
@@ -399,7 +399,7 @@ class TrainData{
             str+=("아이템 승률=======================================\n")
             for(let [item,rate] of this.characterItemWinRates[i].entries()){
                 if(rate > -1){
-                    str+=(ItemList[item].kor_name + ": " + ratioToPercent(rate) +"%" + `(${differencePercent(this.characterWinRates[i],rate)}%)\n`)
+                    str+=(ItemList[item].name + ": " + ratioToPercent(rate) +"%" + `(${differencePercent(this.characterWinRates[i],rate)}%)\n`)
                 }
             }
             str+=("상대별 승률=======================================\n")

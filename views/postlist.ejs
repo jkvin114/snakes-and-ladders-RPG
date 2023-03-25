@@ -1,14 +1,17 @@
 <html>
   <script src="/lib/jquery-3.6.0.min.js"></script>
 	<link rel="stylesheet" href="/src/style/style_main_navbar.css">
+  <script src="/src/localeManager.js"></script>
+	<link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
+
   @font-face {
     font-family: "cookierun";
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
-   background-color: rgb(36, 36, 36);
+   background-color: var(--bg);
    color: rgb(254, 254, 245);
     margin: 0;
     margin-bottom: 20px;
@@ -19,8 +22,8 @@
     font-family: 'cookierun';
   }
   .post{
-    background-color: rgb(65, 65, 65);
-    margin: 10px;
+    background-color: var(--bg3);
+    margin: 5px;
     padding: 5px;
     cursor: pointer;
     border-radius: 4px;
@@ -92,6 +95,16 @@
   #navbar img:hover,#navbar > div:hover,.pagebtn:hover{
     background-color: rgb(75, 75, 75);
   } */
+  #header{
+    text-align: center;
+    /* border-radius: 10px; */
+    width: min(99%,700px);
+    display: inline-block;
+    padding: 5px;
+    background-color:  var(--bg3);
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
   .pagebtn:hover{
     background-color: rgb(75, 75, 75);
   }
@@ -107,7 +120,7 @@
     font-size: 20px;
     border:none;
     vertical-align: middle;
-    border-radius: 5px;
+    border-radius: 2px;
     padding: 5px;
     margin-right: 5px;
      /* height: 30px;  */
@@ -135,7 +148,8 @@
   }
   .subtext{
     font-size: 10px;
-    color: #efa1ff;
+    /* color: #efa1ff; */
+    color: var(--font-light);
     word-break: keep-all;
   }
   .subtext_container{
@@ -151,6 +165,7 @@
   }
   .title-username{
     color: #d88bff;
+    /* color: var(--font-light); */
     text-decoration: underline;
     cursor: pointer;    display: inline;
   }
@@ -224,15 +239,15 @@
     </div>
   </div>
 
-  <div>
+  <div id="header">
     <%if(displayType==="all") {%>
-      <h1>All Posts</h1>
+      <h3 lkey="allpost">All Posts</h3>
       <% }else if(displayType==="user"){%>
-        <h1><a class="title-username" onclick="golink('/user/<%=user%>')"><%=user%></a>`s Posts</h1>
+        <h3><a class="title-username" onclick="golink('/user/<%=user%>')"><%=user%></a><b lkey="user.post">`s Posts</b></h3>
       <% }else if(displayType==="userlikes"){%>
-        <h1><a class="title-username"  onclick="golink('/user/<%=user%>')"><%=user%></a>`s likes</h1>
+        <h3><a class="title-username"  onclick="golink('/user/<%=user%>')"><%=user%></a><b lkey="user.like">`s likes</b></h3>
       <% }else if(displayType==="bookmarks"){%>
-        <h1><%=user%>`s bookmarks</h1>
+        <h3><%=user%><b lkey="user.bookmark">`s bookmarks</b></h3>
       <% }%>
   </div>
      
@@ -272,9 +287,9 @@
             </div>
             <div></div>
             <div class="subtext_container">
-              <a class="subtext">Author: <%=posts[i].authorName%></a>
+              <a class="subtext"><b lkey="author">author</b>: <%=posts[i].authorName%></a>
               <a class="subtext"> <%= posts[i].createdAt.toString().substring(0,24) %></a>
-              <a class="subtext"> views:<%= posts[i].views %></a>
+              <a class="subtext">  <b lkey="view">views</b>:<%= posts[i].views %></a>
             </div>
             <div>
               <a class="subtext comment"><img src="/res/img/svg/comment.svg"> [<%= posts[i].commentCount %>]</a><br>
@@ -282,12 +297,12 @@
           </div>
       <% } %> 
       <%if(start>0){%>
-        <button id="prevbtn" class="pagebtn"data-username="<%= user %>" data-displaytype="<%= displayType %>" data-params="<%= `?start=${start-count}` %>">
+        <button lkey="prev" id="prevbtn" class="pagebtn"data-username="<%= user %>" data-displaytype="<%= displayType %>" data-params="<%= `?start=${start-count}` %>">
           ❮ Prev</button>
       <% }%>
 
       <%if(!isEnd){ %> 
-        <button id="nextbtn" class="pagebtn" data-username="<%= user %>"data-displaytype="<%= displayType %>"  data-params="<%= `?start=${start+count}` %>">
+        <button lkey="next" id="nextbtn" class="pagebtn" data-username="<%= user %>"data-displaytype="<%= displayType %>"  data-params="<%= `?start=${start+count}` %>">
           Next ❯</button>
       <% } %> 
 
@@ -298,6 +313,8 @@
 function golink(link){
   window.location.href=link
 }
+
+updateLocale("board")
 $(".pagebtn").click(function(){
   let type=$(this).data("displaytype")
   let params=$(this).data("params")

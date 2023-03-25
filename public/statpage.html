@@ -63,8 +63,8 @@
 				<!-- <img class='menubtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블"> -->
 				<img class='menubtn langbtn' id="langbtn" src="res/img/svg/globe.svg"  title="Language">
 				<div class="lang_dropdown">
-				  <a class="dropitem" value="kor">한국어</a>
-				  <a class="dropitem" value="eng">English</a>
+				  <a class="dropitem" value="ko">한국어</a>
+				  <a class="dropitem" value="en">English</a>
 				</div>
 				<!-- <img class="menubtn" id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login"> -->
 				<!-- <img class='menubtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()" title="Logout"> -->
@@ -76,13 +76,13 @@
 			<!-- <div onclick="golink('statpage.html')"  id="title"><h5>Statistics</h5></div> -->
 
 			<div class="stat-navbar-btn active intro_game" >
-				<a>Games</a>
+				<a lkey="games">Games</a>
 			</div>
 			<div class="stat-navbar-btn intro_simulation">
-				<a>Simulations</a>
+				<a lkey="simulations">Simulations</a>
 			</div>
 			<div class="stat-navbar-btn intro_analysis">
-				<a>Analysis</a>
+				<a lkey="analysis">Analysis</a>
 			</div>
 		</div>
 		<!-- <div id="intro">
@@ -127,13 +127,13 @@
 			
 		</div>
 		<div id="summary-collapse" data-collapsed="false">
-			&#9650;collapse
+			&#9650;<b lkey="collapse">collapse</b>
 		</div>
 
 		<div id="toolbar">
-			<div class="toolbar_item">&#9664;collapse</div>
-			<div class="toolbar_item">&#9654;expand</div>
-			<div class="toolbar_item">&#9664;back to list</div>
+			<div class="toolbar_item">&#9664;<b lkey="collapse">collapse</b></div>
+			<div class="toolbar_item">&#9654;<b lkey="expand">expand</b></div>
+			<div class="toolbar_item">&#9664;<b lkey="list">back to list</b></div>
 		</div>
 		
 		<div id="holder">
@@ -187,36 +187,36 @@
 
 					<div class="game-detail-item no-stretch" id="game-detail-table">
 						<div class="game-detail-header"> 
-							<b>Game Details</b>
+							<b lkey="gamedetail">Game Details</b>
 						</div>
 						<div class="player-data-content game-detail-table-content"> 
 							<div class="player-data-otherstat">
 								<div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name game-detail-name">Total turn: </b><b class="otherstat-value game-detail-value"></b>
+										<b class="otherstat-name game-detail-name" lkey="gamedetail_data.turn">Total turn: </b><b class="otherstat-value game-detail-value"></b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name game-detail-name">Winner: </b><b class="otherstat-value game-detail-value"></b>
+										<b class="otherstat-name game-detail-name" lkey="gamedetail_data.winner">Winner: </b><b class="otherstat-value game-detail-value"></b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name game-detail-name">Map: </b><b class="otherstat-value game-detail-value"></b>
+										<b class="otherstat-name game-detail-name" lkey="gamedetail_data.map">Map: </b><b class="otherstat-value game-detail-value"></b>
 									</div>
 								</div>
 								<div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name game-detail-name">Item Limit: </b><b class="otherstat-value game-detail-value">6</b>
+										<b class="otherstat-name game-detail-name" lkey="gamedetail_data.itemlimit">Item Limit: </b><b class="otherstat-value game-detail-value">6</b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name game-detail-name">Win by decision: </b><b class="otherstat-value game-detail-value"></b>
+										<b class="otherstat-name game-detail-name" lkey="gamedetail_data.winbydecision">Win by decision: </b><b class="otherstat-value game-detail-value"></b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name game-detail-name">Additional life: </b><b class="otherstat-value game-detail-value"></b>
+										<b class="otherstat-name game-detail-name" lkey="gamedetail_data.life">Additional life: </b><b class="otherstat-value game-detail-value"></b>
 									</div>
 								</div>
 							</div>
 						</div>
 						<div id="replay">
-							<button id="replay-btn">Watch Replay</button>
+							<button id="replay-btn" lkey="gamedetail_data.replay">Watch Replay</button>
 						</div>
 					</div>
 					<div id="game_detail_content">
@@ -290,7 +290,7 @@
 						<div id="game-detail-graphs" class="game-detail-item ">
 					
 							<div class="game-detail-graph">
-								<b class="game-detail-graph-type"></b><br>
+								<b class="game-detail-graph-type" lkey="smallgraph.dmgdealt"></b><br>
 								<div class="game-detail-graph-players">
 									<!-- <div class="game-detail-graph-oneplayer">
 										<div class="game-detail-graph-name">
@@ -304,31 +304,31 @@
 								</div>
 							</div>
 							<div class="game-detail-graph">
-								<b class="game-detail-graph-type"></b><br>
+								<b class="game-detail-graph-type" lkey="smallgraph.playerdmg"></b><br>
 								<div class="game-detail-graph-players">
 
 								</div>
 							</div>
 							<div class="game-detail-graph">
-								<b class="game-detail-graph-type"></b><br>
+								<b class="game-detail-graph-type" lkey="smallgraph.obsdmg"></b><br>
 								<div class="game-detail-graph-players">
 
 								</div>
 							</div>
 							<div class="game-detail-graph">
-								<b class="game-detail-graph-type"></b><br>
+								<b class="game-detail-graph-type" lkey="smallgraph.heal"> </b><br>
 								<div class="game-detail-graph-players">
 
 								</div>
 							</div>
 							<div class="game-detail-graph">
-								<b class="game-detail-graph-type"></b><br>
+								<b class="game-detail-graph-type" lkey="smallgraph.money"></b><br>
 								<div class="game-detail-graph-players">
 
 								</div>
 							</div>
 							<div class="game-detail-graph">
-								<b class="game-detail-graph-type"></b><br>
+								<b class="game-detail-graph-type" lkey="smallgraph.reduce"></b><br>
 								<div class="game-detail-graph-players">
 
 								</div>
@@ -340,7 +340,7 @@
 
 						
 						<div id="killRecordTable" class="game-detail-item">
-							<b class="game-detail-item-title">Kill Record</b>
+							<b class="game-detail-item-title" lkey="kills">Kill Record</b>
 							<div>
 								<div id="killRecordContent">
 
@@ -416,13 +416,13 @@
 						<div class="divTable greenTable" id="otherstattable" class="game-detail-item"  style="display: none;">
 							<div class="divTableHeading">
 								<div class="divTableRow otherTableRow">
-									<div class="divTableHead otherTableLabel">&nbsp;&nbsp;Player</div>
-									<div class="divTableHead otherTableLabel">Money Spent</div>
-									<div class="divTableHead otherTableLabel">Money taken</div>
-									<div class="divTableHead otherTableLabel">Revived</div>
-									<div class="divTableHead otherTableLabel">Forcemoved</div>
-									<div class="divTableHead otherTableLabel">Basic attack</div>
-									<div class="divTableHead otherTableLabel">Executed</div>
+									<div class="divTableHead otherTableLabel" lkey="player">&nbsp;&nbsp;Player</div>
+									<div class="divTableHead otherTableLabel" lkey="playerdetail_data.moneyspent">Money Spent</div>
+									<div class="divTableHead otherTableLabel" lkey="playerdetail_data.moneytaken">Money taken</div>
+									<div class="divTableHead otherTableLabel" lkey="playerdetail_data.revive">Revived</div>
+									<div class="divTableHead otherTableLabel" lkey="playerdetail_data.forcemove">Forcemoved</div>
+									<div class="divTableHead otherTableLabel" lkey="playerdetail_data.basicattack">Basic attack</div>
+									<div class="divTableHead otherTableLabel" lkey="playerdetail_data.execute">Executed</div>
 								</div>
 							</div>
 							<div class="divTableBody">
@@ -523,7 +523,7 @@
 							</div>
 						</div>
 						<div id="character-list-container" class="character-list-container">
-							<div class="character-content-title">
+							<div class="character-content-title" lkey="perfscore">
 								Overall Performance Score
 							</div>
 							<div id="character-list" class="character-list"></div>
@@ -537,22 +537,22 @@
 						<div id="character-table-container">
 							<div class="character-table-item">
 								<div class="character-table-header">
-									<h2 class="character-table-gametype">2 Player Game</h2>
+									<h2 class="character-table-gametype" lkey="game_2p">2 Player Game</h2>
 								</div>
 								<div class="character-table-metadata">
 									
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-2P">12</b>
+										<b class="otherstat-name" lkey="totalgame">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-2P">12</b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-2P">12</b>
+										<b class="otherstat-name" lkey="avgturn">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-2P">12</b>
 									</div>
 									<div class="player-data-otherstat-item character-table-header-small">
 										<div style="text-align: center;">
-											<b>Name</b>
+											<b lkey="char">Name</b>
 										</div>
 										<div>
-											<b>Win rate</b>
+											<b  lkey="winrate"> Win rate</b>
 										</div>
 									</div>
 								</div>
@@ -574,22 +574,22 @@
 							</div>
 							<div class="character-table-item">
 								<div class="character-table-header">
-									<h2 class="character-table-gametype">3 Player Game</h2>
+									<h2 class="character-table-gametype" lkey="game_3p">3 Player Game</h2>
 								</div>
 								<div class="character-table-metadata">
 									
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value"  id="character-table-totalgames-3P">12</b>
+										<b class="otherstat-name" lkey="totalgame">Total Games: </b><b class="otherstat-value"  id="character-table-totalgames-3P">12</b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-3P">12</b>
+										<b class="otherstat-name" lkey="avgturn">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-3P">12</b>
 									</div>
 									<div class="player-data-otherstat-item character-table-header-small">
 										<div style="text-align: center;">
-											<b>Name</b>
+											<b lkey="char">Name</b>
 										</div>
 										<div>
-											<b>Win rate</b>
+											<b lkey="winrate">Win rate</b>
 										</div>
 									</div>
 								</div>
@@ -599,22 +599,22 @@
 							</div>
 							<div class="character-table-item">
 								<div class="character-table-header">
-									<h2 class="character-table-gametype">4 Player Game</h2>
+									<h2 class="character-table-gametype" lkey="game_4p">4 Player Game</h2>
 								</div>
 								<div class="character-table-metadata">
 									
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-4P">12</b>
+										<b class="otherstat-name" lkey="totalgame">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-4P">12</b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-4P">12</b>
+										<b class="otherstat-name" lkey="avgturn">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-4P">12</b>
 									</div>
 									<div class="player-data-otherstat-item character-table-header-small">
 										<div style="text-align: center;">
-											<b>Name</b>
+											<b lkey="char">Name</b>
 										</div>
 										<div>
-											<b>Win rate</b>
+											<b lkey="winrate">Win rate</b>
 										</div>
 									</div>
 								</div>
@@ -624,22 +624,22 @@
 							</div>
 							<div class="character-table-item">
 								<div class="character-table-header">
-									<h2 class="character-table-gametype">2 vs 2 Game</h2>
+									<h2 class="character-table-gametype" lkey="game_team">2 vs 2 Game</h2>
 								</div>
 								<div class="character-table-metadata">
 									
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-TEAM">12</b>
+										<b class="otherstat-name" lkey="totalgame">Total Games: </b><b class="otherstat-value" id="character-table-totalgames-TEAM">12</b>
 									</div>
 									<div class="player-data-otherstat-item">
-										<b class="otherstat-name">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-TEAM">12</b>
+										<b class="otherstat-name" lkey="avgturn">Average Turns: </b><b class="otherstat-value" id="character-table-avgturns-TEAM">12</b>
 									</div>
 									<div class="player-data-otherstat-item character-table-header-small">
 										<div>
-											<b>Name</b>
+											<b lkey="char">Name</b>
 										</div>
 										<div>
-											<b>Win rate</b>
+											<b lkey="winrate">Win rate</b>
 										</div>
 									</div>
 								</div>
@@ -670,10 +670,10 @@
 						</div>
 						<div class="character-summary-section-right character-summary-section">
 							<div class="character-summary-item">
-								<b class="otherstat-name">Total Games: </b><b class="otherstat-value" id="character-totalgame" >12</b>
+								<b class="otherstat-name" lkey="totalgame">Total Games: </b><b class="otherstat-value" id="character-totalgame" >12</b>
 							</div>
 							<div class="character-summary-item">
-								<b class="otherstat-name">Win Rate: </b><b class="otherstat-value" id="character-winrate">12</b>
+								<b class="otherstat-name" lkey="winrate">Win Rate: </b><b class="otherstat-value" id="character-winrate">12</b>
 							</div>
 							<div class="character-skills">
 								<img src="res/img/skill/1-1.jpg">
@@ -687,10 +687,10 @@
 						<div class="dropdown-container">
 							<div class="character-dropdown-btn"></div>
 							<ul class="dropdown" id="character-gametype-dropdown">
-								<li class="dropdown-item character-gametype-dropdown" data-gametype="2P">2 Player</li>
-								<li class="dropdown-item character-gametype-dropdown" data-gametype="3P">3 Player</li>
-								<li class="dropdown-item character-gametype-dropdown" data-gametype="4P">4 Player</li>
-								<li class="dropdown-item character-gametype-dropdown" data-gametype="TEAM">Team Game</li>
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="2P" lkey="game_2p">2 Player</li>
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="3P"lkey="game_3p">3 Player</li>
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="4P"lkey="game_4p">4 Player</li>
+								<li class="dropdown-item character-gametype-dropdown" data-gametype="TEAM"lkey="game_team">Team Game</li>
 							</ul>
 						  </div>
 						  <div class="dropdown-container">
@@ -717,7 +717,7 @@
 				<div id="character-content">
 					<div class="character-section-characters">
 						<div class="character-list-container"> 
-							<div class="character-content-title">Opponent Win Rates</div>
+							<div class="character-content-title" lkey="charpage.opponent">Opponent Win Rates</div>
 							<div id="character-opponents" class="character-list">
 								<!-- <div class="character-list-card">
 									<div class="card-charimg">
@@ -729,7 +729,7 @@
 							</div>
 						</div>
 						<div class="character-list-container" id="character-duos-container"> 
-							<div class="character-content-title">Teammate Win Rates</div>
+							<div class="character-content-title" lkey="charpage.teammate">Teammate Win Rates</div>
 							<div id="character-duos" class="character-list">
 								<!-- <div class="character-list-card">
 									<div class="card-charimg">
@@ -747,16 +747,16 @@
 					
 						<div class="character-section-item">
 							<div class="character-list-container" >
-								<div class="character-content-title" >Item Builds</div>
+								<div class="character-content-title"lkey="charpage.itembuild" >Item Builds</div>
 								<div class="character-content-header-small" style="grid-template-columns: 2fr 0.7fr 0.7fr;">
 									<div>
-										<b>Item Build</b>
+										<b lkey="charpage.itembuild">Item Build</b>
 									</div>
 									<div>
-										<b>Pick rate</b>
+										<b lkey="charpage.pickrate">Pick rate</b>
 									</div>
 									<div>
-										<b>Win rate</b>
+										<b lkey="winrate">Win rate</b>
 									</div>
 								</div>
 								<div id="character-itembuilds" >
@@ -764,16 +764,16 @@
 							</div>
 						
 							<div class="character-list-container" >
-								<div class="character-content-title">Items</div>
+								<div class="character-content-title"lkey="charpage.item">Items</div>
 								<div class="character-content-header-small " >
 									<div>
-										<b>Item</b>
+										<b lkey="charpage.item">Item</b>
 									</div>
 									<div>
-										<b>Pick rate</b>
+										<b lkey="charpage.pickrate">Pick rate</b>
 									</div>
 									<div>
-										<b>Win rate</b>
+										<b lkey="winrate">Win rate</b>
 									</div>
 								</div>
 								<div id="character-items" >
@@ -804,6 +804,7 @@
 		</div>
 	</body>
 	<script type="text/javascript" src="src/statChartConfig.js"></script>
+	<script type="text/javascript" src="src/localeManager.js"></script>
 
 	<script type="text/javascript" src="src/stat.js"></script>
 </html>

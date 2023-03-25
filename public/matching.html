@@ -8,6 +8,8 @@
   <script src="src/client.js"></script>
 <script src="src/matching.js"></script>
 <script src="src/gamesetting.js"></script>
+<script src="src/localeManager.js"></script>
+
 <link rel="stylesheet" href="./src/style/style_matchingpage.css">
 
 <head>
@@ -90,7 +92,7 @@
       <div class="playercard waiting hidden">
         <div class="card-buttons">
 
-          <p class="iname">Waiting for player..</p>
+          <p class="iname" lkey="waiting">Waiting for player..</p>
         </div>
         <div class="card-buttons">
 
@@ -132,7 +134,7 @@
 
       <div class="playercard waiting hidden">
         <div class="card-buttons">
-          <p class="iname"> Waiting for player..</p>  
+          <p class="iname" lkey="waiting"> Waiting for player..</p>  
         </div>
         <div class="card-buttons">
 
@@ -171,7 +173,7 @@
 
       <div class="playercard waiting hidden">
         <div class="card-buttons">
-          <p class="iname"> Waiting for player..</p>
+          <p class="iname" lkey="waiting"> Waiting for player..</p>
         </div>
         
       </div>
@@ -250,10 +252,10 @@
 
       </div>
 
-      <button type='submit' id="individual" name="gamemode" value="individual" class="mainbtn disabled">
+      <button type='submit' id="individual" name="gamemode" value="individual" class="mainbtn disabled" lkey="start">
           Game Start
       </button>
-      <button type='submit' id="team" name="gamemode" value="team" class="mainbtn">
+      <button type='submit' id="team" name="gamemode" value="team" class="mainbtn" lkey="team">
         Choose Team
       </button>
       <img id="setting" src="./res/img/ui/setting.png">
@@ -323,8 +325,8 @@
     </div>
     <div id="teambuttons">
       
-      <button id="submitTeam" style="background-color: #8000ca;"> Start Game</button>
-      <button id="back"> Cancel</button>
+      <button id="submitTeam" style="background-color: #8000ca;"lkey="start"> Start Game</button>
+      <button id="back" lkey="cancel"> Cancel</button>
     </div>
 
     
@@ -336,7 +338,7 @@
   <!-- <button id="reset"> Reset </button> -->
   <div id="settingwrapper">
     <div id="gameplay">
-        <h5>Gameplay Setting</h5>
+        <h5 lkey="setting.gameplay">Gameplay Setting</h5>
         <div class="setting_category">
          <!-- <div class="onesetting">
             <div class="settingname-container">
@@ -366,13 +368,13 @@
         
       <hr>
     </div>
-    <div id="match">
+    <!-- <div id="match">
       <h5>Match Setting</h5>
       <div class="setting_category"></div>
     <hr>
-    </div>
+    </div> -->
     <div id="statistic">
-      <h5>Statistic Setting</h5>
+      <h5 lkey="setting.stat">Statistic Setting</h5>
       <!-- <div class="onesetting">
         <a>All </a>
         <label class="switch">

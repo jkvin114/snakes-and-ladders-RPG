@@ -73,20 +73,21 @@ $("document").ready(async function () {
 		window.location.port = 3000
 		return
 	}
-	updateLocale("home")
 
 	try {
 		let response = await axios.post("/room/home")
 		if (response.data.config) {
-			if (response.data.board) $("#postbtn").show()
-			if (response.data.simulation) $("#simulation").show()
-			if (response.data.marble) $("#marble").show()
+			if (response.data.config.board) $("#postbtn").show()
+			if (response.data.config.simulation) $("#simulation").show()
+			if (response.data.config.marble) $("#marble").show()
 		}
 		if (response.data.reconnect) {
 			showReconnectBtn()
 		}
 		$("footer").html(` <a>version: ${response.data.version}</a>, <a>patch: ${response.data.patch}</a>
 		<br><a>Created by Yejoon Jung, jkvin114@gmail.com</a>`)
+		if (response.data.config && !sessionStorage.language) updateLocale("home", response.data.config.defaultLocale)
+		else updateLocale("home")
 	} catch (e) {
 		console.log(e)
 	}
@@ -183,9 +184,9 @@ $("#loginform").submit(function (e) {
 		.then(function (res) {
 			let status = res.status
 			if (res.data === "username") {
-				$(".input_alert.login_id").html(chooseLang("Username does not exist", "존재하지 않는 아이디입니다"))
+				$(".input_alert.login_id").html(LOCALE.error.username)
 			} else if (res.data === "password") {
-				$(".input_alert.login_pw").html(chooseLang("Password does not match", "비밀번호 미일치"))
+				$(".input_alert.login_pw").html(LOCALE.error.password)
 			} else if (status === 200) {
 				let redirect = document.location.href.match(/redirect=([^&]+)/)
 				setAsLogin(username)
@@ -213,11 +214,11 @@ $("#registerform").submit(function (e) {
 		return
 	}
 	if (password !== password2) {
-		$(".input_alert.register_pw").html(chooseLang("Password not match", "비밀번호가 다릅니다"))
+		$(".input_alert.register_pw").html(LOCALE.error.password)
 		return
 	}
 	if (email.match(/[^@]+@[^.]+\.[a-z]+/) == null) {
-		$(".input_alert.register_email").html(chooseLang("Not a valid email", "유효한 이메일을 입력하세요"))
+		$(".input_alert.register_email").html(LOCALE.error.email)
 		return
 	}
 
@@ -247,18 +248,11 @@ $("#registerform").submit(function (e) {
 			let status = res.status
 			if (status === 400) {
 				if (res.responseText === "username") {
-					$(".input_alert.register_id").html(
-						chooseLang("Username should be between 2~15 characters", "아이디는 2~15글자 사이여야 합니다")
-					)
+					$(".input_alert.register_id").html(LOCALE.error.username_length)
 				} else if (res.responseText === "password") {
-					$(".input_alert.register_pw").html(
-						chooseLang(
-							"Password should be longer than 3 characters containing both alphabet and number",
-							"비밀번호는 숫자와 영문포함 3글자 이상이어야 합니다 "
-						)
-					)
+					$(".input_alert.register_pw").html(LOCALE.error.password_condition)
 				} else if (res.responseText === "duplicate username") {
-					$(".input_alert.register_id").html(chooseLang("Username duplicate", "아이디 중복"))
+					$(".input_alert.register_id").html(LOCALE.error.username_duplicate)
 				}
 			} else {
 				alert("server error, status:" + status)
@@ -389,7 +383,7 @@ function createroom(isMarble) {
 		})
 		.fail(function (data, statusText, xhr) {
 			if (data.status == 400) {
-				alert("That room name already exist")
+				alert(LOCALE.error.roomname_duplicate)
 			}
 		})
 }

@@ -2,7 +2,7 @@ import * as Util from "../core/Util"
 import * as ENUM from "../data/enum"
 import { ITEM } from "../data/enum"
 
-import { items as ItemList } from "../../res/item.json"
+import { items as ItemList } from "../../res/item_new.json"
 // import {  PlayerClientInterface, testSetting } from "../app"
 import type { Player } from "./player"
 import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat"

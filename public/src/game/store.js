@@ -1,5 +1,5 @@
 const EMPTY = -1
-import { GAME } from "./GameMain.js"
+import { GAME, format } from "./GameMain.js"
 export class StoreStatus {
 	constructor() {
 		this.itemList //
@@ -107,20 +107,15 @@ export class StoreStatus {
 
 		$("#selltokenclose").off()
 
-		$("#sell_token h6").html(GAME.chooseLang("Coins have: ", "코인 보유량: ") + token)
+		$("#sell_token h6").html(GAME.PAGELOCALE.coin.have + token)
 
 		let price = getTokenSellPrice()
 		GAME.store.tokensold = token
-		$("#sell_token h5").html(GAME.chooseLang("Coin sell price: ", "코인 판매가: ") + price + "$")
+		$("#sell_token h5").html(GAME.PAGELOCALE.coin.sell + price + "$")
 		$("#token_sell_range").on("input", function () {
 			GAME.store.tokensold = Math.floor(token * (this.value / 100))
 			$("#token_sell_total").html(
-				GAME.chooseLang(
-					"Sell " + GAME.store.tokensold + "Coins, Price: ",
-					"코인 " + GAME.store.tokensold + "개 매도, 가격: "
-				) +
-					GAME.store.tokensold * price +
-					"$"
+				format(GAME.PAGELOCALE.coin.sellprice, [GAME.store.tokensold]) + GAME.store.tokensold * price + "$"
 			)
 		})
 
@@ -300,21 +295,21 @@ export class StoreInterface {
 		})
 	}
 	initstore() {
-		let storehometexts = $("#storehome > p").toArray()
-		$(storehometexts[0]).html(GAME.chooseLang("Special Items", "특수 아이템"))
-		$(storehometexts[1]).html(GAME.chooseLang("Recommended Items", "추천 아이템"))
+		// let storehometexts = $("#storehome > p").toArray()
+		// $(storehometexts[0]).html(GAME.chooseLang("Special Items", "특수 아이템"))
+		// $(storehometexts[1]).html(GAME.chooseLang("Recommended Items", "추천 아이템"))
 
-		$("#store_auto_text").html(GAME.chooseLang("Item auto buy", "아이템 자동구매"))
-		$("#loweritem").html(GAME.chooseLang("Lower Level Items", "하위 아이템"))
-		$("#upperitem").html(GAME.chooseLang("Upper Level Items", "상위 아이템"))
-		$(".store_life_summary p").html(GAME.chooseLang("Additional Life", "추가 목숨"))
-		$(".store_token_summary p").html(GAME.chooseLang("Coin Investment", "코인 투자"))
-		$("#store_buytoken #itemname").html(GAME.chooseLang("Coin", "코인"))
-		$("#store_buylife #itemname").html(GAME.chooseLang("Additional Life", "추가 목숨"))
+		// $("#store_auto_text").html(GAME.chooseLang("Item auto buy", "아이템 자동구매"))
+		// $("#loweritem").html(GAME.chooseLang("Lower Level Items", "하위 아이템"))
+		// $("#upperitem").html(GAME.chooseLang("Upper Level Items", "상위 아이템"))
+		// $(".store_life_summary p").html(GAME.chooseLang("Additional Life", "추가 목숨"))
+		// $(".store_token_summary p").html(GAME.chooseLang("Coin Investment", "코인 투자"))
+		// $("#store_buytoken #itemname").html(GAME.chooseLang("Coin", "코인"))
+		// $("#store_buylife #itemname").html(GAME.chooseLang("Additional Life", "추가 목숨"))
 		$("#store_buytoken #token_description").html(
-			GAME.chooseLang("Can resell in <b>Coin Store</b>", "<b>코인 거래소</b>") +
-				"<div class=coinstoreimg><img src='res/img/board/obstacles.png' style='margin-left: -3350px'; > </div>" +
-				GAME.chooseLang("", "에서 매도 가능")
+			format(GAME.PAGELOCALE.coin.desc, [
+				"<div class=coinstoreimg><img src='res/img/board/obstacles.png' style='margin-left: -3350px'; > </div>",
+			])
 		)
 		const _this = this
 
@@ -479,14 +474,14 @@ export class StoreInterface {
 		let isReversed = false
 		//3등급 아이템 위로
 		if (GAME.myStat.level <= 2) {
-			$(leveltexts[2]).html(GAME.chooseLang("Epic Items", "상급 아이템"))
-			$(leveltexts[1]).html(GAME.chooseLang("Rare Items", "중급 아이템"))
-			$(leveltexts[0]).html(GAME.chooseLang("Common Items", "하급 아이템"))
+			$(leveltexts[2]).html(GAME.PAGELOCALE.itemlevel.epic)
+			$(leveltexts[1]).html(GAME.PAGELOCALE.itemlevel.rare)
+			$(leveltexts[0]).html(GAME.PAGELOCALE.itemlevel.common)
 			isReversed = true
 		} else {
-			$(leveltexts[0]).html(GAME.chooseLang("Epic Items", "상급 아이템"))
-			$(leveltexts[1]).html(GAME.chooseLang("Rare Items", "중급 아이템"))
-			$(leveltexts[2]).html(GAME.chooseLang("Common Items", "하급 아이템"))
+			$(leveltexts[0]).html(GAME.PAGELOCALE.itemlevel.epic)
+			$(leveltexts[1]).html(GAME.PAGELOCALE.itemlevel.rare)
+			$(leveltexts[2]).html(GAME.PAGELOCALE.itemlevel.common)
 		}
 
 		let categories = ["attack_lv", "magic_lv", "defence_lv", "health_lv", "utility_lv"]
@@ -523,7 +518,7 @@ export class StoreInterface {
 					<div class=store_curritemimg ><img src='res/img/store/items.png' style='margin-left:${-1 * item_id * 100}px';> 
 					</div><b class='summaryprice ${canbuy ? "" : " cannotbuyitem "}'> $${this.storeStatus.itemPrices[item_id]}</b>
 				</div>
-				<p>${GAME.chooseLang(this.storeStatus.itemList[item_id].summary.eng, this.storeStatus.itemList[item_id].summary.kor)}
+				<p>${GAME.LOCALE.item[item_id].summary}
 				</p>
 			</div>`
 
@@ -599,12 +594,7 @@ export class StoreInterface {
 	showLifeDetail() {
 		this.saveNaviRecord("life", 0)
 		$("#buylife").off()
-		$("#life_description").html(
-			GAME.chooseLang(
-				"You will revive next turn when you die if you have additional life(Does not go back to respawn point)",
-				"추가 목숨으로 사망시 돌아오는 턴에 부활함(리스폰지점으로 돌아가지 않음)"
-			)
-		)
+		$("#life_description").html(GAME.PAGELOCALE.life_desc)
 		$("#store_buylife").css("visibility", "visible")
 		$("#buylife").click(
 			function () {
@@ -649,19 +639,19 @@ export class StoreInterface {
 		this.updateTokenCount(0)
 
 		if (!this.storeInstance.enabled) {
-			$("#tokenprice").html(GAME.chooseLang("Current price: ??", "현재가: ??"))
+			$("#tokenprice").html(GAME.PAGELOCALE.coin.price + ": ??")
 		} else {
-			$("#tokenprice").html(GAME.chooseLang("Current price: $", "현재가: $") + this.storeInstance.tokenprice)
+			$("#tokenprice").html(GAME.PAGELOCALE.coin.price + ": $" + this.storeInstance.tokenprice)
 		}
 		//mot enough money
 		if (this.storeInstance.tokenprice > this.storeStatus.money || !this.storeInstance.enabled) {
 			$("#buytoken").off()
-			$("#buytoken").html(GAME.chooseLang("Purchase", "매수")).css({
+			$("#buytoken").html(GAME.PAGELOCALE.coin.buy).css({
 				filter: "grayscale(90%)",
 				color: "gray",
 			})
 		} else {
-			$("#buytoken").html(GAME.chooseLang("Purchase", "매수")).css({
+			$("#buytoken").html(GAME.PAGELOCALE.coin.buy).css({
 				filter: "none",
 				color: "#f4d142",
 			})
@@ -678,10 +668,7 @@ export class StoreInterface {
 		if (this.storeStatus.money < 0 || !this.storeInstance.enabled) return
 		this.storeInstance.updateTokenCount(val)
 		$("#tokentotal").html(
-			GAME.chooseLang(
-				"Buy " + this.storeInstance.tokencount + "Coins, total price: ",
-				"코인 " + this.storeInstance.tokencount + "개 매수, 총 가격: "
-			) +
+			format(GAME.PAGELOCALE.coin.buyprice, [this.storeInstance.tokencount]) +
 				this.storeInstance.tokencount * this.storeInstance.tokenprice +
 				"$"
 		)
@@ -725,7 +712,9 @@ export class StoreInterface {
 
 		let thisitem = this.storeStatus.itemList[item_id]
 
-		$("#itemname").html(GAME.chooseLang(thisitem.name, thisitem.kor_name))
+		const itemlocale = GAME.LOCALE.item[item_id]
+
+		$("#itemname").html(itemlocale.name)
 		$(".store_thisitemimg").html(
 			"<img src='res/img/store/items.png' style='margin-left: " + -1 * item_id * 100 + "px';>"
 		)
@@ -733,7 +722,7 @@ export class StoreInterface {
 		let ability = ""
 		let statinfopopup = ""
 		for (let a of thisitem.ability) {
-			let ab = `<a class='ability_name'>${GAME.strRes.STATS[a.type]}</a> + ${a.value}`
+			let ab = `<a class='ability_name'>${GAME.LOCALE.stat[a.type]}</a> + ${a.value}`
 
 			if (a.type === "addMdmg" || a.type === "skillDmgReduction" || a.type === "absorb" || a.type === "obsR") {
 				ab += "%"
@@ -746,7 +735,7 @@ export class StoreInterface {
 			// }
 
 			if (a.type === "attackRange") {
-				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.attackRange + "<br>"
+				statinfopopup += "&#8251;" + GAME.LOCALE.stat_detail.attackRange + "<br>"
 				needinfobtn = true
 			}
 			// if (a.type === "regen") {
@@ -754,19 +743,19 @@ export class StoreInterface {
 			// 	needinfobtn = true
 			// }
 			if (a.type === "ultHaste") {
-				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.ultHaste + "<br>"
+				statinfopopup += "&#8251;" + GAME.LOCALE.stat_detail.ultHaste + "<br>"
 				needinfobtn = true
 			}
 			if (a.type === "moveSpeed") {
-				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.moveSpeed + "<br>"
+				statinfopopup += "&#8251;" + GAME.LOCALE.stat_detail.moveSpeed + "<br>"
 				needinfobtn = true
 			}
 			if (a.type === "adStat") {
-				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.adStat + "<br>"
+				statinfopopup += "&#8251;" + GAME.LOCALE.stat_detail.adStat + "<br>"
 				needinfobtn = true
 			}
 			if (a.type === "basicAttackSpeed") {
-				statinfopopup += "&#8251;" + GAME.strRes.STAT_DETAIL.basicAttackSpeed + "<br>"
+				statinfopopup += "&#8251;" + GAME.LOCALE.stat_detail.basicAttackSpeed + "<br>"
 				needinfobtn = true
 			}
 		}
@@ -775,17 +764,14 @@ export class StoreInterface {
 			$("#statinfopopup").html(statinfopopup)
 			$("#statinfo").show()
 		}
-		if (thisitem.unique_effect != null) {
-			ability +=
-				"<b class='unique_effect'>[" +
-				GAME.chooseLang("unique passive", "고유지속효과") +
-				"]</b>:" +
-				GAME.chooseLang(thisitem.unique_effect, thisitem.unique_effect_kor)
+		if (thisitem.hasPassive) {
+			ability += "<b class='unique_effect'>[" + GAME.PAGELOCALE.item.passive + "]</b>:" + itemlocale.unique_effect
 			if (thisitem.active_cooltime != null) {
-				ability += GAME.chooseLang(
-					`(cooltime ${thisitem.active_cooltime} turns)`,
-					`(쿨타임 ${thisitem.active_cooltime}턴)`
-				)
+				ability += format(GAME.PAGELOCALE.item.cooltime, [thisitem.active_cooltime])
+				// GAME.chooseLang(
+				// 	`(cooltime ${thisitem.active_cooltime} turns)`,
+				// 	`(쿨타임 ${thisitem.active_cooltime}턴)`
+				// )
 			}
 		}
 		$("#thisitem .item_description").html(ability)
@@ -850,12 +836,13 @@ export class StoreInterface {
 
 		if (GAME.ui != null)
 			GAME.showDialog(
-				GAME.chooseLang(this.storeStatus.itemList[item_id].name, this.storeStatus.itemList[item_id].kor_name) +
+				GAME.LOCALE.item[item_id].name +
 					"<br>" +
-					GAME.chooseLang("price:", "가격:") +
+					GAME.PAGELOCALE.item.price +
+					": " +
 					price +
 					"$<br>" +
-					GAME.chooseLang("Do you really want to sell?", "정말 판매하시겠습니까?"),
+					GAME.PAGELOCALE.item.sellconfirm,
 				() => this.onItemSellConfirm(item_id, price)
 			)
 

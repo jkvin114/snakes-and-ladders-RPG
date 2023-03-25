@@ -52,7 +52,7 @@ export class PlayableGame extends Game {
 
 	onDisconnect() {
 		this.showDialog(
-			this.chooseLang("Unable to connect server, do you wish to reconnect?", "서버 연결 불가, 재접속 하시겠습니까?"),
+			this.PAGELOCALE.msg.reconnect,
 			() => this.tryReconnect(),
 			() => this.onQuit()
 		)
@@ -289,19 +289,19 @@ export class PlayableGame extends Game {
 
 		//console.log(result)
 		if (result.type === 1) {
-			this.android_toast(this.chooseLang("still in cooltime", "아직 재사용 대기시간입니다"))
+			this.android_toast(this.PAGELOCALE.skill.cool)
 			this.ui.showSkillBtn(this.skillstatus)
 		} else if (result.type === 2 || result.type === 7) {
-			this.android_toast(this.chooseLang("Skill activated", "스킬 발동!"))
+			this.android_toast(this.PAGELOCALE.skill.active)
 		} else if (result.type === 3) {
-			this.android_toast(this.chooseLang("no targets in range", "범위내에 적이 없음"))
+			this.android_toast(this.PAGELOCALE.skill.notarget)
 			this.ui.showSkillBtn(this.skillstatus)
 		} else if (result.type === 0) {
-			this.android_toast(this.chooseLang("not learned skill", "아직 배우지 않았습니다"))
+			this.android_toast(this.PAGELOCALE.skill.notlearned)
 			this.ui.showSkillBtn(this.skillstatus)
 		} else if (result.type === 5) {
-			$("#selectionname").html(this.chooseLang("targeting skill", "타겟팅 스킬")).show()
-			$("#selectiondesc").html(this.chooseLang("Choose a target", "대상 선택")).show()
+			$("#selectionname").html(this.PAGELOCALE.skill.targeting).show()
+			$("#selectiondesc").html(this.PAGELOCALE.choosetarget).show()
 			this.scene.showTarget(result.data.targets, false)
 		} else if (result.type === 4) {
 			this.showRangeTiles(result.data.pos, result.data.range, result.data.size, "skill")
@@ -311,8 +311,8 @@ export class PlayableGame extends Game {
 	}
 
 	onReceiveGodhandTarget(targets) {
-		$("#selectionname").html(this.chooseLang("god`s hand", "신의 손")).show()
-		$("#selectiondesc").html(this.chooseLang("Choose a player to move", "이동시킬 플레이어 선택")).show()
+		$("#selectionname").html(this.PAGELOCALE.godhand.name).show()
+		$("#selectiondesc").html(this.PAGELOCALE.godhand.choose).show()
 
 		this.scene.showTarget(targets, "godhand")
 	}
@@ -555,25 +555,23 @@ export class PlayableGame extends Game {
 		if (type === "godhand") {
 			$("#cancel_tileselection").show()
 
-			$("#selectionname").html(this.chooseLang("god`s hand", "신의 손")).show()
-			$("#selectiondesc")
-				.html(this.chooseLang("Choose a square you want to move the player to", "플레이어를 이동시킬 칸 선택"))
-				.show()
+			$("#selectionname").html(this.PAGELOCALE.godhand.name).show()
+			$("#selectiondesc").html(this.PAGELOCALE.tile.godhand).show()
 		} else if (type === "skill") {
 			this.prepareSelection()
 			$("#cancel_tileselection").show()
-			$("#selectionname").html(this.chooseLang("non-target skill", "논타겟 스킬")).show()
-			$("#selectiondesc").html(this.chooseLang("Choose a square to place the projectile", "발사할 칸 선택")).show()
+			$("#selectionname").html(this.PAGELOCALE.tile.name.skill).show()
+			$("#selectiondesc").html(this.PAGELOCALE.tile.skill).show()
 		} else if (type === "submarine") {
 			this.prepareSelection()
 			$("#cancel_tileselection").show()
-			$("#selectionname").html(this.chooseLang("Submarine", "잠수함")).show()
-			$("#selectiondesc").html(this.chooseLang("Choose a square you want to move to", "이동할 칸 선택")).show()
+			$("#selectionname").html(this.PAGELOCALE.tile.name.submarine).show()
+			$("#selectiondesc").html(this.PAGELOCALE.tile.submarine).show()
 		} else if (type === "areaskill") {
 			this.prepareSelection()
 			$("#cancel_tileselection").show()
-			$("#selectionname").html(this.chooseLang("area skill", "영역지정 스킬")).show()
-			$("#selectiondesc").html(this.chooseLang("Choose an area to launch the skill", "발사할 영역 선택")).show()
+			$("#selectionname").html(this.PAGELOCALE.tile.name.area).show()
+			$("#selectiondesc").html(this.PAGELOCALE.tile.area).show()
 		}
 		$("#cancel_tileselection").click(() => this.onTileSelectionCancel(type))
 		$("#confirm_tileselection").show()
@@ -658,7 +656,7 @@ export class PlayableGame extends Game {
 		if (this.myturn === data.turn || data.turn === -1) {
 			if (!data.globalEventName) this.ui.showObsNotification(data.obs)
 			else {
-				this.ui.showObsNotification(data.obs, this.strRes.GLOBAL_OBSTACLE_EVENT[data.globalEventName])
+				this.ui.showObsNotification(data.obs, this.LOCALE.globalObstacleEvent[data.globalEventName])
 			}
 		}
 		this.playObstacleSound(data.obs)
@@ -669,21 +667,13 @@ export class PlayableGame extends Game {
 
 		if (!this.setting.indicateItem) return
 
-		if (!this.strRes.ITEMS.items[item].active_summary) return
-		let it = this.strRes.ITEMS.items[item]
+		if (!this.LOCALE.item[item].active_summary) return
+		const it = this.LOCALE.item[item]
 
 		if (turn === this.myturn) {
-			this.ui.indicateMyActiveItem(
-				item,
-				this.chooseLang(it.name, it.kor_name),
-				this.chooseLang(it.active_summary.eng, it.active_summary.kor)
-			)
+			this.ui.indicateMyActiveItem(item, it.name, it.active_summary)
 		} else {
-			this.ui.indicateActiveItem(
-				this.turn2ui(turn),
-				item,
-				this.chooseLang(it.active_summary.eng, it.active_summary.kor)
-			)
+			this.ui.indicateActiveItem(this.turn2ui(turn), item, it.active_summary)
 		}
 	}
 	playObstacleSound(obs) {

@@ -2,7 +2,7 @@ import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../da
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventFormat } from "../data/EventFormat"
 import { copyElementsOnly, pickRandom, Counter, shuffle, sleep, Stack, AbilityUtilityScorecard } from "../core/Util"
-import { items as ItemList } from "../../res/item.json"
+import { items as ItemList } from "../../res/item_new.json"
 import PlayerInventory from "../player/PlayerInventory"
 import { trajectorySpeedRatio } from "../../res/globalsettings.json"
 import type { Player } from "../player/player"

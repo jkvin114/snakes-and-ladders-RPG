@@ -1,0 +1,389 @@
+{
+    "obstacles": [
+      {
+        "name": "",
+        "val": 0,
+        "idx": 0
+      },
+      {
+        "name": "Money",
+        "val": 1,
+        "idx": 1
+      },
+      {
+        "name": "Money",
+        "val": 2,
+        "idx": 2
+      },
+      {
+        "name": "Money",
+        "val": 3,
+        "idx": 3
+      },
+      {
+        "name": "Trap",
+        "val": -1,
+        "idx": 4
+      },
+      {
+        "name": "Robbery",
+        "val": -2,
+        "idx": 5
+      },
+      {
+        "name": "Subway",
+        "val": 0,
+        "idx": 6
+      },
+      {
+        "name": "Mine",
+        "val": -2,
+        "idx": 7
+      },
+      {
+        "name": "Knife",
+        "val": -1,
+        "idx": 8
+      },
+      {
+        "name": "Fruit",
+        "val": 2,
+        "idx": 9
+      },
+      {
+        "name": "Sleeping pill",
+        "val": -1,
+        "idx": 10
+      },
+      {
+        "name": "Potion",
+        "val": 4,
+        "idx": 11
+      },
+      {
+        "name": "Magic castle",
+        "val": 2,
+        "idx": 12
+      },
+      {
+        "name": "Cobweb",
+        "val": -2,
+        "idx": 13
+      },
+      {
+        "name": "Gamble",
+        "val": 1,
+        "idx": 14
+      },
+      {
+        "name": "Snatcher",
+        "val": -4,
+        "idx": 15
+      },
+      {
+        "name": "Snowball",
+        "val": -2,
+        "idx": 16
+      },
+      {
+        "name": "Vampire",
+        "val": -2,
+        "idx": 17
+      },
+      {
+        "name": "Pickpocket",
+        "val": -3,
+        "idx": 18
+      },
+      {
+        "name": "Summon",
+        "val": 0,
+        "idx": 19
+      },
+      {
+        "name": "Change",
+        "val": 0,
+        "idx": 20
+      },
+      {
+        "name": "God`s hand",
+        "val": 4,
+        "idx": 21
+      },
+      {
+        "name": "Annuity",
+        "val": 3,
+        "idx": 22
+      },
+      {
+        "name": "Daylight Robbery",
+        "val": -3,
+        "idx": 23
+      },
+      {
+        "name": "Shelter",
+        "val": 4,
+        "idx": 24
+      },
+      {
+        "name": "Shield",
+        "val": 2,
+        "idx": 25
+      },
+      {
+        "name": "Big mine",
+        "val": -3,
+        "idx": 26
+      },
+      {
+        "name": "Murderer",
+        "val": -4,
+        "idx": 27
+      },
+      {
+        "name": "Poison cobweb",
+        "val": -3,
+        "idx": 28
+      },
+      {
+        "name": "Poison",
+        "val": -4,
+        "idx": 29
+      },
+      {
+        "name": "Bomb",
+        "val": -5,
+        "idx": 30
+      },
+      {
+        "name": "Nuclear bomb",
+        "val": -5,
+        "idx": 31
+      },
+      {
+        "name": "Radiation",
+        "val": -6,
+        "idx": 32
+      },
+      {
+        "name": "Kidnapper",
+        "val": -5,
+        "idx": 33
+      },
+      {
+        "name": "Slavery",
+        "val": -7,
+        "idx": 34
+      },
+      {
+        "name": "Jail",
+        "val": -5,
+        "idx": 35
+      },
+      {
+        "name": "Hurricane",
+        "val": -1,
+        "idx": 36
+      },
+      {
+        "name": "Death Court",
+        "val": -6,
+        "idx": 37
+      },
+      {
+        "name": "Casino",
+        "val": 0,
+        "idx": 38
+      },
+      {
+        "name": "fair wind",
+        "val": 1,
+        "idx": 39
+      },
+      {
+        "name": "headwind",
+        "val": -3,
+        "idx": 40
+      },
+      {
+        "name": "Net",
+        "val": -2,
+        "idx": 41
+      },
+      {
+        "name": "Fish",
+        "val": 2,
+        "idx": 42
+      },
+      {
+        "name": "Jellyfish",
+        "val": -3,
+        "idx": 43
+      },
+      {
+        "name": "Shark attack",
+        "val": -2,
+        "idx": 44
+      },
+      {
+        "name": "Squid",
+        "val": -1,
+        "idx": 45
+      },
+      {
+        "name": "Iceburg",
+        "val": 3,
+        "idx": 46
+      },
+      {
+        "name": "gold",
+        "val": 3,
+        "idx": 47
+      },
+      {
+        "name": "treasure",
+        "val": 4,
+        "idx": 48
+      },
+      {
+        "name": "Pirate",
+        "val": -4,
+        "idx": 49
+      },
+      {
+        "name": "Vikings",
+        "val": -4,
+        "idx": 50
+      },
+      {
+        "name": "Dive",
+        "val": 3,
+        "idx": 51
+      },
+      {
+        "name": "Lightning",
+        "val": -4,
+        "idx": 52
+      },
+      {
+        "name": "Tsunami",
+        "val": -6,
+        "idx": 53
+      },
+      {
+        "name": "Blue hole",
+        "val": 0,
+        "idx": 54
+      },
+      {
+        "name": "Storm",
+        "val": 0,
+        "idx": 55
+      },
+      {
+        "name": "Tornado",
+        "val": 0,
+        "idx": 56
+      },
+      {
+        "name": "Underwater mine",
+        "val": -3,
+        "idx": 57
+      },
+      {
+        "name": "Torpedo",
+        "val": -4,
+        "idx": 58
+      },
+      {
+        "name": "Whale`s grace",
+        "val": 2,
+        "idx": 59
+      },
+      {
+        "name": "Volcano",
+        "val": -5,
+        "idx": 60
+      },
+      {
+        "name": "SLBM",
+        "val": -6,
+        "idx": 61
+      },
+      {
+        "name": "Loan",
+        "val": 0,
+        "idx": 62
+      },
+      {
+        "name": "Threaten",
+        "val": -3,
+        "idx": 63
+      },
+      {
+        "name": "Private loan",
+        "val": -4,
+        "idx": 64
+      },
+      {
+        "name": "scam",
+        "val": -6,
+        "idx": 65
+      },
+      {
+        "name": "annuity lottery",
+        "val": 4,
+        "idx": 66
+      },
+      {
+        "name": "coin store",
+        "val": 3,
+        "idx": 67
+      },
+      {
+        "name": "Street vendor",
+        "val": 1,
+        "idx": 68
+      },
+      {
+        "name": "Lottery",
+        "val": 4,
+        "idx": 69
+      },
+      {
+        "name": "Tax collector",
+        "val": 4,
+        "idx": 70
+      },
+      {
+        "name": "Thief",
+        "val": -3,
+        "idx": 71
+      },
+      {
+        "name": "Curse",
+        "val": -6,
+        "idx": 72
+      },
+      {
+        "name": "Grief",
+        "val": -5,
+        "idx": 73
+      },
+      {
+        "name": "Tollgate",
+        "val": 0,
+        "idx": 74
+      },
+      {
+        "name": "Call",
+        "val": 0,
+        "idx": 75
+      },
+      {
+        "name": "",
+        "val": 0,
+        "idx": 76
+      }
+    ]
+  }

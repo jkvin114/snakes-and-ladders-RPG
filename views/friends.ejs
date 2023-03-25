@@ -1,5 +1,6 @@
 <html>
   <script src="/lib/jquery-3.6.0.min.js"></script>
+	<link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
   @font-face {
@@ -7,7 +8,7 @@
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
-   background-color: rgb(36, 36, 36);
+   background-color: var(--bg);
    color:white;
 
    margin: 0;
@@ -70,7 +71,7 @@
   #post_container{
     width: min(95%,900px);
     display: inline-block;
-    background-color: #414141;
+    background-color: var(--bg2);
     padding: 10px;
     text-align: start;
   }
@@ -154,7 +155,7 @@
   }
   .friend{
     display: flex;
-    background-color: #505060;
+    background-color: var(--bg3);
     color: #ebebfd;
     font-size: 12px;
     text-align: left;
@@ -165,6 +166,10 @@
     border-radius: 4px;
     justify-content: flex-start;
     align-items: center;
+  }
+  .friend:hover .username{
+    
+    text-decoration: underline;
   }
   .linkbtn:hover{
     text-decoration: underline;

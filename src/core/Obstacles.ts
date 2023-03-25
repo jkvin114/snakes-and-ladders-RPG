@@ -365,6 +365,7 @@ export namespace ObstacleHelper {
 					} else if (player.inven.money < 100 && player.inven.token < 10) {
 						player.killplayer()
 					}
+					break
 				case 75:
 					let mypos2=player.pos
 					let target2=player.mediator.selectBestOneFrom<Player>(EntityFilter.VALID_MOVE_OBSTACLE_TARGET(player).inRadius(40),

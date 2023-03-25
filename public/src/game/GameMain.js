@@ -14,6 +14,7 @@ export class StringResource {
 		this.GLOBAL_OBSTACLE_EVENT
 		this.SPECIAL_EFFECTS = new Map()
 		this.ITEM_DATA = [new Map(), new Map(), new Map(), new Map()]
+		this.LOCALE
 	}
 }
 
@@ -35,6 +36,12 @@ $(document).ready(function () {
 	}
 })
 
+export function format(str, values) {
+	for (const v of values) {
+		str = str.replace(/%d/, v)
+	}
+	return str
+}
 /**
  * window.onload -> socket.connect -> requestsetting -> initialsetting
  * -> initui -> requestobs -> requestitem -> requestmap -> drawboard
@@ -46,7 +53,8 @@ $(document).ready(function () {
  * -> boardready -> setupcomplete -> startgame
  *  */
 //called when all files including images are loaded
-$(window).on("load", function (e) {
+$(window).on("load", async function (e) {
+	await GAME.updateLocale()
 	GAME.onCreate()
 	console.log("window onload")
 })

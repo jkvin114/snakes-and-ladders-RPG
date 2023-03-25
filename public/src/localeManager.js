@@ -1,16 +1,18 @@
 let LOCALE = null
 
 const DEFAULT_LANG = "en"
+
 const updateLocale = async function (page, lang) {
 	let la = DEFAULT_LANG
-	if (lang === undefined) {
-		if (sessionStorage.language === "eng") la = "en"
-		else if (sessionStorage.language === "kor") la = "ko"
+	if (lang === undefined || lang === "") {
+		if (sessionStorage.language === "eng" || sessionStorage.language === "en") la = "en"
+		else if (sessionStorage.language === "kor" || sessionStorage.language === "ko") la = "ko"
 	} else la = lang
+
+	sessionStorage.language = la
 	try {
 		LOCALE = await fetch(`/res/locale/${page}/${la}.json`).then((response) => response.json())
 		Object.freeze(LOCALE)
-		console.log(LOCALE)
 	} catch (e) {
 		console.error(e)
 		return
@@ -20,12 +22,13 @@ const updateLocale = async function (page, lang) {
 		let key = element.getAttribute("lkey")
 		let classes = key.split(".")
 		if (classes.length === 0) return
-
-		let translation = LOCALE
-		for (const c of classes) {
-			translation = translation[c]
-		}
-		if (translation) element.innerText = translation
+		try {
+			let translation = LOCALE
+			for (const c of classes) {
+				translation = translation[c]
+			}
+			if (translation) element.innerText = translation
+		} catch (e) {}
 	})
 
 	//replacing placeholders
@@ -33,11 +36,12 @@ const updateLocale = async function (page, lang) {
 		let key = element.getAttribute("lkey-ph")
 		let classes = key.split(".")
 		if (classes.length === 0) return
-
-		let translation = LOCALE
-		for (const c of classes) {
-			translation = translation[c]
-		}
-		if (translation) element.placeholder = translation
+		try {
+			let translation = LOCALE
+			for (const c of classes) {
+				translation = translation[c]
+			}
+			if (translation) element.placeholder = translation
+		} catch (error) {}
 	})
 }

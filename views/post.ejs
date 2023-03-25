@@ -1,5 +1,7 @@
 <html>
   <script src="/lib/jquery-3.6.0.min.js"></script>
+  <script src="/src/localeManager.js"></script>
+	<link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
   @font-face {
@@ -7,7 +9,7 @@
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
-   background-color: rgb(36, 36, 36);
+   background-color: var(--bg);
    color:white;
 
    margin: 0;
@@ -19,9 +21,7 @@
   a,p{
     font-family: 'nanumB';
   }
-  .filter-invert{
-    filter: invert();
-  }
+
   
   #navbar{
     /* position:fixed; */
@@ -62,7 +62,7 @@
   }
   #comments{
     padding: 5px;
-    background-color: rgb(83, 83, 83);
+    background-color: var(--bg3);
     /* background-color: rgb(221, 221, 221); */
   }
   #comments form{
@@ -147,7 +147,7 @@
   #post_container{
     width: min(95%,900px);
     display: inline-block;
-    background-color: rgb(65, 65, 65);
+    background-color: var(--bg2);
     padding: 10px;
     text-align: start;
   }
@@ -162,7 +162,7 @@
   }
   .info{
     font-size: 10px;
-    color: #b2b2b2;
+    color: var(--font-light);
   }
   .author{
     font-size: 18px;
@@ -318,7 +318,7 @@
     <%}%>
     <b class="info author" onclick="golink('/board/user/<%=author%>/posts')"><%= author %> </b><br>
     <a class="info"><%= createdAt.toString().substring(0,24) %></a>
-    <a class="info"> views: <%= views %></a>
+    <a class="info"> <b lkey="view">views</b>: <%= views %></a>
   </div>
       
   <hr>
@@ -349,21 +349,21 @@
           <input type="hidden" name="postUrl" value="<%= url %>">  
           <input type="hidden" name="postId" value="<%= id %>">  
           <div class="commententer">
-            <input class="enter_comment" type="text" name="content" placeholder="write comment" required>
+            <input class="enter_comment" type="text" lkey-ph="ph.comment" name="content" placeholder="write comment" required>
             <input class="submit_comment" type="submit" value="Submit">
           </div>
             
         </form>
       <%}else{%>
         
-          <p><button class="submit_comment" onclick="goLoginPage()">Log in</button> to write comment</p>
+          <p><button class="submit_comment" onclick="goLoginPage()" lkey="login">Log in</button><a lkey="comment.login">to write comment</a> </p>
       <%}%>
       <%for(let i=comment.length-1;i>=0;--i){%>
         <%const comm = comment[i]%>
         
         <div class="comment">
           <%if(comm.deleted){%>
-            <a> Deleted comment</a>
+            <a lkey="comment_removed"> Deleted comment</a>
             <div></div>
           <%}else{%>
             <%if(comm.authorProfileImage!==""){%>
@@ -400,6 +400,8 @@
    
 </body>
 <script>
+  
+updateLocale("board")
   function golink(link){
   window.location.href=link
 }

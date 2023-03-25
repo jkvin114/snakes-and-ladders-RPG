@@ -93,8 +93,9 @@ class PlayerMediator {
 	}
 	registerAbilities(itemSetting: ServerPayloadInterface.ItemSetting) {
 		const selectedItems=itemSetting.items.filter((item)=>item.selected || item.locked)
-		const meanItemCost=selectedItems.reduce((total,item)=>total+=ITEM_REGISTRY.get(item.code)[2],0) 
+		let meanItemCost=selectedItems.reduce((total,item)=>total+=ITEM_REGISTRY.get(item.code)[2],0) 
 		/ selectedItems.length / 10
+		if(selectedItems.length===0) meanItemCost=0
 		const baseStats=[
 			35 + meanItemCost * 60,
 			35 + meanItemCost * 60,

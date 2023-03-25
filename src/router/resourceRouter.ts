@@ -62,7 +62,7 @@ router.get("/map/:mapId", function (req:express.Request, res:express.Response) {
 })
 
 router.get("/item", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"item.json", "utf8", function (err, data) {
+	fs.readFile(__dirname + RESOURCE_PATH+"item_new.json", "utf8", function (err, data) {
 		if(err){
 			res.status(500).send({err:"error while requesting item file"})
 		}
@@ -72,13 +72,15 @@ router.get("/item", function (req:express.Request, res:express.Response) {
 
 router.get("/obstacle", function (req:express.Request, res:express.Response) {
 	//	console.log(req.query.lang)
+	fs.readFile(__dirname + RESOURCE_PATH+"obstacle_data.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting obstacle file"})
+		}
+		res.end(data)
+	})
+	return
 	if (req.query.lang === "kor") {
-		fs.readFile(__dirname + RESOURCE_PATH+"obstacles_kor.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting obstacle file"})
-			}
-			res.end(data)
-		})
+		
 	} else {
 		fs.readFile(__dirname + RESOURCE_PATH+"obstacles.json", "utf8", function (err, data) {
 			if(err){

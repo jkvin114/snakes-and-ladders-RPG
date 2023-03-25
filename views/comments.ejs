@@ -1,23 +1,25 @@
 <html>
   <script src="/lib/jquery-3.6.0.min.js"></script>
+  <script src="/src/localeManager.js"></script>
+	<link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
     @font-face {
-    font-family: "cookierun";
+    font-family: "nanumB";
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
-   background-color: rgb(36, 36, 36);
+   background-color: var(--bg);
    color:white;
 
    margin: 0;
     margin-bottom: 20px;
-  font-family: 'cookierun';
+  font-family: 'nanumB';
   text-align: center;
 
   }
   a,p{
-    font-family: 'cookierun';
+    font-family: 'nanumB';
   }
   .filter-invert{
     filter: invert();
@@ -52,7 +54,7 @@
     padding: 5px;
     margin-right: 5px;
     /* height: 30px; */
-    font-family: 'cookierun';
+    font-family: 'nanumB';
   }
   #navbar img:hover,#navbar > div:hover,.submit_comment:hover,.pagebtn:hover{
     background-color: #7a7a92;
@@ -73,15 +75,26 @@
   }
   #main{
     text-align: start;
-    border-radius: 10px;
+    /* border-radius: 10px; */
     width: min(95%,900px);
     display: inline-block;
     padding: 5px;
-    background-color: rgb(83, 83, 83);
+    background-color:  var(--bg2);
+  }
+  #header{
+    text-align: center;
+    /* border-radius: 10px; */
+    width: min(95%,900px);
+    display: inline-block;
+    padding: 5px;
+    background-color:  var(--bg2);
+    margin-bottom: 10px;
+    margin-top: 20px;
   }
   .comment{
     min-height: 70px;
-    padding: 7px;
+    padding: 2px;
+    padding-left: 5px;
     /* padding: 50px; */
     display: block;
    
@@ -132,7 +145,8 @@
     float: right;
     border: 1px solid white;
     padding: 5px;
-    margin: 4px;
+    font-size: 12px;
+    margin: 2px;
     cursor: pointer;
     border-radius: 3px;
 
@@ -167,16 +181,16 @@
   .comment_content{
     font-size: 13px;
   }  #main{
-    border-radius: 10px;
+    /* border-radius: 10px; */
     width: min(95%,900px);
     display: inline-block;
     padding: 5px;
-    background-color: rgb(83, 83, 83);
+    background-color: var(--bg3);
   }
   .article a{
     /* text-decoration: none; */
     color: rgb(190, 190, 190);
-    
+    font-size: 12px;
   }
   .article{
     display: inline;
@@ -212,26 +226,27 @@
     <img src="/res/img/svg/list.svg" id="homebtn"  class="filter-black" onclick="golink('/board/')">
 
         <div onclick="golink('/board/user/<%=user%>/posts')">
-          <a class='white-text'>Posts</a>
+          <a class='white-text' lkey="view_posts">Posts</a>
         </div>
   </div>
-  <h1><a class="title-username"  onclick="golink('/user/<%=user%>')"><%=user%></a>`s comments</h1>
 
- 
+  <div id="header">
+    <h3><a class="title-username"  onclick="golink('/user/<%=user%>')"><%=user%></a><a lkey="comment.of_user">`s comments</a></h3>
+  </div>
   <div id="main">
     <select name="sortby" id="sort">
-      <option value="" disabled selected>Order by</option>
-      <option value="new">new</option>
-      <option value="old">old</option>
-      <option value="upvote">like</option>
+      <option value="" lkey="sort.by" disabled >Order by</option>
+      <option class="sortoption" value="new" lkey="sort.new">new</option>
+      <option class="sortoption" value="old" lkey="sort.old">old</option>
+      <option class="sortoption" value="upvote" lkey="sort.like">like</option>
     </select>
     
 
-   
+   <hr>
     <%for(const comm of comments){%>
         <div class="comment">
           <%if(comm.type==='reply'){%>
-            <a class="comment_info reply_info">Reply</a>
+            <a class="comment_info reply_info" lkey="reply.name">Reply</a>
             <%}%>
 
             <a class="comment_info"><%= comm.createdAt.toString().substring(0,24) %></a>
@@ -253,20 +268,20 @@
                 <%if(comm.type==='comment'){%>
                   <div class="reply">
                     <a href="/board/post/comment/<%=comm.id%>/reply"><img src="/res/img/svg/comment-white.svg"><%=comm.replyCount%></a>
-                  </div><br><br>
+                  </div><br>
                     <%if(comm.articleUrl===0){%>
                       <div class="article">
-                        <a>Original post has been removed</a>
+                        <a lkey="post_removed">Original post has been removed</a>
                       </div>
                     <%}else{%>
                       <div class="article">
-                        <a href="/board/post/<%=comm.articleUrl%>">View post</a>
+                        <a href="/board/post/<%=comm.articleUrl%>" lkey="view_post">View post</a>
                       </div>
                     <%}%>
                     
                 <%}else if(comm.type==='reply'){%>
                   <div class="reply">
-                    <a href="/board/post/comment/<%=comm.commentId%>/reply">View reply</a>
+                    <a href="/board/post/comment/<%=comm.commentId%>/reply"lkey="view_reply">View reply</a>
                   </div><br><div> &nbsp;</div>
                 <%}%>
               
@@ -274,44 +289,58 @@
         <hr class="comment_hr">
     <%}%>
     <%if(start>0){%>
-      <button id="prevbtn" class="pagebtn" value='/board/<%=`user/${user}/comments?start=${start-count}&sortby=${sortby}`%>'>
+      <button lkey="prev" id="prevbtn" class="pagebtn" value='/board/<%=`user/${user}/comments?start=${start-count}&sortby=${sortby}`%>'>
         ❮ Prev</button>
     <% }%>
   
     <%if(!isEnd){ %> 
-      <button id="nextbtn" class="pagebtn" value='/board/<%=`user/${user}/comments?start=${start+count}&sortby=${sortby}`%>'>
+      <button lkey="next" id="nextbtn" class="pagebtn" value='/board/<%=`user/${user}/comments?start=${start+count}&sortby=${sortby}`%>'>
         Next ❯</button>
     <% } %> 
   </div>
  
 </body>
 <script>
-$("#sort").change(function(){
-  window.location.href=window.location.href.split("?")[0]+"?sortby="+$(this).val()
-})
-$(".pagebtn").click(function(){
-  window.location.href=$(this).val()
-})
-$(".delete_comment").click(function(){
-    if(!confirm("Are you sure you want to delete?")) return
 
-  let value=$(this).val()
-  let type=$(this).data('type')
-  $.ajax({
-        method: 'POST',
-        url: '/board/post/'+type+'/delete',
-        data:{commentId:value}
-    })
-    .done(function(data, statusText, xhr){
-      let status = xhr.status;
-        window.location.reload()
-      
-    })
-    .fail(function(data, statusText, xhr){
-        alert("error")
-      
-    })
-})
+function init(){
+
+  updateLocale("board")
+  const sortOptions=$("sortoption").toArray()
+  let query = new URLSearchParams(window.location.search)
+  if(!query.has("sortby") || query.get("sortby")==="new") $("#sort").val("new")
+  else if(query.get("sortby")==="old")  $("#sort").val("old")
+  else if(query.get("sortby")==="upvote") $("#sort").val("upvote")
+
+  $("#sort").change(function(){
+    window.location.href=window.location.href.split("?")[0]+"?sortby="+$(this).val()
+  })
+  $(".pagebtn").click(function(){
+    window.location.href=$(this).val()
+  })
+  $(".delete_comment").click(function(){
+      if(!confirm(LOCALE.msg.confirm_delete)) return
+
+    let value=$(this).val()
+    let type=$(this).data('type')
+    $.ajax({
+          method: 'POST',
+          url: '/board/post/'+type+'/delete',
+          data:{commentId:value}
+      })
+      .done(function(data, statusText, xhr){
+        let status = xhr.status;
+          window.location.reload()
+        
+      })
+      .fail(function(data, statusText, xhr){
+          alert("error")
+        
+      })
+  })
+}
+
+$(document).ready(init)
+
 function golink(link){
   window.location.href=link
 }

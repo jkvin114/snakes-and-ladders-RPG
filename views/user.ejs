@@ -1,5 +1,7 @@
 <html>
   <script src="/lib/jquery-3.6.0.min.js"></script>
+  <script src="/src/localeManager.js"></script>
+	<link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
   @font-face {
@@ -7,7 +9,7 @@
     src: url("/res/font/NanumSquareB.ttf");
   }
   body{     
-   background-color: rgb(36, 36, 36);
+   background-color:var(--bg);
    color:white;
 
    margin: 0;
@@ -70,7 +72,7 @@
   #post_container{
     width: min(95%,900px);
     display: inline-block;
-    background-color: #414141;
+    background-color: var(--bg2);
     padding: 10px;
     text-align: start;
   }
@@ -134,7 +136,7 @@
   }
   .linkbtn{
     display: block;
-    background-color: #505060;
+    background-color: var(--bg3);
     color: #ebebfd;
     font-size: 20px;
     text-align: left;
@@ -169,7 +171,7 @@
     width: 80%;
     max-width: 700px;
     height: 90%;
-    background-color: #414141;
+    background-color: var(--bg2);
     text-align: center;
     left: 50%;
     transform: translate(-50%,0);
@@ -179,7 +181,7 @@
     font-size: 25px;
   }
   .setting-section{
-    background-color: #2b3741;
+    background-color: var(--bg3);
     margin: 30px;
     padding: 10px;
   }
@@ -221,9 +223,9 @@
 input{
     border: none;
     background-color: #2d2d2d;
-    color: beige;
+    color: rgb(246, 246, 246);
     font-size: 15px;
-    border-radius:10px;
+    /* border-radius:10px; */
     padding: 5px;
     width: 300px;
 }
@@ -278,7 +280,7 @@ input{
         <div class="username"><%= username %> </div>
         <div class="email">Email:<%= email %> </div>
         <%if(isme) {%>
-          <div style="text-decoration:underline;cursor:pointer;" onclick="logout()">Logout</div>
+          <div style="text-decoration:underline;cursor:pointer;" onclick="logout()" lkey="logout">Logout</div>
       <% }  %>
     </div>
     
@@ -289,17 +291,17 @@ input{
       <div id="friend-btn-container">
         <%if(isFriend) {%>
           <b class="button" style="color:rgb(135, 255, 126);">
-            <img src="/res/img/ui/confirm.png" style="width:15px ;vertical-align: middle;">Friend
+            <img src="/res/img/ui/confirm.png" style="width:15px ;vertical-align: middle;"><b lkey="mypage.friend">Friend</b>
           </b>
         <%}else{%>
-          <button class="button" id="friend-request-btn" onclick="friendRequest()">Friend request</button>
+          <button class="button" id="friend-request-btn" onclick="friendRequest()"lkey="mypage.friendrequest">Friend request</button>
         <%}%>
       </div>
       <div id="follow-btn-container">
         <%if(isFollowing) {%>
-          <button class="button" id="unfollow-btn"  onclick="unfollow()">Unfollow</button>
+          <button class="button" id="unfollow-btn"  onclick="unfollow()" lkey="mypage.unfollow">Unfollow</button>
           <%}else{%>
-            <button class="button" id="follow-btn" onclick="follow()" style="background: #7E00BF;">Follow</button>
+            <button class="button" id="follow-btn" onclick="follow()" style="background: #7E00BF;"lkey="mypage.follow">Follow</button>
           <%}%>
        
       </div>
@@ -311,14 +313,14 @@ input{
       
      <div class="content">
         <%if(isme) {%>
-            <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/bookmarks`)">Bookmarks <a class="count">(<%= counts[2] %>)</a></div>
-            <div class="linkbtn" onclick="golink(`/user/<%= username %>/follow`)">Following <a class="count">(<%= counts[1] %>)</a></div>
+            <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/bookmarks`)"><b lkey="mypage.bookmarks">Bookmarks</b> <a class="count">(<%= counts[2] %>)</a></div>
+            <div class="linkbtn" onclick="golink(`/user/<%= username %>/follow`)"><b lkey="mypage.following">Following</b> <a class="count">(<%= counts[1] %>)</a></div>
         <% }  %>
-        <div class="linkbtn" onclick="golink(`/user/<%= username %>/friend`)">Friends <a class="count">(<%= counts[0] %>)</a></div>
+        <div class="linkbtn" onclick="golink(`/user/<%= username %>/friend`)"><b lkey="mypage.friends">Friends</b> <a class="count">(<%= counts[0] %>)</a></div>
 
-        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/posts`)">Posts <a class="count">(<%= counts[3] %>)</a></div>
-        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/comments`)">Comments <a class="count">(<%= counts[4] %>)</a></div>
-        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/likes`)">Liked Posts <a class="count">(<%= counts[5] %>)</a></div>
+        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/posts`)"><b lkey="mypage.posts">Posts</b> <a class="count">(<%= counts[3] %>)</a></div>
+        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/comments`)"><b lkey="mypage.comments">Comments</b> <a class="count">(<%= counts[4] %>)</a></div>
+        <div class="linkbtn" onclick="golink(`/board/user/<%= username %>/likes`)"><b lkey="mypage.likes">Liked Posts</b> <a class="count">(<%= counts[5] %>)</a></div>
 
         <%if(isadmin) {%>
             <button onclick="golink('/admin.html')">Admin page</button>
@@ -331,9 +333,9 @@ input{
 
       <div id="settingpage">
         <button class="button" id="close-setting" onclick="closeSetting()">&times;</button>
-        <h4>User Settings</h4>
+        <h4 lkey="mypage.setting">User Settings</h4>
         <div class="setting-section">
-          <h5>Profile Image</h5>
+          <h5 lkey="mypage.profile">Profile Image</h5>
           <hr>
           <form id="form" action="/user/profileimg" method="post" enctype="multipart/form-data">
             <div class="filebox">
@@ -352,31 +354,32 @@ input{
             </div>
           </label>
           <br>
-          <button id="submit-img"  class="button hidden" >Confirm change</button>
+          <button id="submit-img"  class="button hidden" lkey="mypage.confirm">Confirm change</button>
             <%if(profile && profile!=="") {%>
-            <button id="remove-profile" class="button" >Remove profile image</button>
+            <button id="remove-profile" class="button" lkey="mypage.removeprofile">Remove profile image</button>
             <% }%>
 
         </div>
         <div class="setting-section">
-          <h5>Security</h5>
+          <h5 lkey="mypage.security">Security</h5>
           <hr>
           <form id="password-change-form" method="patch" action="/user/password">
             <!-- <input name="username" type="hidden" value="<%= username %> "> -->
 
-            <input class="text-input" type='password' name="originalpw" placeholder="previous password">
+            <input class="text-input" type='password' name="originalpw" lkey-ph="mypage.ph.prevpw" placeholder="previous password">
             <br><a class="input_alert login_old_pw"></a><br>
-            <input class="text-input" type='password' name="newpw" placeholder="new password"><br>
+            <input class="text-input" type='password' name="newpw" lkey-ph="mypage.ph.pw" placeholder="new password"><br>
             <a class="input_alert login_pw"></a><br>
-            <input class="text-input" type='password' name="newpw2" placeholder="new password check"><br>
+            <input class="text-input" type='password' name="newpw2" lkey-ph="mypage.ph.pw2" placeholder="new password check"><br>
 
-            <button class='button' type="submit" >Change Password</button>
+            <button class='button' type="submit" lkey="mypage.changepw">Change Password</button>
     
           </form>
         </div>
       </div>
 
           <script>
+            
             $("#password-change-form").submit(function(e){
               e.preventDefault()
 
@@ -400,13 +403,13 @@ input{
                 console.log(res)
                     let status = res.status;  
                     if(res.data==='password not match'){
-                      $(".input_alert.login_old_pw").html("Wrong password")
+                      $(".input_alert.login_old_pw").html(LOCALE.mypage.error.password)
                     }
                     else if(res.data==="pw error"){
-                      $(".input_alert.login_pw").html("Password should be longer than 3 characters containing both alphabet and number")
+                      $(".input_alert.login_pw").html(LOCALE.mypage.error.password_condition)
                     }
                     else if(status===200){
-                      alert("changed password")
+                      alert(LOCALE.mypage.pw_changed)
                       window.location.reload()
                     }
                   })
@@ -484,6 +487,7 @@ input{
 
 <script>
 
+updateLocale("board")
 
 function follow(){
   let username=$("#storage").data("username")
@@ -509,7 +513,7 @@ function unfollow(){
         let status = res.status; 
         if(status===200){
           $("#follow-btn-container").html(`
-          <button class="button" id="follow-btn" onclick="follow()" style="background: #7E00BF;">Follow</button>`)
+          <button class="button" id="follow-btn" onclick="follow()" style="background: #7E00BF;">${LOCALE.mypage.follow}</button>`)
         }
       })
       .catch((e)=>{

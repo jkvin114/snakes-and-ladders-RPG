@@ -1,5 +1,5 @@
 {
-    "version": "3.14.2",
+    "version": "3.15.0",
     "patch_version":"1.2",
     "submarine_cooltime": 1,
     "pendingObsList": [
@@ -72,7 +72,7 @@
             "name": "Sniper",
             "imgdir": "sniper.png",
             "illustdir": "sniper.jpg",
-            "bgcolors": ["#E9BC5F","#2B1C09"]
+            "bgcolors": ["#2B1C09","#E9BC5F"]
         },
         {
             "name": "Magician",

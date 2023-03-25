@@ -362,7 +362,7 @@
 <div id="settingwindow" style="display: none;">
   <button id="closesettingbtn">&times;</button>
   <div id="setting-header">
-    <b  id="setting-header-text">Game Setting</b>
+    <b  id="setting-header-text" lkey="setting.name">Game Setting</b>
   </div>
 
   <div id="setting-content">
@@ -370,15 +370,15 @@
       <div class="dropdown-container">
         <span class="setting-btn"><img src="res/img/svg/globe.svg"></span>
         <ul class="dropdown">
-          <li class="dropdown-item langbtn" data-lang="eng">English</li>
-          <li class="dropdown-item langbtn" data-lang="kor">한국어</li>
+          <li class="dropdown-item langbtn" data-lang="en">English</li>
+          <li class="dropdown-item langbtn" data-lang="ko">한국어</li>
         </ul>
       </div>
-      <span class="setting-btn settingname setting-input"  id="toggle_fullscreen" value="off">Toggle Fullscreen</span>
+      <span class="setting-btn settingname setting-input"  id="toggle_fullscreen" value="off" lkey="setting.fullscreen">Toggle Fullscreen</span>
       
     </div>
     <div class="onesetting oneline disable-on-non-playable">
-      <div class="settingname">
+      <div class="settingname" lkey="setting.autobuy">
         Item Auto Buy
       </div>
       <div class="settingvalue">
@@ -391,7 +391,7 @@
     </div>
 
     <div class="onesetting oneline disable-on-non-playable">
-      <div class="settingname">
+      <div class="settingname" lkey="setting.item">
         Indicate Active Items
       </div>
       <div class="settingvalue">
@@ -404,7 +404,7 @@
     </div>
 
     <div class="onesetting oneline disable-on-non-playable">
-      <div class="settingname">
+      <div class="settingname" lkey="setting.obstacle">
         Indicate Obstacles
       </div>
       <div class="settingvalue">
@@ -417,7 +417,7 @@
     </div>
 
     <div class="onesetting oneline">
-      <div class="settingname">
+      <div class="settingname" lkey="setting.kill">
         Indicate Kill/Death
       </div>
       <div class="settingvalue">
@@ -431,27 +431,27 @@
 
 
     <div class="onesetting twoline">
-      <div class="settingname">
+      <div class="settingname" lkey="setting.fps">
         FPS(Frames Per Second)
       </div>
       <div class="settingvalue">
           <div class="slidecontainer">
             <a class="slider-label">10FPS</a><input class="setting-input" type="range" min="10" max="60" value="30" step="10" id="myRange" class="slider">
             <a class="slider-label">60FPS</a><br>
-            <a class="slider-label fps"></a>
+            <a class="slider-label fps">30FPS</a>
           </div>
       </div>
     </div>
 
     <div class="onesetting twoline">
-      <div class="settingname">
+      <div class="settingname" lkey="setting.volume">
         Volume
       </div>
       <div class="settingvalue">
           <div class="slidecontainer">
             <a class="slider-label">0%</a><input class="setting-input" type="range" min="0" max="10" value="7" step="1" id="myRange" class="slider"><a class="slider-label">100%</a>
             <br>
-            <a class="slider-label volume"></a>
+            <a class="slider-label volume">70%</a>
           </div>
       </div>
     </div> 
@@ -724,7 +724,7 @@
     <img src="res/img/svg/chevron-left.svg">
   </div>
   <div id="prediction-content">
-    <b>Win rate predictions</b>
+    <b lkey="winprediction">Win rate predictions</b>
     <div id=prediction>
       <!-- <div class="prediction">
         <img src="res/img/character/illust/bird.jpg">
@@ -793,6 +793,6 @@
 <script>
   // $("#randomobs_entries").animate({ scrollTop: 0}, 2000)
 </script>
-<script type="module" src="src/GameMain.js"></script>
+<script type="module" src="src/game/GameMain.js"></script>
 
 </html>

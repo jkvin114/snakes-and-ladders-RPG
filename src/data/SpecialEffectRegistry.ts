@@ -1,5 +1,5 @@
 import * as ENUM from "./enum"
-import { items } from "../../res/item.json"
+import { items } from "../../res/item_new.json"
 
 export namespace SpecialEffect {
 	export const OBSTACLE={

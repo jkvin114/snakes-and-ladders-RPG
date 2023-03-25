@@ -75,11 +75,12 @@ class Setting {
 		})
 	}
 	setLang(lang) {
-		$("#setting-header-text").html(lang === "kor" ? "게임 설정" : "Game Settings")
+		// $("#setting-header-text").html(lang === "kor" ? "게임 설정" : "Game Settings")
 		this.lang = lang
-		for (let i = 0; i < SettingNames.length; ++i) {
-			$(this.names[i]).html(lang === "kor" ? SettingNamesKor[i] : SettingNames[i])
-		}
+		// for (let i = 0; i < SettingNames.length; ++i) {
+		// 	$(this.names[i]).html(lang === "kor" ? SettingNamesKor[i] : SettingNames[i])
+		// }
+		this.game.updateLocale()
 	}
 	setFPS(fps) {
 		fps = Math.min(60, fps)
@@ -123,6 +124,8 @@ export class Game {
 		this.killTextTimeout = null
 		this.gestureController = new GestureController()
 		this.setting = new Setting(this)
+		this.LOCALE
+		this.PAGELOCALE
 	}
 	onCreate() {
 		this.setting.init()
@@ -148,6 +151,28 @@ export class Game {
 			$("#settingwindow").css("display", "inherit")
 		})
 	}
+	async updateLocale() {
+		this.LOCALE = await fetch(`/res/locale/game/${this.chooseLang("en", "ko")}.json`).then((response) =>
+			response.json()
+		)
+		this.PAGELOCALE = await fetch(`/res/locale/gamepage/${this.chooseLang("en", "ko")}.json`).then((response) =>
+			response.json()
+		)
+		sessionStorage.language = this.setting.lang
+
+		document.querySelectorAll("[lkey]").forEach((element) => {
+			let key = element.getAttribute("lkey")
+			let classes = key.split(".")
+			if (classes.length === 0) return
+			try {
+				let translation = this.PAGELOCALE
+				for (const c of classes) {
+					translation = translation[c]
+				}
+				if (translation) element.innerText = translation
+			} catch (e) {}
+		})
+	}
 	resetSetting() {
 		this.setting.reset()
 	}
@@ -157,7 +182,7 @@ export class Game {
 	tryReconnect() {}
 
 	onQuit() {
-		this.showDialog(GAME.chooseLang("Are you sure you want to quit?", "정말 게임을 떠나시겠습니까?"), () => {
+		this.showDialog(GAME.PAGELOCALE.msg.quit, () => {
 			document.onbeforeunload = () => {}
 			window.location.href = "index.html"
 		})
@@ -193,7 +218,7 @@ export class Game {
 	}
 
 	chooseLang(eng, kor) {
-		if (this.setting.lang === "kor") return kor
+		if (this.setting.lang === "ko") return kor
 		return eng
 	}
 	zeroArray(count) {
@@ -345,7 +370,7 @@ export class Game {
 			return
 		}
 		if (dice.dcused) {
-			this.android_toast(this.chooseLang("Dice Control!", "주사위 컨트롤!"))
+			this.android_toast(this.PAGELOCALE.dicecontrol)
 		}
 
 		this.animateDice(dice, ismyturn)
@@ -559,7 +584,7 @@ export class Game {
 		$(".overlay").show()
 		const easings = ["easeOutBounce", "easeOutBack", "easeOutQuad"]
 		const entry_height = 70
-		let labels = type === "casino" ? this.strRes.CASINO_LABELS : this.strRes.TRIAL_LABELS
+		let labels = type === "casino" ? this.LOCALE.casinolabel : this.LOCALE.triallabel
 		if (type === "casino") {
 			$("#randomobs_casino").show()
 		} else if (type === "court") {
