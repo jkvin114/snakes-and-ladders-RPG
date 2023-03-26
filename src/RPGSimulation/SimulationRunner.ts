@@ -198,7 +198,7 @@ class SimulationSetting {
 			return teamlist2
 		}
 	}
-	getSummary() {
+	serialize() {
 		return [
 			{ name: "allowMirrorMatch", value: this.allowMirrorMatch },
 			{ name: "isTeam", value: this.isTeam },
@@ -257,7 +257,7 @@ class Simulation {
 			multiple: true,
 			version: SETTINGS.version,
 			patchVersion:SETTINGS.patch_version,
-			setting: this.setting.getSummary()
+			setting: this.setting.serialize()
 		}
 	}
 
@@ -269,7 +269,7 @@ class Simulation {
 			count: this.count - 1,
 			serverVersion: SETTINGS.version,
 			patchVersion:SETTINGS.patch_version,
-			setting: this.setting.getSummary(),
+			setting: this.setting.serialize(),
 			simulation: "",
 			runner: this.runnerId
 		}

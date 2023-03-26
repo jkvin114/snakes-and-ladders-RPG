@@ -1164,11 +1164,11 @@ class Game {
 			},
 			killRecord: this.killRecord,
 			isTeam: this.isTeam,
-			replay:"",
-			setting: this.setting.getSummary()
+			replay:'',
+			setting: this.setting.serialize()
 		}
 		
-		data.replay=''
+		data.replay=undefined
 
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {

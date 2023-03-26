@@ -90,7 +90,7 @@ class GameSetting {
 		}
 	}
 
-	getSummary() {
+	serialize() {
 		return [
 			{ name: "itemLimit", value: this.itemLimit },
 			{

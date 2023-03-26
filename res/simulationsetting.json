@@ -29,7 +29,7 @@
 		"divideTeamEqually": {
 			"desc": "Divide teams equally",
 			"desc_kor": "공평하게 팀나누기",
-			"default": false
+			"default": true
 		}
 	},
 	"statisticsSetting": {

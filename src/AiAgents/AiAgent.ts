@@ -1,7 +1,7 @@
 import { CHANGE_MONEY_TYPE, EFFECT, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventFormat } from "../data/EventFormat"
-import { copyElementsOnly, pickRandom, Counter, shuffle, sleep, Stack, AbilityUtilityScorecard } from "../core/Util"
+import { copyElementsOnly, pickRandom, Counter, shuffle, sleep, Stack, AbilityUtilityScorecard, clamp, randInt } from "../core/Util"
 import { items as ItemList } from "../../res/item_new.json"
 import PlayerInventory from "../player/PlayerInventory"
 import { trajectorySpeedRatio } from "../../res/globalsettings.json"
@@ -87,6 +87,7 @@ abstract class AiAgent {
 					if (skillinit.data == null) break
 					if (skillinit.data.kind !== "location") break
 					let projpos = this.getProjectilePos(skillinit.skill, skillinit.data)
+					projpos=this.clampProjPos(projpos,skillinit.data.range)
 					if (projpos < 0) break
 					this.player.game.placeSkillProjectile(projpos)
 					result = true
@@ -112,7 +113,7 @@ abstract class AiAgent {
 			callback()
 			return
 		}
-		for (let i = 0; i < 5; ++i) {
+		for (let i = 0; i < 7; ++i) {
 			let skill = this.nextSkill()
 
 			if (skill < 0) break
@@ -160,6 +161,7 @@ abstract class AiAgent {
 					if (skillinit.data == null) break
 					if (skillinit.data.kind !== "location") break
 					let projpos = this.getProjectilePos(skillinit.skill, skillinit.data)
+					projpos=this.clampProjPos(projpos,skillinit.data.range)
 					if (projpos < 0) break
 					this.player.game.placeSkillProjectile(projpos)
 					result = true
@@ -203,6 +205,9 @@ abstract class AiAgent {
 		return true
 	}
 
+	clampProjPos(pos:number,range:number){
+		return clamp(pos,this.player.pos-Math.floor(range/2),this.player.pos+Math.floor(range/2))
+	}
 	selectTarget(skill: SKILL, targets: ServerGameEventFormat.PlayerTargetSelector): Player | null {
 		let players = targets.targets
 		if (players.length === 1) {
@@ -210,7 +215,7 @@ abstract class AiAgent {
 		}
 		let ps = this.player.mediator.allPlayer()
 		players.sort(function (b, a) {
-			if (Math.abs(ps[a].pos - ps[b].pos) < 8) {
+			if (Math.abs(ps[a].pos - ps[b].pos) < 2+randInt(6)+randInt(6)) {
 				return ps[b].HP - ps[a].HP
 			} else {
 				return ps[a].pos - ps[b].pos
@@ -239,7 +244,7 @@ abstract class AiAgent {
 			//타겟이 1명일경우
 			goal = targets[0]
 			//속박걸렸으면 플레이어 위치 그대로
-			if (!goal.canThrowDice()) {
+			if (!goal.canThrowDice() && Math.random()<0.8) {
 				return goal.pos
 			}
 		} else {
@@ -249,9 +254,9 @@ abstract class AiAgent {
 				return a.pos - b.pos
 			})
 
-			//속박걸린 플레이어있으면 그 플레이어 위치 그대로
+			//속박걸린 플레이어있으면 그 플레이어 위치 그대로 (80% )
 			for (const t of targets) {
-				if (!t.canThrowDice()) {
+				if (!t.canThrowDice() && Math.random()<0.8) {
 					return t.pos
 				}
 			}
@@ -287,7 +292,7 @@ abstract class AiAgent {
 			// 	return b.pos - a.pos
 			// })
 			targets.sort(function (a, b) {
-				if (Math.abs(b.pos - a.pos) < 8) {
+				if (Math.abs(b.pos - a.pos) < 2+randInt(6)+randInt(6)) {
 					return a.HP - b.HP
 				} else {
 					return b.pos - a.pos

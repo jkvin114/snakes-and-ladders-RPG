@@ -37,8 +37,8 @@ class BirdAgent extends AiAgent {
 
 		//full ap build
 		if ((ut.defence + ut.health) ===0 && randomBoolean()) {
-			entries[2]=new ItemBuildStage(ITEM.CARD_OF_DECEPTION)
-			entries[4]=new ItemBuildStage(ITEM.STAFF_OF_JUDGEMENT)
+			entries[1]=new ItemBuildStage(ITEM.CARD_OF_DECEPTION)
+			entries[3]=new ItemBuildStage(ITEM.STAFF_OF_JUDGEMENT)
 		}
 		
 		this.itemBuild

@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose, { Schema } from "mongoose"
 require('dotenv').config({path:__dirname+'/../../config/.env'})
 import CONFIG from "./../../config/config.json"
 
@@ -78,7 +78,7 @@ const gameRecordSchema=new mongoose.Schema({
     },
     killRecord:[killRecordSchema],
     setting:[gameSettingSchema],
-    replay:mongoose.Types.ObjectId
+    replay:Schema.Types.ObjectId
 },{timestamps:true})
 
 const simulationRecordSchema=new mongoose.Schema({

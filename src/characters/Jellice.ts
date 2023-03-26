@@ -41,7 +41,7 @@ class Jellice extends Player {
 		const basic_stats = [170, 30, 6, 6, 0, 50]
 		super(turn, team, game, ai, ID, name)
 		//	this.onoff = [false, false, false]
-		this.cooltime_list = [3, 4, 7] //3 5 7
+		this.cooltime_list = [3, 4, 8] //3 5 7
 		this.duration_list = [0, 1, 0]
 		this.skill_ranges = [0, 0, 30]
 		this.u_used = 0

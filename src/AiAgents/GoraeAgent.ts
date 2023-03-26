@@ -56,7 +56,7 @@ class GoraeAgent extends AiAgent {
 			//사거리내에 1~3 명이상 있으면 사용
 			if (
 				this.player.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this.player).inRadius(5)).length >=
-				this.player.game.totalnum - 1 ||
+				this.player.game.totalnum - 2 ||
 				this.player.HP / this.player.MaxHP < 0.3
 			)
 				return SKILL.W

@@ -38,7 +38,7 @@ class YangyiAgent extends AiAgent{
 					)
 			],
 			new ItemBuildStage(ITEM.EPIC_SWORD)
-		)
+		).addAdditionalFinalItem(ITEM.EPIC_WHIP)
 		
 		this.gameStartMessage= "You all will die under my claw and fire!"
     }
