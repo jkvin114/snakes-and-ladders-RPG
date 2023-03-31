@@ -12,7 +12,7 @@ import mongoose from "mongoose"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
 import { UserSchema } from "../../mongodb/schemaController/User"
 
-const { User } = require("../../mongodb/DBHandler")
+const { User } = require("../../mongodb/UserDBSchema")
 
 
 const router = express.Router()

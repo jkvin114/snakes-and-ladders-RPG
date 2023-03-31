@@ -467,5 +467,11 @@ input[type=password]{
 
 <script src="src/homepage.js"></script>
 <script src="src/localeManager.js"></script>
+<script src="lib/socket.io.min.js"></script>
+<script>
+  const socket=io(window.location.host+":4000",{
+    withCredentials: true
+  })
 
+</script>
 </html>

@@ -1,9 +1,9 @@
 import type { Socket } from "socket.io";
 import { io } from "../app";
-import { R } from "../RoomStorage";
+import { R } from "../Room/RoomStorage";
 import { SocketSession } from "./SocketSession";
-import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventFormat";
-import { RPGRoom } from "../RPGRoom";
+import { ClientInputEventFormat, ServerGameEventFormat } from "../RPGGame/data/EventFormat";
+import { RPGRoom } from "../RPGGame/RPGRoom";
 import { controlRoom, controlRPGRoom } from "./Controller";
 const { User } = require("../mongodb/DBHandler")
 module.exports=function(socket:Socket){

@@ -3,7 +3,7 @@ import TRAINAVG = require("../../res/trainavg.json")
 import TRAIN_SETTINGS = require("../../res/train_setting.json")
 import fs = require("fs")
 
-import { getCurrentTime, makeArrayOf, roundToNearest, writeFile, writeToFile } from "./../core/Util"
+import { getCurrentTime, makeArrayOf, roundToNearest, writeFile, writeToFile } from "../RPGGame/core/Util"
 
 import { items as ItemList } from "../../res/item_new.json"
 import { SimulationEvalGenerator } from "./SimulationEvalGenerator"

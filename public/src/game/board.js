@@ -1,4 +1,4 @@
-const ZOOM_BTN_SCALES = [0.8, 1, 1.2, 1.4, 1.6, 1.8]
+const ZOOM_BTN_SCALES = [0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8]
 const PLAYER_POS_DIFF = [
 	[8, 9],
 	[-17, 2],

@@ -1,5 +1,7 @@
 const EMPTY = -1
+import { sleep } from "./canvas_control.js"
 import { GAME, format } from "./GameMain.js"
+const DOUBLECLICK_TOL = 150
 export class StoreStatus {
 	constructor() {
 		this.itemList //
@@ -162,7 +164,9 @@ class ItemTreeNode {
 	}
 	getNodeStr() {
 		let str =
-			`<div class='onetreeitem' value='${String(this.item_id)}'>` +
+			`<div class='onetreeitem ${this.canbuy ? "canbuy" : ""} ${this.isparent ? "parents" : ""}' value='${String(
+				this.item_id
+			)}' data-price='${this.price}'>` +
 			`<div class='store_treeitemimg ${!this.canbuy || this.have ? "itemhave" : ""}'>` +
 			`<img src='res/img/store/items.png' style='margin-left:${-1 * this.item_id * 100}px';>` +
 			`</div><b>$${this.price}</b>` +
@@ -687,6 +691,13 @@ export class StoreInterface {
 		$(".itemdetail").css("visibility", "hidden")
 		$("#store_buytoken").css("visibility", "hidden")
 	}
+	onTreeItemDoubleClick(item_id, price, currentPageItem) {
+		console.log("doubleclick" + item_id)
+		let predicted_itemlist = Array.from(this.storeStatus.itemSlots)
+
+		this.storeInstance.calcDiscount(item_id, predicted_itemlist)
+		this.onItemBuy(item_id, predicted_itemlist, price, currentPageItem)
+	}
 
 	showDetail(item_id, changetree) {
 		this.saveNaviRecord("item", item_id)
@@ -784,20 +795,6 @@ export class StoreInterface {
 
 		$("#buyitem").html("$" + actual_price)
 
-		let _this = this
-		if (this.storeStatus.canBuyItem(item_id) && this.storeInstance.enabled) {
-			$("#buyitem").css("color", "#f4d142")
-			$("#buyitem").css({
-				filter: "none",
-			})
-			$("#buyitem").click(() => _this.onItemBuy(item_id, predicted_itemlist, actual_price))
-		} else {
-			$("#buyitem").css("color", "gray")
-			$("#buyitem").css({
-				filter: "grayscale(90%)",
-			})
-		}
-
 		let treeItem = this.currentTreeItem
 		if (changetree) {
 			treeItem = item_id
@@ -814,15 +811,40 @@ export class StoreInterface {
 		)
 
 		$(".onetreeitem").off()
-		$(".tf-nc .onetreeitem").click(function () {
+		let _this = this
+
+		$(".tf-nc .onetreeitem").click(async function () {
 			//console.log($(this).attr("value"))
-			_this.showDetail(Number($(this).attr("value")), false)
-		})
-		$(".tf-nc.parents .onetreeitem").click(function () {
-			//console.log($(this).attr("value"))
-			_this.showDetail(Number($(this).attr("value")), true)
+			await sleep(DOUBLECLICK_TOL)
+			if ($(this).data("blockClick") === "true") return
+
+			if ($(this).hasClass("parents")) _this.showDetail(Number($(this).attr("value")), true)
+			else _this.showDetail(Number($(this).attr("value")), false)
 		})
 
+		$(".tf-nc .onetreeitem.canbuy").dblclick(function () {
+			//console.log($(this).attr("value"))
+			_this.onTreeItemDoubleClick(Number($(this).attr("value")), $(this).data("price"), item_id)
+			$(this).data("blockClick", "true")
+		})
+
+		// $(".tf-nc.parents .onetreeitem").click(function () {
+		// 	//console.log($(this).attr("value"))
+		// 	_this.showDetail(Number($(this).attr("value")), true)
+		// })
+
+		if (this.storeStatus.canBuyItem(item_id) && this.storeInstance.enabled) {
+			$("#buyitem").css("color", "#f4d142")
+			$("#buyitem").css({
+				filter: "none",
+			})
+			$("#buyitem").click(() => _this.onItemBuy(item_id, predicted_itemlist, actual_price))
+		} else {
+			$("#buyitem").css("color", "gray")
+			$("#buyitem").css({
+				filter: "grayscale(90%)",
+			})
+		}
 		// $(".have").css({
 		// 	border: "7px solid green"
 		// })
@@ -874,7 +896,7 @@ export class StoreInterface {
 		// $(".sell_toast").toast("hide")
 	}
 
-	onItemBuy(item_id, predicted_itemlist, actual_price) {
+	onItemBuy(item_id, predicted_itemlist, actual_price, redirectItem) {
 		GAME.playSound("store")
 		$("#buyitem").off()
 		this.storeStatus.spendMoney(actual_price)
@@ -884,7 +906,9 @@ export class StoreInterface {
 		this.updateAllCurrentItem(predicted_itemlist)
 		this.storeInstance.sendPurchaseData()
 		this.storeInstance.updateAllItemPrices()
-		this.showDetail(item_id, false)
+
+		if (!redirectItem) redirectItem = item_id
+		this.showDetail(redirectItem, false)
 	}
 
 	goBack() {
@@ -927,7 +951,7 @@ export class StoreInstance {
 		}
 	}
 	sendPurchaseData() {
-		GAME.connection.sendStoreData(this.getSendData())
+		GAME.connection.sendStoreData(this.serialize())
 		this.moneyspend = 0
 		this.tokenbought = 0
 		this.lifecount = 0
@@ -944,7 +968,7 @@ export class StoreInstance {
 		this.data.updateToken(this.data.token)
 	}
 
-	getSendData() {
+	serialize() {
 		return {
 			item: this.data.itemSlots,
 			moneyspend: this.moneyspend,

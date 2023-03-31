@@ -6,7 +6,7 @@ import {  Server, Socket } from "socket.io"
 import fs = require("fs")
 import cors = require("cors")
 import os = require("os")
-import { R } from "./RoomStorage"
+
 
 const session = require("express-session")({
 	key: "sid", //세션의 키 값
@@ -18,6 +18,7 @@ const session = require("express-session")({
 	}
 })
 import express=require("express")
+import { connectMongoDB } from "./mongodb/connect"
 declare module 'express-session' {
 	interface SessionData {
         cookie: Cookie;
@@ -41,6 +42,26 @@ const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 80
 const app = express()
 
+//temp ==============================
+
+/*
+let cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+import { createClient } from 'redis';
+import { hexId } from "./Marble/util"
+
+const redisClient = createClient(); //port 6379
+
+redisClient.on('error', err => console.log('Redis Client Error', err));
+
+redisClient.connect().then(()=>{
+	console.log("connected to redis")
+});
+*/
+
+//==============================================
+
 app.use(session)
 app.use(cors())
 app.use(express.json())
@@ -52,10 +73,6 @@ app.use("/user", require("./router/RegisteredUserRouter"))
 app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
 app.use("/board", require("./router/board/BoardRouter"))
-// app.use("/board/user", require("./router/board/BoardUserRouter"))
-// // app.use("/board/post", require("./router/board/BoardPostRouter"))
-// app.use("/board/comment", require("./router/board/BoardCommentRouter"))
-// app.use("/board/reply", require("./router/board/BoardReplyRouter"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
@@ -68,6 +85,7 @@ app.on("error", (err: any) => {
 	console.error("Server error:", err)
 })
 
+connectMongoDB()
 // const interfaces = os.networkInterfaces()
 // var addresses = []
 // for (var k in interfaces) {
@@ -129,6 +147,22 @@ app.get("/connection_check", function (req:any, res:any) {
 app.get("/notfound", function (req:any, res:any) {
 	res.render("notfound")
 })
+
+/*
+
+app.get("/session", async function (req:any, res:any) {
+
+	req.session.userId="hi"
+	res.cookie("username", "donald_trump");
+	let val=hexId()
+	const value = await redisClient.get('donald_trump:key');
+	console.log("current value "+value)
+	console.log("set value to "+val)
+	await redisClient.set('donald_trump:key',val);
+
+	return res.end("404 not found")
+})
+*/
 // app.get("/mode_selection", function (req, res, next) {})
 
 // app.get("/check_players", function (req, res) {})
@@ -149,7 +183,7 @@ app.get("/notfound", function (req:any, res:any) {
 // 	)
 // 	res.end("")
 // })
-
+/*
 app.post("/reset_game", function (req:any, res:any) {
 	//console.log(req.session)
 	let rname = req.session.roomname

@@ -1,8 +1,8 @@
 import type { Socket } from "socket.io";
-import { R } from "../RoomStorage";
+import { R } from "../Room/RoomStorage";
 import { SocketSession } from "./SocketSession";
-import type { Room } from "../room";
-import type { RPGRoom } from "../RPGRoom";
+import type { Room } from "../Room/room";
+import type { RPGRoom } from "../RPGGame/RPGRoom";
 import type { MarbleRoom } from "../Marble/MarbleRoom";
 
 interface RoomController{

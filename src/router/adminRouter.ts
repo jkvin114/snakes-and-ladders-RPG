@@ -1,6 +1,6 @@
 
 import express = require("express")
-import { R } from "../RoomStorage"
+import { R } from "../Room/RoomStorage"
 const router = express.Router()
 import { adminauth } from "./board/helpers"
 

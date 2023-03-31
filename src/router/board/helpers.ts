@@ -7,7 +7,7 @@ const { ObjectID } =require('mongodb') ;
 import { PostSchema } from "../../mongodb/schemaController/Post"
 import { CommentSchema } from "../../mongodb/schemaController/Comment"
 import { ReplySchema } from "../../mongodb/schemaController/Reply"
-const { User } = require("../../mongodb/DBHandler")
+const { User } = require("../../mongodb/UserDBSchema")
 import mongoose from "mongoose"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
 import { Friend, friendSchema } from "../../mongodb/UserRelationDBSchema";

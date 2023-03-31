@@ -15,7 +15,7 @@ import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { AbilityValues } from "./Ability/AbilityValues"
 import { ITEM_REGISTRY } from "./ItemRegistry"
 import { ServerPayloadInterface } from "./ServerPayloadInterface"
-import { randomBoolean } from "../core/Util"
+import { randomBoolean } from "../RPGGame/core/Util"
 import { ArriveEmptyLandActionBuilder, ArriveEnemyLandActionBuilder, ArriveMyLandActionBuilder, AttemptAttackActionBuilder, BuyoutActionBuilder, ClaimBuyoutActionBuilder, ClaimTollActionBuilder, MeetPlayerActionBuilder, MonopolyChanceActionBuilder, PassPlayerActionBuilder } from "./action/PackageBuilder"
 const PLAYER_NAMES=["데니스","슬기","에르난데스","카트리나","스티브","야나기","최배달","밍밍","산티노","휘트니","아리안","콕스","아라","아폴론","타란튤라","헤나"]
 
@@ -95,9 +95,10 @@ class PlayerMediator {
 			35 + meanItemCost * 60
 		]
 		this.players.forEach((p) => {
-			if(meanItemCost > 4)
+			console.log(meanItemCost)
+			if(meanItemCost > 0.4)
 				p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
-			else if(meanItemCost > 2){
+			else if(meanItemCost > 0.2){
 				let rand=Math.random()
 				if(rand<0.3)
 					p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)

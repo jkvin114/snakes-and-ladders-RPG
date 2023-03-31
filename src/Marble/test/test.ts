@@ -1,4 +1,4 @@
-import { ProtoPlayer,PlayerType } from "../../core/Util";
+import { ProtoPlayer,PlayerType } from "../../RPGGame/core/Util";
 import { MarbleGame } from "../Game";
 import { BuildableTile } from "../tile/BuildableTile";
 import { backwardBy, backwardDistance, cl, distance, forwardBy, forwardDistance, getTilesBewteen, signedShortestDistance } from "../util";

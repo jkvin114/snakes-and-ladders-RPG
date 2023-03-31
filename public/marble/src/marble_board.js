@@ -9,11 +9,6 @@ const PLAYER_POS_DIFF = [
 ]
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
-const ZINDEX = {
-	playerEffect: 11,
-	player: 10,
-	tilefeature: 9,
-}
 export const COLORS = ["red", "blue", "green", "yellow"]
 function getFlagCoord(coordinate) {
 	if (coordinate.rot === "right") {
@@ -414,6 +409,10 @@ export class MarbleScene extends Board {
 		this.canvas.setHeight(winheight - 5)
 		this.canvas.setZoom(this.boardScale)
 		//   this.forceRender()
+
+		$("#canvas-container").css("width", winwidth * 2)
+		$("#canvas-container").css("height", winheight * 2)
+		document.getElementById("canvas-container").scrollTo(400, 400)
 	}
 	drawTiles() {
 		for (const land of this.Map.lands) {

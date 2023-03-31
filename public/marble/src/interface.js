@@ -430,7 +430,7 @@ export class GameInterface {
 				await document.exitFullscreen()
 				$(this).data("on", false)
 			}
-			GAME.scene.setBoardScale()
+			// GAME.scene.setBoardScale()
 			GAME.ui.canChangeFullscreen = true
 		})
 		$(".player-ui").click(function () {
@@ -717,6 +717,7 @@ export class GameInterface {
 		this.diceThrowerPos = origin
 		this.oddeven = 0
 		$("#dice_container").show()
+		$("#dice_container").css("opacity", "1")
 		$("#dicebtn").html("ROLL")
 		if (hasOddEven) {
 			$("#odd").removeClass("disabled")

@@ -1,8 +1,13 @@
 import { MarbleScene, moneyToString, MONOPOLY, Player } from "./marble_board.js"
 import { openConnection } from "./socket.js"
 import { GameInterface } from "./interface.js"
+import { GestureController } from "../../src/game/gesturecontroller.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 export const SOLOPLAY = true
+
+const DICE_GAGE_TOL = [9, 18, 27, 38, 48, 56, 66, 76, 84, 92, 100]
+const DICE_GAGE_LENGTH_PX = 300
+
 const BGM = false
 export var GAME
 class Game {
@@ -24,6 +29,7 @@ class Game {
 		this.abilities = new Map()
 		this.playerStats = new Map()
 		this.sounds = new Map()
+		this.gesturecontroller = new GestureController(this)
 		if (Game._instance) {
 			return Game._instance
 		}
@@ -84,6 +90,7 @@ class Game {
 	}
 	onReady() {
 		console.log("game ready")
+		this.gesturecontroller.init()
 		this.connection.gameReady()
 		this.scene.startRenderInterval()
 		if (BGM) {
@@ -224,6 +231,7 @@ class Game {
 
 		this.pressingDice = true
 		$("#gage").css("width", "0")
+		$("#gage").css("opacity", "1")
 		this.diceGage = 1
 		this.diceGageForwardDirection = true
 
@@ -245,14 +253,43 @@ class Game {
 
 		clearInterval(this.diceGageInterval)
 		this.ui.resetTurnIndicator()
-		this.connection.clickDice(this.diceGage, this.ui.oddeven)
 
-		$("#dice_container").hide()
 		$("#gage").stop()
-		$("#gage").css("width", "0")
+		let widthcss = $("#gage").css("width")
+		let width = 0
+		if (widthcss.match(/%/) !== null) width = Number(widthcss.replace("%", ""))
+		else if (widthcss.match(/px/) !== null) width = Number(widthcss.replace("px", ""))
+		width /= DICE_GAGE_LENGTH_PX / 100
+
+		// console.log(width)
+
+		let gage = 2
+		for (const [i, val] of DICE_GAGE_TOL.entries()) {
+			if (val >= width) {
+				gage = i + 2
+				break
+			}
+		}
+		// console.log(gage)
+		this.connection.clickDice(gage, this.ui.oddeven)
+		$("#gage").animate(
+			{
+				opacity: "0",
+			},
+			400
+		)
+		$("#dice_container").animate(
+			{
+				opacity: "0",
+			},
+			400
+		)
+		setTimeout(() => $("#dice_container").hide(), 400)
 		this.pressingDice = false
 	}
 	onDiceGageInterval() {
+		// console.log($("#gage").css("width"))
+		if (!this.pressingDice) return
 		if (this.diceGageForwardDirection) {
 			this.diceGage += 1
 			if (this.diceGage === 12) {
@@ -440,12 +477,12 @@ $(window).on("load", function (e) {
 	})
 
 	$("#dicebtn").on("mousedown touchstart", function (e) {
-		GAME.scene.clearTileHighlight("yellow")
 		GAME.onDiceHoldStart()
 		return false
 	})
 	$("#dicebtn").on("mouseup mouseleave touchend", function (e) {
 		GAME.onDiceHoldEnd()
+		GAME.scene.clearTileHighlight("yellow")
 		return false
 	})
 })

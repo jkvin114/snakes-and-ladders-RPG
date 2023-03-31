@@ -1,14 +1,14 @@
-import type { GameCycleState } from "../GameCycle/RPGGameCycleState"
-import { GameLoop } from "../GameCycle/RPGGameLoop"
-import { GAME_CYCLE } from "../GameCycle/StateEnum"
-import { GameSetting } from "../GameSetting"
+import type { GameCycleState } from "../RPGGame/GameCycle/RPGGameCycleState"
+import { GameLoop } from "../RPGGame/GameCycle/RPGGameLoop"
+import { GAME_CYCLE } from "../RPGGame/GameCycle/StateEnum"
+import { GameSetting } from "../RPGGame/GameSetting"
 //import cliProgress = require("cli-progress")
 import SETTINGS = require("../../res/globalsettings.json")
-import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean, getCurrentTime } from "../core/Util"
-import { ClientInputEventFormat } from "../data/EventFormat"
+import { shuffle, pickRandom, PlayerType, ProtoPlayer, randomBoolean, getCurrentTime } from "../RPGGame/core/Util"
+import { ClientInputEventFormat } from "../RPGGame/data/EventFormat"
 import { GameRecord, TrainData } from "./TrainHelper"
 import TRAIN_SETTINGS = require("../../res/train_setting.json")
-import type { ReplayEventRecords } from "../ReplayEventRecord"
+import type { ReplayEventRecords } from "../RPGGame/ReplayEventRecord"
 import sizeof from 'object-sizeof'
 import process from 'process'
 import type { SimulationEvalGenerator } from "./SimulationEvalGenerator"

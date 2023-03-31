@@ -1,5 +1,5 @@
-import { ItemBuild, ItemBuildStage } from "../src/core/ItemBuild"
-import { AbilityUtilityScorecard } from "../src/core/Util"
+import { ItemBuild, ItemBuildStage } from "../src/RPGGame/core/ItemBuild"
+import { AbilityUtilityScorecard } from "../src/RPGGame/core/Util"
 import { ITEM } from "../src/data/enum"
 
 describe("itembuild", () => {

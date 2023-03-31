@@ -1,5 +1,4 @@
 import fetch from "node-fetch";
-import { MAP_TYPE } from "../data/enum";
 const URL="http://127.0.0.1:5000/prediction"
 
 export function extractNumber(str: string) {
@@ -8,7 +7,7 @@ export function extractNumber(str: string) {
 	return s.replace(/[\s]{2,}/g," ")
 }
 
-export async function getPrediction(labels:string,playercount:number,map:MAP_TYPE){
+export async function getPrediction(labels:string,playercount:number,map:number){
     return new Promise<string[]>(async (resolve,reject)=>{
         try{
             let response=await fetch(URL+`?count=${String(playercount)}&map=${map}&labels=${labels}`)

@@ -1,5 +1,5 @@
-import { PlayerMatchingState } from "./../src/PlayerMatchingState";
-import { PlayerType, ProtoPlayer } from "./../src/core/Util"
+import { PlayerMatchingState } from "../src/Room/PlayerMatchingState";
+import { PlayerType, ProtoPlayer } from "../src/RPGGame/core/Util"
 
 
 describe("matchingturn", () => {

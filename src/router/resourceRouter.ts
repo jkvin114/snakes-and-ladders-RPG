@@ -1,11 +1,11 @@
 import express = require('express');
-import { R } from '../RoomStorage';
-import { MAP_TYPE } from '../data/enum';
+import { R } from '../Room/RoomStorage';
+import { MAP_TYPE } from '../RPGGame/data/enum';
 import fs = require("fs")
 import { ITEM_REGISTRY } from '../Marble/ItemRegistry';
 const RESOURCE_PATH="/../../res/"
 const router = express.Router()
-const{MarbleItemPreset} = require("../mongodb/DBHandler")
+const{MarbleItemPreset} = require("../mongodb/GameDBSchema")
 const{Replay} = require("../mongodb/ReplayDBHandler")
 
 

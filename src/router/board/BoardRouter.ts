@@ -6,7 +6,7 @@ import { ImageUploader } from "../../mongodb/mutler"
 import { auth, availabilityCheck, COUNT_PER_PAGE, filterPostSummary, PostTitle } from "./helpers"
 import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
 import { SchemaTypes } from "../../mongodb/SchemaTypes"
-const  {User}  = require("../../mongodb/DBHandler")
+const  {User}  = require("../../mongodb/UserDBSchema")
 
 // const { User } = require("../mongodb/DBHandler")
 

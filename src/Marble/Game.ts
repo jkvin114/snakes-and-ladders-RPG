@@ -1,4 +1,4 @@
-import { ProtoPlayer, randInt, shuffle } from "../core/Util"
+import { ProtoPlayer, randInt, shuffle } from "../RPGGame/core/Util"
 import { Action, ACTION_TYPE, EmptyAction, MOVETYPE, StateChangeAction } from "./action/Action"
 import { ActionTrace, ActionTraceTag, ACTION_SOURCE_TYPE } from "./action/ActionTrace"
 import { ActionStack } from "./action/ActionStack"
@@ -245,7 +245,7 @@ class MarbleGame {
 			if (player.doubles >= 2) {
 				isTripleDouble = true
 				player.resetDoubleCount()
-			} else {
+			} else{
 				player.onDouble()
 
 				this.pushSingleAction(new DiceChanceAction(this.thisturn), action.source)

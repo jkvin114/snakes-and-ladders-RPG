@@ -1,8 +1,8 @@
 import express = require("express")
-import { R } from "../RoomStorage"
+import { R } from "../Room/RoomStorage"
 import { MarbleRoom } from "../Marble/MarbleRoom"
 const router = express.Router()
-import { RPGRoom } from "../RPGRoom"
+import { RPGRoom } from "../RPGGame/RPGRoom"
 import CONFIG from "./../../config/config.json"
 import SETTINGS = require("../../res/globalsettings.json")
 

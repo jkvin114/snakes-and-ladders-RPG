@@ -128,8 +128,14 @@ html{
     height: 20px;
     border: none;
   }
+
+  #boardside{
+  }
   #canvas-container {
       display: inline-block;
+      width: 100vw;
+    height: 100vh;
+    overflow: scroll;
     /* overflow: hidden; */
     /* width: 1200px;
     height: 1200px; */
@@ -144,12 +150,14 @@ html{
   }
   
   #boardwrapper {
+    
+    margin: 400px;
     /* overflow: hidden; */
     /* transform: rotateX(20deg); */
     position: relative;
     width: 100%;
     height: 100%;
-    margin: 0;
+    /* margin: 0; */
     padding: 0;
     transform-origin: 100% 100%;
   }
@@ -439,20 +447,20 @@ html{
     user-select: none;
   }
   #dicebtn{
-    width: 12vw;
-    height: 9vw;
+    width: 120px;
+    height: 90px;
     left: 50%;
     top:50%;
-    transform: translate(-50%, 3vw);
-    font-size: 3vw;
+    transform: translate(-50%, 40px);
+    font-size: 30px;
     background: linear-gradient(to top, rgba(255, 37, 251, 1) 0%, rgb(255, 211, 253)100%);
   
     box-shadow: 0 0 10px 3px black;
   }
   #odd,#even{
-    width: 6vw;
-    height: 4vw;
-    font-size: 2vw;
+    width: 60px;
+    height: 40px;
+    font-size: 20px;
     top:30px;
     box-shadow: 0 0 4px 1px black;
   }
@@ -501,16 +509,6 @@ html{
   @media screen and (orientation: portrait) {
       html{
           font-size: 1vh;
-      }
-      #dicebtn{
-          font-size: 6vw;
-          width: 26vw;
-          height: 20vw;
-      }
-      #odd,#even{
-        width: 12vw;
-        height: 8vw;
-        font-size: 4vw;
       }
     }
     #toastmessage,  #toastmessage2 {
@@ -813,6 +811,7 @@ html{
     height: 50px;
     outline:2px solid rgba(0, 0, 0, 0.8);
     z-index: 5;
+    pointer-events: all;
   }
   .player-ui.active{
     outline:2px solid white;
@@ -872,9 +871,20 @@ html{
     border-top-left-radius: 25px;
   }
   .player-ui-container{
+    position: absolute;
+    top:0;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    
+    pointer-events: none;
+    width: 40vw;
+    min-width: 150px;
+    max-width: 250px;
+  }
+  .player-ui-container-right{
+    right: 0;
   }
   .player-ui-timeout{
     grid-area: timeout;
@@ -1033,7 +1043,7 @@ html{
   }
   #playerwindow .window-content{
     overflow: auto;
-    max-height: 250px;
+    height: 80vh;
     min-height: 100px;
   }
   .player-ability{

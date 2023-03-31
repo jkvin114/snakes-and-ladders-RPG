@@ -5,7 +5,7 @@ import {CommentSchema} from "../../mongodb/schemaController/Comment"
 const mongoose = require("mongoose")
 
 
-const { User } = require("../../mongodb/DBHandler")
+const { User } = require("../../mongodb/UserDBSchema")
 const router = express.Router()
 
 

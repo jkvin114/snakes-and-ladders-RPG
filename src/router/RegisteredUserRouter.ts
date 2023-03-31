@@ -35,7 +35,7 @@ import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
 // const { UserBoardData } = require("../mongodb/BoardDBSchemas")
 const router = express.Router()
 
-const { User } = require("../mongodb/DBHandler")
+const { User } = require("../mongodb/UserDBSchema")
 
 function createSalt() {
 	return Math.round(new Date().valueOf() * Math.random()) + ""

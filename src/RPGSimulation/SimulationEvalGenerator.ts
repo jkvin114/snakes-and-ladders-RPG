@@ -1,4 +1,4 @@
-import { CHARACTER, ITEM } from "../data/enum";
+import { CHARACTER, ITEM } from "../RPGGame/data/enum";
 import SETTINGS = require("../../res/globalsettings.json")
 
 import { SimulationEval as SimulationEvalModel ,CharacterSimulationEval, ISimulationEval, ICharacterSimulationEval } from "../mongodb/SimulationEvalDBSchema";

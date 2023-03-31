@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from 'express';
-import { R } from '../RoomStorage';
+import { R } from '../Room/RoomStorage';
 const router = express.Router()
-const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../mongodb/DBHandler")
+const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../mongodb/GameDBSchema")
 
 
 
@@ -18,7 +18,7 @@ interface simulationRecord{
 
 router.get('/simulation/summary' ,function (req: Request, res:Response) {
     let count=req.query.count
-    let start=req.query.start?req.query.start:0
+    let start=req.query.start?Number(req.query.start):0
     console.log(count)
     if(start<0) return res.end()
     
@@ -61,7 +61,7 @@ router.get('/simulation/game',function(req: express.Request, res:express.Respons
 
 router.get('/game' ,function (req: express.Request, res:express.Response) {
     let count=req.query.count
-    let start=req.query.start?req.query.start:0
+    let start=req.query.start?Number(req.query.start):0
     console.log(count)
     if(start<0) return res.end()
 
@@ -81,7 +81,7 @@ router.get('/game' ,function (req: express.Request, res:express.Response) {
 
 router.get('/simulation/simple' ,function (req: express.Request, res:express.Response) {
     let count=req.query.count
-    let start=req.query.start?req.query.start:0
+    let start=req.query.start?Number(req.query.start):0
     let serverVersion=req.query.version
     if(start<0) return res.end()
 

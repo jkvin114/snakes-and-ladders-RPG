@@ -1,5 +1,5 @@
-import { GameEventEmitter } from "../GameEventObserver";
-import { Room } from "../room";
+import { GameEventEmitter } from "../Room/GameEventEmitter";
+import { Room } from "../Room/room";
 import { MarbleGameEventObserver } from "./MarbleGameEventObserver";
 import { MarbleGameLoop } from "./MarbleGameLoop";
 import { ServerPayloadInterface } from "./ServerPayloadInterface";

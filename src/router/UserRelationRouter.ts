@@ -3,7 +3,7 @@ import session from 'express-session';
 import { UserSchema } from '../mongodb/schemaController/User';
 import { UserRelationSchema } from '../mongodb/schemaController/UserRelation';
 import { ajaxauth, auth } from './board/helpers';
-const {User} = require("../mongodb/DBHandler")
+const {User} = require("../mongodb/UserDBSchema")
 
 const router = express.Router()
 

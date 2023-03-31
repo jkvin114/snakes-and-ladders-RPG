@@ -1,4 +1,4 @@
-import { sleep,ProtoPlayer } from "../core/Util";
+import { sleep,ProtoPlayer } from "../RPGGame/core/Util";
 import { ACTION_TYPE } from "./action/Action";
 import { DelayedAction } from "./action/DelayedAction";
 import {MarbleGame } from "./Game"

@@ -1,5 +1,5 @@
 import type { Types } from "mongoose"
-import { User } from "../DBHandler"
+import { User } from "../UserDBSchema"
 
 
 export namespace UserSchema{

@@ -9,7 +9,7 @@ import {CommentSchema} from "../../mongodb/schemaController/Comment"
 import {PostSchema} from "../../mongodb/schemaController/Post"
 import { ReplySchema } from "../../mongodb/schemaController/Reply"
 import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
-const { User } = require("../../mongodb/DBHandler")
+const { User } = require("../../mongodb/UserDBSchema")
 const router = express.Router()
 
 

@@ -1,4 +1,4 @@
-import { GameEventEmitter } from "../GameEventObserver"
+import { GameEventEmitter } from "../Room/GameEventEmitter"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { ServerPayloadInterface } from "./ServerPayloadInterface"
 import { BUILDING } from "./tile/Tile"
