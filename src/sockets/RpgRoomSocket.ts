@@ -5,7 +5,7 @@ import { SocketSession } from "./SocketSession";
 import { ClientInputEventFormat, ServerGameEventFormat } from "../RPGGame/data/EventFormat";
 import { RPGRoom } from "../RPGGame/RPGRoom";
 import { controlRoom, controlRPGRoom } from "./Controller";
-const { User } = require("../mongodb/DBHandler")
+const { User } = require("../mongodb/UserDBSchema")
 module.exports=function(socket:Socket){
 
 	socket.on("user:simulationready", function (setting:ClientInputEventFormat.SimulationSetting, count:number, isTeam:boolean) {

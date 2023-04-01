@@ -49,7 +49,9 @@ export enum ACTION_TYPE {
 	EMPTY,
 	CHOOSE_ISLAND,
 	CHOOSE_BUYOUT_POSITION,
-	CHANGE_LAND_OWNER
+	CHANGE_LAND_OWNER,
+	MESSAGE,
+	INDICATE_DEFENCE
 }
 
 export const ACTION_LIST = [
@@ -99,7 +101,8 @@ export const ACTION_LIST = [
 	"EMPTY",
 	"CHOOSE_ISLAND",
 	"CHOOSE_BUYOUT_POSITION",
-	"CHANGE_LAND_OWNER"
+	"CHANGE_LAND_OWNER",
+	"MESSAGE","INDICATE_DEFENCE"
 ]
 
 export enum MOVETYPE{
@@ -120,7 +123,9 @@ export abstract class Action {
 	private reservedAbility:{name: ABILITY_NAME, turn: number }
 	private id: string
 	static readonly PRIORITY_NORMAL=0
-	static readonly PRIORITY_FIRST=1
+	static readonly PRIORITY_IMMEDIATE=1
+	static readonly PRIORITY_ACTIONPACKAGE_BEFORE_MAIN=2
+	static readonly PRIORITY_ACTIONPACKAGE_AFTER_MAIN=3
 	constructor(type: ACTION_TYPE, turn: number) {
 		this.type = type
 		this.source = new ActionTrace(this.type)
@@ -192,14 +197,34 @@ export abstract class Action {
 	getReservedAbility(){
 		return this.reservedAbility
 	}
-}
-
-export class EmptyAction extends Action {
-	constructor() {
-		super(ACTION_TYPE.EMPTY, -1)
+	setToActionPackageBeforeMain(){
+		if(this.priority!==Action.PRIORITY_IMMEDIATE)
+			this.priority=Action.PRIORITY_ACTIONPACKAGE_BEFORE_MAIN
+		return this
+	}
+	setToAfterMain(){
+		if(this.priority!==Action.PRIORITY_IMMEDIATE)
+			this.priority=Action.PRIORITY_ACTIONPACKAGE_AFTER_MAIN
+		return this
 	}
 }
 
+export class EmptyAction extends Action {
+	debugId:string //testing purpose only
+	constructor(debugId?:string) {
+		super(ACTION_TYPE.EMPTY, -1)
+		this.debugId=debugId?debugId:""
+	}
+}
+
+export class MarkerAction extends Action{
+	marker:string
+
+	constructor(marker:string,turn:number) {
+		super(ACTION_TYPE.EMPTY, turn)
+		this.marker=marker
+	}
+}
 /**
  * 즉시 실행됨(상태 변화)
  */
@@ -207,6 +232,6 @@ export class StateChangeAction extends Action {
 	constructor(type: ACTION_TYPE, turn: number) {
 		super(type, turn)
 		if(type===ACTION_TYPE.GAMEOVER)
-			this.priority=Action.PRIORITY_FIRST
+			this.priority=Action.PRIORITY_IMMEDIATE
 	}
 }

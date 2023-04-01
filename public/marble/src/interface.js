@@ -128,6 +128,7 @@ const abilitySound = new Howl({
 class AbilityBuffer {
 	static TOP = 0
 	static BOTTOM = 1
+	static INTERVAL = 1000
 	//pos:top or bottom
 	constructor(pos) {
 		this.pos = pos
@@ -146,7 +147,7 @@ class AbilityBuffer {
 		//if(ui===3) console.log(this.queue)
 		if (this.interval === null) {
 			this.dequeue()
-			this.interval = setInterval(() => this.dequeue(), 1200)
+			this.interval = setInterval(() => this.dequeue(), AbilityBuffer.INTERVAL)
 		}
 	}
 	dequeue() {
@@ -369,6 +370,7 @@ const FORTUNECARD = {
 		image: "",
 	},
 }
+
 const dices = [0, 1, 6, 4, 5, 2, 3]
 const stat_names = ["통행료할인", "건설비용할인", "인수비용할인", "주사위컨트롤", "황금포춘획득"]
 export class GameInterface {

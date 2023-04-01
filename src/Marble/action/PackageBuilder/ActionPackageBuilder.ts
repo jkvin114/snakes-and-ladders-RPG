@@ -1,5 +1,5 @@
 import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
-import type { AbilityValues } from "../../Ability/AbilityValues"
+import type { AbilityAttributes, AbilityValue } from "../../Ability/AbilityValues"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
@@ -10,7 +10,7 @@ export abstract class ActionPackageBuilder {
 	protected game: MarbleGame
 	protected trace: ActionTrace
 	protected invoker: MarblePlayer
-	protected offences: Map<ABILITY_NAME, AbilityValues>
+	offences: Map<ABILITY_NAME, AbilityValue>
 	protected invokerEvent:EVENT_TYPE
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, invokerEvent: EVENT_TYPE) {
 		this.game = game
@@ -32,7 +32,7 @@ export abstract class ActionPackageBuilder {
 
 export abstract class DefendableActionBuilder extends ActionPackageBuilder{
 	protected defender: MarblePlayer
-	protected defences: Map<ABILITY_NAME, AbilityValues>
+	defences: Map<ABILITY_NAME, AbilityValue>
 	abstract setDefender(p: MarblePlayer):this
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, invokerEvent: EVENT_TYPE){
 		super(game, trace, invoker, invokerEvent)

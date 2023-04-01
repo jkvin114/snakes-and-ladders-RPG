@@ -2,7 +2,7 @@ import { ActionTrace } from "../action/ActionTrace";
 import { sample } from "../util";
 import { Ability } from "./Ability";
 import { ABILITY_NAME, ABILITY_REGISTRY } from "./AbilityRegistry";
-import { AbilityValues } from "./AbilityValues";
+import { AbilityAttributes, AbilityValue } from "./AbilityValues";
 import { EVENT_TYPE } from "./EventType";
 
 
@@ -11,14 +11,14 @@ import { EVENT_TYPE } from "./EventType";
 export class AbilityStorage {
     private readonly permanentAbility:Map<EVENT_TYPE,ABILITY_NAME[]>
     private readonly temporaryAbility:Set<ABILITY_NAME>
-    private readonly abilityValues:Map<ABILITY_NAME,AbilityValues>
+    private readonly abilityValues:Map<ABILITY_NAME,AbilityAttributes>
 
     constructor(){
         this.permanentAbility=new Map<EVENT_TYPE,ABILITY_NAME[]>()
         this.temporaryAbility=new Set<ABILITY_NAME>()
-        this.abilityValues=new Map<ABILITY_NAME, AbilityValues>()
+        this.abilityValues=new Map<ABILITY_NAME, AbilityAttributes>()
     }
-    registerPermanent(...abilities:[ABILITY_NAME,AbilityValues][]){
+    registerPermanent(...abilities:[ABILITY_NAME,AbilityAttributes][]){
 
         for(const ability of abilities){
             if(!ability) continue
@@ -34,9 +34,8 @@ export class AbilityStorage {
                 }
             }
         }
-        console.log(this.permanentAbility)
     }
-    getAbilityForEvent(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValues>{
+    getAbilityForEvent(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValue>{
         let abilities:ABILITY_NAME[]=[]
 
         if(this.permanentAbility.has(event)){
@@ -55,7 +54,7 @@ export class AbilityStorage {
             if(abi.hasEvent(event)) abilities.push(ability)
         }
 
-        let validAblities=new Map<ABILITY_NAME,AbilityValues>()
+        let validAblities=new Map<ABILITY_NAME,AbilityValue>()
         
         for(const ability of abilities){
             let ab=ABILITY_REGISTRY.get(ability)
@@ -64,7 +63,7 @@ export class AbilityStorage {
             // console.log(value)
             if(!ab || !value || !ab.isValidSource(source)|| !value.sample()) continue
             
-            validAblities.set(ability,value)
+            validAblities.set(ability,value.abilityValue)
         }
         // console.log(validAblities)
         return validAblities
@@ -75,7 +74,7 @@ export class AbilityStorage {
 
         return 0
     }
-    addTemporary(ability:ABILITY_NAME,value:AbilityValues){
+    addTemporary(ability:ABILITY_NAME,value:AbilityAttributes){
         if(ability===ABILITY_NAME.NONE) return
 
         this.temporaryAbility.add(ability)
@@ -128,5 +127,10 @@ export class AbilityStorage {
         if(!value) return -1
 
         return value.getValue()
+    }
+    getChanceFor(ability:ABILITY_NAME){
+        let value=this.abilityValues.get(ability)
+        if(!value) return -1
+        return value.currentChance
     }
 }

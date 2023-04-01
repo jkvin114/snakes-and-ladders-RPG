@@ -12,7 +12,6 @@ import {MAP} from "./MapHandlers/MapStorage"
 import { EntityMediator } from "./entity/EntityMediator"
 import { Player } from "./player/player"
 import { EntityFilter } from "./entity/EntityFilter"
-// import { PlayerClientInterface } from "./app"
 
 import { GAME_CYCLE } from "./GameCycle/StateEnum"
 import { GameSetting } from "./GameSetting"

@@ -88,7 +88,7 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 		if (value != null) {
 			pkg.addExecuted(ring, this.invoker.turn)
 			pkg.addAction(
-				new EarnMoneyAction(this.invoker.turn, Math.floor(this.tile.getBuildPrice() * value.getValue() * 0.01)),
+				new EarnMoneyAction(this.invoker.turn, Math.floor(this.tile.getBuildPrice() * value.value * 0.01)),
 				ring
 			)
 			return true
@@ -107,10 +107,10 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 		this.monument(pkg)
 
 		if (this.tile.isLandMark() && this.isInvokersTurn()) {
-			let mg = this.offences.get(magnetic)
-			let linemg = this.offences.get(line_magnetic)
-			let bosscall = this.offences.get(call)
-			let bh = this.offences.get(blackhole)
+			const mg = this.offences.get(magnetic)
+			const linemg = this.offences.get(line_magnetic)
+			const bosscall = this.offences.get(call)
+			const bh = this.offences.get(blackhole)
 
 			if (bh != null) {
 				pkg.addExecuted(blackhole, this.invoker.turn)

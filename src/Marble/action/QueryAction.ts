@@ -82,6 +82,7 @@ export class BlackholeTileSelectionAction extends TileSelectionAction {
 	constructor(turn: number,tiles:number[],whitehole:number) {
 		super(ACTION_TYPE.CHOOSE_BLACKHOLE,turn,tiles,"blackhole")
 		this.whitehole=whitehole
+		this.duplicateAllowed=false
 	}
 }
 export class MoveTileSelectionAction extends TileSelectionAction{

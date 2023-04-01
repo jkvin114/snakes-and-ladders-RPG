@@ -1,6 +1,6 @@
 
 import { EventRecord, ReplayEventRecords } from "./ReplayEventRecord"
-import { GameEventEmitter } from "../Room/GameEventEmitter"
+import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ServerGameEventFormat } from "./data/EventFormat"
 import { SpecialEffect } from "./data/SpecialEffectRegistry"
 

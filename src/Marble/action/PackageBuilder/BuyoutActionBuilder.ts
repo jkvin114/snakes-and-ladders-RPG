@@ -5,7 +5,7 @@ import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
-import { BuyoutAction } from "../InstantAction"
+import { BuyoutAction, IndicateDefenceAction } from "../InstantAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
@@ -26,7 +26,8 @@ export class BuyoutActionBuilder extends DefendableActionBuilder {
 		let pkg= super.build().addMain(this.main)
 		const cloe=ABILITY_NAME.BLOCK_BUYOUT
 		if(this.defences.has(cloe) && !this.trace.useTag(ActionTraceTag.IGNORE_BLOCK_BUYOUT)){
-			pkg.blockMain()
+			// pkg.blockMain()
+			pkg.replaceMain(new IndicateDefenceAction("block",this.invoker.pos)) 
 			pkg.addExecuted(cloe,this.defender.turn)
 		}
 		return pkg

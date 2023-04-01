@@ -7,7 +7,7 @@ import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
-import {    TileAttackAction } from "../InstantAction"
+import {    IndicateDefenceAction, TileAttackAction } from "../InstantAction"
 import { AskAttackDefenceCardAction } from "../QueryAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
@@ -43,7 +43,8 @@ export class AttemptAttackActionBuilder extends DefendableActionBuilder {
 				pkg.addExecuted(ignore_defence, this.invoker.turn)
 			} else {
 				pkg.addExecuted(defence, this.defender.turn)
-				pkg.blockMain()
+				// pkg.blockMain()
+				pkg.replaceMain(new IndicateDefenceAction("block",this.tile.position)) 
 			}
 		} else if (this.defences.has(angel)) {
 			pkg.addAction(

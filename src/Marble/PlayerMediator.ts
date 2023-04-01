@@ -12,7 +12,7 @@ import { BuildableTile } from "./tile/BuildableTile"
 import { chooseRandom, chooseRandomMultiple, distance, getTilesBewteen, PlayerType, ProtoPlayer, randInt, range, shuffle } from "./util"
 import { CARD_NAME } from "./FortuneCard"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
-import { AbilityValues } from "./Ability/AbilityValues"
+import { AbilityAttributes } from "./Ability/AbilityValues"
 import { ITEM_REGISTRY } from "./ItemRegistry"
 import { ServerPayloadInterface } from "./ServerPayloadInterface"
 import { randomBoolean } from "../RPGGame/core/Util"
@@ -105,7 +105,7 @@ class PlayerMediator {
 				else if(rand < 0.7) p.saveCardAbility(ABILITY_NAME.DISCOUNT_CARD)
 			}
 			
-			let abs: [ABILITY_NAME, AbilityValues][] = []
+			let abs: [ABILITY_NAME, AbilityAttributes][] = []
 			let randitems: number[] = itemSetting.items.filter((item) => item.selected).map((item) => item.code)
 
 			let codes = chooseRandomMultiple(randitems, itemSetting.randomCount).sort((a: number, b: number) => a - b)

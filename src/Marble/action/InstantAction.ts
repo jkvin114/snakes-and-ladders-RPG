@@ -16,10 +16,36 @@ import { BUILDING } from "../tile/Tile"
 export class GameOverAction extends InstantAction{
 	constructor(winner:number){
 		super(ACTION_TYPE.GAMEOVER,winner)
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 	}
 	execute(game: MarbleGame): void {
 		
+	}
+}
+
+export class SendMessageAction extends InstantAction{
+	
+    message:string
+	constructor(player: number,message:string) {
+		super(ACTION_TYPE.MESSAGE,player)
+        this.message=message
+	}
+	execute(game: MarbleGame): void {
+		game.eventEmitter.sendMessage(this.turn,this.message)
+	}
+}
+export class IndicateDefenceAction extends InstantAction{
+	
+    defencetype:string
+	pos:number
+	constructor(defencetype:string,pos:number) {
+		super(ACTION_TYPE.INDICATE_DEFENCE,-1)
+        this.defencetype=defencetype
+		this.priority=Action.PRIORITY_IMMEDIATE
+		this.pos=pos
+	}
+	execute(game: MarbleGame): void {
+		game.eventEmitter.indicateDefence(this.defencetype,this.pos)
 	}
 }
 export class ClaimTollAction extends InstantAction{
@@ -49,10 +75,10 @@ export class EarnMoneyAction extends InstantAction {
 	constructor(receiver:number,amount:number) {
 		super(ACTION_TYPE.EARN_MONEY,receiver)
         this.amount=amount
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 	}
 	applyMultiplier(mul: number): void {
-		// console.log("applyMultiplier")
+		console.log("applyMultiplier")
 		this.amount = this.amount * mul
 		if(mul===0) this.off()
 	}
@@ -72,7 +98,7 @@ export class PayMoneyAction extends InstantAction {
 		super(ACTION_TYPE.PAY_MONEY,payer)
         this.amount=amount
 		this.receiver=receiver
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 	}
 	applyMultiplier(mul: number): void {
 		this.amount = this.amount * mul
@@ -101,7 +127,7 @@ export class AddMultiplierAction extends InstantAction {
 	count:number
 	constructor(turn:number,pos:number,count:number) {
 		super(ACTION_TYPE.ADD_MULTIPLIER,turn)
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 		this.pos=pos
 		this.count=count
 	}
@@ -116,7 +142,7 @@ export class LandModifierAction extends InstantAction {
 	pos:number
 	constructor(turn:number,pos:number,type:string,val?:number) {
 		super(ACTION_TYPE.ADD_MULTIPLIER,turn)
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 		this.modifierType=type
 		this.pos=pos
 
@@ -132,7 +158,7 @@ export class StealMultiplierAction extends InstantAction {
 	from:number
 	constructor(turn:number,from:number,dest:number) {
 		super(ACTION_TYPE.STEAL_MULTIPLIER,turn)
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 		this.from=from
 		this.dest=dest
 	}
@@ -146,7 +172,7 @@ export class AutoBuildAction extends InstantAction {
 	pos:number
 	constructor(turn: number,pos:number,builds:BUILDING[]) {
 		super(ACTION_TYPE.AUTO_BUILD,turn)
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 		this.pos=pos
 		this.builds=builds
 	}
@@ -159,7 +185,7 @@ export class PayPercentMoneyAction extends InstantAction {
 	receiver:number
 	constructor(payer: number,receiver:number,percent:number) {
 		super(ACTION_TYPE.PAY_MONEY,payer)
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 		this.receiver=receiver
 		this.percent=percent
 	}
@@ -239,7 +265,7 @@ export class CreateBlackholeAction extends InstantAction{
 		super(ACTION_TYPE.CREATE_BLACKHOLE,turn)
 		this.blackpos=blackpos
 		this.whitepos=whitepos
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 	}
 	execute(game: MarbleGame): void {
 		game.createBlackHole(this.blackpos,this.whitepos)
@@ -252,7 +278,7 @@ export class ChangeLandOwnerAction extends InstantAction{
 		super(ACTION_TYPE.CREATE_BLACKHOLE,turn)
 		this.pos=pos
 		this.owner=owner
-		this.priority=Action.PRIORITY_FIRST
+		this.priority=Action.PRIORITY_IMMEDIATE
 	}
 	execute(game: MarbleGame): void {
 		game.setPositionOwner(this.pos,this.owner)

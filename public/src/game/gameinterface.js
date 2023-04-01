@@ -1,5 +1,4 @@
 import { GAME } from "./GameMain.js"
-import { COLOR_LIST_BG } from "./canvas_control.js"
 
 export default class GameInterface {
 	constructor(game) {

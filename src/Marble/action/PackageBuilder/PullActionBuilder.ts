@@ -7,7 +7,7 @@ import type { MarblePlayer } from "../../Player"
 import { MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
-import { RequestMoveAction } from "../InstantAction"
+import { IndicateDefenceAction, RequestMoveAction } from "../InstantAction"
 import {  DefendableActionBuilder } from "./ActionPackageBuilder"
 
 export class PullActionBuilder extends DefendableActionBuilder {
@@ -32,7 +32,8 @@ export class PullActionBuilder extends DefendableActionBuilder {
             }
             else{
                 pkg.addExecuted(defence, this.defender.turn)
-                pkg.blockMain()
+                // pkg.blockMain()
+				pkg.replaceMain(new IndicateDefenceAction("block",this.defender.pos)) 
             }
 		}
 		return pkg

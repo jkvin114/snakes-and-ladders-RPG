@@ -19,6 +19,9 @@ export class ActionStack {
 	//	this.iterate()
 		return a
 	}
+	at(depth:number){
+		return this.stack.at(-(depth+1))
+	}
 	/**
 	 * force resolve action and remove from stack
 	 * @returns more action left
@@ -27,12 +30,53 @@ export class ActionStack {
 		this.stack.pop()
 		return this.stack.length !== 0
 	}
+
+	/**
+	 * 
+	 * if there is another beforemain action in the stack with same turn,
+	 * bubble down the top action to any of the beforemain actions
+	 * 
+	 */
+	private pushAndBubbleDownAfterMainAction(action: Action){
+		//deepest beforemain action 
+		let index=this.stack.findIndex((a)=>a.priority===Action.PRIORITY_ACTIONPACKAGE_BEFORE_MAIN && a.turn === action.turn)
+
+		if(this.stack.length>0 && index>=0) {
+			this.stack.push(action)
+
+			for (let i = this.stack.length-1; i >= 1; --i) {
+				if(i-1>=index){
+				
+					let temp=this.stack[i-1]
+					this.stack[i-1]=this.stack[i]
+					this.stack[i]=temp
+				}
+				else break
+			}
+		}
+		else
+			this.stack.push(action)
+	}
 	private push(action: Action | undefined) {
 		if (!action) return
 	//	 console.log("push")
-		if (action.priority === 1 && action instanceof InstantAction) this.priorityStack.push(action)
+		if (action.priority === Action.PRIORITY_IMMEDIATE && action instanceof InstantAction) {
+			this.priorityStack.push(action)
+			
+		}
+		else if(action.priority===Action.PRIORITY_ACTIONPACKAGE_AFTER_MAIN){
+			//for aftermain actions
+			//they should be stick together at lower level than any before or main actions from actionpackage
+			
+			this.pushAndBubbleDownAfterMainAction(action)
+		}
 		else this.stack.push(action)
 	}
+
+	/**
+	 * push all actions in reverse order
+	 * @param action 
+	 */
 	pushAll(...action: Action[]) {
 		for (let i = action.length - 1; i >= 0; --i) {
 
@@ -109,6 +153,7 @@ export class ActionStack {
 		return this.stack[this.stack.length - 1]
 	}
 	popAllPriorityActions():InstantAction[]{
+
 		let list=Array.from(this.priorityStack)
 		this.priorityStack=[]
 		return list

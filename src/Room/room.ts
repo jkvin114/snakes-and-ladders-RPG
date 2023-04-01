@@ -1,6 +1,6 @@
 import type { Socket } from "socket.io";
 import { PlayerType, ProtoPlayer } from "../RPGGame/core/Util"
-import { GameEventEmitter } from "./GameEventEmitter";
+import { GameEventEmitter } from "../sockets/GameEventEmitter";
 import {PlayerMatchingState} from "./PlayerMatchingState"
 import { encrypt } from "../router/board/helpers";
 import { SocketSession } from "../sockets/SocketSession";

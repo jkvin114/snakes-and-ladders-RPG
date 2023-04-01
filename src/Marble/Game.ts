@@ -1,4 +1,4 @@
-import { ProtoPlayer, randInt, shuffle } from "../RPGGame/core/Util"
+import { randInt, shuffle } from "../RPGGame/core/Util"
 import { Action, ACTION_TYPE, EmptyAction, MOVETYPE, StateChangeAction } from "./action/Action"
 import { ActionTrace, ActionTraceTag, ACTION_SOURCE_TYPE } from "./action/ActionTrace"
 import { ActionStack } from "./action/ActionStack"
@@ -16,6 +16,7 @@ import {
 	InstantAction,
 	PrepareTravelAction,
 	RequestMoveAction,
+	SendMessageAction,
 	TileAttackAction,
 } from "./action/InstantAction"
 import { MarbleGameEventObserver } from "./MarbleGameEventObserver"
@@ -25,6 +26,7 @@ import { BuildableTile } from "./tile/BuildableTile"
 import { LandTile } from "./tile/LandTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
 import {
+	ProtoPlayer,
 	backwardBy,
 	chooseRandom,
 	cl,
@@ -115,6 +117,9 @@ class MarbleGame {
 			this.executeAbility([action.getReservedAbility()])
 		}
 		return action
+	}
+	actionAtDepth(depth:number){
+		return this.actionStack.at(depth)
 	}
 	hasPriorityAction(): boolean {
 		return this.actionStack.priorityStack.length > 0
@@ -233,13 +238,20 @@ class MarbleGame {
 
 		let modifiers = this.getDiceModifiers(action.source, oddeven)
 		let multiplier = modifiers.multiplier
+		let player = this.thisPlayer()
+		if (oddeven > 0) player.useOddEven()
 
 		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven, modifiers)
+		return this.onThrowDice(dice1, dice2,multiplier,modifiers.dc,action)
+		
+
+	}
+	
+	onThrowDice(dice1:number, dice2:number,multiplier:number,dc: boolean,action:DiceChanceAction){
 
 		let isDouble = dice1 === dice2 && action.type===ACTION_TYPE.DICE_CHANCE
 
 		let player = this.thisPlayer()
-		if (oddeven > 0) player.useOddEven()
 		let isTripleDouble = false
 		if (isDouble) {
 			if (player.doubles >= 2) {
@@ -260,7 +272,7 @@ class MarbleGame {
 			{
 				dice: [dice1, dice2],
 				isDouble: isDouble,
-				dc: modifiers.dc,
+				dc: dc,
 			},
 			distance,
 			isTripleDouble
@@ -270,7 +282,7 @@ class MarbleGame {
 		return {
 			dice: [dice1, dice2],
 			isDouble: isDouble,
-			dc: modifiers.dc,
+			dc: dc,
 		}
 	}
 
@@ -545,8 +557,8 @@ class MarbleGame {
 				this.pushSingleAction(new RequestMoveAction(invoker, this.map.start, MOVETYPE.FORCE_WALK), source)
 				break
 			case CARD_NAME.GO_OLYMPIC:
-				if (this.map.olympicPos === -1) return
-				this.pushSingleAction(new RequestMoveAction(invoker, this.map.olympicPos, MOVETYPE.FORCE_WALK), source)
+				if (this.map.olympicPos === -1) this.pushMessageAction(invoker,"forcemove_to_tile")
+				else this.pushSingleAction(new RequestMoveAction(invoker, this.map.olympicPos, MOVETYPE.FORCE_WALK), source)
 				break
 			case CARD_NAME.OLYMPIC:
 				this.arriveOlympicTile(invoker, source)
@@ -560,29 +572,35 @@ class MarbleGame {
 				break
 			case CARD_NAME.DONATE_LAND:
 				let myTiles = this.map.getTiles(this.mediator.pOfTurn(invoker), TileFilter.MY_LAND().setNoLandMark())
-				if (myTiles.length === 0) return
-				this.pushSingleAction(
+				if (myTiles.length === 0) this.pushMessageAction(invoker,"donate_to_tile")
+				else this.pushSingleAction(
 					new TileSelectionAction(ACTION_TYPE.CHOOSE_DONATE_POSITION, invoker, myTiles, CARD_NAME.DONATE_LAND),
 					source
 				)
 				break
 			case CARD_NAME.GO_SPECIAL:
 				let tiles = this.map.getTiles(this.mediator.pOfTurn(invoker), new TileFilter().setSpecialOnly())
-				if (tiles.length === 0) return
-				this.pushSingleAction(
+				if (tiles.length === 0) this.pushMessageAction(invoker,"move_to_tile")
+				else this.pushSingleAction(
 					new MoveTileSelectionAction(invoker, tiles, MOVETYPE.FORCE_WALK,CARD_NAME.GO_SPECIAL),
 					source
 				)
 				break
 		}
 	}
+	private messageAction(turn:number,message:string){
+		return new SendMessageAction(turn,message)
+	}
+	private pushMessageAction(turn:number,message:string){
+		this.pushSingleAction(this.messageAction(turn,message), new ActionTrace(ACTION_TYPE.MESSAGE))
+	}
 	useAttackCard(turn: number, card: AttackCard, source: ActionTrace) {
 		if (card.name === CARD_NAME.LAND_CHANGE) {
 			let enemyTiles = this.map.getTiles(this.mediator.pOfTurn(turn), TileFilter.ENEMY_LAND().setNoLandMark())
 			let myTiles = this.map.getTiles(this.mediator.pOfTurn(turn), TileFilter.MY_LAND().setNoLandMark())
-			if (enemyTiles.length === 0 || myTiles.length === 0) return
-
-			this.pushSingleAction(new LandSwapAction(turn, myTiles, enemyTiles), source)
+			if (enemyTiles.length === 0 || myTiles.length === 0) 
+				this.pushMessageAction(turn,"attack_no_tile")
+			else this.pushSingleAction(new LandSwapAction(turn, myTiles, enemyTiles), source)
 		} else {
 			let filter = TileFilter.ENEMY_LAND()
 
@@ -591,9 +609,8 @@ class MarbleGame {
 
 			let targetTiles = this.map.getTiles(this.mediator.pOfTurn(turn), filter)
 
-			if (targetTiles.length === 0) return
-
-			this.pushSingleAction(
+			if (targetTiles.length === 0) this.pushMessageAction(turn,"attack_no_tile")
+			else this.pushSingleAction(
 				new TileSelectionAction(ACTION_TYPE.CHOOSE_ATTACK_POSITION, turn, targetTiles, card.name),
 				source
 			)
@@ -612,8 +629,8 @@ class MarbleGame {
 	}
 	arriveOlympicTile(moverTurn: number, source: ActionTrace) {
 		let targetTiles = this.map.getTiles(this.mediator.pOfTurn(moverTurn), TileFilter.MY_LAND())
-		if (targetTiles.length === 0) return
-		this.pushActions(
+		if (targetTiles.length === 0) this.pushMessageAction(moverTurn,"choose_no_tile")
+		else this.pushActions(
 			new ArriveOlympicActionBuilder(this, source, this.mediator.pOfTurn(moverTurn), targetTiles).build()
 		)
 	}
@@ -652,8 +669,8 @@ class MarbleGame {
 			TileFilter.EMPTY_LANDTILE().setSameLineOnly(),
 			TileFilter.MY_LANDTILE().setOnlyMoreBuildable().setSameLineOnly()
 		)
-		if (targetTiles.length === 0) return
-		this.pushSingleAction(
+		if (targetTiles.length === 0) this.pushMessageAction(moverTurn,"choose_no_tile")
+		else this.pushSingleAction(
 			new TileSelectionAction(ACTION_TYPE.CHOOSE_BUILD_POSITION, moverTurn, targetTiles, "godhand_special_build"),
 			source
 		)
@@ -770,21 +787,32 @@ class MarbleGame {
 		}
 	}
 	getAskBuildAction(playerTurn: number, tile: BuildableTile, source: ActionTrace): Action {
-		let mainaction: Action = new EmptyAction()
+		let mainaction = this.messageAction(playerTurn,"build_no_more")
 		let player = this.mediator.pOfTurn(playerTurn)
 
-		if (tile.owner !== -1 && !tile.isMoreBuildable()) return mainaction
+		if(tile.isLandMark()) return new EmptyAction()
+
+		if (tile.owner !== -1 && !tile.isMoreBuildable()) {
+			return mainaction
+		}
 		let builds: ServerPayloadInterface.buildAvaliability[] = []
+		const flag=source.hasAbilityInNumberOfMove(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL,1) &&
+		 source.useActionAndAbility(ACTION_TYPE.PREPARE_TRAVEL,ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL)
+
 		if (
-			source.thisMoveHasAbility(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL) &&
+			flag &&
 			tile instanceof LandTile
 		) {
 			builds = tile.getLandMarkBuildData(true)
 		} else if (player.canBuildLandOfMinimumPrice(tile.getMinimumBuildPrice())) {
 			builds = tile.getBuildingAvaliability(player.cycleLevel)
 		}
+		else{
+			mainaction.message="no_money"
+			return mainaction
+		}
 		if (builds.length > 0)
-			mainaction = new AskBuildAction(
+			return new AskBuildAction(
 				playerTurn,
 				tile.position,
 				builds,
@@ -792,6 +820,7 @@ class MarbleGame {
 				player.getBuildDiscount(),
 				player.money
 			)
+
 		return mainaction
 	}
 	pullPlayers(invoker: number, action: PullAction) {
@@ -870,11 +899,13 @@ class MarbleGame {
 			this.executeAbility([{ name: action.ignoredBy, turn: action.attacker }])
 		} else {
 			if (action instanceof AskTollDefenceCardAction) {
+				this.eventEmitter.indicateDefence(action.cardname,this.mediator.pOfTurn(turn).pos)
 				this.pushSingleAction(
 					new ActionModifier(turn, action.toBlock, ActionModifier.TYPE_SET_VALUE, action.after),
 					action.source
 				)
 			} else if (action instanceof AskAttackDefenceCardAction) {
+				this.eventEmitter.indicateDefence(action.cardname,this.mediator.pOfTurn(turn).pos)
 				this.pushSingleAction(new ActionModifier(turn, action.toBlock, ActionModifier.TYPE_BLOCK), action.source)
 			}
 		}

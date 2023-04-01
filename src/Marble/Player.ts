@@ -3,7 +3,7 @@ import { EVENT_TYPE } from "./Ability/EventType"
 import { Action } from "./action/Action"
 import { ActionTrace } from "./action/ActionTrace"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
-import { AbilityValues } from "./Ability/AbilityValues"
+import { AbilityAttributes, AbilityValue } from "./Ability/AbilityValues"
 
 
 class MarblePlayer{
@@ -150,7 +150,7 @@ class MarblePlayer{
     saveCardAbility(ability:ABILITY_NAME){
         this.abilityStorage.removeTemporary(this.savedDefenceCardAbility)
         this.savedDefenceCardAbility=ability
-        this.abilityStorage.addTemporary(ability,new AbilityValues())
+        this.abilityStorage.addTemporary(ability,new AbilityAttributes())
     }
     useCard(){
         this.abilityStorage.removeTemporary(this.savedDefenceCardAbility)
@@ -159,13 +159,13 @@ class MarblePlayer{
     useAbility(name:ABILITY_NAME){
         this.abilityStorage.use(name)
     }
-    sampleAbility(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValues>{
+    sampleAbility(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValue>{
         return this.abilityStorage.getAbilityForEvent(event,source)
     }
     getAbilityValueAmount(ability:ABILITY_NAME){
         return this.abilityStorage.getAbilityValueAmount(ability)
     }
-    registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityValues][]){
+    registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityAttributes][]){
         this.abilityStorage.registerPermanent(...abilities)
     }
     getAbilityString(){

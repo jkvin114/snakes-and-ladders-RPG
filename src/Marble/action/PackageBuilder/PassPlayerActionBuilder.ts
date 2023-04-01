@@ -6,7 +6,7 @@ import type { MarblePlayer } from "../../Player"
 import { MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
-import { BuyoutAction, PayPercentMoneyAction } from "../InstantAction"
+import {  PayPercentMoneyAction } from "../InstantAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
@@ -63,7 +63,7 @@ export class PassPlayerActionBuilder extends DefendableActionBuilder {
 		if (value != null) {
 			pkg.addExecuted(inverse_agreement, this.defender.turn)
 			pkg.addAction(
-				new PayPercentMoneyAction(this.invoker.turn, this.defender.turn, value.getValue()),
+				new PayPercentMoneyAction(this.invoker.turn, this.defender.turn, value.value),
 				inverse_agreement
 			)
 		}
@@ -71,7 +71,7 @@ export class PassPlayerActionBuilder extends DefendableActionBuilder {
 		value = this.offences.get(agreement)
 		if (value != null) {
 			pkg.addExecuted(agreement, this.invoker.turn)
-			pkg.addAction(new PayPercentMoneyAction(this.defender.turn, this.invoker.turn, value.getValue()), agreement)
+			pkg.addAction(new PayPercentMoneyAction(this.defender.turn, this.invoker.turn, value.value), agreement)
 		}
 		return pkg
 	}

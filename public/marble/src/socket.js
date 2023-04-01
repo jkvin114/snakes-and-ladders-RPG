@@ -41,6 +41,13 @@ export function openConnection(isInitial) {
 	socket.on("server:nextturn", function (turn) {
 		GAME.turnStart(turn)
 	})
+	socket.on("server:message", function (turn, msg) {
+		if (!checkTurn(turn)) return
+		GAME.showMessage(msg)
+	})
+	socket.on("server:indicate_defence", function (type, pos) {
+		GAME.scene.showDefenceIndicator(type, pos)
+	})
 	socket.on("server:show_dice", function (turn, data) {
 		if (!checkTurn(turn)) return
 		GAME.showDiceBtn(turn, data)

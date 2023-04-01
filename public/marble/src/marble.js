@@ -8,6 +8,16 @@ export const SOLOPLAY = true
 const DICE_GAGE_TOL = [9, 18, 27, 38, 48, 56, 66, 76, 84, 92, 100]
 const DICE_GAGE_LENGTH_PX = 300
 
+const MESSAGE = {
+	no_money: "자금 부족",
+	attack_no_tile: "공격할 땅이 없습니다",
+	build_no_more: "더이상 건설할 수 없습니다",
+	donate_no_tile: "기부할 땅이 없습니다",
+	move_no_tile: "이동 가능한 지역이 없습니다",
+	forcemove_no_tile: "이동할 지역이 없습니다",
+	choose_to_tile: "선택 가능 지역이 없습니다",
+}
+
 const BGM = false
 export var GAME
 class Game {
@@ -43,6 +53,7 @@ class Game {
 	}
 
 	init(setting, num, turn) {
+		Howler.volume(0.3)
 		this.myNum = num
 		this.myTurn = turn
 		this.isTeam = setting.isTeam
@@ -104,6 +115,9 @@ class Game {
 			elem.load()
 			elem.play()
 		}
+	}
+	showMessage(msg) {
+		toast(MESSAGE[msg])
 	}
 	playsound(sound) {
 		let s = this.sounds.get(sound)

@@ -1,16 +1,20 @@
 import { sample } from "../util"
 
+export interface AbilityValue{
+    value:number
+}
+
 /**
  * ability 의 현재 상태 저장,
  * ability_name 하나당 한개만 존재,
  * 기본값: value:0,change:100,limit:무한, 아이템이름:""
  */
- export class AbilityValues{
+ export class AbilityAttributes{
     private value:number //각성 전 값
     private upgradeValue:number //각성 시 값
     private limit:number //횟수제한 
     private baseChance:number //기본 확률
-    private currentChance:number //현재 확률
+    currentChance:number //현재 확률
     private upgraded:boolean
     private itemName:string
     private korname:string
@@ -28,6 +32,7 @@ import { sample } from "../util"
         this.korname=""
         this.firstOnly=false
     }
+
     setValue(value:number,upgradeValue?:number){
         this.value=value
         if(upgradeValue!==undefined) this.upgradeValue=upgradeValue
@@ -65,6 +70,9 @@ import { sample } from "../util"
     }
     upgrade(){
         this.upgraded=true
+    }
+    get abilityValue():AbilityValue{
+        return {value:this.getValue()}
     }
     getValue(){
         if(this.upgraded) return this.upgradeValue

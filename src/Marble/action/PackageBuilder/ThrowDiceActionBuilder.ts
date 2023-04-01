@@ -92,7 +92,7 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 		let val = this.offences.get(name)
 		if (!val) return false
 		pkg.addExecuted(name, this.invoker.turn)
-		pkg.addAction(new EarnMoneyAction(this.invoker.turn, val.getValue() * this.totaldice), name)
+		pkg.addAction(new EarnMoneyAction(this.invoker.turn, val.value * this.totaldice), name)
 		return true
 	}
 }

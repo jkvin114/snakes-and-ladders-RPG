@@ -5,6 +5,7 @@ import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
+import { SendMessageAction } from "../InstantAction"
 import {  AskBuyoutAction } from "../QueryAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
@@ -27,7 +28,7 @@ export class ClaimBuyoutActionBuilder extends DefendableActionBuilder {
 
 		if (price <= this.defender.money)
 			pkg.addMain(new AskBuyoutAction(this.defender.turn, this.tile.position, price, originalprice))
-
+		else pkg.addMain(new SendMessageAction(this.defender.turn,"no_money"))
 		return pkg
 	}
 }

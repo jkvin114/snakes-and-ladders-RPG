@@ -8,7 +8,9 @@ class ActionPackage {
 	blocksMain: boolean
 	blockedAbilities: { name: ABILITY_NAME; turn: number }[]
 	executedAbilities: { name: ABILITY_NAME; turn: number }[]
+	involvedAbilities:ABILITY_NAME[]
 	shouldPutMainToPending:boolean
+
 	trace:ActionTrace
 	constructor(trace:ActionTrace) {
 		this.trace=trace
@@ -17,21 +19,25 @@ class ActionPackage {
 		this.after = []
 		this.blockedAbilities = []
 		this.executedAbilities = []
+		this.involvedAbilities=[]
 		this.blocksMain = false
 		this.shouldPutMainToPending=false
 	}
 	addMain(main: Action) {
 		main.setPrevActionTrace(this.trace)
+		main.setToActionPackageBeforeMain()
 		this.main.push(main)
 		return this
 	}
 	addBefore(a: Action) {
 		a.setPrevActionTrace(this.trace)
+		a.setToActionPackageBeforeMain()
 		this.before.push(a)
 		return this
 	}
 	addAfter(a: Action) {
 		a.setPrevActionTrace(this.trace)
+		a.setToAfterMain()
 		this.after.push(a)
 		return this
 	}
@@ -52,6 +58,10 @@ class ActionPackage {
 		this.blocksMain = true
 		return this
 	}
+	replaceMain(action:Action){
+		this.main=[action]
+		return
+	}
 	hasAfter() {
 		return this.after.length !== 0
 	}
@@ -70,6 +80,7 @@ class ActionPackage {
 	addAction(action: Action, ability: ABILITY_NAME) {
 		let ab = ABILITY_REGISTRY.get(ability)
 		if (!ab) return
+		this.involvedAbilities.push(ability)
 		action.addAbilityToActionTrace(ability)
 		if (ab.isAfterMain()) {
 			this.addAfter(action)

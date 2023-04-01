@@ -40,7 +40,7 @@ export class PassOrArriveStartActionBuilder extends ActionPackageBuilder {
 		let val = this.offences.get(name)
 		if (!val) return false
 		pkg.addExecuted(name, this.invoker.turn)
-		this.main.applyMultiplier(1 + val.getValue() * 0.01)
+		this.main.applyMultiplier(1 + val.value * 0.01)
 
 		return true
 	}

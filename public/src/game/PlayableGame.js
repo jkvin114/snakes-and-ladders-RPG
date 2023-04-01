@@ -1,7 +1,7 @@
-import { Game } from "./script.js"
+import { Game } from "./RPGGame.js"
 import { StoreStatus, StoreInstance, StoreInterface } from "./store.js"
 import GameInterface from "./gameinterface.js"
-import { openConnection } from "./gameclient.js"
+import { openConnection } from "./SocketClient.js"
 
 export class PlayableGame extends Game {
 	constructor(is_spectator) {

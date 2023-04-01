@@ -5,12 +5,12 @@ import { backwardBy, backwardDistance, cl, distance, forwardBy, forwardDistance,
 
 let players:ProtoPlayer[]=[
     {
-        type:PlayerType.AI,name:"",team:true,champ:0,ready:true
+        type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0
     },{
-        type:PlayerType.AI,name:"",team:true,champ:1,ready:true
+        type:PlayerType.AI,name:"",team:true,champ:1,ready:true,userClass:0
     },
     {
-        type:PlayerType.AI,name:"",team:true,champ:2,ready:true
+        type:PlayerType.AI,name:"",team:true,champ:2,ready:true,userClass:0
     }
 ]
 

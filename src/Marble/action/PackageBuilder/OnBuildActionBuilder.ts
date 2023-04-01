@@ -11,7 +11,7 @@ import { ACTION_TYPE, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import { LinePullAction, RangePullAction } from "../DelayedAction"
-import { AddMultiplierAction, AutoBuildAction, BuyoutAction, RequestMoveAction } from "../InstantAction"
+import { AddMultiplierAction, AutoBuildAction,  RequestMoveAction } from "../InstantAction"
 import { BlackholeTileSelectionAction, DiceChanceAction, MoveTileSelectionAction, TileSelectionAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
@@ -193,13 +193,16 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 	build(): ActionPackage {
 		let pkg = super.build()
 		
+		if(this.tile.isLandMark()){
+			this.blackhole(pkg)
+			this.buildLandmarkEvent(pkg)
+		}
+
 		if (!this.isAuto) {
 			this.buildUpgrades(pkg)
 			this.additionalBuild(pkg)
 			if (this.tile.isLandMark()) {
 				this.multiplier(pkg)
-				this.blackhole(pkg)
-
 				if (this.isDirectBuild) this.pull(pkg)
 			}
 			else{
@@ -211,9 +214,6 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 			}
 		} else {
 			// this.olympicPull(pkg)
-		}
-		if(this.tile.isLandMark()){
-			this.buildLandmarkEvent(pkg)
 		}
 		return pkg
 	}

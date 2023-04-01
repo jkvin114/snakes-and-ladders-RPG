@@ -1,4 +1,4 @@
-import { GameEventEmitter } from "../Room/GameEventEmitter"
+import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { ServerPayloadInterface } from "./ServerPayloadInterface"
 import { BUILDING } from "./tile/Tile"
@@ -41,6 +41,8 @@ const serverEvents={
     MODIFY_LAND:prefix+"modify_land",
     ASK_ISLAND:prefix+"ask_island",
     REMOVE_BLACKHOLE:prefix+"remove_blackhole",
+    MESSAGE:prefix+"message",
+    INDICATE_DEFENCE:prefix+"indicate_defence"
 
 }
 
@@ -167,7 +169,12 @@ export class MarbleGameEventObserver {
     setTileState(change:ServerPayloadInterface.tileStateChange){
         this.eventEmitter(this.rname, serverEvents.TILE_STATE_UPDATE, change)
     }
-    
+    sendMessage(player:number,message:string){
+        this.eventEmitter(this.rname, serverEvents.MESSAGE, player,message)
+    }
+    indicateDefence(type:string,pos:number){
+        this.eventEmitter(this.rname, serverEvents.INDICATE_DEFENCE, type,pos)
+    }
     bankrupt(player:number)
     {
         this.eventEmitter(this.rname, serverEvents.BANKRUPT, player)

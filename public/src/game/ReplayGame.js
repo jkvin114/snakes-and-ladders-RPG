@@ -1,4 +1,4 @@
-import { Game } from "./script.js"
+import { Game } from "./RPGGame.js"
 // import { REPLAY } from "./replays/replay_test.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 

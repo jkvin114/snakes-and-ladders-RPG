@@ -1,26 +1,9 @@
-import { Scene, sleep, COLOR_LIST } from "./canvas_control.js"
+import { Scene, sleep, COLOR_LIST } from "./RPGGameScene.js"
 import { COLOR_LIST_BG } from "./board.js"
 import { Player } from "./player.js"
 import { GAME, StringResource, registerSounds } from "./GameMain.js"
 import { GestureController } from "./gesturecontroller.js"
-const SettingNames = [
-	"Toggle Fullscreen",
-	"Item Auto Buy",
-	"Indicate Active Items",
-	"Indicate Obstacles",
-	"Indicate Kill/Death",
-	"FPS(Frames Per Second)",
-	"Volume",
-]
-const SettingNamesKor = [
-	"전체화면",
-	"아이템 자동구매",
-	"아이템 알림",
-	"장애물 알림",
-	"킬/데스 알림",
-	"FPS(초당 프레임)",
-	"음량",
-]
+
 class Setting {
 	constructor(game) {
 		//singleton

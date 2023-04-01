@@ -341,15 +341,15 @@ class Money {
 		this.scene.lockFabricObject(image)
 
 		let coord = getCornerPos(this.source, this.scene.boardInnerHeight)
-		image.scale(1.3)
+		image.scale(1.8)
 		image.set({ top: coord.y, left: coord.x })
 		this.scene.canvas.add(image)
 		image.bringToFront()
 		this.image = image
 	}
 	animate1(size) {
-		let randRange = 50
-		if (size > 7) randRange = 100
+		let randRange = 75
+		if (size > 7) randRange = 150
 		if (!this.image) return
 		this.scene.animateX(this.image, this.scene.boardInnerHeight / 2 + (Math.random() * randRange - randRange / 2), 200)
 		this.scene.animateY(this.image, this.scene.boardInnerHeight / 2 + (Math.random() * randRange - randRange / 2), 200)
@@ -578,7 +578,7 @@ export class MarbleScene extends Board {
 			opacity: 0,
 			fontWeight: "bold",
 			evented: false,
-			top: this.boardInnerHeight / 2 + 120,
+			top: this.boardInnerHeight / 2 + 160,
 			left: this.boardInnerHeight / 2,
 			fontFamily: "nanumEB",
 		})
@@ -617,6 +617,106 @@ export class MarbleScene extends Board {
 		this.lockFabricObject(lock)
 		this.canvas.add(lock)
 		this.lock.image = lock
+	}
+	async showDefenceIndicator(type, pos) {
+		console.log("showDefenceIndicator" + type)
+		let image = "indicateblock"
+		let coord = this.getCoord(pos)
+		let y = coord.y - 70
+		switch (type) {
+			case "angel":
+				image = "indicateangel"
+				break
+			case "discount":
+				image = "indicatediscount"
+				break
+		}
+
+		let p = new fabric.Image(document.getElementById(image), {
+			left: coord.x,
+			top: y,
+			objectCaching: false,
+			evented: false,
+			opacity: 1,
+		})
+		this.lockFabricObject(p)
+		this.canvas.add(p.scale(0.9))
+
+		p.bringToFront()
+		await sleep(1000)
+		this.animateOpacity(p, 0, 1000)
+		this.removeImageAfter(p, 1500)
+	}
+	showMessage(type, pos) {
+		let colorstop = ["black", "white"]
+		let str = ""
+		let coord = this.getCoord(pos)
+		let y = coord.y - 50
+		let fontsize = 50
+		switch (type) {
+			case "landmark":
+				colorstop = ["#7FE2EB", "#3AA8CF"]
+				str = "랜드마크"
+				y -= 20
+				break
+			case "olympic":
+				colorstop = ["#7FE2EB", "#3AA8CF"]
+				str = "올림픽"
+				break
+			case "colormonopoly":
+				colorstop = ["#7FE2EB", "#3AA8CF"]
+				str = "컬러독점"
+				break
+			case "blackhole":
+				colorstop = ["#7FE2EB", "#3AA8CF"]
+				str = "블랙홀 발생"
+				break
+			case "whitehole":
+				colorstop = ["#7FE2EB", "#3AA8CF"]
+				str = "화이트홀 발생"
+				break
+			case "root":
+				colorstop = ["#7FE2EB", "#3AA8CF"]
+				str = "속박"
+				break
+			case "toll_increase":
+				colorstop = ["#F6E33E", "#F5AC12"]
+				str = "통행료 증가!"
+				y -= 40
+				break
+			case "lock":
+				colorstop = ["#7FE2EB", "#3AA8CF"]
+				str = "배수잠금"
+				break
+		}
+
+		let text = new fabric.Text(str, {
+			fontSize: fontsize,
+			fill: "white",
+			opacity: 0,
+			evented: false,
+			top: y,
+			left: coord.x,
+			fontWeight: "bold",
+			fontFamily: "CookierunBlack",
+			stroke: "black",
+			strokeWidth: 2,
+		})
+		text.setGradient("fill", {
+			y1: 0,
+			x1: 0,
+			x2: 0,
+			y2: 40,
+			colorStops: {
+				0: colorstop[0],
+				1: colorstop[1],
+			},
+		})
+		this.lockFabricObject(text)
+		this.canvas.add(text)
+		this.animateOpacity(text, 1, 100)
+		text.bringToFront()
+		this.removeImageAfter(text, 1500)
 	}
 
 	scaleTileImage(tile, rot) {
@@ -818,12 +918,12 @@ export class MarbleScene extends Board {
 		let lm = this.getLandMark(owner)
 		let coord = getLandMarkCoord(this.getCoord(pos))
 		if (!coord) return
-
 		lm.set({ top: coord.y, left: coord.x })
 		lm.bringToFront()
 		if (this.tileObj.get(pos).buildings[4] != null) this.canvas.remove(this.tileObj.get(pos).buildings[4])
 
 		this.tileObj.get(pos).setLandMark(lm)
+		this.showMessage("landmark", pos)
 		for (let i = 1; i < 4; ++i) {
 			this.removeHouse(pos, i)
 		}
@@ -868,6 +968,7 @@ export class MarbleScene extends Board {
 		this.canvas.add(bubble)
 		bubble.bringToFront()
 		this.players[player].bubble = bubble
+		this.showMessage("root", playerpos)
 		this.render()
 	}
 	showTileHighlight(positions, color) {
@@ -974,6 +1075,7 @@ export class MarbleScene extends Board {
 					this.canvas.add(shine)
 					shine.bringToFront()
 					this.animateOpacity(shine, 1, 200)
+					this.showMessage("toll_increase", pos)
 					setTimeout(() => {
 						this.canvas.remove(shine)
 						this.render()
@@ -1014,6 +1116,7 @@ export class MarbleScene extends Board {
 		if (this.olympic !== -1) {
 			this.tileData.get(this.olympic).olympic = false
 		}
+		this.showMessage("olympic", pos)
 		this.tileData.get(pos).olympic = true
 	}
 	setBlackhole(blackpos, whitepos) {
@@ -1025,6 +1128,8 @@ export class MarbleScene extends Board {
 		this.whitehole.image.bringToFront()
 		this.blackhole.pos = blackpos
 		this.whitehole.pos = whitepos
+		this.showMessage("blackhole", blackpos)
+		this.showMessage("whitehole", whitepos)
 		this.render()
 	}
 	removeBlackHole() {
@@ -1040,6 +1145,7 @@ export class MarbleScene extends Board {
 			this.lock.image.set({ left: b.x, top: b.y - 40, visible: true })
 			this.lock.image.bringToFront()
 			this.lock.pos = pos
+			this.showMessage("lock", pos)
 		}
 		if (type === "unlock") {
 			this.lock.image.set({ visible: false })

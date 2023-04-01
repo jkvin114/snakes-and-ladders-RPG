@@ -46,7 +46,7 @@ export class ClaimTollActionBuilder extends DefendableActionBuilder {
 
 		if (value != null) {
 			pkg.addExecuted(atoll, this.invoker.turn)
-			main.applyMultiplier(percentValueToMultiplier(value.getValue()))
+			main.applyMultiplier(percentValueToMultiplier(value.value))
 		}
 
 		if(this.trace.thisMoveHasAbility(ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME)){

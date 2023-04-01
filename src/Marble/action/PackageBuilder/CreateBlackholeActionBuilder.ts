@@ -7,7 +7,7 @@ import { chooseRandom } from "../../util"
 import type { Action, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import type { ActionTrace } from "../ActionTrace"
-import { AddMultiplierAction, BuyoutAction, CreateBlackholeAction, PayPercentMoneyAction } from "../InstantAction"
+import { AddMultiplierAction,  CreateBlackholeAction, PayPercentMoneyAction } from "../InstantAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
 

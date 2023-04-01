@@ -8,7 +8,7 @@ import { Worker, isMainThread } from "worker_threads"
 import { GameEventObserver } from "./GameEventObserver"
 import { SimulationEvalGenerator } from "./../RPGSimulation/SimulationEvalGenerator"
 import { GameLoop } from "./GameCycle/RPGGameLoop"
-import { GameEventEmitter } from "../Room/GameEventEmitter"
+import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
 const path = require("path")
 

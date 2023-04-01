@@ -1,5 +1,5 @@
 const EMPTY = -1
-import { sleep } from "./canvas_control.js"
+import { sleep } from "./RPGGameScene.js"
 import { GAME, format } from "./GameMain.js"
 const DOUBLECLICK_TOL = 150
 export class StoreStatus {

@@ -1,6 +1,6 @@
 
 import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
-import { AbilityValues } from "../../Ability/AbilityValues"
+import {  AbilityValue } from "../../Ability/AbilityValues"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import { CARD_NAME, FortuneCardRegistry } from "../../FortuneCard"
 import type { MarbleGame } from "../../Game"
@@ -38,21 +38,24 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 		if(this.trace.thisMoveHasAbility(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK)) return false
 
 		pkg.addExecuted(perfume, this.invoker.turn)
-		pkg.addAction(new PayPercentMoneyAction(stayed.turn, this.invoker.turn, value.getValue()), perfume)
+		pkg.addAction(new PayPercentMoneyAction(stayed.turn, this.invoker.turn, value.value), perfume)
 		return true
 	}
-	private badge(pkg: ActionPackage, defences: Map<ABILITY_NAME, AbilityValues>, stayed: MarblePlayer) {
+	private badge(pkg: ActionPackage, defences: Map<ABILITY_NAME, AbilityValue>, stayed: MarblePlayer) {
 		const badge = ABILITY_NAME.TAKE_MONEY_ON_PLAYER_ARRIVE_TO_ME
 		let value = defences.get(badge)
 		if (!value || this.movetype === MOVETYPE.TELEPORT || this.movetype === MOVETYPE.BLACKHOLE) return false
 		pkg.addExecuted(badge, stayed.turn)
-		pkg.addAction(new PayPercentMoneyAction(this.invoker.turn, stayed.turn, value.getValue()), badge)
+		pkg.addAction(new PayPercentMoneyAction(this.invoker.turn, stayed.turn, value.value), badge)
 		return true
 	}
-	private guidebook(pkg: ActionPackage, defences: Map<ABILITY_NAME, AbilityValues>, stayed: MarblePlayer) {
+	private guidebook(pkg: ActionPackage, defences: Map<ABILITY_NAME, AbilityValue>, stayed: MarblePlayer) {
 		const guidebook = ABILITY_NAME.THROW_TO_LANDMARK_ON_ENEMY_ARRIVE_TO_ME
 		const donate_guidebook=ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME
 
+		if(this.trace.thisMoveHasAbility(ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND))
+         	return
+			
 		let pos = this.game.map.getMostExpensiveIn(stayed, TileFilter.MY_LANDMARK())
 		if (pos === -1) return false
 		if(defences.get(donate_guidebook) && !this.trace.hasActionAndAbility(ACTION_TYPE.REQUEST_MOVE,donate_guidebook)){

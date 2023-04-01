@@ -128,18 +128,24 @@ export class ActionTrace {
      * @param ability 
      */
     thisMoveHasAbility(ability:ABILITY_NAME):boolean{
-        return this.hasAbilityInNumberOfMove(ability,1)
+        // console.log(this.toString())
+        return this.hasAbilityInNumberOfMove(ability,0)
     }
     /**
      * 움직임 횟수 내에 능력 포함되있는지
      * @param ability 
      */
     hasAbilityInNumberOfMove(ability:ABILITY_NAME,moveStartCountLeft:number):boolean{
+        // console.log(this.actionType)
         if(this.abilityName===ability) {
             return true
         }
-        if(this.isMoveStart) moveStartCountLeft-=1
-        if(!this.prev || moveStartCountLeft < 0)
+        if(this.isMoveStart){
+            moveStartCountLeft-=1
+            if(moveStartCountLeft < 0)
+                return this.prev!==null && this.prev.abilityName===ability
+        }
+        if(!this.prev)
             return false
 
         return this.prev.hasAbilityInNumberOfMove(ability,moveStartCountLeft)
@@ -171,11 +177,12 @@ export class ActionTrace {
         this.prev=null
         return this
     }
-    toString(depth:number):string{
+    toString(depth?:number):string{
+        if(depth===undefined) depth=1000
         if(depth===0) return ""
         // let str=`[type:${ACTION_LIST[this.actionType]},abilityname:${this.abilityName}]`
         let str=ACTION_LIST[this.actionType]
-        if(!this.prev) return str
+        if(!this.prev) return `[${str} ${this.abilityName}]`
         return this.prev.toString(depth-1) + `-> [${str} ${this.abilityName}]`
     }
 }
