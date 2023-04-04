@@ -38,7 +38,7 @@ router.get("/:username/posts", availabilityCheck,async (req: express.Request, re
 	}
 	catch(e){
 		console.error(e)
-		res.status(500).end("")
+		res.status(500).redirect("servererror")
 		return
 	}
 })
@@ -77,7 +77,7 @@ router.get("/:username/likes", availabilityCheck,async (req: express.Request, re
 	}
 	catch(e){
 		console.error(e)
-		res.status(500).end("")
+		res.status(500).redirect("servererror")
 		return
 	}
 })
@@ -122,7 +122,7 @@ router.get("/:username/bookmarks", availabilityCheck,async (req: express.Request
 	}
 	catch(e){
 		console.error(e)
-		res.status(500).end("")
+		res.status(500).redirect("servererror")
 		return
 	}
 })
@@ -228,7 +228,7 @@ router.get("/:username/comments",availabilityCheck, async (req: express.Request,
 		})
 	} catch (e) {
 		console.error(e)
-		res.status(500).end("")
+		res.status(500).redirect("servererror")
 		return
 	}
 })

@@ -30,6 +30,16 @@
 			"desc": "Divide teams equally",
 			"desc_kor": "공평하게 팀나누기",
 			"default": true
+		},
+		"saveLabelCSV":{
+			"desc": "Save label CSV",
+			"desc_kor": "CSV 저장",
+			"default": false
+		},
+		"saveEvaluation":{
+			"desc": "Save Evaluation",
+			"desc_kor": "승률 데이터 저장",
+			"default": false
 		}
 	},
 	"statisticsSetting": {

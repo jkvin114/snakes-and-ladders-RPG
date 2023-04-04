@@ -486,7 +486,7 @@ ABILITY_REGISTRY.set(
 	new MoveAbilty(ABILITY_NAME.TRAVEL_ON_PASS_TRAVEL_AND_DICE_CHANCE)
 	.on(EVENT_TYPE.PASS_TRAVEL)
 	.on(EVENT_TYPE.ARRIVE_TRAVEL)
-	.desc("세계여행에 도착하거나 지나칠 때 50% 확률로 즉시 세계여행 발동/이동후 주사위 한번 더!")
+	.desc("세계여행에 도착하거나 지나칠 때 즉시 세계여행 발동/이동후 주사위 한번 더!")
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.ADDITIONAL_LANDMARK_ON_BUILD,

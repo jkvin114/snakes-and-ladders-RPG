@@ -145,9 +145,11 @@ app.get("/connection_check", function (req:any, res:any) {
 	res.end()
 })
 app.get("/notfound", function (req:any, res:any) {
-	res.render("notfound")
+	res.render("error",{status:404})
 })
-
+app.get("/servererror", function (req:any, res:any) {
+	res.render("error",{status:500})
+})
 /*
 
 app.get("/session", async function (req:any, res:any) {

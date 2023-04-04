@@ -107,7 +107,14 @@
 
 
   <div class="title_container">
-    <a class="title">404 NOT FOUND! </a>
+    <%if(status===404){%>
+      <a class="title"> 404 NOT FOUND! </a>
+    <%}else if(status===500){%>
+      <a class="title"> 500 Internal Server Error! </a>
+    <%}else {%>
+      <a class="title">Error!</a>
+    <%}%>
+    
   </div>
       
   <hr>

@@ -225,15 +225,15 @@ export function openConnection(isInitial) {
 		console.log(player)
 		GAME.bankrupt(player)
 	})
-	socket.on("server:gameover_bankrupt", function (player) {
+	socket.on("server:gameover_bankrupt", function (player, scores, mul) {
 		console.log("gameover_monopoly")
 		console.log(player)
-		GAME.gameoverBankrupt(player)
+		GAME.gameoverBankrupt(player, scores, mul)
 	})
-	socket.on("server:gameover_monopoly", function (player, monopoly) {
+	socket.on("server:gameover_monopoly", function (player, monopoly, scores, mul) {
 		console.log("gameover_monopoly")
 		console.log(player, monopoly)
-		GAME.gameoverMonopoly(player, monopoly)
+		GAME.gameoverMonopoly(player, monopoly, scores, mul)
 	})
 
 	GAME.connection.clickDice = function (gage, oddeven) {

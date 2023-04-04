@@ -68,7 +68,7 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 			)
 			let donatePos=this.game.map.getMostExpensiveIn(this.invoker, TileFilter.MY_LAND().setNoLandMark())
 			if(donatePos!==-1){
-				pkg.addAction(new ChangeLandOwnerAction(stayed.turn,donatePos,stayed.turn),donate_guidebook)
+				pkg.addAction(new ChangeLandOwnerAction(stayed.turn,donatePos,stayed.turn).setPriorityNormal(),donate_guidebook)
 			}
 			this.trace.addTag(ActionTraceTag.GUIDEBOOK).setName("지옥가북")
 			return true

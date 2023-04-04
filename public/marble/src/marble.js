@@ -18,7 +18,7 @@ const MESSAGE = {
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
 
-const BGM = false
+const BGM = true
 export var GAME
 class Game {
 	constructor() {
@@ -205,12 +205,12 @@ class Game {
 	async build(pos, builds, player) {
 		for (const b of builds) {
 			if ((b === 1 && builds.length === 1) || b === 6) {
-				this.scene.addLandFlag(pos, player)
+				this.scene.addLandFlag(pos, player, "create")
 			} else if (b === 5) {
 				this.playsound("landmark")
-				this.scene.addLandMark(pos, player)
+				this.scene.addLandMark(pos, player, "create")
 			} else {
-				this.scene.addHouse(pos, player, b - 1)
+				this.scene.addHouse(pos, player, b - 1, "create")
 			}
 			this.scene.render()
 			await sleep(500)
@@ -375,13 +375,20 @@ class Game {
 		this.scene.removePlayer(this.turnToPlayerNum(turn))
 		this.ui.onBankrupt(turn)
 	}
-	gameoverBankrupt(winner) {
+	gameoverBankrupt(winner, scores, mul) {
 		this.playsound("finish")
 		this.ui.largeText(winner + 1 + "P 파산 승리", false)
+		this.onGameOver(winner, scores, mul, winner + 1 + "P 파산 승리")
 	}
-	gameoverMonopoly(winner, monopoly) {
+	gameoverMonopoly(winner, monopoly, scores, mul) {
 		this.playsound("finish")
 		this.ui.largeText(winner + 1 + "P " + MONOPOLY[monopoly] + "으로 승리", false)
+		this.onGameOver(winner, scores, mul, winner + 1 + "P " + MONOPOLY[monopoly] + " 승리")
+	}
+	async onGameOver(winner, scores, mul, wintext) {
+		console.log(scores)
+		await sleep(2000)
+		this.ui.showResult(winner, scores, mul, wintext)
 	}
 	onQuit() {
 		this.ui.showDialog("정말 게임을 떠나시겠습니까?", () => {
@@ -494,7 +501,7 @@ $(window).on("load", function (e) {
 		GAME.onDiceHoldStart()
 		return false
 	})
-	$("#dicebtn").on("mouseup mouseleave touchend", function (e) {
+	$("#dicebtn").on("mouseup touchend", function (e) {
 		GAME.onDiceHoldEnd()
 		GAME.scene.clearTileHighlight("yellow")
 		return false

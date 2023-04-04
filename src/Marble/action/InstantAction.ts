@@ -23,6 +23,17 @@ export class GameOverAction extends InstantAction{
 	}
 }
 
+
+export class SimpleInstantAction extends InstantAction{
+	
+	constructor(type:ACTION_TYPE) {
+		super(type,-1)
+	}
+	execute(game: MarbleGame): void {
+		game.runSimpleInstantAction(this.type)
+	}
+}
+
 export class SendMessageAction extends InstantAction{
 	
     message:string

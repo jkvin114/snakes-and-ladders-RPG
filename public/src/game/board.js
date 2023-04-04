@@ -10,6 +10,9 @@ const FRAME = 30 //milisecond
 const TILE_SHADOW_THICKNESS_RIGHT = 5
 const TILE_SHADOW_THICKNESS_BOTTOM = 10
 export const COLOR_LIST_BG = ["#a6c8ff", "#ff7070", "#95ff80", "#fdff80"] //플레이어별 연한 색상
+export const easeLinear = function (t, b, c, d) {
+	return b + (t / d) * c
+}
 
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
@@ -267,6 +270,104 @@ export class Board {
 	extrapolate(start, end, scale) {
 		return start + (end - start) * scale
 	}
+	getBearingAngle(pos1, pos2) {
+		let angle
+		if (pos1.x < pos2.x) {
+			angle = 90 + Math.atan((pos2.y - pos1.y) / (pos2.x - pos1.x)) * (180 / Math.PI)
+		} else {
+			angle = 270 + Math.atan((pos1.y - pos2.y) / (pos1.x - pos2.x)) * (180 / Math.PI)
+		}
+		return angle
+	}
+
+	slopeBearingAngle(slope) {
+		return this.getBearingAngle({ x: 0, y: 0 }, { x: 1, y: slope })
+	}
+
+	distance(pos1, pos2) {
+		return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.y - pos2.y) ** 2)
+	}
+
+	/**
+	 *
+	 * @param {*} elem element to animate
+	 * @param {*} start start x,y pos
+	 * @param {*} dest dest x,y pos
+	 * @param {*} duration total duartion
+	 * @param {*} curveStrength value of parabolaheight/distance
+	 * @param {*} angle rotates randomly if set to "random"
+	 * @param {*} easing easing method for x direction animation :"in" or "out" or none
+	 */
+	async animateParabola(elem, start, dest, duration, curveStrength, angle, easing) {
+		const bearing = ((this.getBearingAngle(start, dest) + 360) % 360) - 90
+		const group = new fabric.Group([elem], { evented: false })
+		// console.log(bearing)
+		const dist = this.distance(start, dest) //alpha
+		const flip = bearing > 90 && bearing < 270
+		const parabolaHeight = dist * curveStrength //beta
+		// console.log(bearing)
+		const startAngle = this.slopeBearingAngle((-4 * parabolaHeight) / dist) //* (flip?-1:1) %360
+		const angleinit = flip ? -startAngle + 180 : startAngle
+		// console.log(startAngle)
+		elem.set({
+			top: 0,
+			left: 0,
+			originX: "center",
+			originY: "center",
+			angle: angleinit,
+		})
+		group.set({ angle: bearing, left: start.x, top: start.y, originX: "center", originY: "center", flipY: false })
+		this.canvas.add(elem)
+		this.canvas.add(group)
+		this.removeImageAfter(elem, duration + 200)
+		this.removeImageAfter(group, duration + 200)
+
+		let xEasing = easeLinear
+		if (easing === "in") {
+			xEasing = fabric.util.ease.easeInCubic
+		} else if (easing === "out") {
+			xEasing = fabric.util.ease.easeOutCubic
+		}
+		elem.animate("left", dist, {
+			onChange: this.render.bind(this),
+			duration: duration,
+			easing: xEasing,
+		})
+		if (angle === "random") {
+			elem.animate("angle", 600, {
+				onChange: this.render.bind(this),
+				duration: duration,
+				easing: easeLinear,
+			})
+		} else {
+			elem.animate("angle", 90, {
+				onChange: this.render.bind(this),
+				duration: duration / 2,
+				easing: fabric.util.ease.easeOutQuad,
+			})
+		}
+		elem.animate("top", parabolaHeight * (flip ? 1 : -1), {
+			onChange: this.render.bind(this),
+			duration: duration / 2,
+			easing: fabric.util.ease.easeOutQuad,
+		})
+		await sleep(duration / 2)
+
+		elem.animate("top", 0, {
+			onChange: this.render.bind(this),
+			duration: duration / 2,
+			easing: fabric.util.ease.easeInQuad,
+		})
+		if (angle !== "random") {
+			elem.animate("angle", flip ? startAngle : 180 - startAngle, {
+				onChange: this.render.bind(this),
+				duration: duration / 2,
+				easing: fabric.util.ease.easeInQuad,
+			})
+		}
+		// canvas.add(container);
+		// canvas.add(group);
+	}
 	animateOpacity(elem, opacity, duration) {
 		if (!elem) return
 		elem.animate("opacity", opacity, {
@@ -291,6 +392,14 @@ export class Board {
 			easing: fabric.util.ease.easeOutCubic,
 		})
 	}
+	animateScale(elem, scale, duration) {
+		if (!elem) return
+		elem.animate("scale", scale, {
+			onChange: this.render.bind(this),
+			duration: duration,
+			easing: fabric.util.ease.easeOutCubic,
+		})
+	}
 	animateAngle(elem, angle, duration) {
 		if (!elem) return
 		elem.animate("angle", angle, {
@@ -310,6 +419,7 @@ export class Board {
 			elem.animate("left", x, {
 				onChange: this.render.bind(this),
 				duration: duration,
+				easing: easeLinear,
 			})
 	}
 	animateY(elem, y, duration, linearEasing) {
@@ -323,6 +433,7 @@ export class Board {
 			elem.animate("top", y, {
 				onChange: this.render.bind(this),
 				duration: duration,
+				easing: easeLinear,
 			})
 	}
 	animateXEaseOut(elem, x, duration) {

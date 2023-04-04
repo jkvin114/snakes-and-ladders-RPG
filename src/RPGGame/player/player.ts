@@ -16,7 +16,7 @@ import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
 import { ServerGameEventFormat } from "../data/EventFormat"
 import { MAP } from "../MapHandlers/MapStorage"
 import ABILITY = require("../../../res/character_ability.json")
-import { Indicator } from "../../RPGSimulation/TrainHelper"
+import { Indicator } from "../Simulation/data/Indicator"
 // const { isMainThread } = require('worker_threads')
 import CONFIG from "../../../config/config.json"
 import { Damage, PercentDamage } from "../core/Damage"

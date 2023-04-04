@@ -179,12 +179,12 @@ export class MarbleGameEventObserver {
     {
         this.eventEmitter(this.rname, serverEvents.BANKRUPT, player)
     }
-    gameOverWithMonopoly(player:number,monopoly:number)
+    gameOverWithMonopoly(player:number,monopoly:number,scores:number[],mul:number)
     {
-        this.eventEmitter(this.rname, serverEvents.GAMEOVER_MONOPOLY, player,monopoly)
+        this.eventEmitter(this.rname, serverEvents.GAMEOVER_MONOPOLY, player,monopoly,scores,mul)
     }
-    gameoverWithBankrupt(player:number)
+    gameoverWithBankrupt(player:number,scores:number[],mul:number)
     {
-        this.eventEmitter(this.rname, serverEvents.GAMEOVER_BANKRUPT, player)
+        this.eventEmitter(this.rname, serverEvents.GAMEOVER_BANKRUPT, player,scores,mul)
     }
 }

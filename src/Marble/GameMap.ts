@@ -44,6 +44,7 @@ class MarbleGameMap{
     blockingTiles:Set<number>
     liftedTile:number
     lockedTile:number
+    readonly bankruptWinMultiplier:number
     constructor(map:string){ 
         this.buildableTiles=new Map<number,BuildableTile>()
         this.tiles=[]
@@ -52,8 +53,9 @@ class MarbleGameMap{
         this.specials=new Set<Tile>()
         this.sights=[]
         this.name=map
+        this.bankruptWinMultiplier=1
         if(map==='god_hand'){
-            
+            this.bankruptWinMultiplier=2
             this.setMap(GOD_HAND_MAP)
 
             this.start=GOD_HAND_MAP.start
@@ -68,7 +70,6 @@ class MarbleGameMap{
             this.island=WORLD_MAP.island
             this.olympic=WORLD_MAP.olympic
             this.travel=WORLD_MAP.travel
-            
         }
         
         this.olympicPos=-1

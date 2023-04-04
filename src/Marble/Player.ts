@@ -23,6 +23,7 @@ class MarblePlayer{
     oddeven:number
     cycleLevel:number
     num:number  //index of this player in player array
+    totalBet:number
     private turnsOnIsland:number
     private pendingActions:Action[]
     private savedDefenceCardAbility:ABILITY_NAME
@@ -50,6 +51,7 @@ class MarblePlayer{
         this.abilityStorage=new AbilityStorage()
         this.statusEffect=new Set<string>()
         this.turnsOnIsland=0
+        this.totalBet=money
     }
     
     addPendingAction(action:Action){
@@ -57,6 +59,10 @@ class MarblePlayer{
     }
     getPendingAction(){
         return this.pendingActions
+    }
+    incrementTotalBet(bet:number){
+        this.totalBet+=bet
+        console.log(this.totalBet)
     }
     clearPendingAction(){
         this.pendingActions=[]
@@ -193,7 +199,8 @@ class MarblePlayer{
     canLoan(amt:number){
         return !this.hadLoan
     }
-    onLoan(){
+    onLoan(amount:number){
+        this.incrementTotalBet(amount)
         this.hadLoan=true
         this.money=0
     }
@@ -203,7 +210,8 @@ class MarblePlayer{
     earnMoney(amt:number){
         this.money+=amt
     }
-    bankrupt(){
+    bankrupt(amount:number){
+        this.incrementTotalBet(amount)
      //   console.log("bankrupt")
         this.retired=true
     }

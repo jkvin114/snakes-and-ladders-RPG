@@ -6,14 +6,14 @@ const { GameRecord, SimulationRecord, SimpleSimulationRecord } = require("./../m
 import { hasProp, writeFile } from "./core/Util"
 import { Worker, isMainThread } from "worker_threads"
 import { GameEventObserver } from "./GameEventObserver"
-import { SimulationEvalGenerator } from "./../RPGSimulation/SimulationEvalGenerator"
+import { SimulationEvalGenerator } from "./Simulation/eval/Generator"
 import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
 const path = require("path")
 
 function workerTs(data: unknown) {
-	return new Worker(path.resolve(__dirname, `./WorkerThread.js`), { workerData: data })
+	return new Worker(path.resolve(__dirname, `./../WorkerThread.js`), { workerData: data })
 }
 
 class RPGRoom extends Room {
@@ -155,6 +155,10 @@ class RPGRoom extends Room {
 		runnerId: string
 	) {
 		if (!isMainThread) return
+		if(CONFIG.dev_settings.enabled) {
+			console.error("ERROR: Dev setting is enabled!")
+			return
+		}
 		// let setting = new SimulationSetting(isTeam, simulationsetting)
 		// this.simulation = new Simulation(this.name, simulation_count, setting, runnerId)
 		this.doInstantSimulation(simulationsetting, simulation_count, isTeam, runnerId, this.name)
@@ -181,7 +185,7 @@ class RPGRoom extends Room {
 				isTeam: isTeam,
 				runnerId: runnerId,
 				roomName: roomName,
-				path: "./RPGSimulation/SimulationRunner.ts"
+				path: "./RPGGame/Simulation/runner.ts"
 			})
 			worker.on("message", (data: unknown) => {
 			//	console.log(data)

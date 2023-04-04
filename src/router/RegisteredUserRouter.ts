@@ -56,15 +56,23 @@ function checkPasswordValidity(pw: string) {
 	return true
 }
 router.get("/all", async function (req: express.Request, res: express.Response) {
-	const friends = await User.findAllSummary()
-	res.render("friends", {
-		username: "",
-		email: "",
-		profile: "",
-		isme: false,
-		friends: friends,
-		displayType: "all",
-	})
+	try{
+		const friends = await User.findAllSummary()
+		res.render("friends", {
+			username: "",
+			email: "",
+			profile: "",
+			isme: false,
+			friends: friends,
+			displayType: "all",
+		})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).redirect("servererror")
+	}
+	
+	
 })
 
 router.get("/:username", async function (req: express.Request, res: express.Response) {
@@ -75,72 +83,96 @@ router.get("/:username", async function (req: express.Request, res: express.Resp
 	}
 	let isFriend = false
 	let isFollowing = false
-	const boardData = await UserBoardDataSchema.findOneById(user.boardData)
-	if(!boardData){
-		res.status(404).redirect("/notfound")
-		return
-	}
-	const friendcount=await UserRelationSchema.friendCount(user._id)
-	const followcount=await UserRelationSchema.followCount(user._id)
+	try{
 
-	const counts = [friendcount, followcount,boardData.bookmarks.length,
-        boardData.articles.length,boardData.comments.length+boardData.replys.length,boardData.upvotedArticles.length]
+		const boardData = await UserBoardDataSchema.findOneById(user.boardData)
+		if(!boardData){
+			res.status(404).redirect("/notfound")
+			return
+		}
+		const friendcount=await UserRelationSchema.friendCount(user._id)
+		const followcount=await UserRelationSchema.followCount(user._id)
 
-	if (req.session.isLogined) {
-		isFriend =await UserRelationSchema.isFriendWith(req.session.userId,user._id)
-		isFollowing =await UserRelationSchema.isFollowTo(req.session.userId,user._id)
+		const counts = [friendcount, followcount,boardData.bookmarks.length,
+			boardData.articles.length,boardData.comments.length+boardData.replys.length,boardData.upvotedArticles.length]
+
+		if (req.session.isLogined) {
+			isFriend =await UserRelationSchema.isFriendWith(req.session.userId,user._id)
+			isFollowing =await UserRelationSchema.isFollowTo(req.session.userId,user._id)
+		}
+		res.render("user", {
+			isFriend: isFriend,
+			isFollowing: isFollowing,
+			username: user.username,
+			email: user.email,
+			profile: user.profileImgDir,
+			isme: req.session.isLogined && req.session.userId === String(user._id),
+			isadmin:user.role==="admin" && req.session.isLogined && req.session.userId === String(user._id),
+			isLogined: req.session.isLogined,
+			counts: counts,
+		})
 	}
-	res.render("user", {
-		isFriend: isFriend,
-		isFollowing: isFollowing,
-		username: user.username,
-		email: user.email,
-		profile: user.profileImgDir,
-		isme: req.session.isLogined && req.session.userId === String(user._id),
-		isadmin:user.role==="admin" && req.session.isLogined && req.session.userId === String(user._id),
-		isLogined: req.session.isLogined,
-		counts: counts,
-	})
+	catch(e){
+		console.error(e)
+		res.status(500).redirect("servererror")
+	}
+	
 })
 
 router.get("/:username/friend", async function (req: express.Request, res: express.Response) {
-	const user = await User.findOneByUsername(req.params.username)
-	if (!user) {
-		res.status(404).redirect("/notfound")
-		return
+	try{
+		const user = await User.findOneByUsername(req.params.username)
+		if (!user) {
+			res.status(404).redirect("/notfound")
+			return
+		}
+
+		const friendIds = await UserRelationSchema.findFriends(user._id)
+		const friends=await User.findAllSummaryByIdList(friendIds)
+		res.render("friends", {
+			username: user.username,
+			email: user.email,
+			profile: user.profileImgDir,
+			isme: req.session.isLogined && req.session.userId === String(user._id),
+			friends: friends,
+			displayType: "friends",
+		})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).redirect("servererror")
 	}
 
-	const friendIds = await UserRelationSchema.findFriends(user._id)
-	const friends=await User.findAllSummaryByIdList(friendIds)
-	res.render("friends", {
-		username: user.username,
-		email: user.email,
-		profile: user.profileImgDir,
-		isme: req.session.isLogined && req.session.userId === String(user._id),
-		friends: friends,
-		displayType: "friends",
-	})
+	
 })
 
 router.get("/:username/follow", async function (req: express.Request, res: express.Response) {
-	const user = await User.findOneByUsername(req.params.username)
-	if (!user) {
-		res.status(404).redirect("/notfound")
-		return
-	}
-	
-	const followIds = await UserRelationSchema.findFollows(user._id)
-	const follows=await User.findAllSummaryByIdList(followIds)
+	try{
+		const user = await User.findOneByUsername(req.params.username)
+		if (!user) {
+			res.status(404).redirect("/notfound")
+			return
+		}
+		
+		const followIds = await UserRelationSchema.findFollows(user._id)
+		const follows=await User.findAllSummaryByIdList(followIds)
 
-	//console.log(follows)
-	res.render("friends", {
-		username: user.username,
-		email: user.email,
-		profile: user.profileImgDir,
-		isme: req.session.isLogined && req.session.userId === String(user._id),
-		friends: follows,
-		displayType: "follows",
-	})
+		//console.log(follows)
+		res.render("friends", {
+			username: user.username,
+			email: user.email,
+			profile: user.profileImgDir,
+			isme: req.session.isLogined && req.session.userId === String(user._id),
+			friends: follows,
+			displayType: "follows",
+		})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).redirect("servererror")
+	}
+
+	
 })
 
 router.post(
@@ -149,14 +181,29 @@ router.post(
 	ImageUploader.uploadProfile.single("img"),
 	async function (req: express.Request, res: express.Response) {
 		const imgfile = req.file
-		if (imgfile) await User.updateProfileImage(req.session.userId, imgfile.filename)
-		res.status(201).redirect("/user")
+		try{
+			if (imgfile) await User.updateProfileImage(req.session.userId, imgfile.filename)
+			res.status(201).redirect("/user")
+		}
+		catch(e){
+			console.error(e)
+			res.status(500).end()
+		}
+
+		
 	}
 )
 
 router.post("/remove_profileimg", auth, async function (req: express.Request, res: express.Response) {
-	await User.updateProfileImage(req.session.userId, "")
-	res.status(200).redirect("/user")
+	try{
+		await User.updateProfileImage(req.session.userId, "")
+		res.status(200).redirect("/user")
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
+	}
+	
 })
 
 router.get("/", async function (req: express.Request, res: express.Response) {
@@ -180,42 +227,50 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 		res.status(400).end("password")
 		return
 	}
-	let user = await User.findOneByUsername(body.username)
-	if (user) {
-		res.status(400).end("duplicate username")
-		return
+	try{
+
+		let user = await User.findOneByUsername(body.username)
+		if (user) {
+			res.status(400).end("duplicate username")
+			return
+		}
+
+		let salt = createSalt()
+		let encryptedPw = await encrypt(body.password, salt)
+
+		let boardData = await UserBoardDataSchema.create({
+			_id:new mongoose.Types.ObjectId(),
+			articles: [],
+			comments: [],
+			bookmarks: [],
+			replys: [],
+			username: body.username,
+		})
+
+		User.create({
+			_id:new mongoose.Types.ObjectId(),
+			username: body.username,
+			email: body.email,
+			password: encryptedPw,
+			salt: salt,
+			simulations: [],
+			boardData: boardData._id,
+			role:"user"
+		})
+			.then((data: any) => {
+				console.log(data)
+				res.status(200).end(body.username)
+			})
+			.catch((err: Error) => {
+				console.log(err)
+				res.status(500).end()
+			})
 	}
-
-	let salt = createSalt()
-	let encryptedPw = await encrypt(body.password, salt)
-
-	let boardData = await UserBoardDataSchema.create({
-		_id:new mongoose.Types.ObjectId(),
-		articles: [],
-		comments: [],
-		bookmarks: [],
-		replys: [],
-		username: body.username,
-	})
-
-	User.create({
-		_id:new mongoose.Types.ObjectId(),
-		username: body.username,
-		email: body.email,
-		password: encryptedPw,
-		salt: salt,
-		simulations: [],
-		boardData: boardData._id,
-		role:"user"
-	})
-		.then((data: any) => {
-			console.log(data)
-			res.status(200).end(body.username)
-		})
-		.catch((err: Error) => {
-			console.log(err)
-			res.status(500).end()
-		})
+	catch(e){
+		console.error(e)
+		res.status(500).end()
+	}
+	
 })
 
 router.post("/current", async function (req: express.Request, res: express.Response) {
@@ -228,43 +283,50 @@ router.post("/current", async function (req: express.Request, res: express.Respo
  */
 router.post("/login", async function (req: express.Request, res: express.Response) {
 	let body = req.body
-
-	let user = await User.findOneByUsername(body.username)
-	if (!user) {
-		res.end("username")
-		return
-	}
-
-	if (user.password !== encrypt(body.password, user.salt)) {
-		res.end("password")
-		return
-	}
-	if (req.session) {
-		req.session.username = body.username
-		req.session.isLogined = true
-		req.session.userId = String(user._id)
-		if (user.boardData == null) {
-			console.log("added board data")
-			let boardData = await UserBoardDataSchema.create({
-				_id:new mongoose.Types.ObjectId(),
-				articles: [],
-				comments: [],
-				bookmarks: [],
-				replys: [],
-				username: body.username,
-			})
-			user = await User.setBoardData(user._id, boardData._id)
+	try{
+		let user = await User.findOneByUsername(body.username)
+		if (!user) {
+			res.end("username")
+			return
 		}
-		req.session.boardDataId = String(user.boardData)
+
+		if (user.password !== encrypt(body.password, user.salt)) {
+			res.end("password")
+			return
+		}
+		if (req.session) {
+			req.session.username = body.username
+			req.session.isLogined = true
+			req.session.userId = String(user._id)
+			if (user.boardData == null) {
+				console.log("added board data")
+				let boardData = await UserBoardDataSchema.create({
+					_id:new mongoose.Types.ObjectId(),
+					articles: [],
+					comments: [],
+					bookmarks: [],
+					replys: [],
+					username: body.username,
+				})
+				user = await User.setBoardData(user._id, boardData._id)
+			}
+			req.session.boardDataId = String(user.boardData)
+		}
+
+		// console.log(req.session)
+		console.log(body.username + " has logged in")
+		res.status(200).json({
+			username: body.username,
+			email: user.email,
+			id: user._id,
+		})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
 	}
 
-	console.log(req.session)
-	console.log(body.username + " has logged in")
-	res.status(200).json({
-		username: body.username,
-		email: user.email,
-		id: user._id,
-	})
+	
 })
 
 /**
@@ -291,39 +353,46 @@ router.post("/logout", ajaxauth, function (req: express.Request, res: express.Re
  */
 router.patch("/password", ajaxauth, async function (req: express.Request, res: express.Response) {
 	let body = req.body
+	try{
+		let user = await User.findById(req.session.userId)
 
-	let user = await User.findById(req.session.userId)
+		if (!user) {
+			console.log("user not exist")
+			res.end("user not exist")
+			return
+		}
 
-	if (!user) {
-		console.log("user not exist")
-		res.end("user not exist")
-		return
+		if (user.password !== encrypt(body.originalpw, user.salt)) {
+			res.end("password not match")
+			return
+		}
+		if (!checkPasswordValidity(body.newpw)) {
+			res.end("pw error")
+			return
+		}
+
+		let salt = createSalt()
+		let encryptedPw = encrypt(body.newpw, salt)
+
+		let id = user._id
+
+		console.log(body.username + " has changed password")
+
+		User.updatePassword(id, encryptedPw, salt)
+			.then(() => {
+				res.status(200).end()
+			})
+			.catch((err: Error) => {
+				console.log(err)
+				res.status(500).end()
+			})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
 	}
 
-	if (user.password !== encrypt(body.originalpw, user.salt)) {
-		res.end("password not match")
-		return
-	}
-	if (!checkPasswordValidity(body.newpw)) {
-		res.end("pw error")
-		return
-	}
-
-	let salt = createSalt()
-	let encryptedPw = encrypt(body.newpw, salt)
-
-	let id = user._id
-
-	console.log(body.username + " has changed password")
-
-	User.updatePassword(id, encryptedPw, salt)
-		.then(() => {
-			res.status(200).end()
-		})
-		.catch((err: Error) => {
-			console.log(err)
-			res.status(500).end()
-		})
+	
 })
 
 /**
@@ -331,30 +400,37 @@ router.patch("/password", ajaxauth, async function (req: express.Request, res: e
  */
 router.patch("/email", async function (req: express.Request, res: express.Response) {
 	let body = req.body
+	try{
+		let user = await User.findOneByUsername(body.username)
 
-	let user = await User.findOneByUsername(body.username)
+		if (!user) {
+			res.end("user not exist")
+			return
+		}
 
-	if (!user) {
-		res.end("user not exist")
-		return
+		if (user.password !== encrypt(body.password, user.salt)) {
+			res.end("password not match")
+			return
+		}
+		console.log(body.username + " has changed email")
+
+		let id = user._id
+
+		User.updateEmail(id, body.email)
+			.then(() => {
+				res.status(201).end()
+			})
+			.catch((err: Error) => {
+				console.log(err)
+				res.status(500).end()
+			})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
 	}
 
-	if (user.password !== encrypt(body.password, user.salt)) {
-		res.end("password not match")
-		return
-	}
-	console.log(body.username + " has changed email")
-
-	let id = user._id
-
-	User.updateEmail(id, body.email)
-		.then(() => {
-			res.status(201).end()
-		})
-		.catch((err: Error) => {
-			console.log(err)
-			res.status(500).end()
-		})
+	
 })
 
 /**
@@ -362,8 +438,15 @@ router.patch("/email", async function (req: express.Request, res: express.Respon
  */
 router.delete("/", async function (req: express.Request, res: express.Response) {
 	let body = req.body
-
-	let user = await User.findOneByUsername(body.username)
+	let user=null
+	try{
+		user = await User.findOneByUsername(body.username)
+	}
+	catch(e){
+		console.error(e)
+		return res.status(500).end()
+	}
+	
 	if (!user) {
 		res.status(204).end("user not exist")
 		return
@@ -415,15 +498,23 @@ router.post("/", async function (req: express.Request, res: express.Response) {
  * username
  */
 router.get("/simulation", async function (req: express.Request, res: express.Response) {
-	let user = await User.findOneByUsername(req.query.username)
-	if (!user) {
-		res.status(204).end("user not exist")
-		return
-	}
-	let simulations = user.simulations
+	try{
+		let user = await User.findOneByUsername(req.query.username)
+		if (!user) {
+			res.status(204).end("user not exist")
+			return
+		}
+		let simulations = user.simulations
 
-	res.status(200).end(JSON.stringify(simulations))
-})
+		res.status(200).end(JSON.stringify(simulations))
+
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
+	}
+	
+})	
 router.use("/relation", require("./UserRelationRouter"))
 
 module.exports = router

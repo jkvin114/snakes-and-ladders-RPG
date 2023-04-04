@@ -1,5 +1,17 @@
 import { GAME, SOLOPLAY } from "./marble.js"
-import { moneyToString, COLORS } from "./marble_board.js"
+import { moneyToString, COLORS, COLORS_LIGHT } from "./marble_board.js"
+
+function addNumComma(num) {
+	if (num <= 0) num = Math.abs(num)
+	let str = String(num)
+	let s = ""
+	for (let i = str.length - 1; i >= 0; i--) {
+		s = str[i] + s
+		if ((str.length - 1 - i) % 3 == 2 && i !== 0 && i !== str.length - 1) s = "," + s
+	}
+	return s
+}
+
 class BuildingSelector {
 	constructor(builds, buildsHave, discount, avaliableMoney) {
 		this.builds = builds
@@ -444,6 +456,7 @@ export class GameInterface {
 		})
 
 		$("#quit").click(() => GAME.onQuit())
+		$("#result-quitbtn").click(() => (window.location.href = "/index.html"))
 
 		$("#fortunecard-cancel").click(() => {
 			this.game.finishObtainCard(false)
@@ -501,18 +514,18 @@ export class GameInterface {
 			let p = setting.players[i]
 			$(this.doms.playerName[ui_index]).html(p.name)
 			$(this.doms.playerTurn[ui_index]).html(String(i + 1))
-			$(this.doms.playerChar[ui_index]).attr(
-				"src",
-				"./../res/img/character/" +
-					["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree", "hacker"][
-						p.char
-					] +
-					".png"
-			)
+			$(this.doms.playerChar[ui_index]).attr("src", this.charImgUrl(p.char))
 			$(this.doms.playerMoney[ui_index]).html(moneyToString(p.money))
 			this.setSavedCard(i, p.card)
 			// $(this.doms.moneyTable[p.turn]).html(moneyToString(p.money))
 		}
+	}
+	charImgUrl(char) {
+		return (
+			"./../res/img/character/" +
+			["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree", "hacker"][char] +
+			".png"
+		)
 	}
 
 	onTurnStart(turn) {
@@ -939,5 +952,47 @@ export class GameInterface {
 			$("#dialog").hide()
 		})
 		$("#dialog").show()
+	}
+	showResult(winner, scores, mul, wintext) {
+		$("#resultwindow .window-header-content").html(`
+		${wintext}<a style="font-size: 19px;color: white;font-family: CookierunBlack;">${
+			mul > 1 ? "(보너스 x" + mul + ")" : ""
+		}</a>
+		`)
+		let str = `<div class="result-winner-wrapper">
+		<div class="result-winner">
+		  <div>
+		  <img src="${this.charImgUrl(
+				this.game.players[winner].char
+			)}" class="result-charimg" style="width: 30px;background-color: ${COLORS_LIGHT[winner]};">
+
+			<a class="goldtext" style="font-size: 21px;">${this.game.players[winner].name}</a>
+		  </div>
+		  <div>
+			<img src="res/trophy.svg" style="width: 30px;">  <a class="goldtext" style="font-size: 21px;">${addNumComma(
+				scores[winner]
+			)}</a>
+		  </div>
+		</div>
+	  </div>`
+		for (let i = 0; i < this.game.players.length; ++i) {
+			if (scores[i] > 0) continue
+			str += `
+		<div class="result-loser-wrapper">
+		<div class="result-loser">
+		  <div>
+		  <img src="${this.charImgUrl(
+				this.game.players[i].char
+			)}" class="result-charimg" style="width: 25px;background-color: ${COLORS_LIGHT[i]};">
+		  ${this.game.players[i].name}
+		  </div>
+		  <div>
+			 -${addNumComma(scores[i])}
+		  </div>
+		</div>
+	  </div>`
+		}
+		$("#resultwindow-table").html(str)
+		$("#resultwindow").show()
 	}
 }

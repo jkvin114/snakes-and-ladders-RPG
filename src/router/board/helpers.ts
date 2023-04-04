@@ -91,13 +91,21 @@ export const voteController = async function (req: express.Request, res: express
 	const id = new ObjectID(req.body.id) as mongoose.Types.ObjectId
 	let voters: { upvoters: mongoose.Types.ObjectId[]; downvoters: mongoose.Types.ObjectId[] }|null=null
 	console.log(type)
-	if (type === ContentType.POST) {
-		voters = await PostSchema.getVotersById(id)
-	} else if (type === ContentType.COMMENT) {
-		voters = await CommentSchema.getVotersById(id)
-	} else if (type === ContentType.REPLY) {
-		voters = await ReplySchema.getVotersById(id)
+	try{
+		if (type === ContentType.POST) {
+			voters = await PostSchema.getVotersById(id)
+		} else if (type === ContentType.COMMENT) {
+			voters = await CommentSchema.getVotersById(id)
+		} else if (type === ContentType.REPLY) {
+			voters = await ReplySchema.getVotersById(id)
+		}
 	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
+	}
+
+	
 	// console.log(voters)
 
 	if (!voters) {

@@ -167,18 +167,35 @@ router.get("/marble_items", function (req:express.Request, res:express.Response)
 	res.end(JSON.stringify(data))
 })
 router.get("/marble_item_presets", async function (req:express.Request, res:express.Response) {
-	let data=await MarbleItemPreset.findAll()
+	try{
 
-	res.end(JSON.stringify(data))
+		let data=await MarbleItemPreset.findAll()
+
+		res.end(JSON.stringify(data))
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
+	}
 })
 
 router.post("/marble_item_presets", async function (req:express.Request, res:express.Response) {
 	if(!req.body) return
-	await MarbleItemPreset.create({
-		name:req.body.name,
-		items:req.body.items,
-		randomCount:req.body.randcount
-	})
+	try{
+
+		
+		await MarbleItemPreset.create({
+			name:req.body.name,
+			items:req.body.items,
+			randomCount:req.body.randcount
+		})
+		res.status(200).end()
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).end()
+	}
+	
 })
 
 

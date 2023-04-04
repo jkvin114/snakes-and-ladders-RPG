@@ -10,6 +10,11 @@ const PLAYER_POS_DIFF = [
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
 export const COLORS = ["red", "blue", "green", "yellow"]
+export const COLORS_LIGHT = ["#F1959B", "#7879FF", "#83D475", "#FFED73"]
+
+const HOUSE_SCALE = 0.6
+const LANDMARK_SCALE = 1.2
+const FLAG_SCALE = 0.8
 function getFlagCoord(coordinate) {
 	if (coordinate.rot === "right") {
 		return { x: coordinate.x - 30, y: coordinate.y - 10 }
@@ -630,6 +635,12 @@ export class MarbleScene extends Board {
 			case "discount":
 				image = "indicatediscount"
 				break
+			case "change":
+				image = "indicatechange"
+				break
+			case "selloff":
+				image = "indicateselloff"
+				break
 		}
 
 		let p = new fabric.Image(document.getElementById(image), {
@@ -639,12 +650,26 @@ export class MarbleScene extends Board {
 			evented: false,
 			opacity: 1,
 		})
+		let light = new fabric.Image(document.getElementById("indicatelight"), {
+			left: coord.x,
+			top: y,
+			objectCaching: false,
+			evented: false,
+			opacity: 1,
+		})
 		this.lockFabricObject(p)
-		this.canvas.add(p.scale(0.9))
-
+		this.canvas.add(p.scale(0.8))
+		this.lockFabricObject(light)
+		this.canvas.add(light.scale(0.8))
+		this.render()
 		p.bringToFront()
+		light.bringToFront()
+		this.animateAngle(light, 1000, 2500)
 		await sleep(1000)
+
+		this.animateOpacity(light, 0, 1000)
 		this.animateOpacity(p, 0, 1000)
+		this.removeImageAfter(light, 1500)
 		this.removeImageAfter(p, 1500)
 	}
 	showMessage(type, pos) {
@@ -676,7 +701,7 @@ export class MarbleScene extends Board {
 				str = "화이트홀 발생"
 				break
 			case "root":
-				colorstop = ["#7FE2EB", "#3AA8CF"]
+				colorstop = ["#FFFFFF", "#fffbbd"]
 				str = "속박"
 				break
 			case "toll_increase":
@@ -701,6 +726,8 @@ export class MarbleScene extends Board {
 			fontFamily: "CookierunBlack",
 			stroke: "black",
 			strokeWidth: 2,
+			scaleX: 0.2,
+			scaleY: 0.2,
 		})
 		text.setGradient("fill", {
 			y1: 0,
@@ -714,8 +741,11 @@ export class MarbleScene extends Board {
 		})
 		this.lockFabricObject(text)
 		this.canvas.add(text)
-		this.animateOpacity(text, 1, 100)
 		text.bringToFront()
+		this.render()
+		this.animateScaleX(text, 1, 400)
+		this.animateScaleY(text, 1, 400)
+		this.animateOpacity(text, 1, 400)
 		this.removeImageAfter(text, 1500)
 	}
 
@@ -821,7 +851,7 @@ export class MarbleScene extends Board {
 			objectCaching: false,
 			evented: false,
 		})
-		house.scale(0.6)
+		house.scale(HOUSE_SCALE)
 		this.lockFabricObject(house)
 		this.canvas.add(house)
 
@@ -836,7 +866,7 @@ export class MarbleScene extends Board {
 			objectCaching: false,
 			evented: false,
 		})
-		house.scale(1.2)
+		house.scale(LANDMARK_SCALE)
 		this.lockFabricObject(house)
 		this.canvas.add(house)
 		return house
@@ -850,27 +880,155 @@ export class MarbleScene extends Board {
 			objectCaching: false,
 			evented: false,
 		})
-		flag.scale(0.8)
+		flag.scale(FLAG_SCALE)
 		this.lockFabricObject(flag)
 		this.canvas.add(flag)
 		return flag
 	}
 
-	addLandFlag(pos, owner) {
+	/**
+	 *
+	 * @param {*} elem
+	 * @param {*} coord
+	 * @param {*} buildingType flag/house/landmark
+	 * @param {*} animateType  fade/create
+	 */
+	async animateBuildingBuild(elem, coord, buildingType, animateType) {
+		if (animateType === "create") {
+			let offset = 40
+
+			elem.set({ top: coord.y - offset, left: coord.x })
+			this.render()
+			await sleep(buildingType === "landmark" ? 400 : 200)
+			elem.bringToFront()
+			let easing = fabric.util.ease.easeOutBounce
+			let delay = 250
+			if (buildingType === "landmark") {
+				easing = fabric.util.ease.easeOutCubic
+				delay = 400
+			}
+			elem.animate("top", coord.y, {
+				onChange: this.render.bind(this),
+				duration: 400,
+				easing: easing,
+			})
+
+			await sleep(delay)
+
+			let flash = null
+			if (buildingType === "landmark") {
+				offset = 60
+				flash = new fabric.Image(document.getElementById("landmarkflash"), {
+					objectCaching: false,
+					evented: false,
+					originX: "center",
+					originY: "center",
+					top: coord.y,
+					left: coord.x,
+					opacity: 1,
+				})
+				flash.scale(1.5)
+				this.lockFabricObject(flash)
+			} else if (buildingType === "house") {
+				flash = new fabric.Image(document.getElementById("houseflash"), {
+					objectCaching: false,
+					evented: false,
+					originX: "center",
+					originY: "center",
+					top: coord.y,
+					left: coord.x,
+					opacity: 1,
+				})
+				flash.scale(1.5)
+				this.lockFabricObject(flash)
+			}
+			if (flash) {
+				this.canvas.add(flash)
+				this.animateOpacity(flash, 0, 800)
+				this.removeImageAfter(flash, 1000)
+				flash.bringToFront()
+				if (buildingType === "house") elem.bringToFront()
+			}
+		} else {
+			//fade
+			let scale = HOUSE_SCALE
+			if (buildingType === "landmark") scale = LANDMARK_SCALE
+			else if (buildingType === "flag") scale = FLAG_SCALE
+			elem.set({ top: coord.y, left: coord.x, scale: 0.1 })
+			elem.bringToFront()
+			this.animateScale(elem, scale, 500)
+		}
+	}
+	/**
+	 *
+	 * @param {*} elem
+	 * @param {*} buildingType flag/house/landmark
+	 * @param {*} animateType fade/destroy/delayed-fade
+	 */
+	async animateBuildingDestroy(elem, buildingType, animateType) {
+		// this.animateOpacity(elem, 0, 1000)
+		this.animateOpacity(elem, 0, 1500)
+		this.removeImageAfter(elem, 1500)
+
+		if (animateType === "destroy") {
+			this.animateMoneyParticle(elem.left, elem.top, buildingType)
+		}
+	}
+	async animateMoneyParticle(x, y, buildingType) {
+		let moneys = []
+		let interval = setInterval(() => {
+			for (const m of moneys) {
+				if (m) m.set({ flipY: !m.flipY })
+			}
+		}, 150)
+		let xRange = 20
+		let count = 6
+		if (buildingType === "landmark") {
+			count = 9
+			xRange = 50
+		}
+		for (let i = 0; i < count; ++i) {
+			let posx = x + (Math.random() * xRange - xRange / 2)
+			let rand = Math.floor(Math.random() * 4) + 1
+			console.log("spawnmoney" + posx)
+			let money = new fabric.Image(document.getElementById("moneyparticle" + rand), {
+				objectCaching: false,
+				evented: false,
+				originX: "center",
+				originY: "center",
+				top: y,
+				left: posx,
+				opacity: 1,
+				scale: 0.8,
+			})
+			this.canvas.add(money)
+			this.animateY(money, y - 130, 1000, true)
+			this.animateX(money, posx + (Math.random() * 20 - 10), 1000)
+			this.removeImageAfter(money, 1500)
+			moneys.push(money)
+			await sleep(200)
+			this.animateOpacity(money, 0, 900)
+		}
+		await sleep(2000)
+		clearInterval(interval)
+		moneys = null
+	}
+	addLandFlag(pos, owner, animateType) {
 		let flag = this.getFlag(owner)
 		let coord = getFlagCoord(this.getCoord(pos))
 		if (!coord) return
-
-		flag.set({ top: coord.y, left: coord.x })
-		flag.bringToFront()
+		this.animateBuildingBuild(flag, coord, "flag", animateType)
+		// flag.set({ top: coord.y, left: coord.x })
+		// flag.bringToFront()
 		this.tileObj.get(pos).setLandFlag(flag)
 	}
-	removeLandFlag(pos) {
+	removeLandFlag(pos, animateType) {
 		let tileobj = this.tileObj.get(pos)
 		if (tileobj.type === "nonbuildable") return
 		let flag = tileobj.buildings[0]
 		if (!flag) return
-		this.canvas.remove(flag)
+		this.animateBuildingDestroy(flag, "flag", animateType)
+		// this.canvas.remove(flag)
 		tileobj.setLandFlag(null)
 	}
 	/**
@@ -880,16 +1038,17 @@ export class MarbleScene extends Board {
 	 * @param {*} level 1~3
 	 * @returns
 	 */
-	addHouse(pos, owner, level) {
+	addHouse(pos, owner, level, animateType) {
 		if (level < 1 || level > 3) return
 		let h = this.getHouse(owner)
 		let coord = getHouseCoord(this.getCoord(pos), level)
 		if (!coord) return
+		this.animateBuildingBuild(h, coord, "house", animateType)
+		// h.set({ top: coord.y, left: coord.x })
+		// h.bringToFront()
 
-		h.set({ top: coord.y, left: coord.x })
-		h.bringToFront()
 		this.tileObj.get(pos).setHouse(h, level)
-		this.removeLandFlag(pos)
+		this.removeLandFlag(pos, "fade")
 	}
 	/**
 	 *
@@ -897,48 +1056,54 @@ export class MarbleScene extends Board {
 	 * @param {*} level 1~3
 	 * @returns
 	 */
-	removeHouse(pos, level) {
+	removeHouse(pos, level, animateType) {
 		if (level < 1 || level > 3) return
 
 		let tileobj = this.tileObj.get(pos)
 		if (tileobj.type === "nonbuildable") return
 		let house = tileobj.buildings[level]
 		if (!house) return
-		this.canvas.remove(house)
+		this.animateBuildingDestroy(house, "house", animateType)
+		// this.canvas.remove(house)
 		tileobj.setHouse(null, level)
 
 		if (tileobj.data.hasOnlyLand()) {
-			this.addLandFlag(pos, tileobj.data.owner)
+			this.addLandFlag(pos, tileobj.data.owner, "fade")
 		}
 	}
-	removeAllHouse(pos) {
-		for (let i = 1; i < 4; ++i) this.removeHouse(pos)
+	/*
+	removeAllHouse(pos, animateType) {
+		for (let i = 1; i < 4; ++i) this.removeHouse(pos, animateType)
 	}
-	addLandMark(pos, owner) {
+*/
+	addLandMark(pos, owner, animateType) {
 		let lm = this.getLandMark(owner)
 		let coord = getLandMarkCoord(this.getCoord(pos))
 		if (!coord) return
-		lm.set({ top: coord.y, left: coord.x })
-		lm.bringToFront()
+		this.animateBuildingBuild(lm, coord, "landmark", animateType)
+		// lm.set({ top: coord.y, left: coord.x })
+		// lm.bringToFront()
+
 		if (this.tileObj.get(pos).buildings[4] != null) this.canvas.remove(this.tileObj.get(pos).buildings[4])
 
 		this.tileObj.get(pos).setLandMark(lm)
 		this.showMessage("landmark", pos)
 		for (let i = 1; i < 4; ++i) {
-			this.removeHouse(pos, i)
+			this.removeHouse(pos, i, "fade")
 		}
-		this.removeLandFlag(pos)
+		this.removeLandFlag(pos, "fade")
 	}
-	removeLandMark(pos) {
+	removeLandMark(pos, animateType) {
 		let tileobj = this.tileObj.get(pos)
 		if (tileobj.type === "nonbuildable") return
-		let flag = tileobj.buildings[4]
-		if (!flag) return
-		this.canvas.remove(flag)
+		let landmark = tileobj.buildings[4]
+		if (!landmark) return
+		this.animateBuildingDestroy(landmark, animateType)
+		// this.canvas.remove(flag)
 		tileobj.setLandFlag(null)
 
 		for (let i = 1; i < 4; ++i) {
-			this.addHouse(pos, tileobj.data.owner, i)
+			this.addHouse(pos, tileobj.data.owner, i, "fade")
 		}
 	}
 	indicatePull(positions) {
@@ -996,16 +1161,32 @@ export class MarbleScene extends Board {
 			let tileobj = this.tileObj.get(p)
 			tileobj.setOwner(-1)
 			if (tileobj.type === "nonbuildable") return
-			tileobj.buildings.forEach((b) => {
-				this.canvas.remove(b)
-			})
+
+			let currentbuilds = this.tileData.get(p).builds
+			let tiledata = this.tileData.get(p)
+
+			for (let i = 0; i < currentbuilds.length; ++i) {
+				if (!currentbuilds[i]) continue
+				// this.animateBuildingDestroy(currentbuilds[i],"","destroy")
+				if (i === 0 && tiledata.hasOnlyLand()) {
+					this.animateBuildingDestroy(tileobj.buildings[i], "flag", "destroy")
+				} else if (i === 4) {
+					this.animateBuildingDestroy(tileobj.buildings[i], "landmark", "destroy")
+				} else if (!tiledata.hasLandMark()) {
+					this.animateBuildingDestroy(tileobj.buildings[i], "house", "destroy")
+				}
+			}
+
+			// tileobj.buildings.forEach((b) => {
+			// 	// this.canvas.remove(b)
+			// })
 
 			this.tileObj.get(p).clear()
 		}
 	}
 	removeBuildings(pos, toremove) {
 		toremove.forEach((b) => {
-			this.removeHouse(pos, b - 1)
+			this.removeHouse(pos, b - 1, "destroy")
 		})
 		this.render()
 	}
@@ -1100,14 +1281,14 @@ export class MarbleScene extends Board {
 			if (!currentbuilds[i]) continue
 
 			if (i === 0 && tiledata.hasOnlyLand()) {
-				this.removeLandFlag(pos)
-				this.addLandFlag(pos, player)
+				this.removeLandFlag(pos, "delayed-fade")
+				this.addLandFlag(pos, player, "fade")
 			} else if (i === 4) {
-				this.removeLandMark(pos)
-				this.addLandMark(pos, player)
+				this.removeLandMark(pos, "delayed-fade")
+				this.addLandMark(pos, player, "fade")
 			} else if (!tiledata.hasLandMark()) {
-				this.removeHouse(pos, i)
-				this.addHouse(pos, player, i)
+				this.removeHouse(pos, i, "delayed-fade")
+				this.addHouse(pos, player, i, "fade")
 			}
 		}
 		this.render()

@@ -189,7 +189,7 @@ html{
     border-radius: 4px;
     border: 1px solid rgb(82, 57, 9);
     color: white;
-    height: 30px;
+    min-height: 30px;
     font-size: 20px;
     text-align: center;
    
@@ -1355,7 +1355,7 @@ html{
   #dice-number-container.double #dice-double{
     display: inline;
   }
-  #dice-control > a
+  #dice-control > a,.goldtext
   {
    
     text-align: center;
@@ -1372,6 +1372,10 @@ html{
     padding-left: 10px;
     padding-right: 10px;
   
+    
+  }
+  .goldtext{
+    -webkit-text-stroke: 1px #000;
   }
   #dice-double{
     font-family: 'cookierun';
@@ -1386,3 +1390,51 @@ html{
     background: linear-gradient(to bottom,#ffc561 0%,#ffc561 50%,#e98e25 50%,#e98e25 100%);
     display: none;
   }
+.result-loser-wrapper{
+  background-color: #BCA68E;
+  margin: 4px;
+  border-radius: 5px;
+  padding: 4px;
+}
+.result-winner-wrapper{
+  background: linear-gradient(45deg,#f9ec6a, #f7c109);
+  margin: 4px;
+  border-radius: 5px;
+  padding: 5px;
+  box-shadow: 0 0 5px 2px #2c2120;
+  margin-top: 0;
+}
+.result-loser{
+  height: 40px;
+  background-color: #E5D3CB;
+}
+.result-winner{
+  height: 50px;
+  background-color: #483532;
+
+}
+.result-winner a{
+  font-family: "CookierunBlack";
+  font-weight: bold;
+}
+.result-loser,.result-winner{
+  display: grid;
+  grid-template-columns: 40% 60%;
+}
+.result-loser >div,.result-winner >div{
+  display: flex;
+  
+  justify-content: center;
+  align-items: center;
+}
+.result-loser >div{
+  line-height: 40px;
+  font-size: 15px;
+  color: #2c2120;
+}
+.result-loser >div:nth-child(1){
+  border-right: 2px dashed gray;
+}
+.result-charimg{
+  border-radius: 3px;
+}

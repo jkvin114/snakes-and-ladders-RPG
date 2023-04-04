@@ -166,9 +166,11 @@ export class AskDefenceCardAction extends QueryAction{
 
 export class AskAttackDefenceCardAction extends AskDefenceCardAction{
 	attackName:string
-	constructor(turn: number,cardname:string,name:string) {
+	attackTargetTile:number
+	constructor(turn: number,cardname:string,name:string,attackTargetTile:number) {
 		super(ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE,turn,cardname)
 		this.attackName=name
+		this.attackTargetTile=attackTargetTile
 	}
 }
 export class AskTollDefenceCardAction extends AskDefenceCardAction{

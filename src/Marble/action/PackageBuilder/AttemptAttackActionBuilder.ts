@@ -48,7 +48,7 @@ export class AttemptAttackActionBuilder extends DefendableActionBuilder {
 			}
 		} else if (this.defences.has(angel)) {
 			pkg.addAction(
-				new AskAttackDefenceCardAction(this.defender.turn, CARD_NAME.ANGEL, this.attackName)
+				new AskAttackDefenceCardAction(this.defender.turn, CARD_NAME.ANGEL, this.attackName,this.tile.position)
 					.setBlockActionId(this.main.getId())
 					.setAttacker(this.invoker.turn)
 					.setIgnore(ignored, ignore_defence),
@@ -56,7 +56,7 @@ export class AttemptAttackActionBuilder extends DefendableActionBuilder {
 			)
 		} else if (this.defences.has(shield)) {
 			pkg.addAction(
-				new AskAttackDefenceCardAction(this.defender.turn, CARD_NAME.SHIELD, this.attackName)
+				new AskAttackDefenceCardAction(this.defender.turn, CARD_NAME.SHIELD, this.attackName,this.tile.position)
 					.setBlockActionId(this.main.getId())
 					.setAttacker(this.invoker.turn)
 					.setIgnore(ignored, ignore_defence),

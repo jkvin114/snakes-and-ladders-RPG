@@ -88,11 +88,11 @@ class PlayerMediator {
 		/ selectedItems.length / 10
 		if(selectedItems.length===0) meanItemCost=0
 		const baseStats=[
-			35 + meanItemCost * 60,
-			35 + meanItemCost * 60,
-			35 + meanItemCost * 60,
+			35 + meanItemCost * 90,
+			35 + meanItemCost * 90,
+			35 + meanItemCost * 90,
 			75 + meanItemCost * 90,
-			35 + meanItemCost * 60
+			35 + meanItemCost * 90
 		]
 		this.players.forEach((p) => {
 			console.log(meanItemCost)
@@ -296,6 +296,7 @@ class PlayerMediator {
 	earnMoney(playerTurn: number, amount: number) {
 		let player = this.pOfTurn(playerTurn)
 		player.earnMoney(amount)
+		this.game.incrementTotalBet(amount)
 		this.game.eventEmitter.payMoney(-1, playerTurn, amount, "earn")
 		this.game.eventEmitter.changeMoney(player.turn, player.money)
 	}
@@ -334,12 +335,19 @@ class PlayerMediator {
 			this.payMoneyTo(payer, receiver, amt, type)
 		}
 	}
+	/**
+	 * 
+	 * @param amount 대출받은 돈
+	 * @param payerturn 
+	 * @param receiverturn 
+	 */
 	onLoanConfirm(amount: number, payerturn: number, receiverturn: number) {
 		let payer = this.pOfTurn(payerturn)
 		let receiver = this.pOfTurn(receiverturn)
 		// this.earnMoney(payer.turn, amount)
+		this.game.incrementTotalBet(amount)
 		this.payMoneyTo(payer, receiver, payer.money + amount, "toll")
-		payer.onLoan()
+		payer.onLoan(amount)
 	}
 	/**
 	 *
@@ -350,8 +358,9 @@ class PlayerMediator {
 	playerBankrupt(playerTurn: number, receiverturn: number, amount: number) {
 		let payer = this.pOfTurn(playerTurn)
 		let receiver = this.pOfTurn(receiverturn)
+		this.game.incrementTotalBet(amount-payer.money)
 		this.payMoneyTo(payer, receiver, amount, "toll")
-		payer.bankrupt()
+		payer.bankrupt(amount)
 		this.playerRetire(payer.turn)
 		this.game.bankrupt(payer)
 	}
@@ -418,6 +427,19 @@ class PlayerMediator {
 	onMonopolyChance(player: MarblePlayer, spots: number[]) {
 		let source = new ActionTrace(ACTION_TYPE.EMPTY)
 		this.game.pushActions(new MonopolyChanceActionBuilder(this.game, source, player, spots).build())
+	}
+	getPlayerBets(winner:number,mul:number):number[]{
+		let bets=[0,0,0,0]
+		let losertotalbet=0
+		for(const p of this.players){
+			if(p.turn!==winner){
+				bets[p.turn]=-(p.totalBet * mul+this.game.totalBet)
+				losertotalbet+=p.totalBet
+			}
+		}
+		bets[winner]=losertotalbet * mul + this.game.totalBet
+
+		return bets
 	}
 }
 export { PlayerMediator }

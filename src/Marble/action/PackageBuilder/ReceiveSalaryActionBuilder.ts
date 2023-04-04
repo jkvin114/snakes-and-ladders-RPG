@@ -41,7 +41,7 @@ export class PassOrArriveStartActionBuilder extends ActionPackageBuilder {
 		if (!val) return false
 		pkg.addExecuted(name, this.invoker.turn)
 		this.main.applyMultiplier(1 + val.value * 0.01)
-
+		this.invoker.incrementTotalBet(this.main.amount)
 		return true
 	}
 }

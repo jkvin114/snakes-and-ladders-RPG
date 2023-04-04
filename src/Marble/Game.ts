@@ -61,6 +61,7 @@ import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { EVENT_TYPE } from "./Ability/EventType"
 import type { ServerPayloadInterface } from "./ServerPayloadInterface"
 import { ArriveBlackholeActionBuilder, ArriveIslandActionBuilder, ArriveOlympicActionBuilder, ArriveStartActionBuilder, ArriveTravelActionBuilder, CreateBlackholeActionBuilder, OnBuildActionBuilder, PassOrArriveStartActionBuilder, PassTravelActionBuilder, PrepareTravelActionBuilder, PullActionBuilder, SelectOlympicActionBuilder, ThrowDiceActionBuilder, TurnStartActionBuilder } from "./action/PackageBuilder"
+import { ChooseBuildActionBuilder } from "./action/PackageBuilder/ChooseBuildActionBuilder"
 
 const DELAY_ROLL_DICE = 1000
 const MAP = ["world", "god_hand"]
@@ -86,6 +87,7 @@ class MarbleGame {
 	eventEmitter: MarbleGameEventObserver
 	bankruptPlayers: number[]
 	over: boolean
+	totalBet:number
 	readonly rname: string
 	constructor(players: ProtoPlayer[], rname: string, isTeam: boolean, map: number) {
 		this.isTeam = isTeam
@@ -100,6 +102,7 @@ class MarbleGame {
 		this.actionStack = new ActionStack()
 		this.bankruptPlayers = []
 		this.over = false
+		this.totalBet = this.playerTotal * this.START_MONEY
 		// this.test()
 	}
 	test() {
@@ -127,6 +130,7 @@ class MarbleGame {
 	getPriorityActions(): InstantAction[] {
 		return this.actionStack.popAllPriorityActions()
 	}
+
 	canStart() {
 		this.clientsReady += 1
 		if (this.clientsReady < this.mediator.playerCount) {
@@ -191,6 +195,14 @@ class MarbleGame {
 			if (this.totalturn === 6) this.mediator.upgradePlayerAbility()
 		}
 	}
+	incrementTotalBet(amount:number){
+		this.totalBet+=amount
+	}
+	runSimpleInstantAction(type:ACTION_TYPE){
+		if(type===ACTION_TYPE.REMOVE_BLACKHOLE)
+			this.eventEmitter.removeBlackHole()
+	}
+
 	getDiceModifiers(source: ActionTrace, oddEven: number) {
 		let dc = sample(this.thisPlayer().getDiceControlChance())
 		let abilities = this.thisPlayer().sampleAbility(EVENT_TYPE.GENERATE_DICE_NUMBER, source)
@@ -382,7 +394,7 @@ class MarbleGame {
 
 		this.pushActions(new ArriveBlackholeActionBuilder(this, source, player, pos, this.map.whiteholeTile).build())
 		this.map.removeBlackHole()
-		this.eventEmitter.removeBlackHole()
+		
 		return true
 	}
 	/**
@@ -751,7 +763,7 @@ class MarbleGame {
 	onSelectDonatePosition(turn: number, pos: number, source: ActionTrace) {
 		let tile = this.map.buildableTileAt(pos)
 		if (!tile || !tile.owned()) return
-
+		this.eventEmitter.indicateDefence("change",pos)
 		this.setLandOwner(tile, this.mediator.getRandomEnemy(turn))
 	}
 	onSelectBlackholePosition(turn: number, pos: number, action: TileSelectionAction) {
@@ -775,6 +787,7 @@ class MarbleGame {
 	attackTile(action: TileAttackAction) {
 		if (action.name === CARD_NAME.SELLOFF) {
 			this.map.clearTile(action.tile)
+			this.eventEmitter.indicateDefence("selloff",action.tile.position)
 		}
 		if (action.name === CARD_NAME.EARTHQUAKE) {
 			this.map.removeOneBuild(action.tile)
@@ -784,44 +797,14 @@ class MarbleGame {
 		}
 		if (action.name === CARD_NAME.LAND_CHANGE && action.landChangeTile != null) {
 			this.swapLand(action.landChangeTile, action.tile)
+			this.eventEmitter.indicateDefence("change",action.landChangeTile.position)
+			this.eventEmitter.indicateDefence("change",action.tile.position)
+
 		}
 	}
 	getAskBuildAction(playerTurn: number, tile: BuildableTile, source: ActionTrace): Action {
-		let mainaction = this.messageAction(playerTurn,"build_no_more")
-		let player = this.mediator.pOfTurn(playerTurn)
-
-		if(tile.isLandMark()) return new EmptyAction()
-
-		if (tile.owner !== -1 && !tile.isMoreBuildable()) {
-			return mainaction
-		}
-		let builds: ServerPayloadInterface.buildAvaliability[] = []
-		const flag=source.hasAbilityInNumberOfMove(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL,1) &&
-		 source.useActionAndAbility(ACTION_TYPE.PREPARE_TRAVEL,ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL)
-
-		if (
-			flag &&
-			tile instanceof LandTile
-		) {
-			builds = tile.getLandMarkBuildData(true)
-		} else if (player.canBuildLandOfMinimumPrice(tile.getMinimumBuildPrice())) {
-			builds = tile.getBuildingAvaliability(player.cycleLevel)
-		}
-		else{
-			mainaction.message="no_money"
-			return mainaction
-		}
-		if (builds.length > 0)
-			return new AskBuildAction(
-				playerTurn,
-				tile.position,
-				builds,
-				tile.getCurrentBuilds(),
-				player.getBuildDiscount(),
-				player.money
-			)
-
-		return mainaction
+		
+		return new ChooseBuildActionBuilder(this,source,this.mediator.pOfTurn(playerTurn),tile).build().main[0]
 	}
 	pullPlayers(invoker: number, action: PullAction) {
 		let players = this.mediator.getPlayersAt(action.targetTiles)
@@ -905,7 +888,7 @@ class MarbleGame {
 					action.source
 				)
 			} else if (action instanceof AskAttackDefenceCardAction) {
-				this.eventEmitter.indicateDefence(action.cardname,this.mediator.pOfTurn(turn).pos)
+				this.eventEmitter.indicateDefence(action.cardname,action.attackTargetTile)
 				this.pushSingleAction(new ActionModifier(turn, action.toBlock, ActionModifier.TYPE_BLOCK), action.source)
 			}
 		}
@@ -1050,6 +1033,7 @@ class MarbleGame {
 		this.checkMonopoly(tile, player)
 	}
 	onConfirmLoan(player: number, receiver: number, loanamount: number, result: boolean) {
+
 		if (result) this.mediator.onLoanConfirm(loanamount, player, receiver)
 		else this.mediator.playerBankrupt(player, receiver, loanamount + this.mediator.pOfTurn(player).money)
 	}
@@ -1066,11 +1050,18 @@ class MarbleGame {
 			this.mediator.onMonopolyChance(invoker, monopolyAlert.pos)
 		}
 	}
+	getPlayerWinScores(winner: number,multiplier:number){
+		return this.mediator.getPlayerBets(winner,multiplier).map((amt)=>Math.floor(amt/20000))
+	}
 
 	gameOverWithMonopoly(winner: number, monopoly: MONOPOLY) {
 		this.over = true
+		let mul=2
+		if(monopoly===MONOPOLY.LINE) mul=3
+		else if(monopoly===MONOPOLY.SIGHT) mul=5
+
+		this.eventEmitter.gameOverWithMonopoly(winner, monopoly,this.getPlayerWinScores(winner,mul),mul)
 		this.pushSingleAction(new GameOverAction(winner), new ActionTrace(ACTION_TYPE.EMPTY))
-		this.eventEmitter.gameOverWithMonopoly(winner, monopoly)
 	}
 
 	bankrupt(player: MarblePlayer) {
@@ -1087,7 +1078,8 @@ class MarbleGame {
 		if (left.length === 1) this.gameoverWithBankrupt(left[0].turn)
 	}
 	gameoverWithBankrupt(winner: number) {
-		this.eventEmitter.gameoverWithBankrupt(winner)
+		this.eventEmitter.gameoverWithBankrupt(winner,this.getPlayerWinScores(winner,this.map.bankruptWinMultiplier)
+		,this.map.bankruptWinMultiplier)
 		this.over = true
 		this.pushSingleAction(new GameOverAction(winner), new ActionTrace(ACTION_TYPE.EMPTY))
 	}

@@ -1439,38 +1439,30 @@ export class Scene extends Board {
 	}
 	//===========================================================================================================================
 
-	//===========================================================================================================================
-
-	getBearingAngle(pos1, pos2) {
-		let angle
-		if (pos1.x < pos2.x) {
-			angle = 90 + Math.atan((pos2.y - pos1.y) / (pos2.x - pos1.x)) * (180 / Math.PI)
-		} else {
-			angle = 270 + Math.atan((pos1.y - pos2.y) / (pos1.x - pos2.x)) * (180 / Math.PI)
-		}
-		return angle
-	}
-	//===========================================================================================================================
-
 	animateProjTrajectory(proj, speed) {
 		let dest = this.getTilePos(proj.scope[0])
 		let start = this.getPlayerPos(proj.owner)
 		let img = this.createProjIcon(proj.name)
-		console.log("animate projectile traj" + proj.name)
+		// console.log("animate projectile traj" + proj.name)
+		const bearing = this.getBearingAngle(start, dest)
+		let curveStrength = 0.3
 		switch (proj.name) {
 			case "ghost_r":
 			case "reaper_w":
 			case "sniper_w":
 			case "tree_w":
 			case "kraken_q":
-				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, this.getBearingAngle(start, dest))
+				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, bearing)
 				break
 			case "magician_r":
-				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, this.getBearingAngle(start, dest) + 90)
+				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, bearing)
+				curveStrength = 0.5
 				break
 		}
-		this.animateX(img, dest.x, speed)
-		this.animateY(img, dest.y, speed)
+
+		this.animateParabola(img, start, dest, speed, curveStrength, "", "")
+		// this.animateX(img, dest.x, speed)
+		// this.animateY(img, dest.y, speed)
 		setTimeout(() => img.set({ opacity: 0 }), speed + 100)
 
 		this.removeImageAfter(img, 2000)
@@ -1478,84 +1470,82 @@ export class Scene extends Board {
 
 	//===========================================================================================================================
 
-	animateTrajectory(target, origin, type, speed) {
+	animateTrajectory(target, origin, type, duration) {
 		//console.log("trajectory" + type)
 		let pos1 = this.getTilePos(origin)
 		let pos2 = this.getTilePos(target)
 		let img
+		const bearing = this.getBearingAngle(pos1, pos2)
+		let override = false
+		let curveStrength = 0.2
+		let angleAnim = ""
+		let easing = ""
 		switch (type) {
 			case "dinosaur_r":
 				img = this.createCroppedEffectImage("dinosaur_r")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.3, 0.6, 1, this.getBearingAngle(pos1, pos2))
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
-
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.3, 0.6, 1, bearing)
+				easing = "in"
+				curveStrength = 0
 				break
 			case "sniper_r":
 				img = this.createCroppedEffectImage("sniper_r_trajectory")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.6, 1, this.getBearingAngle(pos1, pos2))
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.6, 1, bearing)
+				curveStrength = 0
 				break
 			case "sniper_q":
 				img = this.createCroppedEffectImage("sniper_q_trajectory")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.6, 1, this.getBearingAngle(pos1, pos2))
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.6, 1, bearing)
+				curveStrength = 0
 				break
 			case "sniper_q_root":
 				img = this.createCroppedEffectImage("sniper_q_trajectory")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.6, 0.9, 1, this.getBearingAngle(pos1, pos2))
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.6, 0.9, 1, bearing)
+				curveStrength = 0
 				break
 			case "ghost_w_q":
 				img = this.createCroppedEffectImage("ghost_q_trajectory")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.7, 0.7, 1, this.getBearingAngle(pos1, pos2))
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.7, 0.7, 1, bearing)
+				curveStrength = 0
+
 				break
 			case "ghost_q":
 				img = this.createCroppedEffectImage("ghost_q_trajectory")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.4, 1, this.getBearingAngle(pos1, pos2))
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.4, 1, bearing)
+				curveStrength = 0
+				easing = "in"
 				break
 			case "tree_q":
 				img = this.createCroppedEffectImage("tree_q_trajectory")
 				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.4, 0.4, 1, 0)
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
-				this.animateAngle(img, 180, speed)
+				angleAnim = "random"
+
 				break
 			case "tree_r":
 			case "tree_wither_r":
 				img = this.createCroppedEffectImage("tree_r")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.6, 0.6, 1, this.getBearingAngle(pos1, pos2))
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.6, 0.6, 1, bearing)
+				curveStrength = 0.1
 				break
 			case "hacker_q":
 				img = this.createCroppedEffectImage("hacker_q_proj")
 				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.3, 0.3, 1, 0)
-				this.animateX(img, pos2.x, speed)
-				this.animateY(img, pos2.y, speed)
-				this.animateAngle(img, 180, speed)
+				angleAnim = "random"
 				break
-
 			case "bird_q":
 			case "bird_w_hit":
 				img = this.createCroppedEffectImage("bird_q_proj")
-				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.7, 0.7, 1, this.getBearingAngle(pos1, pos2))
-				speed *= 3
-				this.animateX(img, this.extrapolate(pos1.x, pos2.x, 3), speed, true)
-				this.animateY(img, this.extrapolate(pos1.y, pos2.y, 3), speed, true)
+				this.setEffectImageAttr(img, pos1.x, pos1.y, 0.7, 0.7, 1, bearing)
+				duration *= 3
+				this.animateX(img, this.extrapolate(pos1.x, pos2.x, 3), duration, true)
+				this.animateY(img, this.extrapolate(pos1.y, pos2.y, 3), duration, true)
+				override = true
 				break
 		}
+		if (!override) this.animateParabola(img, pos1, pos2, duration, curveStrength, angleAnim, easing)
 
 		setTimeout(() => {
 			if (img != null) img.set({ opacity: 0 })
-		}, speed + 100)
+		}, duration + 100)
 
 		this.removeImageAfter(img, 2000)
 	}
@@ -1661,8 +1651,10 @@ export class Scene extends Board {
 						1,
 						this.getBearingAngle(positions[1], positions[0])
 					)
-					this.animateX(hackerData, positions[0].x, duration)
-					this.animateY(hackerData, positions[0].y, duration)
+					this.animateParabola(hackerData, positions[1], positions[0], duration, 0.2, "", "in")
+
+					// this.animateX(hackerData, positions[0].x, duration)
+					// this.animateY(hackerData, positions[0].y, duration)
 					this.removeImageAfter(hackerData, duration + 100)
 				}, 600)
 				break

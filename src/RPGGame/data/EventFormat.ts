@@ -262,6 +262,9 @@ export namespace ClientInputEventFormat {
 		randomizeGameSetting: boolean
 		randomizePlayerNames: boolean
 		divideTeamEqually: boolean
+		saveLabelCSV:boolean
+		saveEvaluation:boolean
+
 		gameSetting: GameSetting
 
 		killRecord: boolean

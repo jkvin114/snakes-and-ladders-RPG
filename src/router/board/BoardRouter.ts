@@ -29,38 +29,54 @@ router.get("/", availabilityCheck,async (req: express.Request, res: express.Resp
 	if (req.query.start) {
 		start  = Math.max(0,Number(req.query.start))
 	}
-	let total=await PostSchema.countDocuments({});
- 
-	let data:SchemaTypes.Article[]=(await PostSchema.findPublicSummaryByRange(start, count))
-	//data=await filterPostSummary(req.session,data,false)
+	try{
+		let total=await PostSchema.countDocuments({});
+	
+		let data:SchemaTypes.Article[]=(await PostSchema.findPublicSummaryByRange(start, count))
+		//data=await filterPostSummary(req.session,data,false)
 
-	res.render("postlist", {
-		displayType:"all",
-		posts: data,
-		logined: req.session.isLogined,
-		user: null,
-		count:count,
-		start:start,
-		isEnd:(start+count > total)
-	})
+		res.render("postlist", {
+			displayType:"all",
+			posts: data,
+			logined: req.session.isLogined,
+			user: null,
+			count:count,
+			start:start,
+			isEnd:(start+count > total)
+		})
+	}
+	catch(e){
+		console.error(e)
+		res.status(500).redirect("servererror")
+	}
+
+	
 })
 router.get("/mypage", availabilityCheck,auth, (req: express.Request, res: express.Response) => {
 	res.redirect("/board/user/" + req.session.username + "/posts")
 })
 router.post("/bookmark", auth,async  (req: express.Request, res: express.Response) => {
-	const user = await User.getBoardData(req.session.userId)
-	const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
-	if(!bookmarks) {
-		return
+	try{
+		const user = await User.getBoardData(req.session.userId)
+		const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
+		if(!bookmarks) {
+			return
+		}
+		if(bookmarks.bookmarks.some((id:any)=>String(id)===req.body.id)){
+			await UserBoardDataSchema.removeBookmark(user.boardData,req.body.id)
+			res.status(200).json({ change: -1 })
+		}
+		else{
+			await UserBoardDataSchema.addBookmark(user.boardData,req.body.id)
+			res.status(200).json({ change: 1 })
+		}
 	}
-	if(bookmarks.bookmarks.some((id:any)=>String(id)===req.body.id)){
-		await UserBoardDataSchema.removeBookmark(user.boardData,req.body.id)
-		res.status(200).json({ change: -1 })
+	catch(e){
+		console.error(e)
+		res.status(500).end()
 	}
-	else{
-		await UserBoardDataSchema.addBookmark(user.boardData,req.body.id)
-		res.status(200).json({ change: 1 })
-	}
+
+	
 })
 
 router.use("/user", require("./BoardUserRouter"))

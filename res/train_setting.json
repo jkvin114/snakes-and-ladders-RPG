@@ -5,8 +5,5 @@
     "random_item_allow_duplicate":false,
     "save_indicator_text":false,
     "save_indicator_json":false,
-    "save_eval":true,
-    "save_label_csv":false,
     "focus_character":-1
-
 }

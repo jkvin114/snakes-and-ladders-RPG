@@ -51,7 +51,8 @@ export enum ACTION_TYPE {
 	CHOOSE_BUYOUT_POSITION,
 	CHANGE_LAND_OWNER,
 	MESSAGE,
-	INDICATE_DEFENCE
+	INDICATE_DEFENCE,
+	REMOVE_BLACKHOLE
 }
 
 export const ACTION_LIST = [
@@ -102,7 +103,8 @@ export const ACTION_LIST = [
 	"CHOOSE_ISLAND",
 	"CHOOSE_BUYOUT_POSITION",
 	"CHANGE_LAND_OWNER",
-	"MESSAGE","INDICATE_DEFENCE"
+	"MESSAGE","INDICATE_DEFENCE",
+	"REMOVE_BLACKHOLE"
 ]
 
 export enum MOVETYPE{
@@ -140,6 +142,11 @@ export abstract class Action {
 		this.duplicateAllowed=true
 		this.incompatiableWith=new Set<ACTION_TYPE>()
 		this.cancels=new Set<ACTION_TYPE>()
+
+	}
+	setPriorityNormal(){
+		this.priority=Action.PRIORITY_NORMAL
+		return this
 
 	}
 	setSource(source:ActionTrace){
