@@ -1,4 +1,4 @@
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 import type { Game } from "../Game"
 
 
@@ -15,10 +15,11 @@ import JelliceAgent from "../AiAgents/JelliceAgent"
 import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT, EFFECT_TIMING } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 5
-class Jellice extends Player {
+class Jellice extends CharacterSkillManager {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
@@ -36,18 +37,12 @@ class Jellice extends Player {
 	static readonly SKILL_EFFECT_NAME = ["magician_q", "hit", "magician_r"]
 	static readonly EFFECT_W_SHIELD="magician_w_shield"
 
-	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
-		//hp, ad:40, ar, mr, attackrange,ap
-		const basic_stats = [170, 30, 6, 6, 0, 50]
-		super(turn, team, game, ai, ID, name)
-		//	this.onoff = [false, false, false]
+	constructor(player:Player) {
+		super(player,ID)
 		this.cooltime_list = [3, 4, 8] //3 5 7
 		this.duration_list = [0, 1, 0]
 		this.skill_ranges = [0, 0, 30]
 		this.u_used = 0
-		
-		this.AiAgent=new JelliceAgent(this)
-
 	}
 
 	getSkillScale() {
@@ -58,9 +53,9 @@ class Jellice extends Player {
 		return 0
 	}
 	private buildProjectile() {
-		return new ProjectileBuilder(this.game, Jellice.PROJ_ULT, Projectile.TYPE_RANGE)
+		return new ProjectileBuilder(this.player.game, Jellice.PROJ_ULT, Projectile.TYPE_RANGE)
 			.setSize(3)
-			.setSource(this)
+			.setSource(this.player)
 			.setAction(function (this: Player) {
 				this.effects.apply(EFFECT.SILENT, 1)
 			})
@@ -107,23 +102,23 @@ class Jellice extends Player {
 			2, //2
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(this.getSkillBaseDamage(ENUM.SKILL.W), PercentDamage.MAX_HP)
-		).setSourceId(this.UEID)
+		).setSourceId(this.player.UEID)
 		.addData(this.getSkillBaseDamage(ENUM.SKILL.W))
 	}
 	private useW() {
 		console.log("usew")
-		this.effects.applySpecial(this.getWShield(), Jellice.EFFECT_W_SHIELD)
-		this.effects.applySpecial(this.getWEffect(), SpecialEffect.SKILL.MAGICIAN_W.name)
+		this.player.effects.applySpecial(this.getWShield(), Jellice.EFFECT_W_SHIELD)
+		this.player.effects.applySpecial(this.getWEffect(), SpecialEffect.SKILL.MAGICIAN_W.name)
 
 		this.startCooltime(ENUM.SKILL.W)
 		this.duration[ENUM.SKILL.W] = 2
-		this.effects.apply(EFFECT.ROOT, 1)
+		this.player.effects.apply(EFFECT.ROOT, 1)
 	}
 
 	qRange(){
 		let w_on = this.isSkillActivated(ENUM.SKILL.W)
-		let end_front = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_front"))
-		let end_back = this.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_back"))
+		let end_front = this.player.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_front"))
+		let end_back = this.player.effects.modifySkillRange((w_on ? 2 : 1) * this.getSkillAmount("qrange_end_back"))
 		let start = w_on?0:this.getSkillAmount("qrange_start")
 		return {end_front:end_front,end_back:end_back,start:start}
 	}
@@ -133,21 +128,22 @@ class Jellice extends Player {
 		let dmg = new SkillAttack(
 			new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0),
 			this.getSkillName(ENUM.SKILL.Q)
-		,ENUM.SKILL.Q,this)
+		,ENUM.SKILL.Q,this.player)
+
+		const effectGen=()=>this.getWBurnEffect()
 
 		if (this.isSkillActivated(ENUM.SKILL.W)) {
 			// let burn = this.
 			dmg.setOnHit(function (this: Player,source:Player) {
-				if(source instanceof Jellice)
-				this.effects.applySpecial(source.getWBurnEffect(), SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
+				this.effects.applySpecial(effectGen(), SpecialEffect.SKILL.MAGICIAN_W_BURN.name)
 			})
 		}
 		let range=this.qRange()
 		let attacked=this.mediator.skillAttack(
-			this,
-			EntityFilter.ALL_ATTACKABLE_PLAYER(this)
-				.in(this.pos + range.start + 1, this.pos + range.end_front)
-				.in(this.pos - range.end_back, this.pos - range.start)
+			this.player,
+			EntityFilter.ALL_ATTACKABLE_PLAYER(this.player)
+				.in(this.player.pos + range.start + 1, this.player.pos + range.end_front)
+				.in(this.player.pos - range.end_back, this.player.pos - range.start)
 		,dmg)
 
 		

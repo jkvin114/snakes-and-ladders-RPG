@@ -1,32 +1,25 @@
 import { Player } from "../player/player"
-import type { Game } from "../Game"
 
 import { SKILL, FORCEMOVE_TYPE, SKILL_INIT_TYPE, CHARACTER } from "../data/enum"
 import { ITEM } from "../data/enum"
 import { Damage, PercentDamage } from "../core/Damage"
 
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../../res/skill_scales.json"
 import { AblityChangeEffect, ShieldEffect } from "../StatusEffect"
-import { Entity } from "../entity/Entity"
+import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
 import { CALC_TYPE } from "../core/Util"
-import HackerAgent from "../AiAgents/HackerAgent"
 import { EFFECT } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 
 const ID = 9
-class Hacker extends Player {
+class Hacker extends CharacterSkillManager {
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 	readonly skill_ranges: number[]
 
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 	readonly duration_list: number[]
 
 	static readonly ULT_ABILITY_STEAL_PERCENT = 1
@@ -35,13 +28,13 @@ class Hacker extends Player {
 	static readonly SKILL_EFFECT_NAME = ["hacker_q", "hacker_w", "hacker_r"]
 
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
-	private virtualCharacter: Player | null
+	private virtualCharacter: CharacterSkillManager | null
 	private copiedCharId: number
 	private stacks: number[]
 	private totalstacks:number
 
-	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
-		super(turn, team, game, ai, ID, name)
+	constructor(player:Player) {
+		super(player,ID)
 		this.skill_ranges = [12, 15, 25]
 
 		this.cooltime_list = [2, 6, 6]
@@ -51,7 +44,6 @@ class Hacker extends Player {
 		this.stacks = [0, 0, 0, 0]
 		this.totalstacks=0
 
-		this.AiAgent = new HackerAgent(this)
 	}
 
 	/**
@@ -59,11 +51,11 @@ class Hacker extends Player {
 	 * @param charId
 	 */
 	private createTransformPlayer(charId: number) {
-		this.virtualCharacter = this.game.createPlayer(this.team, charId, this.name, this.turn, this.AI)
-		this.virtualCharacter.ability = this.ability
-		this.virtualCharacter.effects = this.effects
+		const dummy = this.player.game.createPlayer(this.player.team, charId, this.player.name, this.player.turn, this.player.AI)
+		this.virtualCharacter=dummy.skillManager
+		this.virtualCharacter.setPlayerBinding(this.player)
 
-		this.virtualCharacter.changeSkillImage("", SKILL.ULT)
+		dummy.changeSkillImage("", SKILL.ULT)
 	}
 	/**
 	 * set dummy player`s data to be same with player
@@ -71,9 +63,9 @@ class Hacker extends Player {
 	 */
 	private syncTransformPlayer() {
 		if (!this.virtualCharacter) return
-		this.virtualCharacter.inven = this.inven
-		this.virtualCharacter.pos = this.pos
-		this.virtualCharacter.level = this.level
+		// this.virtualCharacter.inven = this.inven
+		// this.virtualCharacter.pos = this.pos
+		// this.virtualCharacter.level = this.level
 	}
 	/**
 	 *
@@ -99,13 +91,13 @@ class Hacker extends Player {
 	private onAfterCopiedSkill() {
 		this.copiedCharId = -1
 		this.virtualCharacter = null
-		this.changeSkillImage("", SKILL.ULT)
+		this.player.changeSkillImage("", SKILL.ULT)
 		this.ability.sendToClient()
 	}
 	private getStackList() {
 		let str = ""
 		for (const p of this.mediator.allPlayer()) {
-			if (p.turn === this.turn) continue
+			if (p.turn === this.player.turn) continue
 			str += p.name + ":" + this.stacks[p.turn] + ", "
 		}
 		return "<emp>" + str + "</>" +"<br>Total: <emp>"+this.totalstacks+"</>"
@@ -192,7 +184,7 @@ class Hacker extends Player {
 			this.startCooltime(s)
 			let proj = this.virtualCharacter.getSkillProjectile(pos)
 			this.onAfterCopiedSkill()
-			if (proj) proj.sourcePlayer = this
+			if (proj) proj.sourcePlayer = this.player
 			return proj
 		}
 		return null
@@ -226,18 +218,19 @@ class Hacker extends Player {
 					pdmg += this.totalstacks * Hacker.Q_STACK_DAMAGE
 					moneytake = 3 * this.stacks[target.turn]
 				}
-
-				damage = new SkillAttack(new Damage(pdmg, 0, 0), this.getSkillName(s), s, this)
+				const addStack=(turn:number)=>this.addStack(turn)
+				damage = new SkillAttack(new Damage(pdmg, 0, 0), this.getSkillName(s), s, this.player)
 					.setOnHit(function (this: Player, source: Player) {
 						this.inven.takeMoney(moneytake)
 						source.inven.giveMoney(moneytake)
-						if (source instanceof Hacker) source.addStack(this.turn)
+						
+						addStack(this.turn)
 					})
 					.setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				this.startCooltime(s)
 				break
 			case SKILL.W:
-				damage = new SkillAttack(Damage.zero(), this.getSkillName(s), s, this)
+				damage = new SkillAttack(Damage.zero(), this.getSkillName(s), s, this.player)
 				if (target instanceof Player) {
 					let distance = 2 + Math.floor(0.33334 * this.stacks[target.turn])
 					damage.setOnHit(function (this: Player, source: Player) {
@@ -251,14 +244,15 @@ class Hacker extends Player {
 				if (this.copiedCharId !== -1 && this.virtualCharacter) {
 					this.onBeforeCopiedSkillUse()
 					damage = this.virtualCharacter.getSkillDamage(target, this.virtualCharacter.pendingSkill)
-					if (damage) damage.source = this
+					if (damage) damage.source = this.player
 					this.startCooltime(s)
 					this.onAfterCopiedSkill()
 				} else if (target instanceof Player) {
 					let stealRatio =
 						(Hacker.ULT_ABILITY_STEAL_PERCENT_BASE + Hacker.ULT_ABILITY_STEAL_PERCENT * this.totalstacks) / 100
 					let dur = this.duration_list[2]
-					damage = new SkillAttack(Damage.zero(), this.getSkillName(s), s, this).setOnHit(function (
+					const copyFunc=()=>this.copyCharacter(target.champ)
+					damage = new SkillAttack(Damage.zero(), this.getSkillName(s), s, this.player).setOnHit(function (
 						this: Player,
 						source: Player
 					) {
@@ -276,7 +270,7 @@ class Hacker extends Player {
 								.addData(AP),
 							SpecialEffect.SKILL.HACKER_ULT.name
 						)
-						if (source instanceof Hacker && source.copyCharacter(target.champ))
+						if (copyFunc())
 							this.sendConsoleMessage("Hacker extracted " + target.champ_name + "`s ultimate!")
 					})
 				}
@@ -294,7 +288,7 @@ class Hacker extends Player {
 			this.virtualCharacter.useActivationSkill(skill)
 			this.setSingleSkillDuration(skill, this.virtualCharacter.duration_list[skill])
 			this.startCooltime(skill)
-			if (this.copiedCharId === CHARACTER.BIRD) this.changeSkillImage("", SKILL.Q)
+			if (this.copiedCharId === CHARACTER.BIRD) this.player.changeSkillImage("", SKILL.Q)
 		}
 	}
 
@@ -312,7 +306,7 @@ class Hacker extends Player {
 	onSkillDurationEnd(skill: number) {
 		if (skill == SKILL.ULT && this.copiedCharId !== -1 && this.virtualCharacter) {
 			this.virtualCharacter.onSkillDurationEnd(skill)
-			if (this.copiedCharId === CHARACTER.BIRD) this.changeSkillImage("", SKILL.Q)
+			if (this.copiedCharId === CHARACTER.BIRD) this.player.changeSkillImage("", SKILL.Q)
 			this.onAfterCopiedSkill()
 		}
 	}

@@ -272,6 +272,7 @@ export class Board {
 	}
 	getBearingAngle(pos1, pos2) {
 		let angle
+		if (pos1.x === pos2.x && pos2.y === pos1.y) return Math.floor(Math.random() * 180)
 		if (pos1.x < pos2.x) {
 			angle = 90 + Math.atan((pos2.y - pos1.y) / (pos2.x - pos1.x)) * (180 / Math.PI)
 		} else {

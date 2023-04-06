@@ -1,4 +1,4 @@
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 import type { Game } from "../Game"
 
 import * as ENUM from "../data/enum"
@@ -16,9 +16,10 @@ import BirdAgent from "../AiAgents/BirdAgent"
 import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack, SkillOnHitFunction } from "../core/skill"
 import { EFFECT, EFFECT_TIMING } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 const ID = 7
 
-class Bird extends Player {
+class Bird extends CharacterSkillManager {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
@@ -47,16 +48,15 @@ class Bird extends Player {
 
 	static SKILL_EFFECT_NAME=["bird_q", "hit", "bird_r"]
 
-	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
+	constructor(player:Player) {
 		//hp, ad:40, ar, mr, attackrange,ap
 		const basic_stats: number[] = [200, 30, 7, 7, 0, 30]
-		super(turn, team, game, ai, ID, name)
+		super(player,ID)
 		//	this.onoff = [false, false, false]
 		this.cooltime_list = [3, 5, 10]
 		this.duration_list=[0,2,4]
 		this.skill_ranges=[20,0,0]
 		
-		this.AiAgent=new BirdAgent(this)
 	}
 
 
@@ -68,11 +68,11 @@ class Bird extends Player {
 		return Bird.SKILL_SCALES
 	}
 	private buildProjectile() {
-		let _this: Player = this
+		let _this: Player = this.player
 		let ultburn=this.getUltBurn()
-		return new ProjectileBuilder(this.game,Bird.PROJ_ULT_TRACE,Projectile.TYPE_RANGE)
+		return new ProjectileBuilder(this.player.game,Bird.PROJ_ULT_TRACE,Projectile.TYPE_RANGE)
 			.setSize(3)
-			.setSource(this)
+			.setSource(this.player)
 			.setAction(function(this: Player){
 				this.effects.applySpecial(ultburn,SpecialEffect.SKILL.BIRD_ULT_BURN.name)
 			})
@@ -114,27 +114,27 @@ class Bird extends Player {
 			2,
 			TickEffect.FREQ_EVERY_PLAYER_TURN,
 			new PercentDamage(3, PercentDamage.MAX_HP)
-		).setSourceId(this.UEID)
+		).setSourceId(this.player.UEID)
 	}
 
 	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
-		this.effects.apply(EFFECT.SPEED, 1)
-		this.effects.applySpecial(new NormalEffect(EFFECT.BIRD_W,2,EFFECT_TIMING.TURN_START),SpecialEffect.SKILL.BIRD_W.name)
+		this.player.effects.apply(EFFECT.SPEED, 1)
+		this.player.effects.applySpecial(new NormalEffect(EFFECT.BIRD_W,2,EFFECT_TIMING.TURN_START),SpecialEffect.SKILL.BIRD_W.name)
 		this.startDuration(ENUM.SKILL.W)
 	}
 	private useUlt() {
 		this.startCooltime(ENUM.SKILL.ULT)
-		this.effects.applySpecial(this.getUltShield(),Bird.EFFECT_ULT_SHIELD)
-		this.effects.applySpecial(this.getUltAbility(),SpecialEffect.SKILL.BIRD_ULT.name)
+		this.player.effects.applySpecial(this.getUltShield(),Bird.EFFECT_ULT_SHIELD)
+		this.player.effects.applySpecial(this.getUltAbility(),SpecialEffect.SKILL.BIRD_ULT.name)
 
 		this.startDuration(ENUM.SKILL.ULT)
 
 		// this.ability.update("attackRange", 2)
-		this.changeApperance(Bird.APPERANCE_ULT)
-		this.changeSkillImage("bird_r_q",ENUM.SKILL.Q)
+		this.player.changeApperance(Bird.APPERANCE_ULT)
+		this.player.changeSkillImage("bird_r_q",ENUM.SKILL.Q)
 
-		this.showEffect(Bird.VISUALEFFECT_ULT, this.turn)
+		this.player.showEffect(Bird.VISUALEFFECT_ULT, this.player.turn)
 	}
 
 	getSkillName(skill: number): string {
@@ -225,9 +225,9 @@ class Bird extends Player {
 
 				if (this.isSkillActivated(ENUM.SKILL.ULT)) {
 					let proj = this.buildProjectile()
-					this.game.placeProjNoSelection(proj, target.pos - 1)
+					this.player.game.placeProjNoSelection(proj, target.pos - 1)
 				}
-				skillattr =new SkillAttack(damage,this.getSkillName(s),s,this).setOnHit(onhit)
+				skillattr =new SkillAttack(damage,this.getSkillName(s),s,this.player).setOnHit(onhit)
 				.setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				break
 		}
@@ -237,8 +237,8 @@ class Bird extends Player {
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
 			// this.ability.update("attackRange", -2)
-			this.changeApperance("")
-			this.changeSkillImage("",ENUM.SKILL.Q)
+			this.player.changeApperance("")
+			this.player.changeSkillImage("",ENUM.SKILL.Q)
 
 		}
 		if (skill === ENUM.SKILL.W) {

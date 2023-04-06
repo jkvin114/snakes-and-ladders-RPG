@@ -1,17 +1,17 @@
-import { Jean } from "../characters/Jean";
-import { AbilityUtilityScorecard } from "../core/Util";
+import type { Jean } from "../characters/Jean";
 import {  ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
 import { ServerGameEventFormat } from "../data/EventFormat";
 import { EFFECT } from "../StatusEffect/enum"
+import type { Player } from "../player/player";
 
 class JeanAgent extends AiAgent{
     itemBuild: ItemBuild
-	player:Jean
-    constructor(player:Jean){
+	skillManager:Jean
+    constructor(player:Player,skillManager:Jean){
         super(player)
-		this.itemBuild = 
+		this.skillManager=skillManager
 		this.itemBuild = new ItemBuild()
 			.setItemStages(
 				[

@@ -1549,32 +1549,68 @@ export class Scene extends Board {
 
 		this.removeImageAfter(img, 2000)
 	}
-	//===========================================================================================================================
-	showMultiPositionEffects(positions, type) {
-		//console.log("showMultiPositionEffects"+type)
-		positions = positions.map((p) => this.getTilePos(p))
 
+	showSwooshEffect(pos, scale, angle) {
+		const img = this.createCroppedEffectImage("sweep1")
+		this.setEffectImageAttr(img, pos.x, pos.y, scale, scale, 1, angle)
+		this.animateOpacity(img, 0, 1200)
+		this.removeImageAfter(img, 3000)
+	}
+
+	showTwoPositionEffects(sourcePos, targetPos, type) {
+		// const positions = tilepos.map((p) => this.getTilePos(p))
+		const source = this.getTilePos(sourcePos)
+		const target = this.getTilePos(targetPos)
 		let scale = 1
 		let img
 		let img2
 		let pos
 		let effectImages = []
+		let angle
 		switch (type) {
+			case "reaper_q":
+				this.game.playSound("scythe")
+				this.game.playSound("hit")
+
+				this.defaultEffect(targetPos, 100)
+				img = this.createCroppedEffectImage("reaper_q")
+				img.set({ originX: "left", originY: "bottom" })
+				angle = this.getBearingAngle(target, source)
+				this.setEffectImageAttr(img, target.x, target.y - 20, 0.5, 0.5, 1, angle)
+				this.animateOpacity(img, 0, 1500)
+				this.animateAngle(img, "+=210", 300)
+				this.showSwooshEffect(target, scale, angle)
+
+				effectImages.push(img)
+				break
+			case "elephant_q":
+				this.game.playSound("metal")
+				this.game.playSound("hit")
+
+				this.defaultEffect(targetPos, 100)
+				img = this.createCroppedEffectImage("elephant_q")
+				img.set({ originX: "left", originY: "bottom" })
+				this.setEffectImageAttr(img, target.x - 20, target.y - 20, 0.8, 0.8, 1, 0)
+				this.animateOpacity(img, 0, 1000)
+				this.animateAngle(img, 130, 200)
+				this.showSwooshEffect(target, scale, angle)
+				effectImages.push(img)
+				break
 			case "basicattack":
 				let type2 = Math.random() > 0.5
 
 				img = this.createCroppedEffectImage("sweep1")
 				if (type2) img = this.createCroppedEffectImage("sweep2")
 				else img = this.createCroppedEffectImage("sweep1")
-				pos = midpoint(positions[0], positions[1])
-				let scale = Math.max(1, distance(positions[0], positions[1]) / 150)
+				pos = midpoint(source, target)
+				scale = Math.max(1, distance(source, target) / 150)
 				let angleRange = 10 + Math.random() * 30
 				if (type2) angleRange = 0
 
 				let angleoffset = Math.random() * 50 - 25
-				let angle = this.getBearingAngle(positions[0], positions[1]) + angleoffset
+				angle = this.getBearingAngle(source, target) + angleoffset
 
-				if (positions[0].x === positions[1].x && positions[0].y === positions[1].y) {
+				if (source.x === target.x && source.y === target.y) {
 					angle = Math.random() * 180
 				}
 
@@ -1583,7 +1619,71 @@ export class Scene extends Board {
 				this.animateAngle(img, angle + angleRange, 250)
 				effectImages.push(img)
 				break
+			case "bird_r_w_hit":
+			case "bird_r_hit":
+				let sourcepos = { x: source.x, y: source.y - 50 }
+				pos = midpoint(sourcepos, target)
+				img = this.createCroppedEffectImage("bird_r_fire")
+				this.setEffectImageAttr(
+					img,
+					pos.x,
+					pos.y,
+					1,
+					distance(sourcepos, target) / VISUAL_EFFECT_SPRITE_SIZE,
+					1,
+					this.getBearingAngle(sourcepos, target)
+				)
 
+				effectImages.push(img)
+				this.animateOpacity(img, 0, 1200)
+
+				img2 = this.createCroppedEffectImage("bird_r")
+				this.setEffectImageAttr(img2, source.x, source.y - 30, 1.5, 1.5, 0.8, 0)
+				this.animateOpacity(img2, 0, 1700)
+				effectImages.push(img2)
+				break
+			case "hacker_r":
+				pos = midpoint(source, target)
+				img = this.createCroppedEffectImage("magician_r_lightning")
+				this.setEffectImageAttr(
+					img,
+					pos.x,
+					pos.y,
+					1,
+					distance(source, target) / VISUAL_EFFECT_SPRITE_SIZE,
+					1,
+					this.getBearingAngle(source, target)
+				)
+				effectImages.push(img)
+				this.animateOpacity(img, 0, 1000)
+			case "hacker_q":
+				setTimeout(() => {
+					let hackerData = this.createCroppedEffectImage("data")
+					let duration = distance(source, target) * 1.5
+					this.setEffectImageAttr(hackerData, target.x, target.y, 0.5, 0.5, 1, this.getBearingAngle(target, source))
+					this.animateParabola(hackerData, target, source, duration, 0.2, "", "in")
+
+					// this.animateX(hackerData, positions[0].x, duration)
+					// this.animateY(hackerData, positions[0].y, duration)
+					this.removeImageAfter(hackerData, duration + 100)
+				}, 600)
+				break
+		}
+		effectImages.forEach((e) => this.removeImageAfter(e, 3000))
+	}
+	//===========================================================================================================================
+	showMultiPositionEffects(tilepos, type) {
+		//console.log("showMultiPositionEffects"+type)
+
+		const positions = tilepos.map((p) => this.getTilePos(p))
+
+		let scale = 1
+		let img
+		let img2
+		let pos
+		let effectImages = []
+		let angle
+		switch (type) {
 			case "magician_w_q":
 			case "magician_q":
 				pos = midpoint(positions[0], positions[1])
@@ -1600,63 +1700,6 @@ export class Scene extends Board {
 
 				effectImages.push(img)
 				this.animateOpacity(img, 0, 1200)
-				break
-			case "bird_r_w_hit":
-			case "bird_r_hit":
-				let sourcepos = { x: positions[0].x, y: positions[0].y - 50 }
-				pos = midpoint(sourcepos, positions[1])
-				img = this.createCroppedEffectImage("bird_r_fire")
-				this.setEffectImageAttr(
-					img,
-					pos.x,
-					pos.y,
-					1,
-					distance(sourcepos, positions[1]) / VISUAL_EFFECT_SPRITE_SIZE,
-					1,
-					this.getBearingAngle(sourcepos, positions[1])
-				)
-
-				effectImages.push(img)
-				this.animateOpacity(img, 0, 1200)
-
-				img2 = this.createCroppedEffectImage("bird_r")
-				this.setEffectImageAttr(img2, positions[0].x, positions[0].y - 30, 1.5, 1.5, 0.8, 0)
-				this.animateOpacity(img2, 0, 1700)
-				effectImages.push(img2)
-				break
-			case "hacker_r":
-				pos = midpoint(positions[0], positions[1])
-				img = this.createCroppedEffectImage("magician_r_lightning")
-				this.setEffectImageAttr(
-					img,
-					pos.x,
-					pos.y,
-					1,
-					distance(positions[0], positions[1]) / VISUAL_EFFECT_SPRITE_SIZE,
-					1,
-					this.getBearingAngle(positions[0], positions[1])
-				)
-				effectImages.push(img)
-				this.animateOpacity(img, 0, 1000)
-			case "hacker_q":
-				setTimeout(() => {
-					let hackerData = this.createCroppedEffectImage("data")
-					let duration = distance(positions[0], positions[1]) * 1.5
-					this.setEffectImageAttr(
-						hackerData,
-						positions[1].x,
-						positions[1].y,
-						0.5,
-						0.5,
-						1,
-						this.getBearingAngle(positions[1], positions[0])
-					)
-					this.animateParabola(hackerData, positions[1], positions[0], duration, 0.2, "", "in")
-
-					// this.animateX(hackerData, positions[0].x, duration)
-					// this.animateY(hackerData, positions[0].y, duration)
-					this.removeImageAfter(hackerData, duration + 100)
-				}, 600)
 				break
 		}
 		effectImages.forEach((e) => this.removeImageAfter(e, 3000))
@@ -1680,10 +1723,11 @@ export class Scene extends Board {
 				case "hacker_r":
 				case "hacker_q":
 				case "basicattack":
-					this.showMultiPositionEffects([data.sourcePos, t.pos], data.visualeffect)
+				case "reaper_q":
+				case "elephant_q":
+					this.showTwoPositionEffects(data.sourcePos, t.pos, data.visualeffect)
 					break
 				case "hacker_w":
-				case "reaper_q":
 					let pos1 = this.getTilePos(data.sourcePos)
 					let pos2 = this.getTilePos(t.pos)
 					this.line.set({ opacity: 1, x1: pos1.x, y1: pos1.y, x2: pos2.x, y2: pos2.y }).bringToFront()
@@ -1797,15 +1841,6 @@ export class Scene extends Board {
 
 				break
 			case "elephant_q":
-				this.game.playSound("metal")
-				this.game.playSound("hit")
-
-				this.defaultEffect(position, change)
-				addedEffectImg = this.createCroppedEffectImage("elephant_q")
-				this.setEffectImageAttr(addedEffectImg, pos.x - 50, pos.y, 1, 1, 1, -90)
-				this.animateOpacity(addedEffectImg, 0, 1000)
-				this.animateAngle(addedEffectImg, 0, 200)
-
 				break
 			case "elephant_r":
 				this.game.playSound("2r")
@@ -1828,15 +1863,6 @@ export class Scene extends Board {
 
 				break
 			case "reaper_q":
-				this.game.playSound("stab")
-				this.game.playSound("hit")
-
-				this.defaultEffect(position, change)
-				addedEffectImg = this.createCroppedEffectImage("reaper_q")
-				this.setEffectImageAttr(addedEffectImg, pos.x - 20, pos.y - 50, 0.7, 0.7, 1, 0)
-				this.animateOpacity(addedEffectImg, 0, 1500)
-				this.animateAngle(addedEffectImg, 90, 300)
-
 				break
 			case "reaper_r":
 				this.game.playSound("1r")
@@ -3294,7 +3320,7 @@ export class Scene extends Board {
 	}
 	//===========================================================================================================================
 
-	/**	//===========================================================================================================================
+	/**
 
 	 * change player apperance
 	 * if data is empty, set to ogirinal

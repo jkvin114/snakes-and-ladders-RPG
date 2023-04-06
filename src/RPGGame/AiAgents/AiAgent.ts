@@ -12,6 +12,7 @@ import TRAIN_SETTINGS = require("../../../res/train_setting.json")
 import { SkillTargetSelector } from "../core/skill"
 import { ItemBuild, ItemBuildStage } from "../core/ItemBuild"
 import { chooseRandom } from "../../Marble/util"
+import { CharacterSkillManager, EmptySkillManager } from "../characters/SkillManager/CharacterSkillManager"
 
 const CORE_ITEMS = ItemList.filter((i) => i.itemlevel === 3).map((i) => i.id)
 const ITEMS = ItemList
@@ -25,15 +26,17 @@ abstract class AiAgent {
 	static readonly BASICATTACK = 4
 	static readonly CHAR_TYPE_UTILITY_WEIGHTS = [[10], [6, 4], [6.5, 2.5, 1], [5, 3, 1, 1]]
 	gameStartMessage: string
+	abstract skillManager:CharacterSkillManager
 	constructor(player: Player) {
 		this.player = player
+
 		this.isRandomItem = TRAIN_SETTINGS.train && TRAIN_SETTINGS.random_item
 		this.attemptedSkills = new Set<SKILL>()
 		this.skillUseCounter=new Counter<SKILL>()
 		this.gameStartMessage = ""
 		this.itemBuild = new ItemBuild()
 	}
-	onAfterCreate() {
+	onCreate() {
 		if (this.isRandomItem) {
 			if (TRAIN_SETTINGS.random_item_exclude_character.includes(this.player.champ as never)) return
 
@@ -61,7 +64,7 @@ abstract class AiAgent {
 			}
 			this.attemptedSkills.add(skill)
 			this.skillUseCounter.add(skill)
-			let skillinit = this.player.initSkill(skill)
+			let skillinit = this.skillManager.initSkill(skill)
 			//	console.log(skillinit)
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
 				continue
@@ -128,7 +131,7 @@ abstract class AiAgent {
 			this.attemptedSkills.add(skill)
 			this.skillUseCounter.add(skill)
 			//console.log(player.AiAgent.attemptedSkills)
-			let skillinit = this.player.initSkill(skill)
+			let skillinit = this.skillManager.initSkill(skill)
 			//	console.log(skillinit)
 			if (skillinit.type === INIT_SKILL_RESULT.NOT_LEARNED || skillinit.type === INIT_SKILL_RESULT.NO_COOL) {
 				continue
@@ -199,10 +202,10 @@ abstract class AiAgent {
 		return -1
 	}
 	useInstantSkill(skill: SKILL): boolean {
-		return this.player.useInstantSkill(skill)
+		return this.skillManager.useInstantSkill(skill)
 	}
 	useActivationSkill(skill: SKILL): boolean {
-		this.player.useActivationSkill(skill)
+		this.skillManager.useActivationSkill(skill)
 		return true
 	}
 
@@ -320,8 +323,10 @@ abstract class AiAgent {
 
 class DefaultAgent extends AiAgent {
 	itemBuild: ItemBuild
+	skillManager: CharacterSkillManager
 	constructor(player: Player) {
 		super(player)
+		this.skillManager=new EmptySkillManager(player)
 		this.itemBuild = new ItemBuild().setItemStages([], new ItemBuildStage(ITEM.EPIC_SWORD))
 	}
 	getMessageOnGameStart(): string {

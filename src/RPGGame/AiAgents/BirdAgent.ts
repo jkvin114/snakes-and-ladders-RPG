@@ -1,14 +1,16 @@
-import { Bird } from "../characters/Bird"
+import type{ Bird } from "../characters/Bird"
 import { AbilityUtilityScorecard, randInt, randomBoolean } from "../core/Util"
 import { ITEM, SKILL } from "../data/enum"
 import { AiAgent, ItemBuild } from "./AiAgent"
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild"
+import type{ Player } from "../player/player"
 
 class BirdAgent extends AiAgent {
 	itemBuild: ItemBuild
-	player: Bird
-	constructor(player: Bird) {
+	skillManager: Bird
+	constructor(player: Player,skillManager: Bird) {
 		super(player)
+		this.skillManager=skillManager
 		this.itemBuild = new ItemBuild()
 		this.gameStartMessage = "I will burn you all in the name of the phenix!"
 	}
@@ -48,16 +50,16 @@ class BirdAgent extends AiAgent {
 	}
 	nextSkill(): number {
 		if (!this.attemptedSkills.has(SKILL.ULT)) {
-			if (this.player.cooltime[SKILL.Q] <= 2 && this.player.cooltime[SKILL.W] <= 1) return SKILL.ULT
+			if (this.skillManager.cooltime[SKILL.Q] <= 2 && this.skillManager.cooltime[SKILL.W] <= 1) return SKILL.ULT
 		}
 		if (!this.attemptedSkills.has(SKILL.W)) {
-			if (this.player.cooltime[SKILL.Q] <= 1) return SKILL.W
+			if (this.skillManager.cooltime[SKILL.Q] <= 1) return SKILL.W
 		}
 		if (this.player.canBasicAttack()) {
 			return AiAgent.BASICATTACK
 		}
 		if (!this.attemptedSkills.has(SKILL.Q)) {
-			if (this.player.cooltime[SKILL.W] === 1 || this.player.cooltime[SKILL.ULT] === 1) return -1
+			if (this.skillManager.cooltime[SKILL.W] === 1 || this.skillManager.cooltime[SKILL.ULT] === 1) return -1
 
 			return SKILL.Q
 		}

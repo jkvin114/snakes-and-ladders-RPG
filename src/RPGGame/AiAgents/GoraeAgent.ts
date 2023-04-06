@@ -1,18 +1,19 @@
-import { Gorae } from "../characters/Gorae"
+import type { Gorae } from "../characters/Gorae"
 import { AbilityUtilityScorecard } from "../core/Util"
 import { ITEM, SKILL } from "../data/enum"
 import { ServerGameEventFormat } from "../data/EventFormat"
 import { EntityFilter } from "../entity/EntityFilter"
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 import { AiAgent, ItemBuild } from "./AiAgent"
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild"
 import { EFFECT } from "../StatusEffect/enum"
 
 class GoraeAgent extends AiAgent {
 	itemBuild: ItemBuild
-	player: Gorae
-	constructor(player: Gorae) {
+	skillManager: Gorae
+	constructor(player:Player,skillManager: Gorae) {
 		super(player)
+		this.skillManager=skillManager
 		this.itemBuild = new ItemBuild().setItemStages(
 			[
 				new ItemBuildStage(ITEM.FULL_DIAMOND_ARMOR),
@@ -83,7 +84,7 @@ class GoraeAgent extends AiAgent {
 		})
 
 		for (let p of validtargets) {
-			if (ps[p].HP + ps[p].shield < this.player.getSkillBaseDamage(SKILL.ULT) && !ps[p].effects.has(EFFECT.SHIELD)) {
+			if (ps[p].HP + ps[p].shield < this.skillManager.getSkillBaseDamage(SKILL.ULT) && !ps[p].effects.has(EFFECT.SHIELD)) {
 				return ps[p]
 			}
 		}

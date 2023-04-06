@@ -22,7 +22,7 @@ class AttackHandler {
 		let data: ServerGameEventFormat.Attack = {
 			targets: [],
 			source: from.turn,
-			visualeffect: from.getBasicAttackName(),
+			visualeffect: from.skillManager.getBasicAttackName(),
 			sourcePos: from.pos,
 			extraEffect:[]
 		}
@@ -88,7 +88,7 @@ class AttackHandler {
 			damage: damage.total,
 		}
 		//("-----------basicattack"+damage.getTotalDmg())
-		let died = AttackHandler.doDamage(from, target, damage, from.getBasicAttackName(), true)
+		let died = AttackHandler.doDamage(from, target, damage, from.skillManager.getBasicAttackName(), true)
 
 		if (died) victimData.flags.push("died")
 		return victimData

@@ -1,5 +1,5 @@
 import * as ENUM from "../data/enum"
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 import type { Game } from "../Game"
 import { CALC_TYPE } from "../core/Util"
 import { AblityChangeEffect,  NormalEffect ,ShieldEffect} from "../StatusEffect"
@@ -12,10 +12,11 @@ import SilverAgent from "../AiAgents/SilverAgent"
 import { Damage,PercentDamage } from "../core/Damage"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT, EFFECT_TIMING } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 
 // import SETTINGS = require("../../res/globalsettings.json")
 const ID = 1
-class Silver extends Player {
+class Silver extends CharacterSkillManager {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	usedQ: boolean
@@ -35,18 +36,13 @@ class Silver extends Player {
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
 
-	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
-		//hp, ad:40, ar, mr, attackrange,ap
-		const basic_stats = [250, 25, 15, 15, 0, 20]
-		super(turn, team, game, ai, ID, name)
-		//	this.onoff = [false, false, false]
+	constructor(player:Player) {
+		super(player,ID)
 		this.cooltime_list = [2, 4, 9]
 		this.duration_list = [0, 2, 3]
 		this.skill_ranges=[3,15,0]
 		this.skill_name = Silver.SKILL_EFFECT_NAME
 		
-		this.AiAgent=new SilverAgent(this)
-
 	}
 
 
@@ -96,13 +92,13 @@ class Silver extends Player {
 		this.startCooltime(ENUM.SKILL.ULT)
 		this.startDuration(ENUM.SKILL.ULT)
 
-		this.effects.applySpecial(this.getUltShield(),Silver.EFFECT_ULT_SHIELD)
+		this.player.effects.applySpecial(this.getUltShield(),Silver.EFFECT_ULT_SHIELD)
 
-		this.effects.applySpecial(this.getUltResistance(),SpecialEffect.SKILL.ELEPHANT_ULT.name)
-		this.effects.apply(EFFECT.SPEED,1)
+		this.player.effects.applySpecial(this.getUltResistance(),SpecialEffect.SKILL.ELEPHANT_ULT.name)
+		this.player.effects.apply(EFFECT.SPEED,1)
 
-		this.showEffect(Silver.VISUALEFFECT_ULT, this.turn)
-		this.changeApperance(Silver.APPERANCE_ULT)
+		this.player.showEffect(Silver.VISUALEFFECT_ULT, this.player.turn)
+		this.player.changeApperance(Silver.APPERANCE_ULT)
 	}
 
 	getSkillName(skill: number): string {
@@ -124,7 +120,7 @@ class Silver extends Player {
 		return 0
 	}
 	getSkillAmount(key: string): number {
-		if(key==="r_resistance") return this.HP < this.MaxHP / 10 ? 150 : 80
+		if(key==="r_resistance") return this.player.HP < this.player.MaxHP / 10 ? 150 : 80
 		if(key==="rshield") return this.calculateScale(Silver.SKILL_SCALES.rshield!)
 		if(key==="qheal") return Math.floor(this.getSkillBaseDamage(ENUM.SKILL.Q) * 0.3)
 		if(key==="r_qheal") return Math.floor(this.getSkillBaseDamage(ENUM.SKILL.Q) * 0.6)
@@ -143,7 +139,7 @@ class Silver extends Player {
 	}
 
 	private getWEffect() {
-		return new NormalEffect(EFFECT.ELEPHANT_W_SIGN, this.duration_list[1], EFFECT_TIMING.TURN_END).setSourceId(this.UEID)
+		return new NormalEffect(EFFECT.ELEPHANT_W_SIGN, this.duration_list[1], EFFECT_TIMING.TURN_END).setSourceId(this.player.UEID)
 	}
 
 	/**
@@ -165,11 +161,11 @@ class Silver extends Player {
 				let dmg = this.getSkillBaseDamage(s)
 				let heal=this.isSkillActivated(ENUM.SKILL.ULT) ? this.getSkillAmount("r_qheal") : this.getSkillAmount("qheal")
 
-				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s),s,this)
+				skillattr = new SkillAttack(new Damage(0, dmg, 0),this.getSkillName(s),s,this.player)
 				.setOnHit(function(this:Player,source:Player){
 					source.heal(heal)
 				})
-				if (target.effects.hasEffectFrom(EFFECT.ELEPHANT_W_SIGN, this.UEID)) {
+				if (target.effects.hasEffectFrom(EFFECT.ELEPHANT_W_SIGN, this.player.UEID)) {
 					skillattr.damage.updateTrueDamage(CALC_TYPE.plus, this.getSkillAmount("w_qdamage"))
 					target.effects.reset(EFFECT.ELEPHANT_W_SIGN)
 				}
@@ -177,7 +173,7 @@ class Silver extends Player {
 			case ENUM.SKILL.W:
 				this.startCooltime(ENUM.SKILL.W)
 				let effect=this.getWEffect()
-				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s),s,this)
+				skillattr = new SkillAttack(new Damage(0, 0, 0),this.getSkillName(s),s,this.player)
 				.setOnHit(function(this:Player,source:Player){
 					this.effects.applySpecial(effect,SpecialEffect.SKILL.ELEPHANT_W.name)
 					this.effects.apply(EFFECT.CURSE, 1)				
@@ -190,25 +186,25 @@ class Silver extends Player {
 	/**
 	 * called every turn before throw dice
 	 */
-	onMyTurnStart() {
-		if (this.level >= 3 && this.HP <=250) {
+	onTurnStart() {
+		if (this.player.level >= 3 && this.player.HP <=250) {
 
 			let passive = 0
-			if (this.HP > this.MaxHP * 0.3) {
+			if (this.player.HP > this.player.MaxHP * 0.3) {
 				passive = 30
-			} else if (this.HP > this.MaxHP * 0.1) {
+			} else if (this.player.HP > this.player.MaxHP * 0.1) {
 				passive = 45
 			} else {
 				passive = 60
 			}
 
-			this.effects.applySpecial(
+			this.player.effects.applySpecial(
 				new AblityChangeEffect(EFFECT.ELEPHANT_PASSIVE_RESISTANCE, 2, new Map().set("AR", passive).set("MR", passive)),
 				SpecialEffect.SKILL.ELEPHANT_PASSIVE.name
 			)
 
 		}
-		super.onMyTurnStart()
+		super.onTurnStart()
 	}
 
 	/**
@@ -222,7 +218,7 @@ class Silver extends Player {
 
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
-			this.changeApperance("")
+			this.player.changeApperance("")
 		}
 	}
 

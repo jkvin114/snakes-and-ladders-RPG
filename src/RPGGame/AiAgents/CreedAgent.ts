@@ -1,16 +1,17 @@
-import { Creed } from "../characters/Creed"
+import type{ Creed } from "../characters/Creed"
 import { AbilityUtilityScorecard } from "../core/Util"
 import { ITEM, SKILL } from "../data/enum"
 import { ServerGameEventFormat } from "../data/EventFormat"
-import { Player } from "../player/player"
+import type{ Player } from "../player/player"
 import { AiAgent, ItemBuild } from "./AiAgent"
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild"
 
 class CreedAgent extends AiAgent {
 	itemBuild: ItemBuild
-	player: Creed
-	constructor(player: Creed) {
+	skillManager: Creed
+	constructor(player: Player,skillManager: Creed) {
 		super(player)
+		this.skillManager=skillManager
 		this.itemBuild = new ItemBuild()
 			.setItemStages(
 				[

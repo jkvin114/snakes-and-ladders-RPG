@@ -5,6 +5,8 @@ import {statuseffect as statuseffect_kor } from "../../../res/string_resource_ko
 import * as ENUM from "../data/enum"
 import  * as SkillDescription from"../../../res/skill_description.json"
 import { EFFECT } from "../StatusEffect/enum"
+import { CharacterEval } from "../Simulation/eval/CharacterEval"
+import { CharacterSkillManager } from "../characters/SkillManager/CharacterSkillManager"
 
 
 
@@ -12,7 +14,7 @@ export class SkillInfoFactory {
 	static readonly LANG_ENG = 0
 	static readonly LANG_KOR = 1
 	private char: number
-	private plyr: Player
+	private plyr: CharacterSkillManager
 	private names: string[]
 	private lang: number
 	static readonly SKILL_NAME = [
@@ -41,7 +43,7 @@ export class SkillInfoFactory {
 	]
 	static readonly HOTKEY = ["Q", "W", "R"]
 
-	constructor(char: number, plyr: Player, lang: number) {
+	constructor(char: number, plyr: CharacterSkillManager, lang: number) {
 		this.plyr = plyr
 		this.char = char
 		this.names = SkillInfoFactory.SKILL_NAME[char]

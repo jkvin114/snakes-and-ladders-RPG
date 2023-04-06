@@ -189,6 +189,7 @@ export function registerSounds() {
 		"gold2",
 		"store",
 		"store2",
+		"scythe",
 		"1r",
 		"2r",
 		"3r",

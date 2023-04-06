@@ -1,6 +1,5 @@
 import * as ENUM from "../data/enum"
-import { Player } from "../player/player"
-import type { Game } from "../Game"
+import type { Player } from "../player/player"
 
 import { Damage, PercentDamage } from "../core/Damage"
 
@@ -9,14 +8,14 @@ import { Projectile, ProjectileBuilder } from "../Projectile"
 
 import * as SKILL_SCALES from "../../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
-import JeanAgent from "../AiAgents/JeanAgent"
 import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { CALC_TYPE } from "../core/Util"
 import { EFFECT } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 
 const ID = 4
-class Jean extends Player {
+class Jean extends CharacterSkillManager {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
@@ -32,17 +31,13 @@ class Jean extends Player {
 	static readonly Q_ROOT = "sniper_q_root"
 	static readonly SKILL_EFFECT_NAME = ["sniper_q", "sniper_w", "sniper_r"]
 
-	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
-		//hp, ad:40, ar, mr, attackrange,ap
-		const basic_stats: number[] = [190, 40, 7, 7, 0, 0]
-		super(turn, team, game, ai, ID, name)
+	constructor(player:Player) {
+		super(player,ID)
 		//	this.onoff = [false, false, false]
 		this.cooltime_list = [3, 3, 9]
 		this.duration_list = [0, 0, 2]
 		this.skill_ranges = [15, 40, 40]
 		this.u_target = ""
-
-		this.AiAgent = new JeanAgent(this)
 	}
 
 	getSkillScale() {
@@ -58,13 +53,13 @@ class Jean extends Player {
 	}
 
 	private buildProjectile() {
-		return new ProjectileBuilder(this.game, Jean.PROJ_W, Projectile.TYPE_RANGE)
+		return new ProjectileBuilder(this.player.game, Jean.PROJ_W, Projectile.TYPE_RANGE)
 			.setAction(function (this: Player) {
 				this.effects.apply(EFFECT.GROUNGING, 2)
 			})
 			.setTrajectorySpeed(300)
 			.setSize(3)
-			.setSource(this)
+			.setSource(this.player)
 			.setDuration(2)
 			.build()
 	}
@@ -149,24 +144,24 @@ class Jean extends Player {
 					skillname = "sniper_q_root"
 				}
 
-				skillattr = new SkillAttack(damage, skillname, s, this).setTrajectoryDelay(
+				skillattr = new SkillAttack(damage, skillname, s, this.player).setTrajectoryDelay(
 					this.getSkillTrajectoryDelay(skillname)
 				)
 
 				break
 			case ENUM.SKILL.ULT:
-				this.effects.applySpecial(this.getUltShield(), Jean.EFFECT_ULT)
+				this.player.effects.applySpecial(this.getUltShield(), Jean.EFFECT_ULT)
 				if (this.duration[ENUM.SKILL.ULT] === 0) {
 					let onhit = function (this: Player, source: Player) {
 						this.effects.apply(EFFECT.SLOW, 1)
 					}
 
-					skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s), s, this)
+					skillattr = new SkillAttack(new Damage(this.getSkillBaseDamage(s), 0, 0), this.getSkillName(s), s, this.player)
 						.setOnHit(onhit)
 						.setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 					this.startDuration(ENUM.SKILL.ULT)
 
-					this.effects.apply(EFFECT.ROOT, 1)
+					this.player.effects.apply(EFFECT.ROOT, 1)
 					this.u_target = target.UEID
 					this.startCooltime(ENUM.SKILL.ULT)
 				}
@@ -182,7 +177,7 @@ class Jean extends Player {
 
 	onSkillDurationCount() {
 		if (this.duration[ENUM.SKILL.ULT] === 2) {
-			this.effects.apply(EFFECT.ROOT, 1)
+			this.player.effects.apply(EFFECT.ROOT, 1)
 			let onhit = function (this: Player, source: Player) {
 				this.effects.apply(EFFECT.SLOW, 1)
 			}
@@ -190,10 +185,10 @@ class Jean extends Player {
 				new Damage(this.getSkillBaseDamage(ENUM.SKILL.ULT), 0, 0),
 				this.getSkillName(ENUM.SKILL.ULT),
 				ENUM.SKILL.ULT,
-				this
+				this.player
 			).setOnHit(onhit)
-			if (this.u_target !== "" && !this.game.pOfId(this.u_target).dead)
-				this.mediator.skillAttackSingle(this, this.u_target, skillattr)
+			if (this.u_target !== "" && !this.player.game.pOfId(this.u_target).dead)
+				this.mediator.skillAttackSingle(this.player, this.u_target, skillattr)
 		}
 		//궁 세번째 공격
 		if (this.duration[ENUM.SKILL.ULT] === 1) {
@@ -204,11 +199,11 @@ class Jean extends Player {
 				new Damage(0, 0, this.getSkillBaseDamage(ENUM.SKILL.ULT)),
 				this.getSkillName(ENUM.SKILL.ULT),
 				ENUM.SKILL.ULT,
-				this
+				this.player
 			).setOnHit(onhit)
 
-			if (this.u_target !== "" && !this.game.pOfId(this.u_target).dead)
-				this.mediator.skillAttackSingle(this, this.u_target, skillattr)
+			if (this.u_target !== "" && !this.player.game.pOfId(this.u_target).dead)
+				this.mediator.skillAttackSingle(this.player, this.u_target, skillattr)
 
 			this.u_target = ""
 		}
@@ -216,8 +211,8 @@ class Jean extends Player {
 	onSkillDurationEnd(skill: number) {
 		if (skill === ENUM.SKILL.ULT) {
 			this.u_target = ""
-			this.effects.apply(EFFECT.DOUBLEDICE, 1)
-			this.effects.reset(EFFECT.ROOT)
+			this.player.effects.apply(EFFECT.DOUBLEDICE, 1)
+			this.player.effects.reset(EFFECT.ROOT)
 		}
 	}
 }

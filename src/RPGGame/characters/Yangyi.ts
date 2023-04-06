@@ -1,4 +1,4 @@
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 import type { Game } from "../Game"
 
 import * as ENUM from "../data/enum"
@@ -16,8 +16,9 @@ import YangyiAgent from "../AiAgents/YangyiAgent"
 import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT, EFFECT_TIMING } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 const ID = 3
-class Yangyi extends Player {
+class Yangyi extends CharacterSkillManager {
 	// onoff: boolean[]	
 	skill_ranges: number[]
 
@@ -26,15 +27,13 @@ class Yangyi extends Player {
 	readonly duration_list: number[]
 	static readonly SKILL_EFFECT_NAME= ["dinosaur_q", "hit", "dinosaur_r"]
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
-
-	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
-		const basic_stats: number[] = [180, 40, 6, 6, 0, 0]
-		super(turn, team, game, ai, ID, name)
+	protected player: Player
+	constructor(player: Player) {
+		super(player,ID)
 		// this.onoff = [false, false, false]
 		this.cooltime_list = [1, 7, 8] //1 7
 		this.duration_list = [0, 3, 0]
 		this.skill_ranges=[0,0,20]
-		this.AiAgent=new YangyiAgent(this)
 	}
 
 
@@ -91,20 +90,20 @@ class Yangyi extends Player {
 		}
 	}
 	private useQ() {
-		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q),ENUM.SKILL.Q,this)
+		let skilldmg = new SkillAttack(new Damage(this.getSkillBaseDamage(ENUM.SKILL.Q), 0, 0),this.getSkillName(ENUM.SKILL.Q),ENUM.SKILL.Q,this.player)
 
 
-		let targets=this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(4))
+		let targets=this.mediator.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this.player).inRadius(4))
 
 		if (targets.length > 0) {
-			this.doObstacleDamage(Math.floor(this.HP * 0.05), "noeffect")
+			this.player.doObstacleDamage(Math.floor(this.player.HP * 0.05), "noeffect")
 
 			//플레이어 2명아면 데미지 20%, 3명아면 40% 감소
 			let damagecoeff = 1 - 0.2 * (targets.length - 1)
 
 			skilldmg.damage.updateAttackDamage(CALC_TYPE.multiply, damagecoeff)
 			
-			this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(4),skilldmg)
+			this.mediator.skillAttack(this.player,EntityFilter.ALL_ATTACKABLE_PLAYER(this.player).inRadius(4),skilldmg)
 
 			// for (let p of targets) {
 			// 	this.mediator.skillAttackSingle(this,p.turn)(skilldmg)
@@ -120,8 +119,8 @@ class Yangyi extends Player {
 		if (this.duration[ENUM.SKILL.W] === 0) {
 			this.startDuration(ENUM.SKILL.W)
 			this.startCooltime(ENUM.SKILL.W)
-			this.effects.apply(EFFECT.SLOW, 3)
-			this.effects.applySpecial(
+			this.player.effects.apply(EFFECT.SLOW, 3)
+			this.player.effects.applySpecial(
 				new NormalEffect(EFFECT.DINOSAUR_W, 3, EFFECT_TIMING.TURN_START).setGood(),
 				SpecialEffect.SKILL.DINOSAUR_W_HEAL.name
 			)
@@ -141,8 +140,8 @@ class Yangyi extends Player {
 				new PercentDamage(50, PercentDamage.MISSING_HP, Damage.ATTACK).pack(target.MaxHP,target.HP)
 			),
 			this.getSkillName(ENUM.SKILL.ULT)
-		,ENUM.SKILL.ULT,this).setOnKill(function (this:Player) {
-			this.resetCooltime([ENUM.SKILL.ULT])
+		,ENUM.SKILL.ULT,this.player).setOnKill(function (this:Player) {
+			this.skillManager.resetCooltime([ENUM.SKILL.ULT])
 		}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 
 		return skillattr
@@ -170,17 +169,17 @@ class Yangyi extends Player {
 	/**
 	 * 자신의 매 턴 시작시마다 호출
 	 */
-	onMyTurnStart() {
+	onTurnStart() {
 		//w passive
-		if (this.level > 1 && this.mediator.isFellBehind(this)) {
-			this.adice += 1
+		if (this.player.level > 1 && this.mediator.isFellBehind(this.player)) {
+			this.player.adice += 1
 		}
-		super.onMyTurnStart()
+		super.onTurnStart()
 	}
 
 	onSkillDurationCount() {
 		if (this.duration[ENUM.SKILL.W] > 0) {
-			this.heal(this.getSkillAmount("wheal"))
+			this.player.heal(this.getSkillAmount("wheal"))
 		}
 	}
 

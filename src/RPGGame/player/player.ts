@@ -1,26 +1,23 @@
 import {obstacles} from "../../../res/obstacle_data.json"
 import SETTINGS = require("../../../res/globalsettings.json")
+import ABILITY = require("../../../res/character_ability.json")
+import CONFIG from "../../../config/config.json"
+
 import type { Game } from "../Game"
 import { EntityFilter } from "../entity/EntityFilter"
-import { Projectile } from "../Projectile"
 import { PlayerAbility } from "./PlayerAbility"
 import PlayerStatistics from "./PlayerStatistics"
 import { PlayerMapHandler } from "../MapHandlers/PlayerMapHandler"
 import PlayerInventory from "./PlayerInventory"
 import { PlayerStatusEffects } from "./PlayerStatusEffect"
 import { ObstacleHelper } from "../core/Obstacles"
-import { SkillInfoFactory } from "../data/SkillDescription"
 import { Entity } from "../entity/Entity"
 import { SummonedEntity } from "../characters/SummonedEntity/SummonedEntity"
 import { AiAgent, DefaultAgent } from "../AiAgents/AiAgent"
 import { ServerGameEventFormat } from "../data/EventFormat"
 import { MAP } from "../MapHandlers/MapStorage"
-import ABILITY = require("../../../res/character_ability.json")
 import { Indicator } from "../Simulation/data/Indicator"
 // const { isMainThread } = require('worker_threads')
-import CONFIG from "../../../config/config.json"
-import { Damage, PercentDamage } from "../core/Damage"
-import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { HPChange } from "../core/health"
 import { DamageRecord, PlayerDamageRecorder } from "./PlayerDamageRecord"
 import {
@@ -35,6 +32,7 @@ import {
 } from "../data/enum"
 import { EFFECT } from "../StatusEffect/enum"
 import { AbilityUtilityScorecard, clamp, decrement, removeDuplicate, roundToNearest } from "../core/Util"
+import { CharacterSkillManager, EmptySkillManager } from "../characters/SkillManager/CharacterSkillManager"
 
 // if(isMainThread){
 // 	args=require("minimist")(process.argv.slice(2))
@@ -57,24 +55,16 @@ const initialSetting =
 // if (args["m"]) testSetting.money = args["m"]
 
 console.log(initialSetting)
-export interface ValueScale {
-	base: number
-	scales: { ability: string; val: number }[]
-}
 
-abstract class Player extends Entity {
-	//game: Game
-	//	players: Player[]
-	//	mapId: number
+class Player extends Entity {
 	AI: boolean
-	AiAgent: AiAgent
+	
 	turn: number
 	name: string
 	isLoggedIn: boolean
 	champ: number
 	champ_name: string
 	team: number
-	//	pos: number
 	lastpos: number
 	dead: boolean
 
@@ -83,7 +73,6 @@ abstract class Player extends Entity {
 	assist: number
 	invulnerable: boolean
 	adice: number //추가 주사위숫자
-	pendingSkill: number
 	oneMoreDice: boolean
 	diceControl: boolean
 	diceControlCool: number
@@ -91,8 +80,6 @@ abstract class Player extends Entity {
 	private thisLifeKillCount: number //죽지않고 킬 횟수
 	waitingRevival: boolean
 
-	//	HP: number
-	//	MaxHP: number
 	ability: PlayerAbility
 	readonly statistics: PlayerStatistics
 	readonly damageRecord: PlayerDamageRecorder
@@ -100,60 +87,25 @@ abstract class Player extends Entity {
 	effects: PlayerStatusEffects
 	readonly mapHandler: PlayerMapHandler
 	shield: number
-	cooltime: number[]
-	protected duration: number[]
-	protected basicAttackCount: number //basic attack count avaliable in this turn
-	protected readonly basicAttackType: BASICATTACK_TYPE
 	// loanTurnLeft: number
 
 	private autoBuy: boolean
 	private damagedby: number[] //for eath player, turns left to be count as assist(maximum 3)
 
 	bestMultiKill: number
-
-	abstract readonly cooltime_list: number[]
-	abstract readonly duration_list: number[]
-	abstract readonly skill_ranges: number[]
-	private skillInfoKor: SkillInfoFactory
-	private skillInfo: SkillInfoFactory
 	thisTurnObstacleCount: number //variable to prevent infinite recursion error
+	
+	//skillManager and AiAgent will be initialized properly later
+	skillManager:CharacterSkillManager
+	AiAgent:AiAgent
 
-	abstract getSkillTrajectoryDelay(s: string): number
-	/**
-	 * for targeting, projectile, area targeting skill,
-	 * return SkillTargetSelector to ask client about where to use the skill
-	 * @param skill
-	 */
-	abstract getSkillTargetSelector(skill: number): SkillTargetSelector
-	/**
-	 * return projectile object of the pending skill of player
-	 * @param projpos
-	 */
-	abstract getSkillProjectile(projpos: number): Projectile | null
-	/**
-	 * return SkillAttack of the pending skill of player
-	 * @param target
-	 */
-	abstract getSkillDamage(target: Entity, skill: number): SkillAttack | null
-	abstract getSkillScale(): any
-	abstract getSkillName(skill: number): string
-	/**
-	 * called every time skill duration decrements
-	 */
-	abstract onSkillDurationCount(): void
-	/**
-	 * called if skill duration become 0 or on death
-	 * @param skill
-	 */
-	abstract onSkillDurationEnd(skill: number): void
-	abstract getSkillBaseDamage(skill: number): number
-	constructor(turn: number, team: number, game: Game, ai: boolean, char: number, name: string) {
-		super(game, ABILITY[char].initial.HP, initialSetting.pos, ENTITY_TYPE.PLAYER)
+	constructor(turn: number, team: number, game: Game, ai: boolean, name: string,champ:number) {
+		super(game, 200, initialSetting.pos, ENTITY_TYPE.PLAYER)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
-		this.champ = char //챔피언 코드
-		this.champ_name = SETTINGS.characters[char].name //챔피언 이름
+		this.champ = champ //챔피언 코드
+		this.champ_name = '' //챔피언 이름
 		this.team = team //0:readteam  1:blue
 		this.lastpos = 0 //이전위치
 		this.dead = false
@@ -167,7 +119,7 @@ abstract class Player extends Entity {
 		this.invulnerable = true
 		this.adice = 0 //추가 주사위숫자
 
-		this.pendingSkill = -1
+		
 		this.oneMoreDice = false
 		this.diceControl = false
 		this.diceControlCool = 0
@@ -182,24 +134,26 @@ abstract class Player extends Entity {
 		this.inven = new PlayerInventory(this, initialSetting.money)
 		this.effects = new PlayerStatusEffects(this)
 		this.mapHandler = PlayerMapHandler.create(this, this.mapId)
-		this.AiAgent = new DefaultAgent(this)
 		this.damageRecord = new PlayerDamageRecorder()
 
 		this.shield = 0
 
-		this.cooltime = [0, 0, 0]
-		this.duration = [0, 0, 0]
-		this.basicAttackCount = 0
 		// this.loanTurnLeft = 0
 
 		this.damagedby = [0, 0, 0, 0]
 		//for eath player, turns left to be count as assist(maximum 3)
 		this.bestMultiKill = 0
-		this.skillInfo = new SkillInfoFactory(this.champ, this, SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor = new SkillInfoFactory(this.champ, this, SkillInfoFactory.LANG_KOR)
 		this.autoBuy = ai
-		this.basicAttackType = ABILITY[char].basicAttackType === "ranged" ? BASICATTACK_TYPE.RANGED : BASICATTACK_TYPE.MELEE
 		this.thisTurnObstacleCount = 0
+		this.skillManager=new EmptySkillManager(this)
+		this.AiAgent=new DefaultAgent(this)
+	}
+	bindCharacter(id:number,skillManager:CharacterSkillManager,ai:AiAgent){
+		this.skillManager=skillManager
+        this.AiAgent=ai
+        this.champ=id
+        this.champ_name=SETTINGS.characters[id].name
+		this.ability.init(id)
 	}
 	transfer(func: Function, ...args: any[]) {
 		this.mediator.sendToClient(func, ...args)
@@ -216,18 +170,6 @@ abstract class Player extends Entity {
 	}
 	sendConsoleMessage(text: string) {
 		this.game.eventEmitter.message("[@]", text)
-	}
-	getSkillInfoKor() {
-		return this.skillInfoKor.get()
-	}
-	getSkillInfoEng() {
-		return this.skillInfo.get()
-	}
-	getSkillAmount(key: string): number {
-		return 0
-	}
-	calculateScale(data: ValueScale) {
-		return this.ability.calculateScale(data)
 	}
 	isMyTurn() {
 		return this.game.thisturn === this.turn
@@ -277,19 +219,7 @@ abstract class Player extends Entity {
 		}
 		return this.adice
 	}
-	/**
-	 *
-	 * @param {*} skill 0 ~
-	 */
-	isSkillLearned(skill: number): boolean {
-		if (this.level < 2 && skill === SKILL.W) {
-			return false
-		}
-		if (this.level < 3 && skill === SKILL.ULT) {
-			return false
-		}
-		return true
-	}
+	
 	/**
 	 * can be targeted by the entity
 	 * @param e
@@ -300,6 +230,27 @@ abstract class Player extends Entity {
 		if (this.dead || this.invulnerable || this.effects.has(EFFECT.INVISIBILITY)) return false
 		if (e instanceof Player && !this.mapHandler.isTargetableFrom(e)) return false
 		return true
+	}
+	canBasicAttack(): boolean {
+		return (
+			this.skillManager.basicAttackCount > 0 &&
+			this.effects.canBasicAttack() &&
+			!this.dead &&
+			this.mapHandler.canAttack() &&
+			this.skillManager.hasBasicAttackTarget()
+		)
+	}
+
+	canUseSkill(): boolean {
+		return !this.effects.has(EFFECT.SILENT) && !this.dead && this.mapHandler.canAttack()
+	}
+	getSkillStatus(): ServerGameEventFormat.SkillStatus{
+		let status=this.skillManager.getSkillStatus()
+		status.turn=this.turn
+		status.canBasicAttack=this.canBasicAttack()
+		status.canUseSkill=this.canUseSkill()
+		status.level=this.level
+		return status
 	}
 	/**
 	 *
@@ -330,17 +281,7 @@ abstract class Player extends Entity {
 		}
 		return super.isEnemyOf(e)
 	}
-	/**
-	 * 스킬 사용가능여부 체크
-	 * @param {} s (0~) 스킬
-	 * @returns
-	 */
-	isCooltimeAvaliable(s: number): boolean {
-		if (this.cooltime[s] > 0) {
-			return false
-		}
-		return true
-	}
+	
 	//========================================================================================================
 
 	//========================================================================================================
@@ -356,54 +297,17 @@ abstract class Player extends Entity {
 	onMyTurnStart() {
 		this.thisTurnObstacleCount = 0
 		if (!this.oneMoreDice) {
-			this.onSkillDurationCount()
-			this.decrementAllSkillDuration()
+			
 			this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
 			this.effects.onTurnStart()
 			console.log("-------------------------onmyturnstart" + this.turn)
 		}
-		this.rechargeBasicAttack()
-		// this.passive()
-		this.cooltime = this.cooltime.map(decrement)
+		this.skillManager.onTurnStart()
 
-		this.game.eventEmitter.update("skillstatus", this.turn, this.getSkillStatus())
+		this.game.eventEmitter.update("skillstatus", this.turn, this.skillManager.getSkillStatus())
 	}
 
-	getSkillStatus(): ServerGameEventFormat.SkillStatus {
-		return {
-			turn: this.game.thisturn,
-			cooltime: this.cooltime,
-			cooltimeratio: this.getCooltimePercent(),
-			duration: this.getDurationPercent(),
-			level: this.level,
-			basicAttackCount: this.basicAttackCount,
-			canBasicAttack: this.canBasicAttack(),
-			canUseSkill: this.canUseSkill(),
-			basicAttackType: this.basicAttackType,
-		}
-	}
-	protected rechargeBasicAttack() {
-		this.basicAttackCount = this.ability.basicAttackSpeed.get()
-	}
-	protected hasBasicAttackTarget(): boolean {
-		return (
-			this.mediator.count(this.getBasicAttackEntityFilter()) + this.mediator.count(this.getBasicAttackPlayerFilter()) >
-			0
-		)
-	}
-	canBasicAttack(): boolean {
-		return (
-			this.basicAttackCount > 0 &&
-			this.effects.canBasicAttack() &&
-			!this.dead &&
-			this.mapHandler.canAttack() &&
-			this.hasBasicAttackTarget()
-		)
-	}
-
-	canUseSkill(): boolean {
-		return !this.effects.has(EFFECT.SILENT) && !this.dead && this.mapHandler.canAttack()
-	}
+	
 
 	//========================================================================================================
 	/**
@@ -440,33 +344,7 @@ abstract class Player extends Entity {
 		this.effects.onAfterObs()
 	}
 
-	/**
-	 * 	decrement all skill durations at once
-	 */
-	decrementAllSkillDuration() {
-		for (let i = 0; i < this.duration.length; i++) this.setSingleSkillDuration(i, this.duration[i] - 1)
-	}
-	/**
-	 * set all skill durations at once
-	 * @param durations
-	 */
-	setAllSkillDuration(durations: number[]) {
-		for (let i = 0; i < durations.length; i++) this.setSingleSkillDuration(i, durations[i])
-	}
-
-	/**
-	 * change one skill`s duration
-	 * checks if the skill duration ends
-	 * @param skill
-	 * @param val
-	 */
-	setSingleSkillDuration(skill: number, val: number) {
-		if (val === 0 && this.isSkillActivated(skill)) {
-			this.onSkillDurationEnd(skill)
-		}
-		if (val < 0) val = 0
-		this.duration[skill] = val
-	}
+	
 
 	//========================================================================================================
 
@@ -564,46 +442,7 @@ abstract class Player extends Entity {
 	}
 	//========================================================================================================
 
-	resetCooltime(list: SKILL[]) {
-		//this.message(this.name + "`s cooltime has been reset")
-		for (let i of list) {
-			this.cooltime[i] = 0
-		}
-	}
-	/**
-	 * 스킬사용후 쿨타임 시작
-	 * apply all cooltime reductions
-	 * @param {} skill 스킬종류,0에서시작
-	 */
-	startCooltime(skill: SKILL) {
-		this.cooltime[skill] = this.cooltime_list[skill]
-
-		if (this.mapId === MAP_TYPE.RAPID) this.cooltime[skill] = Math.ceil(this.cooltime_list[skill] * 0.66)
-
-		if (skill === SKILL.ULT) {
-			this.cooltime[skill] -= this.ability.ultHaste.get()
-		}
-
-		this.cooltime[skill] = Math.max(0, this.cooltime[skill])
-	}
-	startDuration(skill: SKILL) {
-		this.duration[skill] = this.duration_list[skill]
-	}
-	/**
-	 *set skill cooltime as it is(no modifier)
-	 * @param skill skill
-	 * @param amt has to be positive
-	 */
-	setCooltime(skill: SKILL, amt: number) {
-		this.cooltime[skill] = amt
-	}
-	potionObstacle() {
-		this.resetCooltime([SKILL.Q, SKILL.W])
-		this.cooltime[SKILL.ULT] = Math.floor(this.cooltime[SKILL.ULT] / 2)
-	}
-	isSkillActivated(skill: SKILL) {
-		return this.duration[skill] > 0
-	}
+	
 
 	//========================================================================================================
 
@@ -656,18 +495,7 @@ abstract class Player extends Entity {
 	resetSkillImage(skill: SKILL) {
 		this.changeSkillImage("", skill)
 	}
-	getDurationPercent() {
-		return this.duration.map((d, i) => {
-			if (this.duration_list[i] === 0) return 0
-			else return d / this.duration_list[i]
-		})
-	}
-	getCooltimePercent() {
-		return this.cooltime.map((c, i) => {
-			if (this.cooltime_list[i] === 0) return 0
-			else return c / this.cooltime_list[i]
-		})
-	}
+	
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
    * @param {*}data HPChange
@@ -942,11 +770,11 @@ abstract class Player extends Entity {
 		this.effects.reset(EFFECT.ANNUITY_LOTTERY) //연금복권 끝
 
 		if (this.level === 3) {
-			this.cooltime[2] = 1
+			this.skillManager.cooltime[2] = 1
 
 			if (this.mapId === MAP_TYPE.RAPID)
 				// this.cooltime[2] = 0
-				this.cooltime[2] = 4
+				this.skillManager.cooltime[2] = 4
 		}
 		this.thisLevelDeathCount = 0
 	}
@@ -1171,8 +999,8 @@ abstract class Player extends Entity {
 		this.incrementKda("d")
 		this.damagedby = [0, 0, 0, 0]
 
-		this.setAllSkillDuration([0, 0, 0])
 		this.invulnerable = true
+		this.skillManager.onDeath()
 		this.mapHandler.onDeath()
 		this.effects.onDeath()
 
@@ -1248,166 +1076,20 @@ abstract class Player extends Entity {
 		// return assists
 	}
 	/**
-	 * use skill that will be activated for certain amount of time
-	 * @param skill
-	 */
-	useActivationSkill(skill: number): void {}
-	/**
-	 * use skill that will immediately do an action such as attack
-	 * @param skill
-	 * @returns
-	 */
-	useInstantSkill(skill: number): boolean {
-		return false
-	}
-	/**
-	 * check skill avalibility, get avaliable targets or locations from skilltargetselector
-	 * @param {*} skill
-	 */
-	initSkill(skill: number): ServerGameEventFormat.SkillInit {
-		let payload: ServerGameEventFormat.SkillInit = {
-			turn: this.turn,
-			crypt_turn: this.game.getGameTurnToken(this.turn),
-			type: INIT_SKILL_RESULT.NON_TARGET,
-			data: null,
-			skill: skill,
-		}
-		if (!this.isSkillLearned(skill)) {
-			//	return "notlearned"
-			payload.type = INIT_SKILL_RESULT.NOT_LEARNED
-			return payload
-		} else if (!this.isCooltimeAvaliable(skill)) {
-			payload.type = INIT_SKILL_RESULT.NO_COOL
-			return payload
-		}
-		let skillTargetSelector: SkillTargetSelector = this.getSkillTargetSelector(skill)
-		if (skillTargetSelector.isNonTarget()) {
-			payload.type = INIT_SKILL_RESULT.NON_TARGET
-			if (!this.AI) {
-				let result = this.useInstantSkill(skill)
-				if (!result) payload.type = INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-			}
-			return payload
-		}
-
-		if (skillTargetSelector.isActivation()) {
-			if (!this.AI) this.useActivationSkill(skill)
-			payload.type = INIT_SKILL_RESULT.ACTIVATION
-			return payload
-		} else if (skillTargetSelector.isNoTarget()) {
-			payload.type = INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-			return payload
-		}
-		skillTargetSelector.range = this.effects.modifySkillRange(skillTargetSelector.range)
-		//마법의성,실명 적용
-
-		if (skillTargetSelector.isProjectile()) {
-			payload.type = INIT_SKILL_RESULT.PROJECTILE
-			payload.data = {
-				kind: "location",
-				pos: this.pos,
-				range: skillTargetSelector.range,
-				size: skillTargetSelector.projSize,
-			}
-			return payload
-		}
-		if (skillTargetSelector.isAreaTarget()) {
-			payload.type = INIT_SKILL_RESULT.AREA_TARGET
-
-			payload.data = {
-				kind: "location",
-				pos: this.pos,
-				range: skillTargetSelector.range,
-				size: skillTargetSelector.areaSize,
-			}
-			return payload
-		}
-		let targets = this.mediator
-			.selectAllFrom(EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(skillTargetSelector.range))
-			.map((pl: Player) => pl.turn)
-		let conditionedTargets = this.mediator
-			.selectAllFrom(
-				EntityFilter.ALL_ATTACKABLE_PLAYER(this)
-					.inRadius(skillTargetSelector.conditionedRange)
-					.onlyIf(skillTargetSelector.condition)
-			)
-			.map((pl: Player) => pl.turn)
-
-		targets = removeDuplicate(targets.concat(conditionedTargets))
-
-		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
-		if (targets.length === 0) {
-			//return "notarget"
-			payload.type = INIT_SKILL_RESULT.NO_TARGETS_IN_RANGE
-			return payload
-		}
-		payload.type = INIT_SKILL_RESULT.TARGTING
-		payload.data = { targets: targets, kind: "target" }
-		return payload
-	}
-	getBaseBasicAttackDamage(): Damage {
-		return new Damage(this.ability.AD.get(), 0, 0)
-	}
-	getBasicAttackName(): string {
-		return "basicattack"
-	}
-	/**
-	 * similar with useNonTargetSkill() but contains targeted position
-	 * @param pos
-	 */
-	usePendingAreaSkill(pos: number):number { return 0}
-
-	usePendingTargetingSkill(target:number):number {
-		let damage=this.getSkillDamage(this.game.pOfTurn(target),this.pendingSkill)
-	
-		if(!damage || !damage.source) return
-		this.mediator.skillAttackSingle(damage.source, this.game.turn2Id(target),damage)
-		return damage.trajectoryDelay
-	}
-	/**
-	 *
-	 * @returns default entityfilter fo basic attack
-	 */
-	protected getBasicAttackPlayerFilter(): EntityFilter<Player> {
-		return EntityFilter.ALL_ENEMY_PLAYER(this).excludeUnattackable().inRadius(this.ability.attackRange.get())
-	}
-	/**
-	 * attack range halves for ranged characters
-	 * @returns
-	 */
-	protected getBasicAttackEntityFilter(): EntityFilter<Entity> {
-		return EntityFilter.ALL_ENEMY(this)
-			.excludePlayer()
-			.excludeUnattackable()
-			.inRadius(this.ability.attackRange.get() * (this.basicAttackType === BASICATTACK_TYPE.RANGED ? 0.5 : 1))
-	}
-	/**
 	 * perform basic attack if possible
 	 * call mapHandler.onBasicAttack()
 	 * @returns true if performed basic attack
 	 */
 	basicAttack(): boolean {
-		if (this.basicAttackCount <= 0) return false
-
-		this.basicAttackCount -= 1
 		if (!this.effects.canBasicAttack()) {
 			return false
 		}
-		let damage: Damage = this.ability.basicAttackDamage()
+		let attacked=this.skillManager.basicAttack()
 
-		damage = this.mapHandler.onBasicAttack(damage)
-		this.statistics.add(STAT.BASICATTACK, 1)
-		//	console.log("basicattack")
-		if (this.basicAttackType === BASICATTACK_TYPE.MELEE)
-			this.mediator.basicAttackMelee(this, this.getBasicAttackPlayerFilter(), this.getBasicAttackEntityFilter(), damage)
-		else if (this.basicAttackType === BASICATTACK_TYPE.RANGED)
-			this.mediator.basicAttackRanged(
-				this,
-				this.getBasicAttackPlayerFilter(),
-				this.getBasicAttackEntityFilter(),
-				damage
-			)
-		return true
+		if(attacked) 
+			this.statistics.add(STAT.BASICATTACK, 1)
+
+		return attacked
 	}
 
 	aiSkill(callback: Function) {

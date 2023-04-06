@@ -1,13 +1,15 @@
-import { Timo } from "../characters/Timo";
+import type { Timo } from "../characters/Timo";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
+import type { Player } from "../player/player";
 
 class TimoAgent extends AiAgent{
     itemBuild: ItemBuild
-	player:Timo
-    constructor(player:Timo){
+	skillManager:Timo
+    constructor(player:Player,skillManager:Timo){
         super(player)
+		this.skillManager=skillManager
 		this.itemBuild = new ItemBuild().setItemStages([
 			new ItemBuildStage(ITEM.INVISIBILITY_CLOAK),
 			new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL),

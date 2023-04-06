@@ -116,3 +116,9 @@ export class SkillTargetSelector {
 		return this.resultType === SKILL_INIT_TYPE.ACTIVATION
 	}
 }
+
+
+export interface ValueScale {
+	base: number
+	scales: { ability: string; val: number }[]
+}

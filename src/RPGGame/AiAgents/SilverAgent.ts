@@ -1,15 +1,19 @@
-import { Silver } from "../characters/Silver"
+import type { Silver } from "../characters/Silver"
 import { AbilityUtilityScorecard, randInt } from "../core/Util"
 import { AbilityUtilityType, ITEM, SKILL } from "../data/enum"
 import { AiAgent, ItemBuild } from "./AiAgent"
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild"
+import { CharacterSkillManager } from "../characters/SkillManager/CharacterSkillManager"
+import type { Player } from "../player/player"
 
 export class SilverAgent extends AiAgent {
+	skillManager: Silver
 	itemBuild: ItemBuild
-	player: Silver
+	player: Player
 
-	constructor(player: Silver) {
+	constructor(player:Player,skillManager: Silver) {
 		super(player)
+		this.skillManager=skillManager
 		this.itemBuild = new ItemBuild().setItemStages(
 			[
 				new ItemBuildStage(ITEM.EPIC_SHIELD).setChangeCondition(

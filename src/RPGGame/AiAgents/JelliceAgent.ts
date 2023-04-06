@@ -8,10 +8,11 @@ import type { Player } from "../player/player";
 
 class JelliceAgent extends AiAgent{
     itemBuild: ItemBuild
-	player:Jellice
+	skillManager:Jellice
 	private readonly minEnemy:number //minimum number of enemies in range to use W
-    constructor(player:Jellice){
+    constructor(player:Player,skillManager:Jellice){
         super(player)
+		this.skillManager=skillManager
 		if(this.player.game.isTeam)
 			this.minEnemy=1
 		else this.minEnemy=Math.max(1,this.player.game.totalnum-2)
@@ -44,19 +45,19 @@ class JelliceAgent extends AiAgent{
 			return SKILL.ULT
 		}
 		if (!this.attemptedSkills.has(SKILL.W) && this.player.mapHandler.gamemap.finish - this.player.pos > 3) {
-			let range=this.player.qRange()
+			let range=this.skillManager.qRange()
 
 			//q 쿨 있고 사거리내에 1~3 명이상 있으면 사용
 				if (
-					this.player.isCooltimeAvaliable(SKILL.Q) &&
+					this.skillManager.isCooltimeAvaliable(SKILL.Q) &&
 					this.player.mediator.count(EntityFilter.ALL_ATTACKABLE_PLAYER(this.player)
 					.in(this.player.pos-range.end_back*2,this.player.pos+range.end_front*2)) >= this.minEnemy
 				)
 			return SKILL.W
 		}
 		if (!this.attemptedSkills.has(SKILL.Q)) {
-			let range=this.player.qRange()
-			if(this.player.isSkillActivated(SKILL.W)){
+			let range=this.skillManager.qRange()
+			if(this.skillManager.isSkillActivated(SKILL.W)){
 				if(this.player.mediator.count(EntityFilter.ALL_ATTACKABLE_PLAYER(this.player)
 				.in(this.player.pos - range.end_back*2,this.player.pos + range.end_front*2))>0)
 				return SKILL.Q

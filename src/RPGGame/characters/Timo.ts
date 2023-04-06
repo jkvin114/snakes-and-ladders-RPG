@@ -1,5 +1,5 @@
 import * as ENUM from "../data/enum"
-import { Player } from "../player/player"
+import type { Player } from "../player/player"
 import type { Game } from "../Game"
 
 import { Damage,PercentDamage } from "../core/Damage"
@@ -15,9 +15,10 @@ import TimoAgent from "../AiAgents/TimoAgent"
 import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 
 const ID = 2
-class Timo extends Player {
+class Timo extends CharacterSkillManager {
 	//	onoff: boolean[]
 	skill_ranges: number[]
 
@@ -30,17 +31,13 @@ class Timo extends Player {
 	static readonly SKILLNAME_STRONG_Q="ghost_w_q"
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 	static readonly SKILL_EFFECT_NAME=["ghost_q", "hit", "ghost_r"]
-
-	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
-		//hp, ad:40, ar, mr, attackrange,ap
-		const basic_stats: number[] = [170, 30, 6, 6, 0, 30]
-		super(turn, team, game, ai, ID, name)
+	protected player: Player
+	constructor(player: Player) {
+		super(player,ID)
 		//	this.onoff = [false, false, false]
 		this.skill_ranges=[18,0,30]
 		this.cooltime_list = [3, 6, 6]
 		this.duration_list = [0, 1, 0]
-	
-		this.AiAgent=new TimoAgent(this)
 	}
 
 
@@ -56,7 +53,7 @@ class Timo extends Player {
 	}
 
 	private buildProjectile() {
-		let _this: Player = this.getPlayer()
+		let _this: Player = this.player
 		let effect = new TickDamageEffect(
 			EFFECT.GHOST_ULT_DAMAGE,
 			3,
@@ -68,21 +65,21 @@ class Timo extends Player {
 				return false
 			})
 			.setSourceSkill(ENUM.SKILL.ULT)
-			.setSourceId(this.UEID)
+			.setSourceId(this.player.UEID)
 
 		let hiteffect = new OnHitEffect(EFFECT.GHOST_ULT_WEAKEN,3, function(this:Player,target: Player, damage: Damage){
 			damage.updateNormalDamage(CALC_TYPE.multiply, 0.5)
 			return damage
 		})
-			.setSourceId(this.UEID)
+			.setSourceId(this.player.UEID)
 			.on(OnHitEffect.EVERYATTACK)
-			.to([this.UEID])
+			.to([this.player.UEID])
 
 
 
-		return new ProjectileBuilder(this.game,Timo.PROJ_ULT,Projectile.TYPE_RANGE)
+		return new ProjectileBuilder(this.player.game,Timo.PROJ_ULT,Projectile.TYPE_RANGE)
 			.setSize(4)
-			.setSource(this)
+			.setSource(this.player)
 			.setSkillRange(30)
 			.setAction(function (this: Player) {
 				this.effects.applySpecial(effect, SpecialEffect.SKILL.GHOST_ULT.name)
@@ -116,10 +113,10 @@ class Timo extends Player {
 	private useW() {
 		this.startCooltime(ENUM.SKILL.W)
 		this.startDuration(ENUM.SKILL.W)
-		this.effects.apply(EFFECT.INVISIBILITY, 1)
+		this.player.effects.apply(EFFECT.INVISIBILITY, 1)
 	}
 	getSkillName(skill: number): string {
-		if (skill === ENUM.SKILL.Q && this.effects.has(EFFECT.INVISIBILITY)) {
+		if (skill === ENUM.SKILL.Q && this.player.effects.has(EFFECT.INVISIBILITY)) {
 			return Timo.SKILLNAME_STRONG_Q
 		}
 		return Timo.SKILL_EFFECT_NAME[skill]
@@ -158,7 +155,7 @@ class Timo extends Player {
 				this.startCooltime(ENUM.SKILL.Q)
 
 				let admg = new Damage(0, 0, 0)
-				if (this.level > 1 && this.effects.has(EFFECT.INVISIBILITY)) {
+				if (this.player.level > 1 && this.player.effects.has(EFFECT.INVISIBILITY)) {
 					admg = new PercentDamage(30, PercentDamage.MISSING_HP, Damage.MAGIC).pack(
 						target.MaxHP,target.HP
 					)
@@ -167,7 +164,7 @@ class Timo extends Player {
 				skillattr = new SkillAttack(
 					new Damage(0, this.getSkillBaseDamage(s), 0).mergeWith(admg),
 					this.getSkillName(s)
-				,s,this).setOnHit(function (this: Player,source:Player) {
+				,s,this.player).setOnHit(function (this: Player,source:Player) {
 					this.effects.apply(EFFECT.BLIND, 1)
 				}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				break

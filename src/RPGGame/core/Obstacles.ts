@@ -43,7 +43,7 @@ export namespace ObstacleHelper {
 					player.effects.apply(EFFECT.SILENT, 1)
 					break
 				case 11:
-					player.potionObstacle()
+					player.skillManager.potionObstacle()
 					
 					// player.cooltime[ENUM.SKILL.ULT] = 
 					break

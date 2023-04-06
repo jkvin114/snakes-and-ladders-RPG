@@ -1,16 +1,18 @@
-import { Yangyi } from "../characters/Yangyi";
+import type { Yangyi } from "../characters/Yangyi";
 import {  ITEM, SKILL } from "../data/enum";
 import { ServerGameEventFormat } from "../data/EventFormat";
-import { Player } from "../player/player";
+import type { Player } from "../player/player";
 import { AiAgent, ItemBuild } from "./AiAgent";
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
 import { EFFECT } from "../StatusEffect/enum"
 
 class YangyiAgent extends AiAgent{
     itemBuild: ItemBuild
-	player:Yangyi
-    constructor(player:Yangyi){
+	skillManager:Yangyi
+    constructor(player:Player,skillManager:Yangyi){
         super(player)
+		this.skillManager=skillManager
+
         this.itemBuild = new ItemBuild().setItemStages(
 			[
 				new ItemBuildStage(ITEM.EPIC_SWORD),

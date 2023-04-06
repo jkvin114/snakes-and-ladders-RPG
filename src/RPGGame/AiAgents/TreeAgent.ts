@@ -1,4 +1,4 @@
-import { Tree } from "../characters/Tree";
+import type { Tree } from "../characters/Tree";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
@@ -8,9 +8,10 @@ import type { Player } from "../player/player";
 
 class TreeAgent extends AiAgent{
     itemBuild: ItemBuild
-	player:Tree
-    constructor(player:Tree){
-        super(player)
+	skillManager:Tree
+    constructor(player:Player,skillManager:Tree){
+		super(player)
+		this.skillManager=skillManager
 		this.itemBuild = new ItemBuild().setItemStages([
 			new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL),
 			new ItemBuildStage(ITEM.CARD_OF_DECEPTION),

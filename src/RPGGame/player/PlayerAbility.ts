@@ -1,10 +1,11 @@
-import type { Player, ValueScale } from "./player"
+import type { Player } from "./player"
 import {  CALC_TYPE } from "../core/Util"
 import { ITEM } from "../data/enum"
 import ABILITY = require("../../../res/character_ability.json")
 import { PlayerComponent } from "./PlayerComponent"
 import { Damage,PercentDamage } from "../core/Damage"
 import { HPChange } from "../core/health"
+import { ValueScale } from "../core/skill"
 
 class Ability {
 	protected amount: number
@@ -103,12 +104,12 @@ class PlayerAbility implements PlayerComponent{
 	static readonly MAX_ULTHASTE = 3
 	constructor(player: Player) {
 		this.player = player
-		this.AD = new Ability("AD").add(this.initial().AD)
-		this.AR = new Ability("AR").add(this.initial().AR)
-		this.MR = new Ability("MR").add(this.initial().MR)
+		this.AD = new Ability("AD")
+		this.AR = new Ability("AR")
+		this.MR = new Ability("MR")
 		// basic_stats[4]=2
-		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE).add(this.initial().attackRange)
-		this.AP = new Ability("AP").add(this.initial().AP)
+		this.attackRange = new ConstrainedAbility("attackRange", PlayerAbility.MAX_ATTACKRANGE)
+		this.AP = new Ability("AP")
 		// this.basicAttack_multiplier = 1 //평타 데미지 계수
 		this.extraHP = 0 //추가체력
 		this.basicAttackSpeed = new Ability("attackSpeed").add(1)
@@ -129,8 +130,13 @@ class PlayerAbility implements PlayerComponent{
 	onTurnStart(){
 
 	}
-	initial(){
-		return ABILITY[this.player.champ].initial
+	init(char:number){
+		this.AD.add(ABILITY[char].initial.AD)
+		this.AR.add(ABILITY[char].initial.AR)
+		this.MR.add(ABILITY[char].initial.MR)
+		// basic_stats[4]=2
+		this.attackRange.add(ABILITY[char].initial.attackRange)
+		this.AP.add(ABILITY[char].initial.AP)
 	}
 	growth(){
 		return ABILITY[this.player.champ].growth
@@ -278,8 +284,8 @@ class PlayerAbility implements PlayerComponent{
 		return str
 	}
 	sendToClient() {
-		let info_kor = this.player.getSkillInfoKor()
-		let info_eng = this.player.getSkillInfoEng()
+		let info_kor = this.player.skillManager.getSkillInfoKor()
+		let info_eng = this.player.skillManager.getSkillInfoEng()
 
 		if (this.player.game.instant) return
 		this.player.game.eventEmitter.update("stat", this.player.turn, this.serializeAll())
@@ -314,7 +320,7 @@ class PlayerAbility implements PlayerComponent{
 	}
 
 	basicAttackDamage() {
-		return this.player.getBaseBasicAttackDamage()
+		return this.player.skillManager.getBaseBasicAttackDamage()
 	}
 	addMaxHP(maxHpChange: number) {
 		this.extraHP += maxHpChange

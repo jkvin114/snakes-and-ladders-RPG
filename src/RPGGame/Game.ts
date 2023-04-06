@@ -231,8 +231,8 @@ class Game {
 		this.totalnum += 1
 	}
 	createPlayer(team: number, char: number, name: string,turn:number,AI:boolean){
-		let p = PlayerFactory.create(Number(char), name, turn, team, this, AI)
-		p.setMediator(this.entityMediator)
+		let p = PlayerFactory.create(Number(char), name, turn, team, this, AI,this.entityMediator)
+		
 		
 		return p
 	}
@@ -266,7 +266,7 @@ class Game {
 				champ: p.champ,
 				champ_name: p.champ_name,
 				recommendedItem: p.AiAgent.itemBuild.getRecommendedItems(),
-				skillScale:p.getSkillScale()
+				skillScale:p.skillManager.getSkillScale()
 			})
 		}
 		return {
@@ -1004,10 +1004,10 @@ class Game {
 	}
 	
 	useSkillToTarget(target: number):number {
-		return this.thisp().usePendingTargetingSkill(target)
+		return this.thisp().skillManager.usePendingTargetingSkill(this.pOfTurn(target))
 	}
 	onSelectSkill(skill:ENUM.SKILL):ServerGameEventFormat.SkillInit{
-		return this.thisp().initSkill(skill)
+		return this.thisp().skillManager.initSkill(skill)
 	}
 	//========================================================================================================
 
@@ -1023,10 +1023,10 @@ class Game {
 	//========================================================================================================
 	useAreaSkill(pos: number):number {
 	//	console.log("usearea"+pos)
-		return this.thisp().usePendingAreaSkill(pos)
+		return this.thisp().skillManager.usePendingAreaSkill(pos)
 	}
 	placeSkillProjectile(pos: number) {
-		let proj = this.thisp().getSkillProjectile(pos)
+		let proj = this.thisp().skillManager.getSkillProjectile(pos)
 		if(!proj) return
 		this.placeProjectile(proj, pos)
 	}

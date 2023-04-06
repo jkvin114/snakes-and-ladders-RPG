@@ -1,14 +1,16 @@
-import { Hacker } from "../characters/Hacker";
+import type { Hacker } from "../characters/Hacker";
 import { AbilityUtilityScorecard } from "../core/Util";
 import { ITEM, SKILL } from "../data/enum";
 import { AiAgent, ItemBuild } from "./AiAgent";
 import { ItemBuildStage, UtilityCondition } from "../core/ItemBuild";
+import type { Player } from "../player/player";
 
 class HackerAgent extends AiAgent{
     itemBuild: ItemBuild
-	player:Hacker
-    constructor(player:Hacker){
+	skillManager:Hacker
+    constructor(player:Player,skillManager:Hacker){
         super(player)
+		this.skillManager=skillManager
         this.itemBuild = new ItemBuild()
 		this.gameStartMessage= "I know everything about you!"
     }

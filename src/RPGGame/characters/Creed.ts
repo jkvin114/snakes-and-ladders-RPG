@@ -1,30 +1,23 @@
-import { Player } from "../player/player"
-import type { Game } from "../Game"
+import type { Player } from "../player/player"
 
 import * as ENUM from "../data/enum"
 import { ITEM } from "../data/enum"
 import { Damage,PercentDamage } from "../core/Damage"
 
 import { Projectile, ProjectileBuilder } from "../Projectile"
-import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../../res/skill_scales.json"
 import { ShieldEffect } from "../StatusEffect"
-import CreedAgent from "../AiAgents/CreedAgent"
 import { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 
 const ID = 0
-class Creed extends Player {
+class Creed extends CharacterSkillManager {
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 	readonly skill_ranges: number[]
 
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 	private usedQ: boolean
 	readonly duration_list: number[]
 
@@ -36,28 +29,13 @@ class Creed extends Player {
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 	private transformPlayer:Player
 
-	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
-		//hp:200, ad:20, ar, mr, attackrange,ap
-		const basic_stats: number[] = [200, 20, 7, 7, 0, 0]
-		super(turn, team, game, ai, ID, name)
+	constructor(player:Player) {
+		super(player,ID)
 		this.skill_ranges=[7,30,20]
 
 		this.cooltime_list = [3, 4, 8]
 		this.duration_list=[0,0,0]
-		this.itemtree = {
-			level: 0,
-			items: [
-				ITEM.EPIC_SWORD,
-				ITEM.EPIC_WHIP,
-				ITEM.SWORD_OF_BLOOD,
-				ITEM.WARRIORS_SHIELDSWORD,
-				ITEM.CROSSBOW_OF_PIERCING,
-				ITEM.GUARDIAN_ANGEL
-			],
-			final: ITEM.EPIC_SWORD
-		}
 		this.usedQ = false
-		this.AiAgent=new CreedAgent(this)
 	}
 
 
@@ -71,10 +49,10 @@ class Creed extends Player {
 	}
 
 	private buildProjectile() {
-		let _this: Player = this
-		return new ProjectileBuilder(this.game,Creed.PROJ_W,Projectile.TYPE_RANGE)
+		let _this: Player = this.player
+		return new ProjectileBuilder(this.player.game,Creed.PROJ_W,Projectile.TYPE_RANGE)
 			.setSize(3)
-			.setSource(this)
+			.setSource(this.player)
 			.setAction(function (this: Player) {
 				this.game.playerForceMove(this,this.pos - 4, false, ENUM.FORCEMOVE_TYPE.SIMPLE)
 			})
@@ -156,20 +134,20 @@ class Creed extends Player {
 					this.usedQ = false
 					//this.effects.applySpecial(this.getQShield(40),Creed.Q_SHIELD)
 
-					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),this.getSkillName(s),s,this)
+					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * 0.5, 0, 0),this.getSkillName(s),s,this.player)
 				} else {
 					this.usedQ = true
 				//	this.effects.applySpecial(this.getQShield(30),Creed.Q_SHIELD)
-					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s), 0, 0),this.getSkillName(s),s,this)
+					damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s), 0, 0),this.getSkillName(s),s,this.player)
 				}
 				break
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
-				this.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
+				this.player.effects.applySpecial(this.getUltShield(),Creed.ULT_SHIELD)
 				// this.effects.setShield("swordsman_r", new ShieldEffect(3, 70), false)
-				let originalpos = this.pos
-				this.game.playerForceMove(this,target.pos, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
-				damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * (originalpos < this.pos ? 0.7 : 1), 0, 0),this.getSkillName(s),s,this)
+				let originalpos = this.player.pos
+				this.player.game.playerForceMove(this.player,target.pos, true, ENUM.FORCEMOVE_TYPE.LEVITATE)
+				damage = new SkillAttack (new Damage(this.getSkillBaseDamage(s) * (originalpos < this.player.pos ? 0.7 : 1), 0, 0),this.getSkillName(s),s,this.player)
 				break
 		}
 

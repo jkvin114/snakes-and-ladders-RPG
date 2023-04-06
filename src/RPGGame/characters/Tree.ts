@@ -1,24 +1,21 @@
 import * as ENUM from "../data/enum"
-import { ITEM } from "../data/enum"
-import { Player } from "../player/player"
-import type { Game } from "../Game"
+import type { Player } from "../player/player"
 import { Damage,PercentDamage } from "../core/Damage"
 
 import { CALC_TYPE, randInt } from "../core/Util"
 import { Projectile, ProjectileBuilder } from "../Projectile"
 import { AblityChangeEffect, OnDamageEffect, ShieldEffect } from "../StatusEffect"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
-import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
-import TreeAgent from "../AiAgents/TreeAgent"
 import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT } from "../StatusEffect/enum"
 import TreePlant from "./SummonedEntity/TreePlantEntity"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 
 const ID = 8
-class Tree extends Player {
+class Tree extends CharacterSkillManager {
 	//	onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
@@ -39,16 +36,14 @@ class Tree extends Player {
 	static readonly COOLTIME = [2, 5, 9]
 
 	static readonly SKILL_SCALES = SKILL_SCALES[ID]
-
-	constructor(turn: number, team: number, game: Game, ai: boolean, name: string) {
-		super(turn, team, game, ai, ID, name)
+	protected player: Player
+	constructor(player:Player) {
+		super(player,ID)
+		this.isWithered = false
+		this.plantEntities = new Set<string>()
 		this.cooltime_list = Tree.COOLTIME
 		this.duration_list = [0, 0, 0]
 		this.skill_ranges = Tree.RANGES
-
-		this.isWithered = false
-		this.plantEntities = new Set<string>()
-		this.AiAgent = new TreeAgent(this)
 	}
 
 	// getSkillInfoKor() {
@@ -72,9 +67,9 @@ class Tree extends Player {
 	}
 
 	private buildProjectile() {
-		const _this = this.getPlayer()
-		return new ProjectileBuilder(this.game, Tree.PROJ_W, Projectile.TYPE_PASS)
-			.setSource(this)
+		const _this = this.player
+		return new ProjectileBuilder(this.player.game, Tree.PROJ_W, Projectile.TYPE_PASS)
+			.setSource(this.player)
 			.setAction(function (this: Player) {
 				if (!this.isEnemyOf(_this)) {
 					this.effects.apply(EFFECT.SPEED, 2)
@@ -148,11 +143,11 @@ class Tree extends Player {
 	}
 
 	private createPlantEntity() {
-		return TreePlant.create(this.game, new Damage(0, this.getSkillAmount("plantdamage"), 0))
+		return TreePlant.create(this.player.game, new Damage(0, this.getSkillAmount("plantdamage"), 0))
 	}
 	private summonPlantAt(pos: number) {
 		if (!this.isSkillLearned(ENUM.SKILL.ULT)) return
-		let entity = this.game.summonEntity(this.createPlantEntity(), this, Tree.PLANT_LIFE_SPAN, pos)
+		let entity = this.player.game.summonEntity(this.createPlantEntity(), this.player, Tree.PLANT_LIFE_SPAN, pos)
 
 		this.plantEntities.add(entity.UEID)
 	}
@@ -166,7 +161,7 @@ class Tree extends Player {
 	private plantAttack() {
 		this.mediator.withdrawDeadEntities()
 		this.plantEntities.forEach((plantId) => {
-			let plant = this.game.getEntityById(plantId)
+			let plant = this.player.game.getEntityById(plantId)
 			if (plant != null) plant.basicAttack()
 		})
 	}
@@ -177,8 +172,8 @@ class Tree extends Player {
 			return damage
 		})
 			.on([OnDamageEffect.BASICATTACK_DAMAGE, OnDamageEffect.SKILL_DAMAGE])
-			.from(this.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(this).excludeEnemy()).map((p: Player) => p.UEID))
-			.setSourceId(this.UEID)
+			.from(this.mediator.selectAllFrom(EntityFilter.ALL_PLAYER(this.player).excludeEnemy()).map((p: Player) => p.UEID))
+			.setSourceId(this.player.UEID)
 	}
 
 	getSkillDamage(target: Entity,s:number): SkillAttack|null {
@@ -190,13 +185,12 @@ class Tree extends Player {
 				this.summonPlantAt(target.pos)
 				this.startCooltime(ENUM.SKILL.ULT)
 				let rootDur=this.isWithered ? 2 : 1
-				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0), this.getSkillName(s),s,this)
+				const effect=this.getUltEffect()
+				skillattr = new SkillAttack(new Damage(0, this.getSkillBaseDamage(s), 0), this.getSkillName(s),s,this.player)
 					.setOnHit(function (this: Player,source:Player) {
 						this.effects.apply(EFFECT.ROOT, rootDur)
-						
-						if(source instanceof Tree){
-							this.effects.applySpecial(source.getUltEffect(), SpecialEffect.SKILL.TREE_ULT.name)
-						}
+						this.effects.applySpecial(effect, SpecialEffect.SKILL.TREE_ULT.name)
+
 					}).setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 				this.moveAllPlantTo(target.pos)
 				// setTimeout(()=>this.plantAttack(),200)
@@ -215,16 +209,16 @@ class Tree extends Player {
 			this.summonPlantAt(pos)
 
 			// let opponents = this.game.playerSelector.getPlayersIn(this, pos, pos + Tree.Q_AREA_SIZE - 1)
-			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), this.getSkillName(s),s,this)
+			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), this.getSkillName(s),s,this.player)
 			.setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 
-			this.mediator.skillAttack(this, EntityFilter.ALL_ATTACKABLE_PLAYER(this).in(pos, pos + Tree.Q_AREA_SIZE - 1), dmg)
+			this.mediator.skillAttack(this.player, EntityFilter.ALL_ATTACKABLE_PLAYER(this.player).in(pos, pos + Tree.Q_AREA_SIZE - 1), dmg)
 
 			if (this.isWithered) return
 			let healamt = this.getSkillAmount("qheal")
 			let shieldamt = this.getSkillAmount("qshield")
 			this.mediator.forEachPlayer(
-				EntityFilter.ALL_ALIVE_PLAYER(this)
+				EntityFilter.ALL_ALIVE_PLAYER(this.player)
 					.excludeEnemy()
 					.in(pos, pos + Tree.Q_AREA_SIZE - 1)
 			,function (source) {
@@ -237,23 +231,23 @@ class Tree extends Player {
 		return 0
 	}
 
-	onMyTurnStart() {
-		if (this.HP < this.MaxHP * 0.4) {
+	onTurnStart() {
+		if (this.player.HP < this.player.MaxHP * 0.4) {
 			this.isWithered = true
 
-			this.effects.applySpecial(
+			this.player.effects.applySpecial(
 				new AblityChangeEffect(EFFECT.TREE_WITHER, 2, new Map().set("absorb", 35)),
 				SpecialEffect.SKILL.TREE_WITHER.name
 			)
-			this.changeSkillImage(Tree.SKILLNAME_STRONG_R, ENUM.SKILL.ULT)
-			this.changeApperance(Tree.APPERANCE_WITHERED)
+			this.player.changeSkillImage(Tree.SKILLNAME_STRONG_R, ENUM.SKILL.ULT)
+			this.player.changeApperance(Tree.APPERANCE_WITHERED)
 		} else {
-			this.effects.reset(EFFECT.TREE_WITHER)
+			this.player.effects.reset(EFFECT.TREE_WITHER)
 			this.isWithered = false
-			this.resetApperance()
-			this.resetSkillImage(ENUM.SKILL.ULT)
+			this.player.resetApperance()
+			this.player.resetSkillImage(ENUM.SKILL.ULT)
 		}
-		super.onMyTurnStart()
+		super.onTurnStart()
 	}
 	//override
 	basicAttack(): boolean {
@@ -270,7 +264,7 @@ class Tree extends Player {
 	private hasBasicAttackAndPlantAttackTarget() {
 		
 
-		let filter=EntityFilter.ALL_ENEMY_PLAYER(this).excludeUnattackable().in(0,0)
+		let filter=EntityFilter.ALL_ENEMY_PLAYER(this.player).excludeUnattackable().in(0,0)
 		this.plantEntities.forEach((plant) => {
 			let entity=this.mediator.getEntity(plant)
 			if(!entity) return

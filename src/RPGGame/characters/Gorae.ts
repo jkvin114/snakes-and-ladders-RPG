@@ -1,31 +1,24 @@
 import * as ENUM from "../data/enum"
-import { Player } from "../player/player"
-import type { Game } from "../Game"
+import type { Player } from "../player/player"
 
 import { Damage,PercentDamage } from "../core/Damage"
 
 import {Projectile,ProjectileBuilder} from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { ShieldEffect } from "../StatusEffect"
-import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
-import GoraeAgent from "../AiAgents/GoraeAgent"
 import type { Entity } from "../entity/Entity"
 import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT } from "../StatusEffect/enum"
+import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
 const ID=6
-class Gorae extends Player {
+class Gorae extends CharacterSkillManager {
 	skill_ranges: number[]
 	//onoff: boolean[]
 	readonly hpGrowth: number
 	readonly cooltime_list: number[]
 
-	itemtree: {
-		level: number
-		items: number[]
-		final: number
-	}
 	readonly duration_list: number[]
 	
 	static readonly VISUALEFFECT_W='kraken_w_wave'
@@ -34,15 +27,11 @@ class Gorae extends Player {
 	static readonly SKILL_EFFECT_NAME=["kraken_q", "kraken_w", "kraken_r"]
 	static readonly SKILL_SCALES=SKILL_SCALES[ID]
 
-	constructor(turn: number, team: number , game: Game, ai: boolean, name: string) {
-		//hp:220, ad:40, ar, mr, attackrange,ap
-		const basic_stats: number[] =  [220, 40, 8, 8, 0, 40]
-		super(turn, team, game, ai, ID, name)
+	constructor(player:Player) {
+		super(player,ID)
 		this.cooltime_list = [1, 4, 7]
 		this.duration_list=[0,2,0]
 		this.skill_ranges=[15,0,20]
-		
-		this.AiAgent=new GoraeAgent(this)
 	}
 
 	getSkillTrajectoryDelay(skilltype:string):number{
@@ -54,9 +43,9 @@ class Gorae extends Player {
 	}
 
 	private buildProjectile() {
-		return new ProjectileBuilder(this.game,Gorae.PROJ_Q,Projectile.TYPE_RANGE)
+		return new ProjectileBuilder(this.player.game,Gorae.PROJ_Q,Projectile.TYPE_RANGE)
 		.setSize(2)
-		.setSource(this)
+		.setSource(this.player)
 		.setTrajectorySpeed(300)
 		.setDuration(2)
         .setDamage(new Damage( 0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0))
@@ -106,15 +95,15 @@ class Gorae extends Player {
 	}
 
     private useW() {
-		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W),ENUM.SKILL.W,this)
+		let dmg = new SkillAttack( new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.W), 0),this.getSkillName(ENUM.SKILL.W),ENUM.SKILL.W,this.player)
 		.setOnHit(function(this:Player,source:Player){
 			this.effects.apply(EFFECT.SLOW, 1)
 		})
 		
-		this.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
+		this.player.effects.applySpecial(this.getWShield(),Gorae.EFFECT_W)
 
-		this.mediator.skillAttack(this,EntityFilter.ALL_ATTACKABLE_PLAYER(this).inRadius(3),dmg)
-		this.showEffect(Gorae.VISUALEFFECT_W, this.turn)
+		this.mediator.skillAttack(this.player,EntityFilter.ALL_ATTACKABLE_PLAYER(this.player).inRadius(3),dmg)
+		this.player.showEffect(Gorae.VISUALEFFECT_W, this.player.turn)
 
 		this.startCooltime(ENUM.SKILL.W)
 	}
@@ -153,7 +142,7 @@ class Gorae extends Player {
 			case ENUM.SKILL.ULT:
 				this.startCooltime(ENUM.SKILL.ULT)
 
-				skillattr = new SkillAttack(new Damage(0, 0, this.getSkillBaseDamage(s)),this.getSkillName(s),s,this)
+				skillattr = new SkillAttack(new Damage(0, 0, this.getSkillBaseDamage(s)),this.getSkillName(s),s,this.player)
 				.setOnKill(function(this:Player){this.ability.addMaxHP(50)})
 
 				break
