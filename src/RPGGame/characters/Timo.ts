@@ -87,6 +87,7 @@ class Timo extends CharacterSkillManager {
 			})
 			.setTrajectorySpeed(300)
 			.setDuration(2)
+			.setToTrap()
 			.build()
 	}
 

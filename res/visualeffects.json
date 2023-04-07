@@ -243,5 +243,15 @@
         "sprite":{
             "x":1,"y":5
         }
+    },
+    "tilewarn_drop":{
+        "sprite":{
+            "x":4,"y":6
+        }
+    },
+    "tiletarget_drop":{
+        "sprite":{
+            "x":3,"y":6
+        }
     }
 }

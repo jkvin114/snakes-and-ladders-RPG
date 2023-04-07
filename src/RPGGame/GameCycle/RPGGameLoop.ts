@@ -107,17 +107,17 @@ class GameLoop {
 
 			if (p.type === PlayerType.PLAYER_CONNECED) {
 				game.addPlayer(team, p.champ, p.name)
-				console.log("player added")
+				// console.log("player added")
 			} else if (p.type === PlayerType.AI) {
 				game.addAI(
 					team,
 					p.champ,
 					SETTINGS.characters[Number(p.champ)].name + "_Bot(" + String(game.totalnum + 1) + "P) "
 				)
-				console.log("computer added")
+				// console.log("computer added")
 			}
 			else{
-				console.log("empty player discarded")
+				// console.log("empty player discarded")
 			}
 		}
 		game.onCreate()
@@ -217,7 +217,9 @@ class GameLoop {
 		return diceRoll
 	}
 	async afterDice(movedistance: number) {
-		await sleep(SETTINGS.delay_on_dice + Math.abs(movedistance) * SETTINGS.delay_per_dice)
+		const totalInitialDelay=SETTINGS.delay_on_dice + Math.abs(movedistance) * SETTINGS.delay_per_dice
+		this.game.onAfterDice(totalInitialDelay)
+		await sleep(totalInitialDelay)
 		//	console.log("afterDice   " + movedistance)
 		if (!this.game) return
 		this.nextGameCycle()

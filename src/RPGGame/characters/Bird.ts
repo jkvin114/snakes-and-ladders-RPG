@@ -76,6 +76,7 @@ class Bird extends CharacterSkillManager {
 			.setAction(function(this: Player){
 				this.effects.applySpecial(ultburn,SpecialEffect.SKILL.BIRD_ULT_BURN.name)
 			})
+			.setToTrap()
 			.addFlag(Projectile.FLAG_NOT_DISAPPER_ON_STEP)
 			.setDuration(2)
 			.build()

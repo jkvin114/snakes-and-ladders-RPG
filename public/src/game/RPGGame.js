@@ -482,7 +482,10 @@ export class Game {
 
 		this.scene.removeAllEffects(turn)
 	}
-
+	showAreaEffect(info){
+		const isHarmful=this.isEnemy(info.turn)
+		this.scene.showAreaEffect(info,isHarmful)
+	}
 	onTileSelectionCancel(type) {}
 
 	onTileSelectionComplete(index, type) {}

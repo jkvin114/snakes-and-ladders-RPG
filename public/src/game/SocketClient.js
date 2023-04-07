@@ -199,6 +199,14 @@ export function openConnection(isInitial) {
 		if (info == null) return
 		GAME.scene.animateTrajectory(info.to, info.from, info.type, info.delay)
 	})
+	socket.on("server:area_effect", function (info) {
+		if (info == null) return
+		GAME.showAreaEffect(info)
+	})
+	socket.on("server:range_warn_hit", function (info) {
+		if (info == null) return
+		GAME.scene.onBeforeRangeWarnHit(info)
+	})
 	socket.on("server:respawn", function (data) {
 		if (data.turn == null) return
 		GAME.playerRespawn(data.turn, data.respawnPos, data.isRevived)

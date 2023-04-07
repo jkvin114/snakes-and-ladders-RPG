@@ -843,6 +843,11 @@ class Game {
 			this.arriveSquareCallback=null
 		}
 	}
+	onAfterDice(totalInitialDelay:number){
+		setTimeout(()=>
+		this.onBeforeRangeWarnHit(this.thisp().pos,this.thisp(),SETTINGS.delay_on_dice/2)
+		,totalInitialDelay-SETTINGS.delay_on_dice/2)
+	}
 
 	/**
 	 * resolve arriveSquareCallback and take player onAfterObs() action
@@ -865,6 +870,9 @@ class Game {
 		let delay=SETTINGS.delay_simple_forcemove
 		if(movetype=== ENUM.FORCEMOVE_TYPE.LEVITATE) delay=SETTINGS.delay_levitate_forcemove
 		if(movetype==ENUM.FORCEMOVE_TYPE.WALK) delay=SETTINGS.delay_walk_forcemove
+		const arriveSquareDelay=delay-400
+		const minDelay=Math.min(SETTINGS.delay_levitate_forcemove,SETTINGS.delay_walk_forcemove)-400
+
 	//	console.log("--------------------------------requestForceMove")
 	//	console.log(this.cycle)
 		if(this.cycle===GAME_CYCLE.BEFORE_SKILL.ARRIVE_SQUARE){
@@ -883,7 +891,10 @@ class Game {
 
 		if(!ignoreObstacle){
 			setTimeout(
-				() =>player.arriveAtSquare(true),delay-400
+				() =>this.onBeforeRangeWarnHit(player.pos,player,minDelay),arriveSquareDelay - minDelay
+			)
+			setTimeout(
+				() =>player.arriveAtSquare(true),arriveSquareDelay
 			)
 		}
 	}
@@ -960,6 +971,54 @@ class Game {
 	simulationAiSkill(){
 		this.thisp().simulationAiSkill()
 	}
+
+	onBeforeRangeWarnHit(pos:number,player: Player,flyDuration:number){
+		let data={
+			pos:pos,flyDuration:flyDuration,hits:[] as {
+				sourcePos: number;
+				name: string;
+			}[]
+		}
+		for(const proj of this.getRangeWarnHitPredictionsFor(pos,player)){
+			data.hits.push(proj)
+		}
+		this.eventEmitter.rangeWarnHits(data)
+	}
+
+	/**
+	 * get data for warning rangeprojectiles that will be applied to player if the player arrives at the position
+	 * @param pos 
+	 * @param player 
+	 * @returns (sourcePos:number,name:string)[]
+	 */
+	getRangeWarnHitPredictionsFor(pos:number,player: Player):{sourcePos:number,name:string}[]{
+		return this.getApplicableRangeProjectilesFor(pos,player)
+		.filter((proj)=>!proj.isTrap && proj.sourcePlayer!=null)
+		.map((proj:RangeProjectile)=>{
+			return {
+				sourcePos:proj.sourcePlayer.pos,
+				name:proj.name
+			}
+		})
+	}
+
+	/**
+	 * get rangeprojectiles that will be applied to player if the player arrives at the position
+	 * @param pos 
+	 * @param player 
+	 * @returns RangeProjectile[]
+	 */
+	getApplicableRangeProjectilesFor(pos:number,player: Player):RangeProjectile[]{
+		const list=[]
+		for (const proj of this.rangeProjectiles.values()) {
+			if (proj.activated && proj.scope.includes(pos) && proj.canApplyTo(player)) {
+				list.push(proj)
+			}
+		}
+		return list
+	}
+
+
 	//========================================================================================================
 	/**
 	 * 
@@ -971,26 +1030,33 @@ class Game {
 			return false
 		}
 		let ignoreObstacle = false
-
-		for (let proj of this.rangeProjectiles.values()) {
-			if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
-				let died=false
-				if(proj.sourcePlayer){
-					let skillattack = new SkillAttack(proj.damage, proj.name,-1,proj.sourcePlayer).setOnHit(proj.action)
-					died= this.entityMediator.skillAttackAuto(
-						proj.sourcePlayer,
-						this.turn2Id(player.turn)
-					,skillattack)
-				}
-
-				if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
-
-				if (!proj.hasFlag(Projectile.FLAG_NOT_DISAPPER_ON_STEP)) {
-					this.removeRangeProjectileById(proj.UPID)
-				}
-				if (died) return true
+		for(const proj of this.getApplicableRangeProjectilesFor(player.pos,player)){
+			let died=false
+			if(proj.sourcePlayer){
+				let skillattack = new SkillAttack(proj.damage, proj.name,-1,proj.sourcePlayer).setOnHit(proj.action)
+				died= this.entityMediator.skillAttackAuto(
+					proj.sourcePlayer,
+					this.turn2Id(player.turn)
+				,skillattack)
 			}
+
+			if (proj.hasFlag(Projectile.FLAG_IGNORE_OBSTACLE)) ignoreObstacle = true
+
+			if (!proj.hasFlag(Projectile.FLAG_NOT_DISAPPER_ON_STEP)) {
+				this.removeRangeProjectileById(proj.UPID)
+			}
+			if (died) return true
 		}
+		
+		// for (const proj of this.rangeProjectiles.values()) {
+		// 	if (proj.activated && proj.scope.includes(player.pos) && proj.canApplyTo(player)) {
+				
+				
+				
+		// 	}
+		// }
+		
+
 		return ignoreObstacle
 	}
 	getNameByTurn(turn: number) {
@@ -1021,9 +1087,16 @@ class Game {
 
 
 	//========================================================================================================
-	useAreaSkill(pos: number):number {
+	useAreaSkill(pos: number) {
 	//	console.log("usearea"+pos)
-		return this.thisp().skillManager.usePendingAreaSkill(pos)
+		let data= this.thisp().skillManager.usePendingAreaSkill(pos)
+
+		if(data!=null) {
+			data.delay=MAP.getCoordinateDistance(this.mapId,data.from,
+				data.to[Math.round(data.to.length/2)])*data.delay/ SETTINGS.trajectorySpeedRatio
+			this.eventEmitter.areaEffect(data)
+		}
+
 	}
 	placeSkillProjectile(pos: number) {
 		let proj = this.thisp().skillManager.getSkillProjectile(pos)

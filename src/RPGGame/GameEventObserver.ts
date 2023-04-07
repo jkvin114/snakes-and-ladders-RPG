@@ -333,6 +333,12 @@ export class GameEventObserver {
 			.setDelay(data.delay))
 		// this.eventEmitter(this.rname, "server:skill_trajectory", data)
 	}
+	areaEffect(data:ServerGameEventFormat.AreaEffect){
+		this.emit("area_effect",data)
+	}
+	rangeWarnHits(data:ServerGameEventFormat.RangeWarnHits){
+		this.emit("range_warn_hit",data)
+	}
 	indicateObstacle(data: ServerGameEventFormat.Obstacle) {
 		this.emit("indicate_obstacle",data)
 		// this.eventEmitter(this.rname, "server:indicate_obstacle", data)

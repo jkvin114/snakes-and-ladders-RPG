@@ -376,7 +376,7 @@ class EntityMediator {
 	 * skill attack by clicking skill button
 	 * @param from
 	 * @param filter
-	 * @returns
+	 * @returns true if some targets were hit
 	 */
 	skillAttack(from: Player, filter: EntityFilter<Player>, skillAttack: SkillAttack) {
 		let targets = this.selectAllFrom(filter)
@@ -388,7 +388,7 @@ class EntityMediator {
 	 * skill attack by clicking skill button
 	 * @param from
 	 * @param filter
-	 * @returns
+	 * @returns 
 	 */
 	skillAttackSingle(from: Player, to: string, skillAttack: SkillAttack) {
 		let player=this.getPlayer(to)

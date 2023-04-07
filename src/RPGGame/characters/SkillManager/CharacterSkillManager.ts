@@ -342,7 +342,10 @@ export abstract class CharacterSkillManager implements PlayerComponent{
 	 * similar with useNonTargetSkill() but contains targeted position
 	 * @param pos
 	 */
-	usePendingAreaSkill(pos: number):number { return 0}
+	usePendingAreaSkill(pos: number):ServerGameEventFormat.AreaEffect|null { 
+		
+		return null
+	}
 
 	usePendingTargetingSkill(target:Player):number {
 		let damage=this.getSkillDamage(target,this.pendingSkill)

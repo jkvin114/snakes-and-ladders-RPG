@@ -305,7 +305,9 @@ export class Board {
 		// console.log(bearing)
 		const dist = this.distance(start, dest) //alpha
 		const flip = bearing > 90 && bearing < 270
-		const parabolaHeight = dist * curveStrength //beta
+
+		//if curvestrehgth is nonzero, minimum x distance will be applied
+		const parabolaHeight = Math.min(100, dist) * curveStrength //beta
 		// console.log(bearing)
 		const startAngle = this.slopeBearingAngle((-4 * parabolaHeight) / dist) //* (flip?-1:1) %360
 		const angleinit = flip ? -startAngle + 180 : startAngle
@@ -395,11 +397,8 @@ export class Board {
 	}
 	animateScale(elem, scale, duration) {
 		if (!elem) return
-		elem.animate("scale", scale, {
-			onChange: this.render.bind(this),
-			duration: duration,
-			easing: fabric.util.ease.easeOutCubic,
-		})
+		this.animateScaleX(elem, scale, duration)
+		this.animateScaleY(elem, scale, duration)
 	}
 	animateAngle(elem, angle, duration) {
 		if (!elem) return

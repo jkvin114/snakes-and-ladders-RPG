@@ -111,11 +111,13 @@ abstract class Projectile {
 
 class RangeProjectile extends Projectile {
 	scope: number[]
+	isTrap:boolean
 	constructor(builder: ProjectileBuilder) {
 		super(builder)
-
+		this.isTrap=false
 		this.scope = []
 		this.flags = builder.flags
+		this.isTrap=builder.isTrap
 	}
 
 	place(pos: number, id: string) {
@@ -130,7 +132,8 @@ class RangeProjectile extends Projectile {
 			UPID: this.UPID,
 			owner: this.getOwner(),
 			name: this.name,
-			trajectorySpeed: this.trajectorySpeed
+			trajectorySpeed: this.trajectorySpeed,
+			isTrap:this.isTrap
 		}
 	}
 }
@@ -171,6 +174,7 @@ class ProjectileBuilder {
 	flags: Set<number>
 	type: number
 	target: number
+	isTrap:boolean
 	constructor(game: Game, name: string, type: number) {
 		this.sourcePlayer = null
 		this.size = 1
@@ -186,8 +190,12 @@ class ProjectileBuilder {
 		this.flags = new Set<number>()
 		this.type = type
 		this.target = Projectile.TARGET_ENEMY
+		this.isTrap=false
 	}
-
+	setToTrap(){
+		this.isTrap=true
+		return this
+	}
 	setCanApplyToAlly() {
 		this.target = Projectile.TARGET_ALL
 		return this

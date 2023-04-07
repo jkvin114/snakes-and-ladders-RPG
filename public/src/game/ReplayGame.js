@@ -272,6 +272,7 @@ export class ReplayGame extends Game {
 					UPID: this.getProp(event, "id"),
 					trajectorySpeed: this.modifyDelay(this.getProp(event, "trajectorySpeed")),
 					scope: this.getProp(event, "scope", true),
+					isTrap: true,
 				})
 				delay = this.getProp(event, "trajectorySpeed")
 				break

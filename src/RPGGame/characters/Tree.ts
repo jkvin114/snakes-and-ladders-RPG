@@ -13,6 +13,7 @@ import { SkillTargetSelector, SkillAttack } from "../core/skill"
 import { EFFECT } from "../StatusEffect/enum"
 import TreePlant from "./SummonedEntity/TreePlantEntity"
 import { CharacterSkillManager } from "./SkillManager/CharacterSkillManager"
+import { ServerGameEventFormat } from "../data/EventFormat"
 
 const ID = 8
 class Tree extends CharacterSkillManager {
@@ -200,8 +201,7 @@ class Tree extends CharacterSkillManager {
 
 		return skillattr
 	}
-	usePendingAreaSkill(pos: number): number {
-		let skillattr = null
+	usePendingAreaSkill(pos: number): ServerGameEventFormat.AreaEffect {
 		let s: number = this.pendingSkill
 		this.pendingSkill = -1
 		if (s === ENUM.SKILL.Q) {
@@ -212,23 +212,31 @@ class Tree extends CharacterSkillManager {
 			let dmg = new SkillAttack(new Damage(0, this.getSkillBaseDamage(ENUM.SKILL.Q), 0), this.getSkillName(s),s,this.player)
 			.setTrajectoryDelay(this.getSkillTrajectoryDelay(this.getSkillName(s)))
 
-			this.mediator.skillAttack(this.player, EntityFilter.ALL_ATTACKABLE_PLAYER(this.player).in(pos, pos + Tree.Q_AREA_SIZE - 1), dmg)
+			let hit=this.mediator.skillAttack(this.player, EntityFilter.ALL_ATTACKABLE_PLAYER(this.player).in(pos, pos + Tree.Q_AREA_SIZE - 1), dmg)
 
-			if (this.isWithered) return
-			let healamt = this.getSkillAmount("qheal")
-			let shieldamt = this.getSkillAmount("qshield")
-			this.mediator.forEachPlayer(
-				EntityFilter.ALL_ALIVE_PLAYER(this.player)
-					.excludeEnemy()
-					.in(pos, pos + Tree.Q_AREA_SIZE - 1)
-			,function (source) {
-				this.heal(healamt)
-				this.effects.applySpecial(new ShieldEffect(EFFECT.TREE_Q_SHIELD, 2, shieldamt))
-			})
-			
-			return this.getSkillTrajectoryDelay(this.getSkillName(s))
+			if (!this.isWithered){
+				const healamt = this.getSkillAmount("qheal")
+				const shieldamt = this.getSkillAmount("qshield")
+	
+				this.mediator.forEachPlayer(
+					EntityFilter.ALL_ALIVE_PLAYER(this.player)
+						.excludeEnemy()
+						.in(pos, pos + Tree.Q_AREA_SIZE - 1)
+				,function (source) {
+					this.heal(healamt)
+					this.effects.applySpecial(new ShieldEffect(EFFECT.TREE_Q_SHIELD, 2, shieldamt))
+				})
+			}
+
+			return {
+				turn:this.player.turn,
+				from:this.player.pos,
+				to:[pos,pos+1,pos+2],
+				type:this.getSkillName(s),
+				delay:hit?this.getSkillTrajectoryDelay(this.getSkillName(s)):0
+			}
 		}	
-		return 0
+		return null
 	}
 
 	onTurnStart() {

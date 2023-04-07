@@ -6,7 +6,6 @@ const PLAYER_POS_DIFF = [
 	[-12, -9],
 ] //플레이어별 위치 차이
 export const COLOR_LIST = ["blue", "red", "green", "yellow"] //플레이어별 색상
-const PROJ_DIFF = [-2, 4, 2, -4] //플레이어별 투사체범위 위치 차이
 const TILE_IMG_SIZE = 100
 const BOARD_MARGIN = 200
 const FRAME = 30 //milisecond
@@ -30,6 +29,7 @@ const HEALTHBAR_LOST_DISAPPEAR_DELAY = 600
 const HEALTHBAR_FRAME_DISAPPEAR_DELAY = 1300
 const ATTACK_EFFECT_INTERVAL = 100
 import { Board } from "./board.js"
+import { RangeProjectile, PassProjectile, RangeTrapProjectile, RangeWarnProjectile } from "./Projectile.js"
 // import { this.game } from "./script.js"
 function distance(pos1, pos2) {
 	return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.y - pos2.y) ** 2)
@@ -120,130 +120,6 @@ class SummonedEntity {
 		this.scene.canvas.remove(this.img)
 
 		this.scene.canvas.renderAll()
-	}
-}
-
-class PassProjectile {
-	/**
-	 *
-	 * @param {*} pos 위치
-	 * @param {*} name 종류
-	 * @param {*} tile 타일 오브젝트
-	 * @param {*} icon 아이콘 오브젝트
-	 * @param {*} id UPID
-	 */
-	constructor(scene, pos, name, tile, icon, id, stop = null) {
-		this.scene = scene
-		this.pos = pos
-		this.name = name
-		this.tile = tile
-		this.stop = stop
-
-		this.UPID = id
-		this.icon = icon
-	}
-	show() {
-		this.tile.set({
-			left: this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN,
-			top: this.scene.Map.coordinates[this.pos].y + BOARD_MARGIN,
-			visible: true,
-			evented: true,
-		})
-
-		this.icon.set({
-			left: this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN,
-			top: this.scene.Map.coordinates[this.pos].y + 25 + BOARD_MARGIN,
-			visible: true,
-			evented: true,
-		})
-		if (this.stop) {
-			this.stop.set({
-				left: this.scene.Map.coordinates[this.pos].x + BOARD_MARGIN,
-				top: this.scene.Map.coordinates[this.pos].y + BOARD_MARGIN,
-				visible: true,
-				evented: true,
-			})
-		}
-		this.bringToFront()
-		this.scene.playersToFront()
-		this.scene.canvas.renderAll()
-	}
-	bringToFront() {
-		if (this.stop) {
-			this.scene.canvas.bringToFront(this.stop)
-		}
-		this.scene.canvas.bringToFront(this.tile)
-		this.scene.canvas.bringToFront(this.icon)
-	}
-	remove() {
-		if (this.stop) {
-			this.stop.set({ visible: false, evented: false })
-			this.scene.canvas.remove(this.stop)
-		}
-		this.tile.set({ visible: false, evented: false })
-		this.icon.set({ visible: false, evented: false })
-		this.scene.canvas.remove(this.tile)
-		this.scene.canvas.remove(this.icon)
-
-		this.scene.canvas.renderAll()
-	}
-}
-
-class ActiveProjectile {
-	/**
-	 * @param {*} scope int[] 범위
-	 * @param {*} scopeTiles 타일 오브젝트들
-	 * @param {*} id UPID
-	 */
-	constructor(scene, scope, scopeTiles, id, owner, icon) {
-		this.scene = scene
-		this.scope = scope
-		this.scopeTiles = scopeTiles
-		this.UPID = id
-		this.icon = icon
-		this.owner = owner
-	}
-
-	show() {
-		this.scene.game.playSound("place")
-
-		for (let i = 0; i < this.scope.length; ++i) {
-			if (this.scene.Map.coordinates.length <= this.scope[i]) continue
-			this.scopeTiles[i].set({
-				left: this.scene.Map.coordinates[this.scope[i]].x + BOARD_MARGIN + PROJ_DIFF[this.owner],
-				top: this.scene.Map.coordinates[this.scope[i]].y + BOARD_MARGIN + PROJ_DIFF[this.owner],
-				visible: true,
-				evented: true,
-			})
-		}
-		this.icon.set({
-			left: this.scene.Map.coordinates[this.scope[0]].x + BOARD_MARGIN + PROJ_DIFF[this.owner],
-			top: this.scene.Map.coordinates[this.scope[0]].y + 25 + BOARD_MARGIN + PROJ_DIFF[this.owner],
-			visible: true,
-			evented: true,
-		})
-		this.bringToFront()
-		this.scene.playersToFront()
-		this.scene.canvas.renderAll()
-	}
-
-	bringToFront() {
-		this.scene.canvas.bringToFront(this.icon)
-		for (let i of this.scopeTiles) {
-			this.scene.canvas.bringToFront(i)
-		}
-	}
-
-	remove() {
-		for (let i of this.scopeTiles) {
-			i.set({ visible: false, evented: false })
-			this.scene.canvas.remove(i)
-		}
-
-		this.icon.set({ visible: false, evented: false })
-		this.scene.canvas.remove(this.icon)
-
-		this.scene.render()
 	}
 }
 
@@ -461,19 +337,21 @@ export class Scene extends Board {
 
 	async placeProj(proj) {
 		//console.log(proj)
-		if (proj.trajectorySpeed > 0 && proj.owner >= 0) {
-			this.animateProjTrajectory(proj, proj.trajectorySpeed)
-			await sleep(proj.trajectorySpeed)
+		let tiles = []
+		let icon = null
+		let newProj
+		if (proj.isTrap) {
+			if (proj.trajectorySpeed > 0 && proj.owner >= 0) {
+				this.animateProjTrajectory(proj, proj.trajectorySpeed)
+				await sleep(proj.trajectorySpeed)
+			}
+			tiles = this.createProjScopeTiles(proj.scope.length, this.game.getPlayerColor(proj.owner))
+			icon = this.createProjIcon(proj.name)
+			newProj = new RangeTrapProjectile(this, proj.scope, tiles, proj.UPID, proj.owner, icon)
+		} else {
+			tiles = this.createWarnScopeTiles(proj.scope.length, this.game.isEnemy(proj.owner))
+			newProj = new RangeWarnProjectile(this, proj.scope, tiles, proj.UPID, proj.owner, this.game.isEnemy(proj.owner))
 		}
-
-		let newProj = new ActiveProjectile(
-			this,
-			proj.scope,
-			this.createProjScopeTiles(proj.scope.length, this.game.getPlayerColor(proj.owner)),
-			proj.UPID,
-			proj.owner,
-			this.createProjIcon(proj.name)
-		)
 
 		this.activeProjectileList.set(proj.UPID, newProj)
 		newProj.show()
@@ -619,10 +497,50 @@ export class Scene extends Board {
 
 		for (let i = 0; i < size; ++i) {
 			let l = this.createCroppedProjectileRangeImage(tileImage)
-
 			imglist.push(l)
 		}
+
 		return imglist
+	}
+
+	createWarnScopeTiles(size, isEnemy) {
+		let imglist = []
+		for (let i = 0; i < size; ++i) {
+			let img = new fabric.Image(isEnemy ? "tilewarn" : "tiletarget", {
+				evented: false,
+				objectCaching: false,
+			})
+			this.lockFabricObject(img)
+			this.canvas.add(img)
+			this.setEffectImageAttr(img, 0, 0, 0.5, 0.5, 1, 0)
+			imglist.push(img)
+		}
+
+		return imglist
+	}
+	async showWarnDrop(scope, ownerTurn, isEnemy) {
+		let playerpos = this.getPlayerPos(ownerTurn)
+		const scaleX = isEnemy ? 0.15 : 0.3
+		const scaleY = isEnemy ? 0.7 : 1
+		const originImg = this.createCroppedEffectImage(isEnemy ? "tilewarn_drop" : "tiletarget_drop")
+		this.lockFabricObject(originImg)
+		this.canvas.add(originImg)
+		this.setEffectImageAttr(originImg, playerpos.x, playerpos.y, scaleX, scaleY, 1, 0)
+		this.animateY(originImg, playerpos.y - 170, 200, true)
+		this.animateOpacity(originImg, 0, 600)
+		this.removeImageAfter(originImg, 1000)
+
+		await sleep(200)
+		for (const tile of scope) {
+			let pos = this.getTilePos(tile)
+			const img = this.createCroppedEffectImage(isEnemy ? "tilewarn_drop" : "tiletarget_drop")
+			this.lockFabricObject(img)
+			this.canvas.add(img)
+			this.setEffectImageAttr(img, pos.x, pos.y - 170, scaleX, scaleY, 1, 0)
+			this.animateY(img, pos.y - 10, 200, true)
+			this.animateOpacity(img, 0, 600)
+			this.removeImageAfter(img, 1000)
+		}
 	}
 	//===========================================================================================================================
 
@@ -660,6 +578,15 @@ export class Scene extends Board {
 		}
 
 		return this.createCroppedProjectileImage(icon)
+	}
+	async onBeforeRangeWarnHit(info) {
+		const { pos, hits, flyDuration } = info
+		const dest = this.getTilePos(pos)
+		for (const hit of hits) {
+			const start = this.getTilePos(hit.sourcePos)
+			this.animateProjTrajectoryBetween(start, dest, hit.name, flyDuration)
+			await sleep(100)
+		}
 	}
 	//===========================================================================================================================
 
@@ -1438,34 +1365,89 @@ export class Scene extends Board {
 		return img
 	}
 	//===========================================================================================================================
+	async showAreaEffect(info, isHarmful) {
+		// console.log(info)
+		const { from, to, type, delay } = info
+		await sleep(delay)
 
-	animateProjTrajectory(proj, speed) {
-		let dest = this.getTilePos(proj.scope[0])
-		let start = this.getPlayerPos(proj.owner)
-		let img = this.createProjIcon(proj.name)
-		// console.log("animate projectile traj" + proj.name)
-		const bearing = this.getBearingAngle(start, dest)
-		let curveStrength = 0.3
-		switch (proj.name) {
-			case "ghost_r":
-			case "reaper_w":
-			case "sniper_w":
-			case "tree_w":
-			case "kraken_q":
-				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, bearing)
-				break
-			case "magician_r":
-				this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, bearing)
-				curveStrength = 0.5
-				break
+		for (const tilepos of to) {
+			const pos = this.getTilePos(tilepos)
+			let img = new fabric.Image(isHarmful ? "shine_enemy" : "shine_ally", {
+				evented: false,
+				objectCaching: false,
+			})
+			this.lockFabricObject(img)
+			this.canvas.add(img)
+			this.setEffectImageAttr(img, pos.x, pos.y, 0.5, 0.5, 1, 0)
+			this.animateOpacity(img, 0, 1800)
+			this.removeImageAfter(img, 2000)
 		}
 
-		this.animateParabola(img, start, dest, speed, curveStrength, "", "")
+		switch (type) {
+		}
+	}
+	/**
+	 *
+	 * @param {*} start (x,y)
+	 * @param {*} dest (x,y)
+	 * @param {*} name
+	 * @param {*} duration
+	 */
+	animateProjTrajectoryBetween(start, dest, name, duration) {
+		let img = this.createProjIcon(name)
+		// console.log("animate projectile traj" + proj.name)
+		const bearing = this.getBearingAngle(start, dest)
+		this.setEffectImageAttr(img, start.x, start.y, 0.6, 0.6, 1, bearing)
+		let curveStrength = 0.3
+		switch (name) {
+			case "ghost_r":
+			case "sniper_w":
+			case "tree_w":
+				this.game.playSound("throw")
+				break
+			case "reaper_w":
+				this.game.playSound("wind")
+				curveStrength = 0
+				img.scale(1)
+				duration *= 2
+				this.animateX(img, this.extrapolate(start.x, dest.x, 2), duration, true)
+				this.animateY(img, this.extrapolate(start.y, dest.y, 2), duration, true)
+				this.animateScale(img, 1.6, duration)
+				this.animateOpacity(img, 0.5, duration)
+				this.removeImageAfter(img, duration)
+
+				return
+			case "magician_r":
+				this.game.playSound("launch")
+				curveStrength = 0.5
+				break
+			case "kraken_q":
+				img.set({ originX: "center", originY: "bottom" })
+				this.setEffectImageAttr(img, dest.x - 30, dest.y + 20, 1.5, 1.5, 1, 0)
+
+				this.animateAngle(img, "-=60", duration - 200)
+				this.showSwooshEffect(dest, 1, bearing)
+				this.removeImageAfter(img, 2000)
+				setTimeout(() => {
+					this.animateOpacity(img, 0, 1000)
+					this.animateAngle(img, "+=160", 300)
+				}, duration - 200)
+				return
+		}
+
+		if (curveStrength > 0) curveStrength += Math.random() * 0.5 - 0.025
+
+		this.animateParabola(img, start, dest, duration, curveStrength, "", "")
 		// this.animateX(img, dest.x, speed)
 		// this.animateY(img, dest.y, speed)
-		setTimeout(() => img.set({ opacity: 0 }), speed + 100)
+		setTimeout(() => img.set({ opacity: 0 }), duration + 100)
 
 		this.removeImageAfter(img, 2000)
+	}
+	animateProjTrajectory(proj, duration) {
+		let dest = this.getTilePos(proj.scope[0])
+		let start = this.getPlayerPos(proj.owner)
+		this.animateProjTrajectoryBetween(start, dest, proj.name, duration)
 	}
 
 	//===========================================================================================================================

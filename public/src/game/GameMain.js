@@ -213,6 +213,8 @@ export function registerSounds() {
 		"horse",
 		"step",
 		"hack",
+		"throw",
+		"launch",
 	]
 
 	for (const sound of sounds) {

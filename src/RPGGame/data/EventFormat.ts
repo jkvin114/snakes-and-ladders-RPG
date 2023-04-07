@@ -150,6 +150,7 @@ export namespace ServerGameEventFormat {
 		owner: number
 		name: string
 		trajectorySpeed: number
+		isTrap:boolean
 	}
 	//replay
 	export interface SummonedEntity {
@@ -227,6 +228,17 @@ export namespace ServerGameEventFormat {
 	export interface Prediction{
 		probs:number[]
 		diffs:number[]
+	}
+	export interface AreaEffect extends TurnEventFormat{
+		from: number
+		to:number[]
+		type: string
+		delay: number
+	}
+	export interface RangeWarnHits{
+		pos:number
+		flyDuration:number
+		hits:{name:string,sourcePos:number}[]
 	}
 }
 

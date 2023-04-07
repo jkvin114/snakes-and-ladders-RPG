@@ -61,6 +61,7 @@ class Jean extends CharacterSkillManager {
 			.setSize(3)
 			.setSource(this.player)
 			.setDuration(2)
+			.setToTrap()
 			.build()
 	}
 
