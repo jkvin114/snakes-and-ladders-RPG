@@ -5,7 +5,7 @@ import { ABILITY_NAME, ABILITY_REGISTRY } from './Ability/AbilityRegistry';
 import { AbilityAttributes } from './Ability/AbilityValues';
 const headers=["code","name","name_kor","ability","chance","value","upgradevalue","firstonly","limit","cost"]
 
-const DEV=true
+const DEV=false 
 interface itemData{
     limit:string,code:string,name:string,ability:string
     ,name_kor:string,chance:string,value:string,upgradevalue:string

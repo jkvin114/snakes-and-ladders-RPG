@@ -1,5 +1,6 @@
-const PROJ_DIFF = [-2, 4, 2, -4] //플레이어별 투사체범위 위치 차이
+const PROJ_DIFF_X = [0, -3, 0, 3] //플레이어별 투사체범위 위치 차이
 const BOARD_MARGIN = 200
+const PROJ_DIFF_Y = [-3, 0, 3, 0] //플레이어별 투사체범위 위치 차이
 
 export class PassProjectile {
 	/**
@@ -87,8 +88,8 @@ export class RangeProjectile {
 		for (let i = 0; i < this.scope.length; ++i) {
 			if (this.scene.Map.coordinates.length <= this.scope[i]) continue
 			this.scopeTiles[i].set({
-				left: this.scene.Map.coordinates[this.scope[i]].x + BOARD_MARGIN + PROJ_DIFF[this.owner],
-				top: this.scene.Map.coordinates[this.scope[i]].y + BOARD_MARGIN + PROJ_DIFF[this.owner],
+				left: this.scene.Map.coordinates[this.scope[i]].x + BOARD_MARGIN + PROJ_DIFF_X[this.owner],
+				top: this.scene.Map.coordinates[this.scope[i]].y + BOARD_MARGIN + PROJ_DIFF_Y[this.owner],
 				visible: true,
 				evented: true,
 			})
@@ -145,8 +146,8 @@ export class RangeTrapProjectile extends RangeProjectile {
 	show() {
 		if (this.icon)
 			this.icon.set({
-				left: this.scene.Map.coordinates[this.scope[0]].x + BOARD_MARGIN + PROJ_DIFF[this.owner],
-				top: this.scene.Map.coordinates[this.scope[0]].y + 25 + BOARD_MARGIN + PROJ_DIFF[this.owner],
+				left: this.scene.Map.coordinates[this.scope[0]].x + BOARD_MARGIN + PROJ_DIFF_X[this.owner],
+				top: this.scene.Map.coordinates[this.scope[0]].y + 25 + BOARD_MARGIN + PROJ_DIFF_Y[this.owner],
 				visible: true,
 				evented: true,
 			})

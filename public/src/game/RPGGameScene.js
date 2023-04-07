@@ -1426,11 +1426,12 @@ export class Scene extends Board {
 				this.setEffectImageAttr(img, dest.x - 30, dest.y + 20, 1.5, 1.5, 1, 0)
 
 				this.animateAngle(img, "-=60", duration - 200)
-				this.showSwooshEffect(dest, 1, bearing)
+
 				this.removeImageAfter(img, 2000)
 				setTimeout(() => {
 					this.animateOpacity(img, 0, 1000)
 					this.animateAngle(img, "+=160", 300)
+					this.showSwooshEffect(dest, 1, 90)
 				}, duration - 200)
 				return
 		}
