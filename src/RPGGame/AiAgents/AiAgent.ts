@@ -329,9 +329,6 @@ class DefaultAgent extends AiAgent {
 		this.skillManager=new EmptySkillManager(player)
 		this.itemBuild = new ItemBuild().setItemStages([], new ItemBuildStage(ITEM.EPIC_SWORD))
 	}
-	getMessageOnGameStart(): string {
-		return "Hello"
-	}
 }
 
 class AIStoreInstance {

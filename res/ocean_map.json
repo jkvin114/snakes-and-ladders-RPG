@@ -116,16 +116,16 @@
     {"start":73,"end":80}
 	],
 	"dc_limit_level":4,
-    "way2_range":{
-      "start":15,
-      "end":36,
-      "way_start":90,
-      "way_end":98
-    },
-    "submarine_range":{
-      "start":37,
-      "end":75
-    },
-    "goldperturn":[10,10,12,25,25]
+  "way2_range":{
+    "start":15,
+    "end":36,
+    "way_start":90,
+    "way_end":98
+  },
+  "submarine_range":{
+    "start":37,
+    "end":75
+  },
+  "goldperturn":[10,10,12,25,25]
 
   }

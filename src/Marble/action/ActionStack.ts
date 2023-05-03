@@ -1,7 +1,7 @@
 import { Action,  ACTION_LIST, ACTION_TYPE } from "./Action"
 import { InstantAction } from "./InstantAction"
 
-export class ActionStack {
+export class ActionStack{
 	stack: Action[]
 	priorityStack: InstantAction[] //우선순의 스택
 	constructor() {

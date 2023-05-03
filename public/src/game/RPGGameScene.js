@@ -3344,8 +3344,9 @@ export class Scene extends Board {
 		})
 
 		let addedEffectImg = this.createCroppedEffectImage("death")
-		this.setEffectImageAttr(addedEffectImg, pos.x, pos.y, 3, 3, 0.6, 0)
+		this.setEffectImageAttr(addedEffectImg, pos.x, pos.y - 200, 3, 3, 0.6, 0)
 		this.animateScaleX(addedEffectImg, 1.4, 200)
+		this.animateY(addedEffectImg, pos.y, 200, true)
 		this.animateOpacity(addedEffectImg, 0, 1500)
 		this.removeImageAfter(addedEffectImg, 2000)
 

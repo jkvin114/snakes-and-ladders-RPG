@@ -49,10 +49,7 @@ class Bird extends CharacterSkillManager {
 	static SKILL_EFFECT_NAME=["bird_q", "hit", "bird_r"]
 
 	constructor(player:Player) {
-		//hp, ad:40, ar, mr, attackrange,ap
-		const basic_stats: number[] = [200, 30, 7, 7, 0, 30]
 		super(player,ID)
-		//	this.onoff = [false, false, false]
 		this.cooltime_list = [3, 5, 10]
 		this.duration_list=[0,2,4]
 		this.skill_ranges=[20,0,0]

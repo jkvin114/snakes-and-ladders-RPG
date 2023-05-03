@@ -1,4 +1,10 @@
+/**
+ * Implementation incomplete, unused
+ *
+ * 
+ */
 import { dot, normalize } from "./RPGGame/core/Util"
+
 
 class Parameter{
     array:number[]

@@ -160,6 +160,7 @@ function showReconnectBtn() {
 	$("#spectate").hide()
 	$("#open_create_room").hide()
 	$("#reconnect").show()
+	$("#create_room_open").hdie()
 }
 function chooseLang(eng, kor) {
 	return sessionStorage.language === "kor" ? kor : eng
@@ -263,6 +264,7 @@ $("#registerform").submit(function (e) {
 function setAsLogin(username) {
 	redirectFromUrlIfPossible()
 	localStorage.setItem("username", username)
+	localStorage.setItem("loggedIn", true)
 
 	$(".page").hide()
 
@@ -285,6 +287,7 @@ function redirectFromUrlIfPossible() {
 
 function logout() {
 	localStorage.removeItem("username")
+	localStorage.removeItem("loggedIn")
 	$.ajax({
 		method: "POST",
 		url: "/user/logout",

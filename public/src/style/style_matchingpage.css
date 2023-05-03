@@ -251,6 +251,10 @@ background-color: #2b282c  ;
     font-weight: normal;
     /* border: 2px solid rgb(165, 165, 165); */
   }
+  .mainbtn.filled{
+    background-color: #7a2acb;;
+    border: none;
+  }
   .mainbtn.disabled{
     background-color: gray;
   }
@@ -259,6 +263,9 @@ background-color: #2b282c  ;
   }
   .mainbtn:hover{
     background-color:rgb(60, 1, 90);
+  }
+  .mainbtn.filled:hover{
+    background-color: #611ea4;
   }
   /* .swap_player,.swap_ai{
     width:200px;

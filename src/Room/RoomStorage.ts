@@ -2,8 +2,12 @@ import type { MarbleRoom } from "../Marble/MarbleRoom"
 import type { Room } from "./room"
 import type { RPGRoom } from "../RPGGame/RPGRoom"
 
-const ROOMS = new Map<string, RPGRoom>()
-const MARBLE_ROOMS = new Map<string, MarbleRoom>()
+class RoomMap<R extends Room> extends Map<string, R>
+{}
+
+
+const ROOMS = new RoomMap<RPGRoom>()
+const MARBLE_ROOMS = new RoomMap<MarbleRoom>()
 
 export namespace R{
 	export function getRoom(name:string|undefined):Room|undefined{

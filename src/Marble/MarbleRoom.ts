@@ -27,11 +27,13 @@ class MarbleRoom extends Room{
 		return this
 	}
 	registerSimulationClientInterface(callback:GameEventEmitter){
+		console.error("Method not implemented.");
+
 		return this
 	}
     user_gameReady(roomName: string,itemSetting:ServerPayloadInterface.ItemSetting) {
 		this.onBeforeGameStart()
-		this.instant = false
+		// this.instant = false
 
 		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerMatchingState.playerlist,itemSetting)
 		this.gameloop.setClientInterface(this.clientInterface)

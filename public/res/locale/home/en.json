@@ -1,11 +1,12 @@
 {
-    "startgame":"CREATE GAME",
+    "startgame":"Create Game",
     "reconnect":"Reconnect",
     "spectate":"SPECTATE",
     "join":"JOIN",
     "simulation":"Simulation",
     "start":"START",
     "cancel":"CANCEL",
+    "quick_start":"Quick Start",
     "ph":{
         "room":{
             "username":"Username(optional)",

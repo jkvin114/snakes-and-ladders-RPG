@@ -56,7 +56,7 @@ const initialSetting =
 
 console.log(initialSetting)
 
-class Player extends Entity {
+class Player extends Entity{
 	AI: boolean
 	
 	turn: number
@@ -171,9 +171,6 @@ class Player extends Entity {
 	sendConsoleMessage(text: string) {
 		this.game.eventEmitter.message("[@]", text)
 	}
-	isMyTurn() {
-		return this.game.thisturn === this.turn
-	}
 	setAutoBuy(b: boolean) {
 		if (this.AI) return
 		this.autoBuy = b
@@ -284,7 +281,7 @@ class Player extends Entity {
 	
 	//========================================================================================================
 
-	//========================================================================================================
+	
 	/**
 	 * show visual effect to client
 	 * @param type
@@ -293,17 +290,20 @@ class Player extends Entity {
 	showEffect(type: string, source: number) {
 		this.game.eventEmitter.visualEffect(this.pos, type, source)
 	}
+	private lifetimeMoneyMultiplier(){
+		return Math.max(1,this.lifeTime * 0.15)
+	}
 	//========================================================================================================
 	onMyTurnStart() {
 		this.thisTurnObstacleCount = 0
 		if (!this.oneMoreDice) {
 			
-			this.inven.giveTurnMoney(MAP.getTurnGold(this.mapId, this.level))
+			this.inven.giveTurnMoney(Math.floor(MAP.getTurnGold(this.mapId, this.level) * this.lifetimeMoneyMultiplier()))
 			this.effects.onTurnStart()
-			console.log("-------------------------onmyturnstart" + this.turn)
+			this.lifeTime+=1
 		}
+		this.inven.onTurnStart()
 		this.skillManager.onTurnStart()
-
 		this.game.eventEmitter.update("skillstatus", this.turn, this.skillManager.getSkillStatus())
 	}
 
@@ -640,7 +640,7 @@ class Player extends Entity {
 	}
 	//========================================================================================================
 
-	//========================================================================================================
+	
 	isFinished(pos: number) {
 		if (!this.mapHandler.isOnMainWay()) return false
 		return this.game.isFinishPosition(pos)
@@ -799,13 +799,16 @@ class Player extends Entity {
 		let totalkill = this.mediator.allPlayer().reduce(function (t: number, a: Player) {
 			return t + a.kill
 		}, 0)
+		const fbKillMoney=this.mapId===MAP_TYPE.RAPID?130:100
+		const killMoney= this.mapId===MAP_TYPE.RAPID?100:70
+
 		this.inven.onKillEnemy()
-		console.log("--------------addkill" + totalkill)
+		// console.log("--------------addkill" + totalkill)
 		if (totalkill === 0) {
-			this.inven.giveMoney(100)
+			this.inven.giveMoney(fbKillMoney)
 			this.sendConsoleMessage(this.name + ", First Blood!")
 		} else {
-			this.inven.giveMoney(70 + 10 * this.thisLifeKillCount + 20 * deadplayer.thisLifeKillCount)
+			this.inven.giveMoney(killMoney + 10 * this.thisLifeKillCount + 20 * deadplayer.thisLifeKillCount)
 		}
 		this.oneMoreDice = true
 		// this.diceControl = true
@@ -883,7 +886,12 @@ class Player extends Entity {
 	 */
 	doDamage(damage: number, changeData: HPChange): boolean {
 		try {
-			if (this.dead || this.invulnerable || damage === 0 || changeData.getSourceTurn() === this.turn) {
+			
+			// if (this.dead || this.invulnerable || damage === 0 || changeData.getSourceTurn() === this.turn) {
+			// 	return false
+			// }
+			
+			if (this.dead || this.invulnerable || damage === 0) {
 				return false
 			}
 			//	let predictedHP = this.HP + this.shield - damage
@@ -992,7 +1000,7 @@ class Player extends Entity {
 		}
 		this.thisLifeKillCount = 0
 		this.game.addKillData(killerturn, this.turn, this.pos)
-
+		this.lifeTime=0
 		this.addAssist(killerturn)
 		this.HP = 0
 		this.dead = true

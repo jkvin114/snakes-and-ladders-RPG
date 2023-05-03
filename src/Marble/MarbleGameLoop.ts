@@ -92,20 +92,15 @@ class MarbleGameLoop{
     }
     stopTimeout(){
         if (this.idleTimeout != null && this.state != null && this.idleTimeoutTurn === this.state.turn) {
-			//this.clientInterface.stopTimeout(this.game.thisCryptTurn())
 			clearTimeout(this.idleTimeout)
-		//	this.idleTimeout = null
 		}
     }
-    startTimeOut(additional: Function): number {
+    startTimeOut(onTimeOut: Function): number {
 		if (!this.idleTimeout) {
-		//	this.clientInterface.startTimeout(this.game.thisCryptTurn(), SETTINGS.idleTimeout)
 
-			this.idleTimeout = setTimeout(() => {
+            this.idleTimeout = setTimeout(() => {
 				if (!this.game) return
-		//		this.clientInterface.forceNextturn(this.state.crypt_turn)
-			//	this.startNextTurn(true)
-				if (additional != null) additional()
+				if (onTimeOut != null) onTimeOut()
 			}, 10000)
 		}
 		return this.game.thisturn
@@ -185,7 +180,7 @@ class MarbleGameLoop{
                 this.loopRunning=false
                 break
             }
-
+            
             this.state.onDestroy()
             nextstate.onCreate()
             this.state=nextstate

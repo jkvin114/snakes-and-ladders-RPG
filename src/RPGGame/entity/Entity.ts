@@ -20,6 +20,7 @@ class Entity {
 	UEID:string	
 	effects: EntityStatusEffect
 	level:number
+	protected lifeTime:number
 
 	constructor(game: Game, health: number, pos: number,type:ENTITY_TYPE) {
 		this.game = game
@@ -30,6 +31,7 @@ class Entity {
 		this.pos = pos //현재위치
 		this.dead=false
 		this.type=type
+		this.lifeTime=0
 		this.effects=new EntityStatusEffect(this)
 	}
 
@@ -39,7 +41,9 @@ class Entity {
 	setMediator(m:EntityMediator){
 		this.mediator=m
 	}
-	onTurnStart(thisturn:number){}
+	onTurnStart(thisturn:number){
+		
+	}
 	onTurnEnd(thisturn:number){}
 	forceMove(pos:number){
 		this.pos=clamp(pos,0,MAP.getLimit(this.mapId))

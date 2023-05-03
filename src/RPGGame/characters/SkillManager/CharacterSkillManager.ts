@@ -322,6 +322,10 @@ export abstract class CharacterSkillManager implements PlayerComponent{
 
 		targets = removeDuplicate(targets.concat(conditionedTargets))
 
+		//test================
+		// targets.push(this.player.turn)
+		//===================================
+		
 		//	console.log("skillattr" + targets + " " + skillTargetSelector.range)
 		if (targets.length === 0) {
 			//return "notarget"

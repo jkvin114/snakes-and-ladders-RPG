@@ -107,9 +107,6 @@ export class ItemBuild{
 		let items= [...new Set<ITEM>([...matchingItems,...this.additionalFinalItems])]
 		items.push(this.finalEntry.item)
 		return items
-		//if(matchingItems.length===0) return [this.finalEntry.item,...this.additionalFinalItems]
-		//else if(matchingItems.length < count) return [...matchingItems,this.finalEntry.item]
-		//else return matchingItems.slice(0,count)
 	}
 	onBuyCoreItem(item:ITEM){
 
@@ -151,12 +148,6 @@ export class ItemBuild{
 		this.currentBuilding=entry
 		return entry.item
 
-		// if (this.coreItemCount >= this.items.length) {
-		// 	return this.final
-		// } else {
-		// //	this.currentBuilding=this.items[this.coreItemCount]
-		// 	return this.items[this.coreItemCount]
-		// }
 	}
 
 	setOpponentUtility(opponentUtility: AbilityUtilityScorecard) {

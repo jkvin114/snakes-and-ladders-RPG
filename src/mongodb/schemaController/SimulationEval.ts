@@ -22,5 +22,7 @@ export namespace SimulationEvalSchema{
     export const findByVersionWithCharacters=async function(version:string,map:string) {
         return await SimulationEval.find({patchVersion:version,mapName:map}).populate<{characters:ISimulationEval[]}>("characters")
     }
-
+    export const deleteBy=async function(version:string,map:string,gametype:string) {
+        return await SimulationEval.deleteMany({patchVersion:version,mapName:map,gameType:gametype})
+    }
 }

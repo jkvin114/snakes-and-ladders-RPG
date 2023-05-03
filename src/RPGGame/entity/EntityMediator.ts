@@ -361,7 +361,9 @@ class EntityMediator {
 		let targets = this.selectAllFrom(players)
 		let targetentities = this.selectAllFrom(entities)
 		if (targets.length + targetentities.length === 0) return
+
 		AttackHandler.basicAttacks(from, [...targets, ...targetentities], damage)
+
 	}
 
 	basicAttackRanged(from: Player, players: EntityFilter<Player>, entities: EntityFilter<Entity>, damage: Damage) {

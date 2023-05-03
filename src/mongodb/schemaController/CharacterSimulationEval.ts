@@ -18,4 +18,7 @@ export namespace CharacterSimulationEvalSchema{
     export const  findCharacterApperances=async function(char:number){
         return await CharacterSimulationEval.find({charId:char}).select("mapName gameType patchVersion")
     }
+    export const deleteBy=async function(version:string,map:string,gametype:string) {
+        return await CharacterSimulationEval.deleteMany({patchVersion:version,mapName:map,gameType:gametype})
+    }
 }

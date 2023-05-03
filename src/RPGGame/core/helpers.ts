@@ -1,3 +1,7 @@
+/**
+ * depricated
+ * 
+ */
 
 import { MAP } from "../MapHandlers/MapStorage"
 import {Player} from '../player/player'

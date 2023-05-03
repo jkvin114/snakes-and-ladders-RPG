@@ -118,6 +118,11 @@ export namespace SpecialEffect {
 			desc:"Movement speed increased by 1",
 			desc_kor:"이동속도 1 증가",
 			item_id: ENUM.ITEM.POWER_OF_MOTHER_NATURE
+		},TRINITY_FORCE_ABILITY:{
+			name:"trinity_force_speed",
+			desc:"Movement speed increased by 1",
+			desc_kor:"이동속도 1 증가",
+			item_id: ENUM.ITEM.TRINITY_FORCE
 		},WARRIOR_SHIELDSWORD_ABSORB:{
 			name:"shieldsword_absorb",
 			desc:"30% increased damage absorb",
@@ -165,6 +170,10 @@ export namespace SpecialEffect {
 			desc:"Deals additional magic damage on next basic attack with increased range (spend stacks)<hr>current stacks:<d1><br>additional damage:<d2><br>additional range:<d3>",
 			desc_kor:"다음 기본공격시 사정거리 증가, 충전량을 소모해 추가 마법 피해<hr>현재 충전량:<d1><br>추가 마법 피해:<d2><br>추가 사정거리:<d3>",
 			item_id: ENUM.ITEM.FLAIL_OF_JUDGEMENT,
+		},{
+			desc:"Gain stacks on attacking enemy. Move speed +1 if stack exceeds 3 <hr>current stacks:<d1>",
+			desc_kor:"적 공격시 중첩 획득, 중첩이 3 이상이면 이동속도 1 증가<hr>현재 중첩:<d1>",
+			item_id: ENUM.ITEM.TRINITY_FORCE,
 		}
 	]
 

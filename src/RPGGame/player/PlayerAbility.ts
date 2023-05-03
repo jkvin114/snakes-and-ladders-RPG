@@ -6,75 +6,8 @@ import { PlayerComponent } from "./PlayerComponent"
 import { Damage,PercentDamage } from "../core/Damage"
 import { HPChange } from "../core/health"
 import { ValueScale } from "../core/skill"
-
-class Ability {
-	protected amount: number
-	protected isPercent: boolean
-	protected readonly name: string
-	constructor(name: string) {
-		this.name = name
-		this.amount = 0
-		this.isPercent = false
-	}
-	setPercent() {
-		this.isPercent = true
-		return this
-	}
-	update(amt: number) {
-		if (amt > 0) {
-			this.add(amt)
-		} else {
-			this.subtract(-1 * amt)
-		}
-	}
-
-	add(amt: number) {
-		amt = Math.max(0, amt)
-		this.amount += amt
-		return this
-	}
-	set(amt: number) {
-		this.amount = Math.max(0, amt)
-		return this
-	}
-	subtract(amt: number) {
-		amt = Math.max(0, amt)
-		this.amount = Math.max(0, this.amount - amt)
-		return this
-	}
-	get val(){
-		return this.amount
-	}
-	get() {
-		return this.amount
-	}
-	is_percent() {
-		return this.isPercent
-	}
-}
-
-class ConstrainedAbility extends Ability {
-	protected constrain: number
-	protected actual: number //actual amount exceeding the constrain
-	constructor(name: string, constrain: number) {
-		super(name)
-		this.constrain = constrain
-		this.actual = 0
-	}
-
-	add(amt: number) {
-		this.actual += amt
-		if (this.actual > this.constrain) {
-			amt = this.constrain
-		}
-		return super.set(Math.min(this.actual, this.constrain))
-	}
-	subtract(amt: number) {
-		let amtExceeded = Math.max(0, this.actual - this.constrain)
-		this.actual = Math.max(0, this.actual - amt)
-		return super.subtract(Math.max(amt - amtExceeded, 0))
-	}
-}
+import { Ability } from "./ability/Ability"
+import { ConstrainedAbility } from "./ability/ConstrainedAbility"
 
 class PlayerAbility implements PlayerComponent{
 	AD: Ability
@@ -328,7 +261,7 @@ class PlayerAbility implements PlayerComponent{
 	}
 	onTurnEnd() {
 		if (this.regen.get() > 0) {
-			this.player.changeHP_heal(new HPChange(this.regen.get()))
+			this.player.changeHP_heal(new HPChange(this.regen.val))
 		}
 	}
 	applyResistanceToDamage(damage: Damage, target: PlayerAbility): Damage {

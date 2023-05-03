@@ -3,6 +3,7 @@ import { CharacterSimulationEvalSchema } from '../mongodb/schemaController/Chara
 import { SimulationEvalSchema } from '../mongodb/schemaController/SimulationEval';
 import SETTINGS = require("../../res/globalsettings.json")
 import { CharacterCommentSchema } from '../mongodb/schemaController/CharacterComment';
+import { adminauth } from './board/helpers';
 
 const router = express.Router()
 
@@ -108,5 +109,18 @@ router.get('/character/:character/trend' ,async function (req: Request, res:Resp
     }
 
 })
-
+router.post('/delete/:map/:version/:gametype',adminauth ,async function (req: Request, res:Response) {
+    let version= req.params.version
+    if(version==="recent") version=SETTINGS.patch_version
+    const map=req.params.map
+    try {
+        // console.log(version,map,req.params.gametype)
+        let data=await SimulationEvalSchema.deleteBy(version,map,req.params.gametype)
+        data=await CharacterSimulationEvalSchema.deleteBy(version,map,req.params.gametype)
+        return res.status(200).end()
+    } catch (error) {
+        console.error(error)
+        return res.status(500).end()
+    }
+})
 module.exports=router

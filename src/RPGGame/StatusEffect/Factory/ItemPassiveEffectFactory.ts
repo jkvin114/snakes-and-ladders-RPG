@@ -266,6 +266,21 @@ import { EffectFactory } from "./EffectFactory"
 					.setConditionActiveItem(item)
 					.setData([0, 0,0])
 					break
+				case ITEM.TRINITY_FORCE:
+					effects[0]=  new OnHitEffect(EFFECT.ITEM_TRINITY_FORCE, StatusEffect.DURATION_PERMANENT, function (
+						this: Player,
+						target: Player,
+						damage: Damage,
+						data: number[]
+					) {
+						this.inven.addActiveItemData(item,"stack",1)
+						data[0]+=1
+						return damage
+					})
+						.on(OnHitEffect.EVERYATTACK)
+						.setGood()
+						.setData([0])
+						break
 		}
 		return effects
 	}

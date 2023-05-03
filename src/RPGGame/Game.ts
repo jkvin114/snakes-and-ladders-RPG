@@ -845,8 +845,8 @@ class Game {
 	}
 	onAfterDice(totalInitialDelay:number){
 		setTimeout(()=>
-		this.onBeforeRangeWarnHit(this.thisp().pos,this.thisp(),SETTINGS.delay_on_dice/2)
-		,totalInitialDelay-SETTINGS.delay_on_dice/2)
+		this.onBeforeRangeWarnHit(this.thisp().pos,this.thisp(),SETTINGS.delay_on_dice/3)
+		,totalInitialDelay-SETTINGS.delay_on_dice/3)
 	}
 
 	/**

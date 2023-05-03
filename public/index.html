@@ -64,18 +64,22 @@ h1{
   border: 1px solid #c654ff;
   cursor:pointer;
   text-align:center;
-  padding: 15px 20px;
-  font-size: 15px;
-  margin: 15px 15px;
+  padding: 7px 10px;
+  font-size: 13px;
+  margin: 10px 10px;
   /* border:none; */
   vertical-align: middle;
   /* border-radius: 3px; */
-  min-width: 100px;
+  min-width: 80px;
 }
 .button.filled{
   background-color: #7a2acb;;
   border: none;
 }
+
+.button.filled:hover{
+    background-color: #611ea4;
+  }
 .button.wide{
   padding: 10px 60px;
   border-radius: 10px;
@@ -87,6 +91,7 @@ h1{
   font-size: 20px;
   border: none;  
   border-radius: 17px;
+  margin-bottom: 40px;
 }
 #open_create_room:hover{
   transform: scale(1.1);
@@ -364,10 +369,12 @@ input[type=password]{
       <br>
       <div id=buttons>
         <br>
-        <button class='button' id="open_create_room" onclick="open_createroom()" lkey="startgame">
-         
-          CREATE GAME</button>
+        <button class='button' id="open_create_room" onclick="createroom(false)" lkey="quick_start">Quick Start</button>
         <br>
+        <button class='button' id="create_room_open" onclick="open_createroom()" lkey="startgame">
+         
+          Create Game</button>
+       
         <button class='button hidden' id="reconnect" onclick="toGamepage()" lkey="reconnect">Recoect</button>
         <button class='button' id="join" onclick="join()"  lkey="join">IN</button>
         <button class='button' id="spectate" onclick="golink('/spectatepage.html')"  lkey="spectate">SPTATE</button>

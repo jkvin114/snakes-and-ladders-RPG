@@ -44,7 +44,7 @@
             17,
             23,
             35,
-            42
+            42,43
         ],
         "category": [
             "attack"
@@ -116,7 +116,7 @@
             3,
             20,
             33,
-            38
+            38,43
         ],
         "category": [
             "magic"
@@ -569,7 +569,7 @@
             9,
             20,
             32,
-            35
+            35,43
         ],
         "category": [
             "health"
@@ -1097,6 +1097,36 @@
         ],
         "hasPassive": true,
         "active_cooltime": 1
+    },
+    {
+        "id": 43,
+        "name": "Trinity Force",
+        "price": 333,
+        "itemlevel": 3,
+        "ability": [
+            {
+                "type": "AD",
+                "value": 50
+            },
+            {
+                "type": "AP",
+                "value": 70
+            },
+            {
+                "type": "HP",
+                "value": 50
+            }
+        ],
+        "children": [
+            1,
+            4,
+            21
+        ],
+        "parents": [],
+        "category": [
+            "attack","magic","utility","health"
+        ],
+        "hasPassive": true
     }
 ]
 }

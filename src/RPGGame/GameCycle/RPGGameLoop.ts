@@ -196,7 +196,7 @@ class GameLoop {
 		if (this.state.id === GAME_CYCLE.BEFORE_OBS.ROOTED) {
 			this.afterDice(0)
 		} else if (this.state.id === GAME_CYCLE.BEFORE_OBS.AI_THROW_DICE) {
-			let data: ServerGameEventFormat.DiceRoll|null = this.state.getData()
+			let data = this.state.getData<ServerGameEventFormat.DiceRoll>()
 			// this.eventEmitter.rollDice(data)
 			if(data)
 				this.afterDice(data.actualdice)
@@ -211,7 +211,7 @@ class GameLoop {
 
 		this.setGameCycle(result.state)
 		//this.idleTimeoutTurn = this.startTimeOut(this.state.getOnTimeout())
-		let diceRoll: ServerGameEventFormat.DiceRoll|null = this.state.getData<ServerGameEventFormat.DiceRoll>()
+		let diceRoll = this.state.getData<ServerGameEventFormat.DiceRoll>()
 		if(diceRoll)
 			this.afterDice(diceRoll.actualdice)
 		return diceRoll
@@ -237,7 +237,7 @@ class GameLoop {
 
 		await this.state.getPromise()
 		if (!this.game) return
-		console.log("afterDice3")
+		// console.log("afterDice3")
 		if (this.nextGameCycle()) return
 
 		if (this.state instanceof WaitingSkill) {

@@ -9,9 +9,10 @@ import { ClientInputEventFormat, ServerGameEventFormat } from "../data/EventForm
 import { PlayerComponent } from "./PlayerComponent"
 import { ActiveItem, ItemData } from "../core/ActiveItem"
 import { HPChange } from "../core/health"
-import { AblityChangeEffect } from "../StatusEffect"
+import { AblityChangeEffect, EffectFactory } from "../StatusEffect"
 import { ItemBuild } from "../core/ItemBuild"
 import { EFFECT } from "../StatusEffect/enum"
+import { SpecialEffect } from "../data/SpecialEffectRegistry"
 
 class PlayerInventory implements PlayerComponent {
 	// player:Player
@@ -31,11 +32,10 @@ class PlayerInventory implements PlayerComponent {
 		ITEM.CARD_OF_DECEPTION,
 		ITEM.GUARDIAN_ANGEL,
 		ITEM.POWER_OF_MOTHER_NATURE,
-		ITEM.TIME_WARP_POTION,
+		ITEM.TIME_WARP_POTION
 	]
 	constructor(player: Player, money: number) {
 		this.player = player
-		console.log(money)
 		this.token = 2
 		this.money = money
 		this.life = 0
@@ -46,13 +46,31 @@ class PlayerInventory implements PlayerComponent {
 		this.itemSlots = Util.makeArrayOf(-1, player.game.itemLimit) //보유중인 아이템만 저장(클라이언트 전송용)
 	}
 	onDeath: () => void
-	onTurnStart() {}
+	onTurnStart() {
+		if (this.haveItem(ITEM.TRINITY_FORCE) && this.itemData.has(ITEM.TRINITY_FORCE)) {
+			const stacks=this.itemData.get(ITEM.TRINITY_FORCE)?.getDataValue("stack")
+			console.log(stacks)
+			if(!stacks) return
+			if(stacks>=2){
+				this.itemData.get(ITEM.TRINITY_FORCE)?.resetDataValue("stack")
+				this.player.effects.updateSpecialEffectData(EFFECT.ITEM_TRINITY_FORCE, [0])
+				this.player.effects.applySpecial(EffectFactory.create(EFFECT.ITEM_ABILITY_TRINITY_FORCE)
+				,SpecialEffect.ITEM.TRINITY_FORCE_ABILITY.name)
+				this.player.game.eventEmitter.indicateItem(this.player.turn, ITEM.TRINITY_FORCE)
+			}
+		}
+	}
 	transfer(func: Function, ...args: any[]) {
 		this.player.mediator.sendToClient(func, ...args)
 	}
 
 	onTurnEnd() {
-		
+		if (this.haveItem(ITEM.TRINITY_FORCE) && this.itemData.has(ITEM.TRINITY_FORCE)) {
+			const stacks=this.itemData.get(ITEM.TRINITY_FORCE)?.getDataValue("stack")
+			if(!stacks) return
+			this.player.effects.updateSpecialEffectData(EFFECT.ITEM_TRINITY_FORCE, [stacks])
+		}
+
 		this.activeItems.forEach((i) => i.cooldown())
 		this.sendActiveItemStatus()
 

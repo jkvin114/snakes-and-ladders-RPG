@@ -54,7 +54,7 @@ class Hacker extends CharacterSkillManager {
 		const dummy = this.player.game.createPlayer(this.player.team, charId, this.player.name, this.player.turn, this.player.AI)
 		this.virtualCharacter=dummy.skillManager
 		this.virtualCharacter.setPlayerBinding(this.player)
-
+		
 		dummy.changeSkillImage("", SKILL.ULT)
 	}
 	/**

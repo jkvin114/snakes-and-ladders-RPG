@@ -156,7 +156,7 @@ export abstract class Action {
 	setPrevActionTrace(source:ActionTrace){
 		if(this.source === source) return this
 		this.source.setPrev(source)
-		cl(this.source.toString(20))
+		// cl(this.source.toString(20))
 		return this
 	}
 	addFlagToActionTrace(flag:ActionTraceTag){
@@ -224,14 +224,6 @@ export class EmptyAction extends Action {
 	}
 }
 
-export class MarkerAction extends Action{
-	marker:string
-
-	constructor(marker:string,turn:number) {
-		super(ACTION_TYPE.EMPTY, turn)
-		this.marker=marker
-	}
-}
 /**
  * 즉시 실행됨(상태 변화)
  */

@@ -49,7 +49,7 @@
     "respawn":[0,1,1,14,27],
     "store":[1,14,27],
 	  "dc_limit_level":1,
-    "goldperturn":[30,45,60,60,60],
+    "goldperturn":[25,30,35,40,40],
     "shuffle":[
       {"start":8,"end":13},
       {"start":15,"end":23},

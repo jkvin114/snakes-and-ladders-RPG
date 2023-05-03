@@ -22,7 +22,7 @@ import { Entity } from "../entity/Entity"
 import { PlayerComponent } from "./PlayerComponent"
 import { Damage, PercentDamage } from "../core/Damage"
 
-interface StatusEffectManager extends PlayerComponent {
+interface StatusEffectManager  {
 	onLethalDamage(): void
 	onBeforeObs(): void
 	onAfterObs(): void
@@ -63,7 +63,7 @@ class EntityStatusEffect implements StatusEffectManager {
 	reset(effect: number) {}
 }
 
-class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager {
+class PlayerStatusEffects extends EntityStatusEffect implements StatusEffectManager,PlayerComponent {
 	protected owner: Player
 	private category: [
 		Map<number, StatusEffect>,

@@ -24,7 +24,7 @@ class BirdAgent extends AiAgent {
 			new ItemBuildStage(ITEM.ANCIENT_SPEAR).setChangeCondition(
 				ITEM.CROSSBOW_OF_PIERCING,
 				UtilityCondition.MoreTankers()
-				),
+				).setSecondaryChangeCondition(ITEM.TRINITY_FORCE,UtilityCondition.IsUnadvantageous()),
 			new ItemBuildStage(ITEM.GUARDIAN_ANGEL)
 			.setChangeCondition(
 				ITEM.BOOTS_OF_PROTECTION,UtilityCondition.MoreADThanAP(2)
@@ -46,6 +46,7 @@ class BirdAgent extends AiAgent {
 		this.itemBuild
 			.setItemStages(entries, new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL))
 			.addAdditionalFinalItem(ITEM.EPIC_WHIP)
+			.addAdditionalFinalItem(ITEM.TRINITY_FORCE)
 		super.applyInitialOpponentUtility(ut)
 	}
 	nextSkill(): number {

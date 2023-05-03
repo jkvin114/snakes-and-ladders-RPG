@@ -23,6 +23,7 @@ function connectSocket() {
 		if (param.get("join") !== "true") {
 			ServerConnection.makeroom()
 			MATCH.ui.revealContent()
+			MATCH.addAI(1)
 		} else {
 			let roomname = param.get("roomname")
 			$("#rname").html("Room name: " + roomname)

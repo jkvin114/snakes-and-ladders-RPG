@@ -302,6 +302,12 @@
             "name": "Energized Flail of Reach",
             "summary": "Enhance basic attack",
             "unique_effect": "Moving by dice generates stacks. Next basic attack range increases and deals additional magic damage based on stacks"
+        },
+        {
+            "name": "Trinity Force",
+            "summary": "Enhance attack, Movement speed",
+            "unique_effect": "Attacking enemy generate stacks. If there are 2+ stacks on turn start, movement speed +1.",
+            "active_summary": "Move speed increased!"
         }
     ],
     "obstacle": [
@@ -423,7 +429,7 @@
         },
         {
             "name": "Poison",
-            "desc": "-30 HP each turn"
+            "desc": "Poison for 5 turns (-30 HP each turn)"
         },
         {
             "name": "Bomb",

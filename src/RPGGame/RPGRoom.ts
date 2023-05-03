@@ -69,7 +69,7 @@ class RPGRoom extends Room {
 	}
 
 	user_gameReady(setting: ClientInputEventFormat.GameSetting, roomName: string) {
-		this.instant = false
+		// this.instant = false
 		this.onBeforeGameStart()
 		// room.aichamplist=aichamplist
 		// room.map=map

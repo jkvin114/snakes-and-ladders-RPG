@@ -5,7 +5,6 @@ import { ActionTrace } from "./action/ActionTrace"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { AbilityAttributes, AbilityValue } from "./Ability/AbilityValues"
 
-
 class MarblePlayer{
     readonly name:string
     readonly char:number

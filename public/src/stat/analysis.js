@@ -72,7 +72,34 @@ function charDataList() {
 }
 async function showAnalysisTable(version, map) {
 	let data
-
+	console.log(localStorage)
+	const isAdmin = localStorage.getItem("username") === "admin" && localStorage.getItem("loggedIn") === "true"
+	$(".character-table-delete-btn").off()
+	if (isAdmin) {
+		$(".character-table-delete-btn").click(function () {
+			console.log($(this).data("gametype"))
+			$.ajax({
+				method: "POST",
+				url: `/stat/eval/delete/${map}/${version}/${$(this).data("gametype")}`,
+				data: {},
+			})
+				.done(function (res, statusText, xhr) {
+					let status = xhr.status
+					if (status === 200) {
+						alert("deleted")
+					}
+				})
+				.fail(function (res, statusText, xhr) {
+					let status = res.status
+					if (status === 401) alert("unauthorized!")
+					else alert("deletion failed!")
+				})
+		})
+		$(".character-table-delete-btn").show()
+	} else {
+		$(".character-table-delete-btn").off()
+		$(".character-table-delete-btn").hide()
+	}
 	try {
 		data = await (await fetch(`/stat/eval/overview/${map}/${version}`)).json()
 	} catch (e) {

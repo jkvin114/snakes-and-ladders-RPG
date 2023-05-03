@@ -6,7 +6,7 @@ import { encrypt } from "../router/board/helpers";
 import { SocketSession } from "../sockets/SocketSession";
 abstract class Room {
 	//simulation_total_count: number
-	simulation_count: number
+	// simulation_count: number
 	// gameCycle: GameCycleState
 	name: string
 	hosting: number
@@ -16,7 +16,7 @@ abstract class Room {
 	teams: boolean[]
 	
 	//simulation: boolean
-	instant: boolean
+	// instant: boolean
 	map: number
 	idleTimeout: NodeJS.Timeout|null
 	connectionTimeout: NodeJS.Timeout|null
@@ -41,7 +41,7 @@ abstract class Room {
 	abstract registerSimulationClientInterface(callback:GameEventEmitter):Room
 	constructor(name: string) {
 		//	this.simulation_total_count = 1
-		this.simulation_count = 1
+		// this.simulation_count = 1
 		// this.game = null
 		this.name = name
 		this.teams = []
@@ -50,7 +50,7 @@ abstract class Room {
 		this.isTeam = false
 	//	this.playerlist = this.makePlayerList()
 		//	this.simulation = false
-		this.instant = false
+		// this.instant = false
 		this.map = 0
 		this.idleTimeout = null
 		this.idleTimeoutTurn = -1
@@ -151,7 +151,7 @@ abstract class Room {
 	setSimulation(isSimulation: boolean) {
 		if (isSimulation) {
 			//	this.simulation = true
-			this.instant = true
+			// this.instant = true
 		}
 
 		return this
@@ -237,7 +237,7 @@ abstract class Room {
 		this.playerSessions.clear()
 		
 		this.isTeam = false
-		this.instant = false
+		// this.instant = false
 		this.map = 0
 		if(this.resetCallback!=null)
 			this.resetCallback()

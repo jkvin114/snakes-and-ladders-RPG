@@ -153,7 +153,7 @@ export namespace ObstacleHelper {
 
 					break
 				case 29:
-					player.effects.apply(EFFECT.POISON, perma)
+					player.effects.apply(EFFECT.POISON, 5)
 					break
 				case 30:
 					player.doObstacleDamage(new PercentDamage(33, PercentDamage.CURR_HP)
@@ -178,7 +178,7 @@ export namespace ObstacleHelper {
 					}
 					break
 				case 34:
-					player.effects.apply(EFFECT.SLAVE, perma)
+					player.effects.apply(EFFECT.SLAVE, 5)
 					break
 				case 35:
 					player.effects.apply(EFFECT.ROOT, 3)
@@ -416,7 +416,7 @@ export namespace ObstacleHelper {
 				player.sendConsoleMessage(player.name + "fine 100$")
 				break
 			case 1:
-				player.effects.apply(EFFECT.SLAVE, StatusEffect.DURATION_UNTIL_LETHAL_DAMAGE)
+				player.effects.apply(EFFECT.SLAVE, 5)
 				break
 			case 2:
 

@@ -19,8 +19,8 @@ class HackerAgent extends AiAgent{
 		let entries = [
 			new ItemBuildStage(ITEM.EPIC_SWORD),
 			new ItemBuildStage(ITEM.EPIC_CRYSTAL_BALL),
+			new ItemBuildStage(ITEM.TRINITY_FORCE),
 			new ItemBuildStage(ITEM.ANCIENT_SPEAR),
-			new ItemBuildStage(ITEM.EPIC_WHIP),
 			new ItemBuildStage(ITEM.FLAIL_OF_JUDGEMENT).setChangeCondition(
 				ITEM.CROSSBOW_OF_PIERCING,
 				UtilityCondition.MoreTankers()
@@ -38,6 +38,7 @@ class HackerAgent extends AiAgent{
 		//attack focus
 		if (UtilityCondition.MoreADOverall(1.5)(ut)) {
 			entries[1]=new ItemBuildStage(ITEM.EPIC_SWORD)
+			entries[2]=new ItemBuildStage(ITEM.EPIC_WHIP)
 			final=new ItemBuildStage(ITEM.EPIC_SWORD)
 		}//magic focus
 		else if (UtilityCondition.MoreAPOverall(1.5)(ut)) {

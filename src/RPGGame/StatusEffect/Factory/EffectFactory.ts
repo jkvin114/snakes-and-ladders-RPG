@@ -17,6 +17,8 @@ export class EffectFactory {
 					.on(OnHitEffect.SKILLATTACK)
 			case EFFECT.ITEM_ABILITY_POWER_OF_MOTHER_NATURE:
 				return new AblityChangeEffect(effect_id, 1, new Map().set("moveSpeed", 1), EFFECT_TIMING.TURN_END).setGood()
+			case EFFECT.ITEM_ABILITY_TRINITY_FORCE:
+				return new AblityChangeEffect(effect_id, 1, new Map().set("moveSpeed", 1), EFFECT_TIMING.TURN_START).setGood()
 			case EFFECT.ITEM_ABILITY_SHIELDSWORD_ABSORB:
 				return new AblityChangeEffect(effect_id, 2, new Map().set("absorb", 30), EFFECT_TIMING.TURN_END).setGood()
 		}

@@ -868,7 +868,13 @@ class MarbleGame {
 		} else {
 			this.actionStack.pushAll(...actions.main)
 		}
-
+		// let befores=[]
+		// for(const action of actions.before){
+		// 	if(action instanceof InstantAction && action.priority===Action.PRIORITY_IMMEDIATE){
+		// 		this.executeAction(action)
+		// 	}
+		// 	else befores.push(action)
+		// }
 		this.actionStack.pushAll(...actions.before)
 		//this.actionStack.iterate()
 	}
@@ -899,6 +905,10 @@ class MarbleGame {
 		if (action.type === ACTION_TYPE.GAMEOVER) {
 			this.actionStack.removeByTurn(action.turn)
 		}
+		// if(action.priority===Action.PRIORITY_IMMEDIATE){
+		// 	this.executeAction(action as InstantAction)
+		// 	return
+		// }
 
 		this.actionStack.pushAll(action.setPrevActionTrace(trace))
 		//this.actionStack.iterate()
