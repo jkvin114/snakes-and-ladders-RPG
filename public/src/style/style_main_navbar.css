@@ -70,7 +70,7 @@
     height: 40px;
   }
   .navbtn.active{
-    border-bottom: solid 4px #D896FF ;
+    border-bottom: solid 4px #a044ff;
 
   }
   .navbtn:hover{
@@ -88,10 +88,10 @@
     
   }
   .navbtn.active > a{
-    color: #D896FF;
+    color: #a044ff;
   }
   .navbtn.active > img{
-    filter: invert(23%) sepia(36%) saturate(4944%) hue-rotate(215deg) brightness(103%) contrast(103%);
+    filter: invert(49%) sepia(89%) saturate(5585%) hue-rotate(252deg) brightness(99%) contrast(104%);
 
 }
   .nav-section{

@@ -1459,11 +1459,11 @@ transform: scale(1.1);
     line-height: 30px;
   }
   .stat-navbar-btn.active{
-    border-bottom: solid 2px #D896FF ;
+    border-bottom: solid 2px #a044ff ;
 
   }
   .stat-navbar-btn.active > a{
-   color: #D896FF ;
+   color: #a044ff ;
 
   }
   @media screen and (max-width: 600px){
