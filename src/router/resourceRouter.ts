@@ -69,7 +69,14 @@ router.get("/item", function (req:express.Request, res:express.Response) {
 		res.end(data)
 	})
 })
-
+router.get("/skill", function (req:express.Request, res:express.Response) {
+	fs.readFile(__dirname + RESOURCE_PATH+"skill.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting skill file"})
+		}
+		res.end(data)
+	})
+})
 router.get("/obstacle", function (req:express.Request, res:express.Response) {
 	//	console.log(req.query.lang)
 	fs.readFile(__dirname + RESOURCE_PATH+"obstacle_data.json", "utf8", function (err, data) {

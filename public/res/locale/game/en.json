@@ -20,6 +20,245 @@
         "[Farsight] Skill range x3",
         "{Root} Can`t throw dice (ignores obstacle)"
     ],
+    "statuseffect_data": [
+        {
+            "name": "Slowness",
+            "good": false,
+            "desc": "Next dice -2"
+        },
+        {
+            "name": "Speed",
+            "good": true,
+            "desc": "Next dice +2"
+        },
+        {
+            "name": "Grounding",
+            "good": false,
+            "desc": "Can`t throw dice (takes next obstacle effect)"
+        },
+        {
+            "name": "Silent",
+            "good": false,
+            "desc": "Can`t use skill"
+        },
+        {
+            "name": "Shield",
+            "good": true,
+            "desc": "Ignore one skill"
+        },
+        {
+            "name": "Poison",
+            "good": false,
+            "desc": "-30 HP for every turn"
+        },
+        {
+            "name": "Radiation",
+            "good": false,
+            "desc": "Incoming damage x2"
+        },
+        {
+            "name": "Annuity",
+            "good": true,
+            "desc": " +$20 for every turn"
+        },
+        {
+            "name": "Slavery",
+            "good": false,
+            "desc": "-80HP for every turn, die if you reach the end(freed if you kill enemy)"
+        },
+        {
+            "name": "Backslide",
+            "good": false,
+            "desc": "Next dice goes back"
+        },
+        {
+            "name": "Rapidness",
+            "good": true,
+            "desc": "Next dice x2"
+        },
+        {
+            "name": "Blind",
+            "good": false,
+            "desc": "Can`t basic attack, Skill range halves"
+        },
+        {
+            "name": "Ignite",
+            "good": false,
+            "desc": "Damage by 3% of max HP for every player`s turn"
+        },
+        {
+            "name": "Invisibility",
+            "good": true,
+            "desc": "Ignore enemy targeting and all obstacles"
+        },
+        {
+            "name": "Debt",
+            "good": false,
+            "desc": "Can`t earn money or sell tokens"
+        },
+        {
+            "name": "Dividend",
+            "good": true,
+            "desc": "+$50, +1 token for every turn"
+        },
+        {
+            "name": "Curse",
+            "good": false,
+            "desc": "Gets unlucky result for next dice"
+        },
+        {
+            "name": "Farsight",
+            "good": true,
+            "desc": "Skill range triples"
+        },
+        {
+            "name": "Root",
+            "good": false,
+            "desc": "Can`t throw dice (ignores next obstacle)"
+        }
+    ],
+    "skills": [
+        [
+            {
+                "name": "Scythe Strike",
+                "desc": "Deals {pdmg:(sv:Q)} to a {target}. Can use ^{two times}, On second use, deals ^{half} of the damage"
+            },
+            {
+                "name": "Reaping Wind",
+                "desc": "{place} a wind with {projsize:3} that blows away enemies who step on it by -{4 squares backwards} and deals {mdmg:(sv:W)}"
+            },
+            {
+                "name": "Grave Delivery",
+                "desc": "^{Teleports} to a {target} and deals {pdmg:(sv:Q)} and gains {shield:70}. Damage decreases by 30% if the target is ^{in front} of you."
+            }
+        ],
+        [
+            {
+                "name": "Mace Attack",
+                "desc": "Deals {pdmg:(sv:Q)} to a {target} and heals {heal:(sv:qheal)}, If the target has ^{mark} of {skill:022}, range increases by (fv:w_qrange) and deals additional {fdmg:(sv:w_qdamage)}"
+            },
+            {
+                "name": "Tanut",
+                "desc": "Leaves a ^{mark} to a {target} and applies {effect:1601}."
+            },
+            {
+                "name": "Strengthen",
+                "desc": "{passive}: ^{Attack and magic resistance} +{increases by 0~60} based on your {missinghp}. {active}:^{Attack and magic resistance} +{increases by (sv:r_resistance)}, gains {shield:(sv:rshield)} and {effect:0101}. Also heal amount of {skill:021} +{doubles} and ^{range} +{increase by 4}."
+            }
+        ],
+        [
+            {
+                "name": "Blind Curse",
+                "desc": "Deals {mdmg:(sv:Q)} to a {target} and applies {effect:1101}."
+            },
+            {
+                "name": "Phantom Menace",
+                "desc": "{passive}: If you have {effect:1300} effect. deals additional (30% of target`s {missinghp}) as {mdmg: }.{active}: Gains {effect:1301}"
+            },
+            {
+                "name": "Poison Bomb",
+                "desc": "{place} poison bomb of {projsize:4}. Enemy who step on it gains {effect:0000} and takes {mdmg:(sv:R)} for every turn for 3 turns."
+            }
+        ],
+        [
+            {
+                "name": "Claw Strike",
+                "desc": "Deals {pdmg:(sv:Q)} to enemies {radius:(fv:qrange)}.(Damage decreases if there are multiple targets). You -{spend (fv:q_hp_spend)%} of {currhp}"
+            },
+            {
+                "name": "Regeneration",
+                "desc": "{passive}: +{Movement speed +1} if you are in behind of all players.{active}: Heals {heal:(sv:wheal)} every turn but gains {effect:0001} while healing."
+            },
+            {
+                "name": "Burning at the Stake",
+                "desc": "Deals {pdmg:(sv:R)(+50% of target`s {missinghp})} to a {target}. Cooltime of {skill:043} ^{resets} if killed the enemy."
+            }
+        ],
+        [
+            {
+                "name": "Gunfire",
+                "desc": "Fires a gun and deals {pdmg:(sv:Q)} to a {target}. If the target has {effect:0200} or {effect:1800} effect, range increases by (fv:q_root_arange) and deals +{50% increased} damage"
+            },
+            {
+                "name": "Net Trap",
+                "desc": "{place} a trap of {projsize:3} that applies {effect:0201} to enemy who step on it"
+            },
+            {
+                "name": "Target Locked",
+                "desc": "Selects a {target}, Automatically attacks the target ^{3 times} for 3 turns, dealing {pdmg:(sv:R)} each and gains {shield:80}. (Deals {pdmg:(sv:R)}for 3rd attack, can`t move while shooting)<br> After use, you gains {effect:1001}."
+            }
+        ],
+        [
+            {
+                "name": "Chain Lightning",
+                "desc": "Deals {mdmg:(sv:Q)} to all players {radius:front (fv:qrange_start)~(fv:qrange_end_front) and back (fv:qrange_start)~(fv:qrange_end_back)}"
+            },
+            {
+                "name": "Burning Spellbook",
+                "desc": "Gain {effect:1801} and {shield:50}. ^{Range} of {skill:061} and {skill:063} +{doubles}. Also {skill:061} applies {effect:1202} which damages targets by (sv:W)% of {maxhp} as {fdmg: } for every player turns."
+            },
+            {
+                "name": "Dark Magic Circle",
+                "desc": "{place} magic circle of {projsize:3} that deals {mdmg:(sv:R)} and applies {effect:0301} to enemy who step on it. Can use ^{3 times}."
+            }
+        ],
+        [
+            {
+                "name": "Tenacle Strike",
+                "desc": "{place} a tenacle of {projsize:2} which deals {mdmg:(sv:Q)} to enemy who step on it"
+            },
+            {
+                "name": "Protective Water",
+                "desc": "Gains {shield:(sv:wshield)} and deals {mdmg:(sv:W)} and applies {effect:0001} to enemies {radius:3}."
+            },
+            {
+                "name": "Predation",
+                "desc": "Deals {fdmg:(sv:R)} to {target}. Your  {maxhp} +{increases by 50} if you killed the target."
+            }
+        ],
+        [
+            {
+                "name": "Beak Attack",
+                "desc": "Deals {mdmg:(sv:Q)} to a {target} and take away {money:(fv:q_money)}"
+            },
+            {
+                "name": "Baby Birds",
+                "desc": "Gains {effect:0101}. {basicattack} deals additional {mdmg:(sv:w_aa_adamage)}, {skill:081} deals additional {mdmg:(sv:w_q_adamage)} and applies {effect:1801}"
+            },
+            {
+                "name": "Phenix Transform",
+                "desc": "Gains {shield:70}. ^{Basic attack range} +{+2}, {basicattack} deals additional {mdmg:(sv:r_aa_adamage)}. Additional damage of {skill:082} +{doubles} and {skill:081} creates an area of {projsize:3}. If enemy step on it, they receive {effect:1202}"
+            }
+        ],
+        [
+            {
+                "name": "Sweet Fruit",
+                "desc": "{passive}: If HP is -{lower than (fv:wither_cond)%}, transforms to ^{Withered Tree}, On ^{Withered Tree} state, you can`t heal ally with {skill:091}, but ^{damage absorbtion} +{(fv:wither_absorb)% increases}. {active}: {area:(fv:qsize)}. Deals {mdmg:(sv:Q)} to enemies inside. For allies, heals {heal:(sv:qheal)} and gains {shield:(sv:qshield)}."
+            },
+            {
+                "name": "Vine Trap",
+                "desc": "{place} a vine of {projsize:1} that ^{stops} player who passse it. Allies will gain {effect:0101}"
+            },
+            {
+                "name": "Root Prison",
+                "desc": "{passive}: Summons ^{Plant monster} on every skill use. They deal {mdmg:(sv:plantdamage)} to enemies {radius:1} when you perform basic attack. <br> - Plants live for 3 turns and enemy basic attack will kill them, {active}: Deals {mdmg:(sv:R)} to {target} and applies {effect:1801} (2 turns if if you are ^{Withered Tree} state), and and increases all incoming damage by +{20%}. Also, all ^{plant monsters} moves toward target."
+            }
+        ],
+        [
+            {
+                "name": "Vulnerability Attack",
+                "desc": "Deals {pdmg:(sv:Q)(+(fv:stack_damage) x total stacks)} to a {target}, steals {money:((fv:q_money) x stacks)}, and gains a ^{'vulnerability' stack} for that target player. Damage towards the target increases permanently with ^{total vulnerability stacks}<br>{skillvalue:stacks}"
+            },
+            {
+                "name": "Remote Control",
+                "desc": "{passive}: {basicattack} deals additial {mdmg:(sv:W)}.{active}:Select a {target} and forcibly moves ^{2+(1 for 3 vulnerability stacks)squares} backwards and applies {effect:1601}."
+            },
+            {
+                "name": "Extraction",
+                "desc": "Imitates ultimate(lv3 skill) of {target} and steals ^{((fv:r_steal_base)+total stacks x (fv:r_steal) )%} of targets attack power and magic power for 2 turns.Reusing this skill will use the imitated skill."
+            }
+        ]
+    ],
     "stat": {
         "AD": "Attack Power(AD)",
         "AP": "Magic Power(AP)",

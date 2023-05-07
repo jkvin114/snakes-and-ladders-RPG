@@ -1,0 +1,166 @@
+html {
+    /* scroll-behavior: smooth; */
+    font-size: max(9px,1vw);
+}
+@media screen and (orientation: portrait) {
+    html{
+        font-size: max(9px,1vh);
+    }
+}
+.skillinfo{
+    color: rgb(153, 153, 153);
+    font-size: clamp(10px,1.5rem,15px);
+    opacity: 1.0;
+    margin-bottom: 5px;
+    font-weight: normal;
+    font-family: "nanumB";
+    margin-top: 0.5vw;
+    line-height: min(2rem,22px);
+    word-break: keep-all;
+    user-select: none;
+    text-align: left;
+}
+.skillinfo>img {
+  display: inline;
+  width: min(2rem,22px);
+  margin: 0;
+  vertical-align: middle;
+  border: 1px solid gray;
+}
+.skillinfo>i img {
+    display: inline;
+    height: min(2rem,22px);
+    margin: 0;
+    vertical-align: middle;
+    clear: both;
+  }
+  
+  .skillinfo i {
+    word-wrap: none;
+    display: inline-block;
+    text-decoration: none;
+    font-style: normal;
+  }
+  
+  .skillinfo .info_skillimg {
+    border: 1px solid gray;
+  }
+  
+  .skillinfo>i.braket {
+    color: white;
+  }
+  
+  .skillinfo>i.skill_name {
+    font-size: clamp(12px,1.7rem,17px);
+
+    font-family: "cookierun";
+    color: rgb(226, 211, 0);
+  
+  }
+  
+  .skillinfo>i>b {
+    font-family: 'nanumEB';
+    font-weight: bolder;
+  }
+  
+  .skillinfo>i.cooltime {
+    color: rgb(147, 255, 250);
+  }
+  
+  .skillinfo>i.emphasize_simple {
+    /* color: rgb(192, 192, 192); */
+    color: white;
+  
+  }
+  
+  .skillinfo>i.skill_name_desc {
+    color: rgb(226, 211, 0);
+    font-family: "cookierun";
+  }
+  
+  .skillinfo>i.down {
+    color: rgb(255, 122, 122);
+  }
+  
+  .skillinfo>i.up {
+    color: rgb(83, 152, 255);
+  }
+  
+  .skillinfo>i.stat {
+    /* color: rgb(253, 255, 152); */
+    color: white;
+  
+  }
+  
+  .skillinfo>i.emphasize {
+    /* color: rgb(242, 176, 255); */
+    color: white;
+  }
+  
+  .skillinfo>i.range {
+    /* color: rgb(252, 234, 255); */
+    color: white;
+  
+  }
+  
+  .skillinfo>i.mdmg {
+    color: #18d1ff;
+  }
+  
+  .skillinfo>i.pdmg {
+    color: #da5700;
+  }
+  
+  .skillinfo>i.tdmg {
+    color: #fffce9;
+  }
+  
+  .skillinfo i.health {
+    /* color: rgb(255, 169, 169); */
+    color: white;
+  
+  }
+  
+  .skillinfo i.money {
+    color: #FFBD00;
+  }
+  
+  .skillinfo>i.heal {
+    color: rgb(129, 255, 139);
+  }
+  
+  .skillinfo>i.shield {
+    /* color: rgb(187, 187, 187); */
+    color: white;
+  
+  }
+  
+  .skillinfo>i.badeffect {
+    text-decoration: underline;
+    color: rgb(255, 22, 119);
+  }
+  
+  .skillinfo>i.goodeffect {
+    text-decoration: underline;
+    color: rgb(56, 255, 195);
+  }
+  
+  .skillinfo i.scaled_value {
+    text-decoration: underline;
+    font-style: normal;
+  
+  }
+  
+  .skillinfo>i.basicattack {
+    /* color: rgb(255, 207, 152); */
+    color: white;
+  
+  }
+  
+.skillinfo>hr {
+    margin: 0;
+    margin-right: 10px;
+    margin-bottom: 3px;
+    border: 1px solid #555555;
+  }
+  

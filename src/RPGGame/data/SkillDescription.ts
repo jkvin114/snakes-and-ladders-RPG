@@ -770,3 +770,58 @@ export class SkillInfoFactory {
 		return str
 	}
 }
+
+/*
+"[R] {Root Prison}  <cool>
+		9 turns</><range>Range: 25 </><br>[Passive]: Summons <emp>Plant monster</> on every skill use.
+				<emp>Plant monster</> lives for <duration>%d turns</> and deals 
+				<mdmg><scaleplantdamage>%d</> magic damage</> to enemies <radius>within 1 squares</>. 
+				Enemy <basicattack>basic attack</> will kill the <emp>Plant monster</>s.<br>[Active]: 
+				 Deals <mdmg><scaleR>%d</> magic damage</> to a <target>target</> and applies  <badeffect18>Root 1 turn </>.
+				 (2 turns if you are <emp>Withered Tree</> state)
+				,and increases all incoming damage by <up>%d%</>,
+				 Also, all <emp>Plant monster</>s move toward a target."
+
+
+"[Q] {Sweet Fruit}  <cool>
+		2 turns</><range>Range: 25 </><br>[Passive]:  If HP is <lowerbound>lower than 40%</>, transforms 
+		to <emp>Withered Tree</>, On <emp>Withered Tree</> state, you can`t heal ally with <skill><skillimg9-1>Sweet Fruit</>,
+		 but <stat>damage absorbtion</> <up>35% increases</>.<br>[Active]:  <area>Select 3 Squares</>. Deals <mdmg><scaleQ>52</> magic damage</> to enemies inside. For allies, heals <heal><scaleqheal>30</></> HP and gains <shield><scaleqshield>34</></> shield."
+
+
+"[W] {Burning Spellbook}  <cool>
+		4 turns</><br>Gain <badeffect18>Root 1 turn </> and gains <shield>50</> shield. <range>Range</> of 
+		<skill><skillimg6-1>Chain Lightning</> and <skill><skillimg6-3>Dark Magic Circle</> <up>doubles</>.
+				 Applies <badeffect12>Ignite 2 turns </> if you use <skill><skillimg6-1>Chain Lightning</>.
+				  It damages targets by <scaleW>%d%</>
+                     of <maxHP> maximum HP</> as <tdmg> fixed damage</> for every player turn,"
+
+<skill><skillimg6-3>Dark Magic Circle</> : {skill063}
+<cool> 8 turns</> : {cool}
+<range>Range: 30 </> : {range}
+<proj>Places </> : {proj}
+<projsize> size 3</> : {projsize3}
+<mdmg><scaleR>80</> magic damage</> : {mdmgR}
+<mdmg> magic damage</> : {mdmg}
+<badeffect3>Silent 1 turn </> : {ef0301}
+<badeffect3>Silent </> : {ef0300}
+<emp>3 times</> : *{3 times}
+<radius>within 1 squares</> : {radius1}
+<radius>within front 3~20, back 3~8 squares</> : {radius}
+<shield>%d</> shield : {shield}
+<maxHP> maximum HP</> : {maxHP}
+<duration>? turns</> : {dur}
+<up>%d%</> : 
+<basicattack>basic attack</> : {basicattack}
+
+"[R] {Dark Magic Circle}  <cool>
+		8 turns</><range>Range: 30 </><br><proj>Places </> a Magic circle of <projsize> size 3</> that deals
+		 <mdmg><scaleR>80</> magic damage</> and applies 
+				<badeffect3>Silent 1 turn </> to enemy who step on it. Can use <emp>3 times</>."
+
+
+
+"[Q] {Chain Lightning}  <cool>
+		3 turns</><br>Deals <mdmg><scaleQ>67</> magic damage</> to all players <radius>within front 3~20,
+				back 3~8 squares</>"
+*/

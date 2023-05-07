@@ -292,6 +292,7 @@ export function openConnection(isInitial) {
 		if (GAME.myturn !== data.turn || data.turn == null || !GAME.ui) {
 			return
 		}
+		console.log(data.info_eng)
 		GAME.ui.updateSkillInfo(data.info_kor, data.info_eng)
 	})
 	socket.on("server:start_timeout_countdown", function (crypt_turn, time) {

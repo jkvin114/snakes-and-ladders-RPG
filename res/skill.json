@@ -1,0 +1,580 @@
+[
+    [
+        {
+            "cool":3,
+            "range":7,
+            "fixedvalues":{},
+            "values":{
+                "Q": {
+                    "dmgtype":"p",
+                    "base": 30,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.9
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":4,
+            "range":30,
+            "fixedvalues":{},
+            "values":{
+                "W": {
+                    "dmgtype":"m",
+                    "base": 40,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 1
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":8,
+            "range":20,
+            "fixedvalues":{},
+            "values":{
+                "R": {
+                    "dmgtype":"p",
+                    "base": 70,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 1
+                        }
+                    ]
+                }
+            }
+        }
+    ],[
+        {
+            "cool":2,
+            "range":3,
+            "fixedvalues":{"w_qrange":7},
+            "values":{
+                "Q": {
+                    "dmgtype":"m",
+                    "base": 10,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.6
+                        },
+                        {
+                            "ability": "AR",
+                            "val": 0.6
+                        },
+                        {
+                            "ability": "MR",
+                            "val": 0.6
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":4,
+            "range":15,
+            "fixedvalues":{},
+            "values":{
+                "w_qdamage": {
+                    "dmgtype":"f",
+                    "base": 30,
+                    "scales": [
+                        {
+                            "ability": "extraHP",
+                            "val": 0.2
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":9,
+            "dur":3,
+            "fixedvalues":{},
+            "values":{
+                "rshield": {
+                    "base": 50,
+                    "scales": [
+                        {
+                            "ability": "AR",
+                            "val": 0.4
+                        },
+                        {
+                            "ability": "MR",
+                            "val": 0.4
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    [
+        {
+            "cool":3,
+            "range":18,
+            "fixedvalues":{},
+            "values":{
+                "Q": {
+                    "dmgtype":"m",
+                    "base": 20,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.8
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":6,
+            "fixedvalues":{},
+            "values":{
+            }
+        },
+        {
+            "cool":6,
+            "range":30,
+            "fixedvalues":{},
+            "values":{
+                "R": {
+                    "dmgtype":"m",
+                    "base": 30,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.5
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    [
+        {
+            "cool":1,
+            "fixedvalues":{"qrange":4,"q_hp_spend":5},
+            "values":{
+                "Q": {
+                    "dmgtype":"p",
+                    "base": 15,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.6
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":7,
+            "dur":3,
+            "fixedvalues":{},
+            "values":{
+                "wheal": {
+                    "base": 30,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.4
+                        },
+                        {
+                            "ability": "missingHP",
+                            "val": 0.15
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":8,
+            "range":20,
+            "fixedvalues":{},
+            "values":{
+                "R": {
+                    "dmgtype":"p",
+                    "base": 40,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.7
+                        }
+                    ]
+                }
+            }
+        }
+       
+    ],
+    [
+        {
+            "cool":3,
+            "range":15,
+            "fixedvalues":{"q_root_arange":10},
+            "values":{
+                "Q": {
+                    "dmgtype":"p",
+                    "base": 40,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.7
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":3,
+            "range":40,
+            "fixedvalues":{},
+            "values":{
+            }
+        },
+        {
+            "cool":9,
+            "range":40,
+            "fixedvalues":{},
+            "values":{
+                "R": {
+                    "dmgtype":"p",
+                    "base": 40,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.6
+                        }
+                    ]
+                }
+            }
+        }
+       
+    ],
+    [
+        {
+            "cool":3,
+            "fixedvalues":{
+                "qrange_start":3,
+                "qrange_end_front":20,
+                "qrange_end_back":8
+            },
+            "values":{
+                "Q": {
+                    "dmgtype":"m",
+                    "base": 30,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.75
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":4,
+            "dur":1,
+            "fixedvalues":{},
+            "values":{
+                "W": {
+                    "dmgtype":"f",
+                    "base": 3,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.01
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":8,
+            "range":30,
+            "fixedvalues":{},
+            "values":{
+                "R": {
+                    "dmgtype":"m",
+                    "base": 60,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.4
+                        }
+                    ]
+                }
+            }
+        }
+       
+    ],
+    [
+        {
+            "cool":1,
+            "range":15,
+            "fixedvalues":{
+                "q_money":30
+            },
+            "values":{
+                "Q": {
+                    "dmgtype":"m",
+                    "base": 10,
+                    "scales": [
+                        {
+                            "ability": "HP",
+                            "val": 0.2
+                        },
+                        {
+                            "ability": "AP",
+                            "val": 1
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":4,
+            "dur":2,
+            "fixedvalues":{},
+            "values":{
+                "W": {
+                    "dmgtype":"m",
+                    "base": 30,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.5
+                        }
+                    ]
+                },
+                "wshield": {
+                    "base": 0,
+                    "scales": [
+                        {
+                            "ability": "MaxHP",
+                            "val": 0.15
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":7,
+            "range":20,
+            "fixedvalues":{},
+            "values":{
+                "R": {
+                    "dmgtype":"f",
+                    "base": 40,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.6
+                        },
+                        {
+                            "ability": "MaxHP",
+                            "val": 0.15
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    [
+        {
+            "cool":3,
+            "range":20,
+            "fixedvalues":{
+                "q_money":30
+            },
+            "values":{
+                "Q": {
+                    "dmgtype":"m",
+                    "base": 10,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 1.2
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":5,
+            "dur":2,
+            "fixedvalues":{},
+            "values":{
+                "w_q_adamage": {
+                    "dmgtype":"m",
+                    "base": 10,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.3
+                        }
+                    ]
+                },
+                "w_aa_adamage": {
+                    "dmgtype":"m",
+                    "base": 10,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.5
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":10,
+            "dur":4,
+            "fixedvalues":{},
+            "values":{
+                "r_aa_adamage": {
+                    "dmgtype":"p",
+                    "base": 10,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.3
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    [
+        {
+            "cool":2,
+            "range":25,
+            "fixedvalues":{
+                "wither_cond":40,
+                "wither_absorb":35,
+                "qsize":3
+            },
+            "values":{
+                "Q": {"dmgtype":"m",
+                    "base": 20,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.8
+                        }
+                    ]
+                },
+                "qshield": {
+                    "base": 30,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.1
+                        }
+                    ]
+                },
+                "qheal": {
+                    "base": 20,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.25
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":5,
+            "range":30,
+            "fixedvalues":{},
+            "values":{
+            }
+        },
+        {
+            "cool":9,
+            "range":25,
+            "fixedvalues":{},
+            "values":{
+                "R": {
+                    "dmgtype":"m",
+                    "base": 60,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.6
+                        }
+                    ]
+                },
+                "plantdamage": {
+                    "dmgtype":"m",
+                    "base": 10,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.25
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    [
+        {
+            "cool":2,
+            "range":12,
+            "fixedvalues":{
+                "stack_damage":6,
+                "q_money":3
+            },
+            "values":{
+                "Q": {
+                    "dmgtype":"p",
+                    "base": 20,
+                    "scales": [
+                        {
+                            "ability": "AD",
+                            "val": 0.6
+                        },
+                        {
+                            "ability": "AP",
+                            "val": 0.8
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":6,
+            "range":15,
+            "fixedvalues":{},
+            "values":{
+                "dmgtype":"m",
+                "W": {
+                    "base": 20,
+                    "scales": [
+                        {
+                            "ability": "AP",
+                            "val": 0.5
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "cool":6,
+            "range":25,
+            "fixedvalues":{
+                "r_steal":1,
+                "r_steal_base":10},
+            "values":{
+            }
+        }
+    ]
+]
