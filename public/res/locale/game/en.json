@@ -153,7 +153,7 @@
             },
             {
                 "name": "Phantom Menace",
-                "desc": "{passive}: If you have {effect:1300} effect. deals additional (30% of target`s {missinghp}) as {mdmg: }.{active}: Gains {effect:1301}"
+                "desc": "{passive}: If you have {effect:1300} effect. {skill:031} deals additional (30% of target`s {missinghp}) as {mdmg: }.{active}: Gains {effect:1301}"
             },
             {
                 "name": "Poison Bomb",
@@ -185,7 +185,7 @@
             },
             {
                 "name": "Target Locked",
-                "desc": "Selects a {target}, Automatically attacks the target ^{3 times} for 3 turns, dealing {pdmg:(sv:R)} each and gains {shield:80}. (Deals {pdmg:(sv:R)}for 3rd attack, can`t move while shooting)<br> After use, you gains {effect:1001}."
+                "desc": "Selects a {target}, Automatically attacks the target ^{3 times} for 3 turns, dealing {pdmg:(sv:R)} each and gains {shield:80}. (Deals {fdmg:(sv:R)}for 3rd attack, can`t move while shooting)<br> After use, you gains {effect:1001}."
             }
         ],
         [
@@ -227,7 +227,7 @@
             },
             {
                 "name": "Phenix Transform",
-                "desc": "Gains {shield:70}. ^{Basic attack range} +{+2}, {basicattack} deals additional {mdmg:(sv:r_aa_adamage)}. Additional damage of {skill:082} +{doubles} and {skill:081} creates an area of {projsize:3}. If enemy step on it, they receive {effect:1202}"
+                "desc": "Gains {shield:70}. ^{Basic attack range} +{+2}, {basicattack} deals additional {pdmg:(sv:r_aa_adamage)}. Additional damage of {skill:082} +{doubles} and {skill:081} creates an area of {projsize:3}. If enemy step on it, they receive {effect:1202}"
             }
         ],
         [
@@ -241,7 +241,7 @@
             },
             {
                 "name": "Root Prison",
-                "desc": "{passive}: Summons ^{Plant monster} on every skill use. They deal {mdmg:(sv:plantdamage)} to enemies {radius:1} when you perform basic attack. <br> - Plants live for 3 turns and enemy basic attack will kill them, {active}: Deals {mdmg:(sv:R)} to {target} and applies {effect:1801} (2 turns if if you are ^{Withered Tree} state), and and increases all incoming damage by +{20%}. Also, all ^{plant monsters} moves toward target."
+                "desc": "{passive}: Summons ^{Plant monster} on every skill use. They deal {mdmg:(sv:plantdamage)} to enemies {radius:1} when you perform basic attack. <br> - Plants live for 3 turns and enemy basic attack will kill them, {active}: Deals {mdmg:(sv:R)} to {target} and applies {effect:1801} (2 turns if if you are ^{Withered Tree} state), and increases all incoming damage by +{20%}. Also, all ^{plant monsters} moves toward target."
             }
         ],
         [
@@ -255,7 +255,7 @@
             },
             {
                 "name": "Extraction",
-                "desc": "Imitates ultimate(lv3 skill) of {target} and steals ^{((fv:r_steal_base)+total stacks x (fv:r_steal) )%} of targets attack power and magic power for 2 turns.Reusing this skill will use the imitated skill."
+                "desc": "^{Imitates} ultimate(lv3 skill) of {target} and steals ^{((fv:r_steal_base)+total stacks x (fv:r_steal) )%} of targets ^{attack power and magic power} for 2 turns. Reusing this skill will use the imitated skill."
             }
         ]
     ],

@@ -15,7 +15,7 @@ html {
     font-weight: normal;
     font-family: "nanumB";
     margin-top: 0.5vw;
-    line-height: min(2rem,22px);
+    line-height: 1.7em;
     word-break: keep-all;
     user-select: none;
     text-align: left;

@@ -180,11 +180,17 @@ const randomHex = (length) =>
 	("0".repeat(length) + Math.floor(Math.random() * 16 ** length).toString(16)).slice(-length)
 
 async function updateGameLocale() {
+	let la = currentLocale()
+	LOCALE_GAME = await fetch(`/res/locale/game/${la}.json`).then((response) => response.json())
+	SkillParser.updateLocale(la)
+	SkillParser.EFFECTS = LOCALE_GAME.statuseffect_data
+	SkillParser.descriptions = LOCALE_GAME.skills
+}
+function currentLocale() {
 	let la = "en"
 	if (sessionStorage.language === "eng" || sessionStorage.language === "en") la = "en"
 	else if (sessionStorage.language === "kor" || sessionStorage.language === "ko") la = "ko"
-
-	LOCALE_GAME = await fetch(`/res/locale/game/${la}.json`).then((response) => response.json())
+	return la
 }
 const chooseLang = function (kor, eng) {
 	if (sessionStorage.language === "ko") return kor

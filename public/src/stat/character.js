@@ -13,6 +13,15 @@ function pushState(state, querystr) {
 }
 
 async function showCharacterPage(version, map, gametype, charId, isModal, isback) {
+	$("#skill-overlay").click(() => {
+		$("#skill-overlay").hide()
+		$("#skill-tooltip").hide()
+	})
+	$("#skill-tooltip").click(() => {
+		$("#skill-overlay").hide()
+		$("#skill-tooltip").hide()
+	})
+
 	$("#overlay").addClass("visible")
 
 	if (!version) version = "recent"
@@ -91,8 +100,18 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 	$(".summary-charname").html(SETTING.characters[charId].name)
 	$(".character-skills").html("")
 	for (let i = 1; i < 4; ++i) {
-		$(".character-skills").append(`<img src="res/img/skill/${Number(charId) + 1}-${i}.jpg">`)
+		$(".character-skills").append(
+			`<img class='skillicon' data-skillid='${charId}-${i - 1}' src="res/img/skill/${Number(charId) + 1}-${i}.jpg">`
+		)
 	}
+	$(".skillicon").click(function () {
+		let d = $(this).data("skillid")
+		let parsed = SkillParser.parseSkill(Number(d.charAt(0)), Number(d.charAt(2)))
+		// console.log(parsed)
+		$("#skill-overlay").show()
+		$("#skill-tooltip").show()
+		$("#skill-tooltip .skillinfo").html(parsed)
+	})
 	let versionWinrates = new Map()
 	let vstr = ""
 	for (const ver of trend) {

@@ -44,127 +44,127 @@
         [
             {
                 "name":"절단",
-                "desc":""
+                "desc":"{target}에게 {pdmg:(sv:Q)} 를 입힘.^{두번} 사용 가능, 두번째 공격시 ^{절반}의 피해를 입힘"
             },
             {
                 "name":"바람 가르기",
-                "desc":""
+                "desc": "{projsize:3} 의 바람을 {place}해 맞은 적에게 {mdmg:(sv:W)}를 입히고 -{4칸 뒤로} 날려보냄"
             },
             {
                 "name":"태풍",
-                "desc":""
+                "desc": "{target} 에게 ^{순간이동} 후 {pdmg:(sv:Q)}를 입히고 {shield:70} 획득.  자신보다 ^{앞에 있는 상대}에게는 70%의 피해를 입힘."
             }
         ],
         [
             {
                 "name":"암흑의 철퇴",
-                "desc":""
+                "desc": "{target}에게 {pdmg:(sv:Q)} 를 입히고 {heal:(sv:qheal)} 회복. {skill:022}의 ^{표식} 이 있는 상대에게는, 사정거리가 +{(fv:w_qrange) 증가}하고 추가로 {fdmg:(sv:w_qdamage)}를 입힘"
             },
             {
                 "name":"도발",
-                "desc":""
+                "desc": "{target}에게 ^{표식}을 남기고 {effect:1601} 부여."
             },
             {
                 "name":"실버의 갑옷",
-                "desc":""
+                "desc": "{passive}: ^{방어력과 마법저항력}이 {missinghp}에 비례해 +{0~60 증가}. {active}:^{방어력과 마법저항력}이 +{(sv:r_resistance) 증가}, {shield:(sv:rshield)}와 {effect:0101}획득. 또한{skill:021}의 회복량 +{2배}와 ^{사정거리} +{4 증가}."
             }
         ],
         [
             {
                 "name":"실명",
-                "desc":""
+                "desc": "{target}에게 {mdmg:(sv:Q)} 를 입히고 {effect:1101} 부여."
             },
             {
                 "name":"재빠른 이동",
-                "desc":""
+                "desc": "{passive}: {effect:1300} 상태에서. {skill:031} 사용시 대상 {missinghp} 30%의 추가 {mdmg: }를 입힘.{active}: {effect:1301}"
             },
             {
                 "name":"죽음의 독버섯",
-                "desc":""
+                "desc": "{projsize:4}의 독버섯을 {place}해 밟은 적에게 3턴간 {effect:0000} 부여 후 매 턴마다 {mdmg:(sv:R)}를 입힘."
             }
         ],
         [
             {
                 "name":"양이의 손톱",
-                "desc":""
+                "desc": "{radius:(fv:qrange)}의 적들에게 {pdmg:(sv:Q)}를 입힘.(대상이 2명 이상이면 피해량 감소). 사용시 {currhp}의 -{(fv:q_hp_spend)% 소모}"
             },
             {
                 "name":"양이의 고민",
-                "desc":""
+                "desc": "{passive}: 모든 상대보다 뒤쳐져 있으면+{이동속도 +1} {active}: 지속시간 동안 매턴마다 {heal:(sv:wheal)} 회복. 회복 중엔 {effect:0000}에 걸림."
             },
             {
                 "name":"양이의 불",
-                "desc":""
+                "desc": "{target}에게 {pdmg:(sv:R) +(대상 {missinghp}의 50%)}를 입힘.대상 처치시 ^{쿨타임 초기화}."
             }
         ],
         [
             {
                 "name":"원거리 소총",
-                "desc":""
+                "desc": "{target}에게 {pdmg:(sv:Q)}를 입힘. {effect:0200} 혹은 {effect:1800} 상태의 대상에게는 사정거리가 +{(fv:q_root_arange)증가}하고 피해량 +{50% 증가}"
             },
             {
                 "name":"덫 함정",
-                "desc":""
+                "desc": "{projsize:3} 의 함정을 {place}해 밟은 적에게 {effect:0201} 부여."
             },
             {
                 "name":"저격수의 극장",
-                "desc":""
+                "desc": "{shield:80} 획득. {target} 고정 후 3턴간 최대 ^{3번} 공격해 각각 {pdmg:(sv:R)}를 입힘 (3번째 공격은 {fdmg:(sv:R)}를 입힘), 사용중에는 움직일 수 없음)<br> 발사 후에는 {effect:1001}을 받음."
             }
         ],
         [
             {
                 "name":"직선 번개",
-                "desc":""
+                "desc": "사용시 {radius:앞 (fv:qrange_start)~(fv:qrange_end_front), 뒤(fv:qrange_start)~(fv:qrange_end_back)}의 적에게 {mdmg:(sv:Q)}를 입힘 "
             },
             {
                 "name":"몸체 고정",
-                "desc":""
+                "desc": "사용시 {effect:1801}, {shield:50} 획득. {skill:061} 와 {skill:063} 의 ^{사정거리} +{두배}. 또한 {skill:061} 사용시 적중한 적에게 {effect:1202}을 부여해 매 플레이어 턴마다 {maxhp}의 {fdmg:(sv:W)%}를 입힘."
             },
             {
                 "name":"마법진 파티",
-                "desc":""
+                "desc": "{projsize:3}의 마법진을 {place}해 밟은 적에게 {mdmg:(sv:R)}를 입히고 {effect:0301} 부여. ^{총 3번} 시전할 수 있음."
             }
         ],
         [
             {
                 "name":"촉수 채찍",
-                "desc":""
+                "desc": "{projsize:2} 의 촉수를 {place} 해 밟은 적에게 {mdmg:(sv:Q)}를 입힘"
             },
             {
                 "name":"보호의 물",
-                "desc":""
+                "desc": "{shield:(sv:wshield)} 획득하고 {radius:3}의 적에게 {mdmg:(sv:W)}를 입히고 {effect:0001} 부여."
             },
             {
                 "name":"블랙홀",
-                "desc":""
+                "desc": "{target}에게 {fdmg:(sv:R)}를 입힙 . 대상 처치시 {maxhp} +{50 영구 증가}."
             }
         ],
         [
             {
                 "name":"날렵한 부리",
-                "desc":""
+                "desc": "{target}에게 {mdmg:(sv:Q)}를 입히고 {money:(fv:q_money)}를 빼앗음"
             },
             {
                 "name":"아기새 소환",
-                "desc":""
+                "desc": "사용시 {effect:0101}. {basicattack}시 {mdmg:(sv:w_aa_adamage)}, {skill:081} 사용시 {mdmg:(sv:w_q_adamage)}를 추가로 입히고 {effect:1801} 부여"
             },
             {
                 "name":"불사조 소환",
-                "desc":""
+                "desc": "{shield:70} 획득. ^{기본 공격 사거리} +{+2}, {basicattack}시 추가로 {pdmg:(sv:r_aa_adamage)}를 입힘. {skill:082} 추가 피해 +{두배}, {skill:081} 적중 시 밟은 적에게 {effect:1202}을 부여하는 {projsize:3}의 영역을 그 자리에 생성함"
             }
         ],
         [
             {
                 "name":"달콤한 열매",
-                "desc":""
+                "desc": "{passive}: 체력이 -{(fv:wither_cond)% 미만이면}, ^{시든 나무} 상태 돌입, ^{시든 나무} 상태에선 {skill:091}로 아군 회복이 불가하지만 ^{모든피해흡혈} 이 +{(fv:wither_absorb)% 증가}. {active}: {area:(fv:qsize)}해 안의 적들에게 {mdmg:(sv:Q)}를 입힘. 아군은 {heal:(sv:qheal)}을 회복시키고 {shield:(sv:qshield)} 부여."
             },
             {
                 "name":"덩굴 함정",
-                "desc":""
+                "desc": "지나가는 플레이어를 ^{멈추는} {projsize:1} 의 덩굴을 {place}. 덩굴에 걸린 플레이어는 해당 칸의 효과를 받음. 아군이면 {effect:0101} 부여."
             },
             {
                 "name":"뿌리 감옥",
-                "desc":""
+                "desc": "{passive}: 스킬 사용시 사용한 자리에 ^{식충식물}을 소환해 {basicattack}시 식물 {radius:1}의 적에게 {mdmg:(sv:plantdamage)}를 입힘. <br> - 식충식물은 3턴간 유지되여 적이 기본공격시 사라짐. {active}: {target}에게 {mdmg:(sv:R)}를 입히고 {effect:1801} 부여(^{시든 나무} 상태이면 2턴), 또한 이 상태에서 아군이 가하는 피해 +{20% 증가}. 이때 맵에 있는 모든 ^{식충식물}이 대상 주변으로 이동됨."
             }
         ],
         [
@@ -174,11 +174,11 @@
             },
             {
                 "name":"원격 제어",
-                "desc":""
+                "desc": "{passive}: {basicattack}시 {mdmg:(sv:W)}를 추가로 입힘.{active}:{target}을 뒤로 ^{2+(중첩 3개당 1)칸 강제이동} 시키고 {effect:1601}부여."
             },
             {
                 "name":"추출",
-                "desc":""
+                "desc": "{target} 의 궁극기(레벨 3 스킬)를 ^{빼앗고} 대상 ^{공격력과 주문력}의 ^{((fv:r_steal_base)+총 중첩 x (fv:r_steal) )%}를 2턴간 +{훔침}. 스킬을 재시전하면 빼앗은 스킬이 사용됨."
             }
         ]
     ],

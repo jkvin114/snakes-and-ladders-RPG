@@ -492,7 +492,12 @@ color: #ff6e6e;
     width: 30px;
     margin-left: 5px;
     border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 0 3px 1px rgba(32, 32, 32, 0.8);
     /* border: 1px solid white; */
+}
+.character-skills > img:hover{
+    transform: scale(1.1);
 }
 .character-skills{
     text-align: left;
@@ -532,4 +537,36 @@ color: #ff6e6e;
   }
   #analysis .player-data-otherstat-item{
     width: unset;
+  }
+
+  #skill-tooltip{
+    position: fixed;
+    z-index: 5;
+    width: fit-content;
+    
+    min-width:300px;
+    /* width: max(50%,300px); */
+    /* height: 100px; */
+    top:50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background-color: rgb(57, 58, 69);
+    color: white;
+    border: 2px solid rgb(87, 87, 87);
+    padding: 6px;
+    border-radius: 5px;
+    box-shadow: 0 0 3px 1px rgba(46, 46, 46,0.8);
+    display: none;
+  
+  }
+  #skill-overlay{
+    position: fixed;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    top:0;
+    left: 0;
+    background-color: black;
+    opacity: 0.5;
+    display: none;
   }

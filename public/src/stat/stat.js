@@ -435,8 +435,10 @@ function onGameDetailShow() {
 
 $(window).on("load", function () {})
 $(document).ready(function () {
+	SkillParser.init("", "/resource/skill", currentLocale())
 	updateLocale("stat")
 	updateGameLocale()
+
 	itemLists = $(".itemlist").toArray()
 	playerNameLists = $(".playername").toArray()
 	table = $(".statTableRow").toArray()

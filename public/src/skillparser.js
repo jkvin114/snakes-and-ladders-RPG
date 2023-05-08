@@ -1,13 +1,13 @@
 async function testGetskill() {
-	await SkillParser.init("./../res/locale/game/", "/resource/skill", "en")
-	SkillParser.MODE = "fillvalue"
+	await SkillParser.init("./../res/locale/game/", "/resource/skill", "ko")
+	// SkillParser.MODE = "fillvalue"
 	for (let i = 0; i < 10; ++i) {
 		for (let j = 0; j < 3; ++j) {
 			let desc = SkillParser.parseSkill(i, j)
 			$("#test").append(`<div class=skillinfo>${desc}</div><hr>`)
 		}
 	}
-	SkillParser.populateSkillValues({ Q: 10, W: 40, R: 100 })
+	// SkillParser.populateSkillValues({ Q: 10, W: 40, R: 100 })
 }
 
 class SkillParser {
@@ -119,20 +119,30 @@ class SkillParser {
 	static hotkeys = ["Q", "W", "R"]
 	static skills
 	static SkillImagePath = "res/img/skill/"
+	static localePath
 
 	static chooseLang(en, ko) {
 		if (SkillParser.LANG === "ko") return ko
 		else return en
 	}
 	static async init(localepath, datapath, lang) {
-		const data = await (await fetch(localepath + lang + ".json")).json()
-		const skilldata = await (await fetch(datapath)).json()
-		SkillParser.EFFECTS = data.statuseffect_data
-		SkillParser.descriptions = data.skills
-		SkillParser.skills = skilldata
+		if (datapath !== "") {
+			const skilldata = await (await fetch(datapath)).json()
+			SkillParser.skills = skilldata
+		}
+		if (localepath !== "") {
+			const data = await (await fetch(localepath + lang + ".json")).json()
+			SkillParser.localePath = localepath
+			SkillParser.EFFECTS = data.statuseffect_data
+			SkillParser.descriptions = data.skills
+		}
+		SkillParser.LANG = lang
+	}
+	static updateLocale(lang) {
+		SkillParser.LANG = lang
 	}
 	static parseSkill(charId, skillId) {
-		if (!SkillParser.skills || !SkillParser.descriptions || !SkillParser.EFFECTS) {
+		if (!SkillParser.descriptions || !SkillParser.EFFECTS) {
 			console.error("SkillParser is not initialized")
 			return ""
 		}
@@ -156,7 +166,7 @@ class SkillParser {
 		// this.MODE = "fillvalue"
 		let header =
 			`<i class='braket'>[${this.hotkeys[i]}]</i><i class='skill_name'>[${locale.name}]&emsp; </i>` +
-			`<i class='cooltime'><img src='${this.IconPath}cooltime.svg'>${this.chooseLang("cooltime", "쿨타임")} ${
+			`<br><i class='cooltime'><img src='${this.IconPath}cooltime.svg'>${this.chooseLang("cooltime", "쿨타임")} ${
 				data.cool
 			} ${this.chooseLang("turns", "턴")}</i>`
 		if (data.range !== undefined) {
@@ -201,7 +211,7 @@ class SkillParser {
 
 		desc = desc.replace(/\^{(.+?)}/g, "<i class='emphasize_simple'>$1</i>")
 		desc = desc.replace(/\+{(.+?)}/g, "<i class='up'><img src='" + this.IconPath + "up.png'>$1</i>")
-		desc = desc.replace(/\-{(.+?)}/g, "<i class='down'><img src='" + this.IconPath + "lower.png'>$1</i>")
+		desc = desc.replace(/\-{(.+?)}/g, "<i class='down'><img src='" + this.IconPath + "down.png'>$1</i>")
 		desc = desc.replace("{active}", `<br><i class='braket'>[${this.chooseLang("Active", "사용시")}]</i>`)
 		desc = desc.replace("{passive}", `<i class='braket'>[${this.chooseLang("Passive", "기본 지속 효과")}]</i>`)
 		desc = desc.replace(/{skillvalue:(.+)}/g, `<i class='skillvalue_$1'></i>`)
@@ -234,7 +244,7 @@ class SkillParser {
 				const charId = Number(sk[1].slice(0, 2))
 				const skillId = Number(sk[1].slice(2, 3))
 				// console.log(charId, skillId)
-				const skill_name = this.skills[charId - 1][skillId - 1].name
+				const skill_name = this.descriptions[charId - 1][skillId - 1].name
 				const img = this.SkillImagePath + charId + "-" + skillId + ".jpg"
 
 				let toreplace = `<img class='info_skillimg' src='${img}'><i class='skill_name_desc'>${skill_name}</i>`
