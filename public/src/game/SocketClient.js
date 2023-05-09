@@ -80,7 +80,7 @@ export function openConnection(isInitial) {
 	})
 	socket.on("server:rolldice", function (dice) {
 		if (dice == null) return
-		console.log("rolldice")
+		// console.log("rolldice")
 		GAME.rollDice(dice)
 	})
 	// socket.on("server:hp", function (val) {
@@ -108,7 +108,7 @@ export function openConnection(isInitial) {
 
 	socket.on("server:money", function (val) {
 		if (val == null) return
-		console.log("money", val)
+		// console.log("money", val)
 		GAME.updateMoney(val)
 	})
 	socket.on("server:status_effect", function (val) {
@@ -155,8 +155,8 @@ export function openConnection(isInitial) {
 
 	socket.on("server:create_projectile", function (proj) {
 		if (proj == null) return
-		console.log("create_projectile")
-		console.log(proj)
+		// console.log("create_projectile")
+		// console.log(proj)
 		GAME.scene.placeProj(proj)
 	})
 
@@ -288,12 +288,20 @@ export function openConnection(isInitial) {
 		///	console.log(data)
 		GAME.onReceiveChangeData(data.type, data.turn, data.amt)
 	})
-	socket.on("server:update_skill_info", function (data) {
+	socket.on("server:update_skill_info_single", function (data) {
 		if (GAME.myturn !== data.turn || data.turn == null || !GAME.ui) {
 			return
 		}
-		console.log(data.info_eng)
-		GAME.ui.updateSkillInfo(data.info_kor, data.info_eng)
+		// console.log(data.info_eng)
+		GAME.ui.updateSkillInfoSingle(data.charId, data.skillId, data.toChange)
+	})
+	socket.on("server:update_skill_values", function (data) {
+		// console.log(data)
+		if (GAME.myturn !== data.turn || data.turn == null || !GAME.ui) {
+			return
+		}
+		console.log(data.values)
+		GAME.ui.updateSkillValues(data.values)
 	})
 	socket.on("server:start_timeout_countdown", function (crypt_turn, time) {
 		if (GAME.crypt_turn !== crypt_turn || crypt_turn == null || !GAME.ui) {
@@ -379,7 +387,7 @@ export function openConnection(isInitial) {
 	}
 
 	GAME.connection.getSkill = function (s) {
-		console.log("getskill " + s)
+		// console.log("getskill " + s)
 		socket.emit("user:get_skill_data", GAME.crypt_turn, s)
 	}
 	GAME.connection.basicAttack = function () {
@@ -440,7 +448,7 @@ export function openConnection(isInitial) {
 	}
 
 	GAME.connection.sellTokenComplete = function (data) {
-		console.log("onTokenSellComplete")
+		// console.log("onTokenSellComplete")
 
 		socket.emit("user:complete_obstacle_selection", GAME.crypt_turn, data)
 	}

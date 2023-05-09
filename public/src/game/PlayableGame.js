@@ -2,6 +2,7 @@ import { Game } from "./RPGGame.js"
 import { StoreStatus, StoreInstance, StoreInterface } from "./store.js"
 import GameInterface from "./gameinterface.js"
 import { openConnection } from "./SocketClient.js"
+import { SkillParser } from "./skillparser_module.js"
 
 export class PlayableGame extends Game {
 	constructor(is_spectator) {
@@ -18,6 +19,7 @@ export class PlayableGame extends Game {
 		this.crypt_turn = "" //encrypted my turn, "" if spectator mode
 		this.rname = sessionStorage.roomName //방제
 		this.godhandtarget = -1 //신의손 대상 저장용
+		this.initialized = false
 
 		this.dice_clicked = false //주사위 클릭했지
 		this.myStat = {}
@@ -39,7 +41,6 @@ export class PlayableGame extends Game {
 	onCreate() {
 		$("#loadingtext").html("CONNECTING WITH SERVER..")
 		openConnection(true)
-
 		this.ui = new GameInterface(this)
 		this.ui.onCreate()
 		this.storeStatus = new StoreStatus()
@@ -92,6 +93,7 @@ export class PlayableGame extends Game {
 		this.myturn = turn
 
 		this.crypt_turn = cturn
+		this.initialized = true
 
 		// this.skill_description = setting[this.myturn].description
 		//this.playerCount = setting.playerSettings.length //total number of player
@@ -111,6 +113,8 @@ export class PlayableGame extends Game {
 		}
 
 		this.ui.init(setting.playerSettings)
+		this.updateSkillInfo()
+
 		//requestObstacles()
 		//registerSounds()
 	}
@@ -273,6 +277,19 @@ export class PlayableGame extends Game {
 	onSkillAvaliable(status) {
 		this.ui.showSkillBtn(status)
 		this.scene.showArrow(status.turn)
+	}
+	async updateSkillInfo() {
+		if (!this.is_spectator && !this.is_replay) {
+			if (!SkillParser.skills) {
+				await SkillParser.init("", "/resource/skill", this.chooseLang("en", "ko"))
+				SkillParser.MODE = "fillvalue"
+			}
+			SkillParser.LANG = this.chooseLang("en", "ko")
+
+			SkillParser.EFFECTS = this.LOCALE.statuseffect_data
+			SkillParser.descriptions = this.LOCALE.skills
+			this.ui.updateSkillInfo()
+		}
 	}
 	onReceiveTarget(result) {
 		$(".storebtn").hide()

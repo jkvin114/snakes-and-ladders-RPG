@@ -10,7 +10,7 @@ async function testGetskill() {
 	// SkillParser.populateSkillValues({ Q: 10, W: 40, R: 100 })
 }
 
-class SkillParser {
+export class SkillParser {
 	static EFFECTS
 	static LANG = "en"
 	static IconPath = "res/img/svg/skillinfo/"
@@ -214,7 +214,7 @@ class SkillParser {
 		desc = desc.replace(/\^{(.+?)}/g, "<i class='emphasize_simple'>$1</i>")
 		desc = desc.replace(/\+{(.+?)}/g, "<i class='up'><img src='" + this.IconPath + "up.png'>$1</i>")
 		desc = desc.replace(/\-{(.+?)}/g, "<i class='down'><img src='" + this.IconPath + "down.png'>$1</i>")
-		desc = desc.replace(
+		desc = desc.replaceAll(
 			"{active}",
 			`${this.SeparateSection ? "<hr>" : "<br>"}<i class='braket'>[${this.chooseLang("On Use", "사용시")}]</i>`
 		)

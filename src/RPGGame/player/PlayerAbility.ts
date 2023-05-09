@@ -61,7 +61,7 @@ class PlayerAbility implements PlayerComponent{
 	}
 	onDeath: () => void
 	onTurnStart(){
-
+		
 	}
 	init(char:number){
 		this.AD.add(ABILITY[char].initial.AD)
@@ -217,12 +217,13 @@ class PlayerAbility implements PlayerComponent{
 		return str
 	}
 	sendToClient() {
-		let info_kor = this.player.skillManager.getSkillInfoKor()
-		let info_eng = this.player.skillManager.getSkillInfoEng()
+		// let info_kor = this.player.skillManager.getSkillInfoKor()
+		// let info_eng = this.player.skillManager.getSkillInfoEng()
 
 		if (this.player.game.instant) return
 		this.player.game.eventEmitter.update("stat", this.player.turn, this.serializeAll())
-		this.player.game.eventEmitter.updateSkillInfo(this.player.turn, info_kor, info_eng)
+
+		this.player.game.eventEmitter.updateSkillValues(this.player.turn, this.player.skillManager.getSkillValues())
 	}
 
 	onLevelUp(playercount: number) {

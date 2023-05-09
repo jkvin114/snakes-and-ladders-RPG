@@ -12,10 +12,12 @@ import { ServerGameEventFormat } from "../../data/EventFormat"
 import { EntityFilter } from "../../entity/EntityFilter"
 import type { PlayerAbility } from "../../player/PlayerAbility"
 import { EntityMediator } from "../../entity/EntityMediator"
+import SKILLDATA = require("../../../../res/skill.json")
 
 
 export abstract class CharacterSkillManager implements PlayerComponent{
     protected player:Player
+	protected charId:number
 	pendingSkill: number
 	cooltime: number[]
 	duration: number[]
@@ -26,8 +28,8 @@ export abstract class CharacterSkillManager implements PlayerComponent{
 	abstract readonly cooltime_list: number[]
 	abstract readonly duration_list: number[]
 	abstract readonly skill_ranges: number[]
-	private skillInfoKor: SkillInfoFactory
-	private skillInfo: SkillInfoFactory
+	// private skillInfoKor: SkillInfoFactory
+	// private skillInfo: SkillInfoFactory
     abstract getSkillTrajectoryDelay(s: string): number
 	/**
 	 * for targeting, projectile, area targeting skill,
@@ -59,14 +61,15 @@ export abstract class CharacterSkillManager implements PlayerComponent{
 	abstract getSkillBaseDamage(skill: number): number
     constructor(player:Player,charId:number){
         this.player=player
+		this.charId=charId
         this.ability=player.ability
         this.mediator=player.mediator
 
 		this.cooltime = [0, 0, 0]
 		this.duration = [0, 0, 0]
 		this.basicAttackCount = 0
-        this.skillInfo = new SkillInfoFactory(charId, this, SkillInfoFactory.LANG_ENG)
-		this.skillInfoKor = new SkillInfoFactory(charId, this, SkillInfoFactory.LANG_KOR)
+        // this.skillInfo = new SkillInfoFactory(charId, this, SkillInfoFactory.LANG_ENG)
+		// this.skillInfoKor = new SkillInfoFactory(charId, this, SkillInfoFactory.LANG_KOR)
         this.basicAttackType = ABILITY[charId].basicAttackType === "ranged" ? BASICATTACK_TYPE.RANGED : BASICATTACK_TYPE.MELEE
         this.pendingSkill = -1
     }
@@ -92,12 +95,31 @@ export abstract class CharacterSkillManager implements PlayerComponent{
 	getSkillAmount(key: string): number {
 		return 0
 	}
+	getSkillValues():Object{
+		let obj={} as any
+		for(const skill of SKILLDATA[this.charId]){
+			for(const [key,scale] of Object.entries(skill.values)){
+				let val=this.calculateScale(scale)
+				obj[key]=val
+			}
+		}
+		return obj
+	}
+	getSkillValueSingle(charId:number,skillId:number):Object{
+		let obj={} as any
 
+		for(const [key,scale] of Object.entries(SKILLDATA[charId][skillId].values)){
+			let val=this.calculateScale(scale)
+			obj[key]=val
+		}
+		return obj
+	}
+	
 	getSkillInfoKor() {
-		return this.skillInfoKor.get()
+		// return this.skillInfoKor.get()
 	}
 	getSkillInfoEng() {
-		return this.skillInfo.get()
+		// return this.skillInfo.get()
 	}
     /**
          *

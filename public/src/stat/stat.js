@@ -436,6 +436,7 @@ function onGameDetailShow() {
 $(window).on("load", function () {})
 $(document).ready(function () {
 	SkillParser.init("", "/resource/skill", currentLocale())
+	SkillParser.SeparateSection = true
 	updateLocale("stat")
 	updateGameLocale()
 

@@ -3,7 +3,7 @@ import { COLOR_LIST_BG } from "./board.js"
 import { Player } from "./player.js"
 import { GAME, StringResource, registerSounds } from "./GameMain.js"
 import { GestureController } from "./gesturecontroller.js"
-
+import { SkillParser } from "./skillparser_module.js"
 class Setting {
 	constructor(game) {
 		//singleton
@@ -144,6 +144,8 @@ export class Game {
 		)
 		sessionStorage.language = this.setting.lang
 
+		this.updateSkillInfo()
+
 		document.querySelectorAll("[lkey]").forEach((element) => {
 			let key = element.getAttribute("lkey")
 			let classes = key.split(".")
@@ -157,6 +159,7 @@ export class Game {
 			} catch (e) {}
 		})
 	}
+	updateSkillInfo() {}
 	resetSetting() {
 		this.setting.reset()
 	}
@@ -482,9 +485,9 @@ export class Game {
 
 		this.scene.removeAllEffects(turn)
 	}
-	showAreaEffect(info){
-		const isHarmful=this.isEnemy(info.turn)
-		this.scene.showAreaEffect(info,isHarmful)
+	showAreaEffect(info) {
+		const isHarmful = this.isEnemy(info.turn)
+		this.scene.showAreaEffect(info, isHarmful)
 	}
 	onTileSelectionCancel(type) {}
 

@@ -496,6 +496,9 @@ class Player extends Entity{
 		this.changeSkillImage("", skill)
 	}
 	
+	changeSkillInfo(skill:SKILL,toChange:SKILL){
+		this.game.eventEmitter.updateSkillInfoSingle(this.turn,this.champ,skill,toChange)
+	}
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
    * @param {*}data HPChange

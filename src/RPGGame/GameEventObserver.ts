@@ -303,14 +303,15 @@ export class GameEventObserver {
 		
 	}
 
-	updateSkillInfo(turn: number, info_kor: string[], info_eng: string[]) {
-		this.emit("update_skill_info",{ turn: turn, info_kor: info_kor, info_eng: info_eng })
-		// this.eventEmitter(this.rname, "server:update_skill_info", { turn: turn, info_kor: info_kor, info_eng: info_eng })
+	updateSkillInfoSingle(turn: number,char:number,skill:number,toChange:number) {
+		this.emit("update_skill_info_single",{ turn: turn, charId:char,skillId:skill,toChange:toChange })
 	}
-
+	updateSkillValues(turn:number,values:Object){
+		
+		this.emit("update_skill_values",{ turn: turn, values:values })
+	}
 	visualEffect(pos: number, type: string, source: number) {
 		this.emit("visual_effect",{ pos: pos, type: type, source: source })
-		// this.eventEmitter(this.rname, "server:visual_effect", { pos: pos, type: type, source: source })
 	}
 
 	attack(data: ServerGameEventFormat.Attack) {

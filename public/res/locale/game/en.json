@@ -135,7 +135,7 @@
         [
             {
                 "name": "Mace Attack",
-                "desc": "Deals {pdmg:(sv:Q)} to a {target} and heals {heal:(sv:qheal)}, If the target has ^{mark} of {skill:022}, range increases by (fv:w_qrange) and deals additional {fdmg:(sv:w_qdamage)}"
+                "desc": "Deals {mdmg:(sv:Q)} to a {target} and {heal: heals} by ^{30% of damage}, If the target has ^{mark} of {skill:022}, range increases by (fv:w_qrange) and deals additional {fdmg:(sv:w_qdamage)}"
             },
             {
                 "name": "Tanut",
@@ -143,7 +143,7 @@
             },
             {
                 "name": "Strengthen",
-                "desc": "{passive}: ^{Attack and magic resistance} +{increases by 0~60} based on your {missinghp}. {active}:^{Attack and magic resistance} +{increases by (sv:r_resistance)}, gains {shield:(sv:rshield)} and {effect:0101}. Also heal amount of {skill:021} +{doubles} and ^{range} +{increase by 4}."
+                "desc": "{passive}: ^{Attack and magic resistance} +{increases by 0~60} based on your {missinghp}. {active}:^{Attack and magic resistance} +{(fv:r_resistance_min)~(fv:r_resistance_max) increases} based on {missinghp}, gains {shield:(sv:rshield)} and {effect:0101}. Also heal amount of {skill:021} +{doubles} and ^{range} +{increase by 4}."
             }
         ],
         [
@@ -233,11 +233,11 @@
         [
             {
                 "name": "Sweet Fruit",
-                "desc": "{passive}: If HP is -{lower than (fv:wither_cond)%}, transforms to ^{Withered Tree}, On ^{Withered Tree} state, you can`t heal ally with {skill:091}, but ^{damage absorbtion} +{(fv:wither_absorb)% increases}. {active}: {area:(fv:qsize)}. Deals {mdmg:(sv:Q)} to enemies inside. For allies, heals {heal:(sv:qheal)} and gains {shield:(sv:qshield)}."
+                "desc": "{passive}: If HP is -{lower than (fv:wither_cond)%}, transforms to ^{Withered Tree}, On ^{Withered Tree} state, you can`t heal ally with {skill:091}, but ^{damage absorbtion} +{(fv:wither_absorb)% increases}. {active}: {area:(fv:qsize)}. Deals {mdmg:(sv:Q)} to enemies inside. For allies, heals {heal:(sv:qheal)} and grants {shield:(sv:qshield)}."
             },
             {
                 "name": "Vine Trap",
-                "desc": "{place} a vine of {projsize:1} that ^{stops} player who passse it. Allies will gain {effect:0101}"
+                "desc": "{place} a vine of {projsize:1} that ^{stops} player who passes it. Allies will gain {effect:0101}"
             },
             {
                 "name": "Root Prison",
@@ -251,7 +251,7 @@
             },
             {
                 "name": "Remote Control",
-                "desc": "{passive}: {basicattack} deals additial {mdmg:(sv:W)}.{active}:Select a {target} and forcibly moves ^{2+(1 for 3 vulnerability stacks)squares} backwards and applies {effect:1601}."
+                "desc": "{passive}: {basicattack} deals additial {mdmg:(sv:W)}.{active}:Select a {target} and forcibly moves ^{2+(1 for 3 stacks)squares} backwards and applies {effect:1601}."
             },
             {
                 "name": "Extraction",

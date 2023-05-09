@@ -58,7 +58,7 @@
         [
             {
                 "name":"암흑의 철퇴",
-                "desc": "{target}에게 {pdmg:(sv:Q)} 를 입히고 {heal:(sv:qheal)} 회복. {skill:022}의 ^{표식} 이 있는 상대에게는, 사정거리가 +{(fv:w_qrange) 증가}하고 추가로 {fdmg:(sv:w_qdamage)}를 입힘"
+                "desc": "{target}에게 {mdmg:(sv:Q)} 를 입히고 ^{피해량의 30%}만큼 {heal: 회복}. {skill:022}의 ^{표식} 이 있는 상대에게는, 사정거리가 +{(fv:w_qrange) 증가}하고 추가로 {fdmg:(sv:w_qdamage)}를 입힘"
             },
             {
                 "name":"도발",
@@ -66,7 +66,7 @@
             },
             {
                 "name":"실버의 갑옷",
-                "desc": "{passive}: ^{방어력과 마법저항력}이 {missinghp}에 비례해 +{0~60 증가}. {active}:^{방어력과 마법저항력}이 +{(sv:r_resistance) 증가}, {shield:(sv:rshield)}와 {effect:0101}획득. 또한{skill:021}의 회복량 +{2배}와 ^{사정거리} +{4 증가}."
+                "desc": "{passive}: ^{방어력과 마법저항력}이 {missinghp}에 비례해 +{0~60 증가}. {active}:^{방어력과 마법저항력}이 {missinghp}에 비례해 +{(fv:r_resistance_min)~(fv:r_resistance_max) 증가}, {shield:(sv:rshield)}와 {effect:0101}획득. 또한{skill:021}의 회복량 +{2배}와 ^{사정거리} +{4 증가}."
             }
         ],
         [
@@ -108,7 +108,7 @@
             },
             {
                 "name":"저격수의 극장",
-                "desc": "{shield:80} 획득. {target} 고정 후 3턴간 최대 ^{3번} 공격해 각각 {pdmg:(sv:R)}를 입힘 (3번째 공격은 {fdmg:(sv:R)}를 입힘), 사용중에는 움직일 수 없음)<br> 발사 후에는 {effect:1001}을 받음."
+                "desc": "{shield:80} 획득. {target} 고정 후 3턴간 최대 ^{3번} 공격해 각각 {pdmg:(sv:R)}를 입힘 (3번째 공격은 {fdmg:(sv:R)}를 입힘, 사용중에는 움직일 수 없음)<br>3번 발사 후에는 {effect:1001}을 받음."
             }
         ],
         [
@@ -132,7 +132,7 @@
             },
             {
                 "name":"보호의 물",
-                "desc": "{shield:(sv:wshield)} 획득하고 {radius:3}의 적에게 {mdmg:(sv:W)}를 입히고 {effect:0001} 부여."
+                "desc": "{shield:(sv:wshield)}을 획득하고 {radius:3}의 적에게 {mdmg:(sv:W)}를 입히고 {effect:0001} 부여."
             },
             {
                 "name":"블랙홀",
@@ -156,7 +156,7 @@
         [
             {
                 "name":"달콤한 열매",
-                "desc": "{passive}: 체력이 -{(fv:wither_cond)% 미만이면}, ^{시든 나무} 상태 돌입, ^{시든 나무} 상태에선 {skill:091}로 아군 회복이 불가하지만 ^{모든피해흡혈} 이 +{(fv:wither_absorb)% 증가}. {active}: {area:(fv:qsize)}해 안의 적들에게 {mdmg:(sv:Q)}를 입힘. 아군은 {heal:(sv:qheal)}을 회복시키고 {shield:(sv:qshield)} 부여."
+                "desc": "{passive}: 체력이 -{(fv:wither_cond)% 미만이면} ^{시든 나무} 상태 돌입, ^{시든 나무} 상태에선 {skill:091}로 아군 회복이 불가하지만 ^{모든 피해 흡혈}이 +{(fv:wither_absorb)% 증가}. {active}: {area:(fv:qsize)}해 안의 적들에게 {mdmg:(sv:Q)}를 입힘. 아군은 {heal:(sv:qheal)}을 회복시키고 {shield:(sv:qshield)} 부여."
             },
             {
                 "name":"덩굴 함정",
@@ -170,7 +170,7 @@
         [
             {
                 "name":"취약점 공격",
-                "desc":"{target} 을 공격해 {pdmg:(sv:Q)(+(fv:stack_damage) x 총 중첩)} 을 입히고 {money:1중첩당 (fv:q_money)} 를 빼앗음. 적중시 해당 대상에 대한 ^{취약점 중첩} 획득. ^{취약점 중첩} 하나당 대상에 대한 피해량 영구 증가."
+                "desc":"{target} 을 공격해 {pdmg:(sv:Q)(+(fv:stack_damage) x 총 중첩)} 을 입히고 {money:1중첩당 (fv:q_money)} 를 빼앗음. 적중시 해당 대상에 대한 ^{취약점 중첩} 획득. ^{취약점 중첩} 하나당 대상에 대한 피해량 영구 증가.{skillvalue:stacks}"
             },
             {
                 "name":"원격 제어",

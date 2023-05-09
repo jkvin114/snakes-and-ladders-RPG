@@ -1,10 +1,12 @@
 import { GAME } from "./GameMain.js"
+import { SkillParser } from "./skillparser_module.js"
 
 export default class GameInterface {
 	constructor(game) {
 		if (GameInterface._instance) {
 			return GameInterface._instance
 		}
+
 		GameInterface._instance = this
 		this.obsNoti1 = new ObsNotification(".obs_notification1")
 		this.obsNoti2 = new ObsNotification(".obs_notification2")
@@ -657,14 +659,35 @@ export default class GameInterface {
 		}
 	}
 
-	updateSkillInfo(info_kor, info_eng) {
-		for (let i = 0; i < info_kor.length; ++i) {
-			$(this.elements.skillinfos[i]).html(
-				(i === 0 ? "" : "<hr>") + SkillInfoParser.parse(GAME.chooseLang(info_eng[i], info_kor[i]))
-			)
+	// updateSkillInfo(info_kor, info_eng) {
+	// 	for (let i = 0; i < info_kor.length; ++i) {
+	// 		$(this.elements.skillinfos[i])
+	// 			.html
+	// 			// (i === 0 ? "" : "<hr>") + SkillInfoParser.parse(GAME.chooseLang(info_eng[i], info_kor[i]))
+	// 			()
+	// 	}
+	// 	this.addEffectTooltipEvent()
+	// }
+
+	updateSkillInfo() {
+		if (this.game.is_spectator || !this.game.initialized) return
+		let charId = this.game.players[this.game.myturn].champ
+		for (let i = 0; i < 3; ++i) {
+			$(this.elements.skillinfos[i]).html((i === 0 ? "" : "<hr>") + SkillParser.parseSkill(charId, i))
 		}
 		this.addEffectTooltipEvent()
 		this.addSkillScaleTooltipEvent()
+	}
+	updateSkillInfoSingle(charId, skillId, toChange) {
+		if (this.game.is_spectator) return
+		console.log(charId, skillId)
+		$(this.elements.skillinfos[toChange]).html((toChange === 0 ? "" : "<hr>") + SkillParser.parseSkill(charId, skillId))
+		this.addEffectTooltipEvent()
+		this.addSkillScaleTooltipEvent()
+	}
+	updateSkillValues(values) {
+		console.log(values)
+		SkillParser.populateSkillValues(values)
 	}
 	addSkillScaleTooltipEvent() {
 		$(".scaled_value").off()
@@ -720,31 +743,14 @@ export default class GameInterface {
 	}
 
 	showSkillBtn(status) {
-		//console.log("show skill btn turn:" + status.turn)
-		// $(".storebtn").show()
-
-		// $(".nextturnbtn").show()
 		this.nextTurnBtnShown = true
 		$(".nextturnbtn").attr("disabled", false)
 		$(".nextturnbtn").removeClass("unavaliable")
-		// if (status.dead) {
-		// 	return
-		// }
-
 		GAME.skillstatus = status
 
-		//$(".skillbtn button").attr("disabled", false)
-
-		//  if(skillcount===4 || players[thisturn].effects[3]>0)
-		// if (status.silent > 0 || status.dead) {
-		// 	//silent or dead
-		// 	return
-		// }
 		if (status.basicAttackType === "ranged") {
 			$(".basicattackbtn").children("img").attr("src", "res/img/ui/basicattack-ranged.png")
 		}
-		// $(".storebtn").hide()
-		// $(".skillbtn").show()
 		this.showBasicAttackBtn(status.basicAttackCount, status.canBasicAttack)
 		if (status.canUseSkill) {
 			this.skillBtnShown = true
@@ -897,17 +903,6 @@ export default class GameInterface {
 				)
 				$(this.elements.hpis[ui]).data("shield", shield)
 			}
-
-			// let name = $(this.elements.hpis[ui]).html()
-			// let s = name.match(/\([+0-9]+\)/)
-			// //console.log(s)
-			// if (!s) {
-			// 	$(this.elements.hpis[ui]).html(name + ` (+${Math.floor(shield)})`)
-			// } else if (shield === 0) {
-			// 	$(this.elements.hpis[ui]).html(name.replace(/\([+0-9]+\)/, ""))
-			// } else {
-			// 	$(this.elements.hpis[ui]).html(name.replace(/(?<=\(\+)[0-9]+/, shield))
-			// }
 		}
 	}
 	setMyMaxhpSpace(maxhp) {
@@ -988,15 +983,8 @@ export default class GameInterface {
 
 			$(this.elements.hpis[ui]).data("hp", hp)
 			$(this.elements.hpis[ui]).data("maxhp", maxhp)
-			// let shield = $(this.elements.hpis[ui])
-			// .html()
-			// .match(/\([+0-9]+\)/)
+
 			let shield = $(this.elements.hpis[ui]).data("shield")
-			// let str = $(this.elements.hpis[ui])
-			// 	.html()
-			// 	.replace(/\s\([+0-9]+\)/, shield ? shield[0] : "")
-			// 	.replace(/[0-9]+(?=\/)/, String(Math.floor(hp)))
-			// 	.replace(/(?<=\/)[0-9]+/, String(Math.floor(maxhp)))
 			let str = hp + "/" + maxhp
 			if (!!shield) str += "(+" + shield + ")"
 			$(this.elements.hpis[ui]).html(str)
@@ -1519,18 +1507,12 @@ class ObsNotification {
 				-1 * obs * 50 +
 				"px'; > </div>"
 		)
-
-		// $(".toast_obsimg").css({
-		// 	margin: "-35px",
-		// 	width: "50px",
-		// 	overflow: "hidden",
-		// 	height: "50px",
-		// 	display: "inline-block",
-		// 	transform: "scale(1.3)"
-		// })
 	}
 }
 
+/**
+ * Depricated
+ */
 class SkillInfoParser {
 	static parse = function (str) {
 		return str

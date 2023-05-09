@@ -9,7 +9,6 @@ import { Projectile } from "../Projectile"
 // import SETTINGS = require("../../res/globalsettings.json")
 import { NormalEffect } from "../StatusEffect"
 import { SpecialEffect } from "../data/SpecialEffectRegistry"
-import { SkillInfoFactory } from "../data/SkillDescription"
 import * as SKILL_SCALES from "../../../res/skill_scales.json"
 import { EntityFilter } from "../entity/EntityFilter"
 import YangyiAgent from "../AiAgents/YangyiAgent"

@@ -6,7 +6,6 @@
             "fixedvalues":{},
             "values":{
                 "Q": {
-                    "dmgtype":"p",
                     "base": 30,
                     "scales": [
                         {
@@ -23,7 +22,6 @@
             "fixedvalues":{},
             "values":{
                 "W": {
-                    "dmgtype":"m",
                     "base": 40,
                     "scales": [
                         {
@@ -40,7 +38,6 @@
             "fixedvalues":{},
             "values":{
                 "R": {
-                    "dmgtype":"p",
                     "base": 70,
                     "scales": [
                         {
@@ -58,7 +55,6 @@
             "fixedvalues":{"w_qrange":7},
             "values":{
                 "Q": {
-                    "dmgtype":"m",
                     "base": 10,
                     "scales": [
                         {
@@ -83,7 +79,6 @@
             "fixedvalues":{},
             "values":{
                 "w_qdamage": {
-                    "dmgtype":"f",
                     "base": 30,
                     "scales": [
                         {
@@ -97,7 +92,10 @@
         {
             "cool":9,
             "dur":3,
-            "fixedvalues":{},
+            "fixedvalues":{
+                "r_resistance_min":80,
+                "r_resistance_max":150
+            },
             "values":{
                 "rshield": {
                     "base": 50,
@@ -122,7 +120,6 @@
             "fixedvalues":{},
             "values":{
                 "Q": {
-                    "dmgtype":"m",
                     "base": 20,
                     "scales": [
                         {
@@ -145,7 +142,6 @@
             "fixedvalues":{},
             "values":{
                 "R": {
-                    "dmgtype":"m",
                     "base": 30,
                     "scales": [
                         {
@@ -163,7 +159,6 @@
             "fixedvalues":{"qrange":4,"q_hp_spend":5},
             "values":{
                 "Q": {
-                    "dmgtype":"p",
                     "base": 15,
                     "scales": [
                         {
@@ -200,7 +195,6 @@
             "fixedvalues":{},
             "values":{
                 "R": {
-                    "dmgtype":"p",
                     "base": 40,
                     "scales": [
                         {
@@ -220,7 +214,6 @@
             "fixedvalues":{"q_root_arange":10},
             "values":{
                 "Q": {
-                    "dmgtype":"p",
                     "base": 40,
                     "scales": [
                         {
@@ -244,7 +237,6 @@
             "fixedvalues":{},
             "values":{
                 "R": {
-                    "dmgtype":"p",
                     "base": 40,
                     "scales": [
                         {
@@ -267,7 +259,6 @@
             },
             "values":{
                 "Q": {
-                    "dmgtype":"m",
                     "base": 30,
                     "scales": [
                         {
@@ -284,7 +275,6 @@
             "fixedvalues":{},
             "values":{
                 "W": {
-                    "dmgtype":"f",
                     "base": 3,
                     "scales": [
                         {
@@ -301,7 +291,6 @@
             "fixedvalues":{},
             "values":{
                 "R": {
-                    "dmgtype":"m",
                     "base": 60,
                     "scales": [
                         {
@@ -323,7 +312,6 @@
             },
             "values":{
                 "Q": {
-                    "dmgtype":"m",
                     "base": 10,
                     "scales": [
                         {
@@ -344,7 +332,6 @@
             "fixedvalues":{},
             "values":{
                 "W": {
-                    "dmgtype":"m",
                     "base": 30,
                     "scales": [
                         {
@@ -370,7 +357,6 @@
             "fixedvalues":{},
             "values":{
                 "R": {
-                    "dmgtype":"f",
                     "base": 40,
                     "scales": [
                         {
@@ -395,7 +381,6 @@
             },
             "values":{
                 "Q": {
-                    "dmgtype":"m",
                     "base": 10,
                     "scales": [
                         {
@@ -412,7 +397,6 @@
             "fixedvalues":{},
             "values":{
                 "w_q_adamage": {
-                    "dmgtype":"m",
                     "base": 10,
                     "scales": [
                         {
@@ -422,7 +406,6 @@
                     ]
                 },
                 "w_aa_adamage": {
-                    "dmgtype":"m",
                     "base": 10,
                     "scales": [
                         {
@@ -439,7 +422,6 @@
             "fixedvalues":{},
             "values":{
                 "r_aa_adamage": {
-                    "dmgtype":"p",
                     "base": 10,
                     "scales": [
                         {
@@ -461,7 +443,7 @@
                 "qsize":3
             },
             "values":{
-                "Q": {"dmgtype":"m",
+                "Q": {
                     "base": 20,
                     "scales": [
                         {
@@ -503,7 +485,6 @@
             "fixedvalues":{},
             "values":{
                 "R": {
-                    "dmgtype":"m",
                     "base": 60,
                     "scales": [
                         {
@@ -513,7 +494,6 @@
                     ]
                 },
                 "plantdamage": {
-                    "dmgtype":"m",
                     "base": 10,
                     "scales": [
                         {
@@ -535,7 +515,6 @@
             },
             "values":{
                 "Q": {
-                    "dmgtype":"p",
                     "base": 20,
                     "scales": [
                         {
@@ -555,7 +534,6 @@
             "range":15,
             "fixedvalues":{},
             "values":{
-                "dmgtype":"m",
                 "W": {
                     "base": 20,
                     "scales": [

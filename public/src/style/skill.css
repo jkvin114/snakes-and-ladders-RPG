@@ -8,14 +8,14 @@ html {
     }
 }
 .skillinfo{
-    color: rgb(153, 153, 153);
+    color: rgb(196, 196, 196);
     font-size: clamp(10px,1.5rem,15px);
     opacity: 1.0;
     margin-bottom: 5px;
     font-weight: normal;
     font-family: "nanumB";
     margin-top: 0.5vw;
-    line-height: 1.7em;
+    line-height: 1.9em;
     word-break: keep-all;
     user-select: none;
     text-align: left;
@@ -48,6 +48,7 @@ html {
   
   .skillinfo>i.braket {
     color: white;
+    font-size: clamp(12px,1.7rem,17px);
   }
   
   .skillinfo>i.skill_name {
@@ -137,7 +138,7 @@ html {
   
   .skillinfo>i.badeffect {
     text-decoration: underline;
-    color: rgb(255, 22, 119);
+    color: rgb(255, 78, 152);
   }
   
   .skillinfo>i.goodeffect {
