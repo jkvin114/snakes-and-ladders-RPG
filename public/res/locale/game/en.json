@@ -135,7 +135,7 @@
         [
             {
                 "name": "Mace Attack",
-                "desc": "Deals {mdmg:(sv:Q)} to a {target} and {heal: heals} by ^{30% of damage}, If the target has ^{mark} of {skill:022}, range increases by (fv:w_qrange) and deals additional {fdmg:(sv:w_qdamage)}"
+                "desc": "Deals {mdmg:(sv:Q)} to a {target} and {heal: heals} by ^{30% of damage}, If the target has ^{mark} of {skill:022}, range +{increases to (fv:w_qrange)} and deals additional {fdmg:(sv:w_qdamage)}"
             },
             {
                 "name": "Tanut",

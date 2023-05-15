@@ -454,8 +454,9 @@ $(document).ready(function () {
 
 	requestResource()
 	document.getElementById("game_detail").onscroll = function () {
+		if (window.innerHeight > 500) return
 		// console.log("scroll" + document.getElementById("game_detail").scrollTop)
-		if (document.getElementById("game_detail").scrollTop > 150) {
+		if (document.getElementById("game_detail").scrollTop > 0) {
 			document.getElementById("root").scrollTo(0, 1000)
 		} else {
 			document.getElementById("root").scrollTo(0, 0)

@@ -108,9 +108,9 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 		let d = $(this).data("skillid")
 		let parsed = SkillParser.parseSkill(Number(d.charAt(0)), Number(d.charAt(2)))
 		// console.log(parsed)
+		$("#skill-tooltip .skillinfo").html(parsed)
 		$("#skill-overlay").show()
 		$("#skill-tooltip").show()
-		$("#skill-tooltip .skillinfo").html(parsed)
 	})
 	let versionWinrates = new Map()
 	let vstr = ""

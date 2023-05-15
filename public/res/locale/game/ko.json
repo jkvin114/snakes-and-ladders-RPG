@@ -58,7 +58,7 @@
         [
             {
                 "name":"암흑의 철퇴",
-                "desc": "{target}에게 {mdmg:(sv:Q)} 를 입히고 ^{피해량의 30%}만큼 {heal: 회복}. {skill:022}의 ^{표식} 이 있는 상대에게는, 사정거리가 +{(fv:w_qrange) 증가}하고 추가로 {fdmg:(sv:w_qdamage)}를 입힘"
+                "desc": "{target}에게 {mdmg:(sv:Q)} 를 입히고 ^{피해량의 30%}만큼 {heal: 회복}. {skill:022}의 ^{표식} 이 있는 상대에게는, 사정거리가 +{(fv:w_qrange)로 증가}하고 추가로 {fdmg:(sv:w_qdamage)}를 입힘"
             },
             {
                 "name":"도발",

@@ -6,13 +6,13 @@
     "kick":"You have been kicked!",
     "error":{
         "in_game":"You are already in a game",
-    "invalid_access":"Invalid access!",
-    "not_ready":" is not ready",
-    "oneplayer":"You need more than 2 players!",
-    "players":"Cannot start game while waiting for player",
-    "team_not_4":"there should be 4 players for team game",
-    "team_incomplete":"Every player must select teams!",
-    "team_same":"You must divide teams!"
+        "invalid_access":"Invalid access!",
+        "not_ready":" is not ready",
+        "oneplayer":"You need more than 2 players!",
+        "players":"Cannot start game while waiting for player",
+        "team_not_4":"there should be 4 players for team game",
+        "team_incomplete":"Every player must select teams!",
+        "team_same":"You must divide teams!"
     },
     "setting":{
         "gameplay":"Gameplay Setting",
