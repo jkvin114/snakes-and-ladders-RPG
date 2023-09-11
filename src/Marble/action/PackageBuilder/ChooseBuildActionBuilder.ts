@@ -2,7 +2,7 @@ import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type{ MarblePlayer } from "../../Player"
-import { ServerPayloadInterface } from "../../ServerPayloadInterface"
+import { ServerRequestModel } from "../../Model/ServerRequestModel"
 import type{ BuildableTile } from "../../tile/BuildableTile"
 import { LandTile } from "../../tile/LandTile"
 import { TILE_TYPE } from "../../tile/Tile"
@@ -39,7 +39,7 @@ export class ChooseBuildActionBuilder extends ActionPackageBuilder {
 		if (this.tile.owned() && !this.tile.isMoreBuildable()) {
 			return mainaction
 		}
-		let builds: ServerPayloadInterface.buildAvaliability[] = []
+		let builds: ServerRequestModel.buildAvaliability[] = []
 		const flag=this.trace.hasAbilityInNumberOfMove(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL,1) &&
         this.trace.useActionAndAbility(ACTION_TYPE.PREPARE_TRAVEL,ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL)
 
@@ -64,6 +64,7 @@ export class ChooseBuildActionBuilder extends ActionPackageBuilder {
 				this.invoker.getBuildDiscount(),
 				this.invoker.money
 			)
+			return new EmptyAction()
     }
 
     build(): ActionPackage {

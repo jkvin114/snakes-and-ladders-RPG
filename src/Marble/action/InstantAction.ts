@@ -14,9 +14,13 @@ import { BUILDING } from "../tile/Tile"
 	}
 }
 export class GameOverAction extends InstantAction{
-	constructor(winner:number){
+	rewards:number[]
+	winType:string
+	constructor(winner:number,winType:string,rewards:number[]){
 		super(ACTION_TYPE.GAMEOVER,winner)
 		this.priority=Action.PRIORITY_IMMEDIATE
+		this.rewards=rewards
+		this.winType=winType
 	}
 	execute(game: MarbleGame): void {
 		

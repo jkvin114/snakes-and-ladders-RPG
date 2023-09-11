@@ -130,7 +130,6 @@ describe("actionpackage-scenario-1", () => {
 		let action = game.nextAction()
 		expect(action).not.toBeUndefined()
 		expect(action.type).toBe(ACTION_TYPE.BUYOUT)
-
 		;(action as InstantAction).execute(game)
 
 		action = game.nextAction()
@@ -142,9 +141,6 @@ describe("actionpackage-scenario-1", () => {
 		expect(action.type).toBe(ACTION_TYPE.REQUEST_MOVE)
 	})
 })
-
-
-
 
 describe("actionpackage-build-autobuild", () => {
 	const game = mockGame()
@@ -221,28 +217,28 @@ describe("dicedouble", () => {
 	test("double1", () => {
 		game.onThrowDice(1, 1, 1, false, new DiceChanceAction(0, false))
 		expect(game.mediator.pOfTurn(0).doubles).toBe(1)
-        game.nextAction()
-        game.nextAction()
+		game.nextAction()
+		game.nextAction()
 	})
 	test("double-no", () => {
 		game.onThrowDice(1, 1, 1, false, new DiceChanceAction(0, true))
 		expect(game.mediator.pOfTurn(0).doubles).toBe(1)
-        game.nextAction()
-        game.nextAction()
+		game.nextAction()
+		game.nextAction()
 	})
 	test("double-2", () => {
 		game.onThrowDice(1, 1, 1, false, new DiceChanceAction(0, false))
 		expect(game.mediator.pOfTurn(0).doubles).toBe(2)
-        game.nextAction()
-        game.nextAction()
+		game.nextAction()
+		game.nextAction()
 	})
 	test("double-3", () => {
 		game.onThrowDice(1, 1, 1, false, new DiceChanceAction(0, false))
 		expect(game.mediator.pOfTurn(0).doubles).toBe(0)
-        
+
 		let action = game.nextAction()
 		action = game.nextAction()
-        console.log(action)
+		console.log(action)
 		expect(action.type).toBe(ACTION_TYPE.REQUEST_MOVE)
 		expect((action as RequestMoveAction).pos).toBe(8)
 	})
@@ -250,85 +246,114 @@ describe("dicedouble", () => {
 
 describe("actionstack-aftermain", () => {
 	let stack = new ActionStack()
-    stack.clear()
+	stack.clear()
 	test("empty", () => {
-        stack.clear()
-        stack.pushAll(new EmptyAction("before").setToActionPackageBeforeMain(),new EmptyAction("main").setToActionPackageBeforeMain(),new EmptyAction("after").setToAfterMain())
+		stack.clear()
+		stack.pushAll(
+			new EmptyAction("before").setToActionPackageBeforeMain(),
+			new EmptyAction("main").setToActionPackageBeforeMain(),
+			new EmptyAction("after").setToAfterMain()
+		)
 
 		expect((stack.at(0) as EmptyAction).debugId).toBe("before")
-        expect((stack.at(1) as EmptyAction).debugId).toBe("main")
-        expect((stack.at(2) as EmptyAction).debugId).toBe("after")
+		expect((stack.at(1) as EmptyAction).debugId).toBe("main")
+		expect((stack.at(2) as EmptyAction).debugId).toBe("after")
 	})
-    test("one", () => {
-        stack.clear()
-        stack.pushAll(new EmptyAction("bottom"))
-        stack.pushAll(new EmptyAction("before").setToActionPackageBeforeMain(),new EmptyAction("main").setToActionPackageBeforeMain(),new EmptyAction("after").setToAfterMain())
+	test("one", () => {
+		stack.clear()
+		stack.pushAll(new EmptyAction("bottom"))
+		stack.pushAll(
+			new EmptyAction("before").setToActionPackageBeforeMain(),
+			new EmptyAction("main").setToActionPackageBeforeMain(),
+			new EmptyAction("after").setToAfterMain()
+		)
 
 		expect((stack.at(0) as EmptyAction).debugId).toBe("before")
-        expect((stack.at(1) as EmptyAction).debugId).toBe("main")
-        expect((stack.at(2) as EmptyAction).debugId).toBe("after")
-        expect((stack.at(3) as EmptyAction).debugId).toBe("bottom")
+		expect((stack.at(1) as EmptyAction).debugId).toBe("main")
+		expect((stack.at(2) as EmptyAction).debugId).toBe("after")
+		expect((stack.at(3) as EmptyAction).debugId).toBe("bottom")
 	})
 
-    test("multiple", () => {
-        stack.clear()
-        stack.pushAll(new EmptyAction("bottom4"))
-        stack.pushAll(new EmptyAction("bottom3"))
-        stack.pushAll(new EmptyAction("bottom2"))
-        stack.pushAll(new EmptyAction("bottom1"))
-        stack.pushAll(new EmptyAction("before").setToActionPackageBeforeMain(),new EmptyAction("main").setToActionPackageBeforeMain(),new EmptyAction("after").setToAfterMain())
+	test("multiple", () => {
+		stack.clear()
+		stack.pushAll(new EmptyAction("bottom4"))
+		stack.pushAll(new EmptyAction("bottom3"))
+		stack.pushAll(new EmptyAction("bottom2"))
+		stack.pushAll(new EmptyAction("bottom1"))
+		stack.pushAll(
+			new EmptyAction("before").setToActionPackageBeforeMain(),
+			new EmptyAction("main").setToActionPackageBeforeMain(),
+			new EmptyAction("after").setToAfterMain()
+		)
 
 		expect((stack.at(0) as EmptyAction).debugId).toBe("before")
-        expect((stack.at(1) as EmptyAction).debugId).toBe("main")
-        expect((stack.at(2) as EmptyAction).debugId).toBe("after")
-        expect((stack.at(3) as EmptyAction).debugId).toBe("bottom1")
-        expect((stack.at(4)as EmptyAction).debugId).toBe("bottom2")
+		expect((stack.at(1) as EmptyAction).debugId).toBe("main")
+		expect((stack.at(2) as EmptyAction).debugId).toBe("after")
+		expect((stack.at(3) as EmptyAction).debugId).toBe("bottom1")
+		expect((stack.at(4) as EmptyAction).debugId).toBe("bottom2")
 	})
-    test("multiple-aftermain", () => {
-        stack.clear()
-        stack.pushAll(new EmptyAction("bottom4"))
-        stack.pushAll(new EmptyAction("bottom3"))
-        stack.pushAll(new EmptyAction("before1").setToActionPackageBeforeMain(),new EmptyAction("before2").setToActionPackageBeforeMain(),new EmptyAction("main1").setToActionPackageBeforeMain(),new EmptyAction("after1").setToAfterMain())
+	test("multiple-aftermain", () => {
+		stack.clear()
+		stack.pushAll(new EmptyAction("bottom4"))
+		stack.pushAll(new EmptyAction("bottom3"))
+		stack.pushAll(
+			new EmptyAction("before1").setToActionPackageBeforeMain(),
+			new EmptyAction("before2").setToActionPackageBeforeMain(),
+			new EmptyAction("main1").setToActionPackageBeforeMain(),
+			new EmptyAction("after1").setToAfterMain()
+		)
 
-        stack.pushAll(new EmptyAction("bottom2"))
-        stack.pushAll(new EmptyAction("bottom1"))
-        stack.pushAll(new EmptyAction("before3").setToActionPackageBeforeMain(),new EmptyAction("main2").setToActionPackageBeforeMain(),new EmptyAction("after2").setToAfterMain())
+		stack.pushAll(new EmptyAction("bottom2"))
+		stack.pushAll(new EmptyAction("bottom1"))
+		stack.pushAll(
+			new EmptyAction("before3").setToActionPackageBeforeMain(),
+			new EmptyAction("main2").setToActionPackageBeforeMain(),
+			new EmptyAction("after2").setToAfterMain()
+		)
 
 		expect((stack.at(0) as EmptyAction).debugId).toBe("before3")
-        expect((stack.at(1) as EmptyAction).debugId).toBe("main2")
-        expect((stack.at(2) as EmptyAction).debugId).toBe("bottom1")
-        expect((stack.at(3) as EmptyAction).debugId).toBe("bottom2")
-        expect((stack.at(4) as EmptyAction).debugId).toBe("before1")
-        expect((stack.at(5) as EmptyAction).debugId).toBe("before2")
-        expect((stack.at(6) as EmptyAction).debugId).toBe("main1")
-        expect((stack.at(7) as EmptyAction).debugId).toBe("after2")
-        expect((stack.at(8) as EmptyAction).debugId).toBe("after1")
-        expect((stack.at(9) as EmptyAction).debugId).toBe("bottom3")
+		expect((stack.at(1) as EmptyAction).debugId).toBe("main2")
+		expect((stack.at(2) as EmptyAction).debugId).toBe("bottom1")
+		expect((stack.at(3) as EmptyAction).debugId).toBe("bottom2")
+		expect((stack.at(4) as EmptyAction).debugId).toBe("before1")
+		expect((stack.at(5) as EmptyAction).debugId).toBe("before2")
+		expect((stack.at(6) as EmptyAction).debugId).toBe("main1")
+		expect((stack.at(7) as EmptyAction).debugId).toBe("after2")
+		expect((stack.at(8) as EmptyAction).debugId).toBe("after1")
+		expect((stack.at(9) as EmptyAction).debugId).toBe("bottom3")
 	})
 
-    test("stacked-aftermain", () => {
-        stack.clear()
-        stack.pushAll(new EmptyAction("bottom4"))
-        stack.pushAll(new EmptyAction("bottom3"))
-        stack.pushAll(new EmptyAction("before1").setToActionPackageBeforeMain(),new EmptyAction("main1").setToActionPackageBeforeMain(),new EmptyAction("after1-1").setToAfterMain(),new EmptyAction("after1-2").setToAfterMain())
+	test("stacked-aftermain", () => {
+		stack.clear()
+		stack.pushAll(new EmptyAction("bottom4"))
+		stack.pushAll(new EmptyAction("bottom3"))
+		stack.pushAll(
+			new EmptyAction("before1").setToActionPackageBeforeMain(),
+			new EmptyAction("main1").setToActionPackageBeforeMain(),
+			new EmptyAction("after1-1").setToAfterMain(),
+			new EmptyAction("after1-2").setToAfterMain()
+		)
 
-        stack.pushAll(new EmptyAction("bottom2"))
-        stack.pushAll(new EmptyAction("bottom1"))
-        stack.pushAll(new EmptyAction("before3").setToActionPackageBeforeMain(),new EmptyAction("after2-1").setToAfterMain(),new EmptyAction("after2-2").setToAfterMain())
+		stack.pushAll(new EmptyAction("bottom2"))
+		stack.pushAll(new EmptyAction("bottom1"))
+		stack.pushAll(
+			new EmptyAction("before3").setToActionPackageBeforeMain(),
+			new EmptyAction("after2-1").setToAfterMain(),
+			new EmptyAction("after2-2").setToAfterMain()
+		)
 
 		expect((stack.at(0) as EmptyAction).debugId).toBe("before3")
-        expect((stack.at(1) as EmptyAction).debugId).toBe("bottom1")
-        expect((stack.at(2) as EmptyAction).debugId).toBe("bottom2")
-        expect((stack.at(3) as EmptyAction).debugId).toBe("before1")
-        expect((stack.at(4) as EmptyAction).debugId).toBe("main1")
-        
-        expect((stack.at(5) as EmptyAction).debugId).toBe("after2-1")
-        expect((stack.at(6) as EmptyAction).debugId).toBe("after2-2")
-        expect((stack.at(7) as EmptyAction).debugId).toBe("after1-1")
-        expect((stack.at(8) as EmptyAction).debugId).toBe("after1-2")
-        expect((stack.at(9) as EmptyAction).debugId).toBe("bottom3")
-	})
+		expect((stack.at(1) as EmptyAction).debugId).toBe("bottom1")
+		expect((stack.at(2) as EmptyAction).debugId).toBe("bottom2")
+		expect((stack.at(3) as EmptyAction).debugId).toBe("before1")
+		expect((stack.at(4) as EmptyAction).debugId).toBe("main1")
 
+		expect((stack.at(5) as EmptyAction).debugId).toBe("after2-1")
+		expect((stack.at(6) as EmptyAction).debugId).toBe("after2-2")
+		expect((stack.at(7) as EmptyAction).debugId).toBe("after1-1")
+		expect((stack.at(8) as EmptyAction).debugId).toBe("after1-2")
+		expect((stack.at(9) as EmptyAction).debugId).toBe("bottom3")
+	})
 })
 describe("actionstack-build", () => {
 	const game = mockGame()

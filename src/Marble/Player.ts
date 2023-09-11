@@ -4,6 +4,9 @@ import { Action } from "./action/Action"
 import { ActionTrace } from "./action/ActionTrace"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { AbilityAttributes, AbilityValue } from "./Ability/AbilityValues"
+import { ServerRequestModel } from "./Model/ServerRequestModel"
+import { ActionSelector } from "./Agent/ActionSelector/ActionSelector"
+import { PlayerState } from "./Agent/Utility/PlayerState"
 
 class MarblePlayer{
     readonly name:string
@@ -28,7 +31,9 @@ class MarblePlayer{
     private savedDefenceCardAbility:ABILITY_NAME
     private abilityStorage:AbilityStorage
     private statusEffect:Set<string>
-    constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat){
+
+    readonly agent:ActionSelector
+    constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat,agent:ActionSelector){
         this.num=num
         this.turn=0
         this.name=name
@@ -51,8 +56,11 @@ class MarblePlayer{
         this.statusEffect=new Set<string>()
         this.turnsOnIsland=0
         this.totalBet=money
+        this.agent=agent
     }
-    
+    getStateVector(){
+
+    }
     addPendingAction(action:Action){
         this.pendingActions.push(action)
     }
@@ -72,6 +80,7 @@ class MarblePlayer{
     // }
     setTurn(turn:number){
         this.turn=turn
+        this.agent.myturn=turn
     }
     addLand(land:number){
         this.ownedLands.add(land)
@@ -122,7 +131,7 @@ class MarblePlayer{
     useOddEven(){
         this.oddeven-=1
     }
-    getDiceData(){
+    getDiceData():ServerRequestModel.DiceSelection{
         return {
             hasOddEven:this.oddeven > 0,origin:this.pos
         }
@@ -213,6 +222,19 @@ class MarblePlayer{
         this.incrementTotalBet(amount)
      //   console.log("bankrupt")
         this.retired=true
+    }
+
+    updateState(state:PlayerState){
+        if(state.stats.length===0) state.stats=this.stat.serialize()
+
+        state.money=this.money
+        state.angelCard = this.getSavedCard()===ABILITY_NAME.ANGEL_CARD
+        state.shieldCard = this.getSavedCard()===ABILITY_NAME.SHIELD_CARD
+        state.discountCard = this.getSavedCard()===ABILITY_NAME.DISCOUNT_CARD
+        state.canLoan=this.canLoan(0)
+        state.landmarks=this.ownedLandMarks.size
+        state.lands=this.ownedLands.size
+        state.retired=this.retired
     }
 }
 class MarblePlayerStat{

@@ -1,4 +1,5 @@
-import {randomBytes} from "crypto";
+import { randomBytes } from "crypto"
+import { MAP_SIZE } from "./mapconfig"
 /**
  *
  * @param end inclusive
@@ -16,12 +17,12 @@ export function range(end: number, start?: number): number[] {
 export function chooseRandom<T>(list: T[]): T {
 	return list[Math.floor(Math.random() * list.length)]
 }
-export function chooseRandomMultiple<T>(list: T[],count:number): T[] {
-	if(count > list.length) return []
-	return shuffle(list).slice(0,count)
+export function chooseRandomMultiple<T>(list: T[], count: number): T[] {
+	if (count > list.length) return []
+	return shuffle(list).slice(0, count)
 }
-export function percentValueToMultiplier(value:number){
-	return 1+ 0.01*value
+export function percentValueToMultiplier(value: number) {
+	return 1 + 0.01 * value
 }
 export const shuffle = function <T>(array: T[]): T[] {
 	var m = array.length,
@@ -48,11 +49,11 @@ export function randDice() {
 	return Math.ceil(Math.random() * 6)
 }
 /**
- * 
- * @param num 
+ *
+ * @param num
  * @returns [0,num)
  */
-export function randInt(num:number) {
+export function randInt(num: number) {
 	return Math.floor(Math.random() * num)
 }
 export function clamp(num: number, min: number, max: number) {
@@ -62,16 +63,14 @@ export function distance(pos1: number, pos2: number) {
 	return Math.min(Math.abs(pos1 - pos2), MAP_SIZE - Math.abs(pos1 - pos2))
 }
 export function signedShortestDistance(pos1: number, pos2: number) {
-	let forward=forwardDistance(pos1,pos2)
-	let backward=backwardDistance(pos1,pos2)
+	let forward = forwardDistance(pos1, pos2)
+	let backward = backwardDistance(pos1, pos2)
 
-	if(forward < backward) return distance(pos1,pos2)
-	else return -distance(pos1,pos2)
+	if (forward < backward) return distance(pos1, pos2)
+	else return -distance(pos1, pos2)
 }
-export const MAP_SIZE=32
-export const SAME_LINE_TILES:Set<number>[]=[0,8,16,24].map((i)=>new Set(range((i+8),i).map((i)=>i%MAP_SIZE)))
-export const pos2Line=function(pos:number){
-    return Math.floor((pos%MAP_SIZE)/8)
+export const pos2Line = function (pos: number) {
+	return Math.floor((pos % MAP_SIZE) / 8)
 }
 export function forwardDistance(start: number, dest: number): number {
 	return start <= dest ? dest - start : MAP_SIZE - (start - dest)
@@ -94,7 +93,7 @@ export function backwardBy(pos: number, dist: number) {
  * @returns
  */
 export function getTilesBewteen(start: number, dest: number): number[] {
-	if(start===dest) return []
+	if (start === dest) return []
 	if (start < dest) {
 		return range(dest - 1, start + 1)
 	} else {
@@ -125,27 +124,33 @@ export enum PlayerType {
 	AI = "ai",
 	PLAYER = "player",
 	PLAYER_CONNECED = "player_connected",
-	SIM_AI = "sim_ai"
+	SIM_AI = "sim_ai",
+}
+export enum AgentType {
+	RANDOM = "random",
+	RATIONAL_RANDOM = "rational_random",
 }
 export type ProtoPlayer = {
-    type: PlayerType;
-    name: string;
-    team: boolean;
-    champ: number;
-    ready: boolean;
+	type: PlayerType
+	name: string
+	team: boolean
+	champ: number
+	ready: boolean
+	agentType: AgentType
 }
-export function cl(...str:any){
+
+export function cl(...str: any) {
 	//console.log(str)
 }
-export function hexId(){
-	return randomBytes(8).toString("hex");
+export function hexId() {
+	return randomBytes(8).toString("hex")
 }
 /**
  *
  * @param weights
  * @returns index of weight array
  */
- export const chooseWeightedRandom = function (weights: number[]): number {
+export const chooseWeightedRandom = function (weights: number[]): number {
 	for (let i = 1; i < weights.length; ++i) {
 		weights[i] = weights[i] + weights[i - 1]
 	}
@@ -155,4 +160,34 @@ export function hexId(){
 	}
 	return 0
 	//2 3 5    2 5 10
+}
+
+export const hasProp = <T>(varToBeChecked: unknown, propertyToCheckFor: keyof T): varToBeChecked is T =>
+	(varToBeChecked as T)[propertyToCheckFor] !== undefined
+
+export const getCurrentTime = function () {
+	let date_ob = new Date()
+	let date = ("0" + date_ob.getDate()).slice(-2)
+
+	// current month
+	let month = ("0" + (date_ob.getMonth() + 1)).slice(-2)
+	let year = date_ob.getFullYear()
+	// current hours
+	let hours = date_ob.getHours()
+
+	// current minutes
+	let minutes = date_ob.getMinutes()
+
+	// current seconds
+	let seconds = date_ob.getSeconds()
+
+	return year + "_" + month + "_" + date + "_" + hours + "_" + minutes + "_" + seconds
+}
+
+export const roundToNearest=function(num:number,digit?:number){
+	if(!digit) digit=0
+
+	num=num * (10**-digit)
+
+	return Math.round(num) / (10**-digit)
 }

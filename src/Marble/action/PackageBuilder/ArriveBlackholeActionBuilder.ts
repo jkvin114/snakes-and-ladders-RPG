@@ -23,8 +23,7 @@ export class ArriveBlackholeActionBuilder extends ActionPackageBuilder {
 		const escape=ABILITY_NAME.MY_LAND_MOVE_ON_BLACKHOLE
 		let mylands=this.game.map.getTiles(this.invoker,TileFilter.MY_LAND().setExcludeMyPos())
 		
-		pkg.addMain(new SimpleInstantAction(ACTION_TYPE.REMOVE_BLACKHOLE))
-
+		
 		if(this.offences.has(escape) && mylands.length>0){
 			pkg.addAction(new MoveTileSelectionAction(this.invoker.turn,mylands,MOVETYPE.TELEPORT),escape)
 			pkg.addExecuted(escape,this.invoker.turn)
@@ -32,6 +31,7 @@ export class ArriveBlackholeActionBuilder extends ActionPackageBuilder {
 		else{
 			pkg.addMain(new RequestMoveAction(this.invoker.turn, this.white, MOVETYPE.BLACKHOLE))
 		}
+		pkg.addMain(new SimpleInstantAction(ACTION_TYPE.REMOVE_BLACKHOLE))
 		return pkg
 	}
 }

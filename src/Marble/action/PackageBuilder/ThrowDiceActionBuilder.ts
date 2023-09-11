@@ -1,8 +1,9 @@
 import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
+import { ServerEventModel } from "../../Model/ServerEventModel"
 import type { MarblePlayer } from "../../Player"
-import { ServerPayloadInterface } from "../../ServerPayloadInterface"
+import { ISLAND_POS } from "../../mapconfig"
 import { TileFilter } from "../../tile/TileFilter"
 import { forwardBy } from "../../util"
 import { MOVETYPE } from "../Action"
@@ -14,7 +15,7 @@ import { MoveTileSelectionAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
 export class ThrowDiceActionBuilder extends ActionPackageBuilder {
-	private data: ServerPayloadInterface.ThrowDiceData
+	private data: ServerEventModel.ThrowDiceData
 	private distance: number
 	private is3double: boolean
 	private main: RollDiceAction
@@ -23,7 +24,7 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 		game: MarbleGame,
 		trace: ActionTrace,
 		invoker: MarblePlayer,
-		data: ServerPayloadInterface.ThrowDiceData,
+		data: ServerEventModel.ThrowDiceData,
 		distance: number,
 		is3Double: boolean
 	) {
@@ -41,7 +42,7 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 		if (this.is3double) {
 			//뜻초
 			if (!this.tripleDoubleOverrider(pkg)) {
-				pkg.addAfter(new RequestMoveAction(this.invoker.turn, this.game.map.island, MOVETYPE.TELEPORT))
+				pkg.addAfter(new RequestMoveAction(this.invoker.turn, ISLAND_POS, MOVETYPE.TELEPORT))
 			}
 		} else {
 			if(!this.diceOverrider(pkg)){

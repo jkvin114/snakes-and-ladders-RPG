@@ -18,14 +18,14 @@ class BuildingSelector {
 		this.discount = discount
 		this.avaliableMoney = avaliableMoney
 		this.buildsHave = buildsHave
-		this.doms = {
+		this._doms = {
 			buildingSelections: $(".building-selection").toArray(),
 			buildingSelectionChecks: $(".building-selection-check").toArray(),
 			buildingSelectionDescriptions: $(".building-selection-desc").toArray(),
 			buildingSelectionPrices: $(".building-selection-price").toArray(),
 		}
 		this.state = [false, false, false, false, false]
-		Object.freeze(this.doms)
+		Object.freeze(this._doms)
 	}
 	/**
 	 * 창 처음 켜질때만 호출
@@ -37,40 +37,40 @@ class BuildingSelector {
 		let moneyNeeded = 0
 		//보유중인 건물 체크
 		for (let i = 0; i < 4; ++i) {
-			$(this.doms.buildingSelectionPrices[i]).html("")
-			$(this.doms.buildingSelectionDescriptions[i]).hide()
+			$(this._doms.buildingSelectionPrices[i]).html("")
+			$(this._doms.buildingSelectionDescriptions[i]).hide()
 			//보유중
 			if (this.buildsHave.includes(i + 1)) {
-				$(this.doms.buildingSelections[i]).addClass("have")
-				$(this.doms.buildingSelections[i]).off()
-				$(this.doms.buildingSelectionChecks[i]).hide()
+				$(this._doms.buildingSelections[i]).addClass("have")
+				$(this._doms.buildingSelections[i]).off()
+				$(this._doms.buildingSelectionChecks[i]).hide()
 				this.state[i + 1] = false
 				// //깃발
 				// if (i === 0) $(this.doms.buildingSelectionDescriptions[i]).hide()
 			} else {
 				//미보유
-				$(this.doms.buildingSelections[i]).removeClass("have")
+				$(this._doms.buildingSelections[i]).removeClass("have")
 
-				if (i === 0) $(this.doms.buildingSelectionDescriptions[i]).show()
+				if (i === 0) $(this._doms.buildingSelectionDescriptions[i]).show()
 				moneyNeeded += this.builds[i].buildPrice * this.discount
 
 				//더돌아야 건설가능
 				if (this.builds[i].cycleLeft > 0) {
 					this.state[i + 1] = false
-					$(this.doms.buildingSelectionChecks[i]).hide()
-					$(this.doms.buildingSelectionDescriptions[i]).html(
+					$(this._doms.buildingSelectionChecks[i]).hide()
+					$(this._doms.buildingSelectionDescriptions[i]).html(
 						this.builds[i].cycleLeft + "바퀴<br>더 돌아야 <br>건설가능"
 					)
-					$(this.doms.buildingSelectionDescriptions[i]).show()
-					$(this.doms.buildingSelections[i]).off()
+					$(this._doms.buildingSelectionDescriptions[i]).show()
+					$(this._doms.buildingSelections[i]).off()
 				}
 				//돈부족
 				else if (this.avaliableMoney < moneyNeeded) {
 					this.state[i + 1] = false
-					$(this.doms.buildingSelectionChecks[i]).hide()
-					$(this.doms.buildingSelectionDescriptions[i]).html("보유자금<br>부족")
-					$(this.doms.buildingSelectionDescriptions[i]).show()
-					$(this.doms.buildingSelections[i]).off()
+					$(this._doms.buildingSelectionChecks[i]).hide()
+					$(this._doms.buildingSelectionDescriptions[i]).html("보유자금<br>부족")
+					$(this._doms.buildingSelectionDescriptions[i]).show()
+					$(this._doms.buildingSelections[i]).off()
 				}
 			}
 		}
@@ -86,16 +86,16 @@ class BuildingSelector {
 		for (let i = 0; i < this.builds.length; ++i) {
 			let buildType = this.builds[i].type - 1
 
-			$(this.doms.buildingSelectionPrices[buildType]).html(moneyToString(this.builds[i].buildPrice, "무료"))
+			$(this._doms.buildingSelectionPrices[buildType]).html(moneyToString(this.builds[i].buildPrice, "무료"))
 
 			if (this.state[buildType + 1]) {
 				//체크됨
-				$(this.doms.buildingSelectionChecks[buildType]).show()
+				$(this._doms.buildingSelectionChecks[buildType]).show()
 				totalprice += this.builds[i].buildPrice
 				totaltoll += this.builds[i].toll
 			} else {
 				//체크 안됨
-				$(this.doms.buildingSelectionChecks[buildType]).hide()
+				$(this._doms.buildingSelectionChecks[buildType]).hide()
 			}
 		}
 		$(".window-content-text1").html("건설 비용: " + moneyToString(totalprice, "무료"))
@@ -954,6 +954,7 @@ export class GameInterface {
 		$("#dialog").show()
 	}
 	showResult(winner, scores, mul, wintext) {
+		document.onbeforeunload = () => {}
 		$("#resultwindow .window-header-content").html(`
 		${wintext}<a style="font-size: 19px;color: white;font-family: CookierunBlack;">${
 			mul > 1 ? "(보너스 x" + mul + ")" : ""

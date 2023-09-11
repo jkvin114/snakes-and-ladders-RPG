@@ -1,5 +1,6 @@
-import { ServerPayloadInterface } from "../ServerPayloadInterface"
-import { backwardBy, forwardBy, pos2Line, SAME_LINE_TILES } from "../util"
+import { ServerEventModel } from "../Model/ServerEventModel"
+import { SAME_LINE_TILES } from "../mapconfig"
+import { backwardBy, forwardBy, pos2Line } from "../util"
 import { Action, ACTION_TYPE, MOVETYPE } from "./Action"
 import type { ActionTrace } from "./ActionTrace"
 
@@ -42,8 +43,8 @@ export class TeleportAction extends DelayedAction {
 }
 export class RollDiceAction extends DelayedAction {
     static DELAY=1000
-	data:ServerPayloadInterface.ThrowDiceData
-	constructor(turn: number,data:ServerPayloadInterface.ThrowDiceData) {
+	data:ServerEventModel.ThrowDiceData
+	constructor(turn: number,data:ServerEventModel.ThrowDiceData) {
 		super(ACTION_TYPE.ROLLING_DICE,turn,RollDiceAction.DELAY)
 		this.data=data
 	}

@@ -3,6 +3,7 @@ import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
+import { TRAVEL_POS } from "../../mapconfig"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import { TileFilter } from "../../tile/TileFilter"
 import {  Action, MOVETYPE } from "../Action"
@@ -41,7 +42,7 @@ export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
 	}
 	addHealing(pkg: ActionPackage, name: ABILITY_NAME) {
 		pkg.addExecuted(name, this.invoker.turn)
-		pkg.addAction(new RequestMoveAction(this.invoker.turn, 24, MOVETYPE.FORCE_WALK), name)
+		pkg.addAction(new RequestMoveAction(this.invoker.turn, TRAVEL_POS, MOVETYPE.FORCE_WALK), name)
 	}
 
 	healing(pkg: ActionPackage) {

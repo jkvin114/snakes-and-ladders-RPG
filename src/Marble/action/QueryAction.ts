@@ -1,8 +1,9 @@
 import { Action,  ACTION_TYPE, MOVETYPE } from "./Action"
-import { ServerPayloadInterface } from "./../ServerPayloadInterface"
+import { ServerRequestModel } from "../Model/ServerRequestModel"
 import { BUILDING } from "../tile/Tile"
 import { FortuneCard } from "../FortuneCard"
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
+import { BuildType } from "../tile/enum"
 
 
 
@@ -27,19 +28,37 @@ export class DiceChanceAction extends QueryAction {
 }
 
 export class AskBuildAction extends QueryAction {
-    builds:ServerPayloadInterface.buildAvaliability[]
+    builds:ServerRequestModel.buildAvaliability[]
 	pos:number
 	discount:number
 	availableMoney:number
 	buildsHave:BUILDING[]
-	constructor(turn: number,pos:number,avaliableBuilds:ServerPayloadInterface.buildAvaliability[],buildsHave:BUILDING[],discount:number,availableMoney:number) {
+	buildType:BuildType
+	constructor(turn: number,pos:number,avaliableBuilds:ServerRequestModel.buildAvaliability[],buildsHave:BUILDING[],discount:number,availableMoney:number) {
 		super(ACTION_TYPE.CHOOSE_BUILD,turn)
         this.builds=avaliableBuilds
 		this.pos=pos
 		this.discount=discount
 		this.availableMoney=availableMoney
 		this.buildsHave=buildsHave
+		if(avaliableBuilds[0].type===BUILDING.SIGHT)
+			this.buildType=BuildType.SIGHT
+		else if(avaliableBuilds[avaliableBuilds.length-1].type===BUILDING.LANDMARK)
+			this.buildType=BuildType.LANDMARK
+		else this.buildType=BuildType.BUILDINGS
 	}
+
+	serialize():ServerRequestModel.LandBuildSelection{
+		return {
+			pos:this.pos,
+			discount:this.discount,
+			money:this.availableMoney,
+			builds:this.builds,
+			buildsHave:this.buildsHave,
+			type:this.buildType
+		}
+	}
+
 }
 
 export class AskBuyoutAction extends QueryAction {
@@ -51,6 +70,13 @@ export class AskBuyoutAction extends QueryAction {
         this.pos=pos
         this.price=price
         this.originalPrice=originalPrice
+	}
+	serialize():ServerRequestModel.BuyoutSelection {
+		return {
+			pos:this.pos,
+			price:this.price,
+			originalPrice:this.originalPrice
+		}
 	}
 }
 
@@ -75,6 +101,13 @@ export class TileSelectionAction extends QueryAction {
 	setPositions(tiles:number[]){
 		this.tiles=tiles
 		return this
+	}
+	serialize():ServerRequestModel.TileSelection {
+		return {
+			tiles:this.tiles,
+			source:this.name,
+			actionType:this.type
+		}
 	}
 }
 export class BlackholeTileSelectionAction extends TileSelectionAction {
@@ -110,6 +143,13 @@ export class ObtainCardAction extends QueryAction {
 	constructor(turn: number, card:FortuneCard) {
 		super(ACTION_TYPE.OBTAIN_CARD,turn)
         this.card=card
+	}
+	serialize():ServerRequestModel.ObtainCardSelection{
+		return {
+			name:this.card.name,
+			level:this.card.level,
+			type:this.card.type
+		}
 	}
 }
 export class LandSwapAction extends QueryAction{
@@ -193,6 +233,11 @@ export class AskGodHandSpecialAction extends QueryAction{
 		super(ACTION_TYPE.CHOOSE_GODHAND_SPECIAL,turn)
 		this.canLiftTile=canLiftTile
 	}
+	serialize():ServerRequestModel.GodHandSpecialSelection{
+		return {
+			canLiftTile:this.canLiftTile
+		}
+	}
 }
 export class AskIslandAction extends QueryAction{
 	canEscape:boolean
@@ -201,5 +246,11 @@ export class AskIslandAction extends QueryAction{
 		super(ACTION_TYPE.CHOOSE_ISLAND,turn)
 		this.canEscape=canEscape
 		this.escapePrice=escapePrice
+	}
+	serialize():ServerRequestModel.IslandSelection {
+		return{
+			canEscape:this.canEscape,
+			escapePrice:this.escapePrice
+		}
 	}
 }

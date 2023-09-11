@@ -1,10 +1,11 @@
 
 import { PlayerType, ProtoPlayer, shuffle } from "../RPGGame/core/Util"
 import SETTINGS = require("../../res/globalsettings.json")
+import { BaseProtoPlayer } from "./BaseProtoPlayer"
 
 export class PlayerMatchingState{
 	guestnum: number
-	playerlist: ProtoPlayer[]
+	playerlist: BaseProtoPlayer[]
 	teams: boolean[]
 	turnMapping:number[]
 
@@ -14,14 +15,14 @@ export class PlayerMatchingState{
 		this.turnMapping=[0,1,2,3]
 		this.playerlist = this.makePlayerList()
 	}
-	makePlayerList(): ProtoPlayer[] {
+	makePlayerList(): BaseProtoPlayer[] {
 		let p = []
 		for (let i = 0; i < 4; ++i) {
 			p.push(this.createEmptyPlayer())
 		}
 		return p
 	}
-	createEmptyPlayer():ProtoPlayer{
+	createEmptyPlayer():BaseProtoPlayer{
 		return {
 			type: PlayerType.EMPTY,
 			name: "",
@@ -32,7 +33,7 @@ export class PlayerMatchingState{
 		}
 	}
 	getHostingCount(){
-		return this.playerlist.reduce(function (num: number, val: ProtoPlayer) {
+		return this.playerlist.reduce(function (num: number, val: BaseProtoPlayer) {
 			if (val.type === PlayerType.PLAYER) {
 				num += 1
 			}
@@ -43,7 +44,7 @@ export class PlayerMatchingState{
 		this.playerlist[turn].name = name
 		this.playerlist[turn].userClass=userClass
 	}
-	setPlayerList(playerlist: ProtoPlayer[]){
+	setPlayerList(playerlist: BaseProtoPlayer[]){
 		
 
 		for(let i=0;i<playerlist.length;++i){

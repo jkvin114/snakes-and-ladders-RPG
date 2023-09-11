@@ -2,7 +2,12 @@ import type { Socket } from "socket.io";
 // import { R } from "../RoomStorage";
 import { controlMarbleRoom } from "../sockets/Controller";
 import { SocketSession } from "../sockets/SocketSession";
-import { ServerPayloadInterface } from "./ServerPayloadInterface";
+import { ServerRequestModel } from "./Model/ServerRequestModel";
+import { ServerEventModel } from "./Model/ServerEventModel";
+import { MarbleRoom } from "./MarbleRoom";
+import { R } from "../Room/RoomStorage";
+import { io } from "../app";
+import { AgentType, PlayerType } from "./util";
 
 const prefix="marble:user:"
 const userEvents={
@@ -18,6 +23,7 @@ const userEvents={
 	CONFIRM_CARD_USE:`${prefix}confirm_card_use`,
 	SELECT_GODHAND_SPECIAL:`${prefix}select_godhand_special`,
 	SELECT_ISLAND:`${prefix}select_island`,
+	RUN_SIMULATION:prefix+"start_sim"
 }
 function getRoom(socket:Socket){
 	
@@ -25,8 +31,36 @@ function getRoom(socket:Socket){
 
 module.exports=function(socket:Socket){
 
+	socket.on("user:marble_simulation_ready", function (count:number,savelabel:boolean) {
+		
+		let rname = "simulation_marble_" + String(Math.floor(Math.random() * 1000000))
+		SocketSession.setRoomName(socket, rname)
+		socket.join(rname)
 
-    socket.on(userEvents.GAMEREADY, function (itemsetting:ServerPayloadInterface.ItemSetting) {
+		let room = new MarbleRoom(rname)
+		.registerSimulationClientInterface(function(roomname:string,type:string,...args:unknown[]){
+			io.to(roomname).emit(type,...args)
+		}).registerResetCallback(() => {
+			R.remove(rname)
+		})
+
+		R.setMarbleRoom(rname, room)
+		room.user_startSimulation({
+			count:count,
+			saveLabelCSV:savelabel,
+			map:0,
+			players:[
+				{
+					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.RATIONAL_RANDOM}
+				},
+				{
+					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.RATIONAL_RANDOM}
+				}
+			]
+		})
+	})
+
+    socket.on(userEvents.GAMEREADY, function (itemsetting:ServerEventModel.ItemSetting) {
 
 		controlMarbleRoom(socket,(room,rname,turn)=>{
 			room.user_gameReady(rname,itemsetting)

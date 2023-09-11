@@ -1,23 +1,65 @@
-import {  ACTION_TYPE,  MOVETYPE } from "./action/Action"
+import { ACTION_TYPE, MOVETYPE } from "./action/Action"
 import { ActionTrace } from "./action/ActionTrace"
 import type { MarbleGame } from "./Game"
 import type { MarbleGameMap } from "./GameMap"
-import {
-	PayPercentMoneyAction,
-	TileAttackAction,
-} from "./action/InstantAction"
+import { PayPercentMoneyAction, TileAttackAction } from "./action/InstantAction"
 import { MarblePlayer, MarblePlayerStat } from "./Player"
 import { AskLoanAction } from "./action/QueryAction"
 import { BuildableTile } from "./tile/BuildableTile"
-import { chooseRandom, chooseRandomMultiple, distance, getTilesBewteen, PlayerType, ProtoPlayer, randInt, range, shuffle } from "./util"
+import {
+	AgentType,
+	chooseRandom,
+	chooseRandomMultiple,
+	distance,
+	getTilesBewteen,
+	PlayerType,
+	ProtoPlayer,
+	randInt,
+	range,
+	shuffle,
+} from "./util"
 import { CARD_NAME } from "./FortuneCard"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { AbilityAttributes } from "./Ability/AbilityValues"
 import { ITEM_REGISTRY } from "./ItemRegistry"
-import { ServerPayloadInterface } from "./ServerPayloadInterface"
+import { ServerRequestModel } from "./Model/ServerRequestModel"
 import { randomBoolean } from "../RPGGame/core/Util"
-import { ArriveEmptyLandActionBuilder, ArriveEnemyLandActionBuilder, ArriveMyLandActionBuilder, AttemptAttackActionBuilder, BuyoutActionBuilder, ClaimBuyoutActionBuilder, ClaimTollActionBuilder, MeetPlayerActionBuilder, MonopolyChanceActionBuilder, PassPlayerActionBuilder } from "./action/PackageBuilder"
-const PLAYER_NAMES=["데니스","슬기","에르난데스","카트리나","스티브","야나기","최배달","밍밍","산티노","휘트니","아리안","콕스","아라","아폴론","타란튤라","헤나"]
+import {
+	ArriveEmptyLandActionBuilder,
+	ArriveEnemyLandActionBuilder,
+	ArriveMyLandActionBuilder,
+	AttemptAttackActionBuilder,
+	BuyoutActionBuilder,
+	ClaimBuyoutActionBuilder,
+	ClaimTollActionBuilder,
+	MeetPlayerActionBuilder,
+	MonopolyChanceActionBuilder,
+	PassPlayerActionBuilder,
+} from "./action/PackageBuilder"
+import { ServerEventModel } from "./Model/ServerEventModel"
+import { ActionSelector } from "./Agent/ActionSelector/ActionSelector"
+import { PlayerState } from "./Agent/Utility/PlayerState"
+import { RationalRandomAgent } from "./Agent/ActionSelector/RationalRandomActionSelector"
+import { RandomAgent } from "./Agent/ActionSelector/RandomAgent"
+import { BaseProtoPlayer } from "../Room/BaseProtoPlayer"
+const PLAYER_NAMES = [
+	"데니스",
+	"슬기",
+	"에르난데스",
+	"카트리나",
+	"스티브",
+	"야나기",
+	"최배달",
+	"밍밍",
+	"산티노",
+	"휘트니",
+	"아리안",
+	"콕스",
+	"아라",
+	"아폴론",
+	"타란튤라",
+	"헤나",
+]
 
 class PlayerMediator {
 	map: MarbleGameMap
@@ -27,37 +69,47 @@ class PlayerMediator {
 	retiredPlayers: Set<number>
 	playerCount: number
 	aiCount: number
-	private readonly names:string[]
+	private readonly names: string[]
 
-	constructor(game: MarbleGame, map: MarbleGameMap, playerlist: ProtoPlayer[], startmoney: number) {
+	constructor(game: MarbleGame, map: MarbleGameMap, playerlist: BaseProtoPlayer[], startmoney: number) {
 		this.game = game
 		this.map = map
 		this.playerCount = 0
 		this.aiCount = 0
 		this.players = []
 		this.retiredPlayers = new Set<number>()
-		this.names=shuffle(PLAYER_NAMES)
+		this.names = shuffle(PLAYER_NAMES)
 		for (let i = 0; i < playerlist.length; ++i) {
 			const p = playerlist[i]
 			let champ = p.champ === -1 ? randInt(9) : p.champ
 
-			let stats=[60, 60, 60,100 , 60]
+			let stats = [60, 60, 60, 100, 60]
+			
+			
 
 			if (p.type === PlayerType.AI) {
+
+				let agent
+				let playerstate=game.state.CreatePlayer()
+				if (p.data && p.data.agentType === AgentType.RANDOM) {
+					agent = new RandomAgent(playerstate, this.game)
+				} else {
+					agent = new RationalRandomAgent(playerstate, this.game)
+				}
+
 				this.players.push(
-					new MarblePlayer(i, this.names[i], champ, p.team, true, startmoney,
-						 new MarblePlayerStat(stats))
+					new MarblePlayer(i, this.names[i], champ, p.team, true, startmoney, new MarblePlayerStat(stats), agent)
 				)
 				this.aiCount += 1
 			} else if (p.type === PlayerType.PLAYER_CONNECED) {
+				let agent = new RationalRandomAgent(game.state.CreatePlayer(), this.game)
+
 				this.players.push(
-					new MarblePlayer(i, this.names[i], champ, p.team, false, startmoney,
-						 new MarblePlayerStat(stats))
+					new MarblePlayer(i, this.names[i], champ, p.team, false, startmoney, new MarblePlayerStat(stats), agent)
 				)
 				this.playerCount += 1
 			}
 		}
-		
 
 		this.playerTurns = [0, 1, 2, 3]
 	}
@@ -71,7 +123,7 @@ class PlayerMediator {
 				money: player.money,
 				card: player.getSavedCard(),
 				abilities: player.getAbilityString(),
-				stats:player.stat.serialize()
+				stats: player.stat.serialize(),
 			}
 		})
 	}
@@ -82,29 +134,27 @@ class PlayerMediator {
 			p.cycleLevel = this.game.map.cycleStart
 		})
 	}
-	registerAbilities(itemSetting: ServerPayloadInterface.ItemSetting) {
-		const selectedItems=itemSetting.items.filter((item)=>item.selected || item.locked)
-		let meanItemCost=selectedItems.reduce((total,item)=>total+=ITEM_REGISTRY.get(item.code)[2],0) 
-		/ selectedItems.length / 10
-		if(selectedItems.length===0) meanItemCost=0
-		const baseStats=[
+	registerAbilities(itemSetting: ServerEventModel.ItemSetting) {
+		const selectedItems = itemSetting.items.filter((item) => item.selected || item.locked)
+		let meanItemCost =
+			selectedItems.reduce((total, item) => (total += ITEM_REGISTRY.get(item.code)[2]), 0) / selectedItems.length / 10
+		if (selectedItems.length === 0) meanItemCost = 0
+		const baseStats = [
 			35 + meanItemCost * 90,
 			35 + meanItemCost * 90,
 			35 + meanItemCost * 90,
 			75 + meanItemCost * 90,
-			35 + meanItemCost * 90
+			35 + meanItemCost * 90,
 		]
 		this.players.forEach((p) => {
 			console.log(meanItemCost)
-			if(meanItemCost > 0.4)
-				p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
-			else if(meanItemCost > 0.2){
-				let rand=Math.random()
-				if(rand<0.3)
-					p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
-				else if(rand < 0.7) p.saveCardAbility(ABILITY_NAME.DISCOUNT_CARD)
+			if (meanItemCost > 0.4) p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
+			else if (meanItemCost > 0.2) {
+				let rand = Math.random()
+				if (rand < 0.3) p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
+				else if (rand < 0.7) p.saveCardAbility(ABILITY_NAME.DISCOUNT_CARD)
 			}
-			
+
 			let abs: [ABILITY_NAME, AbilityAttributes][] = []
 			let randitems: number[] = itemSetting.items.filter((item) => item.selected).map((item) => item.code)
 
@@ -118,7 +168,7 @@ class PlayerMediator {
 				abs.push([item[0], item[1]])
 			}
 			p.registerPermanentAbilities(abs)
-			p.stat=new MarblePlayerStat(baseStats.map((val)=> Math.floor(val + randInt(6) + randInt(6) - 6)  ))
+			p.stat = new MarblePlayerStat(baseStats.map((val) => Math.floor(val + randInt(6) + randInt(6) - 6)))
 		})
 	}
 	areEnemy(p1: number, p2: number) {
@@ -151,6 +201,9 @@ class PlayerMediator {
 	getPlayersAt(positions: number[]): MarblePlayer[] {
 		let set = new Set<number>(positions)
 		return this.players.filter((p) => set.has(p.pos) && !p.retired)
+	}
+	getPlayerAgent(turn: number): ActionSelector {
+		return this.pOfTurn(turn).agent
 	}
 	/**
 	 * 두 지점 사이의 플레이어 반환(위치 순서대로)
@@ -336,10 +389,10 @@ class PlayerMediator {
 		}
 	}
 	/**
-	 * 
+	 *
 	 * @param amount 대출받은 돈
-	 * @param payerturn 
-	 * @param receiverturn 
+	 * @param payerturn
+	 * @param receiverturn
 	 */
 	onLoanConfirm(amount: number, payerturn: number, receiverturn: number) {
 		let payer = this.pOfTurn(payerturn)
@@ -358,7 +411,7 @@ class PlayerMediator {
 	playerBankrupt(playerTurn: number, receiverturn: number, amount: number) {
 		let payer = this.pOfTurn(playerTurn)
 		let receiver = this.pOfTurn(receiverturn)
-		this.game.incrementTotalBet(amount-payer.money)
+		this.game.incrementTotalBet(amount - payer.money)
 		this.payMoneyTo(payer, receiver, amount, "toll")
 		payer.bankrupt(amount)
 		this.playerRetire(payer.turn)
@@ -428,18 +481,43 @@ class PlayerMediator {
 		let source = new ActionTrace(ACTION_TYPE.EMPTY)
 		this.game.pushActions(new MonopolyChanceActionBuilder(this.game, source, player, spots).build())
 	}
-	getPlayerBets(winner:number,mul:number):number[]{
-		let bets=[0,0,0,0]
-		let losertotalbet=0
-		for(const p of this.players){
-			if(p.turn!==winner){
-				bets[p.turn]=-(p.totalBet * mul+this.game.totalBet)
-				losertotalbet+=p.totalBet
+	getPlayerTotalAsset(turn: number): number {
+		let totalasset = this.pOfTurn(turn).money
+		let lands = this.pOfTurn(turn).ownedLands
+		for (const land of lands) {
+			const tile = this.map.tileAt(land)
+			if (tile instanceof BuildableTile) totalasset += tile.getBuildPrice()
+		}
+		return totalasset
+	}
+	getWinnerOnTurnEnd(): number {
+		let winner = 0
+		let maxAsset = -Infinity
+		for (const p of this.players) {
+			if (p.retired) continue
+			if (maxAsset < this.getPlayerTotalAsset(p.turn)) winner = p.turn
+		}
+		return winner
+	}
+
+	getPlayerBets(winner: number, mul: number): number[] {
+		let bets = [0, 0, 0, 0]
+		let losertotalbet = 0
+		for (const p of this.players) {
+			if (p.turn !== winner) {
+				bets[p.turn] = -(p.totalBet * mul + this.game.totalBet)
+				losertotalbet += p.totalBet
 			}
 		}
-		bets[winner]=losertotalbet * mul + this.game.totalBet
+		bets[winner] = losertotalbet * mul + this.game.totalBet
 
 		return bets
+	}
+	updatePlayerStates(states:PlayerState[]){
+		console.log(states)
+		for(let i=0;i<states.length;++i){
+			const player=this.pOfTurn(i).updateState(states[i])
+		}
 	}
 }
 export { PlayerMediator }

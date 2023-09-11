@@ -2,8 +2,16 @@ import { GameEventEmitter } from "../sockets/GameEventEmitter";
 import { Room } from "../Room/room";
 import { MarbleGameEventObserver } from "./MarbleGameEventObserver";
 import { MarbleGameLoop } from "./MarbleGameLoop";
-import { ServerPayloadInterface } from "./ServerPayloadInterface";
+import { ServerEventModel } from "./Model/ServerEventModel";
+import { Worker, isMainThread } from "worker_threads"
+import { SimulationSetting } from "./Simulation/SimulationSetting";
+import { hasProp } from "./util";
 
+const path = require("path")
+
+function workerTs(data: unknown) {
+	return new Worker(path.resolve(__dirname, `./../WorkerThread.js`), { workerData: data })
+}
 class MarbleRoom extends Room{
     get getMapId(): number {
         return this.map
@@ -13,32 +21,37 @@ class MarbleRoom extends Room{
 		return ""
     }
     gameloop:MarbleGameLoop
-	clientInterface:MarbleGameEventObserver
+	eventObserver:MarbleGameEventObserver
 	type: string
+	simulationRunning:boolean
 
     constructor(name:string){
         super(name)
 		this.type="marble"
         this.gameloop
-		this.clientInterface=new MarbleGameEventObserver(name)
+		this.eventObserver=new MarbleGameEventObserver(name)
+		this.simulationRunning=false
     }
 	registerClientInterface(callback:GameEventEmitter){
-		this.clientInterface.registerCallback(callback)
+		this.eventObserver.registerCallback(callback)
 		return this
 	}
 	registerSimulationClientInterface(callback:GameEventEmitter){
-		console.error("Method not implemented.");
-
+		this.eventObserver.registerSimulationCallback(callback)
 		return this
 	}
-    user_gameReady(roomName: string,itemSetting:ServerPayloadInterface.ItemSetting) {
+    user_gameReady(roomName: string,itemSetting:ServerEventModel.ItemSetting) {
 		this.onBeforeGameStart()
 		// this.instant = false
 
-		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerMatchingState.playerlist,itemSetting)
-		this.gameloop.setClientInterface(this.clientInterface)
+		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerMatchingState.playerlist)
+		this.gameloop.registerItems(itemSetting)
+		this.gameloop.setClientInterface(this.eventObserver)
 		this.gameloop.setOnReset(()=>this.reset())
 	}
+
+
+
 	user_requestSetting(){
 		return this.gameloop.game.getInitialSetting()
 	}
@@ -60,6 +73,49 @@ class MarbleRoom extends Room{
 	onClientEvent(event:string,invoker:number,...args:any[])
 	{	
 		this.gameloop.onClientEvent(event,invoker,args)
+	}
+	user_startSimulation(setting:SimulationSetting){
+		if (!isMainThread || this.simulationRunning) return
+		
+		this.simulationRunning=true
+
+		this.doInstantSimulation(setting)
+			.then((stat: any) => {
+				this.onSimulationOver(true, stat)
+			})
+			.catch((e) => {
+				console.error(e)
+				this.onSimulationOver(false, e.toString())
+			})
+	}
+	onSimulationOver(success:boolean,data:any){
+		this.eventObserver.simulationOver(success,data)
+		this.simulationRunning=false
+		this.reset()
+	}
+	doInstantSimulation(setting:SimulationSetting){
+		return new Promise((resolve, reject) => {
+			const worker = workerTs({
+				setting: setting,
+				roomName:this.name,
+				path: "./Marble/Simulation/runner.ts"
+			})
+			worker.on("message", (data: unknown) => {
+			//	console.log(data)
+				if (hasProp(data, "type") && hasProp(data, "value")) {
+					if (data.type === "progress") {
+						this.eventObserver.simulationProgress(data.value)
+					} else if (data.type === "end") {
+						resolve(data.value)
+					} else reject(data.value)
+				} else reject("invalid response from child thread")
+			})
+			worker.on("error", reject)
+			worker.on("exit", (code: number) => {
+				if (code !== 0) worker.terminate()
+				//reject(new Error(`Simulation worker stopped with exit code ${code}`));
+			})
+		})
 	}
     onGameover(){
 		this.reset()

@@ -3,7 +3,7 @@ import { openConnection } from "./socket.js"
 import { GameInterface } from "./interface.js"
 import { GestureController } from "../../src/game/gesturecontroller.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
-export const SOLOPLAY = true
+export const SOLOPLAY = false
 
 const DICE_GAGE_TOL = [9, 18, 27, 38, 48, 56, 66, 76, 84, 92, 100]
 const DICE_GAGE_LENGTH_PX = 300

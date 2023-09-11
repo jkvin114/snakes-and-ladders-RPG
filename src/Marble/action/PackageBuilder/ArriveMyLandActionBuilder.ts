@@ -3,6 +3,7 @@ import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
+import { TRAVEL_POS } from "../../mapconfig"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import { TileFilter } from "../../tile/TileFilter"
 import { Action,  ACTION_TYPE,  MOVETYPE } from "../Action"
@@ -124,8 +125,8 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 				)
 			}
 
-			if (bosscall != null && this.game.mediator.getPlayersAt([this.game.map.travel]).length > 0) {
-				let targets = this.game.mediator.getPlayersAt([this.game.map.travel])
+			if (bosscall != null && this.game.mediator.getPlayersAt([TRAVEL_POS]).length > 0) {
+				let targets = this.game.mediator.getPlayersAt([TRAVEL_POS])
 				pkg.addExecuted(call, this.invoker.turn)
 				for (const p of targets) {
 					pkg.addAction(new RequestMoveAction(p.turn, this.invoker.pos, MOVETYPE.TELEPORT), call)
@@ -156,7 +157,7 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 		if (this.teleportMoveAbilities(pkg)) {
 		} else if (this.offences.has(ehealing)) {
 			pkg.addExecuted(ehealing, this.invoker.turn)
-			pkg.addAction(new RequestMoveAction(this.invoker.turn, 24, MOVETYPE.FORCE_WALK), ehealing)
+			pkg.addAction(new RequestMoveAction(this.invoker.turn, TRAVEL_POS, MOVETYPE.FORCE_WALK), ehealing)
 		}
 
 		return pkg.addMain(this.main)

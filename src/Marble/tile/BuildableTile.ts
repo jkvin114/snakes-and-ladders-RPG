@@ -1,5 +1,5 @@
 import { CARD_NAME } from "../FortuneCard"
-import { ServerPayloadInterface } from "../ServerPayloadInterface"
+import { ServerRequestModel } from "../Model/ServerRequestModel"
 import { BUILDING, Tile, TILE_TYPE } from "./Tile"
 
 class TilePriceMultiplier{
@@ -84,7 +84,7 @@ abstract class BuildableTile extends Tile{
     abstract removeOneHouse():BUILDING
     abstract getBuildables():BUILDING[]
     abstract getCurrentBuilds():BUILDING[]
-    abstract getBuildingAvaliability(cycleLevel:number):ServerPayloadInterface.buildAvaliability[]
+    abstract getBuildingAvaliability(cycleLevel:number):ServerRequestModel.buildAvaliability[]
     abstract getMinimumBuildPrice():number
     abstract getNextBuild():BUILDING
     abstract build(b:BUILDING[]):number

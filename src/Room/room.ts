@@ -4,6 +4,7 @@ import { GameEventEmitter } from "../sockets/GameEventEmitter";
 import {PlayerMatchingState} from "./PlayerMatchingState"
 import { encrypt } from "../router/board/helpers";
 import { SocketSession } from "../sockets/SocketSession";
+import { BaseProtoPlayer } from "./BaseProtoPlayer";
 abstract class Room {
 	//simulation_total_count: number
 	// simulation_count: number
@@ -160,7 +161,7 @@ abstract class Room {
 		this.playerMatchingState.setHostNickname(name,turn,userClass)
 	}
 	
-	user_updatePlayerList(playerlist: ProtoPlayer[]) {
+	user_updatePlayerList(playerlist: BaseProtoPlayer[]) {
 		
 		
 		this.playerMatchingState.setPlayerList(playerlist)

@@ -1,6 +1,7 @@
 import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
-import { ServerPayloadInterface } from "./ServerPayloadInterface"
+import { ServerEventModel } from "./Model/ServerEventModel"
+import { ServerRequestModel } from "./Model/ServerRequestModel"
 import { BUILDING } from "./tile/Tile"
 const prefix="server:"
 const serverEvents={
@@ -42,30 +43,38 @@ const serverEvents={
     ASK_ISLAND:prefix+"ask_island",
     REMOVE_BLACKHOLE:prefix+"remove_blackhole",
     MESSAGE:prefix+"message",
-    INDICATE_DEFENCE:prefix+"indicate_defence"
+    INDICATE_DEFENCE:prefix+"indicate_defence",
+    SIM_PROGRESS:prefix+"sim_progress",
+    SIM_OVER:prefix+"sim_over"
 
 }
 
 export class MarbleGameEventObserver {
 	private eventEmitter: GameEventEmitter
-    // private simulationEventEmitter:GameEventEmitter
+    private simulationEventEmitter:GameEventEmitter
 	private rname: string
 	constructor(rname: string) {
 		this.rname = rname
 		this.eventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}
-        // this.simulationEventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}
+        this.simulationEventEmitter = (roomname: string, type: string, ...args: unknown[]) => {}
 	}
     registerCallback(callback: GameEventEmitter) {
         //    console.log("registerCallback")
             this.eventEmitter = callback
     }
+    registerSimulationCallback(callback: GameEventEmitter){
+        this.simulationEventEmitter=callback
+    }
+    simulationProgress(p:number){
+        this.simulationEventEmitter(this.rname, serverEvents.SIM_PROGRESS, p)
+    }
+    simulationOver(status:boolean,data:any){
+        this.simulationEventEmitter(this.rname, serverEvents.SIM_OVER, status,data)
+    }
     turnStart(turn:number){
         this.eventEmitter(this.rname, serverEvents.NEXTTURN, turn)
     }
-    showDiceBtn(player:number,data:any){
-        this.eventEmitter(this.rname, serverEvents.SHOW_DICE, player,data)
-    }
-    throwDice(player:number,data:ServerPayloadInterface.ThrowDiceData){
+    throwDice(player:number,data:ServerEventModel.ThrowDiceData){
         this.eventEmitter(this.rname,serverEvents.THROW_DICE, player,data)
     }
     walkMovePlayer(player:number,from:number,distance:number,movetype:string){
@@ -74,8 +83,17 @@ export class MarbleGameEventObserver {
     teleportPlayer(player:number,pos:number,movetype:string){
         this.eventEmitter(this.rname, serverEvents.TELEPORT, player,pos,movetype)
     }
-    chooseBuild(pos:number,player:number,builds:ServerPayloadInterface.buildAvaliability[],buildsHave:BUILDING[],discount:number,money:number){
-        this.eventEmitter(this.rname, serverEvents.CHOOSE_BUILD,player,pos,builds,buildsHave,discount,money)
+
+    ///===============================================
+    //query requests
+    
+    showDiceBtn(player:number,data:ServerRequestModel.DiceSelection){
+        this.eventEmitter(this.rname, serverEvents.SHOW_DICE, player,data)
+    }
+    
+    chooseBuild(player:number,req:ServerRequestModel.LandBuildSelection){
+       // pos:number,player:number,builds:ServerRequestModel.buildAvaliability[],buildsHave:BUILDING[],discount:number,money:number){
+        this.eventEmitter(this.rname, serverEvents.CHOOSE_BUILD,req.pos,player,req.builds,req.buildsHave,req.discount,req.money)
     }
     askLoan(player:number,amount:number){
         this.eventEmitter(this.rname, serverEvents.ASK_LOAN, player,amount)
@@ -98,6 +116,8 @@ export class MarbleGameEventObserver {
     askIsland(turn:number,canEscape:boolean,escapePrice:number){
         this.eventEmitter(this.rname,serverEvents.ASK_ISLAND,turn,canEscape,escapePrice)
     }
+
+    //================================
     setLandOwner(pos:number,player:number){
         this.eventEmitter(this.rname, serverEvents.SET_LANDOWNER, pos,player)
     }
@@ -166,7 +186,7 @@ export class MarbleGameEventObserver {
     setStatusEffect(pos:number,name:string,dur:number){
         this.eventEmitter(this.rname, serverEvents.TILE_STATUS_EFFECT, pos,name,dur)
     }
-    setTileState(change:ServerPayloadInterface.tileStateChange){
+    setTileState(change:ServerEventModel.tileStateChange){
         this.eventEmitter(this.rname, serverEvents.TILE_STATE_UPDATE, change)
     }
     sendMessage(player:number,message:string){

@@ -1,6 +1,9 @@
 import { MOVETYPE } from "./action/Action"
 import { ActionTrace } from "./action/ActionTrace"
+import GameState from "./Agent/Utility/GameState"
+import { PlayerState } from "./Agent/Utility/PlayerState"
 import type { MarbleGame } from "./Game"
+import { MAP_SIZE, SAME_LINE_TILES } from "./mapconfig"
 import { MarbleGameEventObserver } from "./MarbleGameEventObserver"
 import type { MarblePlayer } from "./Player"
 import { BuildableTile } from "./tile/BuildableTile"
@@ -8,7 +11,7 @@ import { LandTile } from "./tile/LandTile"
 import { SightTile } from "./tile/SightTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
 import { TileFilter } from "./tile/TileFilter"
-import { arrayOf, cl, countIterator, countList, distance, MAP_SIZE, pos2Line, range, SAME_LINE_TILES } from "./util"
+import { arrayOf, cl, countIterator, countList, distance,  pos2Line, range } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/marble/godhand_map.json")
 const WORLD_MAP = require("./../../res/marble/world_map.json")
@@ -166,6 +169,26 @@ class MarbleGameMap{
     }
     getSpecialPositions(){
         return [...this.specials].map((tile)=>tile.position)
+    }
+
+
+    getTotalBuildPrice(lands:Iterable<number>){
+        let total=0
+        for(const pos of lands){
+            let tile=this.buildableTileAt(pos)
+            if(tile)
+                total+=tile.getBuildPrice()
+        }
+        return total
+    }
+    getTotalToll(lands:Iterable<number>){
+        let total=0
+        for(const pos of lands){
+            let tile=this.buildableTileAt(pos)
+            if(tile)
+                total+=tile.getToll()
+        }
+        return total
     }
     onTilePass(game:MarbleGame,tile:number,player:MarblePlayer,source:ActionTrace,type:MOVETYPE,isArrived:boolean):boolean{
         if(this.blockingTiles.has(tile) && (type===MOVETYPE.WALK || type===MOVETYPE.TRAVEL)){
@@ -531,6 +554,31 @@ class MarbleGameMap{
         }
         
         return {type:MONOPOLY.NONE,pos:[]}
+    }
+
+    updatePlayerStates(states:PlayerState[],players:MarblePlayer[]){
+        for(let i=0;i<states.length;++i){
+            this.updatePlayerState(states[i],players[i])
+        }
+    }
+    private updatePlayerState(state:PlayerState,player:MarblePlayer){
+        state.totalAsset=player.money+this.getTotalBuildPrice(player.ownedLands)
+        state.totalToll=this.getTotalToll(player.ownedLands)
+        state.monopolyState.colorMonopolies=countIterator(this.colorMonopolys.values(),(m:number)=>m===player.turn)
+    }
+    updateTileState(state:GameState){
+        if(state.tiles.length===0)
+        {
+            for(let i=0;i<this.buildableTiles.size;++i)
+                state.CreateTile()
+        }
+        let i=0
+        for(const tile of this.tiles){
+            if( tile instanceof BuildableTile){
+                state.setTile(i,tile)
+                i++
+            }
+        }
     }
     toString(){
         for(const t of this.tiles){

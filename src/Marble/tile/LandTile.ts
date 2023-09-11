@@ -1,4 +1,4 @@
-import { ServerPayloadInterface } from "../ServerPayloadInterface"
+import { ServerRequestModel } from "../Model/ServerRequestModel"
 import { BuildableTile } from "./BuildableTile"
 import { BUILDING, TILE_TYPE } from "./Tile"
 
@@ -104,6 +104,7 @@ class LandTile extends BuildableTile{
     readonly color:number
     readonly baseToll:LandToll
     readonly buildPrice:LandBuildPrice
+    static readonly BUILDINGS=[BUILDING.LAND,BUILDING.VILLA,BUILDING.BUILDING,BUILDING.HOTEL,BUILDING.LANDMARK]
 
     constructor(position:number,type: TILE_TYPE, name: string,color:number,baseToll:number[],buildPrice:number[]){
         super(position,type, name)
@@ -223,31 +224,32 @@ class LandTile extends BuildableTile{
      * @param cycleLevel 
      * @returns 
      */
-    getBuildingAvaliability(cycleLevel:number):ServerPayloadInterface.buildAvaliability[]{
-        let list:ServerPayloadInterface.buildAvaliability[]=[]
+    getBuildingAvaliability(cycleLevel:number):ServerRequestModel.buildAvaliability[]{
+        let list:ServerRequestModel.buildAvaliability[]=[]
         let buildables=this.getBuildables()
-        for(let i=1;i<6;++i){
 
-            if(!buildables.includes(i)) {
-                if(i===BUILDING.LANDMARK) continue//랜드마크 건설 불가시 배열에 안넣음
+        for(const b of LandTile.BUILDINGS){
+
+            if(!buildables.includes(b)) {
+                if(b===BUILDING.LANDMARK) continue//랜드마크 건설 불가시 배열에 안넣음
                 
                 list.push({
                     cycleLeft:0,toll:0,
-                    buildPrice:0,type:i,have:true
+                    buildPrice:0,type:b,have:true
                 })
                 continue
             }
 
             let cycleLeft=0
-            if(i===BUILDING.BUILDING){
+            if(b===BUILDING.BUILDING){
                 cycleLeft=Math.max(0,2-cycleLevel)
             }
-            if(i===BUILDING.HOTEL){
+            if(b===BUILDING.HOTEL){
                 cycleLeft=Math.max(0,3-cycleLevel)
             }
             list.push({
-                cycleLeft:cycleLeft,toll:this.baseToll.getSingle(i),
-                buildPrice:this.buildPrice.getSingle(i),type:i,have:false
+                cycleLeft:cycleLeft,toll:this.baseToll.getSingle(b),
+                buildPrice:this.buildPrice.getSingle(b),type:b,have:false
             })
         }
 
