@@ -9,8 +9,10 @@ import { BUILDING } from "../tile/Tile"
  */
  export abstract class InstantAction extends Action {
 	abstract execute(game:MarbleGame):void
+	category: string
 	constructor(type:ACTION_TYPE, turn: number) {
 		super(type,turn)
+		this.category="instant"
 	}
 }
 export class GameOverAction extends InstantAction{

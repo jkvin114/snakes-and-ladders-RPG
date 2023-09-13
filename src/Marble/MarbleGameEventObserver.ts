@@ -45,7 +45,8 @@ const serverEvents={
     MESSAGE:prefix+"message",
     INDICATE_DEFENCE:prefix+"indicate_defence",
     SIM_PROGRESS:prefix+"sim_progress",
-    SIM_OVER:prefix+"sim_over"
+    SIM_OVER:prefix+"sim_over",
+    DEBUG_STACK:prefix+"debug_stack"
 
 }
 
@@ -206,5 +207,11 @@ export class MarbleGameEventObserver {
     gameoverWithBankrupt(player:number,scores:number[],mul:number)
     {
         this.eventEmitter(this.rname, serverEvents.GAMEOVER_BANKRUPT, player,scores,mul)
+    }
+
+    //debug==================================
+
+    debugActionStack(stack:any){
+        this.eventEmitter(this.rname,serverEvents.DEBUG_STACK,stack)
     }
 }

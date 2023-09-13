@@ -113,6 +113,7 @@ class MarbleGame {
 	over: boolean
 	totalBet: number
 	state:GameState
+	private readonly debug:boolean
 	private saveStateVector:boolean
 	private stateVectors:number[][]
 	readonly rname: string
@@ -135,6 +136,8 @@ class MarbleGame {
 		this.totalturn=0
 		this.saveStateVector=false
 		this.stateVectors=[]
+
+		this.debug=true
 	}
 	test() {}
 	setClientInterface(ci: MarbleGameEventObserver) {
@@ -148,6 +151,8 @@ class MarbleGame {
 		return this.mediator.pOfTurn(this.thisturn)
 	}
 	nextAction() {
+		this.eventEmitter.debugActionStack(this.actionStack.serialize())
+		
 		let action = this.actionStack.pop()
 		if (action?.indicateAbilityOnPop && action.valid) {
 			this.executeAbility([action.getReservedAbility()])

@@ -103,7 +103,8 @@ export const ACTION_LIST = [
 	"CHOOSE_ISLAND",
 	"CHOOSE_BUYOUT_POSITION",
 	"CHANGE_LAND_OWNER",
-	"MESSAGE","INDICATE_DEFENCE",
+	"MESSAGE",
+	"INDICATE_DEFENCE",
 	"REMOVE_BLACKHOLE"
 ]
 
@@ -128,6 +129,7 @@ export abstract class Action {
 	static readonly PRIORITY_IMMEDIATE=1
 	static readonly PRIORITY_ACTIONPACKAGE_BEFORE_MAIN=2
 	static readonly PRIORITY_ACTIONPACKAGE_AFTER_MAIN=3
+	abstract category:string
 	constructor(type: ACTION_TYPE, turn: number) {
 		this.type = type
 		this.source = new ActionTrace(this.type)
@@ -218,9 +220,11 @@ export abstract class Action {
 
 export class EmptyAction extends Action {
 	debugId:string //testing purpose only
+	category: string
 	constructor(debugId?:string) {
 		super(ACTION_TYPE.EMPTY, -1)
 		this.debugId=debugId?debugId:""
+		this.category="empty"
 	}
 }
 
@@ -228,9 +232,11 @@ export class EmptyAction extends Action {
  * 즉시 실행됨(상태 변화)
  */
 export class StateChangeAction extends Action {
+	category: string
 	constructor(type: ACTION_TYPE, turn: number) {
 		super(type, turn)
 		if(type===ACTION_TYPE.GAMEOVER)
 			this.priority=Action.PRIORITY_IMMEDIATE
+		this.category="instant"
 	}
 }

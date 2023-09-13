@@ -12,8 +12,10 @@ import { BuildType } from "../tile/enum"
  * (주사위,건설,인수,선택이동,카드사용,블랙홀설치 등)
  */
  export class QueryAction extends Action {
+	category: string
 	constructor(type:ACTION_TYPE,turn: number) {
 		super(type,turn)
+		this.category="query"
 	}
 }
 export class DiceChanceAction extends QueryAction {

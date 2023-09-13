@@ -1,0 +1,60 @@
+#debug-window{
+    position: absolute;
+    top:0;
+    left: 0;
+    background: none;
+    opacity: 0.8;
+    z-index:20 ;
+    color: white;
+    display: none;
+    width: 98%;
+}
+
+#debug-stack{
+    width: 70%;
+    /* min-height: 500px; */
+    overflow-x: scroll;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    justify-content: flex-start;
+}
+.stack-item{
+    display: flex;
+    flex-direction: column;
+    margin-left: 5px;
+}
+.action{
+    width: 100px;
+    height: 30px;
+    background-color: white;
+    margin-top: 1px;
+    color: black;
+    text-align: left;
+    font-size: 10px;
+    word-break: break-all;
+    display: grid;
+    grid-template-columns: 12px auto;
+}
+.action b{
+    margin-left: 2px;
+    font-size: 11px;
+}
+.action .before{
+    color: red;
+}.action  .after{
+    color: blue;
+}
+.action.query{
+    background-color: cornflowerblue;
+}
+.action.instant{
+    background-color: coral;
+}
+.action.delayed{
+    background-color: greenyellow;
+}
+.action.disabled{
+    background-color: lightgray;
+}

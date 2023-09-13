@@ -17,6 +17,7 @@
     <meta charset="utf-8"/>
 </head>
 <link rel="stylesheet" href="./src/style/style_gamepage.css">
+<link rel="stylesheet" href="./src/style/style_debug.css">
 
 <style>
 @font-face {
@@ -548,6 +549,15 @@
       
    
     </div>  
+
+    <div id="debug-window">
+      <h1>DEBUG</h1>
+      <div id="debug-stack">
+        
+      </div>
+    </div>
+
+
     <div id="dice-number-container" class="hidden">
       <div id="dice-double">X더블</div><br>
       <div id="dice-number">12</div><br>
@@ -609,7 +619,7 @@
     
     <img src="res/column.png" id="marble_img_column" class="hidden">
     <button id="quit">&times;</button>
-    <button id="rolldice">roll dice</button>
+    <!-- <button id="rolldice">roll dice</button> -->
 </body>
 <script type="module" src="src/marble.js"></script>
 

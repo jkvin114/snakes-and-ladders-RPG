@@ -9,9 +9,11 @@ import type { ActionTrace } from "./ActionTrace"
  * (이동,)
  */
  export class DelayedAction extends Action {
+	category: string
 	constructor(type:ACTION_TYPE,turn: number,delay:number) {
 		super(type,turn)
 		this.delay=delay
+		this.category="delayed"
 	}
 }
 

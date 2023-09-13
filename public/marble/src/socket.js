@@ -1,3 +1,4 @@
+import { debugActionStack } from "./debug/debug_interface.js"
 import { GAME, SOLOPLAY } from "./marble.js"
 export class Socket {
 	constructor() {
@@ -234,6 +235,10 @@ export function openConnection(isInitial) {
 		console.log("gameover_monopoly")
 		console.log(player, monopoly)
 		GAME.gameoverMonopoly(player, monopoly, scores, mul)
+	})
+
+	socket.on("server:debug_stack", function (stack) {
+		debugActionStack(stack)
 	})
 
 	GAME.connection.clickDice = function (gage, oddeven) {

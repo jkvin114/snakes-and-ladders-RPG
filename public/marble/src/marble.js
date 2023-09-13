@@ -2,6 +2,7 @@ import { MarbleScene, moneyToString, MONOPOLY, Player } from "./marble_board.js"
 import { openConnection } from "./socket.js"
 import { GameInterface } from "./interface.js"
 import { GestureController } from "../../src/game/gesturecontroller.js"
+import { initDebug } from "./debug/debug_interface.js"
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 export const SOLOPLAY = false
 
@@ -53,6 +54,8 @@ class Game {
 	}
 
 	init(setting, num, turn) {
+		initDebug()
+
 		Howler.volume(0.3)
 		this.myNum = num
 		this.myTurn = turn
