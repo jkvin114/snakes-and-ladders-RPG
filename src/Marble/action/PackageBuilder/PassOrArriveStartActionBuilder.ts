@@ -13,9 +13,9 @@ import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
 export class PassOrArriveStartActionBuilder extends ActionPackageBuilder {
 	private main: EarnMoneyAction
-	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, amt: number) {
+	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, salary_amt: number) {
 		super(game, trace, invoker, EVENT_TYPE.RECEIVE_SALARY)
-		this.main = new EarnMoneyAction(invoker.turn, amt)
+		this.main = new EarnMoneyAction(invoker.turn, salary_amt)
 	}
 	build(): ActionPackage {
 		let pkg = super.build()

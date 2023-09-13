@@ -627,8 +627,8 @@ export class GameInterface {
 	beforeRolldice(dice1, dice2, thrower) {
 		$("#dice-container").css({ opacity: 1 })
 		let ui = this.turnToUi.get(thrower)
-		let pos = { top: 0, left: 0 }
-		if (ui === 0) pos = { top: "100%", left: 0 }
+		let pos = { top: "100%", left: 0 }
+		if (ui === 0) pos = { top: 0, left: 0 }
 		if (ui === 2) pos = { top: 0, left: "100%" }
 		if (ui === 3) pos = { top: "100%", left: "100%" }
 

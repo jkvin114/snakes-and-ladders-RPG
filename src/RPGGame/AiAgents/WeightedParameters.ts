@@ -2,7 +2,7 @@
  * Implementation incomplete, unused
  *
  * 
- */
+
 import { dot, normalize } from "./RPGGame/core/Util"
 
 
@@ -171,4 +171,4 @@ class TileParameter extends Parameter{
         super()
         this.id=pos
     }
-}
+} */

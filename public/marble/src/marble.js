@@ -18,7 +18,7 @@ const MESSAGE = {
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
 
-const BGM = true
+const BGM = false
 export var GAME
 class Game {
 	constructor() {

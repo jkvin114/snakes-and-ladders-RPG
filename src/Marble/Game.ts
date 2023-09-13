@@ -792,7 +792,7 @@ class MarbleGame {
 	onSelectMovePosition(turn: number, pos: number, action: MoveTileSelectionAction) {
 		this.pushSingleAction(new RequestMoveAction(turn, pos, action.moveType), action.source)
 	}
-	setMovableTiles(sourceAction: MoveTileSelectionAction) {
+	onBeforeAskMoveTile(sourceAction: MoveTileSelectionAction) {
 		if (sourceAction instanceof MoveToPlayerSelectionAction) {
 			let targets = sourceAction.targetPlayers
 			sourceAction.setPositions(targets.map((turn) => this.mediator.pOfTurn(turn).pos))
