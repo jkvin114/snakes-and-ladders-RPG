@@ -139,7 +139,10 @@ class MarbleGameMap{
                 this.eventEmitter.setStatusEffect(tile.position,"",0)
         }
     }
-    buildableTileAt(pos:number){
+    buildableTileAt(pos:number):BuildableTile|null{
+        // if(!this.buildableTiles.has(pos)){
+        //     throw new Error("position "+pos+" is not a buildable tile")
+        // }
         return this.buildableTiles.get(pos)
     }
     tileAt(index:number):Tile{
@@ -246,6 +249,7 @@ class MarbleGameMap{
             if(filter.ownedOnly && !t.owned()) continue
             if(distance(t.position,source.pos) > filter.radius) continue
             if(filter.sameLine && !this.isSameLine(t.position,source.pos)) continue
+            if(filter.line!==-1 && !SAME_LINE_TILES[filter.line].has(t.position)) continue
             if(!filter.condition(t)) continue
             tiles.add(t.position)
         }
@@ -260,6 +264,7 @@ class MarbleGameMap{
             if(filter.cornerOnly && !t.isCorner) continue
             if(filter.specialOnly && !t.isSpecial) continue
             if(filter.sameLine && !this.isSameLine(t.position,source.pos)) continue
+            if(filter.line!==-1 && !SAME_LINE_TILES[filter.line].has(t.position)) continue
             if(!filter.condition(t)) continue
             tiles.add(t.position)
         }
@@ -456,6 +461,12 @@ class MarbleGameMap{
     sendTileState(state:string,pos:number){
         this.eventEmitter.setTileState({state:state,pos:pos})
     }
+    /**
+     * return -1 if none found by tilefilter
+     * @param owner 
+     * @param filter 
+     * @returns 
+     */
     getMostExpensiveIn(owner:MarblePlayer,filter:TileFilter){
         let landmarks=this.getTiles(owner,filter)
         if(landmarks.length===0) return -1
@@ -467,6 +478,12 @@ class MarbleGameMap{
            return t2 - t1
         })[0]
     }
+    /**
+     * return -1 if none found by tilefilter
+     * @param owner 
+     * @param filter 
+     * @returns 
+     */
     getLeastExpensiveIn(owner:MarblePlayer,filter:TileFilter){
         let landmarks=this.getTiles(owner,filter)
         if(landmarks.length===0) return -1
@@ -489,6 +506,11 @@ class MarbleGameMap{
         return toremove
         
     }
+    willBeColorMonopoly(turn:number,pos:number){
+        const tile=this.tileAt(pos)
+        if(!(tile instanceof LandTile)) return false
+        return this.sameColors.get(tile.color).every(t=>((t.position===pos && t.owner !== turn) || t.owner === turn))
+    }
     checkMonopoly(changedTile:BuildableTile,invoker:number):MONOPOLY{
         //관독
         if(changedTile.type===TILE_TYPE.SIGHT){
@@ -509,9 +531,6 @@ class MarbleGameMap{
                 return MONOPOLY.TRIPLE
         }
         
-
-        
-
         return MONOPOLY.NONE
     }
     checkMonopolyAlert(changedTile:BuildableTile,invoker:number):{type:MONOPOLY,pos:number[]}{

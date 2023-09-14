@@ -117,6 +117,13 @@ export class AbilityStorage {
             name:value.getItemKorName(),desc:value.getDescription(ability.description)
         }
     }
+    hasOneAbilities(abilities:Set<ABILITY_NAME>){
+        for(const name of this.abilityValues.keys())
+            if(abilities.has(name)) return true
+        for(const name of this.temporaryAbility)
+            if(abilities.has(name)) return true
+        return false
+    }
     /**
      * 
      * @param ability 

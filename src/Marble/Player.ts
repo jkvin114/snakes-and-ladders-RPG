@@ -7,6 +7,7 @@ import { AbilityAttributes, AbilityValue } from "./Ability/AbilityValues"
 import { ServerRequestModel } from "./Model/ServerRequestModel"
 import { ActionSelector } from "./Agent/ActionSelector/ActionSelector"
 import { PlayerState } from "./Agent/Utility/PlayerState"
+import { MONOPOLY } from "./GameMap"
 
 class MarblePlayer{
     readonly name:string
@@ -26,12 +27,13 @@ class MarblePlayer{
     cycleLevel:number
     num:number  //index of this player in player array
     totalBet:number
+    monopolyChancePos:Map<number,number> //pos => cost
+    
     private turnsOnIsland:number
     private pendingActions:Action[]
     private savedDefenceCardAbility:ABILITY_NAME
     private abilityStorage:AbilityStorage
     private statusEffect:Set<string>
-
     readonly agent:ActionSelector
     constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat,agent:ActionSelector){
         this.num=num
@@ -57,6 +59,7 @@ class MarblePlayer{
         this.turnsOnIsland=0
         this.totalBet=money
         this.agent=agent
+        this.monopolyChancePos=new Map<number,number>()
     }
     getStateVector(){
 
@@ -80,7 +83,7 @@ class MarblePlayer{
     // }
     setTurn(turn:number){
         this.turn=turn
-        this.agent.myturn=turn
+        this.agent.setTurn(turn)
     }
     addLand(land:number){
         this.ownedLands.add(land)
@@ -176,6 +179,9 @@ class MarblePlayer{
     sampleAbility(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValue>{
         return this.abilityStorage.getAbilityForEvent(event,source)
     }
+    hasOneAbilities(abilities:Set<ABILITY_NAME>){
+        return this.abilityStorage.hasOneAbilities(abilities)
+    }
     getAbilityValueAmount(ability:ABILITY_NAME){
         return this.abilityStorage.getAbilityValueAmount(ability)
     }
@@ -222,6 +228,11 @@ class MarblePlayer{
         this.incrementTotalBet(amount)
      //   console.log("bankrupt")
         this.retired=true
+    }
+    addMonopolyChancePos(pos:number[],type:MONOPOLY){
+        for(const p of pos){
+            this.monopolyChancePos.set(p,type)
+        }
     }
 
     updateState(state:PlayerState){

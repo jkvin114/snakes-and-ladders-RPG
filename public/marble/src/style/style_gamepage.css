@@ -696,6 +696,7 @@ html{
     box-shadow: 0 0 5px 2px black;
     
   }
+  
   #fortunecard.gold{
     background-color: rgb(255, 191, 0);
     border: 2px solid rgb(249, 215, 20);
@@ -1095,7 +1096,17 @@ html{
     user-select: none;
     
 }
-.ability-notification.card > img{
+.card-blocked{
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  z-index: 5;
+  top:50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  display: none;
+}
+.ability-notification.card > img:not(.card-blocked){
     width: 45px;
     filter: invert();
 }

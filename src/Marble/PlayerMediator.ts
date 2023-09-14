@@ -42,6 +42,7 @@ import { PlayerState } from "./Agent/Utility/PlayerState"
 import { RationalRandomAgent } from "./Agent/ActionSelector/RationalRandomActionSelector"
 import { RandomAgent } from "./Agent/ActionSelector/RandomAgent"
 import { BaseProtoPlayer } from "../Room/BaseProtoPlayer"
+import { CustomAgent1 } from "./Agent/ActionSelector/CustomAgent1"
 const PLAYER_NAMES = [
 	"데니스",
 	"슬기",
@@ -93,9 +94,12 @@ class PlayerMediator {
 				let playerstate=game.state.CreatePlayer()
 				if (p.data && p.data.agentType === AgentType.RANDOM) {
 					agent = new RandomAgent(playerstate, this.game)
+				}else if (p.data && p.data.agentType === AgentType.SMART_CUSTOM_1) {
+					agent = new CustomAgent1(playerstate, this.game)
 				} else {
-					agent = new RationalRandomAgent(playerstate, this.game)
+					agent = new CustomAgent1(playerstate, this.game)
 				}
+				console.log(agent)
 
 				this.players.push(
 					new MarblePlayer(i, this.names[i], champ, p.team, true, startmoney, new MarblePlayerStat(stats), agent)
@@ -514,7 +518,6 @@ class PlayerMediator {
 		return bets
 	}
 	updatePlayerStates(states:PlayerState[]){
-		console.log(states)
 		for(let i=0;i<states.length;++i){
 			const player=this.pOfTurn(i).updateState(states[i])
 		}

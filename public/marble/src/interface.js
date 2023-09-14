@@ -201,8 +201,14 @@ class AbilityBuffer {
 				`<div class="ability-notification card ${pos}" id='${id}'>
 					<img src="${img}"><br>
 					<a>${text}</a>
+					${isblocked ? `<img class="card-blocked" id='card_block_${id}' src="res/block.png">` : ""}
 				</div>`
 			)
+			if (isblocked) {
+				setTimeout(() => {
+					$("#card_block_" + id).show()
+				}, 800)
+			}
 		} else {
 			$("#ability-container").append(
 				`<div class="ability-notification ability ${pos}" id='${id}'>

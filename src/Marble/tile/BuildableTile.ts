@@ -166,6 +166,14 @@ abstract class BuildableTile extends Tile{
         this.olympic=true
         this.multiplier.setOlympic(num)
     }
+
+    /**
+     * return false if tile is a landmark or an owned sight
+     * @returns 
+     */
+    isEmptyOrBuyable(){
+        return !this.isLandMark() && !(this.type===TILE_TYPE.SIGHT && this.owned())
+    }
     getToll(){
         let mul=1
         if(this.statusEffects!==null) mul=this.statusEffects.getTollMultiplier()

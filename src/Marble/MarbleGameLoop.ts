@@ -57,7 +57,7 @@ class MarbleGameLoop{
 			clearTimeout(this.resetTimeout)
 		this.resetTimeout=setTimeout(()=>{
 			this.reset()
-		},120*1000)
+		},1200*1000)
 	}
     reset(){
         if(this.onReset) this.onReset()

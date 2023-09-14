@@ -1,5 +1,5 @@
 import { Action, ACTION_TYPE, EmptyAction, MOVETYPE, StateChangeAction } from "./action/Action"
-import { ActionTrace, ActionTraceTag, ACTION_SOURCE_TYPE } from "./action/ActionTrace"
+import { ActionTrace, ActionTraceTag } from "./action/ActionTrace"
 import { ActionStack } from "./action/ActionStack"
 import { MoveAction, PullAction, RollDiceAction, TeleportAction } from "./action/DelayedAction"
 import { DiceNumberGenerator } from "./DiceNumberGenerator"
@@ -1123,6 +1123,7 @@ class MarbleGame {
 		let monopolyAlert = this.map.checkMonopolyAlert(tile, invoker.turn)
 
 		if (monopolyAlert.type !== MONOPOLY.NONE) {
+			invoker.addMonopolyChancePos(monopolyAlert.pos,monopolyAlert.type)
 			this.eventEmitter.monopolyAlert(invoker.turn, monopolyAlert.type, monopolyAlert.pos)
 			this.mediator.onMonopolyChance(invoker, monopolyAlert.pos)
 		}

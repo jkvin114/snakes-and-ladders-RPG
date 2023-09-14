@@ -20,7 +20,6 @@ export abstract class ActionSelector{
     protected abstract chooseOlympicTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseAttackTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseGodHandBuildTile(req:sm.TileSelection):Promise<cm.SelectTile>
-    protected abstract chooseMoveSpecialTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseDonateTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseBlackholeTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseBuyoutTile(req:sm.TileSelection):Promise<cm.SelectTile>
@@ -38,6 +37,10 @@ export abstract class ActionSelector{
         this.game=new GameReader(game)
         this.myturn=0
     }
+    setTurn(turn:number){
+        this.myturn=turn
+        this.game.myturn=turn
+    }
     get myPlayer(){
         return this.game.getPlayer(this.myturn)
     }
@@ -47,9 +50,6 @@ export abstract class ActionSelector{
         
         if(req.actionType===ACTION_TYPE.CHOOSE_MOVE_POSITION){
             return this.chooseTravelTile(req)
-            // if(req.source==="travel") 
-            // if(req.source===CARD_NAME.GO_SPECIAL)
-            //     return this.chooseMoveSpecialTile(req)
         }
         if(req.actionType===ACTION_TYPE.CHOOSE_BUILD_POSITION){
             if(req.source==="start_build") return this.chooseStartBuildTile(req)

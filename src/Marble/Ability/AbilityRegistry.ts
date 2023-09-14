@@ -1,5 +1,4 @@
 import { ACTION_TYPE } from "../action/Action"
-import { ACTION_SOURCE_TYPE } from "../action/ActionTrace"
 import { Ability, DiceChanceAbility, ForceMoveAbilty, MoveAbilty, PayAbility, ValueModifierAbility } from "./Ability"
 import { DefenceAbility, DefenceCardAbility } from "./DefenceAbilty"
 import { EVENT_TYPE } from "./EventType"

@@ -114,6 +114,7 @@ class Game {
 			} else {
 				elem = document.getElementById("bgm")
 			}
+			elem.volume = 0.6
 			elem.loop = true
 			elem.load()
 			elem.play()

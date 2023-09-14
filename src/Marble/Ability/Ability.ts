@@ -1,5 +1,5 @@
 import { Action,  ACTION_TYPE, EmptyAction } from "../action/Action"
-import { ActionTrace, ACTION_SOURCE_TYPE } from "../action/ActionTrace"
+import { ActionTrace } from "../action/ActionTrace"
 import { hexId, sample } from "../util"
 import { ABILITY_NAME } from "./AbilityRegistry"
 import { EVENT_TYPE } from "./EventType"

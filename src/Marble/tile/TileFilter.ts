@@ -20,6 +20,7 @@ export class TileFilter{
     landTileOnly:boolean
     enemyLandOnly:boolean
     condition:Function
+    line:number
 
     static ALL_EXCLUDE_MY_POS=()=>new TileFilter().setExcludeMyPos()
     static MORE_BUILDABLE_MY_LAND=()=>new TileFilter().fromBuildable().setOnlyMoreBuildable().setMyLandOnly()
@@ -48,6 +49,7 @@ export class TileFilter{
         this.landTileOnly=false
         this.enemyLandOnly=false
         this.condition=(tile:any)=>true
+        this.line=-1
     }
     setLandTileOnly(){
         this.landTileOnly=true
@@ -121,6 +123,15 @@ export class TileFilter{
     }
     inRadius(rad:number){
         this.radius=rad
+        return this
+    }
+    /**
+     * index start at 0
+     * @param line 
+     * @returns 
+     */
+    atLine(line:number){
+        this.line=line
         return this
     }
 

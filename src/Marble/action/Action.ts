@@ -1,6 +1,6 @@
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 import { cl, hexId } from "../util"
-import { ActionTrace, ActionTraceTag, ACTION_SOURCE_TYPE } from "./ActionTrace"
+import { ActionTrace, ActionTraceTag } from "./ActionTrace"
 
 export enum ACTION_TYPE {
 	WALK_MOVE, //0

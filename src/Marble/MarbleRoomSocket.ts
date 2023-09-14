@@ -48,13 +48,13 @@ module.exports=function(socket:Socket){
 		room.user_startSimulation({
 			count:count,
 			saveLabelCSV:savelabel,
-			map:0,
+			map:1,
 			players:[
 				{
 					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.RATIONAL_RANDOM}
 				},
 				{
-					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.RATIONAL_RANDOM}
+					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.SMART_CUSTOM_1}
 				}
 			]
 		})

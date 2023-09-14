@@ -56,6 +56,9 @@ export function randDice() {
 export function randInt(num: number) {
 	return Math.floor(Math.random() * num)
 }
+export function randFloat(num:number){
+	return (Math.random() * num)
+}
 export function clamp(num: number, min: number, max: number) {
 	return Math.max(Math.min(num, max), min)
 }
@@ -69,6 +72,11 @@ export function signedShortestDistance(pos1: number, pos2: number) {
 	if (forward < backward) return distance(pos1, pos2)
 	else return -distance(pos1, pos2)
 }
+/**
+ * index start at 0
+ * @param pos 
+ * @returns 
+ */
 export const pos2Line = function (pos: number) {
 	return Math.floor((pos % MAP_SIZE) / 8)
 }
@@ -129,6 +137,7 @@ export enum PlayerType {
 export enum AgentType {
 	RANDOM = "random",
 	RATIONAL_RANDOM = "rational_random",
+	SMART_CUSTOM_1="smart_custom_1"
 }
 export type ProtoPlayer = {
 	type: PlayerType
@@ -184,10 +193,27 @@ export const getCurrentTime = function () {
 	return year + "_" + month + "_" + date + "_" + hours + "_" + minutes + "_" + seconds
 }
 
-export const roundToNearest=function(num:number,digit?:number){
-	if(!digit) digit=0
+export const roundToNearest = function (num: number, digit?: number) {
+	if (!digit) digit = 0
 
-	num=num * (10**-digit)
+	num = num * 10 ** -digit
 
-	return Math.round(num) / (10**-digit)
+	return Math.round(num) / 10 ** -digit
+}
+
+export const maxFor = function <T>(arr: Iterable<T>, priority: (e: T) => number):T|null {
+	let maxval = -Infinity
+	let maxElem=null
+	for (const e of arr) {
+		let val = priority(e)
+		if (val > maxval) {
+			maxval = val
+			maxElem=e
+		}
+	}
+	return maxElem
+}
+
+export const triDist=function(mean:number,std:number){
+	return mean + randFloat(std) + randFloat(std) - std
 }
