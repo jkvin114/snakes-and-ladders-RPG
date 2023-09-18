@@ -68,6 +68,13 @@ export default class GameReader {
     getPlayersAt(pos:number){
         return this.game.mediator.getPlayersAt([pos])
     }
+    getGodHandPossibleBuildPos(){
+        return this.game.map.getTiles(
+			this.game.mediator.pOfTurn(this.myturn),
+			TileFilter.EMPTY_LANDTILE().setSameLineOnly(),
+			TileFilter.MY_LANDTILE().setOnlyMoreBuildable().setSameLineOnly()
+		)
+    }
 
     /**
      * if percent is not set, return true if one or more enemy has it

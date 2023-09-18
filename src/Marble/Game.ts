@@ -86,6 +86,7 @@ import { GameResultStat } from "./Model/GameResultStat"
 import GameState from "./Agent/Utility/GameState"
 import SimpleVectorizer from "./Agent/Utility/Vectorize/SimpleVectorizer"
 import TileFocusVectorizer from "./Agent/Utility/Vectorize/TileFocusVectorizer"
+import { AbilityExecution } from "./Ability/Ability"
 
 const DELAY_ROLL_DICE = 1000
 const MAP = ["world", "god_hand"]
@@ -121,7 +122,7 @@ class MarbleGame {
 		this.isTeam = isTeam
 		this.rname = rname
 		this.map = new MarbleGameMap(MAP[map % MAP.length])
-		this.state=new GameState(new TileFocusVectorizer())
+		this.state=new GameState(new SimpleVectorizer())
 		this.mediator = new PlayerMediator(this, this.map, players, this.START_MONEY)
 		this.playerTotal = this.mediator.playerCount + this.mediator.aiCount
 		this.eventEmitter = new MarbleGameEventObserver(rname)
@@ -898,11 +899,11 @@ class MarbleGame {
 		action.execute(this)
 	}
 
-	executeAbility(abilities: { name: ABILITY_NAME; turn: number }[]) {
+	executeAbility(abilities:AbilityExecution[]) {
 		for (const ab of abilities) {
 			if (ab.name === ABILITY_NAME.NONE) continue
 			this.mediator.executeAbility(ab.turn, ab.name)
-			let data = this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
+			let data = this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab)
 			if (!data) continue
 			this.sendAbility(ab.turn, ab.name, data.name, data.desc, false)
 		}
@@ -911,9 +912,9 @@ class MarbleGame {
 		// console.log("sendability"+itemName)
 		this.eventEmitter.ability(turn, name, itemName, desc, isblocked)
 	}
-	indicateBlockedAbility(abilities: { name: ABILITY_NAME; turn: number }[]) {
+	indicateBlockedAbility(abilities: AbilityExecution[]) {
 		for (const ab of abilities) {
-			let data = this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab.name)
+			let data = this.mediator.pOfTurn(ab.turn).getAbilityStringOf(ab)
 			if (!data) continue
 			this.eventEmitter.ability(ab.turn, ab.name, data.name, data.desc, true)
 		}

@@ -1,6 +1,6 @@
 import { ActionTrace } from "../action/ActionTrace";
 import { sample } from "../util";
-import { Ability } from "./Ability";
+import { Ability, AbilityExecution } from "./Ability";
 import { ABILITY_NAME, ABILITY_REGISTRY } from "./AbilityRegistry";
 import { AbilityAttributes, AbilityValue } from "./AbilityValues";
 import { EVENT_TYPE } from "./EventType";
@@ -96,7 +96,7 @@ export class AbilityStorage {
         }
         return list
     }
-    getAbilityString(){
+    getItemDescriptions(){
         let arr:{name:string,desc:string}[]=[]
         for(const [name,value] of this.abilityValues.entries()){
             let ability=ABILITY_REGISTRY.get(name)
@@ -108,13 +108,13 @@ export class AbilityStorage {
         }
         return arr
     }
-    getAbilityStringOf(name:ABILITY_NAME):{name:string,desc:string}|null{
-        let ability=ABILITY_REGISTRY.get(name)
-        let value=this.abilityValues.get(name)
+    getAbilityStringOf(ab:AbilityExecution):{name:string,desc:string}|null{
+        let ability=ABILITY_REGISTRY.get(ab.name)
+        let value=this.abilityValues.get(ab.name)
         if(!ability || !value) return null
 
         return {
-            name:value.getItemKorName(),desc:value.getDescription(ability.description)
+            name:value.getItemKorName(),desc:ability.getAlert(ab.id)
         }
     }
     hasOneAbilities(abilities:Set<ABILITY_NAME>){

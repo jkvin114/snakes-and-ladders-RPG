@@ -174,6 +174,15 @@ router.get("/marble_items", function (req:express.Request, res:express.Response)
 	res.end(JSON.stringify(data))
 })
 router.get("/marble_item_presets", async function (req:express.Request, res:express.Response) {
+	fs.readFile(__dirname + RESOURCE_PATH+"marble/marbleitempresets.json", "utf8", function (err, data) {
+		if(err){
+			res.status(500).send({err:"error while requesting resource file"})
+		}
+		res.end(data)
+	})
+	
+	return
+
 	try{
 
 		let data=await MarbleItemPreset.findAll()

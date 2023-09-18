@@ -50,12 +50,12 @@ export class ClaimTollActionBuilder extends DefendableActionBuilder {
 		}
 
 		if(this.trace.thisMoveHasAbility(ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME)){
-			pkg.addExecuted(ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME,this.invoker.turn)
+			pkg.addExecuted(ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME,this.invoker.turn,1)
 			main.applyMultiplier(2)
 		}
 		
 		if(this.trace.thisMoveHasAbility(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK)){
-			pkg.addExecuted(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK,this.invoker.turn)
+			pkg.addExecuted(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK,this.invoker.turn,1)
 			main.applyMultiplier(2)
 		}
 

@@ -126,7 +126,7 @@ class PlayerMediator {
 				char: player.char,
 				money: player.money,
 				card: player.getSavedCard(),
-				abilities: player.getAbilityString(),
+				abilities: player.getItemDescriptions(),
 				stats: player.stat.serialize(),
 			}
 		})

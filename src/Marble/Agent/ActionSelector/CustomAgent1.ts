@@ -1,7 +1,17 @@
 import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { ISLAND_POS, MAP_SIZE, START_POS, TRAVEL_POS } from "../../mapconfig"
 import { BUILDING, TILE_TYPE } from "../../tile/Tile"
-import { backwardBy, chooseRandom, clamp, forwardBy, forwardDistance, maxFor, pos2Line, range, triDist } from "../../util"
+import {
+	backwardBy,
+	chooseRandom,
+	clamp,
+	forwardBy,
+	forwardDistance,
+	maxFor,
+	pos2Line,
+	range,
+	triDist,
+} from "../../util"
 import { RandomAgent } from "./RandomAgent"
 import { ServerRequestModel as sm } from "../../Model/ServerRequestModel"
 import { ClientResponseModel as cm } from "../../Model/ClientResponseModel"
@@ -14,6 +24,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 		ABILITY_NAME.GO_START_ON_THREE_HOUSE,
 		ABILITY_NAME.UPGRADE_LAND_AND_MULTIPLIER_ON_BUILD,
 	])
+	static readonly GO_STARTS = new Set([ABILITY_NAME.GO_START_ON_THREE_HOUSE])
 	static readonly TRAVELS = new Set([
 		ABILITY_NAME.TRAVEL_ON_ENEMY_LAND,
 		ABILITY_NAME.FREE_AND_TRAVEL_ON_ENEMY_LAND,
@@ -95,19 +106,19 @@ export class CustomAgent1 extends RationalRandomAgent {
 			validpos.map((p) => {
 				return { pos: p, name: "", result: true }
 			}),
-            (p,i)=>{
-                //reward for dice 2 and 12
-                if(i+2===2 || i+2===12) return 1.5
-                //reward for even numbered dice
-                else if(i%2===0) return 1.1
-                return 1
-            }
+			(p, i) => {
+				//reward for dice 2 and 12
+				if (i + 2 === 2 || i + 2 === 12) return 1.5
+				//reward for even numbered dice
+				else if (i % 2 === 0) return 1.1
+				return 1
+			}
 		)
-        console.log(pos)
+		console.log(pos)
 		if (pos.reward <= 0) return this.wrap({ target: 12, oddeven: 0 })
-        let oddeven=0
+		let oddeven = 0
 		let distance = forwardDistance(req.origin, pos.pos)
-        if(pos.reward>9 && oe) oddeven = distance % 2 === 1 ? 1 : 2
+		if (pos.reward > 9 && oe) oddeven = distance % 2 === 1 ? 1 : 2
 
 		return this.wrap({ target: clamp(distance, 2, 12), oddeven: oddeven })
 	}
@@ -167,79 +178,75 @@ export class CustomAgent1 extends RationalRandomAgent {
 		return this.wrap<cm.SelectTile>({ pos: pos.pos, name: avaliablePos[0].name, result: result })
 	}
 
-    protected getMyLandmarkReward(pos:number){
-        let toll=this.game.landAt(pos).getToll() / (200*10000) / triDist(3,2)
-        if(this.myPlayer.hasOneAbilities(CustomAgent1.GUIDEBOOK)) toll*=3
-        if(this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.ADD_MULTIPLIER_ON_ARRIVE_MY_LAND]))) toll*=2
-        
-        if(this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.CALL_PLAYERS_ON_TRAVEL]))){
-            toll*=1.5
-            let enemies= this.game.getPlayersAt(TRAVEL_POS)
-            .filter(p=>p.turn!==this.myturn && p.pos!==pos).length
-            if(enemies>0) return toll * (enemies**2)
-        }
-        
-        let range=[0,0]
-        
-        if(this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.LINE_PULL_ON_ARRIVE_AND_BUILD_LANDMARK]))){
-            let line=pos2Line(pos)
-            range[0] = line * 8
-            range[1]=((line+1)*8 )%MAP_SIZE
-        }
-        else if(this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.RANGE_PULL_ON_ARRIVE_LANDMARK]))){
-            range[0]=backwardBy(pos,4)
-            range[1]=forwardBy(pos,4)
-        }
-        
-        else return triDist(1, 1)
-        let enemies= this.game.getPlayersBetween(range[0],range[1]+1)
-        .filter(p=>p.turn!==this.myturn && p.pos!==pos).length
+	protected getMyLandmarkReward(pos: number) {
+		let toll = this.game.landAt(pos).getToll() / (200 * 10000) / triDist(3, 2)
+		if (this.myPlayer.hasOneAbilities(CustomAgent1.GUIDEBOOK)) toll *= 3
+		if (this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.ADD_MULTIPLIER_ON_ARRIVE_MY_LAND]))) toll *= 2
 
-        
-        return toll * (enemies**2)
-    }
+		if (this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.CALL_PLAYERS_ON_TRAVEL]))) {
+			toll *= 1.5
+			let enemies = this.game.getPlayersAt(TRAVEL_POS).filter((p) => p.turn !== this.myturn && p.pos !== pos).length
+			if (enemies > 0) return toll * enemies ** 2
+		}
 
-    protected getPosReward(pos:number){
-        let reward=0
-        let tileObj = this.game.tileAt(pos)
+		let range = [0, 0]
 
-        if (pos === ISLAND_POS) reward = -1
-        else if (pos === TRAVEL_POS) reward = triDist(1.5, 1)
-        else if (this.game.blackholepos === pos) reward = triDist(-1, 2)
-        else if (tileObj.isLandMark()) {
-            let ismine = !this.game.isEnemyLand(pos)
-            if (!ismine) reward = -4
-            else reward=this.getMyLandmarkReward(pos)
-        }
-        else if (tileObj.type == TILE_TYPE.SIGHT && tileObj.owner !== -1) reward = 0
-        else if (tileObj.type == TILE_TYPE.SIGHT && tileObj.owner === -1) reward = triDist(1.4, 1)
-        else if (tileObj.isSpecial) reward = triDist(2, 2)
-        else if (tileObj.isCorner) reward = triDist(1, 1)
-        else if (tileObj.owner !== -1) reward = triDist(4, 2)
-        else if (tileObj.owner === this.game.myturn){
-            if(this.game.landAt(pos).getNextBuild() === BUILDING.LANDMARK) reward = triDist(1.7, 1)
+		if (this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.LINE_PULL_ON_ARRIVE_AND_BUILD_LANDMARK]))) {
+			let line = pos2Line(pos)
+			range[0] = line * 8
+			range[1] = ((line + 1) * 8) % MAP_SIZE
+		} else if (this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.RANGE_PULL_ON_ARRIVE_LANDMARK]))) {
+			range[0] = backwardBy(pos, 4)
+			range[1] = forwardBy(pos, 4)
+		} else return triDist(1, 1)
+		let enemies = this.game
+			.getPlayersBetween(range[0], range[1] + 1)
+			.filter((p) => p.turn !== this.myturn && p.pos !== pos).length
 
-            else reward = triDist(0.5, 1)
-        }
-        else if (this.game.isEnemyLand(pos) && tileObj.isBuildable) {
-            reward = this.game.landAt(pos).getToll() * triDist(3, 0.5) < this.myPlayer.money ? -1 : triDist(1.5, 1)
-        } else if (tileObj.isBuildable) reward = triDist(1, 1)
-        if (this.game.playerAtHasOneAbility(pos, CustomAgent1.GUIDEBOOK)) reward = -5
-        if (this.game.willBeMyColorMonopoly(pos)){
-            console.log("colormonopoly")
-            reward *= 2
-        }
-        return reward
-    }
+		return toll * enemies ** 2
+	}
 
-	protected selectMovePos(avaliablePos: cm.SelectTile[],rewardMulFunc?:(pos:number,idx:number)=>number): { pos: number; reward: number } {
+	protected getPosReward(pos: number) {
+		let reward = 0
+		let tileObj = this.game.tileAt(pos)
+
+		if (pos === ISLAND_POS) reward = -1
+		else if (pos === TRAVEL_POS) reward = triDist(1.5, 1)
+		else if (this.game.blackholepos === pos) reward = triDist(-1, 2)
+		else if (tileObj.isLandMark()) {
+			let ismine = !this.game.isEnemyLand(pos)
+			if (!ismine) reward = -4
+			else reward = this.getMyLandmarkReward(pos)
+		} else if (tileObj.type == TILE_TYPE.SIGHT && tileObj.owner !== -1) reward = 0
+		else if (tileObj.type == TILE_TYPE.SIGHT && tileObj.owner === -1) reward = triDist(1.4, 1)
+		else if (tileObj.isSpecial) reward = triDist(1.5, 1)
+		else if (tileObj.isCorner) reward = triDist(1, 1)
+		else if (tileObj.isBuildable && tileObj.owner === -1) reward = triDist(2, 1)
+		else if (tileObj.owner === this.game.myturn) {
+			if (this.game.landAt(pos).getNextBuild() === BUILDING.LANDMARK) reward = triDist(1.7, 1)
+			else reward = triDist(0.5, 1)
+		} else if (this.game.isEnemyLand(pos) && tileObj.isBuildable) {
+			reward = this.game.landAt(pos).getToll() * triDist(3, 0.5) < this.myPlayer.money ? triDist(1.5, 1) : -2
+		} 
+		//else if (tileObj.isBuildable) reward = triDist(1, 1)
+		if (this.game.playerAtHasOneAbility(pos, CustomAgent1.GUIDEBOOK)) reward = -5
+		if (this.game.willBeMyColorMonopoly(pos)) {
+			// console.log("colormonopoly")
+			reward *= 2
+		}
+		return reward
+	}
+
+	protected selectMovePos(
+		avaliablePos: cm.SelectTile[],
+		rewardMulFunc?: (pos: number, idx: number) => number
+	): { pos: number; reward: number } {
 		let monopolypos = this.selectPosForMonopoly(avaliablePos.map((p) => p.pos))
 		if (monopolypos !== -1) return { pos: monopolypos, reward: 99 }
 
-		let choices = avaliablePos.map((tile,i) => {
-			let reward = this.getPosReward(tile.pos) 
-            if(rewardMulFunc)
-            reward *= rewardMulFunc(tile.pos,i)
+		let choices = avaliablePos.map((tile, i) => {
+			let reward = this.getPosReward(tile.pos)
+			if (rewardMulFunc) reward *= rewardMulFunc(tile.pos, i)
 			return { pos: tile.pos, reward: reward }
 		})
 
@@ -276,9 +283,39 @@ export class CustomAgent1 extends RationalRandomAgent {
 			return enemylandmark
 		} else if (this.game.enemyHasOneAbility(CustomAgent1.TRAVELS)) {
 			return TRAVEL_POS
-		} else if (this.game.enemyHasOneAbility(CustomAgent1.CONSTRUCTION_TOOLS)) {
+		} else if (this.game.enemyHasOneAbility(CustomAgent1.GO_STARTS)) {
 			return START_POS
 		} else if (enemylandmark > -1) return enemylandmark
 		else return chooseRandom(avaliablePos)
+	}
+
+	chooseGodHand(req: sm.GodHandSpecialSelection): Promise<boolean> {
+		if (!req.canLiftTile) return this.wrap(true)
+		let buildpos = this.game.getGodHandPossibleBuildPos()
+		return this.wrap(buildpos.length > 0)
+	}
+	protected chooseGodHandTileLift(req: sm.TileSelection): Promise<cm.SelectTile> {
+		let choices = new TileChoice().generateNoCancel(req)
+		let pos = -1
+		let maxreward = -Infinity
+
+		for (const tile of choices) {
+			let before = backwardBy(tile.pos, 1)
+			if (
+				this.game.tileAt(before).isBuildable &&
+				this.game.landAt(before).isLandMark() &&
+				!this.game.isEnemyLand(before)
+			) {
+				let reward = this.game.landAt(before).getToll()
+				if (before < this.myPlayer.pos) reward *= 2
+				else if (this.game.hasOneAbility(this.myturn, CustomAgent1.LANDMARK_PULLS)) reward *= 1.5
+				if (maxreward < reward) {
+					pos = tile.pos
+					maxreward = reward
+				}
+			}
+		}
+
+		return this.wrap({ pos: pos, name: req.source, result: pos !== -1 })
 	}
 }

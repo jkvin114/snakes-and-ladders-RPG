@@ -32,7 +32,7 @@ export class PrepareTravelActionBuilder extends ActionPackageBuilder {
 		if(this.trace.useActionAndAbility(ACTION_TYPE.PREPARE_TRAVEL,sophie)){
 
 			pkg.addAction(new DiceChanceAction(this.invoker.turn)
-			.reserveAbilityIndicatorOnPop(sophie, this.invoker.turn),sophie)
+			.reserveAbilityIndicatorOnPop(sophie, this.invoker.turn,1),sophie)
 		}
 		else if (this.offences.has(taxi)) {
 			pkg.addAction(new DiceChanceAction(this.invoker.turn)

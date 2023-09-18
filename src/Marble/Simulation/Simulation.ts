@@ -31,6 +31,7 @@ export class Simulation{
         if(this.gameloop) this.gameloop.reset()
 
         this.gameloop = MarbleGameLoop.createSimulationLoop(this.roomName,this.setting)
+		this.gameloop.registerItems(this.setting.items)
         return new Promise<GameResultStat>((resolve,reject)=>{
             this.gameloop.setOnSimulationOver(resolve).startTurn()
         })

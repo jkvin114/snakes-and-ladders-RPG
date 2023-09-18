@@ -1,4 +1,5 @@
 
+import { registerItems } from "../ItemRegistry"
 import { GameResultStat } from "../Model/GameResultStat"
 import { Simulation, SimulationInit } from "./Simulation"
 import { SimulationSetting } from "./SimulationSetting"
@@ -8,10 +9,10 @@ import { SimulationSetting } from "./SimulationSetting"
 const { workerData, parentPort, isMainThread } = require("worker_threads")
 
 
-function runSimulation(data: SimulationInit): Promise<GameResultStat[]> {
+async function runSimulation(data: SimulationInit): Promise<GameResultStat[]> {
 	//console.log("runnerid"+data.runnerId)
     const simulation=new Simulation(data)
-
+	await registerItems()
 	return new Promise((resolve, reject) => {
 		simulation.run(function () {
 			resolve(simulation.statistics)

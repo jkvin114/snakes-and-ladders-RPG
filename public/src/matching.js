@@ -527,6 +527,11 @@ class MatchInterface {
 			MATCH.map = Number($(this).val())
 			ServerConnection.setMap(MATCH.map)
 		})
+
+		//uncomment to enable preset saving
+		$("#save-preset").hide()
+
+		$("#character_selection").hide()
 		$("#marble-item").show()
 		fetch("/resource/marble_items").then((response) => {
 			response.json().then((result) => {

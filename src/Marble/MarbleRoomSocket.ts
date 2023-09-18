@@ -48,10 +48,18 @@ module.exports=function(socket:Socket){
 		room.user_startSimulation({
 			count:count,
 			saveLabelCSV:savelabel,
+			items:{
+				randomCount:0,
+				items:[
+					{locked:true,code:67,selected:true}, //사힐링,난투전헬멧,각도곰,
+					{locked:true,code:61,selected:true},
+					{locked:true,code:35,selected:true}
+				]
+			},
 			map:1,
 			players:[
 				{
-					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.RATIONAL_RANDOM}
+					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.SMART_CUSTOM_1}
 				},
 				{
 					type:PlayerType.AI,name:"",team:true,champ:0,ready:true,userClass:0,data:{agentType:AgentType.SMART_CUSTOM_1}

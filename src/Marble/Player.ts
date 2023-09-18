@@ -8,6 +8,7 @@ import { ServerRequestModel } from "./Model/ServerRequestModel"
 import { ActionSelector } from "./Agent/ActionSelector/ActionSelector"
 import { PlayerState } from "./Agent/Utility/PlayerState"
 import { MONOPOLY } from "./GameMap"
+import { AbilityExecution } from "./Ability/Ability"
 
 class MarblePlayer{
     readonly name:string
@@ -188,11 +189,11 @@ class MarblePlayer{
     registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityAttributes][]){
         this.abilityStorage.registerPermanent(...abilities)
     }
-    getAbilityString(){
-        return this.abilityStorage.getAbilityString()
+    getItemDescriptions(){
+        return this.abilityStorage.getItemDescriptions()
     }
-    getAbilityStringOf(name:ABILITY_NAME){
-        return this.abilityStorage.getAbilityStringOf(name)
+    getAbilityStringOf(ab:AbilityExecution){
+        return this.abilityStorage.getAbilityStringOf(ab)
     }
     upgradeAbility(){
         return this.abilityStorage.upgradeAbility()

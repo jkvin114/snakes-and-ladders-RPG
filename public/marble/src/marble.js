@@ -19,7 +19,7 @@ const MESSAGE = {
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
 
-const BGM = false
+const BGM = true
 export var GAME
 class Game {
 	constructor() {
@@ -503,11 +503,13 @@ $(window).on("load", function (e) {
 
 	$("#dicebtn").on("mousedown touchstart", function (e) {
 		GAME.onDiceHoldStart()
+		$(this).addClass("pressed")
 		return false
 	})
 	$("#dicebtn").on("mouseup touchend", function (e) {
 		GAME.onDiceHoldEnd()
 		GAME.scene.clearTileHighlight("yellow")
+		$(this).removeClass("pressed")
 		return false
 	})
 })

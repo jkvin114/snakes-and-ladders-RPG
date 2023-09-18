@@ -23,6 +23,7 @@ export abstract class ActionSelector{
     protected abstract chooseDonateTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseBlackholeTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseBuyoutTile(req:sm.TileSelection):Promise<cm.SelectTile>
+    protected abstract chooseGodHandTileLift(req:sm.TileSelection):Promise<cm.SelectTile>
 
     abstract chooseBuild(req:sm.LandBuildSelection):Promise<number[]>
     abstract chooseCardObtain(req:sm.ObtainCardSelection):Promise<boolean>
@@ -71,7 +72,8 @@ export abstract class ActionSelector{
         }
         if(req.actionType===ACTION_TYPE.CHOOSE_BUYOUT_POSITION)
             return this.chooseBuyoutTile(req)
-
+        if(req.actionType===ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT)
+            return this.chooseGodHandTileLift(req)
         return new Promise((resolve)=>resolve({result:false,pos:0,name:""})) 
     }
 }

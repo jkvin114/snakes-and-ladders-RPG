@@ -59,4 +59,7 @@ export class RandomAgent extends ActionSelector {
 	chooseIsland(req: sm.IslandSelection): Promise<boolean> {
 		return new Promise((resolve) => resolve(new IslandChoice().getRandom(req)))
 	}
+	protected chooseGodHandTileLift(req: sm.TileSelection): Promise<cm.SelectTile> {
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+	}
 }

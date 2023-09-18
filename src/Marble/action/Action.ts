@@ -1,3 +1,4 @@
+import { AbilityExecution } from "../Ability/Ability"
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 import { cl, hexId } from "../util"
 import { ActionTrace, ActionTraceTag } from "./ActionTrace"
@@ -123,7 +124,7 @@ export abstract class Action {
 	duplicateAllowed:boolean // 같은플레이어의 같은종류 액션 두개 동시에 스택에 존재 가능한지
 	incompatiableWith:Set<ACTION_TYPE> //호환 안되는 능력들 (같은 플레이어의 해당 능력이 이미 스택에 있으면 이 능력은 무시됨)
 	cancels:Set<ACTION_TYPE>// 이 능력이 발동하면 stack에 있는 해당 능력들 취소됨
-	private reservedAbility:{name: ABILITY_NAME, turn: number }
+	private reservedAbility:AbilityExecution
 	private id: string
 	static readonly PRIORITY_NORMAL=0
 	static readonly PRIORITY_IMMEDIATE=1
@@ -197,9 +198,10 @@ export abstract class Action {
 	/**
 	 * action이 실행될띠 ability 알림 표시(아이템으로 인한 action만 적용)
 	 */
-	reserveAbilityIndicatorOnPop(ability:ABILITY_NAME,turn:number){
+	reserveAbilityIndicatorOnPop(ability:ABILITY_NAME,turn:number,alertId?:number){
 		this.reservedAbility.name=ability
 		this.reservedAbility.turn=turn
+		this.reservedAbility.id=alertId
 		this.indicateAbilityOnPop=true
 		return this
 	}

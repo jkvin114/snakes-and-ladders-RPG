@@ -18,7 +18,7 @@ export class SelectOlympicActionBuilder extends ActionPackageBuilder{
         this.tile=tile
 	}
     private olympicPull(pkg: ActionPackage) {
-        pkg.addExecuted(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL, this.invoker.turn)
+        pkg.addExecuted(ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL, this.invoker.turn,1)
         pkg.addAction(
             new RangePullAction(this.invoker.turn, this.tile.position, 4),
             ABILITY_NAME.OLYMPIC_LANDMARK_AND_PULL

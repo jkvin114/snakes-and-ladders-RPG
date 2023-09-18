@@ -17,7 +17,7 @@ export default class SimpleVectorizer extends StateVectorizer {
 			Number(state.canLoan),
 			Number(state.retired),
 			state.monopolyState.colorMonopolies,
-			...state.stats,
+			// ...state.stats,
 		]
 	}
 }

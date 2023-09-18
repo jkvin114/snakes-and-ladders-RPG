@@ -3,6 +3,7 @@ import { ActionTrace } from "../action/ActionTrace"
 import { hexId, sample } from "../util"
 import { ABILITY_NAME } from "./AbilityRegistry"
 import { EVENT_TYPE } from "./EventType"
+export interface AbilityExecution { name: ABILITY_NAME; turn: number,id?:number }
 
 export class Ability {
     readonly name:ABILITY_NAME//능력 종류(힐링류 잘가북류 등 능력 분류)
@@ -14,6 +15,7 @@ export class Ability {
     static readonly PRIORITY_AFTER=1
     protected priority:number
     description:string
+    protected alerts:string[]
     // readonly owner:number
     constructor(name:ABILITY_NAME){
         this.name=name
@@ -24,6 +26,7 @@ export class Ability {
         this.id=hexId()
         this.priority=Ability.PRIORITY_BEFORE
         this.description=""
+        this.alerts=[]
     }
     isFromItem(){
         return this.sourceItem>-1
@@ -31,6 +34,15 @@ export class Ability {
     desc(desc:string){
         this.description=desc
         return this
+    }
+    setAlerts(alerts:string[]){
+        this.alerts=alerts
+        return this
+    }
+    getAlert(id?:number){
+        if(this.alerts.length===0) return this.description
+        if(!id) return this.alerts[0]
+        return this.alerts[id]
     }
     getEvents(){
         return this.event

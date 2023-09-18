@@ -15,16 +15,21 @@ interface itemData{
 const myParser = csvParse.parse({delimiter: ',',columns: headers,
 fromLine: 2,encoding:"utf-8"});
 const ITEMS:itemData[]=[]
-fs.createReadStream(__dirname+(DEV?'/items-dev.csv':'/items.csv'),{encoding:"utf-8"}).pipe(myParser).on('data', (data) => ITEMS.push(data))
-.on('end', () => {
-    
- //   console.log("marble items registered"+ITEMS[0].name_kor)
-});
+export function registerItems(){
+    return new Promise<void>(res=>fs.createReadStream(__dirname+(DEV?'/items-dev.csv':'/items.csv'),{encoding:"utf-8"}).pipe(myParser).on('data', (data) => ITEMS.push(data))
+    .on('end', () => {
+        
+        console.log("marble items registered"+ITEMS[0].name_kor)
+        res()
+    }))
+}
+
 
 
 export namespace ITEM_REGISTRY{
     export function get(code:number):[ABILITY_NAME,AbilityAttributes,number]|null{
         if(code >= ITEMS.length) code = 0
+     
         const item=ITEMS[code]
 
         if(!ABILITY_REGISTRY.has(item.ability as ABILITY_NAME)) return null

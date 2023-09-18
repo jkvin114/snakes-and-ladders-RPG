@@ -1,3 +1,4 @@
+import type { AbilityExecution } from "../Ability/Ability"
 import { ABILITY_NAME, ABILITY_REGISTRY } from "../Ability/AbilityRegistry"
 import { Action } from "./Action"
 import type { ActionTrace } from "./ActionTrace"
@@ -6,8 +7,8 @@ class ActionPackage {
 	after: Action[]
 	main: Action[]
 	blocksMain: boolean
-	blockedAbilities: { name: ABILITY_NAME; turn: number }[]
-	executedAbilities: { name: ABILITY_NAME; turn: number }[]
+	blockedAbilities: AbilityExecution[]
+	executedAbilities: AbilityExecution[]
 	involvedAbilities:ABILITY_NAME[]
 	shouldPutMainToPending:boolean
 
@@ -46,12 +47,12 @@ class ActionPackage {
 		return this
 	}
 	
-	addBlocked(a: ABILITY_NAME, turn: number) {
-		this.blockedAbilities.push({ name: a, turn: turn })
+	addBlocked(a: ABILITY_NAME, turn: number,alertId?:number) {
+		this.blockedAbilities.push({ name: a, turn: turn,id:alertId })
 		return this
 	}
-	addExecuted(a: ABILITY_NAME, abilityOwner: number) {
-		this.executedAbilities.push({ name: a, turn: abilityOwner })
+	addExecuted(a: ABILITY_NAME, abilityOwner: number,alertId?:number) {
+		this.executedAbilities.push({ name: a, turn: abilityOwner,id:alertId })
 		return this
 	}
 	blockMain() {
