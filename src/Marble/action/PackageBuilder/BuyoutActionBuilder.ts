@@ -5,7 +5,7 @@ import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
-import { BuyoutAction, IndicateDefenceAction } from "../InstantAction"
+import { AddMultiplierAction, BuyoutAction, IndicateDefenceAction } from "../InstantAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
 
@@ -29,6 +29,10 @@ export class BuyoutActionBuilder extends DefendableActionBuilder {
 			// pkg.blockMain()
 			pkg.replaceMain(new IndicateDefenceAction("block",this.invoker.pos)) 
 			pkg.addExecuted(cloe,this.defender.turn)
+		}
+		else if(this.trace.useTag(ActionTraceTag.FREE_BUYOUT)){
+			pkg.addAction(new AddMultiplierAction(this.invoker.turn, this.tile.position, 2), ABILITY_NAME.FREE_BUYOUT_AND_DOUBLE)
+			pkg.addExecuted(ABILITY_NAME.FREE_BUYOUT_AND_DOUBLE,this.invoker.turn,1)
 		}
 		return pkg
 	}

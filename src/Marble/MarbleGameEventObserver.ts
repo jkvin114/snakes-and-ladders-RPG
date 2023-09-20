@@ -85,7 +85,7 @@ export class MarbleGameEventObserver {
         this.eventEmitter(this.rname, serverEvents.TELEPORT, player,pos,movetype)
     }
 
-    ///===============================================
+    ///==============================================================
     //query requests
     
     showDiceBtn(player:number,data:ServerRequestModel.DiceSelection){
@@ -118,7 +118,7 @@ export class MarbleGameEventObserver {
         this.eventEmitter(this.rname,serverEvents.ASK_ISLAND,turn,canEscape,escapePrice)
     }
 
-    //================================
+    //=====================================================
     setLandOwner(pos:number,player:number){
         this.eventEmitter(this.rname, serverEvents.SET_LANDOWNER, pos,player)
     }

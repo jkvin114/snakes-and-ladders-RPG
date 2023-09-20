@@ -3,6 +3,7 @@ import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
+import { START_POS } from "../../mapconfig"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import { BUILDING, TILE_TYPE } from "../../tile/Tile"
 import { TileFilter } from "../../tile/TileFilter"
@@ -11,7 +12,7 @@ import { ACTION_TYPE, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
 import { LinePullAction, RangePullAction } from "../DelayedAction"
-import { AddMultiplierAction, AutoBuildAction,  RequestMoveAction } from "../InstantAction"
+import { AddMultiplierAction, AutoBuildAction,  LandModifierAction,  RequestMoveAction } from "../InstantAction"
 import { BlackholeTileSelectionAction, DiceChanceAction, MoveTileSelectionAction, TileSelectionAction } from "../QueryAction"
 import { ActionPackageBuilder } from "./ActionPackageBuilder"
 
@@ -190,6 +191,15 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 		}
 		return false
 	}
+	private checkStartBuild(pkg:ActionPackage){
+		const lock=ABILITY_NAME.LOCK_MULTIPLIER_AND_DOUBLE_ON_START_BUILD
+		if(this.offences.has(lock) && this.invoker.pos===START_POS){
+			pkg.addExecuted(lock, this.invoker.turn)
+            pkg.addAction(new LandModifierAction(this.invoker.turn, this.tile.position, "lock"), lock)
+			pkg.addAction(new AddMultiplierAction(this.invoker.turn, this.tile.position, 2), lock)
+
+		}
+	}
 	build(): ActionPackage {
 		let pkg = super.build()
 		
@@ -203,6 +213,7 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 			this.additionalBuild(pkg)
 			if (this.tile.isLandMark()) {
 				this.multiplier(pkg)
+				this.checkStartBuild(pkg)
 				if (this.isDirectBuild) this.pull(pkg)
 			}
 			else{

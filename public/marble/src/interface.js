@@ -824,6 +824,8 @@ export class GameInterface {
 			$("#landwindow").hide()
 			onCancel()
 		})
+
+		$("#window-confirm-btn-type").html("인수")
 		$("#landwindow .selection-text")
 			.html(landname + " 인수 하시겠습니까?")
 			.show()

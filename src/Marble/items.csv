@@ -67,12 +67,15 @@ CODE,ITEMNAME,itemname_kor,ABILITYNAME,CHANCE,VALUE,UPGRADEVALUE,FIRSTONLY,LIMIT
 64,levataine sword,레바테인의 칼,move_in_dice_range_after_dice,33,,,,,10
 65,donate_guidebook,기부왕의 지옥가이드북,donate_guidebook,70,,,,,9
 66,healing_trampoline,힐링 트램폴린,enemy_land_trampoline_freemove,35,,,,,7
-67,helmet,[난투전] 탑 레이서의 헬멧,dice_control_accuracy,100,,,,,1
-68,perfume,[난투전] 매혹의 향수,perfume,,100,,,,1
-69,badge,[난투전] 보안관 뱃지,badge,,100,,,,1
-70,bear,[난투전] 나나의 곰돌이,additional_toll,,100,,,,1
-71,healing,[난투전] 힐링 여행권,healing,100,,,,,1
-72,construction_tool,[난투전] 대가의 건설장비,construction,100,,,,,1
-73,magnetic core,[난투전] 마그네틱 코어,range_pull_on_arrive_landmark,100,,,,,1
-74,speaker,[난투전] 승리의 확성기,speaker,100,,,,,1
-75,policecar,[난투전] 일단정지 경찰차,police_car,100,,,,,1
+67,locker,봉인의 자물쇠,lock_multiplier_and_double_on_start_build,50,,,,,6
+68,white_card,화이트 카드,toll_reflection,25,,,,,9
+69,fake_buyout_document,위조된 인수증서,free_buyout_and_double,40,,,,,6
+70,helmet,[난투전] 탑 레이서의 헬멧,dice_control_accuracy,100,,,,,1
+71,perfume,[난투전] 매혹의 향수,perfume,,100,,,,1
+72,badge,[난투전] 보안관 뱃지,badge,,100,,,,1
+73,bear,[난투전] 나나의 곰돌이,additional_toll,,100,,,,1
+74,healing,[난투전] 힐링 여행권,healing,100,,,,,1
+75,construction_tool,[난투전] 대가의 건설장비,construction,100,,,,,1
+76,magnetic core,[난투전] 마그네틱 코어,range_pull_on_arrive_landmark,100,,,,,1
+77,speaker,[난투전] 승리의 확성기,speaker,100,,,,,1
+78,policecar,[난투전] 일단정지 경찰차,police_car,100,,,,,1

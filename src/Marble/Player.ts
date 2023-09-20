@@ -29,7 +29,7 @@ class MarblePlayer{
     num:number  //index of this player in player array
     totalBet:number
     monopolyChancePos:Map<number,number> //pos => cost
-    
+    items:number[]
     private turnsOnIsland:number
     private pendingActions:Action[]
     private savedDefenceCardAbility:ABILITY_NAME
@@ -61,6 +61,7 @@ class MarblePlayer{
         this.totalBet=money
         this.agent=agent
         this.monopolyChancePos=new Map<number,number>()
+        this.items=[]
     }
     getStateVector(){
 
@@ -186,8 +187,9 @@ class MarblePlayer{
     getAbilityValueAmount(ability:ABILITY_NAME){
         return this.abilityStorage.getAbilityValueAmount(ability)
     }
-    registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityAttributes][]){
+    registerPermanentAbilities(abilities: [ABILITY_NAME, AbilityAttributes][],items:number[]){
         this.abilityStorage.registerPermanent(...abilities)
+        this.items=items
     }
     getItemDescriptions(){
         return this.abilityStorage.getItemDescriptions()

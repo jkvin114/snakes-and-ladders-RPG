@@ -863,9 +863,11 @@ class MarbleGame {
 		}
 		if (action.name === CARD_NAME.EARTHQUAKE) {
 			this.map.removeOneBuild(action.tile)
+			this.eventEmitter.indicateDefence("attack", action.tile.position)
 		}
 		if (action.name === CARD_NAME.PANDEMIC || action.name === CARD_NAME.BLACKOUT) {
 			this.map.applyStatusEffect(action.tile, action.name, 5)
+			this.eventEmitter.indicateDefence("attack", action.tile.position)
 		}
 		if (action.name === CARD_NAME.LAND_CHANGE && action.landChangeTile != null) {
 			this.swapLand(action.landChangeTile, action.tile)

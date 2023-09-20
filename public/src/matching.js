@@ -528,7 +528,7 @@ class MatchInterface {
 			ServerConnection.setMap(MATCH.map)
 		})
 
-		//uncomment to enable preset saving
+		//remove this line to enable preset saving
 		$("#save-preset").hide()
 
 		$("#character_selection").hide()

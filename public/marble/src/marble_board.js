@@ -641,6 +641,9 @@ export class MarbleScene extends Board {
 			case "selloff":
 				image = "indicateselloff"
 				break
+			case "attack":
+				image = "indicateattack"
+				break
 		}
 
 		let p = new fabric.Image(document.getElementById(image), {

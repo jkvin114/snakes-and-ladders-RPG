@@ -151,7 +151,6 @@ class PlayerMediator {
 			35 + meanItemCost * 90,
 		]
 		this.players.forEach((p) => {
-			console.log(meanItemCost)
 			if (meanItemCost > 0.4) p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
 			else if (meanItemCost > 0.2) {
 				let rand = Math.random()
@@ -162,16 +161,16 @@ class PlayerMediator {
 			let abs: [ABILITY_NAME, AbilityAttributes][] = []
 			let randitems: number[] = itemSetting.items.filter((item) => item.selected).map((item) => item.code)
 
-			let codes = chooseRandomMultiple(randitems, itemSetting.randomCount).sort((a: number, b: number) => a - b)
-			codes.push(...itemSetting.items.filter((item) => item.locked).map((item) => item.code))
+			let itemcodes = chooseRandomMultiple(randitems, itemSetting.randomCount).sort((a: number, b: number) => a - b)
+			itemcodes.push(...itemSetting.items.filter((item) => item.locked).map((item) => item.code))
 
-			for (const c of codes) {
+			for (const c of itemcodes) {
 				let item = ITEM_REGISTRY.get(c)
 
 				if (!item) continue
 				abs.push([item[0], item[1]])
 			}
-			p.registerPermanentAbilities(abs)
+			p.registerPermanentAbilities(abs,itemcodes)
 			p.stat = new MarblePlayerStat(baseStats.map((val) => Math.floor(val + randInt(6) + randInt(6) - 6)))
 		})
 	}
@@ -310,6 +309,7 @@ class PlayerMediator {
 	 * @param source
 	 */
 	onArriveMyLand(playerTurn: number, tile: BuildableTile, source: ActionTrace) {
+		if(!tile.owned()) return
 		let player = this.pOfTurn(playerTurn)
 
 		this.map.ownerArrive(tile)
@@ -325,6 +325,7 @@ class PlayerMediator {
 	 * @param source
 	 */
 	onArriveEnemyLand(playerTurn: number, ownerTurn: number, tile: BuildableTile, source: ActionTrace) {
+		if(!tile.owned()) return
 		let player = this.pOfTurn(playerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
@@ -341,6 +342,7 @@ class PlayerMediator {
 	 * @param source
 	 */
 	claimToll(payerTurn: number, ownerTurn: number, tile: BuildableTile, source: ActionTrace) {
+		if(!tile.owned()) return
 		let payer = this.pOfTurn(payerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
@@ -429,6 +431,7 @@ class PlayerMediator {
 	 * @param source
 	 */
 	claimBuyOut(buyerTurn: number, tile: BuildableTile, source: ActionTrace) {
+		if(!tile.owned()) return
 		let buyer = this.pOfTurn(buyerTurn)
 		let landOwner = this.pOfTurn(tile.owner)
 
@@ -437,12 +440,14 @@ class PlayerMediator {
 	}
 
 	attemptBuyOut(buyerTurn: number, ownerTurn: number, tile: BuildableTile, price: number, source: ActionTrace) {
+		if(!tile.owned()) return
 		let buyer = this.pOfTurn(buyerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 
 		this.game.pushActions(new BuyoutActionBuilder(this.game, source, buyer, tile, price).setDefender(landOwner).build())
 	}
 	buyOut(buyerTurn: number, ownerTurn: number, price: number, tile: BuildableTile, source: ActionTrace) {
+		if(!tile.owned()) return
 		let buyer = this.pOfTurn(buyerTurn)
 		let landOwner = this.pOfTurn(ownerTurn)
 		this.game.eventEmitter.buyout(buyer.turn, tile.position)
@@ -466,6 +471,8 @@ class PlayerMediator {
 		name: string,
 		secondTile?: BuildableTile
 	) {
+		if(!tile.owned()) return
+
 		let attacker = this.pOfTurn(attackerTurn)
 		let landOwner = this.pOfTurn(tile.owner)
 		let builder = new AttemptAttackActionBuilder(this.game, source, attacker, name, tile)

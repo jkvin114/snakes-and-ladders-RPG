@@ -58,8 +58,9 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 			for(let i=1;i<=this.totaldice;++i){
 				range.push(forwardBy(this.invoker.pos,i))
 			}
-			pkg.addExecuted(levataine,this.invoker.turn)
-			pkg.addAction(new MoveTileSelectionAction(this.invoker.turn,range,MOVETYPE.TELEPORT),levataine)
+			// pkg.addExecuted(levataine,this.invoker.turn)
+			pkg.addAction(new MoveTileSelectionAction(this.invoker.turn,range,MOVETYPE.TELEPORT)
+			.reserveAbilityIndicatorOnPop(levataine,this.invoker.turn),levataine)
 			return true
 		}
 		return false

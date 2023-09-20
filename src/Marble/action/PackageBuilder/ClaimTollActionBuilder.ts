@@ -59,7 +59,11 @@ export class ClaimTollActionBuilder extends DefendableActionBuilder {
 			main.applyMultiplier(2)
 		}
 
-		if (this.defences.has(free)) {
+		if(this.defences.has(ABILITY_NAME.TOLL_REFLECTION)){
+			main = new PayTollAction(this.invoker.turn, this.defender.turn, main.amount)
+			pkg.addExecuted(ABILITY_NAME.TOLL_REFLECTION,this.defender.turn)
+		}
+		else if (this.defences.has(free)) {
 			pkg.addExecuted(free, this.defender.turn)
 			main.applyMultiplier(0)
 		} else if (this.defences.has(angel)) {

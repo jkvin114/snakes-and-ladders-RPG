@@ -87,7 +87,11 @@ export enum ABILITY_NAME {
 	TRAVEL_ON_PASS_TRAVEL_AND_DICE_CHANCE="sophie",
 	ADDITIONAL_LANDMARK_ON_BUILD="additional_landmark_on_build",
 	MOVE_IN_DICE_RANGE_AFTER_DICE="move_in_dice_range_after_dice",
-	THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME="donate_guidebook"
+	THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME="donate_guidebook",
+
+	LOCK_MULTIPLIER_AND_DOUBLE_ON_START_BUILD="lock_multiplier_and_double_on_start_build",
+	TOLL_REFLECTION="toll_reflection",
+	FREE_BUYOUT_AND_DOUBLE="free_buyout_and_double"
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -259,18 +263,21 @@ ABILITY_REGISTRY.set(
 	new MoveAbilty(ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING)
 	.on(EVENT_TYPE.ENEMY_ARRIVE_MY_LAND)
 	.desc("상대가 내 땅에서 힐링 여행권 발동시 $c% 확률로 따라감")
+	.setAlerts(["상대가 내 땅에서 힐링 여행권 발동시 따라감!"])
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE,
 	new MoveAbilty(ABILITY_NAME.TRAVEL_ON_TRIPLE_DOUBLE)
 	.on(EVENT_TYPE.THREE_DOUBLE)
 	.desc("$c% 확률로 더블 3회시 세계여행")
+	.setAlerts(["더블 3회시 세계여행!"])
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL,
 	new Ability(ABILITY_NAME.LANDMARK_ON_AFTER_TRAVEL)
 	.on(EVENT_TYPE.TRAVEL_START)
 	.desc("세계여행 도착시 $c% 확률로 즉시 랜드마크 건설 가능")
+	.setAlerts(["즉시 랜드마크 건설 가능!"])
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.DEFEND_ATTACK,
@@ -566,5 +573,27 @@ ABILITY_REGISTRY.set(
 	.on(EVENT_TYPE.ENEMY_ARRIVE_TO_ME)
 	.desc("상대가 나에게 도착하면 $c% 확률로 가장비싼지역 기부받고 내 랜드마크로 날려보냄(통행료 2배)")
 	.setAlerts(["가장비싼지역 기부받고 내 랜드마크로 날려보냄!","통행료 2배 적용!"])
+)
+
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.TOLL_REFLECTION,
+	new Ability(ABILITY_NAME.TOLL_REFLECTION)
+	.on(EVENT_TYPE.TOLL_CLAIMED)
+	.desc("통행료 지불 시 $c% 확률로 상대가 대신 나에게 통행료를 지불")
+	.setAlerts(["상대가 대신 통행료 지불!"])
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.LOCK_MULTIPLIER_AND_DOUBLE_ON_START_BUILD,
+	new Ability(ABILITY_NAME.LOCK_MULTIPLIER_AND_DOUBLE_ON_START_BUILD)
+	.on(EVENT_TYPE.BUILD_LANDMARK)
+	.desc("출발지에서 랜드마크 건설 시 $c% 확률로 배수잠금 후 통행료 2배 적용")
+	.setAlerts(["배수 잠금 후 통행료 2배 적용!"])
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.FREE_BUYOUT_AND_DOUBLE,
+	new Ability(ABILITY_NAME.FREE_BUYOUT_AND_DOUBLE)
+	.on(EVENT_TYPE.BUYOUT_PRICE_CLAIMED)
+	.desc("인수 시 $c% 확률로 인수비용 면제,인수시 통행료 2배 적용")
+	.setAlerts(["인수비용 면제!","통행료 2배 적용!"])
 )
 export { ABILITY_REGISTRY }

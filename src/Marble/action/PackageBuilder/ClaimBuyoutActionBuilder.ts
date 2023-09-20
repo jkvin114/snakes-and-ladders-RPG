@@ -1,10 +1,11 @@
 
+import { ABILITY_NAME } from "../../Ability/AbilityRegistry"
 import { EVENT_TYPE } from "../../Ability/EventType"
 import type { MarbleGame } from "../../Game"
 import type { MarblePlayer } from "../../Player"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import type { ActionPackage } from "../ActionPackage"
-import type { ActionTrace } from "../ActionTrace"
+import { ActionTraceTag,  ActionTrace } from "../ActionTrace"
 import { SendMessageAction } from "../InstantAction"
 import {  AskBuyoutAction } from "../QueryAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
@@ -17,6 +18,11 @@ export class ClaimBuyoutActionBuilder extends DefendableActionBuilder {
 		super(game, trace, invoker, EVENT_TYPE.CLAIM_BUYOUT_PRICE)
 		this.tile = tile
 	}
+	/**
+	 * defender = buyer
+	 * @param p 
+	 * @returns 
+	 */
 	setDefender(p: MarblePlayer): this {
 		this.setDefences(p, EVENT_TYPE.BUYOUT_PRICE_CLAIMED)
 		return this
@@ -25,7 +31,12 @@ export class ClaimBuyoutActionBuilder extends DefendableActionBuilder {
 		let originalprice = this.tile.getBuyOutPrice()
 		let price = originalprice * this.defender.getBuyoutDiscount()
 		let pkg = super.build()
-
+		const free=ABILITY_NAME.FREE_BUYOUT_AND_DOUBLE
+		if(this.defences.has(free)){
+			price=0
+			pkg.addExecuted(free,this.defender.turn)
+			this.trace.addTag(ActionTraceTag.FREE_BUYOUT)
+		}
 		if (price <= this.defender.money)
 			pkg.addMain(new AskBuyoutAction(this.defender.turn, this.tile.position, price, originalprice))
 		else pkg.addMain(new SendMessageAction(this.defender.turn,"no_money"))
