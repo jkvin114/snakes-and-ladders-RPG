@@ -19,7 +19,7 @@ const MESSAGE = {
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
 
-const BGM = true
+const BGM = false
 export var GAME
 class Game {
 	constructor() {
@@ -207,6 +207,9 @@ class Game {
 		this.connection.islandChooseComplete(isescape)
 	}
 	async build(pos, builds, player) {
+		//4라인 아니면 집 짓는순서 거꾸로
+		if (pos < 24) builds.reverse()
+
 		for (const b of builds) {
 			if ((b === 1 && builds.length === 1) || b === 6) {
 				this.scene.addLandFlag(pos, player, "create")

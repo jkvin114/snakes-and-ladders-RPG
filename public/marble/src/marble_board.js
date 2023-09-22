@@ -15,67 +15,78 @@ export const COLORS_LIGHT = ["#F1959B", "#7879FF", "#83D475", "#FFED73"]
 const HOUSE_SCALE = 0.6
 const LANDMARK_SCALE = 1.2
 const FLAG_SCALE = 0.8
+/**
+ * up
+ * -60,50
+ * right
+ * 120,-10
+ * down
+ * -60,50
+ * left
+ * (landmark): 0,-50
+ */
+
 function getFlagCoord(coordinate) {
 	if (coordinate.rot === "right") {
-		return { x: coordinate.x - 30, y: coordinate.y - 10 }
+		return { x: coordinate.x + 30, y: coordinate.y - 20 }
 	}
 	if (coordinate.rot === "left") {
 		return { x: coordinate.x + 30, y: coordinate.y - 10 }
 	}
 	if (coordinate.rot === "up") {
-		return { x: coordinate.x, y: coordinate.y - 40 }
+		return { x: coordinate.x - 60 + 30, y: coordinate.y + 10 - 25 }
 	}
 	if (coordinate.rot === "down") {
-		return { x: coordinate.x, y: coordinate.y - 30 }
+		return { x: coordinate.x - 15, y: coordinate.y - 15 }
 	}
 	return null
 }
 function getHouseCoord(coordinate, level) {
 	level -= 2
 	if (coordinate.rot === "right") {
-		return { x: coordinate.x - 30, y: coordinate.y + level * 30 }
+		return { x: coordinate.x + 30 - level * 25, y: coordinate.y - level * 14 }
 	}
 	if (coordinate.rot === "left") {
-		return { x: coordinate.x + 30, y: coordinate.y - level * 30 }
+		return { x: coordinate.x + 30 - level * 25, y: coordinate.y - level * 16 }
 	}
 	if (coordinate.rot === "up") {
-		return { x: coordinate.x + level * 30, y: coordinate.y - 40 }
+		return { x: coordinate.x - 30 + 8 + level * 25, y: coordinate.y - level * 14 - 8 }
 	}
 	if (coordinate.rot === "down") {
-		return { x: coordinate.x - level * 30, y: coordinate.y - 30 }
+		return { x: coordinate.x - 30 - level * 25 + 5, y: coordinate.y + level * 14 - 10 }
 	}
 	return null
 }
 function getLandMarkCoord(coordinate) {
 	if (coordinate.rot === "right") {
-		return { x: coordinate.x - 45, y: coordinate.y + 5 }
+		return { x: coordinate.x + 20, y: coordinate.y + 5 - 20 }
 	}
 	if (coordinate.rot === "left") {
-		return { x: coordinate.x + 20, y: coordinate.y + 5 }
+		return { x: coordinate.x + 20, y: coordinate.y + 5 - 25 }
 	}
 	if (coordinate.rot === "up") {
-		return { x: coordinate.x - 10, y: coordinate.y - 40 }
+		return { x: coordinate.x - 40, y: coordinate.y + 10 - 35 }
 	}
 	if (coordinate.rot === "down") {
-		return { x: coordinate.x - 10, y: coordinate.y - 40 }
+		return { x: coordinate.x - 10 - 20, y: coordinate.y - 40 + 25 }
 	}
 	return null
 }
 function getLandNameCoord(coordinate) {
 	if (coordinate.rot === "right") {
-		return { x: coordinate.x + 25, y: coordinate.y - 20 }
+		return { x: coordinate.x - 15, y: coordinate.y - 20 }
 	}
 	if (coordinate.rot === "left") {
-		return { x: coordinate.x - 25, y: coordinate.y - 20 }
+		return { x: coordinate.x - 5, y: coordinate.y - 20 }
 	}
 	if (coordinate.rot === "up") {
-		return { x: coordinate.x - 5, y: coordinate.y }
+		return { x: coordinate.x + 5, y: coordinate.y }
 	}
 	if (coordinate.rot === "down") {
 		return { x: coordinate.x, y: coordinate.y + 10 }
 	}
 	if (coordinate.rot === "center") {
-		return { x: coordinate.x - 10, y: coordinate.y + 30 }
+		return { x: coordinate.x + 10, y: coordinate.y + 20 }
 	}
 	return null
 }
@@ -93,22 +104,22 @@ function getCenterCoord(coordinate) {
 		return { x: coordinate.x - 3, y: coordinate.y + 10 }
 	}
 	if (coordinate.rot === "center") {
-		return { x: coordinate.x - 5, y: coordinate.y - 5 }
+		return { x: coordinate.x + 10, y: coordinate.y - 5 }
 	}
 	return null
 }
 function getLandTollCoord(coordinate) {
 	if (coordinate.rot === "right") {
-		return { x: coordinate.x + 25, y: coordinate.y + 10 }
+		return { x: coordinate.x - 15, y: coordinate.y + 10 }
 	}
 	if (coordinate.rot === "left") {
-		return { x: coordinate.x - 25, y: coordinate.y + 10 }
+		return { x: coordinate.x - 5, y: coordinate.y + 10 }
 	}
 	if (coordinate.rot === "up") {
-		return { x: coordinate.x - 5, y: coordinate.y + 30 }
+		return { x: coordinate.x + 5, y: coordinate.y + 30 }
 	}
 	if (coordinate.rot === "down") {
-		return { x: coordinate.x, y: coordinate.y + 40 }
+		return { x: coordinate.x, y: coordinate.y + 35 }
 	}
 	return null
 }
@@ -127,6 +138,21 @@ function getAngle(rot) {
 	}
 	return 0
 }
+
+function rotate(coord) {
+	const center = { x: 700, y: 450 }
+	const yscale = 0.6
+	const rt2 = Math.sqrt(2)
+
+	let x = coord.x / rt2 + coord.y / rt2 + 700 - 575 * rt2
+	let y = -coord.x / rt2 + coord.y / rt2 + 125 * rt2 + 450
+
+	if (y < center.y) y = center.y - (center.y - y) * yscale
+	else y = center.y + (y - center.y) * yscale
+
+	return { x: x + 60, y: y - 120, rot: coord.rot }
+}
+
 export function moneyToString(money, zero) {
 	money = Math.floor(money)
 	if (money <= 0) {
@@ -356,7 +382,7 @@ class Money {
 		let randRange = 75
 		if (size > 7) randRange = 150
 		if (!this.image) return
-		this.scene.animateX(this.image, this.scene.boardInnerHeight / 2 + (Math.random() * randRange - randRange / 2), 200)
+		this.scene.animateX(this.image, this.scene.boardInnerWidth / 2 + (Math.random() * randRange - randRange / 2), 200)
 		this.scene.animateY(this.image, this.scene.boardInnerHeight / 2 + (Math.random() * randRange - randRange / 2), 200)
 	}
 	animate2() {
@@ -398,8 +424,19 @@ export class MarbleScene extends Board {
 		this.blackhole = new MapFeature("blackhole")
 		this.whitehole = new MapFeature("whitehole")
 		this.lock = new MapFeature("lock")
+		this.tilegroup
+		this.tileoutergroup
+
+		this.tilegroup_copy
+		this.tileoutergroup_copy
+		this.tileshadow
+
+		this.copiedtiles
 	}
 	getCoord(i) {
+		return rotate(this.coordinates[i % this.mapLength()])
+	}
+	getUnrotatedCoord(i) {
 		return this.coordinates[i % this.mapLength()]
 	}
 	getNameAt(pos) {
@@ -410,7 +447,7 @@ export class MarbleScene extends Board {
 		const winheight = window.innerHeight
 
 		this.boardScale = (winheight - 5) / this.boardInnerHeight
-		this.canvas.setWidth(winheight - 5)
+		this.canvas.setWidth(winheight - 5 + 500)
 		this.canvas.setHeight(winheight - 5)
 		this.canvas.setZoom(this.boardScale)
 		//   this.forceRender()
@@ -419,112 +456,174 @@ export class MarbleScene extends Board {
 		$("#canvas-container").css("height", winheight * 2)
 		document.getElementById("canvas-container").scrollTo(400, 400)
 	}
+
+	createTileGroup(tileobj, ...deco) {
+		let tilegroup = new fabric.Group([tileobj, ...deco], { evented: false })
+		this.lockFabricObject(tilegroup)
+		this.canvas.add(tilegroup)
+		// tilegroup.set({ originX: "center", originY: "center" })
+		return tilegroup
+	}
+	enableDebugFabricGroup() {
+		// fabricjs group - always show border
+		fabric.Group.prototype.initialize = (function (initialize) {
+			return function () {
+				initialize.apply(this, arguments)
+				// prepend rect before=behind group objects
+				this._objects = [
+					new fabric.Rect({
+						// position from group center
+						left: -0.5 * this.width,
+						top: -0.5 * this.height,
+						width: this.width,
+						height: this.height,
+
+						stroke: "red",
+						strokeWidth: 2,
+						fill: false,
+					}),
+				].concat(this._objects)
+
+				// TODO repaint border on group resize event
+
+				// TODO remove border on group destroy
+			}
+		})(fabric.Group.prototype.initialize)
+	}
+
 	drawTiles() {
+		const center = { x: 476, y: 487 }
+		let tileobjects = []
+		let tileobjects_copy = []
 		for (const land of this.Map.lands) {
-			let tile = new Tile(land.name, land.pos, "land", this.getCoord(land.pos)).setColor(land.color)
+			let rotatedPos = this.getUnrotatedCoord(land.pos)
+			let tile = new Tile(land.name, land.pos, "land", rotatedPos).setColor(land.color)
 			this.tileData.set(land.pos, tile)
-			let tileobj = this.getTileOf(land.color, this.getCoord(land.pos))
-			let obj = new BuildableTileObject(tile, tileobj)
-			this.tileObj.set(land.pos, obj)
+			let tileobj = this.getTileOf(land.color, rotatedPos)
+
 			this.canvas.add(tileobj)
 
 			let name = this.getTileTextObj(
 				land.name,
-				getLandNameCoord(this.getCoord(land.pos)),
+				getLandNameCoord(this.getUnrotatedCoord(land.pos)),
 				land.name.length > 3 ? 14 : 22
 			)
-			obj.setNameIndicator(name)
+			let toll = this.getTileTextObj("", getLandTollCoord(this.getUnrotatedCoord(land.pos)), 18)
 
-			let toll = this.getTileTextObj("", getLandTollCoord(this.getCoord(land.pos)), 18)
+			const group = this.createTileGroup(tileobj, name, toll)
+			let obj = new BuildableTileObject(tile, group)
+			obj.setNameIndicator(name)
 			obj.setTollIndicator(toll)
+
+			this.tileObj.set(land.pos, obj)
+
+			tileobjects.push(group)
+
+			//tileobjects_copy[land.pos] = fabric.util.object.clone(group)
 		}
 
 		for (const sight of this.Map.sights) {
-			let tile = new Tile(sight.name, sight.pos, "sight", this.getCoord(sight.pos))
+			let rotatedPos = this.getUnrotatedCoord(sight.pos)
+			let tile = new Tile(sight.name, sight.pos, "sight", rotatedPos)
 			this.tileData.set(sight.pos, tile)
-
-			let tileobj = this.getTileOf(sight.type === "blue" ? 4 : 5, this.getCoord(sight.pos))
-			let obj = new BuildableTileObject(tile, tileobj)
-			this.tileObj.set(sight.pos, obj)
+			let tileobj = this.getTileOf(sight.type === "blue" ? 4 : 5, rotatedPos)
 			this.canvas.add(tileobj)
 
 			let name = this.getTileTextObj(
 				sight.name,
-				getLandNameCoord(this.getCoord(sight.pos)),
+				getLandNameCoord(this.getUnrotatedCoord(sight.pos)),
 				sight.name.length > 3 ? 14 : 22
 			)
+			let toll = this.getTileTextObj("", getLandTollCoord(this.getUnrotatedCoord(sight.pos)), 18)
+
+			const group = this.createTileGroup(tileobj, name, toll)
+
+			let obj = new BuildableTileObject(tile, group)
 			obj.setNameIndicator(name)
-			let toll = this.getTileTextObj("", getLandTollCoord(this.getCoord(sight.pos)), 18)
 			obj.setTollIndicator(toll)
+
+			this.tileObj.set(sight.pos, obj)
+			tileobjects.push(group)
+			tileobjects_copy[sight.pos] = fabric.util.object.clone(group)
 		}
 
 		for (const sp of this.Map.specials) {
-			let tile = new Tile("특수 지역", sp, "special", this.getCoord(sp))
+			let tile = new Tile("특수 지역", sp, "special", this.getUnrotatedCoord(sp))
 			this.tileData.set(sp, tile)
 
-			let tileobj = this.getTileOf(12, this.getCoord(sp))
-			let coord = this.getCoord(sp)
+			let tileobj = this.getTileOf(12, this.getUnrotatedCoord(sp))
+			let coord = this.getUnrotatedCoord(sp)
+			this.canvas.add(tileobj)
 
 			let pos = getCenterCoord(coord)
-
-			this.canvas.add(tileobj)
-			this.tileObj.set(
-				sp,
-				new TileObject(tile, tileobj).setDecorator(this.getDecorator("tile_column", pos, getAngle(coord.rot), 1.1, 1))
-			)
+			let column = this.getDecorator("tile_column", pos, getAngle(coord.rot), 1.1, 1)
+			const group = this.createTileGroup(tileobj, column)
+			this.tileObj.set(sp, new TileObject(tile, group).setDecorator(column))
+			tileobjects.push(group)
+			tileobjects_copy[sp] = fabric.util.object.clone(group)
 		}
 
 		for (const cn of this.Map.corners) {
 			let tile
 			let deco
-			let coord = this.getCoord(cn)
+			let coord = this.getUnrotatedCoord(cn)
 			let pos = getCenterCoord(coord)
 
 			if (cn === this.Map.start) {
-				tile = new Tile(this.Map.corner_names.start, cn, "corner", this.getCoord(cn))
+				tile = new Tile(this.Map.corner_names.start, cn, "corner", this.getUnrotatedCoord(cn))
 				deco = this.getDecorator("tile_start", pos, 0, 0.7, 0.6)
 			}
 			if (cn === this.Map.island) {
-				tile = new Tile(this.Map.corner_names.island, cn, "corner", this.getCoord(cn))
+				tile = new Tile(this.Map.corner_names.island, cn, "corner", this.getUnrotatedCoord(cn))
 				deco = this.getDecorator("tile_island", pos, 0, 0.7, 0.6)
 			}
 			if (cn === this.Map.olympic) {
-				tile = new Tile(this.Map.corner_names.olympic, cn, "corner", this.getCoord(cn))
+				tile = new Tile(this.Map.corner_names.olympic, cn, "corner", this.getUnrotatedCoord(cn))
 				deco = this.getDecorator("tile_olympic", pos, 0, 0.7, 1)
 			}
 			if (cn === this.Map.travel) {
-				tile = new Tile(this.Map.corner_names.travel, cn, "corner", this.getCoord(cn))
+				tile = new Tile(this.Map.corner_names.travel, cn, "corner", this.getUnrotatedCoord(cn))
 				deco = this.getDecorator("tile_travel", pos, 0, 0.7, 0.7)
 			}
 			if (!tile) continue
 			this.tileData.set(cn, tile)
-			let tileobj = this.getTileOf(11, this.getCoord(cn))
-			let obj = new TileObject(tile, tileobj)
-			this.tileObj.set(cn, obj)
+			let tileobj = this.getTileOf(11, this.getUnrotatedCoord(cn))
+			tileobj.set({ left: coord.x + 20, top: coord.y + 20 })
+			deco.set({ left: deco.left + 20, top: deco.top + 20 })
+
 			this.canvas.add(tileobj)
+			let name = this.getTileTextObj(tile.originalName, getLandNameCoord(this.getUnrotatedCoord(cn)), 27, "#404040")
+			name.set({ left: name.left + 20, top: name.top + 20 })
 
+			const group = this.createTileGroup(tileobj, deco, name)
+			name.moveTo(2)
+			let obj = new TileObject(tile, group)
 			if (deco != null) obj.setDecorator(deco)
-
-			let name = this.getTileTextObj(tile.originalName, getLandNameCoord(this.getCoord(cn)), 27, "#404040")
 			obj.setNameIndicator(name)
+			this.tileObj.set(cn, obj)
+			tileobjects.push(group)
+			tileobjects_copy[cn] = fabric.util.object.clone(group)
 		}
 
 		for (const cd of this.Map.cards) {
-			let tile = new Tile("포춘 카드", cd, "card", this.getCoord(cd))
+			let tile = new Tile("포춘 카드", cd, "card", this.getUnrotatedCoord(cd))
 			this.tileData.set(cd, tile)
-			let tileobj = this.getTileOf(13, this.getCoord(cd))
 
-			let coord = this.getCoord(cd)
+			let coord = this.getUnrotatedCoord(cd)
+
+			let tileobj = this.getTileOf(13, coord)
+
 			let pos = getCenterCoord(coord)
 
 			this.canvas.add(tileobj)
+			let deco = this.getDecorator("tile_card", pos, getAngle(coord.rot), 1.2, 0.7)
 
-			this.tileObj.set(
-				cd,
-				new TileObject(tile, tileobj).setDecorator(this.getDecorator("tile_card", pos, getAngle(coord.rot), 1.2, 0.7))
-			)
+			const group = this.createTileGroup(tileobj, deco)
+			this.tileObj.set(cd, new TileObject(tile, group).setDecorator(deco))
+			tileobjects.push(group)
+			tileobjects_copy[cd] = fabric.util.object.clone(group)
 		}
-
+		console.log(tileobjects_copy.length)
 		for (let i = 0; i < this.mapLength(); ++i) {
 			this.tiles.push(this.tileObj.get(i).tile)
 		}
@@ -536,7 +635,51 @@ export class MarbleScene extends Board {
 
 		// // this.lockFabricObject(tileshadowgroup)
 		// this.canvas.add(tileshadowgroup)
-		// this.tile_shadows = tileshadowgroup
+		// this.tile_shadows = tileshadowgroup'
+		//	this.enableDebugFabricGroup()
+
+		this.tilegroup = new fabric.Group(tileobjects, { evented: false })
+		this.lockFabricObject(this.tilegroup)
+		this.canvas.add(this.tilegroup)
+		this.tilegroup.set({ left: 700, top: 450 })
+		this.tilegroup.set({ originX: "center", originY: "center", angle: -45 })
+
+		this.tileoutergroup = new fabric.Group([this.tilegroup], { evented: false })
+		this.lockFabricObject(this.tileoutergroup)
+		this.canvas.add(this.tileoutergroup)
+		this.tileoutergroup.set({ originX: "center", originY: "center" })
+		this.tileoutergroup.set({ left: 700, top: 450, scaleY: 0.6 })
+
+		// for (let i = 0; i < this.mapLength(); ++i) {
+		// 	this.tiles[i].cloneAsImage((image) => {
+		// 		this.canvas.add(image)
+		// 		this.copiedtiles.push(image)
+		// 	})
+		// }
+
+		this.tileoutergroup.cloneAsImage((image) => {
+			image.set({ left: 700, top: 450, originX: "center", originY: "center", evented: false })
+			this.lockFabricObject(image)
+			this.canvas.add(image)
+			this.copiedtiles = image
+			this.copiedtiles.sendToBack()
+		})
+		for (let i = 0; i < this.mapLength(); ++i) {}
+		// this.tilegroup_copy = new fabric.Group(tileobjects_copy, { evented: false })
+		// this.lockFabricObject(this.tilegroup_copy)
+		// this.canvas.add(this.tilegroup_copy)
+		// this.tilegroup_copy.set({ left: 700, top: 450 })
+		// this.tilegroup_copy.set({ originX: "center", originY: "center", angle: -45 })
+
+		// this.tileoutergroup_copy = new fabric.Group([this.tilegroup_copy], { evented: false })
+		// this.lockFabricObject(this.tileoutergroup_copy)
+		// this.canvas.add(this.tileoutergroup_copy)
+		// this.tileoutergroup_copy.set({ originX: "center", originY: "center" })
+		// this.tileoutergroup_copy.set({ left: 700, top: 450, scaleY: 0.6 })
+
+		// for (const tileobj of this.tilegroup_copy._objects) {
+		// 	tileobj.set({ visible: false })
+		// }
 	}
 
 	showObjects() {
@@ -584,7 +727,7 @@ export class MarbleScene extends Board {
 			fontWeight: "bold",
 			evented: false,
 			top: this.boardInnerHeight / 2 + 160,
-			left: this.boardInnerHeight / 2,
+			left: this.boardInnerWidth / 2,
 			fontFamily: "nanumEB",
 		})
 		this.lockFabricObject(text)
@@ -596,8 +739,10 @@ export class MarbleScene extends Board {
 			evented: false,
 			opacity: 0.8,
 			visible: false,
+			scaleX: 0.75,
+			scaleY: 0.4,
 		})
-		blackhole.scale(0.85)
+		//blackhole.scale(0.75)
 		this.lockFabricObject(blackhole)
 		this.canvas.add(blackhole)
 		this.blackhole.image = blackhole
@@ -607,8 +752,10 @@ export class MarbleScene extends Board {
 			evented: false,
 			opacity: 0.8,
 			visible: false,
+			scaleX: 0.75,
+			scaleY: 0.4,
 		})
-		whitehole.scale(0.85)
+		//	whitehole.scale(0.75)
 		this.lockFabricObject(whitehole)
 		this.canvas.add(whitehole)
 		this.whitehole.image = whitehole
@@ -756,18 +903,19 @@ export class MarbleScene extends Board {
 		switch (rot) {
 			case "center":
 				tile.scale(1.5)
+				tile.set({ flipX: true })
 				break
 			case "right":
 				tile.set({ scaleX: 1.3, flipX: true })
 				break
 			case "left":
-				tile.set({ scaleX: 1.3 })
+				tile.set({ scaleX: 1.3, flipX: true })
 				break
 			case "up":
-				tile.set({ scaleY: 1.3 })
+				tile.set({ scaleY: 1.3, flipX: true })
 				break
 			case "down":
-				tile.set({ scaleY: 1.3, flipY: true })
+				tile.set({ scaleY: 1.3, flipX: true })
 				break
 		}
 	}
@@ -786,8 +934,8 @@ export class MarbleScene extends Board {
 			// left: coord.x
 		})
 		this.lockFabricObject(tile)
-		this.scaleTileImage(tile, coord.rot)
 		tile.set({ top: coord.y, left: coord.x })
+		this.scaleTileImage(tile, coord.rot)
 
 		return tile
 	}
@@ -809,11 +957,25 @@ export class MarbleScene extends Board {
 
 		return deco
 	}
+
+	getShine(coord) {
+		const image = document.getElementById("shine")
+		let tile = new fabric.Image(image, {
+			originX: "center",
+			originY: "center",
+			objectCaching: false,
+			evented: false,
+		})
+		this.lockFabricObject(tile)
+		tile.set({ top: coord.y + 10, left: coord.x })
+		if (coord.rot === "down" || coord.rot === "up") tile.set({ flipX: true, top: coord.y })
+		return tile
+	}
 	getTileOverlay(coord, type) {
 		let image
 		if (type === "red") image = document.getElementById("tile_highlight_red")
 		else if (type === "yellow") image = document.getElementById("tile_highlight_yellow")
-		else if (type === "shine") image = document.getElementById("shine")
+		else if (type === "shine") return this.getShine(coord)
 		else if (type === "blocker") image = document.getElementById("tile_blocker")
 		else image = document.getElementById("tile_highlight_white")
 
@@ -822,11 +984,18 @@ export class MarbleScene extends Board {
 			originY: "center",
 			objectCaching: false,
 			evented: false,
+			angle: -45,
 		})
 		this.lockFabricObject(tile)
 		this.scaleTileImage(tile, coord.rot)
-		tile.set({ top: coord.y, left: coord.x })
-
+		if (coord.rot === "down" || coord.rot === "up") tile.set({ top: coord.y + 45, left: coord.x })
+		else tile.set({ top: coord.y + 60, left: coord.x })
+		this.canvas.add(tile)
+		const group = new fabric.Group([tile], {
+			scaleY: 0.6,
+			evented: false,
+		})
+		// this.canvas.add(group)
 		return tile
 	}
 	getTileTextObj(str, coord, fontsize, color) {
@@ -969,6 +1138,7 @@ export class MarbleScene extends Board {
 	 * @param {*} animateType fade/destroy/delayed-fade
 	 */
 	async animateBuildingDestroy(elem, buildingType, animateType) {
+		if (!elem) return
 		// this.animateOpacity(elem, 0, 1000)
 		this.animateOpacity(elem, 0, 1500)
 		this.removeImageAfter(elem, 1500)
@@ -993,7 +1163,6 @@ export class MarbleScene extends Board {
 		for (let i = 0; i < count; ++i) {
 			let posx = x + (Math.random() * xRange - xRange / 2)
 			let rand = Math.floor(Math.random() * 4) + 1
-			console.log("spawnmoney" + posx)
 			let money = new fabric.Image(document.getElementById("moneyparticle" + rand), {
 				objectCaching: false,
 				evented: false,
@@ -1095,6 +1264,7 @@ export class MarbleScene extends Board {
 			this.removeHouse(pos, i, "fade")
 		}
 		this.removeLandFlag(pos, "fade")
+		this.lock.liftIfLocatedAt(pos)
 	}
 	removeLandMark(pos, animateType) {
 		let tileobj = this.tileObj.get(pos)
@@ -1142,7 +1312,7 @@ export class MarbleScene extends Board {
 	showTileHighlight(positions, color) {
 		for (const p of positions) {
 			let image = this.getTileOverlay(this.getCoord(p), color)
-			this.canvas.add(image)
+			//this.canvas.add(image)
 			image.bringToFront()
 			this.tileHighlights.get(color).push(image)
 		}
@@ -1154,7 +1324,6 @@ export class MarbleScene extends Board {
 		this.render()
 	}
 	tileHighlightsToFront() {
-		console.log(this.tileHighlights)
 		for (let color of this.tileHighlights.values()) color.forEach((h) => h.bringToFront())
 
 		this.render()
@@ -1216,7 +1385,7 @@ export class MarbleScene extends Board {
 		})
 		img.filters = [filter]
 		img.applyFilters()
-		this.canvas.add(img)
+		//this.canvas.add(img)
 		tileobj.effectOverlay = img
 	}
 
@@ -1230,7 +1399,7 @@ export class MarbleScene extends Board {
 			this.setTileStatusEffect(change.pos, "", 0)
 		} else if (change.state === "lift") {
 			let img = this.getTileOverlay(this.getCoord(change.pos), "blocker")
-			this.canvas.add(img)
+			//this.canvas.add(img)
 			tile.addBlocker(img)
 		} else if (change.state === "unlift") {
 			let b = tile.blocker
@@ -1256,8 +1425,9 @@ export class MarbleScene extends Board {
 					let shine = this.getTileOverlay(this.getCoord(pos), "shine")
 					shine.set({ opacity: 0 })
 
-					this.canvas.add(shine)
-					shine.bringToFront()
+					// this.canvas.add(shine)
+					// shine.bringToFront()
+					this.canvas.bringToFront(shine)
 					this.animateOpacity(shine, 1, 200)
 					this.showMessage("toll_increase", pos)
 					setTimeout(() => {
@@ -1306,8 +1476,16 @@ export class MarbleScene extends Board {
 	setBlackhole(blackpos, whitepos) {
 		let b = this.getCoord(blackpos)
 		let w = this.getCoord(whitepos)
-		this.blackhole.image.set({ left: b.x, top: b.y, visible: true })
-		this.whitehole.image.set({ left: w.x, top: w.y, visible: true })
+		this.blackhole.image.set({
+			left: b.x,
+			top: b.y + (b.rot === "up" || b.rot === "down" ? 10 : 20),
+			visible: true,
+		})
+		this.whitehole.image.set({
+			left: w.x,
+			top: w.y + (w.rot === "up" || w.rot === "down" ? 10 : 20),
+			visible: true,
+		})
 		this.blackhole.image.bringToFront()
 		this.whitehole.image.bringToFront()
 		this.blackhole.pos = blackpos
@@ -1413,13 +1591,35 @@ export class MarbleScene extends Board {
 		// this.moneyAnimations.delete(id)
 	}
 	tileReset() {
+		this.shadow.set({ visible: false })
+		for (const tile of this.tiles) {
+			tile.set({ opacity: 1 })
+		}
 		super.tileReset()
 		this.tileHighlightsToFront()
+		this.canvas.sendToBack(this.tileoutergroup)
+		this.canvas.sendToBack(this.copiedtiles)
 	}
 	onTileClick(pos, type) {
 		this.tileReset()
 		this.game.onTileSelect(pos, type)
 	}
+	showRangeTilesByList(list, type, size) {
+		this.canvas.bringToFront(this.shadow)
+		this.canvas.discardActiveObject()
+		this.shadow.set({ visible: true })
+		this.canvas.bringToFront(this.tileoutergroup)
+		for (const tile of this.tiles) {
+			tile.set({ opacity: 0 })
+		}
+		for (let i of list) {
+			this.liftTile(i, type, size)
+		}
+		this.playersToFront()
+		//this.players[1].updateNameText("지역 매각 중입니다..")
+		this.render()
+	}
+
 	liftTile(index, type, size) {
 		if (this.tiles[index] === null || index >= this.tiles.length || index < 0) {
 			return
@@ -1431,20 +1631,24 @@ export class MarbleScene extends Board {
 		//신의손 특수지역 건설
 		if (type === "") {
 		}
-
 		this.activateTile(index, select)
+		//this.tiles[index].moveTo(31)
+
 		this.tileObj.get(index).onTileLift()
 
 		this.blackhole.liftIfLocatedAt(index)
 		this.whitehole.liftIfLocatedAt(index)
 		this.lock.liftIfLocatedAt(index)
+	}
 
-		//this.tiles[t].set({'top':"-=10"})
-		// this.tiles[index].animate('top','-=10',{
-		//   onChange: this.canvas.renderAll.bind(this.canvas),
-		//   duration: 0,
-		//   easing: fabric.util.ease.easeOutCubic
-		// });
+	activateTile(index, onSelect) {
+		const tile = this.tiles[index]
+
+		this.activetiles.push(index)
+
+		tile.set({ opacity: 1, hoverCursor: "pointer", evented: true })
+		tile.on("mousedown", onSelect)
+		tile.setCoords()
 	}
 	async playerBlackholeMove(player, dest) {
 		this.focusPlayer(player)

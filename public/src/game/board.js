@@ -6,7 +6,7 @@ const PLAYER_POS_DIFF = [
 	[-12, -9],
 ] //플레이어별 위치 차이
 let BOARD_MARGIN = 200
-const FRAME = 30 //milisecond
+const FRAME = 50 //milisecond
 const TILE_SHADOW_THICKNESS_RIGHT = 5
 const TILE_SHADOW_THICKNESS_BOTTOM = 10
 export const COLOR_LIST_BG = ["#a6c8ff", "#ff7070", "#95ff80", "#fdff80"] //플레이어별 연한 색상
@@ -56,7 +56,7 @@ export class Board {
 			function () {
 				// this.canRender = true
 				if (this.shouldRender) {
-					this.canvas.renderAll()
+					this.canvas.requestRenderAll()
 					this.shouldRender = false
 				}
 			}.bind(this),
@@ -828,7 +828,15 @@ export class Board {
 		// this.players[turn].nametext.set("text", "")
 		this.players[turn].playerimg.bringToFront()
 		this.showPin(poslist[poslist.length - 1])
-		for (const pos of poslist) {
+		let count = 0
+		const interval = setInterval(() => {
+			if (count >= poslist.length) {
+				clearInterval(interval)
+				this.moveComplete(turn)
+				callback(turn)
+				return
+			}
+			const pos = poslist[count]
 			let x = this.getCoord(pos).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
 			let y = this.getCoord(pos).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
 
@@ -843,10 +851,26 @@ export class Board {
 				easing: fabric.util.ease.easeOutCubic,
 			})
 			this.onStep()
-			await sleep(speed)
-		}
-		this.moveComplete(turn)
-		callback(turn)
+			count++
+		}, speed)
+
+		// for (const pos of poslist) {
+		// 	let x = this.getCoord(pos).x + PLAYER_POS_DIFF[turn][0] + BOARD_MARGIN
+		// 	let y = this.getCoord(pos).y + PLAYER_POS_DIFF[turn][1] + BOARD_MARGIN
+
+		// 	this.players[turn].playerimg.animate("left", x, {
+		// 		onChange: this.render.bind(this),
+		// 		duration: speed,
+		// 		easing: fabric.util.ease.easeOutCubic,
+		// 	})
+		// 	this.players[turn].playerimg.animate("top", y, {
+		// 		onChange: this.render.bind(this),
+		// 		duration: speed,
+		// 		easing: fabric.util.ease.easeOutCubic,
+		// 	})
+		// 	this.onStep()
+		// 	await sleep(speed)
+		// }
 	}
 	//===========================================================================================================================
 
