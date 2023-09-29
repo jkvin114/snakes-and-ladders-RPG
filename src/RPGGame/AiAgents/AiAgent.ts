@@ -1,7 +1,7 @@
 import { CHANGE_MONEY_TYPE, INIT_SKILL_RESULT, ITEM, SKILL } from "../data/enum"
 import { MAP } from "../MapHandlers/MapStorage"
 import { ServerGameEventFormat } from "../data/EventFormat"
-import { copyElementsOnly, pickRandom, Counter, shuffle, sleep, Stack, AbilityUtilityScorecard, clamp, randInt } from "../core/Util"
+import { copyElementsOnly, pickRandom, Counter, shuffle, sleep, Stack, AbilityUtilityScorecard, clamp, randInt, chooseRandom } from "../core/Util"
 import { items as ItemList } from "../../../res/item_new.json"
 import PlayerInventory from "../player/PlayerInventory"
 import { trajectorySpeedRatio } from "../../../res/globalsettings.json"
@@ -11,7 +11,6 @@ import SETTINGS = require("../../../res/globalsettings.json")
 import TRAIN_SETTINGS = require("../../../res/train_setting.json")
 import { SkillTargetSelector } from "../core/skill"
 import { ItemBuild, ItemBuildStage } from "../core/ItemBuild"
-import { chooseRandom } from "../../Marble/util"
 import { CharacterSkillManager, EmptySkillManager } from "../characters/SkillManager/CharacterSkillManager"
 
 const CORE_ITEMS = ItemList.filter((i) => i.itemlevel === 3).map((i) => i.id)

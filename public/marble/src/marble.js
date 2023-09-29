@@ -232,10 +232,8 @@ class Game {
 	buyoutComplete(result) {
 		this.connection.chooseBuyout(result)
 	}
-	updateMultipliers(changes) {
-		for (const c of changes) {
-			this.updateToll(c.pos, c.toll, c.mul)
-		}
+	updateMultipliers(c) {
+		this.updateToll(c.pos, c.toll, c.mul)
 	}
 	updateToll(pos, toll, mul) {
 		this.scene.setToll(pos, toll, mul)

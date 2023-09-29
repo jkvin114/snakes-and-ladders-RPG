@@ -39,15 +39,16 @@ export function openConnection(isInitial) {
 		console.log("initialsetting")
 		GAME.init(setting, num, turn)
 	})
+
 	socket.on("server:nextturn", function (turn) {
 		GAME.turnStart(turn)
 	})
 	socket.on("server:message", function (turn, msg) {
 		if (!checkTurn(turn)) return
-		GAME.showMessage(msg)
+		GAME.showMessage(msg.val)
 	})
-	socket.on("server:indicate_defence", function (type, pos) {
-		GAME.scene.showDefenceIndicator(type, pos)
+	socket.on("server:indicate_defence", function (turn, data) {
+		GAME.scene.showDefenceIndicator(data.type, data.pos)
 	})
 	socket.on("server:show_dice", function (turn, data) {
 		if (!checkTurn(turn)) return
@@ -55,190 +56,181 @@ export function openConnection(isInitial) {
 		console.log(data)
 	})
 	socket.on("server:throwdice", function (turn, data) {
-		console.log("throwdice")
 		console.log(turn, data)
 		GAME.diceRoll(turn, data)
 	})
-	socket.on("server:walk_move", function (player, from, distance, movetype) {
-		console.log("walk_move")
-		console.log(player, distance, movetype)
-		GAME.playerWalkMove(player, from, distance, movetype)
+	socket.on("server:walk_move", function (player, data) {
+		console.log(data)
+		GAME.playerWalkMove(player, data.from, data.distance, data.movetype)
 	})
-	socket.on("server:teleport", function (player, pos, movetype) {
-		console.log(player, pos, movetype)
-		GAME.playerTeleport(player, pos, movetype)
+	socket.on("server:teleport", function (player, data) {
+		console.log(data)
+		GAME.playerTeleport(player, data.pos, data.movetype)
 	})
-	socket.on("server:pull", function (tiles) {
-		console.log("pull")
-		console.log(tiles)
-		GAME.scene.indicatePull(tiles)
+	socket.on("server:pull", function (turn, data) {
+		// console.log("pull")
+		console.log(data)
+		GAME.scene.indicatePull(data.tiles)
 	})
 	socket.on("server:buyout", function () {
 		console.log("buyout")
 		GAME.playsound("buyout")
 	})
-	socket.on("server:player_effect", function (turn, effect, pos, status) {
+	socket.on("server:player_effect", function (turn, data) {
 		console.log("player_effect")
-		console.log(turn, effect, pos, status)
-		GAME.playerEffect(turn, effect, pos, status)
+		console.log(data)
+		GAME.playerEffect(turn, data.effect, data.pos, data.status)
 	})
-	socket.on("server:choose_build", function (pos, player, builds, buildsHave, discount, avaliableMoney) {
+	socket.on("server:choose_build", function (player, data) {
 		if (!checkTurn(player)) return
 		console.log("choose_build")
-		console.log(player, pos, discount)
-		console.log(builds)
-		GAME.chooseBuild(pos, builds, buildsHave, discount, avaliableMoney)
+		GAME.chooseBuild(data.pos, data.builds, data.buildsHave, data.discount, data.avaliableMoney)
 	})
-	socket.on("server:ask_buyout", function (player, pos, price, originalPrice) {
+	socket.on("server:ask_buyout", function (player, data) {
 		if (!checkTurn(player)) return
-		console.log(player, pos, price, originalPrice)
-		GAME.chooseBuyout(player, pos, price, originalPrice)
+		console.log(data)
+		GAME.chooseBuyout(player, data.pos, data.price, data.originalPrice)
 	})
-	socket.on("server:ask_island", function (turn, canEscape, escapePrice) {
+	socket.on("server:ask_island", function (turn, data) {
 		if (!checkTurn(turn)) return
 
-		console.log(turn, canEscape, escapePrice)
-		GAME.ui.askIsland(turn, canEscape, escapePrice)
+		GAME.ui.askIsland(turn, data.canEscape, data.escapePrice)
 	})
-	socket.on("server:pay", function (payer, receiver, amount, type) {
+	socket.on("server:pay", function (turn, data) {
 		console.log("pay")
-		if (payer === receiver) return
-		console.log(payer, receiver, amount, type)
-		GAME.payMoney(payer, receiver, amount, type)
+		if (data.payer === data.receiver) return
+		GAME.payMoney(data.payer, data.receiver, data.amount, data.type)
 	})
-	socket.on("server:build", function (pos, builds, player) {
+	socket.on("server:build", function (player, data) {
 		console.log("build")
-		console.log(pos, builds, player)
-		GAME.build(pos, builds, player)
+		GAME.build(data.pos, data.builds, player)
 	})
-	socket.on("server:set_landowner", function (pos, player) {
+	socket.on("server:set_landowner", function (player, data) {
 		console.log("set_landowner")
-		console.log(pos, player)
-		GAME.setLandOwner(pos, player)
+		GAME.setLandOwner(data.val, player)
 	})
-	socket.on("server:update_toll", function (pos, toll, mul) {
+
+	socket.on("server:update_toll", function (turn, data) {
 		console.log("update_toll")
-		console.log(pos, toll, mul)
-		GAME.updateToll(pos, toll, mul)
+		GAME.updateToll(data.pos, data.toll, data.mul)
 	})
-	socket.on("server:update_multipliers", function (changes) {
+	socket.on("server:update_multipliers", function (turn, data) {
 		console.log("update_multipliers")
-		console.log(changes)
-		GAME.updateMultipliers(changes)
+		console.log(data)
+		GAME.updateMultipliers(data)
 	})
 	socket.on("server:ask_loan", function (player, amount) {
 		if (!checkTurn(player)) return
 		console.log("ask_loan")
-		console.log(player, amount)
-		GAME.askLoan(amount)
+		GAME.askLoan(amount.val)
 	})
-	socket.on("server:tile_selection", function (player, tiles, source) {
+	socket.on("server:tile_selection", function (player, data) {
 		if (!checkTurn(player)) return
 		console.log("tile_selection")
-		console.log(player, tiles, source)
-		GAME.askTileSelection(tiles, source)
+		console.log(data)
+		GAME.askTileSelection(data.tiles, data.source)
 	})
 	socket.on("server:update_money", function (player, money) {
 		console.log("update_money")
-		console.log(player, money)
-		GAME.ui.updateMoney(player, money)
+		GAME.ui.updateMoney(player, money.val)
 	})
-	socket.on("server:update_olympic", function (pos) {
+	socket.on("server:update_olympic", function (turn, pos) {
 		console.log("update_olympic")
 		console.log(pos)
-		GAME.setOlympic(pos)
+		GAME.setOlympic(pos.val)
 	})
-	socket.on("server:obtain_card", function (player, name, level, type) {
+	socket.on("server:obtain_card", function (player, data) {
 		console.log("obtain_card")
-		console.log(name, level, type)
+		console.log(data)
 		checkTurn(player)
-		GAME.obtainCard(player, name, level, type)
+		GAME.obtainCard(player, data.cardName, data.cardLevel, data.cardType)
 	})
-	socket.on("server:clear_buildings", function (positions) {
+	socket.on("server:clear_buildings", function (turn, data) {
 		console.log("clear_buildings")
-		console.log(positions)
-		GAME.scene.clearBuildings(positions)
+		console.log(data)
+		GAME.scene.clearBuildings(data.toremove)
 	})
-	socket.on("server:remove_building", function (pos, toremove) {
+	socket.on("server:remove_building", function (turn, data) {
 		console.log("remove_building")
-		console.log(pos, toremove)
-		GAME.scene.removeBuildings(pos, toremove)
+		console.log(data)
+		GAME.scene.removeBuildings(data.pos, data.toremove)
 	})
-	socket.on("server:tile_status_effect", function (pos, name, dur) {
+	socket.on("server:tile_status_effect", function (turn, data) {
 		console.log("tile_status_effect")
-		console.log(pos, name, dur)
-		GAME.scene.setTileStatusEffect(pos, name, dur)
+		console.log(data)
+		GAME.scene.setTileStatusEffect(data.pos, data.name, data.dur)
 	})
-	socket.on("server:save_card", function (turn, name, level) {
+	socket.on("server:save_card", function (turn, data) {
 		console.log("save_card")
-		console.log(turn, name, level)
-		GAME.ui.setSavedCard(turn, name, level)
-	})
-	socket.on("server:ask_toll_defence_card", function (turn, cardname, before, after) {
-		if (!checkTurn(turn)) return
-		console.log("ask_toll_defence_card")
-		console.log(turn, cardname, before, after)
-		GAME.ui.askTollDefenceCard(cardname, before, after)
+		console.log(data)
+		GAME.ui.setSavedCard(turn, data.name, data.level)
 	})
 
-	socket.on("server:ask_attack_defence_card", function (turn, cardname, attackName) {
+	socket.on("server:ask_toll_defence_card", function (turn, data) {
+		if (!checkTurn(turn)) return
+		console.log("ask_toll_defence_card")
+		console.log(data)
+		GAME.ui.askTollDefenceCard(data.cardname, data.before, data.after)
+	})
+
+	socket.on("server:ask_attack_defence_card", function (turn, data) {
 		if (!checkTurn(turn)) return
 		console.log("ask_attack_defence_card")
-		console.log(turn, cardname, attackName)
-		GAME.ui.askAttackDefenceCard(cardname, attackName)
+		console.log(data)
+		GAME.ui.askAttackDefenceCard(data.cardname, data.attackName)
 	})
 	socket.on("server:ask_godhand_special", function (turn, canlift) {
 		if (!checkTurn(turn)) return
 		console.log("ask_godhand_special")
 		console.log(turn, canlift)
-		GAME.ui.showGodHandSpecial(canlift)
+		GAME.ui.showGodHandSpecial(canlift.canLiftTile)
 	})
-	socket.on("server:ability", function (turn, name, itemName, desc, isblocked) {
+	socket.on("server:ability", function (turn, data) {
 		console.log("ability")
-		console.log(turn, name, itemName, desc, isblocked)
-		GAME.indicateAbility(turn, name, itemName, desc, isblocked)
+		console.log(data)
+		GAME.indicateAbility(turn, data.name, data.itemName, data.desc, data.isblocked)
 	})
-	socket.on("server:blackhole", function (black, white) {
+	socket.on("server:blackhole", function (turn, data) {
 		console.log("blackhole")
-		console.log(black, white)
-		GAME.scene.setBlackhole(black, white)
+		console.log(data)
+		GAME.scene.setBlackhole(data.blackpos, data.whitepos)
 	})
 	socket.on("server:remove_blackhole", function () {
 		GAME.scene.removeBlackHole()
 	})
-	socket.on("server:modify_land", function (pos, type, val) {
+	socket.on("server:modify_land", function (turn, data) {
 		console.log("modify_land")
-		console.log(pos, type, val)
-		GAME.scene.modifyLand(pos, type, val)
+		console.log(data)
+		GAME.scene.modifyLand(data.pos, data.type, data.val)
 	})
-	socket.on("server:tile_state_update", function (change) {
+	socket.on("server:tile_state_update", function (turn, change) {
 		console.log("tile_state_update")
 		console.log(change)
 		GAME.scene.setTileState(change)
 	})
-	socket.on("server:monopoly_alert", function (player, type, pos) {
+	socket.on("server:monopoly_alert", function (player, data) {
 		console.log("monopoly_alert")
-		console.log(player, type, pos)
-		GAME.alertMonopoly(player, type, pos)
+		console.log(data)
+		GAME.alertMonopoly(player, data.type, data.pos)
 	})
 	socket.on("server:bankrupt", function (player) {
 		console.log("bankrupt")
 		console.log(player)
 		GAME.bankrupt(player)
 	})
-	socket.on("server:gameover_bankrupt", function (player, scores, mul) {
+	socket.on("server:gameover_bankrupt", function (player, data) {
 		console.log("gameover_monopoly")
 		console.log(player)
-		GAME.gameoverBankrupt(player, scores, mul)
+		GAME.gameoverBankrupt(player, data.scores, data.mul)
 	})
-	socket.on("server:gameover_monopoly", function (player, monopoly, scores, mul) {
+	socket.on("server:gameover_monopoly", function (player, data) {
 		console.log("gameover_monopoly")
-		console.log(player, monopoly)
-		GAME.gameoverMonopoly(player, monopoly, scores, mul)
+		console.log(data)
+		GAME.gameoverMonopoly(player, data.monopoly, data.scores, data.mul)
 	})
 
-	socket.on("server:debug_stack", function (stack) {
-		debugActionStack(stack)
+	socket.on("server:debug_stack", function (turn, stack) {
+		debugActionStack(stack.stack)
 	})
 
 	GAME.connection.clickDice = function (gage, oddeven) {

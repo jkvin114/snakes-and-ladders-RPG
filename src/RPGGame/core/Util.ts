@@ -9,6 +9,9 @@ const CALC_TYPE = {
 }
 
 
+export function chooseRandom<T>(list: T[]): T {
+	return list[Math.floor(Math.random() * list.length)]
+}
 // export type Skillattr =
 // 	| number
 // 	| { range: number; skill: number; type: number }

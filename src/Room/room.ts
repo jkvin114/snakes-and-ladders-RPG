@@ -5,6 +5,7 @@ import {PlayerMatchingState} from "./PlayerMatchingState"
 import { encrypt } from "../router/board/helpers";
 import { SocketSession } from "../sockets/SocketSession";
 import { BaseProtoPlayer } from "./BaseProtoPlayer";
+import MarbleGameGRPCClient from "../grpc/client";
 abstract class Room {
 	//simulation_total_count: number
 	// simulation_count: number
@@ -40,6 +41,8 @@ abstract class Room {
 	abstract get getMapId():number
 	abstract registerClientInterface(callback:GameEventEmitter):Room
 	abstract registerSimulationClientInterface(callback:GameEventEmitter):Room
+	
+	
 	constructor(name: string) {
 		//	this.simulation_total_count = 1
 		// this.simulation_count = 1

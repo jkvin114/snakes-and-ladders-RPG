@@ -1,0 +1,138 @@
+
+syntax = "proto3";
+package marblegame;
+service MarbleGame{
+    rpc ResetGame(String) returns (Bool){};
+    rpc InitGame(GameSetting) returns (Bool){};
+    rpc RequestSetting(GameSettingRequest) returns (GameSettingReponse){};
+    rpc RequestGameStart(String) returns (Bool){};
+
+    //in-game user responses
+    rpc PressDice(UserPressDice) returns (Bool){};
+    rpc SelectBuild(UserSelectBuild) returns (Bool){};
+    rpc SelectBuyout(BoolUserResponse) returns (Bool){};
+    rpc SelectLoan(BoolUserResponse) returns (Bool){};
+    rpc SelectTile(UserSelectTile) returns (Bool){};
+    rpc ObtainCard(BoolUserResponse) returns (Bool){};
+    rpc ConfirmCardUse(UserConfirmCardUse) returns (Bool){};
+    rpc SelectGodhandSpecial(BoolUserResponse) returns (Bool){};
+    rpc SelectIsland(BoolUserResponse) returns (Bool){};
+
+    //game event stream
+    rpc ListenGameEvent(String) returns ( stream GameEvent){};
+}
+
+
+//game init ===========================================================
+message ProtoPlayer{
+    string type = 1;
+    string name = 2;
+    bool team = 3;
+    int32 champ = 4;
+    bool ready = 5;
+    int32 userClass = 6;
+    string data = 7;
+}
+message Item{
+    int32 code = 1;
+    bool locked = 2;
+    bool selected = 3;
+}
+message ItemSetting{
+    repeated Item items = 1;
+    int32 randomCount = 2;
+}
+message GameSetting{
+    string rname=1;
+    string gametype = 2;
+    int32 map = 3;
+    bool isTeam = 4;
+    repeated ProtoPlayer playerlist = 5;
+    ItemSetting items = 6;
+}
+
+//initial setting response ==============================================
+
+message GameSettingRequest{
+    string rname = 1;
+    int32 turn = 2;
+}
+
+/**{
+    isTeam:boolean,
+    players:{
+        turn: number;
+        team: boolean;
+        name: string;
+        char: number;
+        money: number;
+        card: ABILITY_NAME;
+        abilities: {
+            name: string;
+            desc: string;
+        }[];
+        stats: number[];
+    }[]
+}
+*/
+
+
+message GameSettingReponse{
+    string jsonPayload = 1;
+}
+//user game responses================================================
+message UserPressDice{
+    string rname = 4;
+    int32 invoker = 1;
+    int32 target = 2;
+    int32 oddeven = 3;
+}
+message BoolUserResponse{
+    int32 invoker = 1;
+    bool result = 2;
+    string rname = 3;
+}
+
+message UserSelectBuild{
+    int32 invoker = 1;
+    repeated int32 builds = 2;
+    string rname = 3;
+}
+message UserSelectTile {
+    
+    int32 invoker = 1;
+    bool result = 2;
+    int32 pos = 3;
+    string source = 4;
+    string rname = 5;
+}
+message UserConfirmCardUse{
+    int32 invoker = 1;
+    bool result = 2;
+    string cardname = 3;
+    string rname = 4;
+}
+
+//=general types====================================================
+message Int {
+    int32 val = 1;
+}
+message Void {
+
+}
+message Bool{
+    bool val=1;
+}
+message String{
+    string val = 1;
+}
+
+
+
+//game event payload ===============================================
+message GameEvent{
+    string rname = 1;
+    int32 player = 2;
+    string jsonObj = 3;
+    string type=4;
+}

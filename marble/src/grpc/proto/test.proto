@@ -1,0 +1,24 @@
+
+syntax = "proto3";
+package test;
+import "google/protobuf/struct.proto";
+
+service Test {
+    rpc Test(Int) returns (Int){}
+    rpc Test1(Int) returns (Void){}
+    rpc EmitEvent(Obj) returns(stream Arr){}
+}
+
+message Int {
+    int32 val = 1;
+}
+message Void {
+
+}
+message Arr{
+    repeated int32 arr=1;
+}
+message Obj {
+    string payload = 1;
+}
+    

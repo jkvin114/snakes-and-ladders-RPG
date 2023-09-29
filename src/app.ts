@@ -19,7 +19,7 @@ const session = require("express-session")({
 })
 import express=require("express")
 import { connectMongoDB } from "./mongodb/connect"
-import { registerItems } from "./Marble/ItemRegistry"
+import MarbleGameGRPCClient from "./grpc/client"
 declare module 'express-session' {
 	interface SessionData {
         cookie: Cookie;
@@ -87,7 +87,7 @@ app.on("error", (err: any) => {
 })
 
 connectMongoDB()
-registerItems()
+MarbleGameGRPCClient.connect()
 // const interfaces = os.networkInterfaces()
 // var addresses = []
 // for (var k in interfaces) {

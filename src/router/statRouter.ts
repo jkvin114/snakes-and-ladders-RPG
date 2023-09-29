@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import { R } from '../Room/RoomStorage';
+import { MarbleGameRecordSchema } from '../mongodb/schemaController/MarbleGameRecord';
 const router = express.Router()
 const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../mongodb/GameDBSchema")
 
@@ -48,7 +49,6 @@ router.get('/simulation',function(req: express.Request, res:express.Response){
     })
     .catch((err:any) => res.status(500).send(err))
 })
-
 
 router.get('/simulation/game',function(req: express.Request, res:express.Response){
     let id=req.query.statid
@@ -143,6 +143,15 @@ router.get("/result", function (req: express.Request, res: express.Response) {
 	//writeStat(str, isSimulation)
 
 	//res.end()
+})
+
+
+router.get('/marble/all',function(req: express.Request, res:express.Response){
+    MarbleGameRecordSchema.findAll()
+    .then((stat:any)=>{
+        res.json(stat).end();
+    })
+    .catch((err:any) => res.status(500).send(err))
 })
 
 router.use("/eval", require("./statEvalRouter"))

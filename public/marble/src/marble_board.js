@@ -139,10 +139,10 @@ function getAngle(rot) {
 	return 0
 }
 
+const rt2 = Math.sqrt(2)
 function rotate(coord) {
 	const center = { x: 700, y: 450 }
 	const yscale = 0.6
-	const rt2 = Math.sqrt(2)
 
 	let x = coord.x / rt2 + coord.y / rt2 + 700 - 575 * rt2
 	let y = -coord.x / rt2 + coord.y / rt2 + 125 * rt2 + 450
@@ -494,7 +494,6 @@ export class MarbleScene extends Board {
 	drawTiles() {
 		const center = { x: 476, y: 487 }
 		let tileobjects = []
-		let tileobjects_copy = []
 		for (const land of this.Map.lands) {
 			let rotatedPos = this.getUnrotatedCoord(land.pos)
 			let tile = new Tile(land.name, land.pos, "land", rotatedPos).setColor(land.color)
@@ -544,7 +543,6 @@ export class MarbleScene extends Board {
 
 			this.tileObj.set(sight.pos, obj)
 			tileobjects.push(group)
-			tileobjects_copy[sight.pos] = fabric.util.object.clone(group)
 		}
 
 		for (const sp of this.Map.specials) {
@@ -560,7 +558,6 @@ export class MarbleScene extends Board {
 			const group = this.createTileGroup(tileobj, column)
 			this.tileObj.set(sp, new TileObject(tile, group).setDecorator(column))
 			tileobjects.push(group)
-			tileobjects_copy[sp] = fabric.util.object.clone(group)
 		}
 
 		for (const cn of this.Map.corners) {
@@ -602,7 +599,6 @@ export class MarbleScene extends Board {
 			obj.setNameIndicator(name)
 			this.tileObj.set(cn, obj)
 			tileobjects.push(group)
-			tileobjects_copy[cn] = fabric.util.object.clone(group)
 		}
 
 		for (const cd of this.Map.cards) {
@@ -621,9 +617,7 @@ export class MarbleScene extends Board {
 			const group = this.createTileGroup(tileobj, deco)
 			this.tileObj.set(cd, new TileObject(tile, group).setDecorator(deco))
 			tileobjects.push(group)
-			tileobjects_copy[cd] = fabric.util.object.clone(group)
 		}
-		console.log(tileobjects_copy.length)
 		for (let i = 0; i < this.mapLength(); ++i) {
 			this.tiles.push(this.tileObj.get(i).tile)
 		}
@@ -773,6 +767,7 @@ export class MarbleScene extends Board {
 	async showDefenceIndicator(type, pos) {
 		console.log("showDefenceIndicator" + type)
 		let image = "indicateblock"
+		let lightimage = "indicatelight"
 		let coord = this.getCoord(pos)
 		let y = coord.y - 70
 		switch (type) {
@@ -787,9 +782,11 @@ export class MarbleScene extends Board {
 				break
 			case "selloff":
 				image = "indicateselloff"
+				lightimage = "indicatelight_yellow"
 				break
 			case "attack":
 				image = "indicateattack"
+				lightimage = "indicatelight_yellow"
 				break
 		}
 
@@ -800,7 +797,7 @@ export class MarbleScene extends Board {
 			evented: false,
 			opacity: 1,
 		})
-		let light = new fabric.Image(document.getElementById("indicatelight"), {
+		let light = new fabric.Image(document.getElementById(lightimage), {
 			left: coord.x,
 			top: y,
 			objectCaching: false,
@@ -1506,6 +1503,7 @@ export class MarbleScene extends Board {
 			let b = getLandMarkCoord(this.getCoord(pos))
 			this.lock.image.set({ left: b.x, top: b.y - 40, visible: true })
 			this.lock.image.bringToFront()
+			this.canvas.bringToFront(this.lock.image)
 			this.lock.pos = pos
 			this.showMessage("lock", pos)
 		}

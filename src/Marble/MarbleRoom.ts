@@ -1,11 +1,11 @@
 import { GameEventEmitter } from "../sockets/GameEventEmitter";
 import { Room } from "../Room/room";
-import { MarbleGameEventObserver } from "./MarbleGameEventObserver";
-import { MarbleGameLoop } from "./MarbleGameLoop";
-import { ServerEventModel } from "./Model/ServerEventModel";
 import { Worker, isMainThread } from "worker_threads"
-import { SimulationSetting } from "./Simulation/SimulationSetting";
-import { hasProp } from "./util";
+import type { SchemaTypes } from "../mongodb/SchemaTypes";
+import { MarbleGameRecordSchema } from "../mongodb/schemaController/MarbleGameRecord";
+
+import MarbleGameGRPCClient from "../grpc/client";
+import { hasProp } from "../RPGGame/core/Util";
 
 const path = require("path")
 
@@ -20,61 +20,32 @@ class MarbleRoom extends Room{
         console.error("Method not implemented.");
 		return ""
     }
-    gameloop:MarbleGameLoop
-	eventObserver:MarbleGameEventObserver
+   // gameloop:MarbleGameLoop
+//	eventObserver:MarbleGameEventObserver
 	type: string
 	simulationRunning:boolean
+	gametype:string
 
     constructor(name:string){
         super(name)
 		this.type="marble"
-        this.gameloop
-		this.eventObserver=new MarbleGameEventObserver(name)
+        //this.gameloop
+	//	this.eventObserver=new MarbleGameEventObserver(name)
 		this.simulationRunning=false
+		//this.gametype=GameType.NORMAL
     }
 	registerClientInterface(callback:GameEventEmitter){
-		this.eventObserver.registerCallback(callback)
+		//this.eventObserver.registerCallback(callback)
 		return this
 	}
 	registerSimulationClientInterface(callback:GameEventEmitter){
-		this.eventObserver.registerSimulationCallback(callback)
+		
+	//	this.eventObserver.registerSimulationCallback(callback)
 		return this
 	}
-    user_gameReady(roomName: string,itemSetting:ServerEventModel.ItemSetting) {
-		this.onBeforeGameStart()
-		// this.instant = false
-
-		this.gameloop = MarbleGameLoop.createLoop(roomName,this.isTeam,this.map, this.playerMatchingState.playerlist)
-		this.gameloop.registerItems(itemSetting)
-		this.gameloop.setClientInterface(this.eventObserver)
-		this.gameloop.setOnReset(()=>this.reset())
-	}
-
-
-
-	user_requestSetting(){
-		return this.gameloop.game.getInitialSetting()
-	}
-	// user_requestSetting(): {
-	// 	// let setting = this.gameloop.game.getInitialSetting()
-	// 	// return setting
-	// }
-
-	/**
-	 *
-	 * @returns test if all players are connected
-	 */
-	user_startGame(): boolean {
-		let canstart = this.gameloop.game.canStart()
-		if (!canstart) return false
-		else if (!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
-		return true
-	}
-	onClientEvent(event:string,invoker:number,...args:any[])
-	{	
-		this.gameloop.onClientEvent(event,invoker,args)
-	}
-	user_startSimulation(setting:SimulationSetting){
+	user_startSimulation(setting:any){
+		return
+		this.gametype=""
 		if (!isMainThread || this.simulationRunning) return
 		
 		this.simulationRunning=true
@@ -89,22 +60,24 @@ class MarbleRoom extends Room{
 			})
 	}
 	onSimulationOver(success:boolean,data:any){
-		this.eventObserver.simulationOver(success,data)
+		return
+		//this.eventObserver.simulationOver(success,data)
 		this.simulationRunning=false
 		this.reset()
 	}
-	doInstantSimulation(setting:SimulationSetting){
+	doInstantSimulation(setting:any){
+		return
 		return new Promise((resolve, reject) => {
 			const worker = workerTs({
 				setting: setting,
 				roomName:this.name,
 				path: "./Marble/Simulation/runner.ts"
 			})
-			worker.on("message", (data: unknown) => {
+			worker.on("message", (data: any) => {
 			//	console.log(data)
 				if (hasProp(data, "type") && hasProp(data, "value")) {
 					if (data.type === "progress") {
-						this.eventObserver.simulationProgress(data.value)
+				//		this.eventObserver.simulationProgress(data.value)
 					} else if (data.type === "end") {
 						resolve(data.value)
 					} else reject(data.value)
@@ -117,12 +90,19 @@ class MarbleRoom extends Room{
 			})
 		})
 	}
-    onGameover(){
-		this.reset()
+    onGameover(winner:number,stat:SchemaTypes.MarbleGameRecord){
+		try{
+			MarbleGameRecordSchema.create(stat)
+		}
+		catch(e){
+			console.error("Failed to save game record")
+		}
+		finally{
+			this.reset()
+		}
     }
 	reset(): void {
 		super.reset()
-		if (this.gameloop != null) this.gameloop.onDestroy()
 		// this.simulation = null
 	}
 }
