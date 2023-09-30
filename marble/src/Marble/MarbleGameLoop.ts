@@ -32,7 +32,7 @@ class MarbleGameLoop{
     resetTimeout:NodeJS.Timeout|undefined
     onReset:Function | undefined
 
-    gametype:GameType
+    readonly gametype:GameType
     simulationOverCallBack:((stat: GameResultStat) => void) | undefined
 
     constructor(rname:string,game:MarbleGame,isTeam:boolean,gametype:GameType){

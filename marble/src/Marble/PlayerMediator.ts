@@ -82,6 +82,7 @@ class PlayerMediator {
 		this.names = shuffle(PLAYER_NAMES)
 		for (let i = 0; i < playerlist.length; ++i) {
 			const p = playerlist[i]
+			if(p.type===PlayerType.EMPTY) continue
 			let champ = p.champ === -1 ? randInt(9) : p.champ
 			let agenttype=DEFAULT_AGENT
 			if( !p.data ||  !p.data.agentType) {
@@ -90,9 +91,8 @@ class PlayerMediator {
 			else agenttype = p.data.agentType
 
 			let stats = [60, 60, 60, 100, 60]
-
 			//dont add any ai in soloplay.
-			//set every player to ai in simulation and instant_simulation
+			//set every player(except for empty) to ai in simulation and instant_simulation
 			if (this.game.gametype !== GameType.SOLOPLAY && 
 				(p.type === PlayerType.AI ||
 				this.game.gametype === GameType.SIMULATION || this.game.gametype === GameType.INSTANT_SIMULATION)

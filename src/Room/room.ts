@@ -5,7 +5,7 @@ import {PlayerMatchingState} from "./PlayerMatchingState"
 import { encrypt } from "../router/board/helpers";
 import { SocketSession } from "../sockets/SocketSession";
 import { BaseProtoPlayer } from "./BaseProtoPlayer";
-import MarbleGameGRPCClient from "../grpc/client";
+import MarbleGameGRPCClient from "../grpc/marblegameclient";
 abstract class Room {
 	//simulation_total_count: number
 	// simulation_count: number
@@ -32,6 +32,7 @@ abstract class Room {
 	password:string
 	isPublic:boolean
 	isLoggedInUserOnly:boolean
+	gametype:string
 	private guestSockets:Map<number,Socket>
 	
 	protected playerMatchingState:PlayerMatchingState
@@ -70,8 +71,13 @@ abstract class Room {
 		this.isPublic=true
 		this.isLoggedInUserOnly=false
 		this.password=""
+		this.gametype="simulation"
 	}
 
+	setGameType(type:string){
+		this.gametype=type
+		return this
+	}
 	setHost(id:string)
 	{
 		this.hostSessionId=id

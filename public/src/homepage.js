@@ -385,8 +385,12 @@ function createroom(isMarble) {
 			}
 		})
 		.fail(function (data, statusText, xhr) {
+			// console.log(data)
 			if (data.status == 400) {
 				alert(LOCALE.error.roomname_duplicate)
+			}
+			if (data.status == 500) {
+				alert("Service unavaliable")
 			}
 		})
 }

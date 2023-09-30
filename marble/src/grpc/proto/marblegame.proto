@@ -18,8 +18,17 @@ service MarbleGame{
     rpc SelectGodhandSpecial(BoolUserResponse) returns (Bool){};
     rpc SelectIsland(BoolUserResponse) returns (Bool){};
 
+    rpc ToggleAuto(Bool) returns (Bool){};
+    //rpc UserMessage(String) returns (Bool){};
+
     //game event stream
     rpc ListenGameEvent(String) returns ( stream GameEvent){};
+
+    //simulaton event stream
+    rpc ListenSimulationEvent(String) returns (stream SimulationEvent){};
+
+    rpc Ping(Int) returns (Int){};
+    rpc RequestItem(Void) returns (String){};
 }
 
 
@@ -135,4 +144,12 @@ message GameEvent{
     int32 player = 2;
     string jsonObj = 3;
     string type=4;
+    optional bool isGameOver = 5;
+}
+
+message SimulationEvent{
+    string rname = 1;
+    int32 type = 2;
+    string jsonObj = 3;
+    optional bool isGameOver = 4;
 }

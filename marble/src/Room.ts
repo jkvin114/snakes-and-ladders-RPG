@@ -31,6 +31,7 @@ export default class Room {
 		this.eventObserver = new MarbleGameEventObserver(name)
 		this.simulationRunning = false
 		this.gametype = gametype as GameType
+		console.log(this.gametype)
 		this.map = map
 		this.isTeam = isTeam
 		this.playerlist = playerlist
@@ -46,7 +47,7 @@ export default class Room {
 	user_gameReady(roomName: string, itemSetting: ServerEventModel.ItemSetting, gametype: string) {
 		//this.onBeforeGameStart()
 		// this.instant = false
-		this.gametype = gametype as GameType
+		// this.gametype = gametype as GameType
 		this.gameloop = MarbleGameLoop.createLoop(roomName, this.isTeam, this.map, this.playerlist, this.gametype)
 		this.gameloop.registerItems(itemSetting)
 		this.gameloop.setGameEventObserver(this.eventObserver)

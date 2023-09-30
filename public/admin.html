@@ -23,7 +23,7 @@
 		}
 		body {
 			/* background-color: #242424; */
-			background-color: #200f33;
+			background-color: #242424;
 			color: beige;
 			margin: 0;
 
@@ -109,7 +109,15 @@ table.minimalistBlack tfoot td {
             </div>
             
         </div>
+
         <div>
+            <h3>status</h3>
+            <div style="text-align: center;">
+                <h4>Database</h4>
+                <h4 id="ping-db"></h4>
+                <h4>Marble Game Server</h4>
+                <h4 id="ping-marble"></h4>
+            </div>
             <h3>rooms</h3>
             <div id="rooms" class="container">
                 <table class="minimalistBlack">
@@ -217,9 +225,49 @@ async function spectate() {
  function golink(link) {
 	window.location.href = link
 }
+
+function healthcheck(data){
+    /*
+    0 = disconnected
+    1 = connected
+    2 = connecting
+    3 = disconnecting
+    99 = uninitialized
+    */
+    const statuscodes = new Map()
+    .set(0,"Disconnected")
+    .set(1,"Connected")
+    .set(2,"Connecting")
+    .set(3,"Disconnecting")
+    .set(99,"Uninitialized")
+
+
+   $("#ping-db").html(statuscodes.get(data.mongodb))
+    if(data.mongodb === 1){
+        $("#ping-db").css("color","green")
+    }
+    else $("#ping-db").css("color","red")
+
+    if(data.marblegame >= 0){
+        $("#ping-marble").css("color","green")
+        $("#ping-marble").html(`Connected (${data.marblegame}ms)`)
+    }
+    else {
+        $("#ping-marble").css("color","red")
+        $("#ping-marble").html("Disconnected")
+        // if(data.marblegame === -1) $("#ping-marble").html("Error")
+        // else if(data.marblegame === -2) 
+    }
+
+
+}
+
 async function fetchdata(){
     try{
+        let health = await (await fetch("/ping")).json()
+        healthcheck(health)
 
+        console.log(health)
         let rooms = (await (await fetch("/admin/allrooms")).json()).data
         let users = (await (await fetch("/admin/allusers")).json()).data
         let str=``

@@ -5,6 +5,8 @@ const PROTO_PATH = __dirname + "/proto/marblegame.proto"
 import { loadPackageDefinition } from "@grpc/grpc-js"
 import { HandleClientEvent,SubscribeEventEmitter,InitGame, RequestGameStart, RequestSetting, ResetGame } from "../controllers"
 import { userEvents } from "../Model/models"
+import RequestItem from "../controllers/RequestItem"
+import Ping from "../controllers/ping"
 const packageDefinition = loadSync(PROTO_PATH, {
 	keepCase: true,
 	longs: String,
@@ -34,6 +36,8 @@ export default function StartGRPCServer() {
         ListenGameEvent:SubscribeEventEmitter,
         RequestSetting:RequestSetting,
         RequestGameStart:RequestGameStart,
-        ResetGame:ResetGame
+        ResetGame:ResetGame,
+        RequestItem:RequestItem,
+        Ping:Ping
     })
 }

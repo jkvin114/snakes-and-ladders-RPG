@@ -535,6 +535,7 @@ class MatchInterface {
 		$("#marble-item").show()
 		fetch("/resource/marble_items").then((response) => {
 			response.json().then((result) => {
+				console.log(result)
 				let str = ""
 				for (const item of result) {
 					this.marbleItemState.push({

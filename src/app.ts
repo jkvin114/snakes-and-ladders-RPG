@@ -19,7 +19,7 @@ const session = require("express-session")({
 })
 import express=require("express")
 import { connectMongoDB } from "./mongodb/connect"
-import MarbleGameGRPCClient from "./grpc/client"
+import MarbleGameGRPCClient from "./grpc/marblegameclient"
 declare module 'express-session' {
 	interface SessionData {
         cookie: Cookie;
@@ -74,6 +74,7 @@ app.use("/user", require("./router/RegisteredUserRouter"))
 app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
 app.use("/board", require("./router/board/BoardRouter"))
+app.use("/ping", require("./router/pingRouter"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);

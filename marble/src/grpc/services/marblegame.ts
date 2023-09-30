@@ -1655,13 +1655,15 @@ export namespace marblegame {
         }
     }
     export class GameEvent extends pb_1.Message {
-        #one_of_decls: number[][] = [];
-        constructor(data?: any[] | {
+        #one_of_decls: number[][] = [[5]];
+        constructor(data?: any[] | ({
             rname?: string;
             player?: number;
             jsonObj?: string;
             type?: string;
-        }) {
+        } & (({
+            isGameOver?: boolean;
+        })))) {
             super();
             pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
             if (!Array.isArray(data) && typeof data == "object") {
@@ -1676,6 +1678,9 @@ export namespace marblegame {
                 }
                 if ("type" in data && data.type != undefined) {
                     this.type = data.type;
+                }
+                if ("isGameOver" in data && data.isGameOver != undefined) {
+                    this.isGameOver = data.isGameOver;
                 }
             }
         }
@@ -1703,11 +1708,30 @@ export namespace marblegame {
         set type(value: string) {
             pb_1.Message.setField(this, 4, value);
         }
+        get isGameOver() {
+            return pb_1.Message.getFieldWithDefault(this, 5, false) as boolean;
+        }
+        set isGameOver(value: boolean) {
+            pb_1.Message.setOneofField(this, 5, this.#one_of_decls[0], value);
+        }
+        get has_isGameOver() {
+            return pb_1.Message.getField(this, 5) != null;
+        }
+        get _isGameOver() {
+            const cases: {
+                [index: number]: "none" | "isGameOver";
+            } = {
+                0: "none",
+                5: "isGameOver"
+            };
+            return cases[pb_1.Message.computeOneofCase(this, [5])];
+        }
         static fromObject(data: {
             rname?: string;
             player?: number;
             jsonObj?: string;
             type?: string;
+            isGameOver?: boolean;
         }): GameEvent {
             const message = new GameEvent({});
             if (data.rname != null) {
@@ -1722,6 +1746,9 @@ export namespace marblegame {
             if (data.type != null) {
                 message.type = data.type;
             }
+            if (data.isGameOver != null) {
+                message.isGameOver = data.isGameOver;
+            }
             return message;
         }
         toObject() {
@@ -1730,6 +1757,7 @@ export namespace marblegame {
                 player?: number;
                 jsonObj?: string;
                 type?: string;
+                isGameOver?: boolean;
             } = {};
             if (this.rname != null) {
                 data.rname = this.rname;
@@ -1742,6 +1770,9 @@ export namespace marblegame {
             }
             if (this.type != null) {
                 data.type = this.type;
+            }
+            if (this.isGameOver != null) {
+                data.isGameOver = this.isGameOver;
             }
             return data;
         }
@@ -1757,6 +1788,8 @@ export namespace marblegame {
                 writer.writeString(3, this.jsonObj);
             if (this.type.length)
                 writer.writeString(4, this.type);
+            if (this.has_isGameOver)
+                writer.writeBool(5, this.isGameOver);
             if (!w)
                 return writer.getResultBuffer();
         }
@@ -1778,6 +1811,9 @@ export namespace marblegame {
                     case 4:
                         message.type = reader.readString();
                         break;
+                    case 5:
+                        message.isGameOver = reader.readBool();
+                        break;
                     default: reader.skipField();
                 }
             }
@@ -1788,6 +1824,155 @@ export namespace marblegame {
         }
         static deserializeBinary(bytes: Uint8Array): GameEvent {
             return GameEvent.deserialize(bytes);
+        }
+    }
+    export class SimulationEvent extends pb_1.Message {
+        #one_of_decls: number[][] = [[4]];
+        constructor(data?: any[] | ({
+            rname?: string;
+            type?: number;
+            jsonObj?: string;
+        } & (({
+            isGameOver?: boolean;
+        })))) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("rname" in data && data.rname != undefined) {
+                    this.rname = data.rname;
+                }
+                if ("type" in data && data.type != undefined) {
+                    this.type = data.type;
+                }
+                if ("jsonObj" in data && data.jsonObj != undefined) {
+                    this.jsonObj = data.jsonObj;
+                }
+                if ("isGameOver" in data && data.isGameOver != undefined) {
+                    this.isGameOver = data.isGameOver;
+                }
+            }
+        }
+        get rname() {
+            return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+        }
+        set rname(value: string) {
+            pb_1.Message.setField(this, 1, value);
+        }
+        get type() {
+            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
+        }
+        set type(value: number) {
+            pb_1.Message.setField(this, 2, value);
+        }
+        get jsonObj() {
+            return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+        }
+        set jsonObj(value: string) {
+            pb_1.Message.setField(this, 3, value);
+        }
+        get isGameOver() {
+            return pb_1.Message.getFieldWithDefault(this, 4, false) as boolean;
+        }
+        set isGameOver(value: boolean) {
+            pb_1.Message.setOneofField(this, 4, this.#one_of_decls[0], value);
+        }
+        get has_isGameOver() {
+            return pb_1.Message.getField(this, 4) != null;
+        }
+        get _isGameOver() {
+            const cases: {
+                [index: number]: "none" | "isGameOver";
+            } = {
+                0: "none",
+                4: "isGameOver"
+            };
+            return cases[pb_1.Message.computeOneofCase(this, [4])];
+        }
+        static fromObject(data: {
+            rname?: string;
+            type?: number;
+            jsonObj?: string;
+            isGameOver?: boolean;
+        }): SimulationEvent {
+            const message = new SimulationEvent({});
+            if (data.rname != null) {
+                message.rname = data.rname;
+            }
+            if (data.type != null) {
+                message.type = data.type;
+            }
+            if (data.jsonObj != null) {
+                message.jsonObj = data.jsonObj;
+            }
+            if (data.isGameOver != null) {
+                message.isGameOver = data.isGameOver;
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                rname?: string;
+                type?: number;
+                jsonObj?: string;
+                isGameOver?: boolean;
+            } = {};
+            if (this.rname != null) {
+                data.rname = this.rname;
+            }
+            if (this.type != null) {
+                data.type = this.type;
+            }
+            if (this.jsonObj != null) {
+                data.jsonObj = this.jsonObj;
+            }
+            if (this.isGameOver != null) {
+                data.isGameOver = this.isGameOver;
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.rname.length)
+                writer.writeString(1, this.rname);
+            if (this.type != 0)
+                writer.writeInt32(2, this.type);
+            if (this.jsonObj.length)
+                writer.writeString(3, this.jsonObj);
+            if (this.has_isGameOver)
+                writer.writeBool(4, this.isGameOver);
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SimulationEvent {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SimulationEvent();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        message.rname = reader.readString();
+                        break;
+                    case 2:
+                        message.type = reader.readInt32();
+                        break;
+                    case 3:
+                        message.jsonObj = reader.readString();
+                        break;
+                    case 4:
+                        message.isGameOver = reader.readBool();
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): SimulationEvent {
+            return SimulationEvent.deserialize(bytes);
         }
     }
     interface GrpcUnaryServiceInterface<P, R> {
@@ -1933,6 +2118,15 @@ export namespace marblegame {
                 responseSerialize: (message: Bool) => Buffer.from(message.serialize()),
                 responseDeserialize: (bytes: Buffer) => Bool.deserialize(new Uint8Array(bytes))
             },
+            ToggleAuto: {
+                path: "/marblegame.MarbleGame/ToggleAuto",
+                requestStream: false,
+                responseStream: false,
+                requestSerialize: (message: Bool) => Buffer.from(message.serialize()),
+                requestDeserialize: (bytes: Buffer) => Bool.deserialize(new Uint8Array(bytes)),
+                responseSerialize: (message: Bool) => Buffer.from(message.serialize()),
+                responseDeserialize: (bytes: Buffer) => Bool.deserialize(new Uint8Array(bytes))
+            },
             ListenGameEvent: {
                 path: "/marblegame.MarbleGame/ListenGameEvent",
                 requestStream: false,
@@ -1941,6 +2135,33 @@ export namespace marblegame {
                 requestDeserialize: (bytes: Buffer) => String.deserialize(new Uint8Array(bytes)),
                 responseSerialize: (message: GameEvent) => Buffer.from(message.serialize()),
                 responseDeserialize: (bytes: Buffer) => GameEvent.deserialize(new Uint8Array(bytes))
+            },
+            ListenSimulationEvent: {
+                path: "/marblegame.MarbleGame/ListenSimulationEvent",
+                requestStream: false,
+                responseStream: true,
+                requestSerialize: (message: String) => Buffer.from(message.serialize()),
+                requestDeserialize: (bytes: Buffer) => String.deserialize(new Uint8Array(bytes)),
+                responseSerialize: (message: SimulationEvent) => Buffer.from(message.serialize()),
+                responseDeserialize: (bytes: Buffer) => SimulationEvent.deserialize(new Uint8Array(bytes))
+            },
+            Ping: {
+                path: "/marblegame.MarbleGame/Ping",
+                requestStream: false,
+                responseStream: false,
+                requestSerialize: (message: Int) => Buffer.from(message.serialize()),
+                requestDeserialize: (bytes: Buffer) => Int.deserialize(new Uint8Array(bytes)),
+                responseSerialize: (message: Int) => Buffer.from(message.serialize()),
+                responseDeserialize: (bytes: Buffer) => Int.deserialize(new Uint8Array(bytes))
+            },
+            RequestItem: {
+                path: "/marblegame.MarbleGame/RequestItem",
+                requestStream: false,
+                responseStream: false,
+                requestSerialize: (message: Void) => Buffer.from(message.serialize()),
+                requestDeserialize: (bytes: Buffer) => Void.deserialize(new Uint8Array(bytes)),
+                responseSerialize: (message: String) => Buffer.from(message.serialize()),
+                responseDeserialize: (bytes: Buffer) => String.deserialize(new Uint8Array(bytes))
             }
         };
         [method: string]: grpc_1.UntypedHandleCall;
@@ -1957,7 +2178,11 @@ export namespace marblegame {
         abstract ConfirmCardUse(call: grpc_1.ServerUnaryCall<UserConfirmCardUse, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
         abstract SelectGodhandSpecial(call: grpc_1.ServerUnaryCall<BoolUserResponse, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
         abstract SelectIsland(call: grpc_1.ServerUnaryCall<BoolUserResponse, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
+        abstract ToggleAuto(call: grpc_1.ServerUnaryCall<Bool, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
         abstract ListenGameEvent(call: grpc_1.ServerWritableStream<String, GameEvent>): void;
+        abstract ListenSimulationEvent(call: grpc_1.ServerWritableStream<String, SimulationEvent>): void;
+        abstract Ping(call: grpc_1.ServerUnaryCall<Int, Int>, callback: grpc_1.sendUnaryData<Int>): void;
+        abstract RequestItem(call: grpc_1.ServerUnaryCall<Void, String>, callback: grpc_1.sendUnaryData<String>): void;
     }
     export class MarbleGameClient extends grpc_1.makeGenericClientConstructor(UnimplementedMarbleGameService.definition, "MarbleGame", {}) {
         constructor(address: string, credentials: grpc_1.ChannelCredentials, options?: Partial<grpc_1.ChannelOptions>) {
@@ -2002,8 +2227,20 @@ export namespace marblegame {
         SelectIsland: GrpcUnaryServiceInterface<BoolUserResponse, Bool> = (message: BoolUserResponse, metadata: grpc_1.Metadata | grpc_1.CallOptions | grpc_1.requestCallback<Bool>, options?: grpc_1.CallOptions | grpc_1.requestCallback<Bool>, callback?: grpc_1.requestCallback<Bool>): grpc_1.ClientUnaryCall => {
             return super.SelectIsland(message, metadata, options, callback);
         };
+        ToggleAuto: GrpcUnaryServiceInterface<Bool, Bool> = (message: Bool, metadata: grpc_1.Metadata | grpc_1.CallOptions | grpc_1.requestCallback<Bool>, options?: grpc_1.CallOptions | grpc_1.requestCallback<Bool>, callback?: grpc_1.requestCallback<Bool>): grpc_1.ClientUnaryCall => {
+            return super.ToggleAuto(message, metadata, options, callback);
+        };
         ListenGameEvent: GrpcStreamServiceInterface<String, GameEvent> = (message: String, metadata?: grpc_1.Metadata | grpc_1.CallOptions, options?: grpc_1.CallOptions): grpc_1.ClientReadableStream<GameEvent> => {
             return super.ListenGameEvent(message, metadata, options);
+        };
+        ListenSimulationEvent: GrpcStreamServiceInterface<String, SimulationEvent> = (message: String, metadata?: grpc_1.Metadata | grpc_1.CallOptions, options?: grpc_1.CallOptions): grpc_1.ClientReadableStream<SimulationEvent> => {
+            return super.ListenSimulationEvent(message, metadata, options);
+        };
+        Ping: GrpcUnaryServiceInterface<Int, Int> = (message: Int, metadata: grpc_1.Metadata | grpc_1.CallOptions | grpc_1.requestCallback<Int>, options?: grpc_1.CallOptions | grpc_1.requestCallback<Int>, callback?: grpc_1.requestCallback<Int>): grpc_1.ClientUnaryCall => {
+            return super.Ping(message, metadata, options, callback);
+        };
+        RequestItem: GrpcUnaryServiceInterface<Void, String> = (message: Void, metadata: grpc_1.Metadata | grpc_1.CallOptions | grpc_1.requestCallback<String>, options?: grpc_1.CallOptions | grpc_1.requestCallback<String>, callback?: grpc_1.requestCallback<String>): grpc_1.ClientUnaryCall => {
+            return super.RequestItem(message, metadata, options, callback);
         };
     }
 }

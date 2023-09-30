@@ -99,11 +99,13 @@ export namespace ServerEventModel{
         monopoly:number
         scores:number[]
         mul:number
+        stat:GameResultStat
     }
     export interface BankruptWin
     {
         scores:number[]
         mul:number
+        stat:GameResultStat
     }
     export interface ActionStack_debug{
         stack:{
@@ -113,5 +115,24 @@ export namespace ServerEventModel{
             valid: boolean;
             category: string;
         }[]
+    }
+
+  export interface GameResultStat{
+        winner: number;
+        winType: string;
+        totalturn: number;
+        map: string;
+        isTeam: boolean;
+        version: number;
+        players: {
+            stats: number[];
+            items: number[];
+            score: number;
+            name: string;
+            char: number;
+            agentType: string;
+        }[];
+        createdAt: any;
+        updatedAt: any;
     }
 }

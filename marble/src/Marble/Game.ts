@@ -120,9 +120,9 @@ class MarbleGame {
 	constructor(players: ProtoPlayer[], rname: string, isTeam: boolean, map: number,gametype:GameType) {
 		this.isTeam = isTeam
 		this.rname = rname
-		
 		this.map = new MarbleGameMap(MAP[map % MAP.length])
 		this.state=new GameState(new SimpleVectorizer())
+		this.gametype=gametype
 		this.mediator = new PlayerMediator(this, this.map, players, this.START_MONEY)
 		this.playerTotal = this.mediator.playerCount + this.mediator.aiCount
 		this.eventEmitter = new MarbleGameEventObserver(rname)
@@ -137,7 +137,6 @@ class MarbleGame {
 		this.totalturn=0
 		this.saveStateVector=false
 		this.stateVectors=[]
-		this.gametype=gametype
 
 		this.debug=false
 	}
@@ -233,9 +232,10 @@ class MarbleGame {
 
 			//currently treated as game over with bankrupt(with multiplier 1)
 			let scores=this.getPlayerWinScores(winner, 1)
-			this.eventEmitter.gameoverWithBankrupt(winner,scores , 1)
+			let windata=new GameOverAction(winner,"turn_end",scores)
+			this.eventEmitter.gameoverWithBankrupt(winner,scores , 1,this.getResultStat(windata))
 			this.over = true
-			this.pushSingleAction(new GameOverAction(winner,"turn_end",scores), new ActionTrace(ACTION_TYPE.EMPTY))
+			this.pushSingleAction(windata, new ActionTrace(ACTION_TYPE.EMPTY))
 
 			return true
 		}
@@ -1157,8 +1157,9 @@ class MarbleGame {
 			winType="sight"
 		}
 		let scores=this.getPlayerWinScores(winner, mul)
-		this.eventEmitter.gameOverWithMonopoly(winner, monopoly, scores, mul)
-		this.pushSingleAction(new GameOverAction(winner,winType,scores), new ActionTrace(ACTION_TYPE.EMPTY))
+		let windata=new GameOverAction(winner,winType,scores)
+		this.eventEmitter.gameOverWithMonopoly(winner, monopoly, scores, mul,this.getResultStat(windata))
+		this.pushSingleAction(windata, new ActionTrace(ACTION_TYPE.EMPTY))
 	}
 
 	bankrupt(player: MarblePlayer) {
@@ -1176,12 +1177,14 @@ class MarbleGame {
 	}
 	gameoverWithBankrupt(winner: number) {
 		let scores=this.getPlayerWinScores(winner, this.map.bankruptWinMultiplier)
+		let windata=new GameOverAction(winner,"bankrupt",scores)
 		this.eventEmitter.gameoverWithBankrupt(
 			winner,scores,
-			this.map.bankruptWinMultiplier
+			this.map.bankruptWinMultiplier,
+			this.getResultStat(windata)
 		)
 		this.over = true
-		this.pushSingleAction(new GameOverAction(winner,"bankrupt",scores), new ActionTrace(ACTION_TYPE.EMPTY))
+		this.pushSingleAction(windata, new ActionTrace(ACTION_TYPE.EMPTY))
 	}
 	getSimulationResultStat(windata:GameOverAction):GameResultStat{
 		return {

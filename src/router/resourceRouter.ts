@@ -2,6 +2,7 @@ import express = require('express');
 import { R } from '../Room/RoomStorage';
 import { MAP_TYPE } from '../RPGGame/data/enum';
 import fs = require("fs")
+import { MarbleRoom } from '../Marble/MarbleRoom';
 const RESOURCE_PATH="/../../res/"
 const router = express.Router()
 const{MarbleItemPreset} = require("../mongodb/GameDBSchema")
@@ -170,7 +171,7 @@ router.get("/marble_map_coordinates", function (req:express.Request, res:express
 
 router.get("/marble_items", function (req:express.Request, res:express.Response) {
 	let data={}
-	res.end(JSON.stringify(data))
+	res.end(JSON.stringify(MarbleRoom.ItemDescriptionCache))
 })
 router.get("/marble_item_presets", async function (req:express.Request, res:express.Response) {
 	fs.readFile(__dirname + RESOURCE_PATH+"marble/marbleitempresets.json", "utf8", function (err, data) {

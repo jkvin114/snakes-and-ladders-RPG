@@ -3,9 +3,10 @@ import { SocketSession } from "../sockets/SocketSession"
 import { MarbleRoom } from "./MarbleRoom"
 import { R } from "../Room/RoomStorage"
 import { io } from "../app"
-import MarbleGameGRPCClient from "../grpc/client"
+import MarbleGameGRPCClient from "../grpc/marblegameclient"
 import { marblegame } from "../grpc/services/marblegame"
 import grpcController from "../sockets/gRPCController"
+import { Room } from "../Room/room"
 
 const prefix = "marble:user:"
 const userEvents = {
@@ -27,7 +28,10 @@ const userEvents = {
 function forwardGameEvent(rname: string, event: marblegame.GameEvent) {
 	io.to(rname).emit(event.type,event.player, JSON.parse(event.jsonObj))
 }
-
+function onGameOver(room:MarbleRoom,jsonObj:string){
+	const data=JSON.parse(jsonObj)
+	room.onGameover(data.stat)
+}
 module.exports = function (socket: Socket) {
 	socket.on("user:marble_simulation_ready", function (count: number, savelabel: boolean) {
 		let rname = "simulation_marble_" + String(Math.floor(Math.random() * 1000000))
@@ -80,12 +84,13 @@ module.exports = function (socket: Socket) {
 
 	socket.on(userEvents.GAMEREADY, function (itemsetting: any) {
 		let setting = new marblegame.GameSetting()
-		setting.gametype = "normal"
 
-		grpcController(socket, (room, rname, turn) => {
+		grpcController<MarbleRoom>(socket, (room, rname, turn) => {
 			setting.isTeam = room.isTeam
 			setting.rname = rname
 			setting.map = room.map
+			setting.gametype=room.gametype
+			console.log(room.gametype)
 			setting.playerlist = room.getPlayerList().map((p) => {
 				if (p.data) p.data = JSON.stringify(p.data)
 				return new marblegame.ProtoPlayer(p)
@@ -97,7 +102,10 @@ module.exports = function (socket: Socket) {
 			MarbleGameGRPCClient.InitGame(setting,()=>{
 
 				MarbleGameGRPCClient.ListenGameEvent(rname, (event: marblegame.GameEvent) => {
-					forwardGameEvent(rname, event)
+					if(event)
+						forwardGameEvent(rname, event)
+					if(event.isGameOver)
+						onGameOver(room,event.jsonObj)
 				})
 
 			})
@@ -119,6 +127,7 @@ module.exports = function (socket: Socket) {
 					turn: turn,
 				}),
 				(event: marblegame.GameSettingReponse) => {
+					if(!event) return
 					const setting = JSON.parse(event.jsonPayload)
 
 					let gameturn = setting.players[turn].turn

@@ -4,6 +4,7 @@ import { ServerRequestModel as sm } from "../Model/ServerRequestModel"
 import { BUILDING } from "./tile/Tile"
 import type { ServerWritableStream } from "@grpc/grpc-js"
 import { marblegame } from "../grpc/services/marblegame"
+import { GameResultStat } from "../Model/GameResultStat"
 const prefix = "server:"
 namespace serverEvents {
 	export const NEXTTURN = prefix + "nextturn"
@@ -65,7 +66,7 @@ export class MarbleGameEventObserver {
 	registerSimulationCallback(callback: GameEventEmitter) {
 		this.simulationEventEmitter = callback
 	}
-	private emit(type:string,payload:any,player:number=0){
+	private emit(type:string,payload:any,player:number=0,isGameOver?:boolean){
 		if(typeof payload === "string" || typeof payload === "number" || typeof payload === "boolean") 
 			payload = {val:payload}
 		if(payload===null || payload===undefined)
@@ -74,7 +75,8 @@ export class MarbleGameEventObserver {
 			rname:this.rname,
 			player:player,
 			type:type,
-			jsonObj:JSON.stringify(payload)
+			jsonObj:JSON.stringify(payload),
+			isGameOver:isGameOver
 		}))
 	}
 
@@ -125,7 +127,7 @@ export class MarbleGameEventObserver {
 		)
 	}
 	askLoan(player: number, amount: number) {
-		this.emit(  serverEvents.ASK_LOAN, player, amount)
+		this.emit(  serverEvents.ASK_LOAN,amount, player )
 	}
 	askBuyout(player: number, pos: number, price: number, originalPrice: number) {
         const payload:sm.BuyoutSelection={
@@ -299,18 +301,18 @@ export class MarbleGameEventObserver {
 	bankrupt(player: number) {
 		this.emit(  serverEvents.BANKRUPT, player)
 	}
-	gameOverWithMonopoly(player: number, monopoly: number, scores: number[], mul: number) {
+	gameOverWithMonopoly(player: number, monopoly: number, scores: number[], mul: number,stat:se.GameResultStat) {
         const payload:se.MonopolyWin={
-            monopoly:monopoly,scores:scores,mul:mul
+            monopoly:monopoly,scores:scores,mul:mul,stat:stat
         }
-		this.emit(  serverEvents.GAMEOVER_MONOPOLY, payload,player)
+		this.emit(  serverEvents.GAMEOVER_MONOPOLY, payload,player,true)
 		this.close()
 	}
-	gameoverWithBankrupt(player: number, scores: number[], mul: number) {
+	gameoverWithBankrupt(player: number, scores: number[], mul: number,stat:se.GameResultStat) {
         const payload:se.BankruptWin={
-            scores:scores,mul:mul
+            scores:scores,mul:mul,stat:stat
         }
-		this.emit(  serverEvents.GAMEOVER_BANKRUPT, payload,player)
+		this.emit(serverEvents.GAMEOVER_BANKRUPT, payload,player,true)
 		this.close()
 	}
 

@@ -5,6 +5,7 @@ const router = express.Router()
 import { RPGRoom } from "../RPGGame/RPGRoom"
 import CONFIG from "./../../config/config.json"
 import SETTINGS = require("../../res/globalsettings.json")
+import MarbleGameGRPCClient from "../grpc/marblegameclient"
 
 function isUserInRPGRoom(req: Express.Request) {
 	return (
@@ -62,10 +63,9 @@ router.post("/create_rpg", function (req: express.Request, res: express.Response
 	return res.status(201).end()
 })
 
-router.post("/create", function (req: express.Request, res: express.Response) {
+router.post("/create", async function (req: express.Request, res: express.Response) {
 	let body = req.body
 	let ismarble = req.body.type === "marble"
-console.log(body)
 	if (ismarble && !CONFIG.marble) return res.status(403).end()
 
 	if (body.roomname === "") {
@@ -77,7 +77,9 @@ console.log(body)
 		return
 	}
 	let room = null
-	if (ismarble) {
+	if (ismarble) {	
+		let status = await MarbleGameGRPCClient.Ping()
+		if(status<0) return res.status(500).end('service unavaliable')
 		room = new MarbleRoom(rname)
 		R.setMarbleRoom(rname, room)
 	} else {

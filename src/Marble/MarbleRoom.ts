@@ -4,7 +4,7 @@ import { Worker, isMainThread } from "worker_threads"
 import type { SchemaTypes } from "../mongodb/SchemaTypes";
 import { MarbleGameRecordSchema } from "../mongodb/schemaController/MarbleGameRecord";
 
-import MarbleGameGRPCClient from "../grpc/client";
+import MarbleGameGRPCClient from "../grpc/marblegameclient";
 import { hasProp } from "../RPGGame/core/Util";
 
 const path = require("path")
@@ -24,8 +24,8 @@ class MarbleRoom extends Room{
 //	eventObserver:MarbleGameEventObserver
 	type: string
 	simulationRunning:boolean
-	gametype:string
-
+	static ItemDescriptionCache:any[]=[]
+	
     constructor(name:string){
         super(name)
 		this.type="marble"
@@ -90,8 +90,10 @@ class MarbleRoom extends Room{
 			})
 		})
 	}
-    onGameover(winner:number,stat:SchemaTypes.MarbleGameRecord){
+    onGameover(stat:any){
+		this.isGameRunning=false
 		try{
+			console.log(stat)
 			MarbleGameRecordSchema.create(stat)
 		}
 		catch(e){
@@ -101,9 +103,9 @@ class MarbleRoom extends Room{
 			this.reset()
 		}
     }
-	reset(): void {
+	reset(){
+		MarbleGameGRPCClient.ResetGame(this.name)
 		super.reset()
-		// this.simulation = null
 	}
 }
 export {MarbleRoom}

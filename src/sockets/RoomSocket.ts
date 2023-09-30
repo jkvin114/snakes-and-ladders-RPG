@@ -26,7 +26,7 @@ module.exports=function(socket:Socket){
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
 				io.to(roomname).emit(type,...args)
 			}).setHostNickname(SocketSession.getUsername(socket), 0,SocketSession.getUserClass(socket))
-
+			
 			room.addSession(SocketSession.getId(socket))
 			socket.join(rname)
 		})

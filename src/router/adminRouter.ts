@@ -3,6 +3,8 @@ import express = require("express")
 import { R } from "../Room/RoomStorage"
 const router = express.Router()
 import { adminauth } from "./board/helpers"
+import mongoose from "mongoose"
+import MarbleGameGRPCClient from "../grpc/marblegameclient"
 
 router.get("/allusers",adminauth, async function (req: express.Request, res: express.Response) {
     try{
@@ -42,5 +44,4 @@ router.post("/reset_room/:roomname",adminauth, function (req: express.Request, r
 
 	return res.status(200).end("admin approved")
 })
-
 module.exports = router
