@@ -2,7 +2,6 @@ node_modules/
 *.txt
 public/uploads/
 *.env
-*.csv
 config/
 temp/
 replays/
