@@ -23,7 +23,7 @@ const ITEMS = new Map<number,itemData>()//: itemData[] = []
 export function registerItems() {
 	return new Promise<void>((res) =>
 		fs
-			.createReadStream(__dirname + (DEV ? "./../../res/items-dev.csv" : "./../../res/items.csv"), { encoding: "utf-8" })
+			.createReadStream(__dirname + (DEV ? "/../../res/items-dev.csv" : "/../../res/items.csv"), { encoding: "utf-8" })
 			.pipe(myParser)
 			.on("data", (data:itemData) => ITEMS.set(Number(data.code),data))
 			.on("end", () => {

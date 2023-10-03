@@ -8,7 +8,7 @@ export default class MarbleGameGRPCClient{
     
 
     static connect(){
-        console.log("create grpc client")
+        console.log("create marblegame grpc client")
         try{
 
             MarbleGameGRPCClient.stub = new marblegame.MarbleGameClient('localhost:'+PORT,credentials.createInsecure());
@@ -23,7 +23,7 @@ export default class MarbleGameGRPCClient{
    /**
     * -1: connection not established
     * -2: error  while conenction 
-    * 0>: a time at which the grpc server received the request
+    * 1: normal
     * @returns 
     */
    static Ping(){
@@ -31,10 +31,9 @@ export default class MarbleGameGRPCClient{
             if(!MarbleGameGRPCClient.stub ) res(-1)
             MarbleGameGRPCClient.stub.Ping(new marblegame.Int(), (error:any, response:marblegame.Int) => {
             if (error) {
-                console.error(error);
                 res(-2)
             }else
-            res(response.val)
+            res(1)
         });
      })
    }

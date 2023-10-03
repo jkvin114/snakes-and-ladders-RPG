@@ -116,7 +116,7 @@ export default class Room {
 						resolve(data.value)
 					} else reject(data.value)
 				} else reject("invalid response from child thread")
-			})
+			})	
 			worker.on("error", reject)
 			worker.on("exit", (code: number) => {
 				if (code !== 0) worker.terminate()

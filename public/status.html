@@ -47,6 +47,8 @@
         <div style="text-align: center;">
             <h4>Database</h4>
             <h4 id="ping-db"></h4>
+            <h4>RPG Game Server</h4>
+            <h4 id="ping-rpg"></h4>
             <h4>Marble Game Server</h4>
             <h4 id="ping-marble"></h4>
         </div>
@@ -88,15 +90,24 @@ function healthcheck(data){
 
     if(data.marblegame >= 0){
         $("#ping-marble").css("color","green")
-        $("#ping-marble").html(`Connected (${data.marblegame}ms)`)
+        $("#ping-marble").html(`Avaliable (${data.marblegame}ms)`)
     }
     else {
         $("#ping-marble").css("color","red")
-        $("#ping-marble").html("Disconnected")
+        $("#ping-marble").html("Unavaliable")
         // if(data.marblegame === -1) $("#ping-marble").html("Error")
         // else if(data.marblegame === -2) 
     }
-
+    if(data.rpggame >= 0){
+        $("#ping-rpg").css("color","green")
+        $("#ping-rpg").html(`Avaliable (${data.rpggame}ms)`)
+    }
+    else {
+        $("#ping-rpg").css("color","red")
+        $("#ping-rpg").html("Unavaliable")
+        // if(data.marblegame === -1) $("#ping-marble").html("Error")
+        // else if(data.marblegame === -2) 
+    }
 
 }
 

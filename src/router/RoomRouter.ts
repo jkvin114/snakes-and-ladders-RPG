@@ -6,6 +6,7 @@ import { RPGRoom } from "../RPGGame/RPGRoom"
 import CONFIG from "./../../config/config.json"
 import SETTINGS = require("../../res/globalsettings.json")
 import MarbleGameGRPCClient from "../grpc/marblegameclient"
+import RPGGameGRPCClient from "../grpc/rpggameclient"
 
 function isUserInRPGRoom(req: Express.Request) {
 	return (
@@ -79,10 +80,16 @@ router.post("/create", async function (req: express.Request, res: express.Respon
 	let room = null
 	if (ismarble) {	
 		let status = await MarbleGameGRPCClient.Ping()
+		console.log(status)
 		if(status<0) return res.status(500).end('service unavaliable')
+
 		room = new MarbleRoom(rname)
 		R.setMarbleRoom(rname, room)
 	} else {
+		let status = await RPGGameGRPCClient.Ping()
+		console.log(status)
+		if(status<0) return res.status(500).end('service unavaliable')
+
 		if (isUserInRPGRoom(req)) {
 			res.status(307).end("previous room exists")
 			return

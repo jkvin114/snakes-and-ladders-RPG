@@ -71,7 +71,7 @@ abstract class Room {
 		this.isPublic=true
 		this.isLoggedInUserOnly=false
 		this.password=""
-		this.gametype="simulation"
+		this.gametype="normal"
 	}
 
 	setGameType(type:string){

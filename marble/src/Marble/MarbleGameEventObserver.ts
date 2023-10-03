@@ -299,7 +299,7 @@ export class MarbleGameEventObserver {
 		this.emit(  serverEvents.INDICATE_DEFENCE, payload)
 	}
 	bankrupt(player: number) {
-		this.emit(  serverEvents.BANKRUPT, player)
+		this.emit(  serverEvents.BANKRUPT,null, player)
 	}
 	gameOverWithMonopoly(player: number, monopoly: number, scores: number[], mul: number,stat:se.GameResultStat) {
         const payload:se.MonopolyWin={
