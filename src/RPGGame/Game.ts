@@ -425,11 +425,28 @@ class Game {
 		// let str=`${this.mapHandler.mapId},${this.totalturn},${this.totalnum},${this.isTeam?1:0},${this.mapHandler.getFinishPos()},`+
 		// `${this.setting.additionalDiceAmount},${this.setting.diceControlItemFrequency},${this.setting.extraResistanceAmount},`+
 		// `${this.itemLimit},`
-		let str2=`${this.totalturn}`
+		const sampleProb=0.3
+
+		let str2=`${Util.normNRound(this.totalturn,20)}`
+		let labels=[]
 		for(let i=0;i<this.totalnum;i++){
-			str2+=","+this.pOfTurn(i).getStateLabel(this.mapHandler.getFinishPos())
+			labels.push(this.pOfTurn(i).getStateLabel(this.mapHandler.getFinishPos()))
 		}
-		this.trainLabels.push(str2)
+		labels=Util.normalize2DIndices(labels,[
+			0,1,2,3,4,5,6
+		])
+		
+		for(const label of labels){
+			let str=""
+			label.forEach((val, i) => {
+				if (i === 0) str += val
+				else return (str += "," + val)
+			}, "")
+			str2+=","+str
+		}
+		if(Math.random()<sampleProb)
+			this.trainLabels.push(str2)
+
 		if(!this.instant && CONFIG.useWinPrediction)
 			this.getPrediction(str2)
 	}

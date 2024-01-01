@@ -1,0 +1,75 @@
+.board-title{
+    font-weight: bold;
+    text-align: left;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.down{
+    color: blue;
+}
+.up{
+    color: red;
+}
+.down-bg{
+    background-color: rgb(117, 117, 255);
+}
+.up-bg{
+    background-color: rgb(255, 115, 115);
+}
+.history-bottom{
+    color: var(--color-text-secondary);
+}
+.history-top{
+    font-size:larger;
+    font-weight: bold;
+}
+.history-item{
+    margin: 10px;
+    max-width: 250px;
+}
+.history{
+    overflow: scroll;
+    height: 100%;
+}
+.trade-board > div{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+}
+.trade-btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    width: 160px;
+    height: 50px;
+    margin: 10px;
+    cursor: pointer;
+    color: white;
+}
+.trade-btn:hover{
+    transform: scale(1.1);
+}
+.trade-btn.disabled{
+    filter:brightness(0.6);
+    cursor:not-allowed;
+}
+.trade-status{
+    height: 50px;
+    margin: 10px;
+    padding: 6px;
+    border-radius: 5px;
+    width: 200px;
+    text-align: center;
+    /* background-color: rgb(251, 251, 251); */
+    background-color: var(--color-bg-secondary);
+
+}
+.trade-status-values{
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}

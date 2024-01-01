@@ -1,0 +1,37 @@
+{
+    "startgame":"Create Game",
+    "reconnect":"Reconnect",
+    "spectate":"SPECTATE",
+    "join":"JOIN",
+    "simulation":"Simulation",
+    "start":"START",
+    "cancel":"CANCEL",
+    "quick_start":"Quick Start",
+    "ph":{
+        "room":{
+            "username":"Username(optional)",
+            "name":"Room Name(optional)",
+            "pw":"Room Password(optional)"
+        },
+        "username":"Username",
+        "password":"Password",
+        "verify_password":"Verify Password",
+        "email":"Email"
+    },
+    "room":{
+        "private":"Make private",
+        "loginonly":"Accept logged in user only"
+    }
+    ,"login":"Log In",
+    "signup":"Sign Up",
+    "home":"Home",
+    "error":{
+        "username":"Username does not exist",
+        "password":"Password does not match",
+        "email":"Not a valid email",
+        "username_length":"Username should be between 2~15 characters",
+        "password_condition":"Password should be longer than 3 characters containing both alphabet and number",
+        "username_duplicate":"Username duplicate",
+        "roomname_duplicate":"That room name already exists"
+    }
+}

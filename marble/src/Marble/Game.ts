@@ -138,7 +138,7 @@ class MarbleGame {
 		this.saveStateVector=false
 		this.stateVectors=[]
 
-		this.debug=false
+		this.debug=true
 	}
 	test() {}
 	setClientInterface(ci: MarbleGameEventObserver) {

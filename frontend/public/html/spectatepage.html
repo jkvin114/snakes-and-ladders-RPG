@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+	<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+	<script src="lib/jquery-3.6.0.min.js"></script>
+	<head>
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+		<link rel="stylesheet" href="./src/style/style_main_navbar.css" />
+		<title>Spectate</title>
+		<link rel="icon" type="image/x-icon" href="res/img/ui/favicon.png" />
+        <link rel="stylesheet" href="./src/style/style_main_navbar.css">
+
+		<meta charset="utf-8" />
+	</head>
+
+	<style>
+		@font-face {
+			font-family: "cookierun";
+			src: url("res/font/CookieRun.ttf");
+		}
+
+		@font-face {
+			font-family: "nanumB";
+			src: url("res/font/NanumSquareB.ttf");
+		}
+		body {
+			/* background-color: #242424; */
+			background-color: #200f33;
+			color: beige;
+			margin: 0;
+
+			font-family: "nanumB";
+			text-align: center;
+		}
+        .hidden{
+            display: none;
+        }.divTable{
+            display: table;
+            width: 100%;
+        }
+        .divTableRow {
+            display: table-row;
+
+        }
+        .tablerow.red{
+            background-color: #59343B;
+        }
+        .tablerow.blue{
+            background-color: #28344E;
+        }
+        .divTableCell, .divTableHead {
+            display: table-cell;
+            padding: 3px 10px;
+        }
+        .divTableBody {
+            display: table-row-group;
+        }
+        .tablehead{
+            background-color: #4d4d5e;
+
+        }
+        .charcell{
+            width: 36px;
+        }
+        .namecell{
+            font-size: 12px;
+        }
+        .charimg{
+            display: inline-block;
+            /* background-color: #804fb3; */
+            /* border-radius: 50%; */
+            overflow: hidden;    
+        }
+        .charimg.red{
+            outline:2px solid rgb(255, 136, 136);
+        }
+        .charimg.blue{
+            outline:2px solid rgb(164, 164, 255);
+        }
+        .onegame-container .list_charimg > img{
+            width: 25px;
+            height: 25px;
+            /* transform: scale(0.8); */
+            border-radius: 3px;
+        }
+        .onegame-container .list_charimg{
+            width: 25px;
+            height: 25px;
+            margin-right: 5px;
+            margin-left: 5px;
+        }
+        .summary_map_icon{
+            display: inline-block;
+            /* background-color: rgb(184, 184, 184); */
+            border-radius: 25%;
+            overflow: hidden;
+            width: 30px;
+            height: 30px;    
+            vertical-align: middle;
+        }
+        .summary_map_icon > img{
+            width: 30px;
+            height: 30px;
+        }
+        .onegame-container{ 
+            display: inline-block;
+            
+            width: 90%;
+            max-width: 900px;
+        }
+        .game-summary-content{
+            padding: 6px;
+            
+        } 
+        .game-summary-content .footer{
+            color: rgb(196, 196, 196);
+            font-size: 13px;
+            text-align: left;
+        }
+        .game-summary{
+
+            background-color: #3f1968;
+            display: inline-block;
+            margin: 5px;;
+            border-radius: 5px;;
+            border-left: 5px solid #804fb3 ;
+            display: grid;
+            grid-template-columns: auto 30px;
+        }
+
+        #container{
+            text-align: center;
+        }
+        .purple-btn{
+            background-color: #8b4dc5;
+            border: none;
+            color: white;
+            font-size: 15px;
+            margin: 4px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 5px;
+            font-family: "nanumB";
+        }
+        .purple-btn:hover{
+            background-color:#5c3481 ;
+        }
+        .toggle-detail{
+            display: flex;
+            background-color: #4f2081;
+            cursor: pointer; 
+             border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .toggle-detail:hover{
+            background-color: #3f1968;
+        }
+        .toggle-detail.open img{
+            transform: rotate(180deg);
+        }
+        .toggle-detail img{
+            width: 30px;
+            vertical-align: middle;
+        }
+        .game-detail{
+            background-color: #3c3c49;
+            margin: 4px;
+            padding: 4px;
+            border-radius: 5px;;
+        }
+        .refreshgame{
+            vertical-align: middle;
+            width: 16px;
+            cursor: pointer;
+
+        }
+	</style>
+	<body>    
+        <div id="navbar">
+
+            <div id="navbar-btn-container">
+                <div class="nav-section ">
+                    <div class="navbtn" onclick="golink('/')">
+                        <img src="res/img/svg/home.svg" title="home">
+                        <a>Home</a>
+                    </div>
+                    <div class="navbtn " id="postbtn" onclick="golink('/board')">
+                        <img class='postbtn' src="res/img/svg/note.svg"  title="post board">
+                        <a>Posts</a>
+                    </div>
+                    <div class="navbtn"  onclick="golink('/statpage.html')">
+                        <img id="statbtn" src="res/img/svg/chart_white.svg" title="Statistics">
+                        <a>Statistics</a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <img class='menubtn' id="refreshbtn" src="res/img/svg/refresh.svg"  title="refresh">
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2 id="title">Choose a game to spectate</h2>
+            <div id="container">
+
+
+                <!-- <div class="onegame-container">
+                    <div class="game-summary">
+                        <div class="game-summary-content">
+                            <div class="footer">
+                                room_12314
+                            </div>
+                            <div>
+                                <div class="charimg list_charimg"><img src="res/img/character/illust/bird.jpg"></div>
+                                <div class="charimg list_charimg"><img src="res/img/character/illust/bird.jpg"></div>
+                                <div class="charimg list_charimg"><img src="res/img/character/illust/bird.jpg"></div>
+                                <div class="charimg list_charimg"><img src="res/img/character/illust/bird.jpg"></div>
+                            </div>
+                            <div>
+                                <div class="summary_map_icon"><img src="res/img/map_thumbnail/rapid_icon.jpg"></div>
+                                <div class="summary_map_icon"><img src="res/img/svg/skillinfo/cooltime.svg"></div>:10T
+                                <button class="purple-btn">Spectate</button>
+                            </div>
+                        </div>
+                        <div class="toggle-detail" data-toggles="123">
+                            <img src="res/img/svg/chevron-down.svg">
+                        </div>
+                    </div>
+                    <div class="game-detail hidden" id="detail_123">
+                        <div class="detail-table">
+                            <div class="divTable">
+                                <div class="divTableBody">
+                                    <div class="divTableRow tablehead">
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell">Name</div>
+                                        <div class="divTableCell">KDA</div>
+                                        <div class="divTableCell">Pos</div>
+                                    </div>
+                                    <div class="divTableRow tablerow">
+                                        <div class="divTableCell charcell">
+                                            <div class="charimg list_charimg"><img src="res/img/character/illust/bird.jpg"></div>
+                                    </div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                    </div>
+                                    <div class="divTableRow tablerow">
+                                        <div class="divTableCell charcell">
+                                            <div class="charimg list_charimg"><img src="res/img/character/illust/bird.jpg"></div>
+                                    </div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                    </div>
+                                    <div class="divTableRow tablerow">
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                    </div>
+                                    <div class="divTableRow tablerow">
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                        <div class="divTableCell"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+
+
+
+
+            </div>
+        </div>
+	</body>
+	<script type="text/javascript" src="src/spectate.js">
+	</script>
+</html>

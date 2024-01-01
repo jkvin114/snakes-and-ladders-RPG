@@ -41,7 +41,7 @@ declare module 'express-session' {
 
 const clientPath = `${__dirname}/../public`
 const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
-const PORT = 80
+const PORT = 5000
 const app = express()
 
 //temp ==============================

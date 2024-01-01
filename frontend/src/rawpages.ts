@@ -1,0 +1,33 @@
+export const PAGES={
+    home:{
+        html:"index-old.html",
+        scripts:[
+            "lib/jquery-3.6.0.min.js",
+            "lib/axios.js",
+            "src/skillparser.js",
+            "src/localeManager.js",
+            "lib/socket.io.min.js",
+            "src/homepage.js",
+            "src/init.js"
+        ],
+        modules:[]
+    },
+    test:{
+        html:"index-old.html",
+        scripts:[
+            "lib/jquery-3.6.0.min.js"
+        ],
+        modules:[
+            "src/init.js"
+        ]
+    },
+    spectate:{
+        html:"spectatepage.html",
+        scripts:[
+            "lib/jquery-3.6.0.min.js",
+            "src/spectate.js",
+            "src/init.js"
+        ],
+        modules:[]
+    }
+}

@@ -1,0 +1,159 @@
+
+
+<div id=newstoremoney  class=''>
+    <b id=storemoney>0$</b><br>
+    <img src="res/img/store/life.png"> <b id=storelife>&times;1</b>
+    <div id=store_token_indicator class=hidden>
+      <img src="res/img/store/token.png"> <b id=storetoken>&times;0</b><br>
+    </div>
+    
+  </div>
+  <div id=newstorecurritem class=''>
+    <!-- <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+    <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+    <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+    <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+    <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+    <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div> -->
+  </div>
+  <div id=newstore >
+    <!-- <button class="storeclose"> &times; </button> -->
+  <!-- <img id="back" src="res/img/store/back.png" class=hidden> -->
+    <div id=typelist>
+      <div class='typelistbtn categorybtn' value="0"><img src="res/img/svg/home.svg"></div>
+      <div class='typelistbtn categorybtn' value="1"><img src="res/img/svg/skillinfo/pdamage.png"></div>
+      <div class='typelistbtn categorybtn' value="2"><img src="res/img/svg/skillinfo/mdamage.png"></div>
+      <div class='typelistbtn categorybtn' value="3"><img src="res/img/svg/skillinfo/shield.svg"></div>
+      <div class='typelistbtn categorybtn' value="4"><img src="res/img/svg/skillinfo/maxhp.png"></div>
+      <div class='typelistbtn categorybtn' value="5"><img src="res/img/svg/skillinfo/speed.png"></div>
+      <div class='typelistbtn' id="store-back-btn" value="back"><img src="res/img/svg/chevron-left.svg"></div>
+
+    </div>
+    <div>
+      <div class="storesetting">
+        <img src="res/img/svg/grid.svg" id="store_grid">
+        <img src="res/img/svg/list.svg" id="store_list">
+        <!-- <input type="checkbox" id="store_auto"><a id="store_auto_text">아이템 자동구매</a> -->
+        <button class="storeclose"> &times; </button>
+      </div>
+
+    
+    <div id=storecontent class='itemcontent hidden'>
+      
+      
+      <p>epic items</p>
+      <div class=levelitems>
+        
+      </div>
+     
+      <p>rare items</p>
+      <div class=levelitems>
+
+      </div>
+     
+      <p>common items</p>
+      <div class=levelitems>
+
+      </div>
+    </div>
+    <div id=storehome class='itemcontent hid2den'>
+      
+      <p lkey="storemenu.special">Special Items</p>
+      <div class=levelitems>
+        <div class='itemsummary store_life_summary hidden' value="-1">
+          <div>
+            <img src='res/img/store/life.png' class=store_specialitemimg >
+            <b class=summaryprice>$</b>
+          </div>
+          <p  lkey="storemenu.life"></p>
+        </div>
+        <div class='itemsummary store_token_summary hidden' value="-2">
+          <div>
+            <img src='res/img/store/token.png' class=store_specialitemimg >
+            <b class=summaryprice>$</b>
+          </div>
+          <p  lkey="storemenu.coin_desc"></p>
+        </div>
+      </div>
+      <p lkey="storemenu.recommend">Recommended Items</p>
+      <div class='levelitems recommendeditem'>
+     
+      </div>
+     
+    </div>
+  </div>
+  <div class=itemdetail id='store_buyitem' >
+    <button id=buyitem>300$</button>
+    <button class="detailclose storeclose"> &times; </button>
+    <button id=statinfo>!</button>
+    <p id=statinfopopup class="hidden">stat infos</p>
+    <!-- &#8251; -->
+    <div id=thisitem>
+      <h6 id=itemname>item name</h6>
+      <div class=store_thisitemimg ><img src='res/img/store/items.png' style='margin-left: -3200px;'; ></div>
+      <p class="item_description">item description</p>
+    </div>
+
+    <div id=otherlevel>
+      <div id=itemtree class="tf-tree">
+        <ul>
+          <li id=itemtreestart>
+
+
+            <!-- <span class="tf-nc parents">
+              <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b></div>
+              <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b></div>
+          </span>
+            <ul>
+              <li>
+                <span class="tf-nc"> <div class='onetreeitem '><div class='store_treeitemimg itemhave' ><img src='res/img/store/items.png' 
+                  style='margin-left: -2400px'; ></div><b>100$</b><img class="itemcheck" src="res/img/ui/confirm.png"></div></span>
+                <ul>
+                  <li>
+                    <span class="tf-nc">
+                      <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b><img class="itemcheck" src="res/img/ui/confirm.png"></div>
+                    </span>
+                  </li>
+                  <li>
+                    <span class="tf-nc">
+                      <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b></div>
+                    </span>
+                  </li>
+                </ul>
+              </li>
+            </ul> -->
+
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class='itemdetail hidden' id="store_buytoken" >
+    <button id=buytoken>$</button>
+    <button class="detailclose storeclose"> &times; </button>
+    <div id=thisitem>
+      <h6 id=itemname  lkey="storemenu.coin">item name</h6>
+      <img src='res/img/store/token.png'>
+      <p id="tokenprice">Current price:</p>
+      <div class="buytokentoken_slidecontainer">
+          <input type="range" class="slider" id="token_buy_range">
+      </div>
+      <p id="tokentotal"></p>
+      
+      <p id="token_description"></p>
+    </div>
+
+  </div>
+  <div class='itemdetail hidden' id="store_buylife" >
+    <button id=buylife>150$</button>
+    <button class="detailclose storeclose"> &times; </button>
+    <!-- &#8251; -->
+    <div id=thisitem>
+      <h6 id=itemname  lkey="storemenu.life">item name</h6>
+      <img src='res/img/store/life.png'>
+      <p id=life_description class="item_description">description</p>
+
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,862 @@
+{
+    "statuseffect": [
+        "{Slowness} Next dice -2",
+        "[Speed] Next dice +2",
+        "{Grounding} Can`t throw dice (gets obstacle effect)",
+        "{Silent} Can`t use skill",
+        "[Shield] Ignore one skill",
+        "{Poison} -30 HP for every turn",
+        "{Radiation} Damage x2",
+        "[Annuity] +$20 for every turn",
+        "{Slavery} -80HP for every turn, die if you reach the end(freed if you kill enemy)",
+        "{Backslide}Next dice goes back",
+        "[Rapidness]Next dice x2",
+        "{Blind} Can`t basic attack, Skill range halves",
+        "{Ignite} damage by 3% of max HP for every player`s turn",
+        "[Invisibility] Ignore enemy targeting and harmful obstacle",
+        "{Debt} Can`t earn money and sell tokens",
+        "[Dividend] +$50, +1 token for every turn",
+        "{Curse} Get worst result for next dice",
+        "[Farsight] Skill range x3",
+        "{Root} Can`t throw dice (ignores obstacle)"
+    ],
+    "statuseffect_data": [
+        {
+            "name": "Slowness",
+            "good": false,
+            "desc": "Next dice -2"
+        },
+        {
+            "name": "Speed",
+            "good": true,
+            "desc": "Next dice +2"
+        },
+        {
+            "name": "Grounding",
+            "good": false,
+            "desc": "Can`t throw dice (takes next obstacle effect)"
+        },
+        {
+            "name": "Silent",
+            "good": false,
+            "desc": "Can`t use skill"
+        },
+        {
+            "name": "Shield",
+            "good": true,
+            "desc": "Ignore one skill"
+        },
+        {
+            "name": "Poison",
+            "good": false,
+            "desc": "-30 HP for every turn"
+        },
+        {
+            "name": "Radiation",
+            "good": false,
+            "desc": "Incoming damage x2"
+        },
+        {
+            "name": "Annuity",
+            "good": true,
+            "desc": " +$20 for every turn"
+        },
+        {
+            "name": "Slavery",
+            "good": false,
+            "desc": "-80HP for every turn, die if you reach the end(freed if you kill enemy)"
+        },
+        {
+            "name": "Backslide",
+            "good": false,
+            "desc": "Next dice goes back"
+        },
+        {
+            "name": "Rapidness",
+            "good": true,
+            "desc": "Next dice x2"
+        },
+        {
+            "name": "Blind",
+            "good": false,
+            "desc": "Can`t basic attack, Skill range halves"
+        },
+        {
+            "name": "Ignite",
+            "good": false,
+            "desc": "Damage by 3% of max HP for every player`s turn"
+        },
+        {
+            "name": "Invisibility",
+            "good": true,
+            "desc": "Ignore enemy targeting and all obstacles"
+        },
+        {
+            "name": "Debt",
+            "good": false,
+            "desc": "Can`t earn money or sell tokens"
+        },
+        {
+            "name": "Dividend",
+            "good": true,
+            "desc": "+$50, +1 token for every turn"
+        },
+        {
+            "name": "Curse",
+            "good": false,
+            "desc": "Gets unlucky result for next dice"
+        },
+        {
+            "name": "Farsight",
+            "good": true,
+            "desc": "Skill range triples"
+        },
+        {
+            "name": "Root",
+            "good": false,
+            "desc": "Can`t throw dice (ignores next obstacle)"
+        }
+    ],
+    "skills": [
+        [
+            {
+                "name": "Scythe Strike",
+                "desc": "Deals {pdmg:(sv:Q)} to a {target}. Can use ^{two times}, On second use, deals ^{half} of the damage"
+            },
+            {
+                "name": "Reaping Wind",
+                "desc": "{place} a wind with {projsize:3} that blows away enemies who step on it by -{4 squares backwards} and deals {mdmg:(sv:W)}"
+            },
+            {
+                "name": "Grave Delivery",
+                "desc": "^{Teleports} to a {target} and deals {pdmg:(sv:Q)} and gains {shield:70}. Damage decreases by 30% if the target is ^{in front} of you."
+            }
+        ],
+        [
+            {
+                "name": "Mace Attack",
+                "desc": "Deals {mdmg:(sv:Q)} to a {target} and {heal: heals} by ^{30% of damage}, If the target has ^{mark} of {skill:022}, range +{increases to (fv:w_qrange)} and deals additional {fdmg:(sv:w_qdamage)}"
+            },
+            {
+                "name": "Tanut",
+                "desc": "Leaves a ^{mark} to a {target} and applies {effect:1601}."
+            },
+            {
+                "name": "Strengthen",
+                "desc": "{passive}: ^{Attack and magic resistance} +{increases by 0~60} based on your {missinghp}. {active}:^{Attack and magic resistance} +{(fv:r_resistance_min)~(fv:r_resistance_max) increases} based on {missinghp}, gains {shield:(sv:rshield)} and {effect:0101}. Also heal amount of {skill:021} +{doubles} and ^{range} +{increase by 4}."
+            }
+        ],
+        [
+            {
+                "name": "Blind Curse",
+                "desc": "Deals {mdmg:(sv:Q)} to a {target} and applies {effect:1101}."
+            },
+            {
+                "name": "Phantom Menace",
+                "desc": "{passive}: If you have {effect:1300} effect. {skill:031} deals additional (30% of target`s {missinghp}) as {mdmg: }.{active}: Gains {effect:1301}"
+            },
+            {
+                "name": "Poison Bomb",
+                "desc": "{place} poison bomb of {projsize:4}. Enemy who step on it gains {effect:0000} and takes {mdmg:(sv:R)} for every turn for 3 turns."
+            }
+        ],
+        [
+            {
+                "name": "Claw Strike",
+                "desc": "Deals {pdmg:(sv:Q)} to enemies {radius:(fv:qrange)}.(Damage decreases if there are multiple targets). You -{spend (fv:q_hp_spend)%} of {currhp}"
+            },
+            {
+                "name": "Regeneration",
+                "desc": "{passive}: +{Movement speed +1} if you are in behind of all players.{active}: Heals {heal:(sv:wheal)} every turn but gains {effect:0001} while healing."
+            },
+            {
+                "name": "Burning at the Stake",
+                "desc": "Deals {pdmg:(sv:R)(+50% of target`s {missinghp})} to a {target}. Cooltime of {skill:043} ^{resets} if killed the enemy."
+            }
+        ],
+        [
+            {
+                "name": "Gunfire",
+                "desc": "Fires a gun and deals {pdmg:(sv:Q)} to a {target}. If the target has {effect:0200} or {effect:1800} effect, range increases by (fv:q_root_arange) and deals +{50% increased} damage"
+            },
+            {
+                "name": "Net Trap",
+                "desc": "{place} a trap of {projsize:3} that applies {effect:0201} to enemy who step on it"
+            },
+            {
+                "name": "Target Locked",
+                "desc": "Selects a {target}, Automatically attacks the target ^{3 times} for 3 turns, dealing {pdmg:(sv:R)} each and gains {shield:80}. (Deals {fdmg:(sv:R)}for 3rd attack, can`t move while shooting)<br> After use, you gains {effect:1001}."
+            }
+        ],
+        [
+            {
+                "name": "Chain Lightning",
+                "desc": "Deals {mdmg:(sv:Q)} to all players {radius:front (fv:qrange_start)~(fv:qrange_end_front) and back (fv:qrange_start)~(fv:qrange_end_back)}"
+            },
+            {
+                "name": "Burning Spellbook",
+                "desc": "Gain {effect:1801} and {shield:50}. ^{Range} of {skill:061} and {skill:063} +{doubles}. Also {skill:061} applies {effect:1202} which damages targets by (sv:W)% of {maxhp} as {fdmg: } for every player turns."
+            },
+            {
+                "name": "Dark Magic Circle",
+                "desc": "{place} magic circle of {projsize:3} that deals {mdmg:(sv:R)} and applies {effect:0301} to enemy who step on it. Can use ^{3 times}."
+            }
+        ],
+        [
+            {
+                "name": "Tenacle Strike",
+                "desc": "{place} a tenacle of {projsize:2} which deals {mdmg:(sv:Q)} to enemy who step on it"
+            },
+            {
+                "name": "Protective Water",
+                "desc": "Gains {shield:(sv:wshield)} and deals {mdmg:(sv:W)} and applies {effect:0001} to enemies {radius:3}."
+            },
+            {
+                "name": "Predation",
+                "desc": "Deals {fdmg:(sv:R)} to {target}. Your  {maxhp} +{increases by 50} if you killed the target."
+            }
+        ],
+        [
+            {
+                "name": "Beak Attack",
+                "desc": "Deals {mdmg:(sv:Q)} to a {target} and take away {money:(fv:q_money)}"
+            },
+            {
+                "name": "Baby Birds",
+                "desc": "Gains {effect:0101}. {basicattack} deals additional {mdmg:(sv:w_aa_adamage)}, {skill:081} deals additional {mdmg:(sv:w_q_adamage)} and applies {effect:1801}"
+            },
+            {
+                "name": "Phenix Transform",
+                "desc": "Gains {shield:70}. ^{Basic attack range} +{+2}, {basicattack} deals additional {pdmg:(sv:r_aa_adamage)}. Additional damage of {skill:082} +{doubles} and {skill:081} creates an area of {projsize:3}. If enemy step on it, they receive {effect:1202}"
+            }
+        ],
+        [
+            {
+                "name": "Sweet Fruit",
+                "desc": "{passive}: If HP is -{lower than (fv:wither_cond)%}, transforms to ^{Withered Tree}, On ^{Withered Tree} state, you can`t heal ally with {skill:091}, but ^{damage absorbtion} +{(fv:wither_absorb)% increases}. {active}: {area:(fv:qsize)}. Deals {mdmg:(sv:Q)} to enemies inside. For allies, heals {heal:(sv:qheal)} and grants {shield:(sv:qshield)}."
+            },
+            {
+                "name": "Vine Trap",
+                "desc": "{place} a vine of {projsize:1} that ^{stops} player who passes it. Allies will gain {effect:0101}"
+            },
+            {
+                "name": "Root Prison",
+                "desc": "{passive}: Summons ^{Plant monster} on every skill use. They deal {mdmg:(sv:plantdamage)} to enemies {radius:1} when you perform basic attack. <br> - Plants live for 3 turns and enemy basic attack will kill them, {active}: Deals {mdmg:(sv:R)} to {target} and applies {effect:1801} (2 turns if if you are ^{Withered Tree} state), and increases all incoming damage by +{20%}. Also, all ^{plant monsters} moves toward target."
+            }
+        ],
+        [
+            {
+                "name": "Vulnerability Attack",
+                "desc": "Deals {pdmg:(sv:Q)(+(fv:stack_damage) x total stacks)} to a {target}, steals {money:((fv:q_money) x stacks)}, and gains a ^{'vulnerability' stack} for that target player. Damage towards the target increases permanently with ^{total vulnerability stacks}<br>{skillvalue:stacks}"
+            },
+            {
+                "name": "Remote Control",
+                "desc": "{passive}: {basicattack} deals additial {mdmg:(sv:W)}.{active}:Select a {target} and forcibly moves ^{2+(1 for 3 stacks)squares} backwards and applies {effect:1601}."
+            },
+            {
+                "name": "Extraction",
+                "desc": "^{Imitates} ultimate(lv3 skill) of {target} and steals ^{((fv:r_steal_base)+total stacks x (fv:r_steal) )%} of targets ^{attack power and magic power} for 2 turns. Reusing this skill will use the imitated skill."
+            }
+        ]
+    ],
+    "stat": {
+        "AD": "Attack Power(AD)",
+        "AP": "Magic Power(AP)",
+        "arP": "Attack Penetration",
+        "MP": "Magic Penetration",
+        "AR": "Attack Resistance",
+        "HP": "Maximum HP",
+        "regen": "HP regen per turn",
+        "MR": "Magic Resistance",
+        "absorb": "Damage absorbtion",
+        "adStat": "Adaptative Stat",
+        "attackRange": "Basic Attack Range",
+        "obsR": "Obstacle Resistance",
+        "ultHaste": "Ultimate Haste",
+        "moveSpeed": "Movement speed",
+        "basicAttackSpeed": "Basic Attack count"
+    },
+    "scale_stat": {
+        "HP": "Current HP",
+        "MaxHP": "Max HP",
+        "extraHP": "Extra Hp",
+        "missingHP": "Missing HP"
+    },
+    "casinolabel": [
+        {
+            "name": "Win",
+            "desc": "Receives $100"
+        },
+        {
+            "name": "JACKPOT",
+            "desc": "Money Doubles"
+        },
+        {
+            "name": "Escape",
+            "desc": "Speed effect for 2 turns"
+        },
+        {
+            "name": "Robbery",
+            "desc": "HP -50%"
+        },
+        {
+            "name": "Lose",
+            "desc": "Money Halves"
+        },
+        {
+            "name": "Addiction",
+            "desc": "Grounded, HP -50"
+        }
+    ],
+    "triallabel": [
+        {
+            "name": "Fine",
+            "desc": "Take away $100"
+        },
+        {
+            "name": "Slavery",
+            "desc": "Slavery effect(dies if you reach the end)"
+        },
+        {
+            "name": "Banishment",
+            "desc": "Move to nearest player"
+        },
+        {
+            "name": "Death",
+            "desc": "Death!"
+        },
+        {
+            "name": "Re-trial",
+            "desc": "Grounded, HP-50%"
+        },
+        {
+            "name": "Thanos",
+            "desc": "50% chance of death for every player"
+        }
+    ],
+    "stat_detail": {
+        "attackRange": "Attack range applies up to 5",
+        "ultHaste": "ultimate Haste applies up to 3 turns",
+        "moveSpeed": "movement speed applies up to 2",
+        "basicAttackSpeed": "Damage of each basic attack decreases based on attack speed<br> (total damage will still increase)",
+        "adStat": "Adaptative Stat applies to higher one between attack and magic power "
+    },
+    "globalObstacleEvent": {
+        "thanos": "Dies immediately by 50% chance!"
+    },
+    "item": [
+        {
+            "name": "Epic Sword",
+            "summary": "Attack Power"
+        },
+        {
+            "name": "Rare Sword",
+            "summary": "Attack Power"
+        },
+        {
+            "name": "Common Sword",
+            "summary": "Attack Power"
+        },
+        {
+            "name": "Epic Crystal Ball",
+            "summary": "Magic Power"
+        },
+        {
+            "name": "Rare Crystal Ball",
+            "summary": "Magic Power"
+        },
+        {
+            "name": "Common Crystal Ball",
+            "summary": "Magic Power"
+        },
+        {
+            "name": "Epic Shield",
+            "summary": "Attack Resistance"
+        },
+        {
+            "name": "Rare Shield",
+            "summary": "Attack Resistance"
+        },
+        {
+            "name": "Common Shield",
+            "summary": "Attack Resistance"
+        },
+        {
+            "name": "Epic Fruit",
+            "summary": "HP regen",
+            "unique_effect": "regenerate 15% of additional HP every turn"
+        },
+        {
+            "name": "Rare Fruit",
+            "summary": "HP regen"
+        },
+        {
+            "name": "Common Fruit",
+            "summary": "HP regen"
+        },
+        {
+            "name": "Epic Armor",
+            "summary": "Magic Resistance"
+        },
+        {
+            "name": "Rare Armor",
+            "summary": "Magic Resistance"
+        },
+        {
+            "name": "Common Armor",
+            "summary": "Magic Resistance"
+        },
+        {
+            "name": "Guardian Angel",
+            "summary": "Defence, Revive on death",
+            "unique_effect": "revive when dies with 50% HP",
+            "active_summary": "Revival!"
+        },
+        {
+            "name": "Bloodsucker",
+            "summary": "Heal on attack"
+        },
+        {
+            "name": "Sword of Blood",
+            "summary": "Attack Power,Heal on attack"
+        },
+        {
+            "name": "Power of Mother Nature",
+            "summary": "Skill defence",
+            "active_summary": "Move speed increased!",
+            "unique_effect": "30% skill damage reduction, movement speed +1 for 1 turn afterwards."
+        },
+        {
+            "name": "Power of Nature",
+            "summary": "Skill defence",
+            "unique_effect": "10% skill damage reduction"
+        },
+        {
+            "name": "Card of Deception",
+            "summary": "Magic Power, Catch-up",
+            "active_summary": "Additional damage and slowness!",
+            "unique_effect": "Hitting skill to enemies in front of you slows them, deals 10% more damage, then grants you speed"
+        },
+        {
+            "name": "Diamond Crystal",
+            "summary": "Maximum HP"
+        },
+        {
+            "name": "Ancient Spear",
+            "summary": "Additional damage on attack",
+            "unique_effect": "Skill attack deals bonus magic damage equal to 10%(5% for basic attack) of target`s maximum HP"
+        },
+        {
+            "name": "Fury Whip",
+            "summary": "Enhance basic attack"
+        },
+        {
+            "name": "Reach Whip",
+            "summary": "Enhance basic attack"
+        },
+        {
+            "name": "Rare Magic Axe",
+            "summary": "Adaptative Stat"
+        },
+        {
+            "name": "Common Magic Axe",
+            "summary": "Adaptative Stat"
+        },
+        {
+            "name": "Piercing Spear",
+            "summary": "Additional damage on attack",
+            "unique_effect": "Skill attack deals bonus magic damage equal to 5%(2% for basic attack) of target`s maximum HP"
+        },
+        {
+            "name": "Boots",
+            "summary": "Catch-up",
+            "unique_effect": "dice number +1 when fell behind"
+        },
+        {
+            "name": "Boots of Haste",
+            "summary": "Faster movement",
+            "unique_effect": "Ignores slow effect, dice number +1 when fell behind"
+        },
+        {
+            "name": "Medieval Bow",
+            "summary": "Anti-tank"
+        },
+        {
+            "name": "Crossbow of Piercing",
+            "summary": "Anti-tank",
+            "unique_effect": "40% armor and magic penetration. Skill attack deals bonus fixed damage equal to 7%(4% for basic attack) of target`s maximum HP"
+        },
+        {
+            "name": "Full Diamond Armour",
+            "summary": "Maximum HP",
+            "unique_effect": "Max Hp increases by 10 permanently on every attack"
+        },
+        {
+            "name": "Invisibility Cloak",
+            "summary": "Magic Power, Survival from attack",
+            "unique_effect": "Become invisible for 1 turn if HP is below 30%",
+            "active_summary": "Invisible!"
+        },
+        {
+            "name": "Diamond Shard",
+            "summary": "Maximum HP"
+        },
+        {
+            "name": "Fortitude Shieldsword",
+            "summary": "Attack Power, Survival from attack",
+            "active_summary": "Obtained shield!",
+            "unique_effect": "If HP goes below 30%, gain shield based on attack power for 2 turns and absorb increases 30%"
+        },
+        {
+            "name": "Boots of Preservation",
+            "summary": "Fast Movement, Attack Defence",
+            "unique_effect": "Reduces incoming basic attack damage by 35%"
+        },
+        {
+            "name": "Boots of Endurance",
+            "summary": "Fast Movement, Magic Resistance",
+            "unique_effect": "Reduces damage from constant damages(poison,ignite,etc) by 25%"
+        },
+        {
+            "name": "Time Warp Potion",
+            "summary": "Magic power, Cooltime reduction",
+            "active_summary": "Skill cooltime reset!",
+            "unique_effect": "When AP is higher than 200, Normal skill cooltime resets if you kill an enemy"
+        },
+        {
+            "name": "Mystic Wand",
+            "summary": "Magic Power"
+        },
+        {
+            "name": "Charged Dagger",
+            "summary": "Charged attack",
+            "unique_effect": "Moving by dice generates stacks. Next attack deals additional magic damage based on stacks"
+        },
+        {
+            "name": "Thunderbolt Staff",
+            "summary": "Enhance skill",
+            "unique_effect": "Moving by dice generates stacks. Next skill attack deals additional magic damage based on stacks"
+        },
+        {
+            "name": "Energized Flail of Reach",
+            "summary": "Enhance basic attack",
+            "unique_effect": "Moving by dice generates stacks. Next basic attack range increases and deals additional magic damage based on stacks"
+        },
+        {
+            "name": "Trinity Force",
+            "summary": "Enhance attack, Movement speed",
+            "unique_effect": "Attacking enemy generate stacks. If there are 2+ stacks on turn start, movement speed +1.",
+            "active_summary": "Move speed increased!"
+        }
+    ],
+    "obstacle": [
+        {
+            "name": "",
+            "desc": ""
+        },
+        {
+            "name": "Money",
+            "desc": "Receives 10~30$"
+        },
+        {
+            "name": "Money",
+            "desc": "Receives 40~60$"
+        },
+        {
+            "name": "Money",
+            "desc": "Receives 70~100$"
+        },
+        {
+            "name": "Trap",
+            "desc": "HP -10"
+        },
+        {
+            "name": "Robbery",
+            "desc": " -30$"
+        },
+        {
+            "name": "Subway",
+            "desc": "Choose the type of the train"
+        },
+        {
+            "name": "Mine",
+            "desc": "HP -30 on step out"
+        },
+        {
+            "name": "Knife",
+            "desc": "HP -20"
+        },
+        {
+            "name": "Fruit",
+            "desc": "HP +50"
+        },
+        {
+            "name": "Sleeping pill",
+            "desc": "Silent(can`t use skill)"
+        },
+        {
+            "name": "Potion",
+            "desc": "Reset normal skill cooltimes, reduce ultimate cooltime by 50%"
+        },
+        {
+            "name": "Magic castle",
+            "desc": "Skill range x3, additional true damage for skill"
+        },
+        {
+            "name": "Cobweb",
+            "desc": "Stun"
+        },
+        {
+            "name": "Gamble",
+            "desc": "Receives 10~60$ randomly"
+        },
+        {
+            "name": "Snatcher",
+            "desc": "Other players take 10% each of your money "
+        },
+        {
+            "name": "Snowball",
+            "desc": "HP -20, slowness"
+        },
+        {
+            "name": "Vampire",
+            "desc": "Other players take away 20 HP each"
+        },
+        {
+            "name": "Pickpocket",
+            "desc": "Other players take away 30$ each"
+        },
+        {
+            "name": "Summon",
+            "desc": "Summon every player in range of 20"
+        },
+        {
+            "name": "Change",
+            "desc": "Change position with nearest playere"
+        },
+        {
+            "name": "God`s hand",
+            "desc": "Force move one player in range of 5"
+        },
+        {
+            "name": "Annuity",
+            "desc": "+30$ every turn "
+        },
+        {
+            "name": "Daylight Robbery",
+            "desc": "HP -30, -30$, (-3tokens)"
+        },
+        {
+            "name": "Shelter",
+            "desc": "HP +70, Invisibility 1 turn, get shield, remove all harmful effects"
+        },
+        {
+            "name": "Shield",
+            "desc": "Ignore one skill"
+        },
+        {
+            "name": "Big mine",
+            "desc": "HP -70 on step out"
+        },
+        {
+            "name": "Murderer",
+            "desc": "HP -100"
+        },
+        {
+            "name": "Poison cobweb",
+            "desc": "stun and slowness"
+        },
+        {
+            "name": "Poison",
+            "desc": "Poison for 5 turns (-30 HP each turn)"
+        },
+        {
+            "name": "Bomb",
+            "desc": " HP -1/3 of current HP"
+        },
+        {
+            "name": "Nuclear bomb",
+            "desc": " HP -1/2 of missing HP,radiation effect"
+        },
+        {
+            "name": "Radiation",
+            "desc": "damage x2 for 1 turn"
+        },
+        {
+            "name": "Kidnapper",
+            "desc": "choose between -300 HP and stun for 2 turns"
+        },
+        {
+            "name": "Slavery",
+            "desc": "-80HP for every turn, dies if you reach the end"
+        },
+        {
+            "name": "Jail",
+            "desc": "speed effect after stun for 3 turns"
+        },
+        {
+            "name": "Hurricane",
+            "desc": "Move back to original position"
+        },
+        {
+            "name": "Death Court",
+            "desc": "Roll a roullete"
+        },
+        {
+            "name": "Casino",
+            "desc": "Roll a roullete"
+        },
+        {
+            "name": "fair wind",
+            "desc": "next dice x2"
+        },
+        {
+            "name": "headwind",
+            "desc": "next dice goes back"
+        },
+        {
+            "name": "Net",
+            "desc": "stun 1 turn"
+        },
+        {
+            "name": "Fish",
+            "desc": "HP +50"
+        },
+        {
+            "name": "Jellyfish",
+            "desc": "-30 HP each turn for 3 turns"
+        },
+        {
+            "name": "Shark attack",
+            "desc": "HP -40"
+        },
+        {
+            "name": "Squid",
+            "desc": "Can`t use basic attack for 1 turn"
+        },
+        {
+            "name": "Iceburg",
+            "desc": "slowness, HP -30"
+        },
+        {
+            "name": "gold",
+            "desc": "100~150$"
+        },
+        {
+            "name": "treasure",
+            "desc": ""
+        },
+        {
+            "name": "Pirate",
+            "desc": "HP -50, -20$"
+        },
+        {
+            "name": "Vikings",
+            "desc": "HP -30,ignite effct for 3 turn"
+        },
+        {
+            "name": "Dive",
+            "desc": "Ignore every attack and obstacle for 1 turn"
+        },
+        {
+            "name": "Lightning",
+            "desc": "HP -75 for every player in range of 3"
+        },
+        {
+            "name": "Tsunami",
+            "desc": "Every player move back by 3, HP -30"
+        },
+        {
+            "name": "Blue hole",
+            "desc": "Summon every player in range of 20"
+        },
+        {
+            "name": "Storm",
+            "desc": "Randomly move to a square in range of 5"
+        },
+        {
+            "name": "Tornado",
+            "desc": "move to random player in range of 30"
+        },
+        {
+            "name": "Underwater mine",
+            "desc": "HP -70 on step out"
+        },
+        {
+            "name": "Torpedo",
+            "desc": "HP -120"
+        },
+        {
+            "name": "Whale`s grace",
+            "desc": "speed for 3 turns"
+        },
+        {
+            "name": "Volcano",
+            "desc": "HP - 1/4 of max HP, ignite effct for 3 turn "
+        },
+        {
+            "name": "SLBM",
+            "desc": "HP -175"
+        },
+        {
+            "name": "Loan",
+            "desc": "get 10 tokens, -400$ after 5 turns"
+        },
+        {
+            "name": "Threaten",
+            "desc": "Choose between -50$ or -3 tokens"
+        },
+        {
+            "name": "Private loan",
+            "desc": "Can`t earn money, can`t sell tokens for 2 turns "
+        },
+        {
+            "name": "scam",
+            "desc": "take away half of your money and tokens"
+        },
+        {
+            "name": "annuity lottery",
+            "desc": "+50$, +1 token for every turn"
+        },
+        {
+            "name": "coin store",
+            "desc": "Can sell coin"
+        },
+        {
+            "name": "Street vendor",
+            "desc": "can use store with 10% higher price"
+        },
+        {
+            "name": "Lottery",
+            "desc": "get huge amount of money by 7%"
+        },
+        {
+            "name": "Tax collector",
+            "desc": "take away 5% + 2$ x coins for every player"
+        },
+        {
+            "name": "Thief",
+            "desc": "take away one of your common items "
+        },
+        {
+            "name": "Curse",
+            "desc": "get worst result for next dice for 2 turns"
+        },
+        {
+            "name": "Grief",
+            "desc": "damage by 50% of your money you have"
+        },
+        {
+            "name": "Tollgate",
+            "desc": "can pass only if you have more than 150$ or 10 tokens"
+        },
+        {
+            "name": "Call",
+            "desc": "Move nearest player to current position"
+        },
+        {
+            "name": "",
+            "desc": ""
+        }
+    ]
+}

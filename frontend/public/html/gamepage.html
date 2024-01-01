@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<link rel="stylesheet" href="./src/style/treeflex.css">
+<link rel="stylesheet" href="./src/style/style_gamepage.css">
+<link rel="stylesheet" href="./src/style/style_gamepage_portrait.css">
+
+<link rel="stylesheet" href="./src/style/input.css">
+<link rel="stylesheet" href="./src/style/skill.css">
+
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.15, user-scalable=no" />
+<!-- <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=0;"/> -->
+<!-- <meta name="viewport" content="width=device-width, target-densityDpi=medium-dpi"/> -->
+<!-- jQuery library -->
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src="./lib/jquery-3.6.0.min.js"></script>
+
+<script src="./lib/fabric.min.js"></script>
+<script src="./lib/howler.min.js"></script>
+<script src="./lib/socket.io.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script> -->
+
+<style>
+  
+@font-face {
+    font-family: "cookierun";
+    src: url("res/font/CookieRun.ttf");
+}
+@font-face {
+    font-family: "Do Hyeon";
+    src: url("res/font/DoHyeon.ttf");
+}
+/*
+@font-face {
+    font-family: "Spartan";
+    src: url("res/font/Spartan.ttf");
+} */
+@font-face {
+    font-family: "Cookierun Black";
+    src: url("res/font/CookieRun_Black.ttf");
+}@font-face {
+    font-family: "nanumB";
+    src: url("res/font/NanumSquareB.ttf");
+}
+@font-face {
+    font-family: "nanumEB";
+    src: url("res/font/NanumSquareEB.ttf");
+}
+</style>
+<head>
+    <meta charset="utf-8"/>
+    <title>Snakes-and-Ladders RPG</title>
+    <link rel="icon" type="image/x-icon" href="res/img/ui/favicon.png">
+  
+</head>
+<body>
+  <!-- <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" value="off"> -->
+
+  
+<div id="replay-control">
+  
+  <div id="replay-buttons">
+    <img id="replaystart" src="res/img/svg/play.svg">
+    <img id="replaypause" src="res/img/svg/pause.svg">
+    <img id="replayslow" src="res/img/svg/fast.svg">
+    <img id="replayfast" src="res/img/svg/fast.svg">
+    <div id="replay-speed">&times;1</div>
+    
+  </div>
+  <div class="replay-progressbar">
+    <div class="replay-progress-value"></div>
+    <b class="replayprogress">0/0</b>
+  </div>
+</div>
+
+
+<div id="Gamepage">
+
+     
+      <!-- <button class='zoomin'> + </button> -->
+      <!-- <button class='zoomout'> - </button> -->
+      <!-- <img class='hidden' src='res/img/svg/info.svg' id="skillinfobtn"> -->
+      <div class='effect_tooltip tooltip'>
+        <h4>name</h4>
+        <p>description.</p>
+      </div>
+      <div class='specialeffect_tooltip tooltip'>
+        <p>description.</p>
+        <h4>source</h4>
+      </div>
+      <div class='skill_scale_tooltip tooltip'>
+        <p>0</p>
+      </div>
+
+      <div class='stat_tooltip tooltip'>
+        <!-- <button id="close_stat_tooltip">&times;</button> -->
+        <div id="stat_content">
+          <div class="stat_row">
+            <a class="name">n</a><a class="value">1000</a>
+          </div>
+        </div>
+      </div>
+      <div class='inventory_tooltip tooltip'>
+        <!-- <button id="close_inventory_tooltip">&times;</button> -->
+        <div id="inventory_content">
+        
+        </div>
+        <div id="inventory_active_items">
+          <!-- <div class="active_item active">
+            <img class='active_item_img' src="res/img/store/items.png"  style='margin-left: -200px';>
+            <div class="cooltime_mask" style="  background: conic-gradient(rgba(0,0,0,0) 0% 
+            ,rgba(0,0,0,0) 100%,rgba(255, 255, 255, 0.6) 100%,rgba(255, 255, 255, 0.6) 100%);">
+            &nbsp;</div>
+          </div> -->
+        </div>
+      </div>
+      <div class='item_tooltip ' id="item_tooltip">
+        <h4>name</h4>
+        <p>description.<a>unique effect:</a>blah</p>
+        <i></i>
+      </div>
+      <div class="myui_new">
+
+        <!-- <div class="mydisplay">
+         
+          <img id="show_stat" src="res/img/svg/chart.svg">
+          <strong id=money class="display_description"> 0$</strong>
+          <img id="show_items" src="res/img/svg/shopping-bag.svg">
+        </div> -->
+
+        <div class="mystatus">
+          <!-- <div class="mystatus-container myhpi-container">
+            <a class=" myhpi namei">1p</a>
+          </div> -->
+          <!-- <a class="myhpi hpi "> 200/200 </a>        -->
+          <div class=" mainhpcontainer">
+            
+            <a class="namei shieldframe hidden"></a>
+            <a class="myhp-val hpi">100/100</a>
+            <a class="myshield-val"></a>
+            <div class="mystatus-container mychar-container">
+              <img class="mychar char" >
+            </div>
+            <div style="display: inline-block;margin-left: -3px;">
+              <div class="mystatus-container myhpframe-container">
+                
+                <div class="myhpframe hpframe">
+                  <span class="myhp hp">
+                  </span>
+                  <span class="myhp_lost">
+                  </span>
+                  <span class="myshield shield">
+                  </span>
+                </div>
+              </div><br>
+              <div class="mystatus-container mybuttonframe-container">
+                <img id="show_stat" src="res/img/svg/chart.svg">
+                <img id="show_items" src="res/img/svg/shopping-bag.svg">
+                <strong id=money class="display_description"> 0$</strong>
+                <!-- <div class="myshieldframe shieldframe">
+                  <span class="myshield shield">
+                  </span>
+                </div> -->
+              </div>
+              <div id="effects">
+                        <!-- <a style="background:url('res/img/effects.png') 0 0" class=effect data-toggle="tooltip" title="[Slowness] next dice -2"></a> -->
+                <!-- <img src="./res/img/skill/1-1.jpg" class="specialeffect">
+                <div class='specialeffect itemeffect' ><img src='res/img/store/items_small.png' 
+                  style='margin-left: -100px'; ></div>
+                  <a style="background:url('res/img/status_effect/effects.png') 0px 0"
+                  class=effect value='0' id='e0'></a> -->
+              </div>
+            </div>
+            
+          </div>         
+        </div>
+        
+
+      </div>
+      <!-- <img id="show_otherui" class="toggle_otherui hidden" src="res/img/ui/hide.png"></img> -->
+      <div id=otherui_container>
+        <div id=otheruis>
+          <div class="otherui_new">
+            <div class="otherui_upper">
+              <img class="otherchar char">
+              <a class="namei otherhpi"> 2p </a>
+              <a class="hpi otherhpi"> 200/200 </a>
+            </div>
+            
+
+            <div class="hpframe otherhpframe">
+              <span class="hp otherhp">
+              </span>
+            </div>
+            <div class="othershieldframe shieldframe hidden">
+              <span class="othershield shield">
+              </span>
+            </div>
+            
+
+          </div>
+
+          <div class="otherui_new hidden">
+            <div class="otherui_upper">
+              <img class="otherchar char">
+              <a class="namei otherhpi"> 2p </a>
+              <a class="hpi otherhpi"> 200/200 </a>
+            </div>
+            <div class="hpframe otherhpframe">
+              <span class="hp otherhp">
+              </span>
+            </div>
+            <div class="othershieldframe shieldframe hidden">
+              <span class="othershield shield">
+              </span>
+            </div>
+          </div>
+
+          <div class="otherui_new hidden">
+            <div class="otherui_upper">
+              <img class="otherchar char">
+              <a class="namei otherhpi"> 2p </a>
+              <a class="hpi otherhpi"> 200/200 </a>
+            </div>
+            <div class="hpframe otherhpframe">
+              <span class="hp otherhp">
+              </span>
+            </div>
+            <div class="othershieldframe shieldframe hidden">
+              <span class="othershield shield">
+              </span>
+            </div>
+          </div>
+        </div>
+        <img id="toggle_otherui" class="toggle_otherui" src="res/img/svg/chevron-left.svg"></img>
+
+      </div>
+      
+          
+  <img src='res/img/svg/info.svg' id="skillinfobtn">
+  <img src='res/img/ui/setting.png' id="settingbtn">
+  <!-- <img src="res/img/svg/chevrons-up.svg" id="nextturn" class="hidden"> -->
+  <img src="res/img/ui/cancel.png" id="cancel_tileselection" class=hidden>
+  <img src="res/img/ui/cancel.png" id="skillcancel" class=hidden>
+  <img src="res/img/ui/confirm.png" id="confirm_tileselection" class=hidden>
+  <div id=skillbtncontainer>
+    
+    <div class="skillbtn footerbtn"  value=1>
+     
+      <div class="duration_mask" > </div>
+      <div class="cooltime_mask" > </div>
+      <img class="skillbtnimg" src="res/img/skill/1-1.jpg"> 
+      <div class="cooltime"></div>
+    </div>
+    <div class="skillbtn footerbtn"  value=2>
+      <div class="duration_mask" > </div>
+      <div class="cooltime_mask" > </div>
+      <img class="skillbtnimg" src="res/img/skill/1-2.jpg"> 
+      <a class="cooltime"></a>
+    </div>
+    <div class="skillbtn footerbtn"  value=3>
+      <div class="duration_mask" > </div>
+      <div class="cooltime_mask"> </div>
+      <img class="skillbtnimg" src="res/img/skill/1-3.jpg"> 
+      <a class="cooltime"></a>
+    </div>
+    
+    <div class="footerbtn dcbtn unavaliable">
+      <img src="res/img/ui/dicecontrol.png">
+      <a class="cooltime"></a>
+    </div>
+    <div class="footerbtn storebtn2 unavaliable">
+      <img src="res/img/ui/item.png">
+    </div>
+    <div class="footerbtn nextturnbtn unavaliable">
+      <img src="res/img/svg/chevrons-up.svg">
+    </div>
+  </div>
+  <img class="storebtn hidden " src="res/img/ui/item.png">
+  <div class="basicattackbtn hidden unavaliable">
+    <img src="res/img/ui/basicattack.png">
+    <div class="basicattack_count"><a>1</a> </div>
+  </div>
+ 
+  <!-- 보드판======================================================== -->
+  <div id="boardside">
+    <div id="canvas-container">
+      <div id="boardwrapper">
+        <canvas id="board">
+        </canvas>
+      </div>
+    </div>
+  </div>   
+  <!-- boardside -->
+
+
+<a id=toastmessage class="hidden">toast</a>
+
+<!-- <img id="largedicebtn" class="dicebtn" src="res/img/ui/dicebtn.png">
+<img id="largedicebtn_pressed" class="dicebtn hidden" src="res/img/ui/dicebtn_pressed.png"> -->
+<button class="dicebtn" id="largedicebtn">ROLL<br>DICE</button>
+
+<img id="largedicestun" class="dicebtn" src="res/img/dice/stun.png" >
+
+<img id="largedicebtnimg" class="dicebtn">
+<img id="smalldicebtn" class="dicebtn">
+
+
+<!-- <img id="dicecontrolbtn" class=" dc" src="res/img/ui/dicecontrol.png"> -->
+<!-- <a id=dicecontrolcool  class=" dc">1</a> -->
+<div id=diceselection class=hidden>
+  <button class="diceselection" value=1><strong>1</strong></button>
+  <button class="diceselection" value=2><strong>2</strong></button>
+  <button class="diceselection" value=3><strong>3</strong></button>
+  <br class="show_on_portraint">
+  <button class="diceselection" value=4><strong>4</strong></button>
+  <button class="diceselection" value=5><strong>5</strong></button>
+  <button class="diceselection" value=6><strong>6</strong></button>
+</div>
+
+<div id="infowindow" class='hidden'>
+
+  <div id="kdawindow" class='hid2den'>
+    <div class=kdasection>
+      <img src="res/img/character/reaper.png" class="kdaimg">
+      <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
+    </div>
+    <div class="itemsection">
+    </div>
+    <div class=kdasection>
+      <img src="res/img/character/reaper.png" class="kdaimg">
+     <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
+    </div>  
+    <div class="itemsection">
+    </div>
+    <div class='kdasection'>
+      <img src="res/img/character/reaper.png" class="kdaimg">
+  <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
+    </div>  
+    <div class="itemsection">
+    </div>
+    <div class='kdasection'>
+      <img src="res/img/character/reaper.png" class="kdaimg">
+      <a class="kdainfo">0/0/0</a><a class="kdaname"></a> 
+
+    </div>
+    <div class="itemsection">
+    </div>
+  </div>
+  <div id="skillinfowindow">
+    <button id="closeskillinfobtn">&times;</button>
+
+
+    <img  class="skillinfoimg">
+    <a class="skillinfo"></a>
+    <img  class="skillinfoimg">
+    <a class="skillinfo"> </a>
+    <img class="skillinfoimg">
+    <a class="skillinfo"></a>
+    <br>
+  </div>
+</div>
+<div id="settingwindow" style="display: none;">
+  <button id="closesettingbtn">&times;</button>
+  <div id="setting-header">
+    <b  id="setting-header-text" lkey="setting.name">Game Setting</b>
+  </div>
+
+  <div id="setting-content">
+    <div class="onesetting buttons">
+      <div class="dropdown-container">
+        <span class="setting-btn"><img src="res/img/svg/globe.svg"></span>
+        <ul class="dropdown">
+          <li class="dropdown-item langbtn" data-lang="en">English</li>
+          <li class="dropdown-item langbtn" data-lang="ko">한국어</li>
+        </ul>
+      </div>
+      <span class="setting-btn settingname setting-input"  id="toggle_fullscreen" value="off" lkey="setting.fullscreen">Toggle Fullscreen</span>
+      
+    </div>
+    <div class="onesetting oneline disable-on-non-playable">
+      <div class="settingname" lkey="setting.autobuy">
+        Item Auto Buy
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1">
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="onesetting oneline disable-on-non-playable">
+      <div class="settingname" lkey="setting.item">
+        Indicate Active Items
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1" checked>
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="onesetting oneline disable-on-non-playable">
+      <div class="settingname" lkey="setting.obstacle">
+        Indicate Obstacles
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1" checked>
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="onesetting oneline">
+      <div class="settingname" lkey="setting.kill">
+        Indicate Kill/Death
+      </div>
+      <div class="settingvalue">
+
+        <label class="switch">
+          <input class="setting-input" type="checkbox" value="1" checked>
+          <span class="switchslider"></span>
+        </label>
+      </div>
+    </div>
+
+
+    <div class="onesetting twoline">
+      <div class="settingname" lkey="setting.fps">
+        FPS(Frames Per Second)
+      </div>
+      <div class="settingvalue">
+          <div class="slidecontainer">
+            <a class="slider-label">10FPS</a><input class="setting-input" type="range" min="10" max="60" value="30" step="10" id="myRange" class="slider">
+            <a class="slider-label">60FPS</a><br>
+            <a class="slider-label fps">30FPS</a>
+          </div>
+      </div>
+    </div>
+
+    <div class="onesetting twoline">
+      <div class="settingname" lkey="setting.volume">
+        Volume
+      </div>
+      <div class="settingvalue">
+          <div class="slidecontainer">
+            <a class="slider-label">0%</a><input class="setting-input" type="range" min="0" max="10" value="7" step="1" id="myRange" class="slider"><a class="slider-label">100%</a>
+            <br>
+            <a class="slider-label volume">70%</a>
+          </div>
+      </div>
+    </div> 
+   
+  </div>
+</div>
+
+<div id="adicewindow">
+  <img src="res/img/dice/roll5.png">
+  <a id="adiceinfo"></a>
+</div>
+
+
+  <!-- 자신의UI=========================================================== -->
+	
+</div>
+
+<div class="overlay hidden">
+</div>
+<div class="red-overlay">
+</div>
+<img src="res/img/ui/victory.png" class=" resultimg victory hidden">
+<img src="res/img/ui/defeat.png" class=" resultimg defeat hidden">
+
+
+
+
+
+<div w3-include-html="gamestore.html" id="newstore_container">
+  
+</div>
+
+
+
+
+<div id="sell_token" class="hidden">
+    <button id="selltokenclose"> &times; </button>  
+  <img src='res/img/store/token.png'>
+  <h5 style="color:rgb(209, 209, 209);display: inline;font-size:x-large;">Coin sell price: 0$</h5>
+  <h6 style="color:rgb(209, 209, 209);">Coin have:0</h6>
+  <!-- <p style="color:rgb(209, 209, 209);">Price range:10~100$</p> -->
+  <div class="slidecontainer">
+      <input type="range" class="slider" id="token_sell_range">
+  </div>
+  <p style="color:rgb(209, 209, 209);" id="token_sell_total">Sell 0 Coins, 0$</p>
+  <button id="sellalltokenbtn">Sell All</button>
+  <button id="selltokenbtn">Sell</button>
+  
+</div>
+<div id=chat_enter class="hidden">
+  <input type="text" id="text" placeholder="Enter message">
+  <img id=sendmessage src="res/img/ui/send.png">
+</div>
+<div id="chat">
+  <div id=chat_ui>
+    
+    <img id=writemessage src="res/img/ui/write.png">
+    <button id="movechat">  &#10021; </button>
+    <button id="hide">  _ </button>
+  </div>
+  <div id="chat_text">
+    <!-- 채팅 메시지 영역 -->   
+  </div>
+</div>
+
+
+<div id="overlay" class="hidden">  
+</div>
+
+
+<!-- <div id="casino" class="hidden">
+ <a class="roullete_end">end roullete</a>
+  <h3></h3>
+  <div id=wheel>
+    <canvas id="roullete" width='300px' height='300px'>
+    </canvas>
+  </div>
+  
+  <button id="casinobtn">
+    Spin
+  </button>
+
+</div> -->
+
+<div id=select class='hidden'>
+  <h3>Select between two</h3>
+  <div>
+    <button class='selectbutton first' id=selecttruebutton>
+    choice1</button>
+    <button class='selectbutton second' id=selectfalsebutton>
+    choice2</button>
+  </div>
+  
+</div>
+
+<div class="obs_notification1 obs_notification">
+  <div class="obs_color "></div>
+  <div class=obs_img>
+  </div>
+  <div class=obs_text>
+    <b></b>
+    <p></p>
+  </div>
+</div>
+<div class="obs_notification2 obs_notification good">
+  <div class="obs_color "></div>
+  <div class=obs_img>
+    <div class=toast_obsimg><img src='res/img/board/obstacles.png' style='margin-left: -200px'; > </div>
+  </div>
+  <div class=obs_text>
+    <b></b>
+    <!-- <hr> -->
+    <p></p>
+  </div>
+  
+</div>
+
+<div id="item_notification_container">
+
+  <!-- <div class="item_notification">
+    
+    <div class=item_noti_text>
+      <b>Card of Deception</b>
+      <hr>
+      <p>Additional damage and slowness!</p>
+    </div>
+    <div class=item_noti_img>
+      <img src='res/img/store/items.png' style='margin-left: -3800px'; >
+    </div>
+  </div>
+
+  <div class="item_notification small">
+    <div class=item_noti_text>
+      <p>Additional damage and slowness!</p>
+    </div>
+    <div class=item_noti_img>
+      <img src='res/img/store/items.png' style='margin-left: -3800px'; >
+    </div>
+  </div> -->
+
+</div>
+
+<div id=subwaywindow class="">
+  <b>Choose one</b>
+  <div id=subwaycontent>
+    <img src="res/img/ui/default.png" style="background-color: #ff7070;" id=subway_local>
+    <div><b style="color: #ff7070;" class="subway_name"></b><br><a class="subway_desc"></a><button class="subway_select" value="0">FREE</button></div>
+    <img src="res/img/ui/rapid.png" style="background-color: #fdff80;" id=subway_rapid>
+    <div><b style="color: #fdff80;" class="subway_name"></b></b><br><a class="subway_desc"></a><button class="subway_select" value="1">50$</button></div>
+    <img src="res/img/ui/superrapid.png" style="background-color: #95ff80;" id=subway_express>
+    <div><b  style="color: #95ff80;" class="subway_name"></b></b><br><a class="subway_desc"></a> <button class="subway_select" value="2">100$</button></div>
+  </div>
+  <a id=subway_footer style="font-size: 10px;"></a>
+</div>
+<div id=loadingoverlay>
+  <h6 id=loadingtext>
+    LOADING RESOURCE...
+  </h6>
+  <img src="res/img/ui/loading.gif">  
+
+</div>
+
+<div id="multikill_indicator" class=hidden>
+  <img class="multikillimg" src="res/img/multikill/legendary.png" >
+  <img class="multikillimg" src="res/img/multikill/multikill2.png" >
+  <img class="multikillimg" src="res/img/multikill/multikill1.png" >
+  <img class="multikillchar" src="res/img/character/bird.png">
+  <h5 id=largekilltext>
+    펜타킬
+  </h5>
+</div>
+<div id="kill_text" class="hidden">
+  <div class="killtext_killerimg killtextchar" style="background-color: #70b5ff;">
+    <img src="res/img/character/bird.png">
+  </div>
+  <a id=largetext>
+  </a>
+  <div class="killtext_deadimg killtextchar" style="background-color: #ff7070;">
+    <img src="res/img/character/reaper.png">
+  </div>
+</div>
+
+<h6 id=selectionname class="hidden"></h6>
+<h6 id=selectiondesc class="hidden"></h6>
+
+<div id="dialog">
+  <p>content</p>
+  <button class="dialog_cancel">No</button>
+  <button class="dialog_confirm">Yes</button>
+</div>
+<div id=killindicator_container>
+  <!-- <div class="killframe redkill">
+    <div class="charframe"><img src="res/img/ui/obstacle.png"></div>
+    <img src="res/img/ui/kill.png">
+    <div class="charframe2" style='background:red;'><img src="res/img/character/dinosaur.png"></div>
+  </div><br>
+  <div class="killframe bluekill">
+    <div class="charframe"><img src="res/img/ui/obstacle.png"></div>
+    <img src="res/img/ui/kill.png">
+    <div class="charframe2"><img src="res/img/character/dinosaur.png"></div>
+  </div><br>
+  <div class="killframe whitekill">
+    <div class="charframe"><img src="res/img/ui/obstacle.png"></div>
+    <img src="res/img/ui/kill.png">
+    <div class="charframe2"><img src="res/img/character/dinosaur.png"></div>
+  </div> -->
+</div>
+<div id="deathinfo-container" class="hidden">
+  <div id="deathinfo-btn">
+    사망 정보 확인
+  </div>
+  <div id="deathinfo">
+    <div class="deathinfo-header">
+      <div class="deathinfo-damagetype">
+          <img src="res/img/svg/skillinfo/pdamage.png"><b class="deathinfo-header-pdmg">물리 피해:123</b>
+   
+      </div>
+      <div class="deathinfo-damagetype">
+        <img src="res/img/svg/skillinfo/mdamage.png"><b class="deathinfo-header-mdmg">마법 피해:123</b>
+
+      </div>
+      <div class="deathinfo-damagetype">
+        <img src="res/img/svg/skillinfo/fdamage.png"><b class="deathinfo-header-fdmg">고정 피해:123</b>
+
+      </div>
+    </div>
+    <div class="deathinfo-content">
+
+
+      <div class="deathinfo-source">
+        <div>
+          <img src="res/img/ui/obstacle.png" class="killer">
+        </div>
+        <div>
+          Obstacle
+        </div>
+        <div>
+
+          <div class="deathinfo-source-graph">
+            <div class="deathinfo-source-bar deathinfo-source-bar-pdamage"></div>
+            <div class="deathinfo-source-bar deathinfo-source-bar-fdamage"></div>
+            <div class="deathinfo-source-damage">123</div>
+          </div>
+          
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+<div id="randomobs">
+  <img id="randomobs_casino" draggable="false" src="res/img/ui/casino.png">
+  <img id="randomobs_court"  draggable="false" src="res/img/ui/court.png">
+  <div id="randomobs_entries">
+    <!-- <p class="randomobs_entry">벌금</p>
+    <p class="randomobs_entry">사형</p> -->
+
+  </div>
+  <div id="randomobs_result">
+    <!-- result -->
+  </div>
+</div>
+<div id=timeourbarcontainer>
+  <div id=timeoutbar></div>
+</div>
+<div id=prediction-container>
+  
+  <div id="prediction-close" class="opened">
+    <img src="res/img/svg/chevron-left.svg">
+  </div>
+  <div id="prediction-content">
+    <b lkey="winprediction">Win rate predictions</b>
+    <div id=prediction>
+      <!-- <div class="prediction">
+        <img src="res/img/character/illust/bird.jpg">
+        <img src="res/img/svg/skillinfo/down.png">
+        <b class="prediction-prob">100%</b>
+        <b class="prediction-diff bad">(-10%)</b>
+      </div>
+      <div class="prediction">
+        <img src="res/img/character/illust/bird.jpg">
+        <img src="res/img/svg/skillinfo/down.png">
+        <b class="prediction-prob">100%</b>
+        <b class="prediction-diff good">(+10%)</b>
+      </div> -->
+    </div>
+  </div>
+</div>
+
+<div id="dice-container">
+  <div class="dice-wrapper" id='dice-wrapper1'>
+    <div id='dice1' class="dice dice-one">
+      <div id="dice-one-side-one" class='side one'>
+        <div class="dot one-1"></div>
+      </div>
+      <div id="dice-one-side-two" class='side two'>
+        <div class="dot two-1"></div>
+        <div class="dot two-2"></div>
+      </div>
+      <div id="dice-one-side-three" class='side three'>
+        <div class="dot three-1"></div>
+        <div class="dot three-2"></div>
+        <div class="dot three-3"></div>
+      </div>
+      <div id="dice-one-side-four" class='side four'>
+        <div class="dot four-1"></div>
+        <div class="dot four-2"></div>
+        <div class="dot four-3"></div>
+        <div class="dot four-4"></div>
+      </div>
+      <div id="dice-one-side-five" class='side five'>
+        <div class="dot five-1"></div>
+        <div class="dot five-2"></div>
+        <div class="dot five-3"></div>
+        <div class="dot five-4"></div>
+        <div class="dot five-5"></div>
+      </div>
+      <div id="dice-one-side-six" class='side six'>
+        <div class="dot six-1"></div>
+        <div class="dot six-2"></div>
+        <div class="dot six-3"></div>
+        <div class="dot six-4"></div>
+        <div class="dot six-5"></div>
+        <div class="dot six-6"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<button id="quit">&times;</button>
+<!-- <button id="reload">게임 정보 받아오기</button> -->
+
+
+</body>
+<div class="hidden" w3-include-html="gameimages.html">
+
+</div>
+<script type="module" src="src/game/GameMain.js"></script>
+
+</html>

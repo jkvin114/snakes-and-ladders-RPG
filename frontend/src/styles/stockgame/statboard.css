@@ -1,0 +1,39 @@
+#stat-content{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100%;
+}
+#stat-content #stat{
+
+}
+
+#stat-content #history{
+    overflow: scroll;
+    height: 100%;
+}
+
+.day-record-item{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 3px;
+}
+.day-record-date{
+    color: var(--color-text-secondary);
+}
+.day-record-item > span{
+    text-align: left;
+
+}
+.stat-item div{
+    margin: 10px;
+    text-align: center;
+}
+.stat-item-name{
+    color: var(--color-text-secondary);
+    font-size: small;
+}
+.stat-item-value{
+    /* color: blue; */
+    font-size: larger;
+}

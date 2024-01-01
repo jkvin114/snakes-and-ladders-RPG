@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+	<script src="lib/jquery-3.6.0.min.js"></script>
+	<head>
+		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+		<link rel="stylesheet" href="./src/style/style_main_navbar.css" />
+		<title>Adminpage</title>
+		<link rel="icon" type="image/x-icon" href="/res/img/ui/favicon.png" />
+        <link rel="stylesheet" href="./src/style/style_main_navbar.css">
+
+		<meta charset="utf-8" />
+	</head>
+    <style>
+        @font-face {
+			font-family: "cookierun";
+			src: url("res/font/CookieRun.ttf");
+		}
+
+		@font-face {
+			font-family: "nanumB";
+			src: url("res/font/NanumSquareB.ttf");
+		}
+		body {
+			/* background-color: #242424; */
+			background-color: #242424;
+			color: beige;
+			margin: 0;
+
+			/* font-family: "nanumB"; */
+			/* text-align: center; */
+		}
+        .hidden{
+            display: none;
+        }
+
+        table.minimalistBlack {
+  border: 3px solid #000000;
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+table.minimalistBlack td, table.minimalistBlack th {
+  border: 1px solid white;
+  padding: 5px 4px;
+}
+table.minimalistBlack tbody td {
+  font-size: 13px;
+}
+table.minimalistBlack thead {
+  background: #CFCFCF;
+  background: -moz-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+  background: -webkit-linear-gradient(top, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+  background: linear-gradient(to bottom, #dbdbdb 0%, #d3d3d3 66%, #CFCFCF 100%);
+  border-bottom: 3px solid black;
+}
+table.minimalistBlack thead th {
+  font-size: 15px;
+  font-weight: bold;
+  color: #000000;
+  text-align: left;
+}
+table.minimalistBlack tfoot {
+  font-size: 14px;
+  font-weight: bold;
+  color: #000000;
+  border-top: 3px solid black;
+}
+table.minimalistBlack tfoot td {
+  font-size: 14px;
+}
+.container{
+    width: 95vw;
+    max-height: 50vh;
+    overflow: auto;
+}
+.resetbtn{
+    background-color: red;
+    color: wheat;
+    cursor: pointer;
+}
+.spectatebtn{
+    background-color: blueviolet;
+    color: wheat;
+    cursor: pointer;
+}
+    </style>
+    <body>
+        
+        <div id="navbar">
+            <div id="navbar-btn-container">
+                <div class="nav-section ">
+                    <div class="navbtn" onclick="golink('/index.html')">
+                        <img src="res/img/svg/home.svg" title="home">
+                        <a>Home</a>
+                    </div>
+                    <div class="navbtn " id="postbtn" onclick="golink('/board')">
+                        <img class='postbtn' src="res/img/svg/note.svg"  title="post board">
+                        <a>Posts</a>
+                    </div>
+                    <div class="navbtn"  onclick="golink('/statpage.html')">
+                        <img id="statbtn" src="res/img/svg/chart_white.svg" title="Statistics">
+                        <a>Statistics</a>
+                    </div>
+                </div>
+                <div class="nav-section">
+                    <img class='menubtn' id="refreshbtn" src="res/img/svg/refresh.svg"  title="refresh">
+                </div>
+            </div>
+            
+        </div>
+
+        <div>
+            <h3>status</h3>
+            <div style="text-align: center;">
+                <h4>Database</h4>
+                <h4 id="ping-db"></h4>
+                <h4>Marble Game Server</h4>
+                <h4 id="ping-marble"></h4>
+            </div>
+            <h3>rooms</h3>
+            <div id="rooms" class="container">
+                <table class="minimalistBlack">
+                <thead>
+                <tr>
+                    <th>name</th>
+                    <th>type</th>
+                    <th>Login only</th>
+                    <th>Public</th>
+                    <th>Playerlist</th>
+                    <th>Started</th>
+                    <th>Running</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="room-table">
+                
+                </tbody>
+                </table>
+            </div>
+            <h3>users</h3>
+            <div id="users" class="container">
+                <table class="minimalistBlack">
+                <thead>
+                <tr>
+                    <th>name</th>
+                    <th>access time</th>
+                    <th>logged in</th> 
+                    <th>room name</th>
+                    <th>turn</th>
+                    <th>IP</th>
+                </tr>
+                </thead>
+                <tbody id="user-table">
+                
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script>
+
+$(document).ready(async function () {
+	$("#refreshbtn").click(function () {
+		fetchdata()
+	})
+	fetchdata()
+})
+async function spectate() {
+		let rname = $(this).data("roomname")
+		let res = await fetch("/room/spectate_rpg", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ roomname: rname }),
+		})
+		if (res.status === 404) {
+			alert("the game does not exist")
+		} else if (res.status === 200) {
+			window.location.href = "/gamepage.html?is_spectator=true"
+		}
+	}
+    
+    async function resetroom() {
+		let rname = $(this).data("roomname")
+		let res = await fetch("/admin/reset_room/"+rname, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ roomname: rname }),
+		})
+		if (res.status === 404) {
+			alert("the game does not exist")
+		} else if (res.status === 200) {
+            fetchdata()
+            alert("Room successfully reset")
+
+		}
+	}
+/**
+ *  name:this.name,
+    running:this.isGameRunning,
+    started:this.isGameStarted,
+    playerlist:this.playerMatchingState.playerlist,
+    hosting:this.hosting,
+    type:this.type,
+    password:this.password,
+    loginonly:this.isLoggedInUserOnly,
+    isPublic:this.isPublic
+
+
+    isLogined:boolean
+        userId:string
+        username:string
+        boardDataId:string
+        roomname:string
+        turn:number
+		ip:string
+ * 
+ **/
+
+ function golink(link) {
+	window.location.href = link
+}
+
+function healthcheck(data){
+    /*
+    0 = disconnected
+    1 = connected
+    2 = connecting
+    3 = disconnecting
+    99 = uninitialized
+    */
+    const statuscodes = new Map()
+    .set(0,"Disconnected")
+    .set(1,"Connected")
+    .set(2,"Connecting")
+    .set(3,"Disconnecting")
+    .set(99,"Uninitialized")
+
+
+   $("#ping-db").html(statuscodes.get(data.mongodb))
+    if(data.mongodb === 1){
+        $("#ping-db").css("color","green")
+    }
+    else $("#ping-db").css("color","red")
+
+    if(data.marblegame >= 0){
+        $("#ping-marble").css("color","green")
+        $("#ping-marble").html(`Connected (${data.marblegame}ms)`)
+    }
+    else {
+        $("#ping-marble").css("color","red")
+        $("#ping-marble").html("Disconnected")
+        // if(data.marblegame === -1) $("#ping-marble").html("Error")
+        // else if(data.marblegame === -2) 
+    }
+
+
+}
+
+async function fetchdata(){
+    try{
+        let health = await (await fetch("/ping")).json()
+        healthcheck(health)
+
+        console.log(health)
+        let rooms = (await (await fetch("/admin/allrooms")).json()).data
+        let users = (await (await fetch("/admin/allusers")).json()).data
+        let str=``
+        for(const rm of rooms){
+            let players=''
+            for(const player of rm.playerlist){
+                if(player.type!=="none")
+                    players+=(player.type+",")
+            }
+            str+=`
+            <tr>
+                <td>${rm.name}</td>
+                <td>${rm.type}</td>
+                <td>${rm.loginonly}</td>
+                <td>${rm.isPublic}</td>
+                <td>${players}</td>
+                <td>${rm.started}</td>
+                <td>${rm.running}</td>
+                <td><button class="spectatebtn ${rm.running?"":"hidden"}" data-roomname='${rm.name}'>Spectate</button></td>
+                <td><button class="resetbtn" data-roomname='${rm.name}'>RESET</button></td>
+             </tr>
+            `
+        }
+        $("#room-table").html(str)
+        str=""
+        for(const us of users){
+            if(!us.ip) continue
+            str+=`
+            <tr>
+                <td>${us.username}</td>
+                <td>${us.time}</td>
+                <td>${us.isLogined}</td>
+                <td>${us.roomname}</td>
+                <td>${us.turn}</td>
+                <td>${us.ip}</td>
+             </tr>
+            `
+        }
+        $("#user-table").html(str)
+       
+        $(".spectatebtn").click(spectate)
+        $(".resetbtn").click(resetroom)
+    }
+    catch(e){
+        console.error(e)
+        alert("error")
+    }
+
+
+}
+    </script>
+</html>

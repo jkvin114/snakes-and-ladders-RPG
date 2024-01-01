@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src="lib/jquery-3.6.0.min.js"></script>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
+	<link rel="stylesheet" href="./src/style/style_main_navbar.css">
+  <link rel="stylesheet" href="./src/style/input.css">
+  <link rel="stylesheet" href="./src/style/skill.css">
+
+  <title>Snakes-and-Ladders RPG</title>
+  <link rel="icon" type="image/x-icon" href="res/img/ui/favicon.png">
+
+  <meta charset="utf-8" >
+</head>
+
+<style>
+  @font-face {
+    font-family: "cookierun";
+    src: url("res/font/CookieRun.ttf");
+}
+
+@font-face {
+    font-family: "nanumB";
+    src: url("res/font/NanumSquareB.ttf");
+}
+html{
+  
+}
+body{     
+   /* background-color: #242424; */
+   /* background-color: #200f33; */
+   /* background: linear-gradient(45deg, #41295a, #2f0743); */
+   background-color: #2b282c;
+   color: beige;
+    margin: 0;
+  min-height: 100vh;
+  font-family: 'nanumB';
+  text-align:center;
+}
+div{
+text-align:center;
+}
+h1{
+  color:black;
+  font-size: 60px;
+}
+
+.area{
+  /* background-color: #2A1343; */
+  border: 1px solid #9158ce;
+  display: inline-block;
+  /* width: 90%; */
+  padding: 20px;
+  max-width: 400px;
+  margin-top: 50px;
+}
+.button{
+  font-family: 'nanumB';
+  color:whitesmoke;
+  /* background-color: #7E00BF; */
+  background: transparent;
+  border: 1px solid #a044ff;
+  cursor:pointer;
+  text-align:center;
+  padding: 7px 10px;
+  font-size: 13px;
+  margin: 10px 10px;
+  /* border:none; */
+  vertical-align: middle;
+  /* border-radius: 3px; */
+  min-width: 80px;
+}
+.button.filled{
+  background-color: #a044ff;;
+  border: none;
+}
+
+.button.filled:hover{
+    background-color: #8b2fe6;
+  }
+.button.wide{
+  padding: 10px 60px;
+  border-radius: 10px;
+  width: 80%;
+}
+#open_create_room{
+  background: linear-gradient(-45deg, #6a3093, #a044ff); 
+  padding: 15px 60px;
+  font-size: 20px;
+  border: none;  
+  border-radius: 17px;
+  margin-bottom: 40px;
+}
+#open_create_room:hover{
+  transform: scale(1.1);
+}
+
+input{
+  text-align: center;
+}
+.button:hover{
+  filter: brightness(0.8);
+}
+#startgame{
+  display:block;
+}
+footer{
+  /* background-color:#ededed;
+  border:1px solid gray; */
+  width:100%;
+  /* margin-top: 200px; */
+  font-size: 10px;
+  /* display: none; */
+}
+#signin{
+  display:none;
+  
+  visibility: collapse;
+}
+form > input{
+  font-size:20px;
+}
+#sign{
+  display:none;
+}
+input{
+  border: none;
+    border-bottom: 2px solid #c5c5c5;
+    /* background-color: #e9d5ff; */
+    /* background-color: #1F0E32; */
+
+    /* background: rgba(0,0,0,0.1); */
+    background: none;
+    color: beige;
+    font-size: 20px;
+    /* border-radius:10px; */
+    padding: 5px;
+    font-family:"cookierun" ;
+    width: min(70vw,350px);
+
+}
+input[type=password]{
+  font-family:"cookierun" ;
+}
+#simulation{
+  border:1px solid rgb(127, 187, 255);
+  color:rgb(127, 187, 255);
+}
+#simulation:hover{
+  background-color: rgb(20, 60, 105);
+}
+
+#logout{
+  font-size:13px;
+  padding: 4px 8px;
+  background-color: #ff5656;
+}
+#firstpage,#loginpage,#signuppage{
+  font-size:15px;
+  /* display: inline; */
+}
+#field{
+  text-align: center;
+  /* width: min(80%,500px); */
+  /* visibility: collapse; */
+  /* display: inline-block; */
+}
+#createroom{
+  display:none;
+}
+
+/* .nav-section{
+  min-width: 80px;
+} */
+/* .nav-section.left{
+  text-align: left;
+}
+.nav-section.right{
+  text-align: right
+}  */
+
+#quitbtn{
+  /* background-color: #ff5656; */
+
+}
+.hidden{
+  display: none;
+}
+
+.lang_dropdown{
+  display: none;
+  position: absolute;
+  background: rgb(121, 121, 121);
+  z-index: 2;
+  width: 120px;
+  right: 0;
+
+}
+.lang_dropdown > a{
+  display: block;
+  font-size: 20px;
+  color: rgb(255, 255, 255);
+  cursor:pointer;
+  padding:4px;
+}
+.dropitem:hover{
+  background: rgb(73, 73, 73);
+
+}
+.input_alert{
+  font-size: 12px;
+  color:rgb(255, 78, 78)
+}
+
+#loginpage,#signuppage{
+  /* background-color: rgb(48, 48, 48); */
+  /* background-color: #351954; */
+  margin-left: 5vw;
+  margin-right: 5vw;
+  padding: 10px;
+}
+
+#toggle_fullscreen{
+  position: fixed;
+  z-index: 99;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 40px;
+  height: 20px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  left: 50%;
+  transform: translate(-50%,0);
+  top:0;
+  cursor: pointer;
+}
+.cool{
+  position:relative;
+  width: 5vw;
+  height: 5vw;
+}
+.img{
+  width: inherit;
+  height: inherit;
+  display: inline-block;
+}
+.mask{
+  position: absolute;
+  top:0;
+  left: 0;
+  width: inherit;
+  height: inherit;
+  z-index: 2;
+  background: conic-gradient(rgba(255,255,255,0.0) 0%,rgba(255,255,255,0.0) 30%,rgba(255,255,255,0.6) 30% ,rgba(255,255,255,0.6) 100%);
+}
+#postbtn{
+  /* background-color: rgb(163, 87, 33); */
+}
+#room-name-input{
+  margin-bottom: 16px;
+}
+#ip-input{
+  visibility: hidden;
+}
+
+.wikibtn {
+  /* transform: scale(0.7); */
+  /* filter: invert(); */
+}
+#title{
+  margin-top: 10vh;
+  margin-bottom: 6vh;
+
+}
+#logged_in_username{
+  font-size: 20px;
+  color: rgb(175, 175, 175);
+}
+#myname{
+  color: white;
+  font-size: 26px;
+  font-family: 'cookierun';
+}
+.onesetting  .settingname-container a{
+  text-align: right;
+  font-size: 13px;
+  /* line-height: 50px; */
+  font-weight: normal;
+  color: whitesmoke;
+  /* padding-right: 10px; */
+  margin: 0;
+}
+
+.slider{
+  border-radius: 10px;
+}.onesetting{
+  padding-top: 10px;
+  text-align: center;
+}
+#room-settings{
+  text-align: center;
+}
+#room-settings label{
+  cursor: pointer;
+}
+#marble{
+  height: 50px;
+  background: transparent;
+  vertical-align: middle;
+  cursor: pointer;
+
+}
+#marble:hover{
+  transform: scale(1.1);
+}
+</style>
+<body>
+<!-- <img id="toggle_fullscreen" src="res/img/svg/maximize.svg" data-on=false> -->
+
+
+
+    <div id="navbar">
+
+      <div id="navbar-btn-container">
+        <div class="nav-section ">
+          <div class="navbtn active" onclick="golink('/')">
+            <img src="res/img/svg/home.svg" title="home">
+            <a>Home</a>
+          </div>
+          <div class="navbtn " id="postbtn">
+            <img class='postbtn' src="res/img/svg/note.svg"  title="post board">
+            <a>Posts</a>
+          </div>
+          <div class="navbtn" onclick="toStatpage()">
+            <img id="statbtn" src="res/img/svg/chart_white.svg" title="Statistics">
+            <a>Statistics</a>
+          </div>
+        </div>
+        <div class="nav-section">
+        <img class='menubtn wikibtn'  onclick="golink('https:\/\/jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/')" src="res/img/svg/question.svg"  title="Wiki"> 
+
+          <!-- <img class='menubtn hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블"> -->
+          <img class='menubtn langbtn' id="langbtn" src="res/img/svg/globe.svg"  title="Language">
+          <div class="lang_dropdown">
+            <a class="dropitem" value="ko">한국어</a>
+            <a class="dropitem" value="en">English</a>
+          </div>
+          <img class="menubtn" id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login">
+          <img class="menubtn hidden" id="mypagebtn" onclick="mypage()" src="./res/img/svg/user.svg" title="Mypage">
+          <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="slidecontainer">
+      <input type="range" min="1" max="100" value="50" id="myRange" class="slider">
+    </div> -->
+    <div id="firstpage" class="page" >
+     <div id="title"><img style="width: 90%;max-width: 700px;" src="res/img/ui/logo3.png"></div>
+     <div id="logged_in_username"><p></p></div>
+      <br>
+      <input id="input-username" type='text' name="nickname" value="" lkey-ph="ph.room.username" placeholder=" Username(optional)">
+      <div id="ip_area" class="hidden">
+        <input type='text' id="ip-input" name="ip" value="" placeholder="Server ip address " >
+      </div>
+     
+      <!-- <button onclick="tolocalhost()">localhost</button> -->
+      <br>
+      <div id=buttons>
+        <br>
+        <button class='button' id="open_create_room" onclick="createroom(false)" lkey="quick_start">Quick Start</button>
+        <br>
+        <button class='button' id="create_room_open" onclick="open_createroom()" lkey="startgame">
+         
+          Create Game</button>
+       
+        <button class='button hidden' id="reconnect" onclick="toGamepage()" lkey="reconnect">Reconnect</button>
+        <button class='button' id="join" onclick="join()"  lkey="join">IN</button>
+        <button class='button' id="spectate" onclick="golink('/spectate')"  lkey="spectate">SPTATE</button>
+        <button class='hidden button' id="simulation" onclick="simulation()" lkey="simulation">simution</button><br><br>
+        <a class="button" href="/status.html">Status</a>
+        <!-- <a class="button" href="/marble/stat.html">marble stats</a> -->
+        <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->
+      </div>
+      <div id=field style="display: none;">
+        <br>
+        <input type='text' name="room_name" value="" lkey-ph="ph.room.name" placeholder="Room Name(optional)" id="room-name-input"><br>
+        <input type='text' name="room_password" value="" lkey-ph="ph.room.pw" placeholder="Room Password(optional)" id="room-password-input">
+        <div id="room-settings">
+
+          <div class="onesetting">
+            <label class="switch">
+              <input type="checkbox" name="room_private" class="toggleallstat" id="room_private">
+              <span class="switchslider"></span>
+            </label>
+            <label for="room_private" lkey="room.private">Make private</label>
+          </div> 
+          <div class="onesetting">
+            <label class="switch">
+              <input type="checkbox" name="room_loggedin_only" class="toggleallstat" id="room_loggedin_only">
+              <span class="switchslider"></span>
+            </label>
+            <label for="room_loggedin_only" lkey="room.loginonly">Logged in user only</label>
+          </div>
+        </div>
+        <br>
+        <img class='hidden' onclick="createroom(true)" id=marble src="marble/res/icon.jpg"  title="모두의마블">
+        <button class='button filled' id="create_room" onclick="createroom(false)" lkey="start">START</button>
+        <button class=button id=close_createroom onclick="close_createroom()" lkey="cancel">CANCEL</button>
+      </div>
+    </div>
+
+
+    <div id="loginpage" class="hidden page area">
+      <form id="loginform" method="post" action="/user/login">
+         <h2 lkey="login">Login</h2>
+        <br>
+        
+
+        <input type='text' name="username" placeholder="Username" lkey-ph="ph.username">
+        <br><a class="input_alert login_id"></a><br>
+        
+        <input type='password' name="password" placeholder="Password" lkey-ph="ph.password"><br>
+        <a class="input_alert login_pw"></a><br>
+        <button class='button loginpage_btn filled wide' type="submit" lkey="login">Login</button><br>
+        <button class='button loginpage_btn' type="button" onclick="open_signup()" lkey="signup">Sign up</button>
+        <button class='button loginpage_btn' type="button" onclick="open_firstpage()" lkey="home">Home</button>
+
+      </form>
+
+
+    </div>
+    <br>
+    <div id="signuppage" class="hidden page area">
+      <form id="registerform" method="post" action="/user/register">
+        <h2 lkey="signup">Sign Up</h2>
+         
+        <br>
+        <input type='text' name="username" placeholder="Username" lkey-ph="ph.username">
+        <br><a class="input_alert register_id"></a><br>
+         
+        <br>
+        <input type='password' name="password" placeholder="Password" lkey-ph="ph.password"><br><a class="input_alert register_pw" ></a><br>
+        
+        <br>
+        <input type='password' name="password2" placeholder="Verify Password " lkey-ph="ph.verify_password"><br><a class="input_alert"></a><br>
+        
+        <br>
+        <input type='email' name="email" placeholder="Email"  lkey-ph="ph.email">
+        <br><a class="input_alert register_email"></a><br>
+        <button class='button regpage_btn filled wide' type="submit" lkey="signup">Sign up</button><br>
+        <button class='button regpage_btn' type="button" onclick="open_login()"lkey="login">Login</button>
+        <button class='button regpage_btn' type="button" onclick="open_firstpage()"lkey="home">Home</button>
+
+      </form>
+     
+
+    </div>
+
+    <div id="test">
+      
+    </div>
+    </body>
+<!-- <footer>  
+  <br>
+  <a href="https://pngtree.com/free-backgrounds">free background photos from pngtree.com</a>
+  Icons made by <a href="https://www.freepik.com/" title="Freepik">Freepik</a> from 
+  <a href="https://www.flaticon.com/"title="Flaticon">www.flaticon.com</a> 
+  is licensed by <a href="http://creativecommons.org/licenses/by/3.0/"title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
+</footer> -->
+
+
+<footer>
+  <a>version</a>
+</footer>
+
+<script src="lib/axios.js"></script>
+<script src="src/skillparser.js"></script>
+
+<script src="src/homepage.js"></script>
+<script src="src/localeManager.js"></script>
+<script src="lib/socket.io.min.js"></script>
+<script>
+  // const socket=io(window.location.host+":4000",{
+  //   withCredentials: true
+  // })
+console.log("sdsd")
+</script>
+</html>
