@@ -10,3 +10,6 @@ stats/
 uploads/*.jpg
 uploads/*.png
 public/res/img/effect/effects_old.png
+
+*.swp
+*.pyc
