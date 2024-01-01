@@ -2,8 +2,8 @@ async function showAnalysisPage(version) {
 	$("#overlay").addClass("visible")
 	$("#character-table-container").addClass("hidden")
 	try {
-		let maps = await (await fetch(`/stat/eval/list/map/${version}`)).json()
-		let versions = await (await fetch(`/stat/eval/list/version`)).json()
+		let maps = await (await fetch(SERVER_URL + `/stat/eval/list/map/${version}`)).json()
+		let versions = await (await fetch(SERVER_URL + `/stat/eval/list/version`)).json()
 		let str = ` <li class="dropdown-item version-item" data-version="recent">${LOCALE.recent}</li>`
 		versions = versions.versions.reverse()
 		for (const v of versions) {
@@ -101,7 +101,7 @@ async function showAnalysisTable(version, map) {
 		$(".character-table-delete-btn").hide()
 	}
 	try {
-		data = await (await fetch(`/stat/eval/overview/${map}/${version}`)).json()
+		data = await (await fetch(SERVER_URL + `/stat/eval/overview/${map}/${version}`)).json()
 	} catch (e) {
 		console.error(e)
 		$("#overlay").removeClass("visible")

@@ -14,7 +14,9 @@ function App() {
 
         <Route path='/' element={<HtmlPage htmlPath="home"/>}></Route> 
 		<Route path='/spectate' element={<HtmlPage htmlPath="spectate"/>}></Route> 
-		
+		<Route path='/stat' element={<HtmlPage htmlPath="stat"/>}></Route> 
+		<Route path='/find_room' element={<HtmlPage htmlPath="find_room"/>}></Route> 
+
 		</Routes>
 		{/* <StockGame/> */}
 	</>

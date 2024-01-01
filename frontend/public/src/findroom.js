@@ -1,4 +1,6 @@
-$(document).ready(async function () {
+let SERVER_URL = ""
+async function main(url) {
+	SERVER_URL = url
 	$("#refreshbtn").click(function () {
 		getRooms()
 	})
@@ -13,9 +15,9 @@ $(document).ready(async function () {
 		$("#password-window").hide()
 	})
 	getRooms()
-})
+}
 async function joinRoom(name, password) {
-	let res = await fetch("/room/verify_join", {
+	let res = await fetch(SERVER_URL + "/room/verify_join", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -43,7 +45,7 @@ async function joinRoom(name, password) {
 
 async function getRooms() {
 	$("#loading").show()
-	let rooms = (await (await fetch("/room/hosting")).json()).rooms
+	let rooms = (await (await fetch(SERVER_URL + "/room/hosting")).json()).rooms
 
 	if (rooms.length === 0) $("#emptyroom").show()
 	else $("#emptyroom").hide()

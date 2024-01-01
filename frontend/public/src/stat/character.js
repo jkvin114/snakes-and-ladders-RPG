@@ -47,7 +47,7 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 	let data
 	let trend
 	try {
-		data = await fetch(`/stat/eval/character/${charId}?version=${version}&map=${map}&gametype=${gametype}`)
+		data = await fetch(SERVER_URL + `/stat/eval/character/${charId}?version=${version}&map=${map}&gametype=${gametype}`)
 		if (data.status === 400) {
 			alert("invalid query")
 		}
@@ -64,7 +64,7 @@ async function showCharacterPage(version, map, gametype, charId, isModal, isback
 		}
 		$("#character-nodata").hide()
 		$("#character-content").show()
-		trend = await fetch(`/stat/eval/character/${charId}/trend?map=${map}&gametype=${gametype}`)
+		trend = await fetch(SERVER_URL + `/stat/eval/character/${charId}/trend?map=${map}&gametype=${gametype}`)
 		if (trend.status === 400) {
 			alert("invalid query")
 		}

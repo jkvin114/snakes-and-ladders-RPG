@@ -93,6 +93,8 @@ async function main(server_url) {
 		else updateLocale("home")
 	} catch (e) {
 		console.log(e)
+		throw Error("Service Unavaliable! " + e)
+		// alert("Service")
 	}
 
 	//checks if user is also maintaing login status in server
@@ -400,9 +402,9 @@ function createroom(isMarble) {
 }
 
 function toStatpage() {
-	sessionStorage.ip_address = $("input[name='ip']").val()
+	// sessionStorage.ip_address = $("input[name='ip']").val()
 
-	window.location.href = "statpage.html"
+	window.location.href = "/stat"
 }
 // function changelang(){
 //   if(sessionStorage.language==="eng"){
@@ -431,29 +433,7 @@ function join() {
 	}
 
 	sessionStorage.nickName = n
-	window.location.href = "find_room_page.html"
-	return
-	let url = $("input[name='ip']").val()
-	sessionStorage.ip_address = url
-
-	$.ajax({
-		method: "POST",
-		url: "/room/join",
-		data: { username: n },
-	})
-		.done(function (data, statusText, xhr) {
-			let status = xhr.status
-			console.log(status)
-			if (status == 200) {
-				window.location.href = "matching.html"
-			}
-			if (status == 307) {
-				window.location.href = "gamepage.html"
-			}
-		})
-		.fail(function (data, statusText, xhr) {
-			console.error("error")
-		})
+	window.location.href = "/find_room"
 }
 function simulation() {
 	let r = "simulation_" + String(Math.floor(Math.random() * 1000000))
@@ -462,6 +442,6 @@ function simulation() {
 
 	window.location.href = "simulation_selection_page.html"
 }
-function toGamepage() {
-	window.location.href = "gamepage.html"
-}
+// function toGamepage() {
+// 	window.location.href = "gamepage.html"
+// }

@@ -333,7 +333,7 @@ input[type=password]{
             <img class='postbtn' src="res/img/svg/note.svg"  title="post board">
             <a>Posts</a>
           </div>
-          <div class="navbtn" onclick="toStatpage()">
+          <div class="navbtn" onclick="golink('/stat')">
             <img id="statbtn" src="res/img/svg/chart_white.svg" title="Statistics">
             <a>Statistics</a>
           </div>
@@ -377,9 +377,9 @@ input[type=password]{
           Create Game</button>
        
         <button class='button hidden' id="reconnect" onclick="toGamepage()" lkey="reconnect">Reconnect</button>
-        <button class='button' id="join" onclick="join()"  lkey="join">IN</button>
-        <button class='button' id="spectate" onclick="golink('/spectate')"  lkey="spectate">SPTATE</button>
-        <button class='hidden button' id="simulation" onclick="simulation()" lkey="simulation">simution</button><br><br>
+        <button class='button' id="join" onclick="join()"  lkey="join">JOIN</button>
+        <button class='button' id="spectate" onclick="golink('/spectate')"  lkey="spectate">SPECTATE</button>
+        <button class='hidden button' id="simulation" onclick="simulation()" lkey="simulation">simulation</button><br><br>
         <a class="button" href="/status.html">Status</a>
         <!-- <a class="button" href="/marble/stat.html">marble stats</a> -->
         <!-- <button class=button id="simulation" onclick="simulation()">Simulation</button> -->

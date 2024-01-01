@@ -40,19 +40,31 @@ export default function HtmlPage({htmlPath}:Props){
       console.error(e)
       setHtmlData({html:`<h1>Cannot load a page</h1>`,scripts:[],modules:[]});
     }
+    finally{
+      const cover= document.getElementById("html-cover") as HTMLElement
+      await sleep(200);
+      cover.style.opacity="0";
+      await sleep(500);
+      cover.style.display="none"
+    }
   }
   useEffect(() => {
     fetchHtml();
   }, []);
 
+ 
   return(
     <div className="App">
-      <div id="rawhtml" dangerouslySetInnerHTML={{ __html: htmlData.html }}></div>
-      <Helmet>
-        {htmlData.scripts.map((v,i)=>(<script src={v} key={i}></script>))}
-        {htmlData.modules.map((v,i)=>(<script type="module" src={v} key={i}></script>))}
+      <div id="html-cover">
+      </div>
+        <div id="rawhtml" dangerouslySetInnerHTML={{ __html: htmlData.html }}></div>
+        <Helmet>
+          {htmlData.scripts.map((v,i)=>(<script src={v} key={i}></script>))}
+          {htmlData.modules.map((v,i)=>(<script type="module" src={v} key={i}></script>))}
 
-      </Helmet>
+        </Helmet>
+      
+      
       {/* <iframe src="index-old.html" style={{width:"100vw",height:"100vh"}}></iframe> */}
     </div>
   );

@@ -17,6 +17,7 @@ const STATE_SIMULATION = 1
 const STATE_ONEGAME = 2
 const STATE_ANALYSIS = 3
 const STATE_CHARACTER_ANALYSIS = 4
+let SERVER_URL = ""
 let LOCALE_GAME = {}
 class InterfaceState {
 	constructor() {
@@ -122,7 +123,7 @@ function requestStatAfterGame(params) {
 	console.log(params)
 	$("#main").css("grid-template-columns", "auto")
 	$("#overlay").addClass("visible")
-	$.get("/stat/result?" + params).done((data) => showStat(data))
+	$.get(SERVER_URL + "/stat/result?" + params).done((data) => showStat(data))
 }
 /**
  * request simulation list as summary
@@ -131,7 +132,9 @@ function requestStatAfterGame(params) {
  */
 function requestSimulationSummary(start, count) {
 	$("#overlay").addClass("visible")
-	$.get("/stat/simulation/summary?start=" + start + "&count=" + count).done((data) => onReceiveSimulationSummary(data))
+	$.get(SERVER_URL + "/stat/simulation/summary?start=" + start + "&count=" + count).done((data) =>
+		onReceiveSimulationSummary(data)
+	)
 }
 /**
  * request gamelist for normal games(not simulation games)
@@ -140,7 +143,7 @@ function requestSimulationSummary(start, count) {
  */
 function requestGames(start, count) {
 	$("#overlay").addClass("visible")
-	$.get("/stat/game?start=" + start + "&count=" + count).done((data) => onReceiveGames(data))
+	$.get(SERVER_URL + "/stat/game?start=" + start + "&count=" + count).done((data) => onReceiveGames(data))
 }
 /**
  * updates page number
@@ -277,7 +280,7 @@ function onReceiveSimulationSummary(data) {
  * @param {*} id
  */
 function requestStatById(id) {
-	let xhr = $.get("/stat/simulation?statid=" + id)
+	let xhr = $.get(SERVER_URL + "/stat/simulation?statid=" + id)
 
 	$("#overlay").addClass("visible")
 	xhr.done((data) => {
@@ -297,7 +300,7 @@ function requestStatById(id) {
 	3-2. otherwise request game list
  */
 function requestGlobalSetting() {
-	let xhr = $.get("/resource/globalsetting")
+	let xhr = $.get(SERVER_URL + "/resource/globalsetting")
 
 	xhr.done((data) => {
 		data = JSON.parse(data)
@@ -311,7 +314,7 @@ function requestGlobalSetting() {
  * and request global setting afterwards
  */
 function requestResource() {
-	let xhr = $.get("/resource/item")
+	let xhr = $.get(SERVER_URL + "/resource/item")
 
 	xhr.done((data) => {
 		data = JSON.parse(data)
@@ -432,10 +435,21 @@ function onGameDetailShow() {
 		$("#gamelist_wrapper").hide()
 	}
 }
+function loadScriptSync(src) {
+	var s = document.createElement("script")
+	s.src = src
+	s.type = "text/javascript"
+	s.async = false // <-- this is important
+	document.getElementsByTagName("head")[0].appendChild(s)
+}
 
-$(window).on("load", function () {})
-$(document).ready(function () {
-	SkillParser.init("", "/resource/skill", currentLocale())
+function main(url) {
+	loadScriptSync("https://cdn.amcharts.com/lib/4/core.js")
+	loadScriptSync("https://cdn.amcharts.com/lib/4/charts.js")
+	loadScriptSync("https://cdn.amcharts.com/lib/4/themes/dark.js")
+	SERVER_URL = url
+
+	SkillParser.init("", SERVER_URL + "/resource/skill", currentLocale())
 	SkillParser.SeparateSection = true
 	updateLocale("stat")
 	updateGameLocale()
@@ -656,7 +670,7 @@ $(document).ready(function () {
 		}
 	})
 	$("#close_sidebar").click(function () {})
-})
+}
 
 /**
  * DEPRICATED
