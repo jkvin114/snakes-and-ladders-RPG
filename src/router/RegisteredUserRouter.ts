@@ -5,6 +5,7 @@ import { ImageUploader } from "../mongodb/mutler"
 import { ajaxauth, auth, containsId, encrypt } from "./board/helpers"
 import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
+import { SessionManager } from "../inMemorySession"
 /**
  * https://icecokel.tistory.com/17?category=956647
  * 
@@ -274,8 +275,10 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 })
 
 router.post("/current", async function (req: express.Request, res: express.Response) {
-	if (req.session && req.session.isLogined) {
-		res.end(req.session.username)
+	const session = SessionManager.getSession(req)
+	console.log(session)
+	if (session && session.isLogined) {
+		res.end(session.username)
 	} else res.end("")
 })
 /**
@@ -283,6 +286,7 @@ router.post("/current", async function (req: express.Request, res: express.Respo
  */
 router.post("/login", async function (req: express.Request, res: express.Response) {
 	let body = req.body
+	const session = SessionManager.getSession(req)
 	try{
 		let user = await User.findOneByUsername(body.username)
 		if (!user) {
@@ -294,10 +298,10 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			res.end("password")
 			return
 		}
-		if (req.session) {
-			req.session.username = body.username
-			req.session.isLogined = true
-			req.session.userId = String(user._id)
+		if (session) {
+			session.username = body.username
+			session.isLogined = true
+			session.userId = String(user._id)
 			if (user.boardData == null) {
 				console.log("added board data")
 				let boardData = await UserBoardDataSchema.create({
@@ -310,11 +314,12 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 				})
 				user = await User.setBoardData(user._id, boardData._id)
 			}
-			req.session.boardDataId = String(user.boardData)
+			console.log(session)
+			session.boardDataId = String(user.boardData)
+			console.log(session.username + " has logged in")
 		}
-
+		
 		// console.log(req.session)
-		console.log(body.username + " has logged in")
 		res.status(200).json({
 			username: body.username,
 			email: user.email,
@@ -333,16 +338,18 @@ router.post("/login", async function (req: express.Request, res: express.Respons
  *
  */
 router.post("/logout", ajaxauth, function (req: express.Request, res: express.Response) {
-	req.session.isLogined = false
-	delete req.session.userId
-	delete req.session.username
-	delete req.session.boardDataId
+	const session = SessionManager.getSession(req)
 
-	console.log(req.session.username + " has logged out")
+	session.isLogined = false
+	delete session.userId
+	delete session.username
+	delete session.boardDataId
+
+	console.log(session.username + " has logged out")
 	// req.session.destroy(function(e){
 	//     if(e) console.log(e)
 	// });
-	console.log(req.session)
+	console.log(session)
 
 	res.clearCookie("sid")
 	res.status(200).redirect("/")

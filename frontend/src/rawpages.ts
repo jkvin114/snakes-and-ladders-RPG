@@ -9,8 +9,7 @@ export const PAGES={
             "lib/socket.io.min.js",
             "src/homepage.js",
             "src/init.js"
-        ],
-        modules:[]
+        ]
     },
     test:{
         html:"home.html",
@@ -27,8 +26,7 @@ export const PAGES={
             "lib/jquery-3.6.0.min.js",
             "src/spectate.js",
             "src/init.js"
-        ],
-        modules:[]
+        ]
     },
     stat:{
         html:"statpage.html",
@@ -43,8 +41,7 @@ export const PAGES={
             "src/stat/util.js",
             "src/skillparser.js",
             "src/init.js"
-        ],
-        modules:[]
+        ]
     }
     ,find_room:{
         html:"find_room_page.html",
@@ -52,7 +49,6 @@ export const PAGES={
             "lib/jquery-3.6.0.min.js",
             "src/findroom.js",
             "src/init.js"
-        ],
-        modules:[]
+        ]
     }
 }

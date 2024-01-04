@@ -6,13 +6,13 @@ type Props={
     htmlPath:string
 }
 type PageData={
-  html:string,scripts:string[],modules:string[]
+  html:string,scripts?:string[],modules?:string[]
 }
 const sleep = (m: any) => new Promise((r) => setTimeout(r, m))
 
 export default function HtmlPage({htmlPath}:Props){
     let[htmlData, setHtmlData] = useState<PageData>({
-      html:"",scripts:[],modules:[]
+      html:""
     });
     let loaded=false
 
@@ -22,7 +22,7 @@ export default function HtmlPage({htmlPath}:Props){
     const pagedata:PageData=(PAGES as any)[htmlPath ]
     if(!pagedata) 
     {
-      setHtmlData({html:`<h1>Cannot load a page</h1>`,scripts:[],modules:[]});
+      setHtmlData({html:`<h1>Cannot load a page</h1>`});
       return
 
     }
@@ -38,7 +38,7 @@ export default function HtmlPage({htmlPath}:Props){
     }
     catch(e){
       console.error(e)
-      setHtmlData({html:`<h1>Cannot load a page</h1>`,scripts:[],modules:[]});
+      setHtmlData({html:`<h1>Cannot load a page</h1><p>${e}</p>`});
     }
     finally{
       const cover= document.getElementById("html-cover") as HTMLElement
@@ -59,8 +59,8 @@ export default function HtmlPage({htmlPath}:Props){
       </div>
         <div id="rawhtml" dangerouslySetInnerHTML={{ __html: htmlData.html }}></div>
         <Helmet>
-          {htmlData.scripts.map((v,i)=>(<script src={v} key={i}></script>))}
-          {htmlData.modules.map((v,i)=>(<script type="module" src={v} key={i}></script>))}
+          {htmlData.scripts && htmlData.scripts.map((v,i)=>(<script src={v} key={i}></script>))}
+          {htmlData.modules && htmlData.modules.map((v,i)=>(<script type="module" src={v} key={i}></script>))}
 
         </Helmet>
       

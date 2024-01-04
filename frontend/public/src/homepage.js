@@ -96,13 +96,18 @@ async function main(server_url) {
 		throw Error("Service Unavaliable! " + e)
 		// alert("Service")
 	}
-
 	//checks if user is also maintaing login status in server
-	if (localStorage.getItem("username") != null) {
-		let response = await axios.post(SERVER_URL + "/user/current")
-
+	if (localStorage.getItem("username") != null && sessionStorage.getItem("jwt")) {
+		let response = await axios.post(
+			SERVER_URL + "/user/current",
+			{},
+			{
+				headers: { Authorization: `Bearer ${sessionStorage.getItem("jwt")}` },
+			}
+		)
 		if (response.data === "") {
 			localStorage.removeItem("username")
+			localStorage.removeItem("loggedin")
 			window.location.reload()
 			return
 		}
@@ -112,30 +117,11 @@ async function main(server_url) {
 	let page = document.location.href.match(/page=([^&]+)/)
 	if (page && page[1] === "login") {
 		//  delete sessionStorage.username
-		if (localStorage.getItem("username") != null) redirectFromUrlIfPossible()
-		else open_login()
 	} else if (localStorage.getItem("username") != null) {
 		setAsLogin(localStorage.getItem("username"))
 	}
 
 	$("input[name='ip']").val(window.location.href.split("://")[1].split("/")[0])
-
-	// $("#open_create_room").html(chooseLang("CREATE GAME", "게임 만들기"))
-	// $("#join").html(chooseLang("JOIN", "게임 참가"))
-	// $("#spectate").html(chooseLang("SPECTATE", "관전하기"))
-	// $("#simulation").html(chooseLang("Simulation", "시뮬레이션"))
-	// $("#reconnect").html(chooseLang("Reconnect", "재접속"))
-
-	let loginbtns = $(".loginpage_btn").toArray()
-	let registerbtns = $(".regpage_btn").toArray()
-
-	// $(loginbtns[0]).html(chooseLang("Login", "로그인"))
-	// $(loginbtns[1]).html(chooseLang("Sign Up", "회원가입"))
-	// $(loginbtns[2]).html(chooseLang("Home", "홈으로"))
-
-	// $(registerbtns[1]).html(chooseLang("Login", "로그인"))
-	// $(registerbtns[0]).html(chooseLang("Sign Up", "회원가입"))
-	// $(registerbtns[2]).html(chooseLang("Home", "홈으로"))
 
 	$("#langbtn").click(function () {
 		$(".lang_dropdown").toggle()
@@ -156,7 +142,7 @@ async function main(server_url) {
 
 	window.onbeforeunload = function (e) {}
 	$("#postbtn").click(() => (window.location.href = "/board"))
-
+	/*
 	$("#loginform").submit(function (e) {
 		e.preventDefault()
 
@@ -248,6 +234,7 @@ async function main(server_url) {
 				}
 			})
 	})
+	*/
 }
 
 function showReconnectBtn() {
@@ -268,10 +255,9 @@ function mypage() {
 }
 
 function setAsLogin(username) {
-	redirectFromUrlIfPossible()
 	localStorage.setItem("username", username)
 	localStorage.setItem("loggedIn", true)
-
+	console.log(username)
 	$(".page").hide()
 
 	$("#firstpage").show()
@@ -284,11 +270,11 @@ function setAsLogin(username) {
 }
 
 function redirectFromUrlIfPossible() {
-	let redirect = document.location.href.match(/redirect=([^&]+)/)
-	console.log(redirect)
-	if (redirect) {
-		window.location.href = redirect[1]
-	}
+	// let redirect = document.location.href.match(/redirect=([^&]+)/)
+	// console.log(redirect)
+	// if (redirect) {
+	// 	window.location.href = redirect[1]
+	// }
 }
 
 function logout() {
@@ -311,9 +297,7 @@ function open_firstpage() {
 	window.location.href = "/"
 }
 function open_login() {
-	$(".page").hide()
-
-	$("#loginpage").css("display", "inline-block")
+	window.location.href = "/login"
 }
 function open_signup() {
 	$(".page").hide()

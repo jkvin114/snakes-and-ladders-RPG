@@ -21,6 +21,7 @@ import express=require("express")
 import { connectMongoDB } from "./mongodb/connect"
 import MarbleGameGRPCClient from "./grpc/marblegameclient"
 import RPGGameGRPCClient from "./grpc/rpggameclient"
+import { SessionManager } from "./inMemorySession"
 declare module 'express-session' {
 	interface SessionData {
         cookie: Cookie;
@@ -65,7 +66,13 @@ redisClient.connect().then(()=>{
 //==============================================
 
 app.use(session)
-app.use(cors())
+app.use(cors({credentials: true, origin: 'http://localhost:3000'}))
+app.use((req, res, next) => {
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+	res.setHeader('Access-Control-Allow-Credentials', "true");
+
+	next()
+})  
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use("/stat", require("./router/statRouter"))
@@ -155,6 +162,29 @@ app.get("/notfound", function (req:any, res:any) {
 })
 app.get("/servererror", function (req:any, res:any) {
 	res.render("error",{status:500})
+})
+
+// import { createClient } from 'redis';
+
+// const redisClient = createClient(); //port 6379
+
+// redisClient.on('error', (err:any) => console.log('Redis Client Error', err));
+
+// redisClient.connect().then(()=>{
+// 	console.log("connected to redis")
+// });
+
+app.get("/test/jwt",function(req:any, res:any){
+	let token = SessionManager.createSession()
+	res.end(token)
+})
+app.post("/test/jwt",function(req:any, res:any){
+	const session=SessionManager.getSession(req)
+	console.log(session)
+})
+app.get("/test/jwt/verify",function(req:any, res:any){
+	let valid = SessionManager.isValid(req)
+	res.json({isVaild:valid})
 })
 /*
 
