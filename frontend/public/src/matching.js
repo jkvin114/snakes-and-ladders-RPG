@@ -880,12 +880,12 @@ function auth() {
 		.fail(function (data, statusText, xhr) {
 			if (data.status == 307) {
 				alert("You are already in a game")
-				window.location.href = "index.html"
+				window.location.href = "/"
 				return
 			}
 			if (data.status === 401) {
 				alert("Invalid access!")
-				window.location.href = "index.html"
+				window.location.href = "/"
 			}
 
 			// if (data.status === 404) {

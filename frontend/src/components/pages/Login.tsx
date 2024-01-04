@@ -3,7 +3,7 @@ import "../../styles/login.css"
 import { RiArrowLeftLine, RiErrorWarningFill } from "react-icons/ri"
 import { useParams, useSearchParams } from "react-router-dom"
 import { backend_url } from "../../variables"
-
+import axios from "axios"
 export function LoginPage() {
 
 
@@ -12,7 +12,9 @@ export function LoginPage() {
     const  url = backend_url+"/user/login"
     let [searchParams, setSearchParams] = useSearchParams()
     const redirect=searchParams.get("redirect")
+    const API = axios.create({ baseURL: backend_url })
     async function submitLogin(){
+        
         const email = (document.getElementById("login-email") as HTMLInputElement).value
         const pw = (document.getElementById("login-password") as HTMLInputElement).value
         if(email==="" || pw === ""){
@@ -20,24 +22,27 @@ export function LoginPage() {
             return
         }
         let token=sessionStorage.getItem("jwt")
-
         try{
-            const res = await fetch(url, {
-                method: "POST",
-                mode:'cors',
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${token}`,
-                    // 'Content-Type': 'application/x-www-form-urlencoded',
-                  },
-                body:JSON.stringify({
-                    username:email,
-                    password:pw
-                })
+            const res = await API.post("/user/login",{
+                username:email,
+                password:pw
             })
+            // const res = await fetch(url, {
+            //     method: "POST",
+            //     mode:'cors',
+            //     credentials:"include",
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //         // 'Content-Type': 'application/x-www-form-urlencoded',
+            //       },
+            //     body:JSON.stringify({
+            //         username:email,
+            //         password:pw
+            //     })
+            // })
             console.log(res.headers)
 
-            const data = await res.text()
+            const data = res.data
             if(data === "username"){
                 setError("Wrong username")
             }
@@ -66,7 +71,7 @@ export function LoginPage() {
 			<div className="signin">
                 <a className="back" href="/"><RiArrowLeftLine  /></a>
 				<div className="content">
-					<h2>Librarian Log In</h2>
+					<h2>Log In</h2>
 
 					<div className="form">
 						<div className="inputBox">

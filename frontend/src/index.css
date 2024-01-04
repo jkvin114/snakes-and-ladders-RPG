@@ -13,7 +13,13 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	font-family: 'Pretendard-Regular';
-	
+	background-color: #1d1d2d;
+	--col-primary:#7e00bf;
+	--col-primary-light:#a044ff;
+	--col-bg:#1d1d2d;
+	--col-bg-light:#29293e;
+	--col-font:rgb(239, 239, 239);
+	--col-font-light:rgb(130, 130, 130);
 }
 #html-cover
 {

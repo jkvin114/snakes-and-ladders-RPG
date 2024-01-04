@@ -24,6 +24,7 @@ export const PAGES={
         html:"spectatepage.html",
         scripts:[
             "lib/jquery-3.6.0.min.js",
+            "lib/axios.js",
             "src/spectate.js",
             "src/init.js"
         ]
@@ -32,6 +33,7 @@ export const PAGES={
         html:"statpage.html",
         scripts:[
             "lib/jquery-3.6.0.min.js",
+            "lib/axios.js",
             "src/localeManager.js",
             "src/stat/stat.js",
             "src/stat/statChartConfig.js",
@@ -47,6 +49,7 @@ export const PAGES={
         html:"find_room_page.html",
         scripts:[
             "lib/jquery-3.6.0.min.js",
+            "lib/axios.js",
             "src/findroom.js",
             "src/init.js"
         ]

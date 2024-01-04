@@ -6,6 +6,8 @@ import { ajaxauth, auth, containsId, encrypt } from "./board/helpers"
 import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
 import { SessionManager } from "../inMemorySession"
+import { getNewJwt, setJwtCookie } from "../jwt"
+import { loginauth } from "./jwt/auth"
 /**
  * https://icecokel.tistory.com/17?category=956647
  * 
@@ -276,7 +278,6 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 
 router.post("/current", async function (req: express.Request, res: express.Response) {
 	const session = SessionManager.getSession(req)
-	console.log(session)
 	if (session && session.isLogined) {
 		res.end(session.username)
 	} else res.end("")
@@ -302,6 +303,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			session.username = body.username
 			session.isLogined = true
 			session.userId = String(user._id)
+			
 			if (user.boardData == null) {
 				console.log("added board data")
 				let boardData = await UserBoardDataSchema.create({
@@ -318,7 +320,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			session.boardDataId = String(user.boardData)
 			console.log(session.username + " has logged in")
 		}
-		
+
 		// console.log(req.session)
 		res.status(200).json({
 			username: body.username,
@@ -334,10 +336,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 	
 })
 
-/**
- *
- */
-router.post("/logout", ajaxauth, function (req: express.Request, res: express.Response) {
+router.post("/logout", loginauth, function (req: express.Request, res: express.Response) {
 	const session = SessionManager.getSession(req)
 
 	session.isLogined = false

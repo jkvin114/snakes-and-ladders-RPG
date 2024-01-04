@@ -345,7 +345,7 @@
      <div id="comments">
       <%if(logined){%>
           
-        <form action="/board/post/comment" method="post"> 
+        <form action="/board/post/comment" method="post" id="commentform"> 
           <input type="hidden" name="postUrl" value="<%= url %>">  
           <input type="hidden" name="postId" value="<%= id %>">  
           <div class="commententer">
@@ -496,6 +496,17 @@ $(".bookmark").click(function(){
     })
 })
 
+$("#commentform").on("submit",writeComment)
+function writeComment(e){
+  e.preventDefault()
+  let postUrl = $( this ).find( "input[name='postUrl']" ).val()
+  let postId = $( this ).find( "input[name='postId']" ).val()
+  let content = $( this ).find( "input[name='content']" ).val()
+
+  let url = "/board/post/comment_ajax"
+  
+}
+  
 
 function sendVote(kind,type,id,elem){
 

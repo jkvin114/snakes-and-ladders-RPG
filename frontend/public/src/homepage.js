@@ -72,13 +72,18 @@ let SERVER_URL = ""
 
 async function main(server_url) {
 	SERVER_URL = server_url
+
+	// axios.defaults.withCredentials = true // NEW
+
+	// const API = axios.create({ baseURL: SERVER_URL })
+
 	let query = new URLSearchParams(window.location.search)
 	if (query.get("top500movies") === "true") {
 		window.location.port = 3000
 		return
 	}
 	try {
-		let response = await axios.post(SERVER_URL + "/room/home")
+		let response = await AxiosApi.post("/room/home")
 		if (response.data.config) {
 			if (response.data.config.board) $("#postbtn").show()
 			if (response.data.config.simulation) $("#simulation").show()
@@ -97,14 +102,8 @@ async function main(server_url) {
 		// alert("Service")
 	}
 	//checks if user is also maintaing login status in server
-	if (localStorage.getItem("username") != null && sessionStorage.getItem("jwt")) {
-		let response = await axios.post(
-			SERVER_URL + "/user/current",
-			{},
-			{
-				headers: { Authorization: `Bearer ${sessionStorage.getItem("jwt")}` },
-			}
-		)
+	if (localStorage.getItem("username") != null) {
+		let response = await AxiosApi.post("/user/current")
 		if (response.data === "") {
 			localStorage.removeItem("username")
 			localStorage.removeItem("loggedin")
