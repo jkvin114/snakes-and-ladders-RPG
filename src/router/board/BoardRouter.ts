@@ -1,14 +1,11 @@
 import express = require("express")
-// import { R } from "../RoomStorage"
 const router = express.Router()
-import { PostSchema } from "../../mongodb/schemaController/Post"
 import { ImageUploader } from "../../mongodb/mutler"
-import { auth, availabilityCheck, COUNT_PER_PAGE, filterPostSummary, PostTitle } from "./helpers"
-import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
-import { SchemaTypes } from "../../mongodb/SchemaTypes"
-const  {User}  = require("../../mongodb/UserDBSchema")
+import { auth, availabilityCheck } from "./helpers"
 
-// const { User } = require("../mongodb/DBHandler")
+import { loginauth, sessionParser } from "../jwt/auth"
+import { ControllerWrapper } from "../ControllerWrapper"
+import { BoardController } from "./controller/BoardController"
 
 router.post("/uploadimg",availabilityCheck, auth, ImageUploader.upload.single("img"), async (req: express.Request, res: express.Response) => {
 	const imgfile = req.file
@@ -21,63 +18,13 @@ router.post("/uploadimg",availabilityCheck, auth, ImageUploader.upload.single("i
 })
 
 
-router.get("/", availabilityCheck,async (req: express.Request, res: express.Response) => {
-
-	//cleanUpComments()
-	let start = 0
-	let count = COUNT_PER_PAGE
-	if (req.query.start) {
-		start  = Math.max(0,Number(req.query.start))
-	}
-	try{
-		let total=await PostSchema.countDocuments({});
-	
-		let data:SchemaTypes.Article[]=(await PostSchema.findPublicSummaryByRange(start, count))
-		//data=await filterPostSummary(req.session,data,false)
-
-		res.render("postlist", {
-			displayType:"all",
-			posts: data,
-			logined: req.session.isLogined,
-			user: null,
-			count:count,
-			start:start,
-			isEnd:(start+count > total)
-		})
-	}
-	catch(e){
-		console.error(e)
-		res.status(500).redirect("servererror")
-	}
-
-	
+router.get("/", availabilityCheck,sessionParser,ControllerWrapper(BoardController.allPost))
+router.get("/mypage", loginauth,sessionParser, (req: express.Request, res: express.Response) => {
+	const session = res.locals.session
+	res.redirect("/board/user/" + session.username + "/posts")
 })
-router.get("/mypage", availabilityCheck,auth, (req: express.Request, res: express.Response) => {
-	res.redirect("/board/user/" + req.session.username + "/posts")
-})
-router.post("/bookmark", auth,async  (req: express.Request, res: express.Response) => {
-	try{
-		const user = await User.getBoardData(req.session.userId)
-		const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
-		if(!bookmarks) {
-			return
-		}
-		if(bookmarks.bookmarks.some((id:any)=>String(id)===req.body.id)){
-			await UserBoardDataSchema.removeBookmark(user.boardData,req.body.id)
-			res.status(200).json({ change: -1 })
-		}
-		else{
-			await UserBoardDataSchema.addBookmark(user.boardData,req.body.id)
-			res.status(200).json({ change: 1 })
-		}
-	}
-	catch(e){
-		console.error(e)
-		res.status(500).end()
-	}
 
-	
-})
+router.post("/bookmark", loginauth,sessionParser,ControllerWrapper(BoardController.addBookmark))
 
 router.use("/user", require("./BoardUserRouter"))
 router.use("/comment", require("./BoardCommentRouter"))

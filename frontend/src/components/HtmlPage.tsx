@@ -29,6 +29,7 @@ export default function HtmlPage({htmlPath}:Props){
 
     try{
         const html=await (await fetch("html/"+pagedata.html)).text()
+        
         setHtmlData({
           html:html,
           scripts:pagedata.scripts,
@@ -38,7 +39,7 @@ export default function HtmlPage({htmlPath}:Props){
     }
     catch(e){
       console.error(e)
-      setHtmlData({html:`<h1>Cannot load a page</h1><p>${e}</p>`});
+      setHtmlData({html:`<h1 style='color:red;'>Cannot load a page</h1><p style='color:red;'>${e}</p>`});
     }
     finally{
       const cover= document.getElementById("html-cover") as HTMLElement
@@ -54,7 +55,7 @@ export default function HtmlPage({htmlPath}:Props){
 
  
   return(
-    <div className="App">
+    <div className="App" >
       <div id="html-cover">
       </div>
         <div id="rawhtml" dangerouslySetInnerHTML={{ __html: htmlData.html }}></div>

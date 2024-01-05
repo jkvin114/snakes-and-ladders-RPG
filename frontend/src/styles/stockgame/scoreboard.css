@@ -37,18 +37,18 @@
     height: 100%;
 
 }
-.pie {
+#root-stockgame .pie {
     width: 80px;
     height: 80px;
     /* background: conic-gradient(#16BC5A 64%,#efac39 64%, #efac39 100%); */
     border-radius: 50%
 }
-.color-label{
+#root-stockgame .color-label{
     display: inline-block;
     width: 15px;
     height: 15px;
 }
-.graph-desc{
+#root-stockgame .graph-desc{
     color: lightslategray;
     margin-left: 20px;
     display: flex;
@@ -56,23 +56,23 @@
     justify-content: center;
     align-items: flex-start;
 }
-.price{
+#root-stockgame .price{
     display: inline;
     vertical-align: middle;
     margin-left: 10vw;
     margin-top: 10px;
     margin-bottom: -10px;
 }
-.price span{
+#root-stockgame .price span{
     margin-right: 15px;
 }
-.price-val{
+#root-stockgame .price-val{
     font-size: xx-large;
     font-weight: bold;
     
 }
 
-.meter {
+#root-stockgame .meter {
     width: 100%;
     
     box-sizing: content-box;
@@ -85,10 +85,10 @@
     /* padding: 10px; */
     box-shadow: inset 0 -1px 1px rgba(255, 255, 255, 0.3);
   }
-  [data-theme="light"] .meter{
+  #root-stockgame   [data-theme="light"] .meter{
     background: #9ee39e;
   }
-  .meter > span {
+  #root-stockgame  .meter > span {
     display: block;
     height: 100%;
     border-top-right-radius: 8px;
@@ -106,13 +106,13 @@
     position: relative;
     overflow: hidden;
   }
-  .btn-toolbar{
+  #root-stockgame  .btn-toolbar{
     /* display: inline-block; */
     float: right;
   }
 
   
-  .btn-toolbar >div{
+  #root-stockgame  .btn-toolbar >div{
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -124,11 +124,12 @@
     
     padding: 7px;
 }
-.btn-toolbar >div:hover{
+#root-stockgame .btn-toolbar >div:hover{
     transform: scale(1.1);
 }
-.start-btn{
+#root-stockgame .start-btn{
     background-color: rgb(117, 117, 255);
-}.stop-btn{
+}
+#root-stockgame .stop-btn{
     background-color: rgb(255, 115, 115);
 }

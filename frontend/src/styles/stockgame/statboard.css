@@ -12,28 +12,28 @@
     height: 100%;
 }
 
-.day-record-item{
+#root-stockgame .day-record-item{
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
     padding: 3px;
 }
-.day-record-date{
+#root-stockgame .day-record-date{
     color: var(--color-text-secondary);
 }
-.day-record-item > span{
+#root-stockgame .day-record-item > span{
     text-align: left;
 
 }
-.stat-item div{
+#root-stockgame .stat-item div{
     margin: 10px;
     text-align: center;
 }
-.stat-item-name{
+#root-stockgame  .stat-item-name{
     color: var(--color-text-secondary);
     font-size: small;
 }
-.stat-item-value{
+#root-stockgame  .stat-item-value{
     /* color: blue; */
     font-size: larger;
 }

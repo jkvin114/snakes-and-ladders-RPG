@@ -4,7 +4,7 @@ import CONFIG from "../../../config/config.json"
 import { SessionManager } from "../../inMemorySession"
 
 /**
- * checks where user is logged in
+ * checks whether the user is logged in
  * @param req 
  * @param res 
  * @param next 
@@ -17,7 +17,7 @@ export const loginauth = (req: Request, res: Response, next: NextFunction) => {
 	try {
 		if (!CONFIG.board) return res.status(403).redirect("/")
 
-		if ( session && session.isLogined) {
+		if ( session && session.isLogined && session.userId) {
 			next()
 		} else {
 			res.status(401).end("unauthorized")
@@ -25,4 +25,17 @@ export const loginauth = (req: Request, res: Response, next: NextFunction) => {
 	} catch {
 		res.status(401).end("unauthorized")
 	}
+}
+/**
+ * get session and store it to res.locals.session
+ * @param req 
+ * @param res 
+ * @param next 
+ * @returns 
+ */
+export const sessionParser = (req: Request, res: Response, next: NextFunction)=>{
+	const session = SessionManager.getSession(req)
+	if(!session) return res.status(401).end("unauthorized")
+	res.locals.session = session
+	next()
 }

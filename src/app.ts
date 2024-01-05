@@ -21,7 +21,7 @@ import express=require("express")
 import { connectMongoDB } from "./mongodb/connect"
 import MarbleGameGRPCClient from "./grpc/marblegameclient"
 import RPGGameGRPCClient from "./grpc/rpggameclient"
-import { SessionManager } from "./inMemorySession"
+import { ISession, SessionManager } from "./inMemorySession"
 import cookieParser from "cookie-parser"
 import { setJwtCookie } from "./jwt"
 
@@ -39,6 +39,16 @@ declare module 'express-session' {
 	}
   }
 // import session from 'express-session';
+
+interface Locals {
+  session: ISession;
+}
+
+declare module 'express' {
+  export interface Response  {
+    locals: Locals;
+  }
+}
 
 
 
@@ -196,6 +206,7 @@ app.post("/jwt/init",function(req:express.Request, res:express.Response){
 	res.end()
 
 })
+
 /*
 
 app.get("/session", async function (req:any, res:any) {

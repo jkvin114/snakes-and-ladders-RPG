@@ -1,15 +1,8 @@
 const server_url = "http://localhost:5000"
 let AxiosApi = {
-	get: () => {
-		throw Error("Axios api is not initialized")
-	},
-	post: () => {
-		throw Error("Axios api is not initialized")
-	},
+	get: () => {},
+	post: () => {},
 }
-/**
- * axios throws error when status code is >= 300
- */
 
 var everythingLoaded = setInterval(function () {
 	if (/loaded|complete/.test(document.readyState)) {

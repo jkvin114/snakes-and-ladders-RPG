@@ -13,18 +13,21 @@ function main(url) {
 	updateLocale("board")
 
 	$(".delete_comment").click(function () {
+		if (!confirm(LOCALE.msg.confirm_delete)) return
+
 		let value = $(this).val()
-		$.ajax({
-			method: "POST",
-			url: backend_url + "/board/post/reply/delete",
-			data: { commentId: value },
-		})
-			.done(function (data, statusText, xhr) {
-				let status = xhr.status
-				window.location.reload()
+		AxiosApi.post("/board/post/reply/delete", { commentId: value })
+			.then((res) => {
+				if (res.status == 200) {
+					window.location.reload()
+				}
 			})
-			.fail(function (data, statusText, xhr) {
-				alert("error")
+			.catch((e) => {
+				if (e.response.status == 401) {
+					alert("unauthorized")
+				} else {
+					alert("error")
+				}
 			})
 	})
 
@@ -38,21 +41,37 @@ function main(url) {
 		let id = $(this).data("id")
 		sendVote("comment", type, id, $(this))
 	})
+	$("#commentform").on("submit", writeComment)
 }
+function writeComment(e) {
+	e.preventDefault()
+	let commentId = $(this).find("input[name='commentId']").val()
+	let content = $(this).find("input[name='content']").val()
+
+	let url = "/board/post/comment/reply"
+	AxiosApi.post(url, {
+		commentId: commentId,
+		content: content,
+	})
+		.then((res) => {
+			window.location.reload()
+		})
+		.catch((e) => {
+			console.log(e)
+			if (e.response.status === 401) alert("unauthorized")
+
+			throw Error(e)
+		})
+}
+
 function sendVote(kind, type, id, elem) {
 	let vote_count = $(elem).children(".vote_count").eq(0)
-
-	$.ajax({
-		method: "POST",
-		url: backend_url + "/board/" + kind + "/vote",
-		data: { id: id, type: type },
-	})
-		.done((data, statusText, xhr) => {
-			let status = xhr.status
-			if (status == 200) {
-				if (data.change === 0) alert(type === "up" ? LOCALE.already_like : LOCALE.already_dislike)
+	AxiosApi.post("/board/" + kind + "/vote", { id: id, type: type })
+		.then((res) => {
+			const data = res.data
+			if (res.status == 200) {
+				if (data.change === 0) alert(`You already ${type === "up" ? "down" : "up"}voted.`)
 				else $(vote_count).html(Number($(vote_count).html()) + data.change)
-
 				if (data.change === 1) {
 					$(elem).addClass("active")
 				} else if (data.change === -1) {
@@ -60,8 +79,8 @@ function sendVote(kind, type, id, elem) {
 				}
 			}
 		})
-		.fail((data, statusText, xhr) => {
-			if (data.status == 401) {
+		.catch((e) => {
+			if (e.response.status == 401) {
 				alert("Login required")
 			}
 		})

@@ -1,7 +1,7 @@
 import multer = require("multer");
 import path = require("path");
-const PATH="./public/uploads"
-const PATH_PROFILE="./public/uploads/profile"
+const PATH="./frontend/public/uploads"
+const PATH_PROFILE="./frontend/public/uploads/profile"
 
 const fileFilter = (req:any, file:any, cb:any) => {
   // 확장자 필터링

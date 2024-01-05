@@ -191,7 +191,7 @@ function StockGame() {
 
 	return (
     <>
-	<div className="root" data-theme={theme}>
+	<div className="root" id="root-stockgame" data-theme={theme}>
       <div  className="section">
         <div id="score-board" className="subsection ">
           <ScoreBoard gameState={gameState} player={playerState}  price={val} startFunc={start} stopFunc={stopChart}/>

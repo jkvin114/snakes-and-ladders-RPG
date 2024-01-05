@@ -277,7 +277,7 @@
     </div>
 
     <%if(logined && !comment.deleted){%>
-       <form action="/board/post/comment/reply" method="post"> 
+       <form id="commentform"> 
         <input type="hidden" name="commentId" value="<%= comment._id %>">  
         <div class="commententer">
           <input class="enter_comment" type="text" name="content" placeholder="reply" lkey-ph="ph.reply" required>

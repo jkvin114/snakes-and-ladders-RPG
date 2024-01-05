@@ -17,18 +17,9 @@ function main(url) {
 
 		let value = $(this).val()
 		let type = $(this).data("type")
-		$.ajax({
-			method: "POST",
-			url: url + "/board/post/" + type + "/delete",
-			data: { commentId: value },
-		})
-			.done(function (data, statusText, xhr) {
-				let status = xhr.status
-				window.location.reload()
-			})
-			.fail(function (data, statusText, xhr) {
-				alert("error")
-			})
+		AxiosApi.post("/board/post/" + type + "/delete", { commentId: value })
+			.then((res) => window.location.reload())
+			.catch((e) => alert("error"))
 	})
 }
 

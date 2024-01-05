@@ -10,6 +10,7 @@ import { backend_url } from "./variables";
 import StatusPage from "./components/pages/Status";
 import BoardPage from "./components/pages/Board";
 import axios from "axios";
+import EjsPage from "./components/EjsPage";
 
 axios.defaults.withCredentials = true; // NEW
 
@@ -64,6 +65,10 @@ function App() {
 	}
 
 	useEffect(()=>{
+		// API.get("/statustest")
+		// .then(res=>console.log(res))
+		// .catch(e=>console.log(e))
+
 		API.post("/jwt/init")
 	},[])
 
@@ -82,8 +87,12 @@ function App() {
 			<Route path='/login' element={<LoginPage/>}></Route> 
 			<Route path='/register' element={<RegisterPage/>}></Route> 
 			<Route path='/status' element={<StatusPage/>}></Route> 
-			<Route path='/board' element={<BoardPage/>}></Route> 
-
+			<Route path='/board' element={<EjsPage/>}>
+				<Route path='/board/:arg1/:arg2' element={<EjsPage/>}></Route>
+				<Route path='/board/:arg1' element={<EjsPage/>}></Route>
+				<Route path='/board/:arg1/:arg2/:arg3' element={<EjsPage/>}></Route>
+				<Route path='/board/:arg1/:arg2/:arg3/:arg4' element={<EjsPage/>}></Route>
+			</Route> 
 			<Route path='/' element={<HtmlPage htmlPath="home"/>}></Route> 
 			<Route path='/spectate' element={<HtmlPage htmlPath="spectate"/>}></Route> 
 			<Route path='/stat' element={<HtmlPage htmlPath="stat"/>}></Route> 

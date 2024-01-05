@@ -16,19 +16,14 @@ function main(url) {
 
 	$(".delete_comment").click(function () {
 		let value = $(this).val()
-		$.ajax({
-			method: "POST",
-			url: backend_url + "/board/post/comment/delete",
-			data: { commentId: value },
-		})
-			.done(function (data, statusText, xhr) {
-				let status = xhr.status
-				if (status == 200) {
+		AxiosApi.post("/board/post/comment/delete", { commentId: value })
+			.then((res) => {
+				if (res.status == 200) {
 					window.location.reload()
 				}
 			})
-			.fail(function (data, statusText, xhr) {
-				if (data.status == 401) {
+			.catch((e) => {
+				if (e.response.status == 401) {
 					alert("unauthorized")
 				} else {
 					alert("error")
@@ -39,19 +34,14 @@ function main(url) {
 		if (!confirm("Are you sure you want to delete?")) return
 
 		let value = $(this).data("id")
-		$.ajax({
-			method: "POST",
-			url: backend_url + "/board/post/delete",
-			data: { id: value },
-		})
-			.done(function (data, statusText, xhr) {
-				let status = xhr.status
-				if (status == 201) {
+		AxiosApi.post("/board/post/delete", { id: value })
+			.then((res) => {
+				if (res.status == 201) {
 					window.location.href = "/board/"
 				}
 			})
-			.fail(function (data, statusText, xhr) {
-				if (data.status == 401) {
+			.catch((e) => {
+				if (e.response.status == 401) {
 					alert("unauthorized")
 				} else {
 					alert("error")
@@ -69,41 +59,55 @@ function main(url) {
 		sendVote("comment", type, id, $(this))
 	})
 	$(".bookmark").click(function () {
-		$.ajax({
-			method: "POST",
-			url: backend_url + "/board/bookmark",
-			data: { id: $(this).data("postid") },
-		})
-			.done((data, statusText, xhr) => {
-				let status = xhr.status
-				if (status == 200) {
-					if (data.change === 1) {
+		AxiosApi.post("/board/bookmark", { id: $(this).data("postid") })
+			.then((res) => {
+				if (res.status == 200) {
+					if (res.data.change === 1) {
 						$(this).addClass("active")
 						$(this).removeClass("inactive")
-					} else if (data.change === -1) {
+					} else if (res.data.change === -1) {
 						$(this).addClass("inactive")
 						$(this).removeClass("active")
 					}
 				}
 			})
-			.fail((data, statusText, xhr) => {
-				if (data.status == 401) {
+			.catch((e) => {
+				if (e.response.status == 401) {
 					alert("Login required")
 				}
 			})
 	})
+	$("#commentform").on("submit", writeComment)
 }
 
+function writeComment(e) {
+	e.preventDefault()
+	let postUrl = $(this).find("input[name='postUrl']").val()
+	let postId = $(this).find("input[name='postId']").val()
+	let content = $(this).find("input[name='content']").val()
+
+	let url = "/board/post/comment"
+	AxiosApi.post(url, {
+		postUrl: postUrl,
+		postId: postId,
+		content: content,
+	})
+		.then((res) => {
+			window.location.reload()
+		})
+		.catch((e) => {
+			console.log(e)
+			if (e.response.status === 401) alert("unauthorized")
+
+			throw Error(e)
+		})
+}
 function sendVote(kind, type, id, elem) {
 	let vote_count = $(elem).children(".vote_count").eq(0)
-	$.ajax({
-		method: "POST",
-		url: backend_url + "/board/" + kind + "/vote",
-		data: { id: id, type: type },
-	})
-		.done((data, statusText, xhr) => {
-			let status = xhr.status
-			if (status == 200) {
+	AxiosApi.post("/board/" + kind + "/vote", { id: id, type: type })
+		.then((res) => {
+			const data = res.data
+			if (res.status == 200) {
 				if (data.change === 0) alert(`You already ${type === "up" ? "down" : "up"}voted.`)
 				else $(vote_count).html(Number($(vote_count).html()) + data.change)
 				if (data.change === 1) {
@@ -113,8 +117,8 @@ function sendVote(kind, type, id, elem) {
 				}
 			}
 		})
-		.fail((data, statusText, xhr) => {
-			if (data.status == 401) {
+		.catch((e) => {
+			if (e.response.status == 401) {
 				alert("Login required")
 			}
 		})

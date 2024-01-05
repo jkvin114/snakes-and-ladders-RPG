@@ -54,4 +54,13 @@ export const PAGES={
             "src/init.js"
         ]
     }
+    ,board:{
+        html:"",
+        scripts:[
+            "/lib/jquery-3.6.0.min.js",
+            "/lib/axios.js",
+            "/src/localeManager.js",
+            "/src/init.js"
+        ]
+    }
 }
