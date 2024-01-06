@@ -2,11 +2,12 @@ import type { Request, Response } from "express"
 import type { ISession } from "../../../inMemorySession"
 import { COUNT_PER_PAGE, CommentSummary, filterPostSummary, renderEjs, timestampToNumber } from "../helpers"
 import { SchemaTypes } from "../../../mongodb/SchemaTypes"
-const { User } = require("../../../mongodb/UserDBSchema")
 import { PostSchema } from "../../../mongodb/schemaController/Post"
 import { UserBoardDataSchema } from "../../../mongodb/schemaController/UserData"
 import { CommentSchema } from "../../../mongodb/schemaController/Comment"
 import { ReplySchema } from "../../../mongodb/schemaController/Reply"
+import { UserSchema } from "../../../mongodb/schemaController/User"
+import mongoose from "mongoose"
 
 export namespace BoardUserController {
 	export async function allPost(req: Request, res: Response, session: ISession) {
@@ -16,10 +17,11 @@ export namespace BoardUserController {
 			start = Math.max(0, Number(req.query.start))
 		}
 
-		let user = await User.findIdByUsername(req.params.username)
+		let userId = await UserSchema.findIdByUsername(req.params.username)
+		if(!userId) throw Error("invalid username")
 
-		let total = await PostSchema.countDocuments({ author: user._id })
-		let postlist: SchemaTypes.Article[] = await PostSchema.findSummaryOfUserByRange(start, count, user._id)
+		let total = await PostSchema.countDocuments({ author: userId })
+		let postlist: SchemaTypes.Article[] = await PostSchema.findSummaryOfUserByRange(start, count, userId)
 		postlist = await filterPostSummary(session, postlist, false)
 		renderEjs(res, "postlist", {
 			displayType: "user",
@@ -39,16 +41,12 @@ export namespace BoardUserController {
 			start = Math.max(0, Number(req.query.start))
 		}
 
-		let user = await User.findOneByUsername(req.params.username)
-		if (!user) {
-			res.status(404).redirect("/notfound")
-			return
-		}
-		let likes = await UserBoardDataSchema.getLikedPosts(user.boardData)
-		if (!likes) {
-			res.status(404).redirect("/notfound")
-			return
-		}
+		let boarddata = await UserSchema.getBoardDataByUsername(req.params.username)
+		if (!boarddata) throw Error("invalid username")
+		
+		let likes = await UserBoardDataSchema.getLikedPosts(boarddata)
+		if (!likes) throw Error("invalid user data")
+
 		let total = likes.upvotedArticles.length
 		let likesId = likes.upvotedArticles.slice(start, start + count)
 
@@ -75,16 +73,10 @@ export namespace BoardUserController {
 			return
 		}
 
-		let user = await User.findOneByUsername(req.params.username)
-		if (!user) {
-			res.status(400).redirect("/notfound")
-			return
-		}
-		let bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
-		if (!bookmarks) {
-			res.status(404).redirect("/notfound")
-			return
-		}
+		let boarddata = await UserSchema.getBoardDataByUsername(req.params.username)
+		if (!boarddata) throw Error("invalid username")
+		let bookmarks = await UserBoardDataSchema.getBookmarks(boarddata as mongoose.Types.ObjectId)
+		if (!bookmarks) throw Error("invalid user data")
 		let total = bookmarks.bookmarks.length
 
 		let bookmarksId = bookmarks.bookmarks.slice(start, start + count)
@@ -115,14 +107,12 @@ export namespace BoardUserController {
 			sortby = String(req.query.sortby)
 			// count = Number(req.query.count)
 		}
-		let user = await User.findIdByUsername(req.params.username)
-
+		const user = await UserSchema.findIdByUsername(req.params.username)
+		if(!user) throw Error("invalid username")
 		let comments = await CommentSchema.findOfUserByRange(start, count, user._id, sortby)
 		let replys = await ReplySchema.findOfUserByRange(start, count, user._id, sortby)
-		if (!comments || !replys) {
-			res.status(404).redirect("/notfound")
-			return
-		}
+		if (!comments || !replys) throw Error("invalid user data")
+
 		// console.log(comments)
 		// console.log(replys)
 		let c = 0

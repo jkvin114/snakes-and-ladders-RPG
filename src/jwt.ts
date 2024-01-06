@@ -2,7 +2,7 @@
 import Jwt from "jsonwebtoken"
 import {Request,Response} from 'express';
 
-const key="key"
+const key="salr_session_key_4321"
 declare module 'jsonwebtoken' {
     export interface CustomJwtPayload extends Jwt.JwtPayload {
         id: string

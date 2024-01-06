@@ -15,6 +15,8 @@ function main(url) {
 	})
 
 	$(".delete_comment").click(function () {
+		if (!confirm(LOCALE.msg.confirm_delete)) return
+
 		let value = $(this).val()
 		AxiosApi.post("/board/post/comment/delete", { commentId: value })
 			.then((res) => {
@@ -31,12 +33,12 @@ function main(url) {
 			})
 	})
 	$(".delete_post").click(function () {
-		if (!confirm("Are you sure you want to delete?")) return
+		if (!confirm(LOCALE.msg.confirm_delete)) return
 
 		let value = $(this).data("id")
 		AxiosApi.post("/board/post/delete", { id: value })
 			.then((res) => {
-				if (res.status == 201) {
+				if (res.status == 200) {
 					window.location.href = "/board/"
 				}
 			})

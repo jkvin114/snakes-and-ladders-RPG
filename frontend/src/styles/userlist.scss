@@ -1,0 +1,82 @@
+.userlist{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .profileimg-container{
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--col-primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .profileimg-container.has-img{
+        background-color: #ebebfd;
+      }
+      .profileimg-container > a{
+        user-select: none;
+        color: #ffffff;
+        font-size: 22px;
+        /* text-align: center; */
+      }
+      .profileimg{
+        object-fit: cover;
+  
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+  
+      }
+
+      .user-item{
+        display: grid;
+        grid-template-columns: min-content auto min-content;
+        width: 300px;
+        color: white;
+        background-color: var(--col-bg-light);
+        margin: 2px;
+        padding: 7px;
+      }
+      .item-section{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .item-section.name{
+        justify-content: flex-start;
+        padding-left: 10px;
+        
+      }
+      a {
+        color: white;
+        text-decoration: none;
+      }
+      button{
+        background-color: var(--col-primary);
+        color: #ebebfd;
+        border: none;
+        font-size: 15px;
+        padding: 6px;
+        margin: 10px;
+        
+        border-radius: 4px;
+      }
+      button.dark{
+        background-color: var(--col-bg-lighter);
+      }
+      .btn,button{
+        cursor: pointer;
+      }
+      .btn:hover,button:hover{
+        filter: brightness(0.7);
+      }
+      .icon-btn{
+        color: white;
+        height: 30px;
+        width: 30px;
+      }
+      .icon-btn.green{
+        color: greenyellow;
+      }
+}

@@ -1,4 +1,4 @@
-const { User } = require("../../../mongodb/UserDBSchema")
+
 import type { Request, Response } from "express"
 const {ObjectID} = require('mongodb');
 import { ISession } from "../../../inMemorySession"
@@ -29,16 +29,18 @@ export namespace BoardPostController {
 			}
 		}
 
-		let user = await User.getBoardData(session.userId)
+		let boarddata = await UserSchema.getBoardData(session.userId)
+		if(!boarddata) return
 		await PostSchema.remove(id)
-		await UserBoardDataSchema.removePost(user.boardData, id)
+		await UserBoardDataSchema.removePost(boarddata, id)
     }
 
     export async function addComment(req: Request, res: Response, session: ISession) {
         const postId = new ObjectID(req.body.postId) //objectid
         const content = req.body.content
         const userId = new ObjectID(session.userId)
-        let user = await User.getBoardData(userId)
+		const boarddata = await UserSchema.getBoardData(session.userId)
+		if(!boarddata) return
 
         let comment = await CommentSchema.create({
             _id:new mongoose.Types.ObjectId(),
@@ -56,7 +58,7 @@ export namespace BoardPostController {
             authorName: session.username
         })
         await PostSchema.addComment(postId, comment._id)
-        await UserBoardDataSchema.addComment(user.boardData, comment._id)
+        await UserBoardDataSchema.addComment(boarddata, comment._id)
 
     }
     
@@ -68,8 +70,9 @@ export namespace BoardPostController {
 			return
 		}
 		await PostSchema.removeComment(comment.article)
-		let user = await User.getBoardData(comment.author)
-		await UserBoardDataSchema.removeComment(user.boardData, commid)
+		const boarddata = await UserSchema.getBoardData(session.userId)
+		if(!boarddata) return
+		await UserBoardDataSchema.removeComment(boarddata, commid)
 
 		await CommentSchema.remove(commid)
     }
@@ -83,10 +86,11 @@ export namespace BoardPostController {
 			return
 		}
 
-		let user = await User.getBoardData(reply.author)
+		const boarddata = await UserSchema.getBoardData(session.userId)
+		if(!boarddata) return
 		await CommentSchema.removeReply(reply.comment, commid)
 		await PostSchema.removeReply(reply.article)
-		await UserBoardDataSchema.removeReply(user.boardData, commid)
+		await UserBoardDataSchema.removeReply(boarddata, commid)
 		await ReplySchema.remove(commid)
     }
 
@@ -97,8 +101,9 @@ export namespace BoardPostController {
 		const postUrl = await PostSchema.getUrlById(comment.article)
 		let voteRecords=null
 		if(session && session.isLogined){
-			const user = await User.getBoardData(session.userId)
-			voteRecords = await UserBoardDataSchema.getVoteRecords(user.boardData)
+			const boarddata = await UserSchema.getBoardData(session.userId)
+			if(boarddata) 
+				voteRecords = await UserBoardDataSchema.getVoteRecords(boarddata)
 		}
 
 		let replys = []
@@ -133,7 +138,8 @@ export namespace BoardPostController {
         const commentId =new ObjectID(req.body.commentId) //objectid
         const content = req.body.content
         const userId = new ObjectID(session.userId)
-        let user = await User.getBoardData(userId)
+        const boarddata = await UserSchema.getBoardData(session.userId)
+		if(!boarddata) return
         const comment = await CommentSchema.findOneById(new ObjectID(req.body.commentId))
 
         let reply = await ReplySchema.create({
@@ -152,7 +158,7 @@ export namespace BoardPostController {
         })
 
         await CommentSchema.addReply(commentId, reply._id)
-        await UserBoardDataSchema.addReply(user.boardData, reply._id)
+        await UserBoardDataSchema.addReply(boarddata, reply._id)
         await PostSchema.addReply(comment.article)
     }
 
@@ -166,9 +172,11 @@ export namespace BoardPostController {
 		let voteRecords=null
 		let isBookmarked=false
 		if(session && session.isLogined){
-			const user = await User.getBoardData(session.userId)
-			voteRecords = await UserBoardDataSchema.getVoteRecords(user.boardData)
-			const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
+			const boarddata = await UserSchema.getBoardData(session.userId)
+			if(!boarddata) return res.status(404).redirect("/notfound")
+
+			voteRecords = await UserBoardDataSchema.getVoteRecords(boarddata)
+			const bookmarks = await UserBoardDataSchema.getBookmarks(boarddata)
 			//console.log(bookmarks)
 			if(bookmarks.bookmarks.some((id:mongoose.Types.ObjectId)=>String(id)===String(post._id))){
 				isBookmarked=true

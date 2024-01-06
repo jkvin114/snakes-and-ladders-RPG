@@ -89,7 +89,7 @@ export const postRoleChecker =  async (req: express.Request, res: express.Respon
 		return
 	}
 	let isfriend=false
-	let currentUser:mongoose.Types.ObjectId|null=null
+	let currentUser:mongoose.Types.ObjectId|null=new ObjectID(session.userId)
 	if(session.isLogined && session.userId){
 		isfriend=await UserRelationSchema.isFriendWith(session.userId,post.author)
 	}

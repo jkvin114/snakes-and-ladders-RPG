@@ -1,9 +1,10 @@
+import mongoose from "mongoose"
 import { ISession } from "../../../inMemorySession"
 import { SchemaTypes } from "../../../mongodb/SchemaTypes"
 import { PostSchema } from "../../../mongodb/schemaController/Post"
+import { UserSchema } from "../../../mongodb/schemaController/User"
 import { UserBoardDataSchema } from "../../../mongodb/schemaController/UserData"
 import { COUNT_PER_PAGE, renderEjs } from "../helpers"
-const { User } = require("../../../mongodb/UserDBSchema")
 import type { Request, Response } from "express"
 
 export namespace BoardController {
@@ -13,8 +14,8 @@ export namespace BoardController {
 		if (req.query.start) {
 			start = Math.max(0, Number(req.query.start))
 		}
+		let total =await PostSchema.countDocuments({$or:[{visibility:{ $exists: false}},{visibility:"PUBLIC"}]})
 		let data: SchemaTypes.Article[] = await PostSchema.findPublicSummaryByRange(start, count)
-		let total = data.length
 		//data=await filterPostSummary(req.session,data,false)
 
 		renderEjs(res, "postlist", {
@@ -24,22 +25,23 @@ export namespace BoardController {
 			user: null,
 			count: count,
 			start: start,
-			isEnd: start + count > total,
+			isEnd: start + count >= total,
 		})
 	}
 
     export async function addBookmark(req: Request, res: Response, session: ISession) {
-        const user = await User.getBoardData(session.userId)
-		const bookmarks = await UserBoardDataSchema.getBookmarks(user.boardData)
+		const boardDataId = await UserSchema.getBoardData(session.userId)
+		if(!boardDataId) return
+		const bookmarks = await UserBoardDataSchema.getBookmarks(boardDataId)
 		if(!bookmarks) {
 			return
 		}
 		if(bookmarks.bookmarks.some((id:any)=>String(id)===req.body.id)){
-			await UserBoardDataSchema.removeBookmark(user.boardData,req.body.id)
+			await UserBoardDataSchema.removeBookmark(boardDataId,req.body.id)
 			res.status(200).json({ change: -1 })
 		}
 		else{
-			await UserBoardDataSchema.addBookmark(user.boardData,req.body.id)
+			await UserBoardDataSchema.addBookmark(boardDataId,req.body.id)
 			res.status(200).json({ change: 1 })
 		}
     }

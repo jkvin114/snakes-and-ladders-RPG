@@ -73,13 +73,12 @@
     margin-top: 20px;
   }
   .pagebtn:hover{
-    background-color: rgb(75, 75, 75);
+    background-color: var(--bg4);
   }
   .pagebtn{
     font-family: 'cookierun';
     color:white;
-    background-color: #7E00BF; 
-    background: transparent;
+    background-color:var(--bg3);
     line-height: 30px;
 
     cursor:pointer;
@@ -118,6 +117,7 @@
     /* color: #efa1ff; */
     color: var(--font-light);
     word-break: keep-all;
+
   }
   .subtext_container{
     text-align: center;
@@ -143,6 +143,16 @@
     float: left;
     margin-bottom: 3px;
   }
+  .divlink{
+	position: relative;
+}
+a.divlink{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -220,13 +230,14 @@
      
     <div id="post_container">
         <% for(let i=0;i<posts.length;++i){%>
-          <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
-            
+          <div class="post divlink">
+            <a class="divlink" href='/board/post/<%=posts[i].articleId%>'></a>
+
             <%if(posts[i].imagedir!=="") {%>
               <div class="thumbnail-img-container">
                 <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
               </div>
-            <% } else{ %><div></div>
+            <% } else{ %><div class="thumbnail-img-container"></div>
               <% }  %> 
             <div class="title_container">
               

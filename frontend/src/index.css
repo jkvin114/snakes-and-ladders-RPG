@@ -15,11 +15,14 @@ body {
 	font-family: 'Pretendard-Regular';
 	background-color: #1d1d2d;
 	--col-primary:#7e00bf;
-	--col-primary-light:#a044ff;
-	--col-bg:#1d1d2d;
-	--col-bg-light:#29293e;
+	--col-primary-light:#a438e4;
+	--col-bg:hsl(240, 22%, 15%);
+	--col-bg-light:hsl(240, 22%, 20%);
+	--col-bg-lighter:hsl(240, 22%, 25%);
+
 	--col-font:rgb(239, 239, 239);
 	--col-font-light:rgb(130, 130, 130);
+	color: var(--col-font);
 }
 #html-cover
 {
@@ -31,4 +34,14 @@ body {
 	left: 0;
 	background-color: #1d1d2d;
 	z-index: 9999;
+}
+.divlink{
+	position: relative;
+}
+a.divlink{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }

@@ -8,9 +8,11 @@ import { useEffect } from "react";
 import { RegisterPage } from "./components/pages/Register";
 import { backend_url } from "./variables";
 import StatusPage from "./components/pages/Status";
-import BoardPage from "./components/pages/Board";
+import BoardPostWrite from "./components/pages/BoardPostWrite";
 import axios from "axios";
 import EjsPage from "./components/EjsPage";
+import ProfilePage from "./components/pages/Profile";
+import RelationPage from "./components/pages/Relation";
 
 axios.defaults.withCredentials = true; // NEW
 
@@ -87,6 +89,11 @@ function App() {
 			<Route path='/login' element={<LoginPage/>}></Route> 
 			<Route path='/register' element={<RegisterPage/>}></Route> 
 			<Route path='/status' element={<StatusPage/>}></Route> 
+			<Route path='/writepost' element={<BoardPostWrite/>}></Route>
+			<Route path='/user/:username' element={<ProfilePage/>}></Route>
+			<Route path='/user/' element={<ProfilePage/>}></Route>
+			<Route path='/relation/:username' element={<RelationPage/>}></Route>
+
 			<Route path='/board' element={<EjsPage/>}>
 				<Route path='/board/:arg1/:arg2' element={<EjsPage/>}></Route>
 				<Route path='/board/:arg1' element={<EjsPage/>}></Route>

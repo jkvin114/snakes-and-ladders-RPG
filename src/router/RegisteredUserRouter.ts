@@ -7,7 +7,10 @@ import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
 import { SessionManager } from "../inMemorySession"
 import { getNewJwt, setJwtCookie } from "../jwt"
-import { loginauth } from "./jwt/auth"
+import { loginauth, sessionParser } from "./jwt/auth"
+import { ControllerWrapper } from "./ControllerWrapper"
+import { UserController } from "./user/controller"
+import { UserSchema } from "../mongodb/schemaController/User"
 /**
  * https://icecokel.tistory.com/17?category=956647
  * 
@@ -78,105 +81,13 @@ router.get("/all", async function (req: express.Request, res: express.Response) 
 	
 })
 
-router.get("/:username", async function (req: express.Request, res: express.Response) {
-	const user = await User.findOneByUsername(req.params.username)
-	if (!user) {
-		res.status(404).redirect("/notfound")
-		return
-	}
-	let isFriend = false
-	let isFollowing = false
-	try{
+router.get("/:username",sessionParser,ControllerWrapper(UserController.getProfile))
 
-		const boardData = await UserBoardDataSchema.findOneById(user.boardData)
-		if(!boardData){
-			res.status(404).redirect("/notfound")
-			return
-		}
-		const friendcount=await UserRelationSchema.friendCount(user._id)
-		const followcount=await UserRelationSchema.followCount(user._id)
+router.get("/:username/friend", sessionParser,ControllerWrapper(UserController.getFriend))
 
-		const counts = [friendcount, followcount,boardData.bookmarks.length,
-			boardData.articles.length,boardData.comments.length+boardData.replys.length,boardData.upvotedArticles.length]
+router.get("/:username/following",sessionParser, ControllerWrapper(UserController.getFollowing))
 
-		if (req.session.isLogined) {
-			isFriend =await UserRelationSchema.isFriendWith(req.session.userId,user._id)
-			isFollowing =await UserRelationSchema.isFollowTo(req.session.userId,user._id)
-		}
-		res.render("user", {
-			isFriend: isFriend,
-			isFollowing: isFollowing,
-			username: user.username,
-			email: user.email,
-			profile: user.profileImgDir,
-			isme: req.session.isLogined && req.session.userId === String(user._id),
-			isadmin:user.role==="admin" && req.session.isLogined && req.session.userId === String(user._id),
-			isLogined: req.session.isLogined,
-			counts: counts,
-		})
-	}
-	catch(e){
-		console.error(e)
-		res.status(500).redirect("servererror")
-	}
-	
-})
-
-router.get("/:username/friend", async function (req: express.Request, res: express.Response) {
-	try{
-		const user = await User.findOneByUsername(req.params.username)
-		if (!user) {
-			res.status(404).redirect("/notfound")
-			return
-		}
-
-		const friendIds = await UserRelationSchema.findFriends(user._id)
-		const friends=await User.findAllSummaryByIdList(friendIds)
-		res.render("friends", {
-			username: user.username,
-			email: user.email,
-			profile: user.profileImgDir,
-			isme: req.session.isLogined && req.session.userId === String(user._id),
-			friends: friends,
-			displayType: "friends",
-		})
-	}
-	catch(e){
-		console.error(e)
-		res.status(500).redirect("servererror")
-	}
-
-	
-})
-
-router.get("/:username/follow", async function (req: express.Request, res: express.Response) {
-	try{
-		const user = await User.findOneByUsername(req.params.username)
-		if (!user) {
-			res.status(404).redirect("/notfound")
-			return
-		}
-		
-		const followIds = await UserRelationSchema.findFollows(user._id)
-		const follows=await User.findAllSummaryByIdList(followIds)
-
-		//console.log(follows)
-		res.render("friends", {
-			username: user.username,
-			email: user.email,
-			profile: user.profileImgDir,
-			isme: req.session.isLogined && req.session.userId === String(user._id),
-			friends: follows,
-			displayType: "follows",
-		})
-	}
-	catch(e){
-		console.error(e)
-		res.status(500).redirect("servererror")
-	}
-
-	
-})
+router.get("/:username/follower", sessionParser,ControllerWrapper(UserController.getFollower))
 
 router.post(
 	"/profileimg",
@@ -209,12 +120,13 @@ router.post("/remove_profileimg", auth, async function (req: express.Request, re
 	
 })
 
-router.get("/", async function (req: express.Request, res: express.Response) {
-	if (!req.session || !req.session.isLogined) {
+router.get("/",sessionParser, async function (req: express.Request, res: express.Response) {
+	const session = res.locals.session
+	if (!session || !session.isLogined) {
 		res.status(401).redirect("/")
 		return
 	}
-	res.redirect("/user/" + req.session.username)
+	res.redirect("/user/" + session.username)
 })
 /**
  * username,password,email

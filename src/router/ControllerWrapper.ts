@@ -12,7 +12,7 @@ export function ControllerWrapper(controller:IController,successCode?:number){
         {
            return res.status(401).end("Session does not exists")
         }
-
+        
         let code = successCode?successCode:200
         controller(req,res,session)
         .then(()=>{

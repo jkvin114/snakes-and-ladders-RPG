@@ -1431,7 +1431,7 @@ transform: scale(1.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgb(36, 36, 36);
+    background-color: var(--col-bg);
   }
   #stat-navbar > div{
   }
