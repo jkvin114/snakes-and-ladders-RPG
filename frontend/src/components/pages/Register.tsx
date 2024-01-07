@@ -66,10 +66,14 @@ export function RegisterPage() {
         }
         
     }
-
+    const handleKeyPress = (event:any) => {
+        if (event.key === 'Enter') {
+          submitLogin()
+        }
+      };
 	return (
 		<>
-			<div className="signin">
+			<div className="signin" onKeyDown={handleKeyPress}>
             <a className="back" href="/"><RiArrowLeftLine  /></a>
 
 				<div className="content">

@@ -9,7 +9,6 @@ export function LoginPage() {
 
     const [error,setError] =useState("")
 
-    const  url = backend_url+"/user/login"
     let [searchParams, setSearchParams] = useSearchParams()
     const redirect=searchParams.get("redirect")
     const API = axios.create({ baseURL: backend_url })
@@ -21,25 +20,11 @@ export function LoginPage() {
             setError("Enter username and password")
             return
         }
-        let token=sessionStorage.getItem("jwt")
         try{
             const res = await API.post("/user/login",{
                 username:email,
                 password:pw
             })
-            // const res = await fetch(url, {
-            //     method: "POST",
-            //     mode:'cors',
-            //     credentials:"include",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //         // 'Content-Type': 'application/x-www-form-urlencoded',
-            //       },
-            //     body:JSON.stringify({
-            //         username:email,
-            //         password:pw
-            //     })
-            // })
             console.log(res.headers)
 
             const data = res.data
@@ -65,10 +50,15 @@ export function LoginPage() {
             setError("Server Error")
         }
     }
-
+    const handleKeyPress = (event:any) => {
+        if (event.key === 'Enter') {
+          submitLogin()
+        }
+      };
+    
 	return (
 		<>
-			<div className="signin">
+			<div className="signin" onKeyDown={handleKeyPress}>
                 <a className="back" href="/"><RiArrowLeftLine  /></a>
 				<div className="content">
 					<h2>Log In</h2>

@@ -1,0 +1,64 @@
+.form {
+    *,
+    ::before,
+    ::after {
+        box-sizing: border-box;
+    }
+
+    width: min(100%, 400px);
+    display: inline-flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    gap: 25px;
+
+    .inputBox {
+        position: relative;
+        width: 100%;
+    }
+    .inputBox input {
+        position: relative;
+        width: 100%;
+        background: var(--col-bg);
+        border: none;
+        outline: none;
+        padding: 25px 10px 7.5px;
+        border-radius: 4px;
+        color: var(--col-font);
+        font-weight: 500;
+        font-size: 1em;
+    }
+    .inputBox i {
+        position: absolute;
+        left: 0;
+        padding: 15px 10px;
+        font-style: normal;
+        color: var(--col-font-light);
+        transition: 0.5s;
+        pointer-events: none;
+    }
+    .inputBox input:focus ~ i,
+    .inputBox input:valid ~ i {
+        transform: translateY(-7.5px);
+        font-size: 0.8em;
+        color: #bfbfbf;
+    }
+
+    .links {
+        position: relative;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+    .links a {
+        color: var(--col-primary-light);
+        font-weight: 600;
+        text-decoration: underline;
+    }
+    .login-error {
+        color: red;
+    }
+    .login-error svg {
+        display: inline;
+    }
+}

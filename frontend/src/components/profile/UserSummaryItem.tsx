@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { RiUserAddFill, RiUserFollowFill } from "react-icons/ri"
 import { AxiosApi } from "../../api/axios"
+import { Link } from "react-router-dom"
 
 type Props={
     profileImgDir:string
@@ -44,13 +45,17 @@ export default function UserSummaryItem({profileImgDir,username,buttonType}:Prop
 	}
     
     return (<div className="user-item">
-        <div className={"item-section profileimg-container" + (!profileImgDir || profileImgDir === "" ? " " : " has-img")}>
-            {!profileImgDir || profileImgDir === "" ? (
-                <a>{username.charAt(0).toUpperCase()}</a>
-            ) : (
-                <img className="profileimg" src={"/uploads/profile/" + profileImgDir}></img>
-            )}
-        </div>
+		<div className="item-section">
+			<div className={"profileimg-container divlink" + (!profileImgDir || profileImgDir === "" ? " " : " has-img")}>
+				{!profileImgDir || profileImgDir === "" ? (
+					<b>{username.charAt(0).toUpperCase()}</b>
+				) : (
+					<img className="profileimg" src={"/uploads/profile/" + profileImgDir}></img>
+				)}
+				<a href={`/user/`+username} className="divlink" ></a>
+			</div>
+		</div>
+        
         <div className="item-section name">
                 <a href={`/user/`+username}>{username}</a>
         </div>

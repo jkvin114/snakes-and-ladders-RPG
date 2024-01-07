@@ -3,8 +3,9 @@ import { ControllerWrapper } from './ControllerWrapper';
 import { loginauth, sessionParser } from './jwt/auth';
 import { UserController } from './user/controller';
 import express = require("express")
+import { Router } from 'express';
 
-const router = express.Router()
+const router = Router()
 
 router.post("/friend_request",loginauth,sessionParser,ControllerWrapper(UserController.addFriend))
 

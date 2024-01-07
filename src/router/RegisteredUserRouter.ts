@@ -5,12 +5,13 @@ import { ImageUploader } from "../mongodb/mutler"
 import { ajaxauth, auth, containsId, encrypt } from "./board/helpers"
 import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
-import { SessionManager } from "../inMemorySession"
+import { ISession, SessionManager } from "../inMemorySession"
 import { getNewJwt, setJwtCookie } from "../jwt"
 import { loginauth, sessionParser } from "./jwt/auth"
 import { ControllerWrapper } from "./ControllerWrapper"
 import { UserController } from "./user/controller"
 import { UserSchema } from "../mongodb/schemaController/User"
+import { userSchema } from "../mongodb/UserDBSchema"
 /**
  * https://icecokel.tistory.com/17?category=956647
  * 
@@ -47,8 +48,6 @@ function createSalt() {
 	return Math.round(new Date().valueOf() * Math.random()) + ""
 }
 
-
-
 function checkPasswordValidity(pw: string) {
 	if (pw.length <= 3) {
 		return false
@@ -62,7 +61,7 @@ function checkPasswordValidity(pw: string) {
 	return true
 }
 router.get("/all", async function (req: express.Request, res: express.Response) {
-	try{
+	try {
 		const friends = await User.findAllSummary()
 		res.render("friends", {
 			username: "",
@@ -72,55 +71,54 @@ router.get("/all", async function (req: express.Request, res: express.Response) 
 			friends: friends,
 			displayType: "all",
 		})
-	}
-	catch(e){
+	} catch (e) {
 		console.error(e)
 		res.status(500).redirect("servererror")
 	}
-	
-	
 })
 
-router.get("/:username",sessionParser,ControllerWrapper(UserController.getProfile))
+router.get("/:username", sessionParser, ControllerWrapper(UserController.getProfile))
 
-router.get("/:username/friend", sessionParser,ControllerWrapper(UserController.getFriend))
+router.get("/:username/friend", sessionParser, ControllerWrapper(UserController.getFriend))
 
-router.get("/:username/following",sessionParser, ControllerWrapper(UserController.getFollowing))
+router.get("/:username/following", sessionParser, ControllerWrapper(UserController.getFollowing))
 
-router.get("/:username/follower", sessionParser,ControllerWrapper(UserController.getFollower))
+router.get("/:username/follower", sessionParser, ControllerWrapper(UserController.getFollower))
 
 router.post(
 	"/profileimg",
-	auth,
+	loginauth,
+	sessionParser,
 	ImageUploader.uploadProfile.single("img"),
-	async function (req: express.Request, res: express.Response) {
+	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
 		const imgfile = req.file
-		try{
-			if (imgfile) await User.updateProfileImage(req.session.userId, imgfile.filename)
-			res.status(201).redirect("/user")
-		}
-		catch(e){
+		try {
+			console.log(imgfile)
+			if (imgfile) await UserSchema.updateProfileImage(session.userId, imgfile.filename)
+			res.status(201).end()
+		} catch (e) {
 			console.error(e)
 			res.status(500).end()
 		}
-
-		
-	}
+	})
 )
 
-router.post("/remove_profileimg", auth, async function (req: express.Request, res: express.Response) {
-	try{
-		await User.updateProfileImage(req.session.userId, "")
-		res.status(200).redirect("/user")
-	}
-	catch(e){
-		console.error(e)
-		res.status(500).end()
-	}
-	
-})
+router.post(
+	"/remove_profileimg",
+	loginauth,
+	sessionParser,
+	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
+		try {
+			await UserSchema.updateProfileImage(session.userId, "")
+			res.status(200).end()
+		} catch (e) {
+			console.error(e)
+			res.status(500).end()
+		}
+	})
+)
 
-router.get("/",sessionParser, async function (req: express.Request, res: express.Response) {
+router.get("/", sessionParser, async function (req: express.Request, res: express.Response) {
 	const session = res.locals.session
 	if (!session || !session.isLogined) {
 		res.status(401).redirect("/")
@@ -142,8 +140,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 		res.status(400).end("password")
 		return
 	}
-	try{
-
+	try {
 		let user = await User.findOneByUsername(body.username)
 		if (user) {
 			res.status(400).end("duplicate username")
@@ -154,7 +151,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 		let encryptedPw = await encrypt(body.password, salt)
 
 		let boardData = await UserBoardDataSchema.create({
-			_id:new mongoose.Types.ObjectId(),
+			_id: new mongoose.Types.ObjectId(),
 			articles: [],
 			comments: [],
 			bookmarks: [],
@@ -163,14 +160,14 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 		})
 
 		User.create({
-			_id:new mongoose.Types.ObjectId(),
+			_id: new mongoose.Types.ObjectId(),
 			username: body.username,
 			email: body.email,
 			password: encryptedPw,
 			salt: salt,
 			simulations: [],
 			boardData: boardData._id,
-			role:"user"
+			role: "user",
 		})
 			.then((data: any) => {
 				console.log(data)
@@ -180,12 +177,10 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 				console.log(err)
 				res.status(500).end()
 			})
-	}
-	catch(e){
+	} catch (e) {
 		console.error(e)
 		res.status(500).end()
 	}
-	
 })
 
 router.post("/current", async function (req: express.Request, res: express.Response) {
@@ -200,7 +195,7 @@ router.post("/current", async function (req: express.Request, res: express.Respo
 router.post("/login", async function (req: express.Request, res: express.Response) {
 	let body = req.body
 	const session = SessionManager.getSession(req)
-	try{
+	try {
 		let user = await User.findOneByUsername(body.username)
 		if (!user) {
 			res.end("username")
@@ -215,11 +210,11 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			session.username = body.username
 			session.isLogined = true
 			session.userId = String(user._id)
-			
+
 			if (user.boardData == null) {
 				console.log("added board data")
 				let boardData = await UserBoardDataSchema.create({
-					_id:new mongoose.Types.ObjectId(),
+					_id: new mongoose.Types.ObjectId(),
 					articles: [],
 					comments: [],
 					bookmarks: [],
@@ -239,13 +234,10 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			email: user.email,
 			id: user._id,
 		})
-	}
-	catch(e){
+	} catch (e) {
 		console.error(e)
 		res.status(500).end()
 	}
-
-	
 })
 
 router.post("/logout", loginauth, function (req: express.Request, res: express.Response) {
@@ -269,56 +261,42 @@ router.post("/logout", loginauth, function (req: express.Request, res: express.R
 /**
  * username,originalpw,newpw
  */
-router.patch("/password", ajaxauth, async function (req: express.Request, res: express.Response) {
-	let body = req.body
-	try{
-		let user = await User.findById(req.session.userId)
+router.patch(
+	"/password",
+	loginauth,
+	sessionParser,
+	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
+		let body = req.body
+		let user = await User.findById(session.userId)
 
 		if (!user) {
 			console.log("user not exist")
-			res.end("user not exist")
+			res.status(200).end("user not exist")
 			return
 		}
-
 		if (user.password !== encrypt(body.originalpw, user.salt)) {
-			res.end("password not match")
+			res.status(200).end("password not match")
 			return
 		}
 		if (!checkPasswordValidity(body.newpw)) {
-			res.end("pw error")
+			res.status(200).end("pw error")
 			return
 		}
-
 		let salt = createSalt()
 		let encryptedPw = encrypt(body.newpw, salt)
-
 		let id = user._id
 
+		await UserSchema.updatePassword(id, encryptedPw, salt)
 		console.log(body.username + " has changed password")
-
-		User.updatePassword(id, encryptedPw, salt)
-			.then(() => {
-				res.status(200).end()
-			})
-			.catch((err: Error) => {
-				console.log(err)
-				res.status(500).end()
-			})
-	}
-	catch(e){
-		console.error(e)
-		res.status(500).end()
-	}
-
-	
-})
+	},201)
+)
 
 /**
  * username,email,password
  */
 router.patch("/email", async function (req: express.Request, res: express.Response) {
 	let body = req.body
-	try{
+	try {
 		let user = await User.findOneByUsername(body.username)
 
 		if (!user) {
@@ -342,13 +320,10 @@ router.patch("/email", async function (req: express.Request, res: express.Respon
 				console.log(err)
 				res.status(500).end()
 			})
-	}
-	catch(e){
+	} catch (e) {
 		console.error(e)
 		res.status(500).end()
 	}
-
-	
 })
 
 /**
@@ -356,15 +331,14 @@ router.patch("/email", async function (req: express.Request, res: express.Respon
  */
 router.delete("/", async function (req: express.Request, res: express.Response) {
 	let body = req.body
-	let user=null
-	try{
+	let user = null
+	try {
 		user = await User.findOneByUsername(body.username)
-	}
-	catch(e){
+	} catch (e) {
 		console.error(e)
 		return res.status(500).end()
 	}
-	
+
 	if (!user) {
 		res.status(204).end("user not exist")
 		return
@@ -416,7 +390,7 @@ router.post("/", async function (req: express.Request, res: express.Response) {
  * username
  */
 router.get("/simulation", async function (req: express.Request, res: express.Response) {
-	try{
+	try {
 		let user = await User.findOneByUsername(req.query.username)
 		if (!user) {
 			res.status(204).end("user not exist")
@@ -425,14 +399,11 @@ router.get("/simulation", async function (req: express.Request, res: express.Res
 		let simulations = user.simulations
 
 		res.status(200).end(JSON.stringify(simulations))
-
-	}
-	catch(e){
+	} catch (e) {
 		console.error(e)
 		res.status(500).end()
 	}
-	
-})	
+})
 router.use("/relation", require("./UserRelationRouter"))
 
 module.exports = router

@@ -13,6 +13,7 @@ import axios from "axios";
 import EjsPage from "./components/EjsPage";
 import ProfilePage from "./components/pages/Profile";
 import RelationPage from "./components/pages/Relation";
+import { AxiosApi } from "./api/axios";
 
 axios.defaults.withCredentials = true; // NEW
 
@@ -71,11 +72,11 @@ function App() {
 		// .then(res=>console.log(res))
 		// .catch(e=>console.log(e))
 
-		API.post("/jwt/init")
+		AxiosApi.post("/jwt/init")
 	},[])
 
 	function logout() {
-		API.post("/user/logout")
+		AxiosApi.post("/user/logout")
 		.then(r=>{
 			window.location.href="/"
 			localStorage.removeItem("username")
@@ -90,9 +91,15 @@ function App() {
 			<Route path='/register' element={<RegisterPage/>}></Route> 
 			<Route path='/status' element={<StatusPage/>}></Route> 
 			<Route path='/writepost' element={<BoardPostWrite/>}></Route>
+
 			<Route path='/user/:username' element={<ProfilePage/>}></Route>
 			<Route path='/user/' element={<ProfilePage/>}></Route>
-			<Route path='/relation/:username' element={<RelationPage/>}></Route>
+			<Route path='/user/:username/friend' element={<ProfilePage modal="friend"/>}></Route>
+			<Route path='/user/:username/follower' element={<ProfilePage modal="follower"/>}></Route>
+			<Route path='/user/:username/following' element={<ProfilePage modal="following"/>}></Route>
+			<Route path='/user/:username/setting' element={<ProfilePage modal="setting"/>}></Route>
+
+			{/* <Route path='/relation/:username' element={<RelationPage/>}></Route> */}
 
 			<Route path='/board' element={<EjsPage/>}>
 				<Route path='/board/:arg1/:arg2' element={<EjsPage/>}></Route>
@@ -100,6 +107,7 @@ function App() {
 				<Route path='/board/:arg1/:arg2/:arg3' element={<EjsPage/>}></Route>
 				<Route path='/board/:arg1/:arg2/:arg3/:arg4' element={<EjsPage/>}></Route>
 			</Route> 
+
 			<Route path='/' element={<HtmlPage htmlPath="home"/>}></Route> 
 			<Route path='/spectate' element={<HtmlPage htmlPath="spectate"/>}></Route> 
 			<Route path='/stat' element={<HtmlPage htmlPath="stat"/>}></Route> 

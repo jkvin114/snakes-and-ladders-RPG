@@ -15,7 +15,6 @@ export default function FriendList({username}:Props){
         if(!username) return
         AxiosApi.get("/user/" + username+"/friend")
 			.then((res) => {
-                console.table(res.data)
 				setFriends(res.data as IFriend[])
 			})
     },[])
