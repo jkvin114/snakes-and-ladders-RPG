@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import { ISession } from "../../../inMemorySession"
+import { ISession } from "../../../session/inMemorySession"
 import { SchemaTypes } from "../../../mongodb/SchemaTypes"
 import { PostSchema } from "../../../mongodb/schemaController/Post"
 import { UserSchema } from "../../../mongodb/schemaController/User"

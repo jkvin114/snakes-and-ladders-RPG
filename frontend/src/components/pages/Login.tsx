@@ -65,12 +65,12 @@ export function LoginPage() {
 
 					<div className="form">
 						<div className="inputBox">
-							<input type="text" id="login-email"/>
+							<input type="text" id="login-email" required/>
 								<i>Username</i>
 						</div>
 
 						<div className="inputBox">
-							<input type="password" id="login-password"/>
+							<input type="password" id="login-password" required/>
 								<i>Password</i>
 						</div>
 

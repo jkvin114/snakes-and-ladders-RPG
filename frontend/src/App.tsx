@@ -14,6 +14,7 @@ import EjsPage from "./components/EjsPage";
 import ProfilePage from "./components/pages/Profile";
 import RelationPage from "./components/pages/Relation";
 import { AxiosApi } from "./api/axios";
+import { socket } from "./api/socket";
 
 axios.defaults.withCredentials = true; // NEW
 
@@ -114,7 +115,9 @@ function App() {
 			<Route path='/find_room' element={<HtmlPage htmlPath="find_room"/>}></Route> 
 
 		</Routes>
-		<button onClick={logout}> logout</button>
+		<div>
+
+		</div>
 		{/* <StockGame/> */}
 	</>
 	)

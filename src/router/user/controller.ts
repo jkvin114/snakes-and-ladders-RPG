@@ -1,4 +1,4 @@
-import { ISession } from "../../inMemorySession"
+import { ISession } from "../../session/inMemorySession"
 import type { Request, Response } from "express"
 import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation"

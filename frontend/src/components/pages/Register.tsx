@@ -82,19 +82,19 @@ export function RegisterPage() {
 					<div className="form">
 						
                         <div className="inputBox">
-							<input type="text" id="register-username"/>
+							<input type="text" id="register-username" required/>
 								<i>Username</i>
 						</div>
 						<div className="inputBox">
-							<input type="password" id="register-password"/>
+							<input type="password" id="register-password" required/>
 								<i>Password</i>
 						</div>
                         <div className="inputBox">
-							<input type="password" id="register-password2"/>
+							<input type="password" id="register-password2" required/>
 								<i>Verify Password</i>
 						</div>
                         <div className="inputBox">
-							<input type="text" id="register-email"/>
+							<input type="text" id="register-email" required/>
 								<i>Email</i>
 						</div>
 						<div className="links">

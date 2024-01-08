@@ -14,7 +14,7 @@ import { Friend, friendSchema } from "../../mongodb/UserRelationDBSchema";
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation";
 import crypto from "crypto";
 import { CharacterSimulationEval, SimulationEval } from "../../mongodb/SimulationEvalDBSchema";
-import { ISession } from "../../inMemorySession";
+import { ISession, SessionManager } from "../../session/inMemorySession";
 export function encrypt(pw: string, salt: string) {
 	return crypto
 		.createHash("sha512")
@@ -60,11 +60,12 @@ export const ajaxauth = (req: express.Request, res: express.Response, next: expr
 export const adminauth = async(req: express.Request, res: express.Response, next: express.NextFunction) => {
 	// next()
 	// return
+	const session = SessionManager.getSession(req)
 	try {
-		if (!req.session.isLogined) {
+		if (!session.isLogined) {
 			res.status(401).end("unauthorized")
 		} else {
-			const user = await User.findById(req.session.userId)
+			const user = await User.findById(session.userId)
 			if(user.role && user.role==="admin") next()
 			else
 				res.status(401).end("unauthorized")

@@ -48,6 +48,7 @@ export const PAGES={
     ,find_room:{
         html:"find_room_page.html",
         scripts:[
+            "lib/socket.io.min.js",
             "lib/jquery-3.6.0.min.js",
             "lib/axios.js",
             "src/findroom.js",

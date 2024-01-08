@@ -17,6 +17,9 @@ export namespace UserSchema{
     export const create = function(data:SchemaTypes.User){
         return (new User(data)).save()
     }
+    export const findById = function(id:string|Types.ObjectId){
+        return User.findById(id)
+    }
     export const findAllSummary = function() {
         return User.find({}).select('profileImgDir username email')
     };

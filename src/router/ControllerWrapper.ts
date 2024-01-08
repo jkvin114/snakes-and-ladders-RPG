@@ -1,7 +1,7 @@
 import type {Request,Response} from 'express';
-import { ISession } from '../inMemorySession';
+import { ISession } from '../session/inMemorySession';
 
-export interface IController{
+export type IController={
     (req:Request,res:Response,session:ISession):Promise<void>
 }
 export function ControllerWrapper(controller:IController,successCode?:number){

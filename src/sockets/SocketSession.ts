@@ -1,50 +1,46 @@
 import type { Socket } from "socket.io"
-import express = require("express")
+
+import { SessionManager } from "../session/inMemorySession"
+import { getSessionIdFromSocket } from "../session/jwt"
 
 export namespace SocketSession {
+
+	export function getSession(socket:Socket){
+        let id = getSessionIdFromSocket(socket)
+        if(!id || !id.id){
+            return null
+        }
+        const session =  SessionManager.getSessionById(id.id)
+        return session
+    }
+	
 	export function getUsername(socket: Socket): string {
-		const req = socket.request as express.Request
-		return req.session.username
+		return getSession(socket).username
 	}
 	export function getUserClass(socket: Socket): number {
-		const req = socket.request as express.Request
-		return req.session.isLogined?1:0
+		return getSession(socket).isLogined?1:0
 	}
 	export function setTurn(socket: Socket, turn: number) {
-		const req = socket.request as express.Request
-		req.session.turn = turn
-		req.session.save()
-		console.log(req.session)
+		getSession(socket).turn=turn
 	}
 	export function getTurn(socket: Socket): number {
-		const req = socket.request as express.Request
-		return req.session.turn
+		return getSession(socket).turn
 	}
 	export function getId(socket: Socket): string {
-		const req = socket.request as express.Request
-		return req.session.id
+		return getSession(socket).id
 	}
 	export function setRoomName(socket: Socket, roomname: string) {
-		const req = socket.request as express.Request
-		req.session.roomname = roomname
-		req.session.save()
-		console.log(req.session)
+		getSession(socket).roomname=roomname
 	}
 	export function getRoomName(socket: Socket): string {
-		const req = socket.request as express.Request
-		return req.session.roomname
+		return getSession(socket).roomname
 	}
 	export function removeGameSession(socket: Socket) {
-		const req = socket.request as express.Request
-		delete req.session.turn 
-		delete req.session.roomname
-	
-		// if(!req.session.isLogined)
-		// 	delete req.session.username
-		// console.log(req.session)
+		const session=getSession(socket)
+		delete session.turn 
+		delete session.roomname
 	}
 	export function print(socket: Socket){
-		const req = socket.request as express.Request
-		console.log(req.session)
+		console.log(getSession(socket))
 	}
 }

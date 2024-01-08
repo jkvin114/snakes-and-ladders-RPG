@@ -1,7 +1,7 @@
 
 import type { Request, Response } from "express"
 const {ObjectID} = require('mongodb');
-import { ISession } from "../../../inMemorySession"
+import { ISession } from "../../../session/inMemorySession"
 import { CommentSchema } from "../../../mongodb/schemaController/Comment"
 import { PostSchema } from "../../../mongodb/schemaController/Post"
 import { ReplySchema } from "../../../mongodb/schemaController/Reply"

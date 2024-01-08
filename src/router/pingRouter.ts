@@ -9,7 +9,7 @@ router.get("/",async function(req: express.Request, res: express.Response){
     let time = new Date().valueOf()
     let marbleping = await MarbleGameGRPCClient.Ping()
     let time2 = new Date().valueOf()
-
+    
     if(marbleping!==-1 && marbleping!==-2) marbleping = time2-time
 
     time = new Date().valueOf()

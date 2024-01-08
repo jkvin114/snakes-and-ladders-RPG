@@ -43,6 +43,7 @@ export default function ProfilePage({ modal }: Props) {
 		}
 		AxiosApi.get("/user/" + name)
 			.then((res) => {
+				console.log(res.data)
 				setProfile(res.data as IUserProfile)
 			})
 			.catch((e) => {
@@ -129,7 +130,7 @@ export default function ProfilePage({ modal }: Props) {
 			<div style={{ textAlign: "center" }}>
 				<div id="profilepage_container">
 					<div className="profile">
-						{isMyPage && (
+						{profile.isme && (
 							<div className="profile-toolbar">
 								<div>
 									<Link className="divlink" to={`/user/${name}/setting`}>
@@ -144,7 +145,7 @@ export default function ProfilePage({ modal }: Props) {
 							) : (
 								<img className="profileimg" src={"/uploads/profile/" + profile.profile}></img>
 							)}
-							{isMyPage && (
+							{profile.isme && (
 								<>
 									<label htmlFor="img" className="editimg">
 										<RiEditBoxLine />

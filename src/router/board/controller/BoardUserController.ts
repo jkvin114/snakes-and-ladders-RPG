@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import type { ISession } from "../../../inMemorySession"
+import type { ISession } from "../../../session/inMemorySession"
 import { COUNT_PER_PAGE, CommentSummary, filterPostSummary, renderEjs, timestampToNumber } from "../helpers"
 import { SchemaTypes } from "../../../mongodb/SchemaTypes"
 import { PostSchema } from "../../../mongodb/schemaController/Post"

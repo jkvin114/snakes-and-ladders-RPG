@@ -1,6 +1,9 @@
 
 import Jwt from "jsonwebtoken"
 import {Request,Response} from 'express';
+import type { Socket } from "socket.io";
+
+import cookie from "cookie";
 
 const key="salr_session_key_4321"
 declare module 'jsonwebtoken' {
@@ -10,7 +13,7 @@ declare module 'jsonwebtoken' {
 }
 
 function extractTokenPayload (req:Request) {
-    if (req.cookies.jwt) {
+    if (req.cookies && req.cookies.jwt) {
         return decodeToken(req.cookies.jwt);
     }
     return null;
@@ -25,6 +28,17 @@ function decodeToken(token:string){
 		return null
 	}
 }
+
+export function getSessionIdFromSocket(socket:Socket){
+
+	const c = cookie.parse(socket.request.headers.cookie)
+	if(c  && c.jwt){
+		let token= decodeToken(c.jwt) as Jwt.CustomJwtPayload
+		return token
+	}
+	return null
+}
+
 export function getSessionId(req:Request){
 	let token=extractTokenPayload(req) as Jwt.CustomJwtPayload
 	if(token) return token.id

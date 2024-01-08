@@ -5,8 +5,8 @@ import { ImageUploader } from "../mongodb/mutler"
 import { ajaxauth, auth, containsId, encrypt } from "./board/helpers"
 import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
-import { ISession, SessionManager } from "../inMemorySession"
-import { getNewJwt, setJwtCookie } from "../jwt"
+import { ISession, SessionManager } from "../session/inMemorySession"
+import { getNewJwt, setJwtCookie } from "../session/jwt"
 import { loginauth, sessionParser } from "./jwt/auth"
 import { ControllerWrapper } from "./ControllerWrapper"
 import { UserController } from "./user/controller"
@@ -196,7 +196,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 	let body = req.body
 	const session = SessionManager.getSession(req)
 	try {
-		let user = await User.findOneByUsername(body.username)
+		let user = await UserSchema.findOneByUsername(body.username)
 		if (!user) {
 			res.end("username")
 			return
@@ -207,9 +207,8 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			return
 		}
 		if (session) {
+			SessionManager.login(req,String(user._id))
 			session.username = body.username
-			session.isLogined = true
-			session.userId = String(user._id)
 
 			if (user.boardData == null) {
 				console.log("added board data")
@@ -223,11 +222,12 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 				})
 				user = await User.setBoardData(user._id, boardData._id)
 			}
-			console.log(session)
 			session.boardDataId = String(user.boardData)
 			console.log(session.username + " has logged in")
 		}
-
+		else{
+			return res.status(401).send("session does not exist")
+		}
 		// console.log(req.session)
 		res.status(200).json({
 			username: body.username,
@@ -243,11 +243,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 router.post("/logout", loginauth, function (req: express.Request, res: express.Response) {
 	const session = SessionManager.getSession(req)
 
-	session.isLogined = false
-	delete session.userId
-	delete session.username
-	delete session.boardDataId
-
+	SessionManager.logout(req)
 	console.log(session.username + " has logged out")
 	// req.session.destroy(function(e){
 	//     if(e) console.log(e)

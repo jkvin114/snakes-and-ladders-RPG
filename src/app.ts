@@ -21,9 +21,10 @@ import express=require("express")
 import { connectMongoDB } from "./mongodb/connect"
 import MarbleGameGRPCClient from "./grpc/marblegameclient"
 import RPGGameGRPCClient from "./grpc/rpggameclient"
-import { ISession, SessionManager } from "./inMemorySession"
+import { ISession, SessionManager } from "./session/inMemorySession"
 import cookieParser from "cookie-parser"
-import { setJwtCookie } from "./jwt"
+import { setJwtCookie } from "./session/jwt"
+import { SocketSession } from "./sockets/SocketSession"
 
 declare module 'express-session' {
 	interface SessionData {
@@ -99,6 +100,7 @@ app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
 app.use("/board", require("./router/board/BoardRouter"))
 app.use("/ping", require("./router/pingRouter"))
+app.use("/chat", require("./router/chat"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
@@ -139,7 +141,7 @@ function errorHandler(err: any, req: any, res: any, next: any) {
 
 export const io = new Server(httpserver, {
 	cors: {
-		origin: "http://127.0.0.1:" + PORT,
+		origin: "http://localhost:3000",
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		credentials: true
 	},
@@ -163,10 +165,15 @@ io.on("error", function (e: any) {
 
 
 io.on("connection", function (socket: Socket) {
-	//console.log(`${socket.id} is connected`)
-	require("./sockets/RoomSocket")(socket)
-	require("./sockets/RpgRoomSocket")(socket)
-	require("./Marble/MarbleRoomSocket")(socket)
+	console.log(`${socket.id} is connected`)
+
+	const session =  SocketSession.getSession(socket)
+	console.log(session)
+
+	// require("./sockets/RoomSocket")(socket)
+	// require("./sockets/RpgRoomSocket")(socket)
+	// require("./Marble/MarbleRoomSocket")(socket)
+	require("./social/chatSocket")(socket)
 })
 
 
@@ -199,11 +206,11 @@ app.get("/jwt/verify",function(req:express.Request, res:express.Response){
 app.post("/jwt/init",function(req:express.Request, res:express.Response){
 
 	if(req.cookies && SessionManager.isValid(req)){
-		return res.end()
+		return res.status(204).send("ok")
 	}
 	let token = SessionManager.createSession(false)
 	setJwtCookie(res,token)
-	res.end()
+	res.send("ok")
 
 })
 
