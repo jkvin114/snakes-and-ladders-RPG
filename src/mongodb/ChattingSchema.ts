@@ -32,7 +32,8 @@ const chatRoomJoinStatusSchema=new mongoose.Schema({
         required: true,
         type: Schema.Types.ObjectId,
         ref: "ChatRoom"
-    }
+    },
+    lastSerial:Number
 },{ timestamps: true })
 
 const chatMessageSchema = new mongoose.Schema({
@@ -62,16 +63,12 @@ const chatMessageQueue = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
-    message:{
-        required: true,
-        type: Schema.Types.ObjectId,
-        ref: "ChatMessage"
-    },
     room:{
         required: true,
         type: Schema.Types.ObjectId,
         ref: "ChatRoom"
-    }
+    },
+    lastSerial:Number
 },{ timestamps: true })
 
 const userChatRoomSetting = new mongoose.Schema({

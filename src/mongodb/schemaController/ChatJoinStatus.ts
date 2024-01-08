@@ -20,8 +20,23 @@ export namespace ChatRoomJoinStatusSchema{
     export const findByRoom = function (id: Types.ObjectId|string) {
         return ChatRoomJoinStatus.find({room:id})
     }
-
-    export const findByUserPopulated = async function (id: Types.ObjectId|string) {
+    export const findOne = function(room: Types.ObjectId|string,user:Types.ObjectId|string){
+        return ChatRoomJoinStatus.findOne({user:user,room:room})
+    }
+    /**
+     * update serial number only if current serial is less than the new one.(serial number never decrease)
+     * @param room 
+     * @param user 
+     * @param serial 
+     * @returns 
+     */
+    export const updateLastReadSerial = function (room: Types.ObjectId|string,user:Types.ObjectId|string,serial:number)
+    {
+        return ChatRoomJoinStatus.findOneAndUpdate({user:user,room:room,lastSerial:{$lt:serial}},{
+            lastSerial:serial
+        })
+    }
+    export const findByUserPopulated = async function (id: Types.ObjectId|string){
         return (await ChatRoomJoinStatus.find({user:id}).select("room")
         .populate<{ room:IChatRoom}>("room","name size")).map(u=>u.room)
     }
@@ -29,13 +44,15 @@ export namespace ChatRoomJoinStatusSchema{
         return  (await ChatRoomJoinStatus.find({room:id}).select("user")
         .populate<{ user:SchemaTypes.User}>("user","profileImgDir username email")).map(u=>u.user)
     }
-    export const join = function (room: Types.ObjectId|string,user: Types.ObjectId|string) {
-        return new ChatRoomJoinStatus({
-            user:user,room:room
+    export const join =async function (room: Types.ObjectId|string,user: Types.ObjectId|string) {
+        if(await isUserInRoom(user,room)) return null
+
+        return await new ChatRoomJoinStatus({
+            user:user,room:room,lastSerial:0
         }).save()
     }
     export const left = function (room: Types.ObjectId|string,user: Types.ObjectId|string) {
-        return ChatRoomJoinStatus.findOneAndRemove({
+        return ChatRoomJoinStatus.deleteMany({
             user:user,room:room
         })
     }

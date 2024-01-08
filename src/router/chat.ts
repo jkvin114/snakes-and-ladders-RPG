@@ -123,11 +123,11 @@ router.post("/room/join",loginauth,sessionParser,ControllerWrapper(async functio
  */
 router.post("/room/quit",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
     const roomid = req.body.room
-
+    delete session.currentChatRoom
+    
     let change = await ChatRoomJoinStatusSchema.left(roomid,session.userId)
     if(change){
         await ChatRoomSchema.onUserLeft(roomid)
-        await ChatMessageQueueSchema.onUserLeft(roomid,session.userId)
     }
     else{
         res.status(404).send("invalid room")
