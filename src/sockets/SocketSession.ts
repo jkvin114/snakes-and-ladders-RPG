@@ -15,28 +15,33 @@ export namespace SocketSession {
     }
 	
 	export function getUsername(socket: Socket): string {
-		return getSession(socket).username
+		return getSession(socket)?.username
 	}
 	export function getUserClass(socket: Socket): number {
-		return getSession(socket).isLogined?1:0
+		return getSession(socket)?.isLogined?1:0
 	}
 	export function setTurn(socket: Socket, turn: number) {
-		getSession(socket).turn=turn
+		const session=getSession(socket)
+		if(!session) return
+		session.turn=turn
 	}
 	export function getTurn(socket: Socket): number {
-		return getSession(socket).turn
+		return getSession(socket)?.turn
 	}
 	export function getId(socket: Socket): string {
-		return getSession(socket).id
+		return getSession(socket)?.id
 	}
 	export function setRoomName(socket: Socket, roomname: string) {
-		getSession(socket).roomname=roomname
+		const session=getSession(socket)
+		if(!session) return
+		session.roomname=roomname
 	}
 	export function getRoomName(socket: Socket): string {
-		return getSession(socket).roomname
+		return getSession(socket)?.roomname
 	}
 	export function removeGameSession(socket: Socket) {
 		const session=getSession(socket)
+		if(!session) return
 		delete session.turn 
 		delete session.roomname
 	}

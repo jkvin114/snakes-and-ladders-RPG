@@ -3,6 +3,7 @@ async function main(url) {
 	SERVER_URL = url
 	const socket = io(url, {
 		withCredentials: true,
+        query: { type: "findroom" } 
 	})
 
 	socket.on("connect", function () {

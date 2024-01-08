@@ -24,4 +24,7 @@ export namespace ChatMessageSchema{
     export const findOneFromSerial = function (room:Types.ObjectId|string,serial:number) {
         return ChatMessage.find({serial: serial,room:room})
     }
+    export const findAllBetweenSerial = function (room:Types.ObjectId|string,serialStart:number,serialEnd:number) {
+        return ChatMessage.find({serial: { $ge: serialStart,$le:serialEnd},room:room}).sort({ createdAt: "asc" })
+    }
 }

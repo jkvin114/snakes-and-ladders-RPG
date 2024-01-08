@@ -1,5 +1,5 @@
 
-import { Route, Routes } from "react-router-dom";
+import { Link, Route, Routes } from "react-router-dom";
 import HtmlPage from "./components/HtmlPage";
 import "./index.css"
 import StockGame from "./stockgame/StockGame";
@@ -14,7 +14,7 @@ import EjsPage from "./components/EjsPage";
 import ProfilePage from "./components/pages/Profile";
 import RelationPage from "./components/pages/Relation";
 import { AxiosApi } from "./api/axios";
-import { socket } from "./api/socket";
+import ChatPage from "./components/pages/Chat";
 
 axios.defaults.withCredentials = true; // NEW
 
@@ -72,7 +72,6 @@ function App() {
 		// API.get("/statustest")
 		// .then(res=>console.log(res))
 		// .catch(e=>console.log(e))
-
 		AxiosApi.post("/jwt/init")
 	},[])
 
@@ -92,6 +91,7 @@ function App() {
 			<Route path='/register' element={<RegisterPage/>}></Route> 
 			<Route path='/status' element={<StatusPage/>}></Route> 
 			<Route path='/writepost' element={<BoardPostWrite/>}></Route>
+			<Route path='/chat' element={<ChatPage/>}></Route>
 
 			<Route path='/user/:username' element={<ProfilePage/>}></Route>
 			<Route path='/user/' element={<ProfilePage/>}></Route>
@@ -116,7 +116,7 @@ function App() {
 
 		</Routes>
 		<div>
-
+		
 		</div>
 		{/* <StockGame/> */}
 	</>

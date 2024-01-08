@@ -1,7 +1,7 @@
 import mongoose, { InferSchemaType, Schema } from "mongoose";
 
 const notificationSchema=new mongoose.Schema({
-    target:{
+    receiver:{
         required: true,
         type: Schema.Types.ObjectId,
         ref: "User"
@@ -18,13 +18,15 @@ const notificationSchema=new mongoose.Schema({
     url:{
         type: String,
     },
-    payload:[String]
+    payload1:mongoose.Schema.Types.Mixed,
+    payload2:mongoose.Schema.Types.Mixed,
+    payload3:mongoose.Schema.Types.Mixed,
+    payload4:mongoose.Schema.Types.Mixed,
+    payload5:mongoose.Schema.Types.Mixed,
 })
 
 const Notification = mongoose.model("Notification", notificationSchema)
 
 type INotification = InferSchemaType<typeof notificationSchema>;
-notificationSchema.statics.create=function(data:INotification){
-    return (new Notification(data)).save()
-}
+
 export {Notification,INotification}

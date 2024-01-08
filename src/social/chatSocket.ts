@@ -6,6 +6,11 @@ module.exports=function(socket:Socket){
 
         const session =  SocketSession.getSession(socket)
 	    console.log(session)
-        console.log('disconnect')
+        console.log('disconnected from '+socket.data.type)
+        if(socket.data.type==="chat"){
+            delete session.currentChatRoom
+        }
     })
+
+
 }

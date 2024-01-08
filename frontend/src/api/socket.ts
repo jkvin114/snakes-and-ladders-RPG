@@ -3,8 +3,8 @@ import { backend_url } from "../variables"
 
 export const socket = io(backend_url,
     {
-        autoConnect: true,
-        withCredentials: true
-        
-      });
+        autoConnect: false,
+        withCredentials: true,
+        query: { type: "home" } 
+});
 

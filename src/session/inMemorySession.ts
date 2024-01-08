@@ -15,6 +15,7 @@ export interface ISession{
     turn?:number
     ip?:string
     status?:string
+    currentChatRoom?:string
 }
 const SessionStore = new Map<string,ISession>()
 const SessionIds = new Map<string,string>() //session id => user id
@@ -30,10 +31,10 @@ export namespace SessionManager{
      * create a new session and return a jwt containing session id
      * @returns 
      */
-    export function createSession(login:boolean){
+    export function createSession(){
         
         const id = uuidv4()
-        SessionStore.set(id,{id:id,isLogined:login,time:new Date()})
+        SessionStore.set(id,{id:id,isLogined:false,time:new Date()})
         return getNewJwt(id)
     }
     export function getSessionById(id:string):ISession{

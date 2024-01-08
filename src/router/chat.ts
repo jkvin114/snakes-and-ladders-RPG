@@ -13,13 +13,15 @@ import mongoose from "mongoose"
 import { UserSchema } from "../mongodb/schemaController/User"
 import { ChatMessageQueueSchema } from "../mongodb/schemaController/ChatMessageQueue"
 import { ObjectId } from 'bson'
+import { ChatMessageSchema } from "../mongodb/schemaController/ChatMessage"
 
+const MAX_MESSAGE_FETCH = 20
 
 /**
  * return list of rooms (id,name) that the user is in
  */
 router.get("/rooms",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
-   const rooms = (await ChatRoomJoinStatusSchema.findByUserPopulated(session.userId)).map(r=>r.room)
+   const rooms = await ChatRoomJoinStatusSchema.findByUserPopulated(session.userId)
    res.json(rooms)
 }))
 
@@ -30,10 +32,36 @@ router.get("/rooms",loginauth,sessionParser,ControllerWrapper(async function(req
  */
 router.get("/users/:roomid",sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
     const roomid = req.params.roomid
-    const users = (await ChatRoomJoinStatusSchema.findByRoomPopulated(roomid)).map(r=>r.user)
+    const users = await ChatRoomJoinStatusSchema.findByRoomPopulated(roomid)
     res.json(users)
  }))
  
+ /**
+  * fetch messages until serial from (serial - MAX_FETCH_SIZE)
+  */
+ router.get("/message/:roomid",sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
+    const roomid = req.params.roomid
+    const room = await ChatRoomSchema.findById(roomid)
+    if(!room){
+        res.status(404).send("invalid room")
+        return   
+    }
+    if(!req.query.serial){
+        const messages = await ChatMessageSchema.findAllFromSerial(roomid,room.serial - MAX_MESSAGE_FETCH)
+        res.json(messages)
+        return
+    }
+    
+    let serial =  Number(req.query.serial)
+    if( isNaN(serial)){
+        res.status(400).send("invalid serial number")
+        return   
+    }
+    const messages = await ChatMessageSchema.findAllBetweenSerial(roomid,serial - MAX_MESSAGE_FETCH ,serial)
+    res.json(messages)
+ }))
+
+
 /**
  * create a room using a list of usernames. those users will be joined to this room
  * 
@@ -77,7 +105,7 @@ router.post("/room/join",loginauth,sessionParser,ControllerWrapper(async functio
     const roomid = req.body.room
     if(!await ChatRoomSchema.findById(roomid))
     {
-        res.status(204).send("invalid room")
+        res.status(404).send("invalid room")
         return
     }
     if(await ChatRoomJoinStatusSchema.isUserInRoom(session.userId,roomid)){
@@ -102,7 +130,7 @@ router.post("/room/quit",loginauth,sessionParser,ControllerWrapper(async functio
         await ChatMessageQueueSchema.onUserLeft(roomid,session.userId)
     }
     else{
-        res.status(204).send("invalid room")
+        res.status(404).send("invalid room")
     }
 }))
 

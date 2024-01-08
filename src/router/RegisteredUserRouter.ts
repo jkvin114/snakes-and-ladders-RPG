@@ -194,7 +194,15 @@ router.post("/current", async function (req: express.Request, res: express.Respo
  */
 router.post("/login", async function (req: express.Request, res: express.Response) {
 	let body = req.body
-	const session = SessionManager.getSession(req)
+	let session = SessionManager.getSession(req)
+
+	//create new session if session is not initialized
+	if(!session){
+		let token = SessionManager.createSession()
+		setJwtCookie(res,token)
+		session = SessionManager.getSession(req)
+	}
+
 	try {
 		let user = await UserSchema.findOneByUsername(body.username)
 		if (!user) {
@@ -208,7 +216,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 		}
 		if (session) {
 			SessionManager.login(req,String(user._id))
-			session.username = body.username
+			session.username = user.username
 
 			if (user.boardData == null) {
 				console.log("added board data")

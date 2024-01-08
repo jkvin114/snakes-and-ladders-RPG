@@ -21,11 +21,13 @@ export namespace ChatRoomJoinStatusSchema{
         return ChatRoomJoinStatus.find({room:id})
     }
 
-    export const findByUserPopulated = function (id: Types.ObjectId|string) {
-        return ChatRoomJoinStatus.find({user:id}).select("room").populate<{ room:IChatRoom}>("room","name size")
+    export const findByUserPopulated = async function (id: Types.ObjectId|string) {
+        return (await ChatRoomJoinStatus.find({user:id}).select("room")
+        .populate<{ room:IChatRoom}>("room","name size")).map(u=>u.room)
     }
-    export const findByRoomPopulated = function (id: Types.ObjectId|string) {
-        return ChatRoomJoinStatus.find({room:id}).select("user").populate<{ user:SchemaTypes.User}>("user","profileImgDir username email")
+    export const findByRoomPopulated = async function (id: Types.ObjectId|string) {
+        return  (await ChatRoomJoinStatus.find({room:id}).select("user")
+        .populate<{ user:SchemaTypes.User}>("user","profileImgDir username email")).map(u=>u.user)
     }
     export const join = function (room: Types.ObjectId|string,user: Types.ObjectId|string) {
         return new ChatRoomJoinStatus({

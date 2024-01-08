@@ -52,13 +52,11 @@ declare module 'express' {
 }
 
 
-
-
 const clientPath = `${__dirname}/../public`
 const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 5000
 const app = express()
-
+const ORIGIN = "http://localhost:3000"
 //temp ==============================
 
 /*
@@ -80,9 +78,9 @@ redisClient.connect().then(()=>{
 //==============================================
 
 app.use(session)
-app.use(cors({credentials: true, origin: 'http://localhost:3000'}))
+app.use(cors({credentials: true, origin: ORIGIN}))
 app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+	res.setHeader('Access-Control-Allow-Origin', ORIGIN);
 	res.setHeader('Access-Control-Allow-Credentials', "true");
 	res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
 
@@ -141,7 +139,7 @@ function errorHandler(err: any, req: any, res: any, next: any) {
 
 export const io = new Server(httpserver, {
 	cors: {
-		origin: "http://localhost:3000",
+		origin: ORIGIN,
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		credentials: true
 	},
@@ -155,25 +153,53 @@ io.use((socket, next) => {
 	session(req, res, next as express.NextFunction)
 })
 
+io.use((socket, next) => {
+
+	try{
+		socket.data.sessionId = SocketSession.getId(socket)
+		const session =  SessionManager.getSessionById(socket.data.sessionId)
+		if(!session) {
+			throw new Error("invalid session for socket id:"+socket.id)
+		}
+		if(!socket.handshake.query || !socket.handshake.query.type){
+			throw new Error("No connection type provided! socket id:"+socket.id)
+		}
+		
+		socket.data.type = socket.handshake.query.type
+	
+		next()
+	}
+	catch(e){
+		console.error(e)
+	}
+	
+});
+
+  
 io.on("listen", function () {
 	console.log("listen to socket")
 })
 io.on("error", function (e: any) {
-	console.log(e)
+	console.error(e)
 })
 
 
 
 io.on("connection", function (socket: Socket) {
 	console.log(`${socket.id} is connected`)
-
-	const session =  SocketSession.getSession(socket)
-	console.log(session)
-
+	console.log(socket.data.type)
+	const session =  SessionManager.getSessionById(socket.data.sessionId)
+	session.status="online"
+	
 	// require("./sockets/RoomSocket")(socket)
 	// require("./sockets/RpgRoomSocket")(socket)
 	// require("./Marble/MarbleRoomSocket")(socket)
 	require("./social/chatSocket")(socket)
+
+	socket.on("disconnect",function(){
+		const session =  SessionManager.getSessionById(socket.data.sessionId)
+		delete session.status
+	})
 })
 
 
@@ -208,7 +234,7 @@ app.post("/jwt/init",function(req:express.Request, res:express.Response){
 	if(req.cookies && SessionManager.isValid(req)){
 		return res.status(204).send("ok")
 	}
-	let token = SessionManager.createSession(false)
+	let token = SessionManager.createSession()
 	setJwtCookie(res,token)
 	res.send("ok")
 
