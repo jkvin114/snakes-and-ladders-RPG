@@ -1,0 +1,84 @@
+import { useEffect, useState } from "react"
+import { AxiosApi } from "../../api/axios"
+import "../../styles/marblestat.scss"
+import { RiTrophyFill, RiZoomInLine } from "react-icons/ri"
+
+export default function MarbleStatPage() {
+	function getWinType(win: string) {
+		let wintype = "파산"
+		if (win === "triple") wintype = "트리플 독점"
+		if (win === "line") wintype = "라인 독점"
+		if (win === "sight") wintype = "관광지 독점"
+		return wintype
+	}
+	function getMapName(map: string) {
+		if (map === "god_hand") return "신의손"
+		return "월드맵"
+	}
+
+	const [games, setGames] = useState<any[]>([])
+	useEffect(() => {
+		AxiosApi.get("/stat/marble/all").then((res) => setGames(res.data))
+	}, [])
+	return (
+		<div id="marble-stat-root">
+            <h1>모두의마블 대전기록</h1>
+            <div id="stat-container">
+			{games.map((stats) => {
+				const winner = stats.players[stats.winner]
+				let idx = [0, 1, 2, 3]
+				let total = stats.players.length
+				return (
+
+					<div className="stat-game" key={stats._id}>
+						<div className="stat-win">
+							{getWinType(stats.winType)} 승리
+							<a style={{ color: "white" }}>{getMapName(stats.map)}</a>
+							<a>{new Date(stats.createdAt).toLocaleString()}</a>
+						</div>
+						<div className="stat-player-container">
+							<div className="stat-player winner">
+								<div className="stat-player-name">
+                                    <RiTrophyFill  style={{color:"gold"}}/>
+									{winner.name ? winner.name : stats.winner + 1 + "P"}
+								</div>
+								<div className="stat-player-score">{winner.score}</div>
+								<div>
+									<div className="stat-player-detail-btn" data-game={stats._id} data-player={stats.winner}>
+                                    <RiZoomInLine />
+
+									</div>
+								</div>
+							</div>
+							{idx.map((i: number) => {
+								if (i === stats.winner) return <></>
+								const player = stats.players[i]
+								if (i < total)
+									return (
+										<div className="stat-player" key={i}>
+											<div className="stat-player-name">{player.name ? player.name : i + 1 + "P"}</div>
+											<div className="stat-player-score">{player.score}</div>
+											<div>
+												<div className="stat-player-detail-btn" data-game={stats._id} data-player={i}>
+                                                <RiZoomInLine />
+
+												</div>
+											</div>
+										</div>
+									)
+								else
+									return (
+										<div className="stat-player" key={i}>
+											<div className="stat-player-name">&nbsp;</div>
+											<div className="stat-player-score"> &nbsp;</div>
+											<div></div>
+										</div>
+									)
+							})}
+						</div>
+					</div>
+				)
+			})}</div>
+		</div>
+	)
+}

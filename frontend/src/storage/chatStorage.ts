@@ -2,16 +2,18 @@ import { IChatMessage, IChatUser } from "../types/chat"
 
 export namespace ChatStorage{
     export function maxSerial(roomId:string){
+        if(!roomId) return 0
         let maxSerial = localStorage.getItem(`chat-${roomId}-serial-max`)
         let max = maxSerial?Number(maxSerial):0
+        console.log(max)
         return max
     }
-    export function storeMessage(roomId:string,message:IChatMessage,user:IChatUser){
-        
+    export function storeMessage(roomId:string,message:IChatMessage){
+        if(!roomId) return 
         localStorage.setItem(`chat-${roomId}-${message.serial}`,JSON.stringify({
             message:message.message,
-            username:user.username,
-            profileImgDir:user.profileImgDir,
+            username:message.username,
+            profileImgDir:message.profileImgDir,
             createdAt:message.createdAt,
             serial:message.serial
         } as IChatMessage))
@@ -28,6 +30,8 @@ export namespace ChatStorage{
     }
 
     export function iterateStoredMsg(roomId:string,func:(msgobj:IChatMessage|null,unread:string|null,i:number)=>void,from?:number,to?:number){
+        if(!roomId) return 
+
         let minSerial = localStorage.getItem(`chat-${roomId}-serial-min`)
         let maxSerial = localStorage.getItem(`chat-${roomId}-serial-max`)
         let min = minSerial?Number(minSerial):0
@@ -74,6 +78,7 @@ export namespace ChatStorage{
         return messages
     }
     export function decrementUnread(roomId:string,from:number){
+        if(!roomId) return 
         iterateStoredMsg(roomId,(msg,u,i)=>{
             let unread = localStorage.getItem(`chat-${roomId}-${i}-unread`)
             if(unread && !isNaN(Number(unread))){

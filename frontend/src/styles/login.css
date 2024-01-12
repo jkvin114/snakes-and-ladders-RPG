@@ -2,9 +2,9 @@
 .signin
 {
     position: absolute;
-    width: 400px;
+    width: min(400px,80vw);
     background: var(--col-bg-light);  
-    z-index: 1000;
+    /* z-index: 1; */
     display: flex;
     justify-content: center;
     align-items: center;

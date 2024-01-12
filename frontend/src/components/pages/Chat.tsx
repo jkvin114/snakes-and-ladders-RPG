@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { AxiosApi } from "../../api/axios"
 import { Link, useSearchParams } from "react-router-dom"
-import { socket } from "../../api/socket"
 import { IChatMessage, IChatRoom, IChatUser } from "../../types/chat"
 import ChatRoom from "../chat/ChatRoom"
 
@@ -12,7 +11,6 @@ export default function ChatPage(){
     const [searchParams, setSearchParams]  = useSearchParams()
     const [roomId,setRoomId] = useState<string|null>(searchParams.get("room"))
     useEffect(()=>{
-        socket.connect()
         AxiosApi.get("/chat/rooms")
         .then(res=>{
             console.log(res.data)

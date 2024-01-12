@@ -1,0 +1,28 @@
+#topbar{
+    display: none;
+    @media only screen and (max-width: 768px) {
+        display: flex;
+    }
+    background-color: var(--col-bg-dark);
+    height: 35px;
+    // display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+
+    svg{
+        width: 30px;
+        height:30px;
+        margin-left: 10px;
+        margin-right: 10px;
+        cursor: pointer;
+        color: var(--col-font-light);
+    }
+    >div{
+        display:inline-block ;
+        height:30px;
+    }
+    img{
+        height:30px;
+    }
+}

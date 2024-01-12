@@ -15,11 +15,16 @@ body {
 	font-family: 'Pretendard-Regular';
 	--col-primary:#7e00bf;
 	--col-primary-light:#a438e4;
+	--col-secondary:#e11900;
+	--col-secondary-light:#f05b47;
+	--col-bg-dark:#10101e;
 	--col-bg:#1e1e2f;
 	--col-bg-light:hsl(240, 22%, 20%);
 	--col-bg-lighter:hsl(240, 22%, 25%);
 
 	--col-font:rgb(239, 239, 239);
+	--col-font-dim:rgb(216, 216, 216);
+
 	--col-font-light:rgb(130, 130, 130);
 	color: var(--col-font);
 	background-color: var(--col-bg);
@@ -34,6 +39,22 @@ body {
 	left: 0;
 	background-color: var(--col-bg);
 	z-index: 9999;
+}
+#rawhtml{
+	max-height: 100vh;
+	overflow: auto;
+}
+#page-root{
+	display: grid;
+	grid-template-columns: 50px auto;
+}
+
+@media only screen and (max-width: 768px) {
+	#page-root{
+		display: block;
+	}
+	
+
 }
 .divlink{
 	position: relative;
@@ -69,3 +90,4 @@ a.divlink{
 .button:hover{
 	filter: brightness(0.7);
   }
+  

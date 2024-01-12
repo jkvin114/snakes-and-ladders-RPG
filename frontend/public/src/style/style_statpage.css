@@ -18,7 +18,7 @@ body {
     overflow-y: hidden;
     overflow-x: hidden;
 }
-#root{
+#stat-root{
     scroll-behavior: smooth;
     position: absolute;
     top:0;
@@ -1373,20 +1373,6 @@ transform: scale(1.1);
   #sidebarbtn{
       /* visibility: collapse; */
   }
-  #sidebar{
-    top:46px;
-      /* visibility: hidden; */
-      position: fixed;
-      left: -150px;
-      width: min(30%,150px);
-      height: 100vh;
-      /* background-color: rgba(214, 214, 214, 0.85); */
-      background: #31313C;
-    display: flex;
-    flex-direction: column;
-    /* position:sticky; */
-    z-index: 4;
-  }
   /* #close_sidebar{
       position: absolute;
       right: 10px;
@@ -1549,7 +1535,7 @@ transform: scale(1.1);
     .detailbtn{
         /* height: 33px; */
     }
-    #root{
+    #stat-root{
         overflow: hidden;
     }
 }

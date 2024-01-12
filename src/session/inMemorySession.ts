@@ -22,6 +22,9 @@ const SessionIds = new Map<string,string>() //session id => user id
 
 export namespace SessionManager{
 
+    export function hasSession(userId:string){
+        return SessionIds.has(userId)
+    }
     export function getSessionByUserId(userId:string):ISession|undefined{
         const id = SessionIds.get(userId)
         if(!id) return undefined

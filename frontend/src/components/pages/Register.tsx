@@ -2,6 +2,7 @@ import { useContext, useState } from "react"
 import "../../styles/login.css"
 import { RiArrowLeftLine, RiErrorWarningFill } from "react-icons/ri"
 import { backend_url } from "../../variables"
+import { Link } from "react-router-dom"
 
 export function RegisterPage() {
 
@@ -74,7 +75,7 @@ export function RegisterPage() {
 	return (
 		<>
 			<div className="signin" onKeyDown={handleKeyPress}>
-            <a className="back" href="/"><RiArrowLeftLine  /></a>
+            <Link to="/" className="back"><RiArrowLeftLine  /> </Link>
 
 				<div className="content">
 					<h2>Register</h2>
@@ -100,7 +101,7 @@ export function RegisterPage() {
 						<div className="links">
                             {error!=="" && (<i id="login-error"><RiErrorWarningFill /> {error}</i>)}
                             <br></br>
-							<a href="/login">Login</a>
+                            <Link to={"/login"}>Login</Link>
 						</div>
 
 						<div className="inputBox">

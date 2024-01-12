@@ -1,13 +1,14 @@
 import { useContext, useState } from "react"
 import "../../styles/login.css"
 import { RiArrowLeftLine, RiErrorWarningFill } from "react-icons/ri"
-import { useParams, useSearchParams } from "react-router-dom"
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { backend_url } from "../../variables"
 import axios from "axios"
 export function LoginPage() {
 
 
     const [error,setError] =useState("")
+    const navigate = useNavigate()
 
     let [searchParams, setSearchParams] = useSearchParams()
     const redirect=searchParams.get("redirect")
@@ -59,7 +60,7 @@ export function LoginPage() {
 	return (
 		<>
 			<div className="signin" onKeyDown={handleKeyPress}>
-                <a className="back" href="/"><RiArrowLeftLine  /></a>
+                <Link to="/" className="back"><RiArrowLeftLine  /> </Link>
 				<div className="content">
 					<h2>Log In</h2>
 
@@ -76,7 +77,8 @@ export function LoginPage() {
 
 						<div className="links">
                             {error!=="" && (<i id="login-error"><RiErrorWarningFill /> {error}</i>)}
-                            <br></br><a href="/register">Register</a>
+                            <br></br>
+                            <Link to={"/register"}>Register</Link>
 							{/* <a href="#">Forgot Password</a> <a href="#">Signup</a> */}
 						</div>
 

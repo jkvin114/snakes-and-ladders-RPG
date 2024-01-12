@@ -156,8 +156,9 @@ io.use((socket, next) => {
 io.use((socket, next) => {
 
 	try{
-		socket.data.sessionId = SocketSession.getId(socket)
-		const session =  SessionManager.getSessionById(socket.data.sessionId)
+		const session =  SessionManager.getSessionById(SocketSession.getId(socket))
+		socket.data.session=session
+
 		if(!session) {
 			throw new Error("invalid session for socket id:"+socket.id)
 		}
@@ -188,7 +189,7 @@ io.on("error", function (e: any) {
 io.on("connection", function (socket: Socket) {
 	console.log(`${socket.id} is connected`)
 	console.log(socket.data.type)
-	const session =  SessionManager.getSessionById(socket.data.sessionId)
+	const session =  socket.data.session
 	session.status="online"
 	
 	// require("./sockets/RoomSocket")(socket)
@@ -197,7 +198,7 @@ io.on("connection", function (socket: Socket) {
 	require("./social/chatSocket")(socket)
 
 	socket.on("disconnect",function(){
-		const session =  SessionManager.getSessionById(socket.data.sessionId)
+		const session = socket.data.session
 		delete session.status
 	})
 })

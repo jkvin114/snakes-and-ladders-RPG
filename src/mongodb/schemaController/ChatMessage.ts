@@ -19,12 +19,12 @@ export namespace ChatMessageSchema{
         return ChatMessage.findById(id)
     }
     export const findAllFromSerial = function (room:Types.ObjectId|string,serialStart:number) {
-        return ChatMessage.find({serial: { $ge: serialStart},room:room}).sort({ createdAt: "asc" })
+        return ChatMessage.find({serial: { $gte: serialStart},room:room}).sort({ createdAt: "asc" })
     }
     export const findOneFromSerial = function (room:Types.ObjectId|string,serial:number) {
         return ChatMessage.find({serial: serial,room:room})
     }
     export const findAllBetweenSerial = function (room:Types.ObjectId|string,serialStart:number,serialEnd:number) {
-        return ChatMessage.find({serial: { $ge: serialStart,$le:serialEnd},room:room}).sort({ createdAt: "asc" })
+        return ChatMessage.find({serial: { $gte: serialStart,$lte:serialEnd},room:room}).sort({ createdAt: "asc" })
     }
 }
