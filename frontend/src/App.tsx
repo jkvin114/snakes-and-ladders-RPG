@@ -71,6 +71,15 @@ function App() {
 		// .then(res=>console.log(res))
 		// .catch(e=>console.log(e))
 		AxiosApi.post("/jwt/init")
+		if(localStorage.getItem("username") != null)
+			AxiosApi.post("/user/current")
+			.then(res=>{
+				if (res.data === "") {
+					localStorage.removeItem("username")
+					localStorage.removeItem("loggedin")
+					window.location.reload()
+				}
+			})
 	}, [])
 
 	function logout() {
@@ -82,7 +91,21 @@ function App() {
 			.catch((e) => console.error(e))
 	}
 	const [navbarOpen,setNavbarOpen]=useState(false)
+	function printsession(){
+		AxiosApi.get("/session")
+		.then(res=>console.log(res.data))
+	}
+	function closeNavbar(){
+		setNavbarOpen(false)
+	}
+	function clearChatCache(){
+		Object.keys(localStorage)
+		.filter(x =>
+			x.startsWith('chat-'))
+		.forEach(x => 
+			localStorage.removeItem(x))
 
+	}
 	return (
 		<>
 			
@@ -90,6 +113,9 @@ function App() {
 				<SideBar isOpen={navbarOpen} openNavbar={setNavbarOpen}/>
 				<div>
 					<TopBar openNavbar={setNavbarOpen}/>
+					<div onClick={closeNavbar}>
+
+					
 					<Routes>
 						<Route path="/" element={<HomePage/>}></Route>
 						<Route path="/stockgame" element={<StockGame />}></Route>
@@ -115,13 +141,16 @@ function App() {
 							<Route path="/board/:arg1/:arg2/:arg3" element={<EjsPage />}></Route>
 							<Route path="/board/:arg1/:arg2/:arg3/:arg4" element={<EjsPage />}></Route>
 						</Route>
-
-						
 						<Route path="/spectate" element={<HtmlPage htmlPath="spectate" />}></Route>
 						<Route path="/stat" element={<HtmlPage htmlPath="stat" />}></Route>
 						<Route path="/find_room" element={<HtmlPage htmlPath="find_room" />}></Route>
 					</Routes>
+					</div>
+					<button onClick={printsession}>session</button>
+				<button onClick={clearChatCache}>clear chat</button>
 				</div>
+				
+
 				{/* <StockGame/> */}
 			</div>
 		</>

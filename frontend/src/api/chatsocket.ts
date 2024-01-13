@@ -2,28 +2,25 @@ import { Socket, io } from "socket.io-client"
 
 import { backend_url } from "../variables"
 
-export function createChatSocket(): [
-	Socket,
-	(roomid: string, lastSerial: number) => void,
-	(roomid: string) => void,
-	(roomid: string, message: string) => void
-] {
-	const socket = io(backend_url, {
+export namespace ChatSocket{
+	export const Socket = io(backend_url, {
 		autoConnect: true,
 		withCredentials: true,
 		query: { type: "chat" },
 	})
-    socket.on("connect",()=>{
-        console.log("hon")
-    })
-	function joinRoom(roomid: string, lastSerial: number) {
-		socket.emit("user:chat:enter", roomid, lastSerial)
+	console.log("init")
+	export function joinRoom(roomid: string, lastSerial: number) {
+		Socket.emit("user:chat:enter", roomid, lastSerial)
 	}
-	function leaveRoom(roomid: string) {
-		socket.emit("user:chat:leave", roomid)
+	export function leaveRoom(roomid: string) {
+		Socket.emit("user:chat:leave", roomid)
+		
 	}
-	function sendChat(roomid: string, message: string) {
-		socket.emit("user:chat:message", roomid, message)
+	export function sendChat(roomid: string, message: string) {
+		Socket.emit("user:chat:message", roomid, message)
 	}
-	return [socket, joinRoom, leaveRoom, sendChat]
+	export function on(name:string,func:(...args:any[])=>void){
+		Socket.removeAllListeners(name);
+		Socket.on(name,func)
+	}
 }

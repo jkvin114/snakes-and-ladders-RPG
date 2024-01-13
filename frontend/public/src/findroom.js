@@ -1,14 +1,14 @@
 let SERVER_URL = ""
 async function main(url) {
 	SERVER_URL = url
-	const socket = io(url, {
-		withCredentials: true,
-        query: { type: "findroom" } 
-	})
+	// const socket = io(url, {
+	// 	withCredentials: true,
+	//     query: { type: "findroom" }
+	// })
 
-	socket.on("connect", function () {
-		console.log("socket")
-	})
+	// socket.on("connect", function () {
+	// 	console.log("socket")
+	// })
 
 	$("#refreshbtn").click(function () {
 		getRooms()

@@ -66,7 +66,7 @@ Create Room</a></li>
           <a className="menu-item"><RiTeamFill /><b className="menu-name">Social</b></a>
             <ul className="sub-menu">
               <li className="sub-menu-item"><Link to="/"><RiNewspaperFill />Newsfeed</Link></li>
-              <li className="sub-menu-item"><Link to="/"><RiMessage2Fill/>Chat</Link></li>
+              <li className="sub-menu-item"><Link to="/chat"><RiMessage2Fill/>Chat</Link></li>
             </ul>
           </li>
           <li>

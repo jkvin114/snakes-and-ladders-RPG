@@ -71,7 +71,7 @@ router.post("/room",loginauth,sessionParser,ControllerWrapper(async function(req
     let body = req.body
     let users = body.users
     const room = await ChatRoomSchema.create(session.userId,body.name)
-
+ 
 
     await ChatRoomJoinStatusSchema.join(room._id,session.userId)
     await ChatRoomSchema.onUserJoin(room._id)

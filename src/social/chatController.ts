@@ -6,6 +6,7 @@ import { ChatRoomJoinStatusSchema } from "../mongodb/schemaController/ChatJoinSt
 import { ISession, SessionManager } from "../session/inMemorySession"
 import { NotificationSchema } from "../mongodb/schemaController/Notification"
 import { NotificationController } from "./notificationController"
+import { ChatMessageModel } from "../router/ResponseModel"
 
 
 export function ChatControllerWrapper(socket:Socket,eventname:string,controller:(socket:Socket,session:ISession,...args:any[])=>Promise<void>){
@@ -26,7 +27,7 @@ export function ChatControllerWrapper(socket:Socket,eventname:string,controller:
 
 		controller(socket,session,...args)
 		.then(()=>{
-			console.log(eventname+" success!")
+			// console.log(eventname+" success!")
 		})
 		.catch((e:Error)=>{
             console.error(e)
@@ -42,6 +43,7 @@ export function ChatControllerWrapper(socket:Socket,eventname:string,controller:
 export namespace ChatController {
 	const ROOM_NAME_PREFIX = "chatroom:"
 	const MAX_MESSAGE_FETCH = 20
+	const notify=false
 	export async function sendMessage(socket: Socket,session:ISession, roomId: string, message: string) {
 		const sender = await UserCache.getUser(session.userId)
 		const room = await ChatRoomSchema.findById(roomId)
@@ -52,39 +54,48 @@ export namespace ChatController {
 		}
 
 		let serial = await ChatRoomSchema.getSerial(roomId) + 1
-		ChatMessageSchema.create(roomId, session.userId, message, serial)
-		ChatRoomSchema.onPostMessage(roomId)
+		let messageObj = await ChatMessageSchema.create(roomId, session.userId, message, serial)
+		ChatRoomSchema.onPostMessage(roomId).then()
 
 		let status = await ChatRoomJoinStatusSchema.findByRoom(roomId)
 		let unreadCount = 0
 		for (const member of status) {
 			let memberId = String(member.user)
+			//read
 			if (memberId === session.userId || (SessionManager.hasSession(memberId) && SessionManager.getSessionByUserId(memberId).currentChatRoom === roomId))
 			{
-				ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,memberId,serial)
+				ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,memberId,serial).then()
+				//console.log(SessionManager.getSessionByUserId(memberId).username + " read chat")
 			}
-			unreadCount++
-			//post notifications for unread users
-			NotificationController.notifyChat(memberId,roomId,message,serial)
+			else{
+				//unread
+				unreadCount++
+				
+				//post notifications for unread users
+				if(notify)
+					NotificationController.notifyChat(memberId,roomId,message,serial).then()
+			}
+			
 		}
-
 		socket.broadcast.to(ROOM_NAME_PREFIX + roomId).emit("chat:message_received", {
-			sender: sender,
-			message: message,
+			username: sender.username,
+			content: message,
 			serial: serial,
-			unreadCount:unreadCount
-		})
+			unread:unreadCount,
+			createdAt:messageObj.createdAt.toISOString()
+		} as ChatMessageModel)
 
 		socket.emit("chat:message_sent", {
-			sender: sender,
-			message: message,
+			username: sender.username,
+			content: message,
 			serial: serial,
-			unreadCount:unreadCount
-		})
+			unread:unreadCount,
+			createdAt:messageObj.createdAt.toISOString()
+		} as ChatMessageModel)
 
 	}
 
-	export async function enterRoom(socket: Socket,session:ISession, roomId: string, lastSerial?: number) {
+	export async function enterRoom(socket: Socket,session:ISession, roomId: string, lastSerial: number) {
 		const receiver = await UserCache.getUser(session.userId)
 		const room = await ChatRoomSchema.findById(roomId)
 		const currentSerial = room.serial
@@ -94,24 +105,40 @@ export namespace ChatController {
 		}
 		socket.join(ROOM_NAME_PREFIX + roomId)
 		const status = await ChatRoomJoinStatusSchema.findOne(roomId,session.userId)
-		const serverLastSerial = status.lastSerial?status.lastSerial:0
+		const serverLastSerial = status.lastSerial?(status.lastSerial):0
 
-		const targetSerial = Math.min(serverLastSerial,lastSerial)
-		console.log(targetSerial)
+		const targetSerial = Math.min(serverLastSerial,lastSerial)+1
 		let messageFromSerial = await ChatMessageSchema.findAllFromSerial(
 			roomId,
 			Math.max(targetSerial, currentSerial - MAX_MESSAGE_FETCH)
 		)
 		
-		NotificationSchema.consumeChat(session.userId, roomId)
-		ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,session.userId,currentSerial)
+		
+		if(notify)
+			NotificationSchema.consumeChat(session.userId, roomId).then()
+
+		ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,session.userId,currentSerial).then()
 
 		let userLastSerials = (await ChatRoomJoinStatusSchema.findByRoom(roomId)).map(d=>d.lastSerial)
 		session.currentChatRoom = roomId
+
+		let messages:ChatMessageModel[] = []
+
+		for(const msg of messageFromSerial){
+			let username = (await UserCache.getUser(msg.sender)).username
+			messages.push({
+				username:username,
+				content: msg.content,
+				serial: msg.serial,
+				createdAt:msg.createdAt.toISOString(),
+				unread:0
+			} )
+		}
+
 		
 		socket.emit("chat:joined_room", {
 			room: room,
-			messages:messageFromSerial,
+			messages:messages,
 			userLastSerials:userLastSerials
 		})
 		socket.broadcast.emit("chat:user_join",{

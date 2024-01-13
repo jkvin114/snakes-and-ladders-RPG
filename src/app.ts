@@ -230,6 +230,10 @@ app.get("/jwt/verify",function(req:express.Request, res:express.Response){
 	res.json({isVaild:valid})
 })	
 
+app.get("/session",function(req:express.Request, res:express.Response){
+	let session = SessionManager.getSession(req)
+	res.json(session).end()
+})	
 app.post("/jwt/init",function(req:express.Request, res:express.Response){
 
 	if(req.cookies && SessionManager.isValid(req)){

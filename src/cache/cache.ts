@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { UserSchema } from "../mongodb/schemaController/User";
+import { User } from "../mongodb/UserDBSchema";
 
 
 
@@ -28,5 +29,8 @@ export namespace UserCache{
             email:user.email
         })
         return userCache.get(String(id))
+    }
+    export function invalidate(id:string|mongoose.Types.ObjectId){
+        userCache.delete(String(id))
     }
 }

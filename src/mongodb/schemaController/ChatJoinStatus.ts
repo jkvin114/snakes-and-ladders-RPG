@@ -32,7 +32,7 @@ export namespace ChatRoomJoinStatusSchema{
      */
     export const updateLastReadSerial = function (room: Types.ObjectId|string,user:Types.ObjectId|string,serial:number)
     {
-        return ChatRoomJoinStatus.findOneAndUpdate({user:user,room:room,lastSerial:{$lt:serial}},{
+        return ChatRoomJoinStatus.findOneAndUpdate({user:user,room:room,$or: [{ lastSerial: { $lt: serial } }, { lastSerial: { $exists: false } }]},{
             lastSerial:serial
         })
     }

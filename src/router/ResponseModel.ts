@@ -14,3 +14,10 @@ export interface IFollow{
     email:string
     isMyFollowing?:boolean
 }
+export interface ChatMessageModel{
+    username?:string
+    content?:string
+    serial:number
+    createdAt?:string
+    unread:number
+}

@@ -12,8 +12,8 @@ export interface IChatUser{
 export interface IChatMessage{
     profileImgDir?:string
     username?:string
-    message?:string
+    content?:string
     serial:number
     createdAt?:string
-    unread:string|null
+    unread:number
 }
