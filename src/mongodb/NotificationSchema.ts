@@ -23,7 +23,17 @@ const notificationSchema=new mongoose.Schema({
     payload3:mongoose.Schema.Types.Mixed,
     payload4:mongoose.Schema.Types.Mixed,
     payload5:mongoose.Schema.Types.Mixed,
-})
+    read:{//true if user saw and clicked the notification 
+        type:Boolean,
+        required:true,
+        default:false
+    },
+    accessed:{
+        type:Boolean,  //true if accessed by client`s poll request
+        required:true,
+        default:false
+    },
+},{timestamps:true})
 
 const Notification = mongoose.model("Notification", notificationSchema)
 

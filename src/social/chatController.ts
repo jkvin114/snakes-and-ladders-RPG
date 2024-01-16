@@ -43,7 +43,7 @@ export function ChatControllerWrapper(socket:Socket,eventname:string,controller:
 export namespace ChatController {
 	const ROOM_NAME_PREFIX = "chatroom:"
 	const MAX_MESSAGE_FETCH = 20
-	const notify=false
+	const notify=true
 	export async function sendMessage(socket: Socket,session:ISession, roomId: string, message: string) {
 		const sender = await UserCache.getUser(session.userId)
 		const room = await ChatRoomSchema.findById(roomId)
@@ -59,12 +59,13 @@ export namespace ChatController {
 
 		let status = await ChatRoomJoinStatusSchema.findByRoom(roomId)
 		let unreadCount = 0
+
 		for (const member of status) {
 			let memberId = String(member.user)
 			//read
 			if (memberId === session.userId || (SessionManager.hasSession(memberId) && SessionManager.getSessionByUserId(memberId).currentChatRoom === roomId))
 			{
-				ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,memberId,serial).then()
+				await ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,memberId,serial)
 				//console.log(SessionManager.getSessionByUserId(memberId).username + " read chat")
 			}
 			else{
@@ -73,16 +74,19 @@ export namespace ChatController {
 				
 				//post notifications for unread users
 				if(notify)
-					NotificationController.notifyChat(memberId,roomId,message,serial).then()
+					NotificationController.notifyChat(memberId,roomId,message,serial,sender.username,sender.profileImgDir).then()
 			}
 			
 		}
+		let userLastSerials = (await ChatRoomJoinStatusSchema.findByRoom(roomId)).map(d=>d.lastSerial)
+
 		socket.broadcast.to(ROOM_NAME_PREFIX + roomId).emit("chat:message_received", {
 			username: sender.username,
 			content: message,
 			serial: serial,
 			unread:unreadCount,
-			createdAt:messageObj.createdAt.toISOString()
+			createdAt:messageObj.createdAt.toISOString(),
+			userLastSerials:userLastSerials
 		} as ChatMessageModel)
 
 		socket.emit("chat:message_sent", {
@@ -90,7 +94,8 @@ export namespace ChatController {
 			content: message,
 			serial: serial,
 			unread:unreadCount,
-			createdAt:messageObj.createdAt.toISOString()
+			createdAt:messageObj.createdAt.toISOString(),
+			userLastSerials:userLastSerials
 		} as ChatMessageModel)
 
 	}
@@ -117,7 +122,7 @@ export namespace ChatController {
 		if(notify)
 			NotificationSchema.consumeChat(session.userId, roomId).then()
 
-		ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,session.userId,currentSerial).then()
+		await ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,session.userId,currentSerial)
 
 		let userLastSerials = (await ChatRoomJoinStatusSchema.findByRoom(roomId)).map(d=>d.lastSerial)
 		session.currentChatRoom = roomId
@@ -143,7 +148,7 @@ export namespace ChatController {
 		})
 		socket.broadcast.emit("chat:user_join",{
 			user:session.userId,
-			userLastSerial:serverLastSerial
+			userLastSerials:userLastSerials
 		})
 	}
 	export async function leaveRoom(socket: Socket,session:ISession, roomId: string) {

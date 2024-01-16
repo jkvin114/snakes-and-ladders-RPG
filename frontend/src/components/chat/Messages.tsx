@@ -1,9 +1,9 @@
 import { RiDownloadCloudFill } from "react-icons/ri"
-import { IChatMessage } from "../../types/chat"
+import { IChatMessage, IMessageData } from "../../types/chat"
 import ProfileImage from "./ProfileImage"
 
 type Props = {
-	messages: IChatMessage[]
+	messages: IMessageData
     fetchOld:React.MouseEventHandler
 }
 export default function Messages({ messages,fetchOld }: Props) {
@@ -12,18 +12,30 @@ export default function Messages({ messages,fetchOld }: Props) {
 	let isLastMessageEmpty = false
 	let lastDate = ""
 	let started = false
+	let unread = 0
+	messages.userLastSerials.sort((a, b) => a - b)
+	let serials = new Set<number>()
 	return (
 		<>
-			{messages.map((m, i) => {
+			{messages.messages.map((m, i) => {
+				if(serials.has(m.serial)) return (<></>)
+				serials.add(m.serial)
 				const today = m.createdAt ? m.createdAt.slice(0, 16).replace("T", " ") : ""
-				const showname = lastusername !== m.username
 				const showdate = lastDate !== today
 				const showdots = !isLastMessageEmpty && !m.content
 				const showfetch = !started && m.serial > 1
+
+				const showname = (lastusername !== m.username || showdate)
                 started=true
 				if (m.username) lastusername = m.username
 				lastDate = today
 				isLastMessageEmpty = !m.content
+
+				while (unread < messages.userLastSerials.length && m.serial > messages.userLastSerials[unread])
+					unread++
+
+				const msgunread = messages.freshMsgSerial === m.serial ? m.unread : unread
+
 
 				if (showdots) {
 					return (
@@ -49,7 +61,7 @@ export default function Messages({ messages,fetchOld }: Props) {
 							<div key={m.serial} className={"message-container " + (m.username === me ? "me" : "")}>
 								{m.username === me ? (
 									<>
-										<b className="unread">{m.unread ? m.unread : ""}</b>
+										<b className="unread">{msgunread>0?msgunread:""}</b>
 										<div className="message me">
 											{m.content}
 											{m.serial}
@@ -66,7 +78,7 @@ export default function Messages({ messages,fetchOld }: Props) {
 												{m.serial}
 											</div>
 										</div>
-										<b className="unread">{m.unread ? m.unread : ""}</b>
+										<b className="unread">{msgunread>0?msgunread:""}</b>
 									</>
 								)}
 								

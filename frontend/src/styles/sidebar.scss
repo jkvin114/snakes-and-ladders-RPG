@@ -25,9 +25,7 @@
 	&:hover .menu-name {
 		display: inline;
 	}
-	&:hover .button {
-		display: inline;
-	}
+	
 	.menu-name {
 		display: none;
 	}
@@ -49,6 +47,18 @@
 			height: 22px;
 			margin-right: 5px;
 			vertical-align: middle;
+		}
+		.badge{
+			position: absolute;
+			top: 32px;
+			left: 26px;
+			background-color: red;
+			border-radius: 50%;
+			min-width: 14px;
+			height: 14px;
+			font-size: 10px;
+			text-align: center;
+			line-height: 14px;
 		}
 	}
 	.sidebar-content {
@@ -101,10 +111,10 @@
 	.menu-item-container:hover .sub-menu {
 		display: block;
 	}
-
+	
 	/* Mobile Menu Button Styling */
 	.mobile-menu-button {
-		display: none;
+		display: block;
 		background: #555;
 		color: white;
 		border: none;
@@ -154,7 +164,12 @@
 				background-color: var(--col-bg-lighter);
 			}
 		}
+		
 	}
+	&:hover .button {
+		display: block;
+	}
+	
 	.menu-item-small {
 		padding-top: 10px;
 		padding-bottom: 10px;

@@ -1,6 +1,6 @@
 import { ChangeEvent, useRef, useState } from "react"
 import { ChatStorage } from "../../storage/chatStorage"
-import { IChatUser, IChatMessage } from "../../types/chat"
+import { IChatUser, IChatMessage, IMessageData } from "../../types/chat"
 import { AxiosApi } from "../../api/axios"
 import { useEffect } from "react"
 import "../../styles/chat.scss"
@@ -15,7 +15,7 @@ type Props = {
 
 export default function ChatRoom({ roomId }: Props) {
 	const [roomUsers, setRoomUsers] = useState<IChatUser[]>([])
-	const [messages, setMessages] = useState<IChatMessage[]>([])
+	const [messages, setMessages] = useState<IMessageData>({messages:[],userLastSerials:[0]})
 	//const [maxSerial, setMaxSerial] = useState<number>(0)
 	const [roomname, setRoomName] = useState("?")
 	let connected = false
@@ -23,24 +23,29 @@ export default function ChatRoom({ roomId }: Props) {
 	function onload() {
 		if (connected) return
 		connected=true
-		setMessages(ChatStorage.loadStoredMessages(roomId))
+		//setMessages(ChatStorage.loadStoredMessages(roomId))
 		//setMaxSerial(ChatStorage.maxSerial(roomId))
 		setTimeout(()=>ChatSocket.joinRoom(roomId, ChatStorage.maxSerial(roomId)),500)
 		//console.log(messages[0])
 	//	console.log(messages.length)
 		ChatSocket.on("chat:message_received", (data) => {
+			if(!ChatSocket.isConnected()) return
+			let lastserials = data.userLastSerials
+			delete data.userLastSerials
 			receiveMessage({
 				...data,
 				profileImgDir: UserStorage.getProfileImg(data.username),
-			})
+			},lastserials)
 		//	console.log("unread:"+data.unread)
 			
 		})
 		ChatSocket.on("chat:message_sent", (data) => {
+			let lastserials = data.userLastSerials
+			delete data.userLastSerials
 			receiveMessage({
 				...data,
 				profileImgDir: UserStorage.getProfileImg(data.username),
-			})
+			},lastserials)
 			//console.log("unread:"+data.unread)
 		})
 		ChatSocket.on("chat:joined_room", (data) => {
@@ -48,12 +53,13 @@ export default function ChatRoom({ roomId }: Props) {
 			receiveMessageChunk(data.messages,data.userLastSerials)
 		})
 		ChatSocket.on("chat:user_join", (data) => {
-			decrementUnreadFrom(data.userLastSerial+1)
-			ChatStorage.decrementUnread(roomId, data.userLastSerial+1)
+			if(!ChatSocket.isConnected()) return
+			updateUnread(data.userLastSerials)
+			//ChatStorage.decrementUnread(roomId, data.userLastSerials)
 		})
 
 		ChatSocket.on("chat:user_quit", () => {
-
+			if(!ChatSocket.isConnected()) return
 		})
 		ChatSocket.on("chat:error", (data) => {
 			console.error(data)
@@ -90,24 +96,11 @@ export default function ChatRoom({ roomId }: Props) {
 		scrollToBottom()
 	}, [messages])
 
-	function decrementUnreadFrom(from: number) {
-		//console.log("decrementUnreadFrom")
-		//console.log(messages.length)
-		// let newmsg = []
-		// for(const msg of messages){
-		// 	let unread = msg.unread
-		// 	if(msg.serial >= from){
-		// 		unread=Math.max(msg.unread - 1, 0)
-		// 	}
-		// 	newmsg.push({...msg,unread:unread})
-		// }
-	//	console.log(newmsg.at(-1))
-		setMessages(msgs => msgs.map(m=>{
-			let unread = m.unread
-			if(m.serial >= from){
-				unread=Math.max(m.unread - 1, 0)
-			}
-			return {...m,unread:unread}
+	function updateUnread(userLastSerials: number[]) {
+		setMessages(msgs => ({
+			messages:msgs.messages,
+			userLastSerials:userLastSerials,
+			freshMsgSerial:-1
 		}))
 	}
 	const handleKeyPress = (event: any) => {
@@ -118,29 +111,28 @@ export default function ChatRoom({ roomId }: Props) {
 	function receiveMessageChunk(messageChunk: IChatMessage[],userLastSerials:number[]) {
 		// message.unread = String(message.unread)
 		
-		
-		userLastSerials.sort()//ascending order
-	//	console.log(userLastSerials)
-		let idx = 0
-
 		for(const msg of messageChunk){
 			msg.profileImgDir = UserStorage.getProfileImg(msg.username)
-			while (idx < userLastSerials.length && msg.serial > userLastSerials[idx])
-				idx++
-
-			msg.unread = idx
 			ChatStorage.storeMessage(roomId, msg)
 		}
 
-		setMessages(msgs=>[...msgs, ...messageChunk])
+		setMessages(msgs=>({
+			messages:[...ChatStorage.loadStoredMessages(roomId), ...messageChunk],
+			userLastSerials:userLastSerials,
+			freshMsgSerial:-1
+		}))
 
 		//setMaxSerial(ChatStorage.maxSerial(roomId))
 	}
 
-	function receiveMessage(message: IChatMessage) {
+	function receiveMessage(message: IChatMessage,userLastSerials:number[]) {
 		// message.unread = String(message.unread)
 		
-		setMessages(msgs=>[...msgs, message])
+		setMessages(msgs=>({
+			messages:[...msgs.messages, message],
+			userLastSerials:userLastSerials,
+			freshMsgSerial:message.serial
+		}))
 		ChatStorage.storeMessage(roomId, message)
 		//setMaxSerial(ChatStorage.maxSerial(roomId))
 	}

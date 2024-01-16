@@ -1,4 +1,4 @@
-import { Link, Route, Routes } from "react-router-dom"
+import { Link, Route, Routes, useLocation, useParams } from "react-router-dom"
 import HtmlPage from "./components/HtmlPage"
 import "./index.css"
 import StockGame from "./stockgame/StockGame"
@@ -19,54 +19,81 @@ import SideBar from "./components/menu/Sidebar"
 import TopBar from "./components/menu/TopBar"
 import HomePage from "./components/pages/Home"
 import MarbleStatPage from "./components/pages/MarbleStat"
+import { INotification } from "./types/notification"
+import { ToastContainer, toast } from "react-toastify"
+import { RiMessage2Fill } from "react-icons/ri"
+import Notifications from "./components/notification/Notifications"
 
-axios.defaults.withCredentials = true // NEW
+
+
 
 // Main App We run for frontend
 function App() {
-	const API = axios.create({ baseURL: backend_url })
-	async function init() {
-		// let data=sessionStorage.getItem("jwt")
-
-		// let response=await API.get("/test/jwt/verify",
-		// {
-		// 	headers:{
-		// 		 		'Authorization': `Bearer ${data}`, // notice the Bearer before your token
-		// 		 	}
-		// })
-
-		// let valid=response.data
-		// if(!valid) sessionStorage.removeItem("jwt")
-
-		try {
-			// if(!sessionStorage.getItem("jwt")){
-			// 	data=await ((await fetch(url,{credentials: 'include'})).text())
-			// 	console.log(data)
-			// 	sessionStorage.setItem("jwt",data)
-			// }
-			// await API.post("/jwt/init")
-			// await API.get("test/jwt/verify")
-			// console.log(res)
-			// sessionStorage.setItem("jwt",res.data)
-			// await API.post("/test/jwt",{},{
-			// 	headers:{
-			// 		'Authorization': `Bearer ${res.data}`, // notice the Bearer before your token
-			// 	}
-			// })
-			// await (await fetch(url, {
-			// 	method: "POST",
-			// 	mode:'cors',
-			// 	credentials:"include",
-			// 	headers:{
-			// 		'Authorization': `Bearer ${data}`, // notice the Bearer before your token
-			// 	}
-			// }))
-		} catch (e) {
-			console.error(e)
+	const mountedRef = { current: false };
+	const [notiCount,setNotiCount] = useState(0)
+	const location = useLocation();
+  
+	function updateNotiCount(count:number){
+		let username = localStorage.getItem("username")
+		if(!username) return
+		console.log(location.pathname)
+		if(location.pathname === "/notification"){
+			localStorage.removeItem("noti-unread-"+username)
+			setNotiCount(0)
+			return
 		}
+		let unread = localStorage.getItem("noti-unread-"+username)
+		if(!unread) {
+			setNotiCount(count)
+			localStorage.setItem("noti-unread-"+username,String(count))
+		}
+		else{
+			setNotiCount(Number(unread)+count)
+			localStorage.setItem("noti-unread-"+username,String(Number(unread)+count))
+		} 
 	}
-
+	function onReceiveNoti(notis:INotification[]){
+		if(notis.length===0) return
+		// console.table(notis)
+		
+		toast.info("New Message: "+notis[0].message, {
+			position: "bottom-right",
+			autoClose: 3000,
+			hideProgressBar: true,
+			closeOnClick: true,
+			pauseOnHover: false,
+			draggable: false,
+			progress: 0,
+			theme: "colored",
+			icon:(<RiMessage2Fill/>)
+		})
+		updateNotiCount(notis.length)
+		
+	}
+	function pollNotification(){
+		console.log("start polling")
+		AxiosApi.get("/notification/poll")
+		.then(res=>{
+			if(!mountedRef.current) return
+			
+			onReceiveNoti(res.data as INotification[])
+			pollNotification()
+		})
+		.catch(e=>{
+			if(e.response.status !== 401)
+				console.error(e)
+			if(!mountedRef.current) return
+			setTimeout(pollNotification,5*1000)
+		})
+	}
 	useEffect(() => {
+		if(!mountedRef.current && localStorage.getItem("username") != null && localStorage.getItem("loggedIn"))
+		{
+			pollNotification()
+			updateNotiCount(0)
+		}	
+		mountedRef.current=true
+
 		// API.get("/statustest")
 		// .then(res=>console.log(res))
 		// .catch(e=>console.log(e))
@@ -80,6 +107,11 @@ function App() {
 					window.location.reload()
 				}
 			})
+		
+		return () => {
+			mountedRef.current = false;
+			};
+		  
 	}, [])
 
 	function logout() {
@@ -110,7 +142,7 @@ function App() {
 		<>
 			
 			<div id="page-root">
-				<SideBar isOpen={navbarOpen} openNavbar={setNavbarOpen}/>
+				<SideBar isOpen={navbarOpen} openNavbar={setNavbarOpen} notiCount={notiCount}/>
 				<div>
 					<TopBar openNavbar={setNavbarOpen}/>
 					<div onClick={closeNavbar}>
@@ -125,6 +157,7 @@ function App() {
 						<Route path="/writepost" element={<BoardPostWrite />}></Route>
 						<Route path="/chat" element={<ChatRoom roomId="659c2791dbc11e5a15ec6e5a" />}></Route>
 						<Route path="/marble_stat" element={<MarbleStatPage />}></Route>
+						<Route path="/notification" element={<Notifications newNoti={[]}/>}></Route>
 
 						<Route path="/user/:username" element={<ProfilePage />}></Route>
 						<Route path="/user/" element={<ProfilePage />}></Route>
@@ -153,6 +186,7 @@ function App() {
 
 				{/* <StockGame/> */}
 			</div>
+			<ToastContainer></ToastContainer>
 		</>
 	)
 }

@@ -8,13 +8,14 @@ import { useState } from "react";
 type Props={
     isOpen:boolean
     openNavbar:React.Dispatch<React.SetStateAction<boolean>>
-
+    notiCount:number
 }
 
-export default function SideBar({isOpen,openNavbar}:Props){
+export default function SideBar({isOpen,openNavbar,notiCount}:Props){
     const navigate = useNavigate()
 
-    const [login,setLogin]= useState(localStorage.getItem("username")!=null)
+    const loggedin = localStorage.getItem("username")!=null
+
     return (<div id="sidebar" className={isOpen? "mobile-open":""}>
         <nav className="sidebar-content">
         <ul>
@@ -70,15 +71,15 @@ Create Room</a></li>
             </ul>
           </li>
           <li>
-          <a className="menu-item"><RiNotification2Fill/><b className="menu-name">Notifications</b></a>
+          <Link className="menu-item" to={"/notification"}>{notiCount >0 && <span className="badge">{notiCount}</span>}<RiNotification2Fill/><b className="menu-name">Notifications</b></Link>
           </li>
         </ul>
       </nav>
         <div className="bottom">
-            {/* {!login && (<>
+            {!loggedin && (<>
                 <button className="button gray" ><Link to={'/register'}>Register</Link></button>
             <button className="button"><Link to={'/login'}>Login</Link></button>
-            </>)} */}
+            </>)}
            <Link className="menu-item menu-item-small" to={"/user"}><RiAccountCircleFill /><b className="menu-name">Profile</b></Link>
             <br></br>
             <a className="menu-item menu-item-small" ><RiSettings5Fill /><b className="menu-name">Setting</b></a>

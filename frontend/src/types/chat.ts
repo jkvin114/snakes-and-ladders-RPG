@@ -17,3 +17,11 @@ export interface IChatMessage{
     createdAt?:string
     unread:number
 }
+
+export interface IMessageData{
+    messages:IChatMessage[]
+    userLastSerials:number[]
+
+    //serial number of a message that is just received. This message`s unread count will be displayed directly without other calculation.
+    freshMsgSerial?:number 
+}

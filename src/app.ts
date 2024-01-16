@@ -99,6 +99,7 @@ app.use("/resource", require("./router/resourceRouter"))
 app.use("/board", require("./router/board/BoardRouter"))
 app.use("/ping", require("./router/pingRouter"))
 app.use("/chat", require("./router/chat"))
+app.use("/notification", require("./router/notification"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);

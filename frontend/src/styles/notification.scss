@@ -1,0 +1,89 @@
+#notification-root{
+    $imgsize:22px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    .notification{
+        display: inline-block;
+        font-size: 13px;
+        // display: grid;
+        // grid-template-columns: 40px auto;
+        // border-bottom: 1px solid gray;
+        min-height: 50px;
+        padding: 8px;
+        margin: 4px;
+        background-color: var(--col-bg-lighter);
+        border-radius: 5px;
+        cursor: pointer;
+        width: 300px;
+        position: relative;
+        &.read{
+            filter: brightness(0.8);
+        }
+    }
+    .close{
+        position: absolute;
+        top:3px;
+        right: 3px;
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+        line-height: 12px;
+        border: 1px solid gray;
+        border-radius: 50%;
+        text-align: center;
+    }
+    .close:hover{
+        filter: brightness(1.1);
+    }
+    .topbar{
+        color: var(--col-font-dim);
+    }
+    .profileimg-container{
+        vertical-align: middle;
+        margin-right: 5px;
+        width: $imgsize;
+        height: $imgsize;
+        border-radius: 50%;
+        background-color: var(--col-primary);
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .profileimg-container.has-img{
+        background-color: #ebebfd;
+      }
+      .profileimg-container > a{
+        user-select: none;
+        color: #ffffff;
+        font-size: $imgsize / 1.8;
+        /* text-align: center; */
+      }
+      .profileimg{
+        object-fit: cover;
+  
+        width: $imgsize;
+        height: $imgsize;
+        border-radius: 50%;
+  
+      }
+
+      .noti-content{
+            font-weight: normal;
+            font-size: 15px;
+            padding-top: 5px;
+            svg{
+                vertical-align: middle;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+      }
+      .noti-footer{
+        font-size: 12px;
+        float: right;
+        color: var(--col-font-light);
+      }
+}
