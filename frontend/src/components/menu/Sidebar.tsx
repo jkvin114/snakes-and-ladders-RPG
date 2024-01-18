@@ -13,10 +13,9 @@ type Props={
 }
 
 export default function SideBar({isOpen,openNavbar,notiCount}:Props){
-    const navigate = useNavigate()
-    const authState = useContext(RootContext)
+    const {context} = useContext(RootContext)
 
-    const loggedin = localStorage.getItem("username")!=null
+    const loggedin = context.loggedin
 
     return (<div id="sidebar" className={isOpen? "mobile-open":""}>
         <nav className="sidebar-content">
@@ -30,7 +29,7 @@ export default function SideBar({isOpen,openNavbar,notiCount}:Props){
           <li className="menu-item-container">
             <a className="menu-item"><img src="/favicon.png"></img><b className="menu-name">RPG Game</b></a>
             <ul className="sub-menu">
-              <li className="sub-menu-item"><a href="/"><GrGamepad />Create Room</a></li>
+              <li className="sub-menu-item"><a href="/create_game?type=rpg"><GrGamepad />Create Room</a></li>
               <li className="sub-menu-item"><a href="/find_room"><RiUserReceived2Fill />Join</a></li>
               <li className="sub-menu-item"><a href="/spectate"><RiEyeFill />Spectate</a></li>
               <li className="sub-menu-item"><a href="/stat?page=game"><RiFolderVideoFill />Game Record</a></li>
@@ -51,8 +50,7 @@ export default function SideBar({isOpen,openNavbar,notiCount}:Props){
           <li className="menu-item-container">
           <a className="menu-item"><img src="/res/img/marble/icon.jpg"></img><b className="menu-name">Marble Game</b></a>
             <ul className="sub-menu">
-              <li className="sub-menu-item"><a href="/"><GrGamepad />
-Create Room</a></li>
+              <li className="sub-menu-item"><a href="/create_game?type=marble"><GrGamepad />Create Room</a></li>
               <li className="sub-menu-item"><a href="/find_room"><RiUserReceived2Fill />Join</a></li>
               <li className="sub-menu-item"><Link to="/marble_stat"><RiFolderVideoFill />Game Record</Link></li>
             </ul>

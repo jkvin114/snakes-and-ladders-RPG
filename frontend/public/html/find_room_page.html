@@ -102,28 +102,6 @@
             padding:10px 10px;
             transition: all 0.5s;
         }
-        #findroom-root  .button{
-            font-family: 'nanumB';
-            color:whitesmoke;
-            /* background-color: #7E00BF; */
-          background: transparent;
-            border: 1px solid #c654ff;
-            cursor:pointer;
-            text-align:center;
-            padding: 5px 10px;
-            font-size: 12px;
-            margin: 15px 5px;
-            /* border:none; */
-            vertical-align: middle;
-            border-radius: 3px;
-            /* min-width: 100px; */
-        }
-        #findroom-root   .button.fill{
-            background-color: #c654ff;
-        }
-        #findroom-root    .button:hover{
-            background-color: #8a30b7;
-        }
         </style>
 <div id="findroom-root">    
     
@@ -132,8 +110,8 @@
         <h5>Enter Password</h5>
         <input type="password" id="password" >
         <div>
-            <button id="password-confirm" class="button fill">Confirm</button>
-            <button id="password-cancel" class="button">Cancel</button>
+            <button id="password-confirm" class="button">Confirm</button>
+            <button id="password-cancel" class="button dark">Cancel</button>
         </div>
     </div>
 
@@ -153,6 +131,8 @@
         </div>
 
     </div>
+    <br></br>
+    <button id="refreshbtn" class="button">Refresh</button>
     </div>
     <script src="src/findroom.js"></script>
 

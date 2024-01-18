@@ -8,7 +8,7 @@
         border-radius: 10px;
     }
     .section{
-        width: 100%;
+        width: 92%;
         margin: 30px 0px;
         padding: 15px;
         display: flex;
@@ -20,7 +20,7 @@
             margin: 10px;
             text-align: center;
         }
-        @media only screen and (max-width: 1000px) {
+        @media only screen and (max-width: 1100px) {
             flex-wrap: wrap;
 
         }
@@ -129,8 +129,8 @@
   
   .card {
     padding: 20px;
-    max-width: 400px;
-    min-width: 270px;
+    // max-width: 400px;
+    width: 270px;
     min-height: 200px;
     display: grid;
     grid-template-rows: 20px 50px 1fr 50px;

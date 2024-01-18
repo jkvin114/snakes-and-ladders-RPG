@@ -86,7 +86,7 @@ export const PAGES={
         ]
     },
     rpggame:{
-        html:"admin.html",
+        html:"gamepage.html",
         scripts:[
             "/lib/jquery-3.6.0.min.js",
             "/lib/fabric.min.js",

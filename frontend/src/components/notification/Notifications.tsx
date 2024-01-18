@@ -13,7 +13,7 @@ type Props={
 export default function Notifications({newNoti,setCount}:Props){
     const [noti,setNoti] = useState<INotification[]>([])
     const [newNotiCount,setNewNotiCount] = useState<number>(0)
-    const rootState = useContext(RootContext)
+    const {context} = useContext(RootContext)
 
     useEffect(()=>{
         setCount(0)
@@ -24,7 +24,7 @@ export default function Notifications({newNoti,setCount}:Props){
         })
         .catch(e=>console.error(e))
 
-		localStorage.removeItem("noti-unread-"+rootState.username)
+		localStorage.removeItem("noti-unread-"+context.username)
     },[])
 
     useEffect(()=>{

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {Helmet} from "react-helmet";
 import { PAGES } from "../rawpages";
+import { RootContext } from "../context/context";
 
 type Props={
     htmlPath:string
@@ -13,7 +14,10 @@ const sleep = (m: any) => new Promise((r) => setTimeout(r, m))
 export default function HtmlPage({htmlPath}:Props){
     let[htmlData, setHtmlData] = useState<PageData>({
       html:""
-    });
+    });	
+    
+    const {context,setContext}= useContext(RootContext);
+
     let loaded=false
 
     
@@ -29,6 +33,7 @@ export default function HtmlPage({htmlPath}:Props){
 
     try{
         const html=await (await fetch("html/"+pagedata.html)).text()
+        
         
         setHtmlData({
           html:html,
@@ -51,6 +56,10 @@ export default function HtmlPage({htmlPath}:Props){
   }
   useEffect(() => {
     fetchHtml();
+    if(htmlPath==="rpggame" || htmlPath==="marblegame" ){
+        setContext({...context,showToolbar:false})
+    }
+
   }, []);
 
  

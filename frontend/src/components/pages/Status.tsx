@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { backend_url } from "../../variables"
 import "../../styles/status.css"
+import { RiLoopLeftFill } from "react-icons/ri"
 interface IStatus{
     db:string
     rpg:string
@@ -48,9 +49,10 @@ export default function StatusPage(){
                 <h4 className={status?.marbleconnect?"status":"status red"}>{status?status.marble:"Disconnected"}</h4>
             </div>
             <div>
-                <button onClick={ping}>Refresh</button>
-                <br></br>
-                <a href="/">Home</a>
+                <button onClick={ping} className="button"><RiLoopLeftFill style={{verticalAlign:"middle"}} />
+Refresh</button>
+                {/* <br></br> */}
+                {/* <a href="/">Home</a> */}
             </div>
     </div>)
 }

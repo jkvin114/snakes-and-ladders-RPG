@@ -26,6 +26,7 @@ import Notifications from "./components/notification/Notifications"
 import { IRootContext, RootContext } from "./context/context"
 import { ToastHelper } from "./ToastHelper"
 import { limitString } from "./util"
+import { MakeGamePage } from "./components/pages/MakeGame"
 
 
 
@@ -34,10 +35,12 @@ import { limitString } from "./util"
 function App() {
 	const mountedRef = { current: false };
 	const [notiCount,setNotiCount] = useState(0)
-	const [rootState,_] = useState<IRootContext>({
+	const [rootState,setRootState] = useState<IRootContext>({
 		username:localStorage.getItem("username"),
-		loggedin:localStorage.getItem("username") != null && localStorage.getItem("loggedIn") === "true"
+		loggedin:localStorage.getItem("username") != null && localStorage.getItem("loggedIn") === "true",
+		showToolbar:true
 	})
+
 	const [notiQueue,setNotiQueue] = useState<INotification[]>([])
 	function updateNotiCount(count:number){
 		let username = localStorage.getItem("username")
@@ -102,7 +105,7 @@ function App() {
 			updateNotiCount(0)
 		}	
 		mountedRef.current=true
-
+		console.log(rootState)
 		// API.get("/statustest")
 		// .then(res=>console.log(res))
 		// .catch(e=>console.log(e))
@@ -123,14 +126,6 @@ function App() {
 		  
 	}, [])
 
-	function logout() {
-		AxiosApi.post("/user/logout")
-			.then((r) => {
-				window.location.href = "/"
-				localStorage.removeItem("username")
-			})
-			.catch((e) => console.error(e))
-	}
 	const [navbarOpen,setNavbarOpen]=useState(false)
 	function printsession(){
 		AxiosApi.get("/session")
@@ -149,14 +144,13 @@ function App() {
 	}
 	return (
 		<>
-			<RootContext.Provider value={rootState}>
-			<div id="page-root">
-				<SideBar isOpen={navbarOpen} openNavbar={setNavbarOpen} notiCount={notiCount}/>
+			<RootContext.Provider value={{context:rootState,setContext:setRootState}}>
+			<div id="page-root" className={rootState.showToolbar ?"":"hide-toolbar"}>
+				{rootState.showToolbar ?<SideBar isOpen={navbarOpen} openNavbar={setNavbarOpen} notiCount={notiCount}/>:<div></div>}
 				<div>
-					<TopBar openNavbar={setNavbarOpen}/>
+					{rootState.showToolbar && <TopBar openNavbar={setNavbarOpen}/>}
 					<div onClick={closeNavbar}>
 
-					
 					<Routes>
 						<Route path="/" element={<HomePage/>}></Route>
 						<Route path="/stockgame" element={<StockGame />}></Route>
@@ -167,6 +161,7 @@ function App() {
 						<Route path="/chat" element={<ChatRoom roomId="659c2791dbc11e5a15ec6e5a" />}></Route>
 						<Route path="/marble_stat" element={<MarbleStatPage />}></Route>
 						<Route path="/notification" element={<Notifications newNoti={notiQueue} setCount={setNotiCount}/>}></Route>
+						<Route path="/create_game" element={<MakeGamePage />}></Route>
 
 						<Route path="/user/:username" element={<ProfilePage />}></Route>
 						<Route path="/user/" element={<ProfilePage />}></Route>

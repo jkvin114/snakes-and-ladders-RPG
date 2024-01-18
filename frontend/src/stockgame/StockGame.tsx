@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import "./../styles/stockgame/stockgame.css"
 import './../styles/stockgame/board.css';
 
@@ -15,6 +15,7 @@ import { TradeBoard } from "../components/stockgame/TradeBoard"
 import { TranHistoryBoard } from "../components/stockgame/TranHistoryBoard"
 import { StatBoard } from "../components/stockgame/StatBoard"
 import Transaction from "./types/Transaction";
+import { RootContext } from "../context/context";
 
 // Main App We run for frontend
 function StockGame() {
@@ -44,6 +45,8 @@ function StockGame() {
 		profitRate: 0,
 		totalAsset: 0,
 	})
+	const {context,setContext}= useContext(RootContext);
+
   const [tranHistory, setTranHistory] = useState<Transaction[]>([])
 	const [player, setPlayer] = useState<PlayerManager>(new PlayerManager(10000, setPlayerState,
     setTranHistory,displayNews))
@@ -184,9 +187,15 @@ function StockGame() {
 	}
 
 	useEffect(() => {
-		if (dataFetch.current) return
-		dataFetch.current = true
-		fetchstock()
+		if (!dataFetch.current){
+			dataFetch.current = true
+			fetchstock()
+		}
+		setContext({...context,showToolbar:false})
+
+		return ()=> {
+			setContext({...context,showToolbar:true})
+		}
 	}, [])
 
 	return (
