@@ -20,7 +20,7 @@ export default function Messages({ messages,fetchOld }: Props) {
 			{messages.messages.map((m, i) => {
 				if(serials.has(m.serial)) return (<></>)
 				serials.add(m.serial)
-				const today = m.createdAt ? m.createdAt.slice(0, 16).replace("T", " ") : ""
+				const today = m.createdAt ? m.createdAt.slice(0, 11).replace("T", " ") : ""
 				const showdate = lastDate !== today
 				const showdots = !isLastMessageEmpty && !m.content
 				const showfetch = !started && m.serial > 1
@@ -41,7 +41,7 @@ export default function Messages({ messages,fetchOld }: Props) {
 					return (
 						<>
 							{showfetch && (
-								<div className="fetchbtn" onClick={fetchOld}>
+								<div className="fetchbtn" onClick={fetchOld} title="Load older messages">
 									<RiDownloadCloudFill />
 								</div>
 							)}
@@ -62,9 +62,8 @@ export default function Messages({ messages,fetchOld }: Props) {
 								{m.username === me ? (
 									<>
 										<b className="unread">{msgunread>0?msgunread:""}</b>
-										<div className="message me">
+										<div className="message me" title={m.serial.toString()}>
 											{m.content}
-											{m.serial}
 										</div>
 									</>
 								) : (
@@ -73,9 +72,8 @@ export default function Messages({ messages,fetchOld }: Props) {
 								        {!showname && <div className="profile-placeholder"></div>}
 										<div className="message-other">
 											{showname && <div className="name">{m.username} </div>}
-											<div className="message">
+											<div className="message" title={m.serial.toString()}>
 												{m.content}
-												{m.serial}
 											</div>
 										</div>
 										<b className="unread">{msgunread>0?msgunread:""}</b>

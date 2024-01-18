@@ -1,14 +1,16 @@
-const ip = "http://" + sessionStorage.ip_address
 var socket
-console.log(ip)
 let rname = sessionStorage.roomName
 socket_connected = false
 
-function connectSocket() {
-	socket = io()
+function connectSocket(url) {
+	socket = io(url, {
+		autoConnect: true,
+		withCredentials: true,
+		query: { type: "matching" },
+	})
 
 	socket.on("connect", function () {
-		console.log("connect")
+		//console.log("connect")
 		socket_connected = true
 
 		//only make it visible if this is host
@@ -35,11 +37,11 @@ function connectSocket() {
 	// socket.on("server:create_room", function (roomname) {})
 	socket.on("server:to_gamepage", () => {
 		window.onbeforeunload = function () {}
-		window.location.href = "gamepage.html"
+		window.location.href = "/rpggame"
 	})
 	socket.on("server:to_marble_gamepage", () => {
 		window.onbeforeunload = function () {}
-		window.location.href = "/marble/gamepage.html"
+		window.location.href = "/marblegame"
 	})
 	socket.on("server:go_teampage", () => {
 		MATCH.teamSelector.showTeamPage(true)
@@ -96,7 +98,7 @@ function connectSocket() {
 
 	socket.on("server:update_playerlist", (playerlist) => MATCH.updatePlayerList(playerlist))
 	socket.on("server:update_champ", (turn, champ) => {
-		console.log(turn, champ)
+		//	console.log(turn, champ)
 		MATCH.ui.updateOneCharacter(turn, champ)
 	})
 	/**
@@ -120,7 +122,7 @@ function connectSocket() {
 	socket.on("server:unavaliable_room", function () {
 		alert("The room is unavaliable!")
 		window.onbeforeunload = () => {}
-		window.location.href = "index.html"
+		window.location.href = "/"
 	})
 }
 
@@ -156,7 +158,7 @@ class ServerConnection {
 		socket.emit("user:exit_teampage")
 	}
 	static sendCheckBoxToServer = function (check_status) {
-		console.log("checkboc" + check_status)
+		//console.log("checkboc" + check_status)
 		socket.emit("user:update_team", check_status)
 	}
 	static changeChamp = function (turn, champ) {
@@ -173,11 +175,10 @@ class ServerConnection {
 		window.onbeforeunload = () => {}
 		if (gametype === "rpg") {
 			socket.emit("user:gameready", setting)
-
-			window.location.href = "gamepage.html"
+			window.location.href = "/rpggame"
 		} else if (gametype === "marble") {
 			socket.emit("marble:user:gameready", setting)
-			window.location.href = "/marble/gamepage.html"
+			window.location.href = "/marblegame"
 		}
 	}
 }

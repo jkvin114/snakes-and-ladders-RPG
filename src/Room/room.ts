@@ -87,9 +87,9 @@ abstract class Room {
 	{
 		this.password=encrypt(pw,this.name)
 	}
-	setSettings(isLoggedInUserOnly:string,isPrivate:string){
-		this.isLoggedInUserOnly=isLoggedInUserOnly==="true"
-		this.isPublic=isPrivate==="false"
+	setSettings(isLoggedInUserOnly:boolean,isPrivate:boolean){
+		this.isLoggedInUserOnly=isLoggedInUserOnly
+		this.isPublic=!isPrivate
 		console.log(this.isPublic)
 	}
 	registerResetCallback(onreset:Function){

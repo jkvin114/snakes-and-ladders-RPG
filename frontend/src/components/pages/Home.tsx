@@ -3,8 +3,15 @@ import "../../styles/home.scss"
 import { RiBarChartFill, RiBillFill, RiMessage2Fill } from "react-icons/ri"
 import { Link } from "react-router-dom"
 import { TbWorldQuestion } from "react-icons/tb"
+import { createRoom } from "../../api/room"
 
 export default function HomePage() {
+
+
+	function quickplay(){
+		createRoom("rpg",false,false,"annonymus")
+	}
+
 	return (
 		<div id="homepage-root">
 			<div className="homepage">
@@ -17,8 +24,8 @@ export default function HomePage() {
 						<h1>Snakes-and-Ladders RPG</h1>
                         <p>A multiplayer role-playing game that combined traditional dice game(snakes-and-ladders) and RPG-style combat.</p>
 						<div>
-							<div className="mainbtn button-19 divlink">
-                            <Link to="/" className="divlink"></Link>
+							<div className="mainbtn button-19 divlink" onClick={quickplay}>
+                            {/* <Link to="/match" reloadDocument className="divlink"></Link> */}
 
 								<GrGamepad />
 								<b>Quick Play</b>
@@ -26,7 +33,7 @@ export default function HomePage() {
 								Play with computer or other players
 							</div>
 							<div className="mainbtn btn-dark button-19 divlink">
-                                <Link to="/stat" className="divlink"></Link>
+                                <Link reloadDocument to="/stat" className="divlink"></Link>
 								<RiBarChartFill />
 								<b>Statistics</b>
 								<br></br>
@@ -89,7 +96,7 @@ export default function HomePage() {
                         <Link to="/" className="divlink"></Link>
 
 						<div className="card__icon">
-							<RiMessage2Fill /> Chatting
+							<RiMessage2Fill /> Group Chat
 						</div>
 						<h2 className="card__title">Chat with your friends.</h2>
 						<p className="card__apply">

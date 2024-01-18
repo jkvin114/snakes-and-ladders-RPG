@@ -144,7 +144,7 @@ async function getlist() {
 		if (res.status === 404) {
 			alert("the game does not exist")
 		} else if (res.status === 200) {
-			window.location.href = "/gamepage.html?is_spectator=true"
+			window.location.href = "/rpggame?is_spectator=true"
 		}
 	})
 	$(".toggle-detail").click(function () {

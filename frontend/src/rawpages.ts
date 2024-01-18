@@ -63,5 +63,54 @@ export const PAGES={
             "/src/localeManager.js",
             "/src/init.js"
         ]
-    }
+    },matching:{
+        html:"matching.html",
+        scripts:[
+            "/lib/jquery-3.6.0.min.js",
+            "/lib/axios.js",
+            "/lib/socket.io.min.js",
+            "/src/localeManager.js",
+            "/src/client.js",
+            "/src/matching.js",
+            "/src/gamesetting.js",
+            "/src/init.js"
+        ]
+    },
+    admin:{
+        html:"admin.html",
+        scripts:[
+            "/lib/jquery-3.6.0.min.js",
+            "/lib/axios.js",
+            "/src/admin.js",
+            "/src/init.js"
+        ]
+    },
+    rpggame:{
+        html:"admin.html",
+        scripts:[
+            "/lib/jquery-3.6.0.min.js",
+            "/lib/fabric.min.js",
+            "/lib/howler.min.js",
+            "/lib/socket.io.min.js",
+            "/lib/axios.js",
+            "/src/init.js"
+        ],
+        modules:[
+            "src/game/GameMain.js"  
+        ]
+    },
+    marblegame:{
+        html:"gamepage_marble.html",
+        scripts:[
+            "/lib/jquery-3.6.0.min.js",
+            "/lib/fabric.min.js",
+            "/lib/howler.min.js",
+            "/lib/socket.io.min.js",
+            "/lib/axios.js",
+            "/src/init.js",
+        ],
+        modules:[
+            "/src/marble/marble.js"
+        ]
+    },
 }

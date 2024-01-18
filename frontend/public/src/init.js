@@ -25,4 +25,4 @@ var everythingLoaded = setInterval(function () {
 			throw Error("function main() is not defined!   " + e)
 		}
 	}
-}, 10)
+}, 100)

@@ -193,7 +193,7 @@ io.on("connection", function (socket: Socket) {
 	const session =  socket.data.session
 	session.status="online"
 	
-	// require("./sockets/RoomSocket")(socket)
+	require("./sockets/RoomSocket")(socket)
 	// require("./sockets/RpgRoomSocket")(socket)
 	// require("./Marble/MarbleRoomSocket")(socket)
 	require("./social/chatSocket")(socket)

@@ -23,6 +23,9 @@ import { INotification } from "./types/notification"
 import { ToastContainer, toast } from "react-toastify"
 import { RiMessage2Fill } from "react-icons/ri"
 import Notifications from "./components/notification/Notifications"
+import { IRootContext, RootContext } from "./context/context"
+import { ToastHelper } from "./ToastHelper"
+import { limitString } from "./util"
 
 
 
@@ -31,17 +34,15 @@ import Notifications from "./components/notification/Notifications"
 function App() {
 	const mountedRef = { current: false };
 	const [notiCount,setNotiCount] = useState(0)
-	const location = useLocation();
-  
+	const [rootState,_] = useState<IRootContext>({
+		username:localStorage.getItem("username"),
+		loggedin:localStorage.getItem("username") != null && localStorage.getItem("loggedIn") === "true"
+	})
+	const [notiQueue,setNotiQueue] = useState<INotification[]>([])
 	function updateNotiCount(count:number){
 		let username = localStorage.getItem("username")
 		if(!username) return
-		console.log(location.pathname)
-		if(location.pathname === "/notification"){
-			localStorage.removeItem("noti-unread-"+username)
-			setNotiCount(0)
-			return
-		}
+		
 		let unread = localStorage.getItem("noti-unread-"+username)
 		if(!unread) {
 			setNotiCount(count)
@@ -54,20 +55,28 @@ function App() {
 	}
 	function onReceiveNoti(notis:INotification[]){
 		if(notis.length===0) return
-		// console.table(notis)
 		
-		toast.info("New Message: "+notis[0].message, {
-			position: "bottom-right",
-			autoClose: 3000,
-			hideProgressBar: true,
-			closeOnClick: true,
-			pauseOnHover: false,
-			draggable: false,
-			progress: 0,
-			theme: "colored",
-			icon:(<RiMessage2Fill/>)
-		})
-		updateNotiCount(notis.length)
+		if(window.location.pathname.split("/")[1] === "notification"){
+			setNotiQueue(notis)
+			setNotiCount(0)
+			localStorage.removeItem("noti-unread-"+rootState.username)
+			return
+		}
+		else{
+			toast.info("New Message: "+limitString(notis[0].message), {
+				position: "bottom-right",
+				autoClose: 3000,
+				hideProgressBar: true,
+				closeOnClick: true,
+				pauseOnHover: false,
+				draggable: false,
+				progress: 0,
+				theme: "colored",
+				icon:(<RiMessage2Fill/>)
+			})
+			// ToastHelper.ChatToast("New Message: "+notis[0].message,)
+			updateNotiCount(notis.length)
+		}
 		
 	}
 	function pollNotification(){
@@ -140,7 +149,7 @@ function App() {
 	}
 	return (
 		<>
-			
+			<RootContext.Provider value={rootState}>
 			<div id="page-root">
 				<SideBar isOpen={navbarOpen} openNavbar={setNavbarOpen} notiCount={notiCount}/>
 				<div>
@@ -157,7 +166,7 @@ function App() {
 						<Route path="/writepost" element={<BoardPostWrite />}></Route>
 						<Route path="/chat" element={<ChatRoom roomId="659c2791dbc11e5a15ec6e5a" />}></Route>
 						<Route path="/marble_stat" element={<MarbleStatPage />}></Route>
-						<Route path="/notification" element={<Notifications newNoti={[]}/>}></Route>
+						<Route path="/notification" element={<Notifications newNoti={notiQueue} setCount={setNotiCount}/>}></Route>
 
 						<Route path="/user/:username" element={<ProfilePage />}></Route>
 						<Route path="/user/" element={<ProfilePage />}></Route>
@@ -176,7 +185,12 @@ function App() {
 						</Route>
 						<Route path="/spectate" element={<HtmlPage htmlPath="spectate" />}></Route>
 						<Route path="/stat" element={<HtmlPage htmlPath="stat" />}></Route>
+						<Route path="/match" element={<HtmlPage htmlPath="matching" />}></Route>
+						<Route path="/admin" element={<HtmlPage htmlPath="admin" />}></Route>
 						<Route path="/find_room" element={<HtmlPage htmlPath="find_room" />}></Route>
+						<Route path="/rpggame" element={<HtmlPage htmlPath="rpggame" />}></Route>
+						<Route path="/marblegame" element={<HtmlPage htmlPath="marblegame" />}></Route>
+
 					</Routes>
 					</div>
 					<button onClick={printsession}>session</button>
@@ -187,6 +201,7 @@ function App() {
 				{/* <StockGame/> */}
 			</div>
 			<ToastContainer></ToastContainer>
+			</RootContext.Provider>
 		</>
 	)
 }

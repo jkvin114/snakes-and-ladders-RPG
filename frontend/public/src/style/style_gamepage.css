@@ -1,10 +1,8 @@
-html {
-  /* scroll-behavior: smooth; */
+
+
+#rpggame-root {
   overflow: hidden;
   font-size: 1vw;
-}
-
-body {
   font-family: 'cookierun';
   background-color: #242424;
   overflow: hidden;

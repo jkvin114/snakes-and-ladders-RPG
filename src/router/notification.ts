@@ -26,7 +26,10 @@ router.get("/poll",loginauth,sessionParser,ControllerWrapper(async function(req:
     const notis = await NotificationController.poll(session.userId)
     res.json(notis)
  }))
- 
+ router.post("/delete",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
+     await NotificationSchema.deleteById(req.body.id)
+}))
+
  
  router.post("/test",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
     let message = req.body.message

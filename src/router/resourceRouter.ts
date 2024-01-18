@@ -8,32 +8,54 @@ const router = express.Router()
 const{MarbleItemPreset} = require("../mongodb/GameDBSchema")
 const{Replay} = require("../mongodb/ReplayDBHandler")
 
+import type { Request, Response } from "express"
 
-router.get("/gamesetting", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"gamesetting.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting game setting file"})
-		}
-		res.end(data)
-	})
+import GameSetting from "../../res/gamesetting.json"
+const _GameSetting = JSON.stringify(GameSetting)
+
+import SimSetting from "../../res/simulationsetting.json"
+const _SimSetting = JSON.stringify(SimSetting)
+
+import GlobalSetting from "../../res/globalsettings.json"
+const _GlobalSetting = JSON.stringify(GlobalSetting)
+
+import map0 from "../../res/map.json"
+const _Map0 = JSON.stringify(map0)
+
+import map1 from "../../res/ocean_map.json"
+const _Map1 = JSON.stringify(map1)
+import map2 from "../../res/casino_map.json"
+const _Map2 = JSON.stringify(map2)
+import map3 from "../../res/rapid_map.json"
+const _Map3 = JSON.stringify(map3)
+
+import item from "../../res/item_new.json"
+const _Item = JSON.stringify(item)
+import skill from "../../res/skill.json"
+const _Skill = JSON.stringify(skill)
+import obs from "../../res/obstacle_data.json"
+const _Obstacle = JSON.stringify(obs)
+
+import marblemap0 from "../../res/marble/world_map.json"
+const _MarbleMap0 = JSON.stringify(marblemap0)
+
+import marblemap1 from "../../res/marble/godhand_map.json"
+const _MarbleMap1 = JSON.stringify(marblemap1)
+
+import marblecoord from "../../res/marble/map_coordinates.json"
+const _MarbleCoord = JSON.stringify(marblecoord)
+
+
+router.get("/gamesetting", function (req:Request, res:Response) {
+	res.end(_GameSetting)
 })
-router.get("/simulationsetting", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"simulationsetting.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting simulation setting file"})
-		}
-		res.end(data)
-	})
+router.get("/simulationsetting", function (req:Request, res:Response) {
+	res.end(_SimSetting)
 })
-router.get("/globalsetting", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"globalsettings.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting global setting file"})
-		}
-		res.end(data)
-	})
+router.get("/globalsetting", function (req:Request, res:Response) {
+	res.end(_GlobalSetting)
 })
-router.get("/visualeffects", function (req:express.Request, res:express.Response) {
+router.get("/visualeffects", function (req:Request, res:Response) {
 	fs.readFile(__dirname + RESOURCE_PATH+"visualeffects.json", "utf8", function (err, data) {
 		if(err){
 			res.status(500).send({err:"error while requesting visualeffects setting file"})
@@ -41,64 +63,33 @@ router.get("/visualeffects", function (req:express.Request, res:express.Response
 		res.end(data)
 	})
 })
-router.get("/map/:mapId", function (req:express.Request, res:express.Response) {
+
+router.get("/map/:mapId", function (req:Request, res:Response) {
 
 	let mapId = Number(req.params.mapId)
-	let filename="map.json"
 	if (mapId === MAP_TYPE.OCEAN) {
-		filename="ocean_map.json"
+		return res.end(_Map1)
 	} else if (mapId=== MAP_TYPE.CASINO) {
-		filename="casino_map.json"
+		return res.end(_Map2)
 	}else if (mapId=== MAP_TYPE.RAPID) {
-		filename="rapid_map.json"
+		return res.end(_Map3)
 	}
-	
-	fs.readFile(__dirname + RESOURCE_PATH + filename, "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting map file"})
-		}
-		res.end(data)
-	})
+	return res.end(_Map0)
 })
 
-router.get("/item", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"item_new.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting item file"})
-		}
-		res.end(data)
-	})
+router.get("/item", function (req:Request, res:Response) {
+	res.end(_Item)
 })
-router.get("/skill", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"skill.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting skill file"})
-		}
-		res.end(data)
-	})
+router.get("/skill", function (req:Request, res:Response) {
+	res.end(_Skill)
 })
-router.get("/obstacle", function (req:express.Request, res:express.Response) {
-	//	console.log(req.query.lang)
-	fs.readFile(__dirname + RESOURCE_PATH+"obstacle_data.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting obstacle file"})
-		}
-		res.end(data)
-	})
+router.get("/obstacle", function (req:Request, res:Response) {
+	res.end(_Obstacle)
+})
+
+//unused
+router.get("/string_resource", function (req:Request, res:Response) {
 	return
-	if (req.query.lang === "kor") {
-		
-	} else {
-		fs.readFile(__dirname + RESOURCE_PATH+"obstacles.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting obstacle file"})
-			}
-			res.end(data)
-		})
-	}
-})
-
-router.get("/string_resource", function (req:express.Request, res:express.Response) {
 	if (req.query.lang === "kor") {
 		fs.readFile(__dirname + RESOURCE_PATH+"string_resource_kor.json", "utf8", function (err, data) {
 			if(err){
@@ -117,7 +108,7 @@ router.get("/string_resource", function (req:express.Request, res:express.Respon
 	}
 	
 })
-router.get("/replay_format", function (req:express.Request, res:express.Response) {
+router.get("/replay_format", function (req:Request, res:Response) {
 	fs.readFile(__dirname + RESOURCE_PATH+"replay_record_format.json", "utf8", function (err, data) {
 		if(err){
 			res.status(500).send({err:"error while requesting replay_record_format file"})
@@ -126,54 +117,36 @@ router.get("/replay_format", function (req:express.Request, res:express.Response
 	})
 })
 
-router.get("/replay/:replayid", async function (req:express.Request, res:express.Response) {
+router.get("/replay/:replayid", async function (req:Request, res:Response) {
 	let data=await Replay.findById(req.params.replayid)
 
 	res.end(JSON.stringify(data))
 })
 
 
-router.get("/marble_map", function (req:express.Request, res:express.Response) {
+router.get("/marble_map", function (req:Request, res:Response) {
 	let room = R.getMarbleRoom(req.session.roomname)
 	if (!room) {
 		res.status(500).send({err:"error while requesting resource file"})
 		return
 	}
 	if(room.getMapId===0){
-		console.log("world_map")
-		fs.readFile(__dirname + RESOURCE_PATH+"marble/world_map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting resource file"})
-			}
-			res.end(data)
-		})
+		res.end(_MarbleMap0)
 	}
 	else if(room.getMapId===1){
-		console.log("godhand_map")
-		fs.readFile(__dirname + RESOURCE_PATH+"marble/godhand_map.json", "utf8", function (err, data) {
-			if(err){
-				res.status(500).send({err:"error while requesting resource file"})
-			}
-			res.end(data)
-		})
+		res.end(_MarbleMap1)
 	}
 	
 })
 
-router.get("/marble_map_coordinates", function (req:express.Request, res:express.Response) {
-	fs.readFile(__dirname + RESOURCE_PATH+"marble/map_coordinates.json", "utf8", function (err, data) {
-		if(err){
-			res.status(500).send({err:"error while requesting resource file"})
-		}
-		res.end(data)
-	})
+router.get("/marble_map_coordinates", function (req:Request, res:Response) {
+	res.end(_MarbleCoord)
 })
 
-router.get("/marble_items", function (req:express.Request, res:express.Response) {
-	let data={}
+router.get("/marble_items", function (req:Request, res:Response) {
 	res.end(JSON.stringify(MarbleRoom.ItemDescriptionCache))
 })
-router.get("/marble_item_presets", async function (req:express.Request, res:express.Response) {
+router.get("/marble_item_presets", async function (req:Request, res:Response) {
 	fs.readFile(__dirname + RESOURCE_PATH+"marble/marbleitempresets.json", "utf8", function (err, data) {
 		if(err){
 			res.status(500).send({err:"error while requesting resource file"})
@@ -195,7 +168,7 @@ router.get("/marble_item_presets", async function (req:express.Request, res:expr
 	}
 })
 
-router.post("/marble_item_presets", async function (req:express.Request, res:express.Response) {
+router.post("/marble_item_presets", async function (req:Request, res:Response) {
 	if(!req.body) return
 	try{
 

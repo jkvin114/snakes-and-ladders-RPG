@@ -23,12 +23,12 @@
   }
   .post{
     background-color: var(--bg3);
-    margin: 5px;
+    margin: 2px;
     padding: 5px;
     cursor: pointer;
-    border-radius: 4px;
+    /* border-radius: 4px; */
     display: grid;
-    grid-template-columns: min-content auto max-content;
+    grid-template-columns: max-content auto  min-content;
     align-items: center;
   }
   .filter-white{
@@ -70,7 +70,6 @@
     padding: 5px;
     background-color:  var(--bg3);
     margin-bottom: 10px;
-    margin-top: 20px;
   }
   .pagebtn:hover{
     background-color: var(--bg4);
@@ -111,18 +110,23 @@
     font-size: 17px;
   }
   .title_container{
-    padding: 7px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-left: 30px;
+    justify-content: space-evenly;
   }
   .subtext{
     font-size: 10px;
     /* color: #efa1ff; */
     color: var(--font-light);
     word-break: keep-all;
+    vertical-align: middle;
 
   }
   .subtext_container{
-    text-align: center;
-  }
+    text-align: left;  }
   .comment{
     margin-left: 3px;
     color: rgb(161, 195, 255);
@@ -230,19 +234,6 @@ a.divlink{
         <% for(let i=0;i<posts.length;++i){%>
           <div class="post divlink">
             <a class="divlink" href='/board/post/<%=posts[i].articleId%>'></a>
-
-            <%if(posts[i].imagedir!=="") {%>
-              <div class="thumbnail-img-container">
-                <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
-              </div>
-            <% } else{ %><div class="thumbnail-img-container"></div>
-              <% }  %> 
-            <div class="title_container">
-              
-              
-              <a class="title">
-                <%= posts[i].title %> </a> 
-            </div>
             <div class="vote_container">
               
               <%if(posts[i].visibility==="PRIVATE") {%>
@@ -261,15 +252,31 @@ a.divlink{
                 <a><%= posts[i].downvote %></a>
               </div>
             </div>
+           
+            <div class="title_container">
+              <div>
+              <a class="title">
+                <%= posts[i].title %> </a> 
+                  <a class="subtext comment"><img src="/res/img/svg/comment.svg"> [<%= posts[i].commentCount %>]</a><br>
+              </div>
+                <div class="subtext_container">
+                  <a class="subtext"> <b lkey="author">author</b>: <%=posts[i].authorName%> | </a>
+                  <a class="subtext"> <%= posts[i].createdAt.toString().substring(0,16) %>  | </a>
+                  <a class="subtext">  <b lkey="view">views</b>:<%= posts[i].views %></a>
+                </div>
+            </div>
+           
+            <%if(posts[i].imagedir!=="") {%>
+              <div class="thumbnail-img-container">
+                <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
+              </div>
+            <% } else{ %><div class="thumbnail-img-container"></div>
+              <% }  %> 
+
+
             <div></div>
-            <div class="subtext_container">
-              <a class="subtext"><b lkey="author">author</b>: <%=posts[i].authorName%></a>
-              <a class="subtext"> <%= posts[i].createdAt.toString().substring(0,24) %></a>
-              <a class="subtext">  <b lkey="view">views</b>:<%= posts[i].views %></a>
-            </div>
-            <div>
-              <a class="subtext comment"><img src="/res/img/svg/comment.svg"> [<%= posts[i].commentCount %>]</a><br>
-            </div>
+            
+           
           </div>
       <% } %> 
       <%if(start>0){%>

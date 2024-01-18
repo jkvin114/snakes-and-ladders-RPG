@@ -122,7 +122,7 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 
 	socket.on("user:update_champ", function (turn: number, champ: number) {
-		console.log("changechamp" + turn + champ)
+	//	console.log("changechamp" + turn + champ)
 		controlRoom(socket,(room,rname)=>{
 			
 			room.user_updateChamp(turn, champ)
@@ -138,7 +138,7 @@ module.exports=function(socket:Socket){
 			room.user_updateMap(map)
 			io.to(rname).emit("server:map", map)
 		})
-		console.log("setmap" + map)
+		//console.log("setmap" + map)
 	})
 	//==========================================================================================
 
@@ -152,7 +152,7 @@ module.exports=function(socket:Socket){
 
 	
 	socket.on("user:reload_game", function () {
-		console.log("reloadgame")
+		//console.log("reloadgame")
 		let rname = SocketSession.getRoomName(socket)
 
 	})
@@ -177,6 +177,7 @@ module.exports=function(socket:Socket){
 	
 	socket.on("disconnect", function () {
 		console.log("disconnected")
+		if(socket.data.type!=="matching") return
 		let turn = SocketSession.getTurn(socket)
 		if(!SocketSession.getRoomName(socket)) return
 		controlRoom(socket,(room,rname)=>{

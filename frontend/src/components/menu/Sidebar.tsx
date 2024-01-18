@@ -3,7 +3,8 @@ import "../../styles/sidebar.scss"
 import { RiAccountCircleFill, RiBallPenFill, RiBarChartFill, RiBillFill, RiBroadcastFill, RiCloseLine, RiCompass3Line, RiEyeFill, RiFolderVideoFill, RiHome4Fill, RiMessage2Fill, RiNewspaperFill, RiNotification2Fill, RiPlayFill, RiSettings5Fill, RiStockLine, RiTeamFill, RiTrophyFill, RiUserReceived2Fill } from "react-icons/ri";
 import { TbWorldQuestion } from "react-icons/tb";
 import { GrGamepad } from "react-icons/gr";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { RootContext } from "../../context/context";
 
 type Props={
     isOpen:boolean
@@ -13,6 +14,7 @@ type Props={
 
 export default function SideBar({isOpen,openNavbar,notiCount}:Props){
     const navigate = useNavigate()
+    const authState = useContext(RootContext)
 
     const loggedin = localStorage.getItem("username")!=null
 
@@ -63,16 +65,21 @@ Create Room</a></li>
               <li className="sub-menu-item"><Link to="/board"><RiBallPenFill />Write Post</Link></li>
             </ul>
           </li>
-          <li className="menu-item-container">
-          <a className="menu-item"><RiTeamFill /><b className="menu-name">Social</b></a>
-            <ul className="sub-menu">
-              <li className="sub-menu-item"><Link to="/"><RiNewspaperFill />Newsfeed</Link></li>
-              <li className="sub-menu-item"><Link to="/chat"><RiMessage2Fill/>Chat</Link></li>
-            </ul>
-          </li>
-          <li>
-          <Link className="menu-item" to={"/notification"}>{notiCount >0 && <span className="badge">{notiCount}</span>}<RiNotification2Fill/><b className="menu-name">Notifications</b></Link>
-          </li>
+
+
+          {loggedin && <>
+            <li className="menu-item-container">
+            <a className="menu-item"><RiTeamFill /><b className="menu-name">Social</b></a>
+              <ul className="sub-menu">
+                <li className="sub-menu-item"><Link to="/"><RiNewspaperFill />Newsfeed</Link></li>
+                <li className="sub-menu-item"><Link to="/chat"><RiMessage2Fill/>Chat</Link></li>
+              </ul>
+            </li>
+            <li>
+            <Link className="menu-item" to={"/notification"}>{notiCount >0 && <span className="badge">{notiCount}</span>}<RiNotification2Fill/><b className="menu-name">Notifications</b></Link>
+            </li>
+          </>}
+          
         </ul>
       </nav>
         <div className="bottom">
@@ -80,7 +87,8 @@ Create Room</a></li>
                 <button className="button gray" ><Link to={'/register'}>Register</Link></button>
             <button className="button"><Link to={'/login'}>Login</Link></button>
             </>)}
-           <Link className="menu-item menu-item-small" to={"/user"}><RiAccountCircleFill /><b className="menu-name">Profile</b></Link>
+            {loggedin && <Link className="menu-item menu-item-small" to={"/user"}><RiAccountCircleFill /><b className="menu-name">Profile</b></Link>}
+           
             <br></br>
             <a className="menu-item menu-item-small" ><RiSettings5Fill /><b className="menu-name">Setting</b></a>
             <Link to="/status" className="menu-item menu-item-small" ><RiBroadcastFill /><b className="menu-name">Status</b></Link>

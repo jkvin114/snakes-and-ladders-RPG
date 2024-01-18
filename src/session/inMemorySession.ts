@@ -22,6 +22,9 @@ const SessionIds = new Map<string,string>() //session id => user id
 
 export namespace SessionManager{
 
+    export function getAll(){
+        return [...SessionStore.values()]
+    }
     export function hasSession(userId:string){
         return SessionIds.has(userId)
     }

@@ -24,6 +24,8 @@ export const loginauth = (req: Request, res: Response, next: NextFunction) => {
 		res.status(401).end("unauthorized")
 	}
 }
+
+
 /**
  * get session and store it to res.locals.session
  * @param req 

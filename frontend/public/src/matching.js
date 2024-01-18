@@ -1,6 +1,7 @@
 sessionStorage.status = null
 var MATCH = null
-const RANDOM_CHAR_DIR = "res/img/ui/random.png"
+let SERVER_URL = ""
+const RANDOM_CHAR_DIR = "/res/img/ui/random.png"
 
 const chooseLang = function (eng, kor) {
 	if (sessionStorage.language === "ko") return kor
@@ -79,13 +80,13 @@ function onReceiveGameSetting(request) {
 
 	$(".setting_category input").click(function () {
 		let idx = Number($(this).val())
-		console.log(idx)
+		//	console.log(idx)
 
 		MATCH.setting.toggleSettings[idx].toggle()
 	})
 	$(".setting_category .rangedown").click(function () {
 		let idx = Number($(this).val())
-		console.log(idx)
+		//console.log(idx)
 		if (MATCH.setting.rangeSettings[idx].down()) {
 			$(this).attr("disabled", true)
 			$(this).css("color", "gray")
@@ -103,7 +104,7 @@ function onReceiveGameSetting(request) {
 
 	$(".setting_category .rangeup").click(function () {
 		let idx = Number($(this).val())
-		console.log(idx)
+		// console.log(idx)
 
 		if (MATCH.setting.rangeSettings[idx].up()) {
 			$(this).attr("disabled", true)
@@ -136,7 +137,7 @@ function onReceiveGameSetting(request) {
 function onReceiveRoomList(roomlist) {
 	// let roomList = request.responseText
 	roomlist = roomlist.split("||")
-	console.log(roomlist)
+	// console.log(roomlist)
 	if (roomlist[0] === "") {
 	} else {
 		let text = ""
@@ -208,13 +209,13 @@ class MatchStatus {
 		this.playerlist[0].name = sessionStorage.nickName
 		this.myturn = 0
 		let request = new XMLHttpRequest()
-		request.open("GET", "/resource/gamesetting")
+		request.open("GET", SERVER_URL + "/resource/gamesetting")
 
 		request.onload = () => onReceiveGameSetting(request)
 		request.send()
 
 		let request2 = new XMLHttpRequest()
-		request2.open("GET", "/resource/globalsetting")
+		request2.open("GET", SERVER_URL + "/resource/globalsetting")
 
 		request2.onload = () => onReceiveCharacters(request2)
 		request2.send()
@@ -240,10 +241,10 @@ class MatchStatus {
 
 		// request.onload = () =>
 		// request.send()
-		// console.log(roomlist)
+		// // console.log(roomlist)
 		// onReceiveRoomList(roomlist)
 		let request2 = new XMLHttpRequest()
-		request2.open("GET", "/resource/globalsetting")
+		request2.open("GET", SERVER_URL + "/resource/globalsetting")
 
 		request2.onload = () => onReceiveCharacters(request2)
 		request2.send()
@@ -261,9 +262,9 @@ class MatchStatus {
 		if (this.myturn === turn) {
 			sessionStorage.status = null
 			alert(LOCALE.kick)
-			ServerConnection.guestQuit()
+			//ServerConnection.guestQuit()
 			window.onbeforeunload = () => {}
-			window.location.href = "index.html"
+			window.location.href = "/find_room"
 		}
 	}
 	kickPlayer(v) {
@@ -273,7 +274,7 @@ class MatchStatus {
 		// $(this.ui.playerkick[v - 1]).hide()
 	}
 	onGuestRegister(turn, playerlist) {
-		console.log("server:registered" + turn)
+		// console.log("server:registered" + turn)
 		$("#Hostingpage").css("visibility", "visible")
 		$("#readybtn").show()
 		$(".mapbtn").attr("disabled", true)
@@ -306,7 +307,7 @@ class MatchStatus {
 		if (this.myturn === 0) {
 			return
 		}
-		console.log("myturn" + turn)
+		// console.log("myturn" + turn)
 
 		//	sessionStorage.turn = this.myturn
 		// card[turn] = PlayerType.PLAYER_CONNECTED
@@ -319,8 +320,8 @@ class MatchStatus {
 	 */
 	setType(type, turn) {
 		this.playerlist[turn].type = type
-		console.log("setType")
-		console.log(this.playerlist)
+		// console.log("setType")
+		// console.log(this.playerlist)
 		//this.updatePlayerList(this.playerlist)
 		ServerConnection.sendPlayerList(this.playerlist)
 	}
@@ -333,7 +334,7 @@ class MatchStatus {
 	updatePlayerList(players) {
 		if (this.quitted) {
 			//window.onbeforeunload = () => {}
-			window.location.href = "index.html"
+			window.location.href = "/"
 		}
 		if (!players) {
 			return
@@ -353,8 +354,8 @@ class MatchStatus {
 			return num
 		}, 0)
 
-		//console.log("myturn"+this.myturn)
-		console.log(players)
+		//// console.log("myturn"+this.myturn)
+		// console.log(players)
 
 		//card=cards
 		// $(".kick_player").hide()
@@ -365,14 +366,14 @@ class MatchStatus {
 			$(this.ui.playercard[i]).addClass("hidden")
 			$(this.ui.addai[i]).addClass("hidden")
 			this.ui.updateOneCharacter(i, this.playerlist[i].champ)
-			//	console.log(this.playerlist[i].type)
+			//	// console.log(this.playerlist[i].type)
 			switch (this.playerlist[i].type) {
 				case PlayerType.SIM_AI:
 					$(this.ui.playercard[i]).removeClass("hidden")
 					break
 				case PlayerType.PLAYER_CONNECTED:
 					$(this.ui.playercard[i]).removeClass("hidden")
-					console.log(this.playerlist[i].name)
+					// console.log(this.playerlist[i].name)
 					$(this.ui.playercard[i]).find(".iname").html(this.playerlist[i].name)
 					if (this.playerlist[i].userClass === 1) {
 						$(this.ui.playercard[i]).addClass("logined")
@@ -533,9 +534,9 @@ class MatchInterface {
 
 		$("#character_selection").hide()
 		$("#marble-item").show()
-		fetch("/resource/marble_items").then((response) => {
+		fetch(SERVER_URL + "/resource/marble_items").then((response) => {
 			response.json().then((result) => {
-				console.log(result)
+				// console.log(result)
 				let str = ""
 				for (const item of result) {
 					this.marbleItemState.push({
@@ -581,10 +582,10 @@ class MatchInterface {
 			})
 		})
 
-		fetch("/resource/marble_item_presets").then((response) => {
+		fetch(SERVER_URL + "/resource/marble_item_presets").then((response) => {
 			response.json().then((result) => {
 				let str = ""
-				console.log(result)
+				// console.log(result)
 				for (const [i, preset] of result.entries()) {
 					let locked = preset.items.reduce((prev, curr) => (curr === 2 ? prev + 1 : prev))
 					let selected = preset.items.reduce((prev, curr) => (curr === 1 ? prev + 1 : prev))
@@ -622,11 +623,11 @@ class MatchInterface {
 			else if (item.locked) items.push(2)
 			else items.push(0)
 		}
-		console.log(items)
+		// console.log(items)
 
 		$.ajax({
 			method: "POST",
-			url: "/resource/marble_item_presets",
+			url: SERVER_URL + "/resource/marble_item_presets",
 			data: {
 				name: name,
 				items: items,
@@ -699,7 +700,7 @@ class MatchInterface {
 	}
 
 	showAiCharacterList(turn, pos) {
-		console.log(pos)
+		// console.log(pos)
 		$(".champmenu").css(pos).css({ visibility: "visible" }).show()
 		this.aiCharacterListOwner = turn
 		let _this = this
@@ -723,9 +724,9 @@ class MatchInterface {
 	}
 
 	updateOneCharacter(turn, champ) {
-		console.log(turn, champ)
+		// console.log(turn, champ)
 		let src =
-			champ < 0 ? "res/img/ui/random.png" : "res/img/character/illust/" + this.match.characterSetting[champ].illustdir
+			champ < 0 ? "/res/img/ui/random.png" : "/res/img/character/illust/" + this.match.characterSetting[champ].illustdir
 
 		$(this.aichamp[turn]).attr("src", src)
 		$(this.playerchamp[turn]).attr("src", src)
@@ -816,7 +817,7 @@ class TeamSelector {
 			let c = this.match.playerlist[i].champ
 			$(this.champimgs[i]).attr(
 				"src",
-				c < 0 ? RANDOM_CHAR_DIR : "res/img/character/illust/" + this.match.characterSetting[c].illustdir
+				c < 0 ? RANDOM_CHAR_DIR : "/res/img/character/illust/" + this.match.characterSetting[c].illustdir
 			)
 
 			$(this.names[i]).html(playernames[i].name)
@@ -862,89 +863,39 @@ class TeamSelector {
 	}
 }
 function auth() {
-	$.ajax({
-		method: "POST",
-		url: "/room/matching",
-		data: {},
-	})
-		.done(function (data, statusText, xhr) {
-			let status = xhr.status
-			console.log(status)
-
-			if (status === 200) {
-				MATCH.setAsHost(data)
+	AxiosApi.post("/room/matching")
+		.then((res) => {
+			// console.log(res)
+			if (res.status === 200) {
+				MATCH.setAsHost(res.data)
 			}
-
-			connectSocket()
+			connectSocket(SERVER_URL)
 		})
-		.fail(function (data, statusText, xhr) {
-			if (data.status == 307) {
+		.catch((e) => {
+			console.error(e)
+			if (e.response.status === 307) {
 				alert("You are already in a game")
 				window.location.href = "/"
-				return
 			}
-			if (data.status === 401) {
+			if (e.response.status === 401) {
 				alert("Invalid access!")
 				window.location.href = "/"
 			}
-
-			// if (data.status === 404) {
-			// 	alert(chooseLang("There are no rooms to enter", "입장 가능한 방이 없습니다"))
-			// 	window.location.href = "index.html"
-			// }
 		})
 }
 
-$(document).ready(function () {
+function main(url) {
 	if (!sessionStorage.language) {
 		sessionStorage.language = "eng"
 	}
-
-	$("#toggle_fullscreen").click(() => {
-		console.log($(this).data("on"))
-		if (!$(this).data("on")) {
-			document.documentElement.requestFullscreen()
-			$(this).data("on", true)
-		} else {
-			document.exitFullscreen()
-			$(this).data("on", false)
-		}
-	})
-
+	SERVER_URL = url
 	MATCH = new MatchStatus()
 	auth()
 	updateLocale("matching")
 	$("#TeamSelectpage").hide()
 
-	// console.log(sessionStorage.host)
-	// if (!socket_connected) {
-	// 	//$("#Hostingpage").css("visibility", "hidden")
-	// }
-
-	// if (sessionStorage.host === "true") {
-
-	// }
-
-	// if (sessionStorage.host === "false") {
-
-	// }
-
-	// if (sessionStorage.host === "simulation") {
-	// 	$("#rname").html("시뮬레이션")
-	// 	$("#simulation_input").show()
-	// 	$(".champbtn").hide()
-	// 	$(".toplayer").hide()
-	// 	$("#instant").show()
-	// }
-
 	$("#quitbtn").click(function () {
-		// $.ajax({
-		// 	method: 'POST',
-		// 	url: '/reset_game'
-		// })
-
-		// // ServerConnection.resetGame()
-		window.location.href = "index.html"
+		window.location.href = "/"
 	})
 	$("#readybtn").click(function () {
 		if (MATCH.ready) {
@@ -978,27 +929,8 @@ $(document).ready(function () {
 		$("#individual").attr("disabled", true)
 	}
 	$("#individual").click(function () {
-		console.log("startgame")
+		// console.log("startgame")
 		MATCH.startIndividual()
-	})
-
-	$("#instant").click(function () {
-		return
-		let num = Number($("#num").val())
-		if (!num) {
-			num = 0
-		}
-		num += 1
-
-		// champlist.map(function(a){
-		//   return !a ? 0:a
-		//   })
-		if (PNUM + CNUM < 2) {
-			alert("Please check players")
-		} else {
-			window.onbeforeunload = function () {}
-			ServerConnection.finalSubmit(this.setting.getSummary(), num)
-		}
 	})
 
 	$(".aichamp").click(function () {
@@ -1021,20 +953,11 @@ $(document).ready(function () {
 		MATCH.addAI($(this).attr("value"))
 	})
 
-	//teamselection ==========================================================================================
-
-	// if (sessionStorage.host === "false") {
-	// 	$("#team").hide()
-	// 	$("#submitTeam").hide()
-	// }
-
 	$("#team").click(function () {
-		console.log("startgame team")
+		// console.log("startgame team")
 		//sessionStorage.isTeamSelection = true
 		MATCH.showTeamSelection()
 	})
-
-	// if(aiturn.length!==0) {setAI(aiturn)}
 
 	$(".teamchoice.red").on("click", function () {
 		let turn = Number($(this).attr("value"))
@@ -1068,7 +991,7 @@ $(document).ready(function () {
 	$("#settingclose").click(function () {
 		$("#settingpage").hide()
 		$("#overlay").hide()
-		// console.log(MATCH.setting.getSummary())
+		// // console.log(MATCH.setting.getSummary())
 	})
 	$("#setting").click(function () {
 		$("#settingpage").show()
@@ -1086,35 +1009,10 @@ $(document).ready(function () {
 	$("#marble-item-close").click(function () {
 		$("#marble-item-page").hide()
 		$("#overlay").hide()
-		// console.log(MATCH.setting.getSummary())
+		// // console.log(MATCH.setting.getSummary())
 	})
 	$("#marble-item").click(function () {
 		$("#marble-item-page").show()
 		$("#overlay").show()
 	})
-	// window.onbeforeunload = function () {
-	// 	// this.setType("none", this.myturn)
-	// 	// this.quitted = true
-	// 	// ServerConnection.guestQuit()
-
-	// 	return ""
-	// }
-})
-
-// 게스트 표시(방장만)
-// function showGuest(turn){
-
-//   if(sessionStorage.turn==="0"){
-//     addplayer(turn)
-//     $(playerkick[turn-1]).show()
-//   }
-
-// }
-// function addplayer(i){
-//   PNUM+=1
-//   setType('player_connected',i)
-
-//   if(PNUM+CNUM===4){
-//     $("#team").attr("disabled",false)
-//   }
-// }
+}

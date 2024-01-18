@@ -22,13 +22,13 @@
 			font-family: "nanumB";
 			src: url("res/font/NanumSquareB.ttf");
 		}
-		body {
+		#findroom-root {
 			/* background-color: #242424; */
 			background-color: var(--col-bg);
 			color: beige;
 			margin: 0;
 
-			font-family: "nanumB";
+			/* font-family: "nanumB"; */
 			text-align: center;
 		}
         .hidden{
@@ -102,7 +102,7 @@
             padding:10px 10px;
             transition: all 0.5s;
         }
-        .button{
+        #findroom-root  .button{
             font-family: 'nanumB';
             color:whitesmoke;
             /* background-color: #7E00BF; */
@@ -118,14 +118,14 @@
             border-radius: 3px;
             /* min-width: 100px; */
         }
-        .button.fill{
+        #findroom-root   .button.fill{
             background-color: #c654ff;
         }
-        .button:hover{
+        #findroom-root    .button:hover{
             background-color: #8a30b7;
         }
         </style>
-<body>    
+<div id="findroom-root">    
     
 
     <div id="password-window" class="hidden" data-roomname="">
@@ -153,7 +153,7 @@
         </div>
 
     </div>
-    </body>
+    </div>
     <script src="src/findroom.js"></script>
 
 </html>
