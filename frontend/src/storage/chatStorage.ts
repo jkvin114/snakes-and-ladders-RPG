@@ -28,6 +28,13 @@ export namespace ChatStorage{
         }
     }
 
+    export function getLastMsg(roomId:string){
+        let serial = maxSerial(roomId)
+        let obj =  localStorage.getItem(`chat-${roomId}-${serial}`)
+        if(!obj) return null
+        return JSON.parse(obj).content
+    }
+
     export function iterateStoredMsg(roomId:string,func:(msgobj:IChatMessage|null,unread:number,i:number)=>void,from?:number,to?:number){
         if(!roomId) return 
 

@@ -22,14 +22,14 @@ export default function Messages({ messages,fetchOld }: Props) {
 				serials.add(m.serial)
 				const today = m.createdAt ? m.createdAt.slice(0, 11).replace("T", " ") : ""
 				const showdate = lastDate !== today
-				const showdots = !isLastMessageEmpty && !m.content
+				const showdots = !isLastMessageEmpty && (!m.content || m.content==="")
 				const showfetch = !started && m.serial > 1
 
 				const showname = (lastusername !== m.username || showdate)
                 started=true
 				if (m.username) lastusername = m.username
 				lastDate = today
-				isLastMessageEmpty = !m.content
+				isLastMessageEmpty = (!m.content || m.content==="")
 
 				while (unread < messages.userLastSerials.length && m.serial > messages.userLastSerials[unread])
 					unread++
@@ -41,22 +41,24 @@ export default function Messages({ messages,fetchOld }: Props) {
 					return (
 						<>
 							{showfetch && (
-								<div className="fetchbtn" onClick={fetchOld} title="Load older messages">
+								<div key={"fetch"} className="fetchbtn" onClick={fetchOld} title="Load older messages">
 									<RiDownloadCloudFill />
 								</div>
 							)}
-							<div>...</div>
+							<div key={m.serial} title="cannot load messages">...</div>
 						</>
 					)
+				}else if(isLastMessageEmpty){
+					return (<></>)
 				} else {
 					return (
 						<>
 							{showfetch && (
-								<div className="fetchbtn" onClick={fetchOld}>
+								<div key={"fetch"} className="fetchbtn" onClick={fetchOld}>
 									<RiDownloadCloudFill />
 								</div>
 							)}
-							{showdate && <div className="time">{today}</div>}
+							{showdate && <div className="time" key={today}>{today}</div>}
 
 							<div key={m.serial} className={"message-container " + (m.username === me ? "me" : "")}>
 								{m.username === me ? (

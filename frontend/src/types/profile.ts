@@ -4,8 +4,10 @@ export interface IFriend{
     username:string
     email:string
     status?:string
+	_id:string
 }
 export interface IFollow{
+	_id:string
     profileImgDir:string
     username:string
     email:string

@@ -1,5 +1,4 @@
 node_modules/
-*.txt
 public/uploads/
 frontend/public/uploads/
 
@@ -9,8 +8,7 @@ temp/
 replays/
 stats/
 .vs/
-uploads/*.jpg
-uploads/*.png
+.vscode/
 public/res/img/effect/effects_old.png
 
 *.swp

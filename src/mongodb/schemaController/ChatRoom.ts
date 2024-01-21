@@ -15,6 +15,18 @@ export namespace ChatRoomSchema{
     {   
         return ChatRoom.findByIdAndUpdate(id,{admin:user})
     }
+
+    export const isDuplicateWithSize2 = function(user1:Types.ObjectId|string,user2:Types.ObjectId|string){
+        return ChatRoom.find({ $or: [
+            { $and: [{ admin: user1, opponent: user2}] },
+            { $and: [{ admin: user2, opponent: user1}] }
+          ],size:2}
+        )
+    }
+    export const setOpponent  = function (id: Types.ObjectId|string,user:Types.ObjectId|string)
+    {   
+        return ChatRoom.findByIdAndUpdate(id,{opponent:user})
+    }
     export const findById = function (id: Types.ObjectId|string) {
         return ChatRoom.findById(id)
     }

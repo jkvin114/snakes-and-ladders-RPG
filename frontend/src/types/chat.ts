@@ -3,6 +3,8 @@ export interface IChatRoom{
     _id:string
     name:string
     size:number
+    serial:number
+    lastMessage?:string
 }
 export interface IChatUser{
     _id:string

@@ -37,8 +37,8 @@ export namespace ChatRoomJoinStatusSchema{
         })
     }
     export const findByUserPopulated = async function (id: Types.ObjectId|string){
-        return (await ChatRoomJoinStatus.find({user:id}).select("room")
-        .populate<{ room:IChatRoom}>("room","name size")).map(u=>u.room)
+        return (await ChatRoomJoinStatus.find({user:id}).select("room lastSerial")
+        .populate<{ room:IChatRoom}>("room","name size serial opponent admin"))
     }
     export const findByRoomPopulated = async function (id: Types.ObjectId|string) {
         return  (await ChatRoomJoinStatus.find({room:id}).select("user")

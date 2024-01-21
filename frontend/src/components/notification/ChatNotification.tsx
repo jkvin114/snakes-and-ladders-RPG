@@ -2,6 +2,7 @@ import { RiMessage2Fill } from "react-icons/ri"
 import { INotification } from "../../types/notification"
 import ProfileImage from "../chat/ProfileImage"
 import { limitString } from "../../util"
+import { Link } from "react-router-dom"
 
 type Props= {
     noti:INotification
@@ -9,6 +10,7 @@ type Props= {
 export default function ChatNotification({noti}:Props){
 
     return (<>
+    <Link className="divlink" to={"/chat?room="+noti.payload1}></Link>
     <div className="topbar">
         <RiMessage2Fill/>
             <ProfileImage profileImgDir={noti.payload4} username={noti.payload3}/>

@@ -1,8 +1,15 @@
 import multer = require("multer");
 import path = require("path");
 const PATH="./frontend/public/uploads"
-const PATH_PROFILE="./frontend/public/uploads/profile"
+// const PATH_PROFILE="./frontend/public/uploads/profile"
+const PATH_PROFILE="./../uploads"
 
+function getFilename() {
+	console.log(new Date().toISOString().slice(0, 19))
+	return (
+		new Date().toISOString().slice(0, 19).replace("T", "_").replace(/:/g, "") + "_" + Math.floor(Math.random() * 999)
+	)
+}
 const fileFilter = (req:any, file:any, cb:any) => {
   // 확장자 필터링
   if (
@@ -28,7 +35,7 @@ namespace ImageUploader{
       filename: (req:any, file:any, done:any) => {
         const ext = path.extname(file.originalname);
         // aaa.txt => aaa+&&+129371271654.txt
-        const fileName =  Date.now() + ext;
+        const fileName =  getFilename() + ext;
         done(null, fileName);
       },
     }),
@@ -45,7 +52,7 @@ namespace ImageUploader{
       filename: (req:any, file:any, done:any) => {
         const ext = path.extname(file.originalname);
         // aaa.txt => aaa+&&+129371271654.txt
-        const fileName =  Date.now() + ext;
+        const fileName =  getFilename() + ext;
         done(null, fileName);
       },
     }),

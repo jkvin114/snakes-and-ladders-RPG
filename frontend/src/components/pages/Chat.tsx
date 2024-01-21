@@ -1,33 +1,34 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { AxiosApi } from "../../api/axios"
-import { Link, useSearchParams } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { IChatMessage, IChatRoom, IChatUser } from "../../types/chat"
 import ChatRoom from "../chat/ChatRoom"
+import { RootContext } from "../../context/context"
+import ChatRoomList from "../chat/ChatRoomList"
 
 
 export default function ChatPage(){
-
-    const [rooms,setRooms] = useState<IChatRoom[]>([])
+    const {context} = useContext(RootContext)
+    const navigate = useNavigate()
+    const loggedin = context.loggedin
+    
     const [searchParams, setSearchParams]  = useSearchParams()
-    const [roomId,setRoomId] = useState<string|null>(searchParams.get("room"))
+    
+    const room = searchParams.get("room")
+    const [roomId,setRoomId]=useState(room)
     useEffect(()=>{
-        AxiosApi.get("/chat/rooms")
-        .then(res=>{
-            console.log(res.data)
-            setRooms(res.data)
-        })
-        .catch(e=>{
-            console.error(e)
-        })
-
-    },[])
+        if(!loggedin){
+            navigate("/login?redirect=/chat")
+            return
+        }
+        console.log("update")
+        setRoomId(room)
+//659c2791dbc11e5a15ec6e5a
+    },[searchParams])
     
 
-    return (<>
-        {rooms.map(r=> r&&<div key={r._id}><Link to={"/chat?room="+r._id}>{r.name}</Link></div>)}
-        <br></br>
-        <hr></hr>
-        <br></br>
+    return (<div id="chatpage">
+        <ChatRoomList></ChatRoomList>
         {roomId && <ChatRoom roomId={roomId}/>}
-    </>)
+    </div>)
 }

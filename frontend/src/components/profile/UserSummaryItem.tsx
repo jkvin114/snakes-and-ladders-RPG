@@ -1,16 +1,20 @@
-import { useState } from "react"
-import { RiUserAddFill, RiUserFollowFill } from "react-icons/ri"
+import { useEffect, useState } from "react"
+import { RiCheckboxCircleLine, RiUserAddFill, RiUserFollowFill } from "react-icons/ri"
 import { AxiosApi } from "../../api/axios"
 import { Link } from "react-router-dom"
 
 type Props={
     profileImgDir:string
     username:string
-    buttonType:"follow"|"unfollow"|"friend"|"nofriend"|null
+    buttonType:"follow"|"unfollow"|"friend"|"nofriend"|"checked"|null
+	link?:boolean
 }
-export default function UserSummaryItem({profileImgDir,username,buttonType}:Props){
+export default function UserSummaryItem({profileImgDir,username,buttonType,link}:Props){
 
     const [btnState,setBtnState]=useState(buttonType)
+	useEffect(()=>{
+		setBtnState(buttonType)
+    },[buttonType])
 
     const loggedin = localStorage.getItem("username")!=null
     function friendRequest() {
@@ -52,12 +56,12 @@ export default function UserSummaryItem({profileImgDir,username,buttonType}:Prop
 				) : (
 					<img className="profileimg" src={"/uploads/profile/" + profileImgDir}></img>
 				)}
-				<a href={`/user/`+username} className="divlink" ></a>
+				{link && <a href={`/user/`+username} className="divlink" ></a>}
 			</div>
 		</div>
         
         <div className="item-section name">
-                <a href={`/user/`+username}>{username}</a>
+			{link ? ( <a href={`/user/`+username}>{username}</a>): (<a>{username}</a>)}
         </div>
         <div className="item-section">
             {(loggedin && localStorage.getItem("username")!==username) &&(<>
@@ -67,7 +71,7 @@ export default function UserSummaryItem({profileImgDir,username,buttonType}:Prop
                 {btnState==="friend" && (<RiUserFollowFill className="icon-btn green"></RiUserFollowFill>)}
                 </>
             )}
-            
+			{btnState==="checked" && (<RiCheckboxCircleLine  className="icon-btn green"></RiCheckboxCircleLine>)}
         </div>
     </div>)
 }

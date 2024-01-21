@@ -4,62 +4,80 @@ import { IChatUser, IChatMessage, IMessageData } from "../../types/chat"
 import { AxiosApi } from "../../api/axios"
 import { useEffect } from "react"
 import "../../styles/chat.scss"
-import { RiImageFill, RiSendPlane2Fill, RiSendPlaneFill } from "react-icons/ri"
+import "../../styles/userlist.scss"
+
+import {
+	RiArrowLeftLine,
+	RiCloseLine,
+	RiImageFill,
+	RiMenuLine,
+	RiSendPlane2Fill,
+	RiSendPlaneFill,
+} from "react-icons/ri"
 import { ChatSocket } from "../../api/chatsocket"
 import { UserStorage } from "../../storage/userStorage"
 import Messages from "./Messages"
+import { Link } from "react-router-dom"
+import RoomUserList from "./RoomUserList"
 type Props = {
 	roomId: string
-
 }
 
 export default function ChatRoom({ roomId }: Props) {
 	const [roomUsers, setRoomUsers] = useState<IChatUser[]>([])
-	const [messages, setMessages] = useState<IMessageData>({messages:[],userLastSerials:[0]})
+	const [messages, setMessages] = useState<IMessageData>({ messages: [], userLastSerials: [0] })
 	//const [maxSerial, setMaxSerial] = useState<number>(0)
-	const [roomname, setRoomName] = useState("?")
+	const [roomname, setRoomName] = useState("loading...")
+	const [loading, setLoading] = useState(true)
+	const [usersOpen, setUsersOpen] = useState(false)
 	let connected = false
 
 	function onload() {
 		if (connected) return
-		connected=true
+		connected = true
 		//setMessages(ChatStorage.loadStoredMessages(roomId))
 		//setMaxSerial(ChatStorage.maxSerial(roomId))
-		setTimeout(()=>ChatSocket.joinRoom(roomId, ChatStorage.maxSerial(roomId)),500)
+		setTimeout(() => ChatSocket.joinRoom(roomId, ChatStorage.maxSerial(roomId)), 500)
 		//console.log(messages[0])
-	//	console.log(messages.length)
+		//	console.log(messages.length)
 		ChatSocket.on("chat:message_received", (data) => {
-			if(!ChatSocket.isConnected()) return
+			if (!ChatSocket.isConnected()) return
 			let lastserials = data.userLastSerials
 			delete data.userLastSerials
-			receiveMessage({
-				...data,
-				profileImgDir: UserStorage.getProfileImg(data.username),
-			},lastserials)
-		//	console.log("unread:"+data.unread)
-			
+			receiveMessage(
+				{
+					...data,
+					profileImgDir: UserStorage.getProfileImg(data.username),
+				},
+				lastserials
+			)
+			//	console.log("unread:"+data.unread)
 		})
 		ChatSocket.on("chat:message_sent", (data) => {
 			let lastserials = data.userLastSerials
 			delete data.userLastSerials
-			receiveMessage({
-				...data,
-				profileImgDir: UserStorage.getProfileImg(data.username),
-			},lastserials)
+			receiveMessage(
+				{
+					...data,
+					profileImgDir: UserStorage.getProfileImg(data.username),
+				},
+				lastserials
+			)
 			//console.log("unread:"+data.unread)
 		})
 		ChatSocket.on("chat:joined_room", (data) => {
-			setRoomName("Room:" + data.room.name)
-			receiveMessageChunk(data.messages,data.userLastSerials)
+			setRoomName(data.room.name)
+			receiveMessageChunk(data.messages, data.userLastSerials)
+			onFinishRoomLoad()
 		})
 		ChatSocket.on("chat:user_join", (data) => {
-			if(!ChatSocket.isConnected()) return
+			if (!ChatSocket.isConnected()) return
 			updateUnread(data.userLastSerials)
 			//ChatStorage.decrementUnread(roomId, data.userLastSerials)
 		})
 
 		ChatSocket.on("chat:user_quit", () => {
-			if(!ChatSocket.isConnected()) return
+			if (!ChatSocket.isConnected()) return
 		})
 		ChatSocket.on("chat:error", (data) => {
 			console.error(data)
@@ -68,7 +86,7 @@ export default function ChatRoom({ roomId }: Props) {
 
 		AxiosApi.get("/chat/users/" + roomId)
 			.then((res) => {
-				console.table(res.data)
+				//	console.table(res.data)
 				setRoomUsers(res.data)
 				saveUser(res.data)
 			})
@@ -76,31 +94,33 @@ export default function ChatRoom({ roomId }: Props) {
 				console.error(e)
 			})
 	}
-	function saveUser(users:IChatUser[]){
-		for(const user of users){
-			UserStorage.saveUser(user.username,user.profileImgDir)
+	function saveUser(users: IChatUser[]) {
+		for (const user of users) {
+			UserStorage.saveUser(user.username, user.profileImgDir)
 		}
 	}
 
 	useEffect(() => {
-	//	console.log("load")
+		setLoading(true)
+		//	console.log("load")
 		onload()
 		return () => {
 			ChatSocket.leaveRoom(roomId)
 		}
-	}, [])
-
-	
+	}, [roomId])
 
 	useEffect(() => {
 		scrollToBottom()
 	}, [messages])
+	function onFinishRoomLoad() {
+		setLoading(false)
+	}
 
 	function updateUnread(userLastSerials: number[]) {
-		setMessages(msgs => ({
-			messages:msgs.messages,
-			userLastSerials:userLastSerials,
-			freshMsgSerial:-1
+		setMessages((msgs) => ({
+			messages: msgs.messages,
+			userLastSerials: userLastSerials,
+			freshMsgSerial: -1,
 		}))
 	}
 	const handleKeyPress = (event: any) => {
@@ -108,30 +128,30 @@ export default function ChatRoom({ roomId }: Props) {
 			sendMessage()
 		}
 	}
-	function receiveMessageChunk(messageChunk: IChatMessage[],userLastSerials:number[]) {
+	function receiveMessageChunk(messageChunk: IChatMessage[], userLastSerials: number[]) {
 		// message.unread = String(message.unread)
-		
-		for(const msg of messageChunk){
+
+		for (const msg of messageChunk) {
 			msg.profileImgDir = UserStorage.getProfileImg(msg.username)
 			ChatStorage.storeMessage(roomId, msg)
 		}
 
-		setMessages(msgs=>({
-			messages:[...ChatStorage.loadStoredMessages(roomId), ...messageChunk],
-			userLastSerials:userLastSerials,
-			freshMsgSerial:-1
+		setMessages((msgs) => ({
+			messages: [...ChatStorage.loadStoredMessages(roomId), ...messageChunk],
+			userLastSerials: userLastSerials,
+			freshMsgSerial: -1,
 		}))
 
 		//setMaxSerial(ChatStorage.maxSerial(roomId))
 	}
 
-	function receiveMessage(message: IChatMessage,userLastSerials:number[]) {
+	function receiveMessage(message: IChatMessage, userLastSerials: number[]) {
 		// message.unread = String(message.unread)
-		
-		setMessages(msgs=>({
-			messages:[...msgs.messages, message],
-			userLastSerials:userLastSerials,
-			freshMsgSerial:message.serial
+
+		setMessages((msgs) => ({
+			messages: [...msgs.messages, message],
+			userLastSerials: userLastSerials,
+			freshMsgSerial: message.serial,
 		}))
 		ChatStorage.storeMessage(roomId, message)
 		//setMaxSerial(ChatStorage.maxSerial(roomId))
@@ -139,8 +159,8 @@ export default function ChatRoom({ roomId }: Props) {
 	function sendMessage() {
 		let msg = (document.getElementById("msginput") as HTMLInputElement).value
 		if (msg) {
-			ChatSocket.sendChat(roomId, msg);
-			(document.getElementById("msginput") as HTMLInputElement).value = ""
+			ChatSocket.sendChat(roomId, msg)
+			;(document.getElementById("msginput") as HTMLInputElement).value = ""
 		}
 	}
 	const messagesEndRef = useRef(null)
@@ -148,16 +168,29 @@ export default function ChatRoom({ roomId }: Props) {
 	const scrollToBottom = () => {
 		;(messagesEndRef.current as any).scrollIntoView()
 	}
-	function fetchOld(){
-		
+	function fetchOld() {}
+	function toggleUsers() {
+		setUsersOpen(!usersOpen)
 	}
-	
 	return (
 		<>
 			<div id="chatroom" onKeyDown={handleKeyPress}>
+				{usersOpen && (
+					<>
+						<RoomUserList roomUsers={roomUsers} onClose={toggleUsers}/>
+						<div id="shadow" className="shadow-inner"></div>
+					</>
+				)}
+
 				<div className="contact bar">
+					<Link to="/chat" className="back">
+						<RiArrowLeftLine />{" "}
+					</Link>
 					<div className="pic"></div>
 					<div className="name">{roomname}</div>
+					<a className="menu" onClick={toggleUsers}>
+						<RiMenuLine />
+					</a>
 					{/* <div className="seen">Today at 12:56</div> */}
 				</div>
 
@@ -192,6 +225,7 @@ export default function ChatRoom({ roomId }: Props) {
 						<RiSendPlane2Fill onClick={sendMessage} />
 					</i>
 				</div>
+				{loading && <img id="loading" src="/res/img/ui/loading_purple.gif"></img>}
 			</div>
 		</>
 	)

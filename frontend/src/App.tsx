@@ -158,7 +158,7 @@ function App() {
 						<Route path="/register" element={<RegisterPage />}></Route>
 						<Route path="/status" element={<StatusPage />}></Route>
 						<Route path="/writepost" element={<BoardPostWrite />}></Route>
-						<Route path="/chat" element={<ChatRoom roomId="659c2791dbc11e5a15ec6e5a" />}></Route>
+						<Route path="/chat" element={<ChatPage></ChatPage>}></Route>
 						<Route path="/marble_stat" element={<MarbleStatPage />}></Route>
 						<Route path="/notification" element={<Notifications newNoti={notiQueue} setCount={setNotiCount}/>}></Route>
 						<Route path="/create_game" element={<MakeGamePage />}></Route>
