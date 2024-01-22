@@ -36,7 +36,7 @@ async function joinRoom(name, password) {
 	AxiosApi.post("/room/verify_join", {
 		roomname: name,
 		password: password,
-		username: sessionStorage.nickName,
+		username: "",
 	})
 		.then((res) => {
 			window.location.href = "/match?join=true&roomname=" + name

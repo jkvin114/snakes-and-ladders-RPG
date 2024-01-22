@@ -1,5 +1,7 @@
 import { Game } from "./RPGGame.js"
 // import { REPLAY } from "./replays/replay_test.js"
+import { server_url } from "./GameMain.js"
+
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 
 const SPEEDS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4]
@@ -63,14 +65,14 @@ export class ReplayGame extends Game {
 			this.init(setting, 0, "")
 		} catch (e) {
 			alert("error while loading replay data")
-			window.location.href = "index.html"
+			window.location.href = "/"
 		}
 		//this.loadResource()
 	}
 	requestReplayById() {
 		return new Promise((resolve, reject) => {
 			$.ajax({
-				url: "/resource/replay/" + this.replayId,
+				url: server_url + "/resource/replay/" + this.replayId,
 				type: "GET",
 				success: (data) => {
 					this.replayData = JSON.parse(data)
@@ -86,7 +88,7 @@ export class ReplayGame extends Game {
 	requestFormat() {
 		return new Promise((resolve, reject) => {
 			$.ajax({
-				url: "/resource/replay_format",
+				url: server_url + "/resource/replay_format",
 				type: "GET",
 				success: (data) => {
 					this.format = JSON.parse(data)

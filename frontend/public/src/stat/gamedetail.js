@@ -130,7 +130,7 @@ function showSingleStat(data) {
 	} else {
 		$("#replay").show()
 		$("#replay-btn").click(() => {
-			window.location.href = "gamepage.html?isreplay=true&replayid=" + data.replay
+			window.location.href = "/rpggame?isreplay=true&replayid=" + data.replay
 		})
 	}
 	$("#train_detail p").html("")

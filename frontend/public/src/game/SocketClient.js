@@ -1,5 +1,5 @@
 const CONNECTION_TIMEOUT = 2000
-import { GAME } from "./GameMain.js"
+import { GAME, server_url, CONNECTION_TYPE } from "./GameMain.js"
 // import { calculatePrize,randomObs } from "./roulette.js"
 export class GameClient {
 	constructor() {
@@ -30,7 +30,11 @@ export class GameClient {
 
 export function openConnection(isInitial) {
 	console.log("openconnection")
-	const socket = io()
+	const socket = io(server_url, {
+		autoConnect: true,
+		withCredentials: true,
+		query: { type: CONNECTION_TYPE },
+	})
 	GAME.connection = new GameClient()
 	let connectionTimeout = null
 	// const RNAME = sessionStorage.roomName
@@ -349,8 +353,8 @@ export function openConnection(isInitial) {
 	socket.on("server:game_stat_ready", function (statid) {
 		setTimeout(() => {
 			window.onbeforeunload = () => {}
-			if (statid === "" || GAME.is_spectator) window.location.href = "index.html"
-			else window.location.href = "statpage.html?type=game&statid=" + statid
+			if (statid === "" || GAME.is_spectator) window.location.href = "/"
+			else window.location.href = "/stat?type=game&statid=" + statid
 		}, 4000)
 	})
 

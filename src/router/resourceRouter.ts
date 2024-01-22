@@ -43,6 +43,7 @@ import marblemap1 from "../../res/marble/godhand_map.json"
 const _MarbleMap1 = JSON.stringify(marblemap1)
 
 import marblecoord from "../../res/marble/map_coordinates.json"
+import { sessionParser } from './jwt/auth';
 const _MarbleCoord = JSON.stringify(marblecoord)
 
 
@@ -124,8 +125,8 @@ router.get("/replay/:replayid", async function (req:Request, res:Response) {
 })
 
 
-router.get("/marble_map", function (req:Request, res:Response) {
-	let room = R.getMarbleRoom(req.session.roomname)
+router.get("/marble_map",sessionParser, function (req:Request, res:Response) {
+	let room = R.getMarbleRoom(res.locals.session.roomname)
 	if (!room) {
 		res.status(500).send({err:"error while requesting resource file"})
 		return

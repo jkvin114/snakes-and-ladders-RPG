@@ -44,13 +44,13 @@ module.exports=function(socket:Socket){
 
 	socket.on("user:gameready", function (setting:ClientInputEventFormat.GameSetting) {
 		let rname = SocketSession.getRoomName(socket)
-
+		console.log("gameready")
 		if (!R.hasRoom(rname)) return
 
 		R.getRPGRoom(rname)?.user_gameReady(setting, rname)
 
-		//게스트 페이지 바꾸기
-		socket.to(rname).emit("server:to_gamepage")
+		//호스트,게스트 페이지 바꾸기
+		io.to(rname).emit("server:to_gamepage")
 	})
 	
 	//==========================================================================================

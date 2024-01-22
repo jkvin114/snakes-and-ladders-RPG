@@ -11,6 +11,7 @@ import { sessionParser } from "./jwt/auth"
 import { ControllerWrapper } from "./ControllerWrapper"
 import { ISession } from "../session/inMemorySession"
 import type { Request, Response } from "express"
+import { randName } from "../RPGGame/data/names"
 
 function isUserInRPGRoom(req: Express.Request) {
 	return (
@@ -131,8 +132,8 @@ router.post(
 		room.setSettings(body.loggedinOnly, body.isPrivate)
 
 		if (session) {
-			if (!session.username && !session.isLogined) {
-				session.username = String(body.username)
+			if ((!session.username || session.username==="") && !session.isLogined) {
+				session.username = randName()
 			}
 			session.roomname = rname
 			session.turn = 0
@@ -156,8 +157,8 @@ router.post(
 		}
 
 		if (session) {
-			if (!session.username && !session.isLogined) {
-				session.username = String(body.username)
+			if ((!session.username || session.username==="") && !session.isLogined) {
+				session.username = randName()
 			}
 			session.turn = 1
 		}
@@ -240,7 +241,7 @@ router.post(
 			session.roomname = name
 
 			//set the guest username from client session storage if user is not logged in
-			if (!session.isLogined) session.username = req.body.username
+			if (!session.isLogined) session.username = randName()
 		}
 	})
 )
@@ -255,6 +256,8 @@ router.post(
 		}
 		if (!R.hasRoom(session.roomname)) {
 			console.error("access to unexisting game")
+			delete session.roomname
+			delete session.turn
 			res.status(401).end()
 			return
 		}

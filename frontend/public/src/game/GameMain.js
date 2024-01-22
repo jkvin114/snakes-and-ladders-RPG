@@ -1,6 +1,8 @@
 import { ReplayGame } from "./ReplayGame.js"
 import { PlayableGame } from "./PlayableGame.js"
 export const VOLUME = 0.4
+
+export const server_url = "http://localhost:5000"
 export class StringResource {
 	constructor() {
 		this.EFFECTS
@@ -17,19 +19,44 @@ export class StringResource {
 		this.LOCALE
 	}
 }
+export let AxiosApi = {
+	get: () => {
+		throw Error("Axios api is not initialized")
+	},
+	post: () => {
+		throw Error("Axios api is not initialized")
+	},
+}
+/**
+ * axios throws error when status code is >= 300
+ */
+
+var everythingLoaded = setInterval(function () {
+	if (/loaded|complete/.test(document.readyState)) {
+		try {
+			axios.defaults.withCredentials = true
+			AxiosApi = axios.create({ baseURL: server_url })
+			if (main && $) {
+				main() // this is the function that gets called when everything is loaded
+				clearInterval(everythingLoaded)
+			}
+		} catch (e) {
+			console.error(e)
+			// console.error("function main() is not defined!")
+			// throw Error("function main() is not defined!   " + e)
+		}
+	}
+}, 100)
 
 const params = new URL(document.location).searchParams
 const isReplay = params.get("isreplay")
+const isSpectate = params.get("is_spectator") === "true"
+export const GAME = isReplay ? new ReplayGame(params.get("replayid")) : new PlayableGame(isSpectate)
 
-export const GAME = isReplay
-	? new ReplayGame(params.get("replayid"))
-	: new PlayableGame(params.get("is_spectator") === "true")
+export const CONNECTION_TYPE = isReplay ? "rpgreplay" : isSpectate ? "rpgspectate" : "rpggame"
 
 //when html document is loaded
 $(document).ready(function () {
-	if (!isReplay) auth()
-
-	extendJqueryEasing()
 	includeHTML()
 	window.onbeforeunload = function (e) {
 		return ""
@@ -42,6 +69,14 @@ export function format(str, values) {
 	}
 	return str
 }
+
+async function main() {
+	if (!isReplay) auth()
+	extendJqueryEasing()
+	console.log("main")
+	await GAME.updateLocale()
+	GAME.onCreate()
+}
 /**
  * window.onload -> socket.connect -> requestsetting -> initialsetting
  * -> initui -> requestobs -> requestitem -> requestmap -> drawboard
@@ -53,11 +88,22 @@ export function format(str, values) {
  * -> boardready -> setupcomplete -> startgame
  *  */
 //called when all files including images are loaded
-$(window).on("load", async function (e) {
-	await GAME.updateLocale()
-	GAME.onCreate()
-	console.log("window onload")
-})
+
+// $(window).on("load", async function (e) {
+// 	console.log("window onload")
+// })
+
+function auth() {
+	AxiosApi.post("/room/game")
+		.then()
+		.catch((e) => {
+			if (e.response.status === 401) {
+				console.error("unauthorized")
+				alert("Invalid access!")
+				window.location.href = "/"
+			}
+		})
+}
 
 function extendJqueryEasing() {
 	var baseEasings = {}
@@ -101,55 +147,28 @@ function extendJqueryEasing() {
 	})
 }
 
-function includeHTML() {
+async function includeHTML() {
 	var z, i, elmnt, file, xhttp
 	/* Loop through a collection of all HTML elements: */
-	z = document.getElementsByTagName("*")
+	z = [document.getElementById("newstore_container"), document.getElementById("images_container")]
 	for (i = 0; i < z.length; i++) {
 		elmnt = z[i]
 		/*search for elements with a certain atrribute:*/
-		file = elmnt.getAttribute("w3-include-html")
+		file = elmnt.dataset.html
 		if (file) {
-			/* Make an HTTP request using the attribute value as the file name: */
-			xhttp = new XMLHttpRequest()
-			xhttp.onreadystatechange = function () {
-				if (this.readyState == 4) {
-					if (this.status == 200) {
-						elmnt.innerHTML = this.responseText
-					}
-					if (this.status == 404) {
-						elmnt.innerHTML = "Page not found."
-					}
-					/* Remove the attribute, and call this function once more: */
-					elmnt.removeAttribute("w3-include-html")
-					includeHTML()
-				}
+			let res = await fetch(file)
+			if (res.status == 404) {
+				elmnt.innerHTML = "Page not found."
+				continue
 			}
-			xhttp.open("GET", file, true)
-			xhttp.send()
-			/* Exit the function: */
-			return
+
+			const html = await res.text()
+
+			if (res.status == 200) {
+				elmnt.innerHTML = html
+			}
 		}
 	}
-}
-
-function auth() {
-	$.ajax({
-		method: "POST",
-		url: "/room/game",
-		data: {},
-	})
-		.done(function (data, statusText, xhr) {
-			let status = xhr.status
-			console.log(status)
-		})
-		.fail(function (data, statusText, xhr) {
-			if (data.status === 401) {
-				console.error("unauthorized")
-				alert("Invalid access!")
-				window.location.href = "index.html"
-			}
-		})
 }
 
 //WEBAPP INTERFACE

@@ -1689,7 +1689,6 @@ export class Scene extends Board {
 	}
 
 	async showAttackEffect(data) {
-		console.log(data)
 		for (let i = 0; i < data.targets.length; ++i) {
 			let t = data.targets[i]
 			// //console.log(data.visualeffect)

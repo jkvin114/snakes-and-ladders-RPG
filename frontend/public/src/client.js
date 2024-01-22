@@ -172,10 +172,11 @@ class ServerConnection {
 		socket.emit("user:update_ready", turn, ready)
 	}
 	static finalSubmit = function (setting, gametype) {
+		console.log(gametype)
 		window.onbeforeunload = () => {}
 		if (gametype === "rpg") {
 			socket.emit("user:gameready", setting)
-			window.location.href = "/rpggame"
+			//window.location.href = "/rpggame"
 		} else if (gametype === "marble") {
 			socket.emit("marble:user:gameready", setting)
 			window.location.href = "/marblegame"

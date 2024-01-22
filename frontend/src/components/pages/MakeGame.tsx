@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom"
 import "../../styles/makegame.scss"
 import "../../styles/form.scss"
 import { createRoom } from "../../api/room"
+import { randName } from "../../types/names"
 
 export function MakeGamePage() {
 	const [searchParams, _] = useSearchParams()
@@ -18,7 +19,7 @@ export function MakeGamePage() {
         if (gametype !== "rpg" && gametype !== "marble") {
             return
         }
-        createRoom(gametype,isPrivate,isLoginOnly,"annonymus",rname,pw)
+        createRoom(gametype,isPrivate,isLoginOnly,"",rname,pw)
 	}
 
 	return (

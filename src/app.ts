@@ -188,14 +188,14 @@ io.on("error", function (e: any) {
 
 
 io.on("connection", function (socket: Socket) {
-	console.log(`${socket.id} is connected`)
-	console.log(socket.data.type)
+	//console.log(`${socket.id} is connected`)
+	//console.log(socket.data.type)
 	const session =  socket.data.session
 	session.status="online"
 	
 	require("./sockets/RoomSocket")(socket)
-	// require("./sockets/RpgRoomSocket")(socket)
-	// require("./Marble/MarbleRoomSocket")(socket)
+	require("./sockets/RpgRoomSocket")(socket)
+	require("./Marble/MarbleRoomSocket")(socket)
 	require("./social/chatSocket")(socket)
 
 	socket.on("disconnect",function(){

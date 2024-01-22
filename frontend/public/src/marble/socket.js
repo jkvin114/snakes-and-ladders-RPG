@@ -1,5 +1,5 @@
-import { debugActionStack } from "./debug/debug_interface.js"
-import { GAME, SOLOPLAY } from "./marble.js"
+import { debugActionStack } from "./debug_interface.js"
+import { GAME, SOLOPLAY, server_url } from "./marble.js"
 export class Socket {
 	constructor() {
 		this.requestSetting
@@ -18,7 +18,11 @@ function checkTurn(turn) {
 	return GAME.myTurn === turn
 }
 export function openConnection(isInitial) {
-	const socket = io()
+	const socket = io(server_url, {
+		autoConnect: true,
+		withCredentials: true,
+		query: { type: "marblegame" },
+	})
 	GAME.connection = new Socket()
 	let connectionTimeout = null
 	const RNAME = sessionStorage.roomName

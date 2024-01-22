@@ -4,6 +4,8 @@ import { Player } from "./player.js"
 import { GAME, StringResource, registerSounds } from "./GameMain.js"
 import { GestureController } from "./gesturecontroller.js"
 import { SkillParser } from "./skillparser_module.js"
+import { server_url } from "./GameMain.js"
+
 class Setting {
 	constructor(game) {
 		//singleton
@@ -136,12 +138,8 @@ export class Game {
 		})
 	}
 	async updateLocale() {
-		this.LOCALE = await fetch(`/res/locale/game/${this.chooseLang("en", "ko")}.json`).then((response) =>
-			response.json()
-		)
-		this.PAGELOCALE = await fetch(`/res/locale/gamepage/${this.chooseLang("en", "ko")}.json`).then((response) =>
-			response.json()
-		)
+		this.LOCALE = await (await fetch(`/res/locale/game/${this.chooseLang("en", "ko")}.json`)).json()
+		this.PAGELOCALE = await (await fetch(`/res/locale/gamepage/${this.chooseLang("en", "ko")}.json`)).json()
 		sessionStorage.language = this.setting.lang
 
 		this.updateSkillInfo()
@@ -171,7 +169,7 @@ export class Game {
 	onQuit() {
 		this.showDialog(GAME.PAGELOCALE.msg.quit, () => {
 			document.onbeforeunload = () => {}
-			window.location.href = "index.html"
+			window.location.href = "/"
 		})
 	}
 
@@ -244,7 +242,7 @@ export class Game {
 		await this.requestItemList()
 		await this.requestGlobalSetting()
 		await this.requestVisualEffect()
-		await this.requestStringRes()
+		// await this.requestStringRes()
 
 		this.requestMap()
 	}
@@ -909,6 +907,7 @@ export class Game {
 		if (sound === "roullete") {
 			rate = 2
 		}
+		rate *= 1 + (Math.random() * 0.2 - 0.1)
 
 		if (sound === "gold") {
 			toPlay = GAME.sounds.get(Math.random() > 0.5 ? "gold" : "gold2")
@@ -926,9 +925,9 @@ export class Game {
 	}
 
 	requestMap() {
-		//console.log("requestMap")
+		console.log("requestMap")
 		$.ajax({
-			url: "/resource/map/" + this.map,
+			url: server_url + "/resource/map/" + this.map,
 			type: "GET",
 			success: (data) => {
 				this.onMapRequestComplete()
@@ -953,7 +952,7 @@ export class Game {
 	requestItemList() {
 		return new Promise((resolve, reject) => {
 			let itemrequest = new XMLHttpRequest()
-			itemrequest.open("GET", `/resource/item`, true)
+			itemrequest.open("GET", server_url + `/resource/item`, true)
 			itemrequest.onload = () => {
 				try {
 					this.onItemResponse(JSON.parse(itemrequest.responseText))
@@ -974,7 +973,7 @@ export class Game {
 	requestGlobalSetting() {
 		return new Promise((resolve, reject) => {
 			let request = new XMLHttpRequest()
-			request.open("GET", `/resource/globalsetting`, true)
+			request.open("GET", server_url + `/resource/globalsetting`, true)
 			request.onload = () => {
 				try {
 					//	ItemList = JSON.parse(itemrequest.responseText)
@@ -993,7 +992,11 @@ export class Game {
 		return new Promise((resolve, reject) => {
 			let request = new XMLHttpRequest()
 
-			request.open("GET", this.chooseLang("/resource/obstacle?lang=eng", "/resource/obstacle?lang=kor"), true)
+			request.open(
+				"GET",
+				server_url + this.chooseLang("/resource/obstacle?lang=eng", "/resource/obstacle?lang=kor"),
+				true
+			)
 			request.onload = () => {
 				try {
 					//obstacleList = JSON.parse(request.responseText)
@@ -1014,7 +1017,7 @@ export class Game {
 	requestVisualEffect() {
 		return new Promise((resolve, reject) => {
 			let request2 = new XMLHttpRequest()
-			request2.open("GET", `/resource/visualeffects`, true)
+			request2.open("GET", server_url + `/resource/visualeffects`, true)
 			request2.onload = () => {
 				try {
 					this.strRes.VISUAL_EFFECTS = JSON.parse(request2.responseText)
@@ -1028,11 +1031,12 @@ export class Game {
 		})
 	}
 
+	//depricated
 	requestStringRes() {
 		return new Promise((resolve, reject) => {
 			let request = new XMLHttpRequest()
 
-			request.open("GET", "/resource/string_resource?lang=" + this.chooseLang("eng", "kor"), true)
+			request.open("GET", server_url + "/resource/string_resource?lang=" + this.chooseLang("eng", "kor"), true)
 			request.onload = () => {
 				try {
 					//	obstacleList = JSON.parse(request.responseText)

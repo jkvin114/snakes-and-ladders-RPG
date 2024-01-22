@@ -1,8 +1,8 @@
-html{
+
+  #marble-game-root{
     font-size: 1vw;
     overflow: hidden;
-  }
-  body{
+    color: black;
       background-color: rgb(77, 77, 77);
       /* text-align: center; */
       /* margin: 3px; */
@@ -805,6 +805,8 @@ html{
   #gamepage{
     grid-template-columns: 1fr 100vh 1fr;
     display: grid;
+    width: 100vw;
+    height: 100vh;
   }
   .player-ui{
     cursor: pointer;

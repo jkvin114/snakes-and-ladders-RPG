@@ -18,9 +18,68 @@ const MESSAGE = {
 	forcemove_no_tile: "이동할 지역이 없습니다",
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
-
+export const server_url = "http://localhost:5000"
 const BGM = false
 export var GAME
+
+export let AxiosApi = {
+	get: () => {
+		throw Error("Axios api is not initialized")
+	},
+	post: () => {
+		throw Error("Axios api is not initialized")
+	},
+}
+
+export let abilitySound
+
+/**
+ * axios throws error when status code is >= 300
+ */
+
+var everythingLoaded = setInterval(function () {
+	if (/loaded|complete/.test(document.readyState)) {
+		try {
+			axios.defaults.withCredentials = true
+			AxiosApi = axios.create({ baseURL: server_url })
+			if (main && $ && Howl) {
+				main() // this is the function that gets called when everything is loaded
+				clearInterval(everythingLoaded)
+			}
+		} catch (e) {
+			console.error(e)
+			// console.error("function main() is not defined!")
+			// throw Error("function main() is not defined!   " + e)
+		}
+	}
+}, 100)
+
+function main() {
+	extendJqueryEasing()
+	console.log("window onload")
+	$("#loadingtext").html("CONNECTING WITH SERVER..")
+	GAME = new Game()
+	openConnection(true)
+	abilitySound = new Howl({
+		src: ["res/sound/ability.mp3"],
+	})
+	$("#testbtn").click(() => {
+		GAME.scene.test()
+	})
+
+	$("#dicebtn").on("mousedown touchstart", function (e) {
+		GAME.onDiceHoldStart()
+		$(this).addClass("pressed")
+		return false
+	})
+	$("#dicebtn").on("mouseup touchend", function (e) {
+		GAME.onDiceHoldEnd()
+		GAME.scene.clearTileHighlight("yellow")
+		$(this).removeClass("pressed")
+		return false
+	})
+}
+
 class Game {
 	constructor() {
 		this.scene = new MarbleScene(this)
@@ -398,7 +457,7 @@ class Game {
 	onQuit() {
 		this.ui.showDialog("정말 게임을 떠나시겠습니까?", () => {
 			document.onbeforeunload = () => {}
-			window.location.href = "/index.html"
+			window.location.href = "/"
 		})
 	}
 
@@ -419,19 +478,12 @@ function toast2(msg) {
 }
 
 function auth() {
-	$.ajax({
-		method: "POST",
-		url: "/room/game",
-		data: {},
-	})
-		.done(function (data, statusText, xhr) {
-			let status = xhr.status
-			console.log(status)
-		})
-		.fail(function (data, statusText, xhr) {
-			if (data.status === 401) {
+	AxiosApi.post("/room/game")
+		.then()
+		.catch((e) => {
+			if (e.response.status === 401) {
 				console.error("unauthorized")
-				alert("unauthorized access")
+				alert("Invalid access!")
 				window.location.href = "/"
 			}
 		})
@@ -479,52 +531,27 @@ function extendJqueryEasing() {
 	})
 }
 
-$(document).ready(function () {
-	//auth()
-	window.onbeforeunload = function (e) {
-		// sessionStorage.roomName = null
-		// // GAME.connection.resetGame()
-		// $.ajax({
-		// 	method: "POST",
-		// 	url: "/reset_game"
-		// })
-		return true
-	}
-	extendJqueryEasing()
-})
-$(window).on("load", function (e) {
-	console.log("window onload")
-	$("#loadingtext").html("CONNECTING WITH SERVER..")
-	GAME = new Game()
-	openConnection(true)
-
-	$("#testbtn").click(() => {
-		GAME.scene.test()
-	})
-
-	$("#dicebtn").on("mousedown touchstart", function (e) {
-		GAME.onDiceHoldStart()
-		$(this).addClass("pressed")
-		return false
-	})
-	$("#dicebtn").on("mouseup touchend", function (e) {
-		GAME.onDiceHoldEnd()
-		GAME.scene.clearTileHighlight("yellow")
-		$(this).removeClass("pressed")
-		return false
-	})
-})
-
-function requestMap() {
-	console.log("requestMap")
+async function requestMap() {
 	var list = []
+
 	var urls = ["/resource/marble_map", "/resource/marble_map_coordinates"]
+	let res = await AxiosApi.get("/resource/marble_map")
+	GAME.scene.setMap(res.data)
+	let res2 = await AxiosApi.get("/resource/marble_map_coordinates")
+	GAME.scene.setMapCoordinates(res2.data)
+
+	GAME.scene.setToMarble()
+	GAME.scene.drawBoard()
+	GAME.onReady()
+	GAME.scene.onReady()
+
+	return
 
 	urls.forEach(function (url, i) {
 		// (1)
 		list.push(
 			// (2)
-			fetch(url).then(async function (res) {
+			fetch(server_url + url).then(async function (res) {
 				//map
 				console.log(res)
 				let data = await res.json()
@@ -540,14 +567,6 @@ function requestMap() {
 
 	Promise.all(list) // (4)
 		.then(function () {
-			GAME.scene.setToMarble()
-			GAME.scene.drawBoard()
-			GAME.onReady()
-			GAME.scene.onReady()
 			//  alert('all requests finished!'); // (5)
 		})
-}
-
-function registerSounds() {
-	// Howler.volume(VOLUME)
 }

@@ -92,11 +92,10 @@ export const PAGES={
             "/lib/fabric.min.js",
             "/lib/howler.min.js",
             "/lib/socket.io.min.js",
-            "/lib/axios.js",
-            "/src/init.js"
+            "/lib/axios.js"
         ],
         modules:[
-            "src/game/GameMain.js"  
+            "/src/game/GameMain.js"  
         ]
     },
     marblegame:{
@@ -107,7 +106,6 @@ export const PAGES={
             "/lib/howler.min.js",
             "/lib/socket.io.min.js",
             "/lib/axios.js",
-            "/src/init.js",
         ],
         modules:[
             "/src/marble/marble.js"

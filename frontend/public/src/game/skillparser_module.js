@@ -9,7 +9,6 @@ async function testGetskill() {
 	}
 	// SkillParser.populateSkillValues({ Q: 10, W: 40, R: 100 })
 }
-
 export class SkillParser {
 	static EFFECTS
 	static LANG = "en"
@@ -126,10 +125,10 @@ export class SkillParser {
 		if (SkillParser.LANG === "ko") return ko
 		else return en
 	}
-	static async init(localepath, datapath, lang) {
+	static async init(api, localepath, datapath, lang) {
 		if (datapath !== "") {
-			const skilldata = await (await fetch(datapath)).json()
-			SkillParser.skills = skilldata
+			const skilldata = await api.get(datapath)
+			SkillParser.skills = skilldata.data
 		}
 		if (localepath !== "") {
 			const data = await (await fetch(localepath + lang + ".json")).json()

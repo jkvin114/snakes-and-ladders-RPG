@@ -4,12 +4,13 @@ import { RiBarChartFill, RiBillFill, RiMessage2Fill } from "react-icons/ri"
 import { Link } from "react-router-dom"
 import { TbWorldQuestion } from "react-icons/tb"
 import { createRoom } from "../../api/room"
+import { randName } from "../../types/names"
 
 export default function HomePage() {
 
 
 	function quickplay(){
-		createRoom("rpg",false,false,"annonymus")
+		createRoom("rpg",false,false)
 	}
 
 	return (

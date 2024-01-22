@@ -1,4 +1,4 @@
-import { GAME, SOLOPLAY } from "./marble.js"
+import { GAME, SOLOPLAY, abilitySound } from "./marble.js"
 import { moneyToString, COLORS, COLORS_LIGHT } from "./marble_board.js"
 
 function addNumComma(num) {
@@ -134,9 +134,7 @@ class BuildingSelector {
 }
 
 const NO_DUPLICATE_ABILITIES = ["perfume", "badge", "agreement", "reverse_agreement"] //두번연속 알림 안뜨는 능력들
-const abilitySound = new Howl({
-	src: ["res/sound/ability.mp3"],
-})
+
 class AbilityBuffer {
 	static TOP = 0
 	static BOTTOM = 1
@@ -188,20 +186,20 @@ class AbilityBuffer {
 			let img = ""
 			let text = ""
 			if (name === "angel") {
-				img = "res/angel.png"
+				img = "/res/img/marble/angel.png"
 				text = "모두방어"
 			} else if (name === "discount") {
-				img = "res/coupon.png"
+				img = "/res/img/marble/coupon.png"
 				text = "할인"
 			} else if (name === "shield") {
-				img = "res/shield.png"
+				img = "/res/img/marble/shield.png"
 				text = "공격방어"
 			} else return
 			$("#ability-container").append(
 				`<div class="ability-notification card ${pos}" id='${id}'>
 					<img src="${img}"><br>
 					<a>${text}</a>
-					${isblocked ? `<img class="card-blocked" id='card_block_${id}' src="res/block.png">` : ""}
+					${isblocked ? `<img class="card-blocked" id='card_block_${id}' src="/res/img/marble/block.png">` : ""}
 				</div>`
 			)
 			if (isblocked) {
@@ -462,7 +460,7 @@ export class GameInterface {
 		})
 
 		$("#quit").click(() => GAME.onQuit())
-		$("#result-quitbtn").click(() => (window.location.href = "/index.html"))
+		$("#result-quitbtn").click(() => (window.location.href = "/"))
 
 		$("#fortunecard-cancel").click(() => {
 			this.game.finishObtainCard(false)
@@ -528,7 +526,7 @@ export class GameInterface {
 	}
 	charImgUrl(char) {
 		return (
-			"./../res/img/character/" +
+			"/res/img/character/" +
 			["reaper", "elephant", "ghost", "dinosaur", "sniper", "magician", "kraken", "bird", "tree", "hacker"][char] +
 			".png"
 		)
@@ -897,11 +895,11 @@ export class GameInterface {
 		if (name !== "none" && name !== "") {
 			$(this.doms.playerCard[ui_index]).show()
 			if (name === "angel_card" || name === "angel")
-				$(this.doms.playerCard[ui_index]).find("img").attr("src", "res/angel.png")
+				$(this.doms.playerCard[ui_index]).find("img").attr("src", "/res/img/marble/angel.png")
 			if (name === "discount_card" || name === "discount")
-				$(this.doms.playerCard[ui_index]).find("img").attr("src", "res/coupon.png")
+				$(this.doms.playerCard[ui_index]).find("img").attr("src", "/res/img/marble/coupon.png")
 			if (name === "shield_card" || name === "shield")
-				$(this.doms.playerCard[ui_index]).find("img").attr("src", "res/shield.png")
+				$(this.doms.playerCard[ui_index]).find("img").attr("src", "/res/img/marble/shield.png")
 		} else {
 			$(this.doms.playerCard[ui_index]).hide()
 		}
@@ -978,7 +976,7 @@ export class GameInterface {
 			<a class="goldtext" style="font-size: 21px;">${this.game.players[winner].name}</a>
 		  </div>
 		  <div>
-			<img src="res/trophy.svg" style="width: 30px;">  <a class="goldtext" style="font-size: 21px;">${addNumComma(
+			<img src="/res/img/marble/trophy.svg" style="width: 30px;">  <a class="goldtext" style="font-size: 21px;">${addNumComma(
 				scores[winner]
 			)}</a>
 		  </div>

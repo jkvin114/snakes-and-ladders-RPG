@@ -3,7 +3,7 @@ import { StoreStatus, StoreInstance, StoreInterface } from "./store.js"
 import GameInterface from "./gameinterface.js"
 import { openConnection } from "./SocketClient.js"
 import { SkillParser } from "./skillparser_module.js"
-
+import { AxiosApi, server_url } from "./GameMain.js"
 export class PlayableGame extends Game {
 	constructor(is_spectator) {
 		super()
@@ -27,7 +27,7 @@ export class PlayableGame extends Game {
 		this.diceControl = false //주컨 사용가능여부
 
 		this.pendingSelection = { type: "", name: "" }
-		this.ui
+		this.ui = null
 		this.storeStatus
 
 		this.subwayPrices = [0, 50, 100]
@@ -61,7 +61,7 @@ export class PlayableGame extends Game {
 
 	tryReconnect() {
 		$.ajax({
-			url: "http://" + sessionStorage.ip_address + "/connection_check",
+			url: "http://" + server_url + +"/connection_check",
 			type: "GET",
 			success: function () {
 				//	openConnection(false)
@@ -281,14 +281,15 @@ export class PlayableGame extends Game {
 	async updateSkillInfo() {
 		if (!this.is_spectator && !this.is_replay) {
 			if (!SkillParser.skills) {
-				await SkillParser.init("", "/resource/skill", this.chooseLang("en", "ko"))
+				await SkillParser.init(AxiosApi, "", "/resource/skill", this.chooseLang("en", "ko"))
 				SkillParser.MODE = "fillvalue"
 			}
 			SkillParser.LANG = this.chooseLang("en", "ko")
 
 			SkillParser.EFFECTS = this.LOCALE.statuseffect_data
 			SkillParser.descriptions = this.LOCALE.skills
-			this.ui.updateSkillInfo()
+
+			if (this.ui) this.ui.updateSkillInfo()
 		}
 	}
 	onReceiveTarget(result) {

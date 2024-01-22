@@ -1,7 +1,6 @@
 import { GameEventEmitter } from "../sockets/GameEventEmitter";
 import { Room } from "../Room/room";
 import { Worker, isMainThread } from "worker_threads"
-import type { SchemaTypes } from "../mongodb/SchemaTypes";
 import { MarbleGameRecordSchema } from "../mongodb/schemaController/MarbleGameRecord";
 
 import MarbleGameGRPCClient from "../grpc/marblegameclient";

@@ -134,18 +134,13 @@ async function getlist() {
 
 	$(".spectate-btn").click(async function () {
 		let rname = $(this).data("roomname")
-		let res = await fetch(SERVER_URL + "/room/spectate_rpg", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ roomname: rname }),
-		})
-		if (res.status === 404) {
-			alert("the game does not exist")
-		} else if (res.status === 200) {
-			window.location.href = "/rpggame?is_spectator=true"
-		}
+		AxiosApi.post("/room/spectate_rpg", { roomname: rname })
+			.then((res) => {
+				window.location.href = "/rpggame?is_spectator=true"
+			})
+			.catch((e) => {
+				if (e.response.status === 404) alert("the game does not exist")
+			})
 	})
 	$(".toggle-detail").click(function () {
 		let rname = $(this).data("toggles")

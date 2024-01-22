@@ -5,6 +5,8 @@ import express = require("express")
 import { controlRoom } from "./Controller";
 import CONFIG from "./../../config/config.json"
 
+const validTypes = new Set<string>(["matching","rpggame","marblegame"])
+
 module.exports=function(socket:Socket){
 
 
@@ -176,13 +178,13 @@ module.exports=function(socket:Socket){
 	})
 	
 	socket.on("disconnect", function () {
-		console.log("disconnected")
-		if(socket.data.type!=="matching") return
-		let turn = SocketSession.getTurn(socket)
+		
+		if(!validTypes.has(socket.data.type)) return
+		let turn = SocketSession.getTurn(socket) 
 		if(!SocketSession.getRoomName(socket)) return
 		controlRoom(socket,(room,rname)=>{
 			
-			if(!room.isGameStarted){
+			if(!room.isGameStarted && socket.data.type==="matching"){
 				//if host quits in the matching page
 				if(turn===0){
 					room.reset()
@@ -197,6 +199,7 @@ module.exports=function(socket:Socket){
 				SocketSession.removeGameSession(socket)
 			}
 			else{
+				console.log("disconnect")
 				if(CONFIG.dev_settings.enabled && CONFIG.dev_settings.reset_room_on_disconnect && room.isGameRunning){
 					room.reset()
 					io.to(rname).emit("server:quit")
