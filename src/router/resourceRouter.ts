@@ -36,6 +36,7 @@ const _Skill = JSON.stringify(skill)
 import obs from "../../res/obstacle_data.json"
 const _Obstacle = JSON.stringify(obs)
 
+
 import marblemap0 from "../../res/marble/world_map.json"
 const _MarbleMap0 = JSON.stringify(marblemap0)
 

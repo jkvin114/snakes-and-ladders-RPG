@@ -27,3 +27,10 @@ export interface IMessageData{
     //serial number of a message that is just received. This message`s unread count will be displayed directly without other calculation.
     freshMsgSerial?:number 
 }
+export interface IFriendStatus{
+    _id:string
+    profileImgDir:string
+    username:string
+    status:string
+    lastActive:number //last active UTC milisecond. -1 if unavaliable.
+}

@@ -10,15 +10,12 @@ export interface IUserCache{
     boardData:string|mongoose.Types.ObjectId
 }
 
-
-
-
 export namespace UserCache{
     const userCache = new Map<string,IUserCache>()
 
     function onCacheMiss(id:string|mongoose.Types.ObjectId){
         return UserSchema.findById(id)
-     }
+    }
     export async function getUser(id:string|mongoose.Types.ObjectId):Promise<IUserCache>{
         if(userCache.has(String(id))){
             return userCache.get(String(id))

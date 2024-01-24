@@ -9,7 +9,7 @@ import MarbleGameGRPCClient from "../grpc/marblegameclient"
 import RPGGameGRPCClient from "../grpc/rpggameclient"
 import { sessionParser } from "./jwt/auth"
 import { ControllerWrapper } from "./ControllerWrapper"
-import { ISession } from "../session/inMemorySession"
+import { ISession, SessionManager } from "../session/inMemorySession"
 import type { Request, Response } from "express"
 import { randName } from "../RPGGame/data/names"
 
@@ -278,6 +278,19 @@ router.post(
 			session.turn = -1
 
 			res.status(200).end(req.body.roomname)
+		}//find game that the user is currently in
+		else if(req.body.userId){
+
+			const roomname =SessionManager.getGameByUserId(req.body.userId)
+			if (!R.hasRPGRoom(roomname) || !R.getRPGRoom(roomname).gameStatus || !R.getRPGRoom(roomname).isGameStarted) {
+				console.error("access to unexisting game")
+				res.status(404).end()
+				return
+			}
+			session.roomname = roomname
+			session.turn = -1
+
+			res.status(200).end(roomname)
 		} else {
 			res.status(404).end()
 		}

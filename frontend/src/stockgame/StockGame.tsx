@@ -19,7 +19,7 @@ import { RootContext } from "../context/context";
 
 // Main App We run for frontend
 function StockGame() {
-	let theme="light"
+	let theme="dark"
 	const dataFetch = useRef(false)
 	const [val, setVal] = useState<DisplayData>({
 		value: 0,

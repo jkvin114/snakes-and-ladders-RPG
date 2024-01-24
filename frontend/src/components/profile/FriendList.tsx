@@ -20,6 +20,6 @@ export default function FriendList({username}:Props){
     },[])
 
     return (<div className="userlist">
-        {friends.map(f=><UserSummaryItem key={f.username} username={f.username} profileImgDir={f.profileImgDir} buttonType={f.status==="friend"?"friend":"nofriend"}/>)}
+        {friends.map(f=><UserSummaryItem link={true} key={f.username} username={f.username} profileImgDir={f.profileImgDir} buttonType={f.status==="friend"?"friend":"nofriend"}/>)}
     </div>)
 }

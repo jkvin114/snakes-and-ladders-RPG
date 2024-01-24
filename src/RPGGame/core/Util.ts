@@ -302,8 +302,10 @@ class PriorityArray<T> extends Array {
 }
 export class Counter<T>{
 	map:Map<T,number>
+	size:number
 	constructor(elem?:Iterable<T>){
 		this.map=new Map<T,number>()
+		this.size=0
 		if(elem!=null){
 			for(const e of elem){
 				this.add(e)
@@ -321,6 +323,7 @@ export class Counter<T>{
 		else{
 			this.map.set(toadd,1)
 		}
+		this.size++
 		return this
 	}
 	countItem(item:T){
@@ -330,6 +333,7 @@ export class Counter<T>{
 	delete(e:T){
 		let val=this.map.get(e)
 		if(val!==undefined){
+			this.size--
 			this.map.set(e,val-1)
 			if(this.map.get(e)===0) this.map.delete(e)
 		}
@@ -342,6 +346,7 @@ export class Counter<T>{
 	}
 	clear(){
 		this.map.clear()
+		this.size = 0 
 	}
 	toArray(){
 		let list=[]

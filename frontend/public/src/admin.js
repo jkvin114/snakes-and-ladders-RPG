@@ -1,7 +1,7 @@
 let SERVER_URL = ""
 function main(url) {
 	SERVER_URL = url
-	$("#refreshbtn").click(function () {
+	$("#refresh").click(function () {
 		fetchdata()
 	})
 	fetchdata()
@@ -90,8 +90,8 @@ function healthcheck(data) {
 
 async function fetchdata() {
 	try {
-		let rooms = (await AxiosApi.get("/admin/allrooms")).data // (await (await fetch("/admin/allrooms")).json()).data
-		let users = (await AxiosApi.get("/admin/allusers")).data //(await (await fetch("/admin/allusers")).json()).data
+		const rooms = (await AxiosApi.get("/admin/allrooms")).data // (await (await fetch("/admin/allrooms")).json()).data
+		const users = (await AxiosApi.get("/admin/allusers")).data //(await (await fetch("/admin/allusers")).json()).data
 		let str = ``
 		for (const rm of rooms) {
 			let players = ""
@@ -116,7 +116,7 @@ async function fetchdata() {
 		}
 		$("#room-table").html(str)
 		str = ""
-		for (const us of users) {
+		for (const us of users.sessions) {
 			// if (!us.ip) continue
 			str += `
             <tr>
@@ -125,11 +125,26 @@ async function fetchdata() {
                 <td>${us.isLogined}</td>
                 <td>${us.roomname}</td>
                 <td>${us.turn}</td>
-                <td>${us.status}</td>
              </tr>
             `
 		}
 		$("#user-table").html(str)
+
+		str = ""
+		for (const us of users.users) {
+			// if (!us.ip) continue
+			str += `
+            <tr>
+                <td>${us.username}</td>
+                <td>${us.id}</td>
+                <td>${us.lastActive}</td>
+                <td>${us.sockets.join(",")}</td>
+                <td>${us.sessionIds.join(",")}</td>
+				<td>${us.chatRooms.join(",")}</td>
+             </tr>
+            `
+		}
+		$("#userstatus-table").html(str)
 
 		$(".spectatebtn").click(spectate)
 		$(".resetbtn").click(resetroom)

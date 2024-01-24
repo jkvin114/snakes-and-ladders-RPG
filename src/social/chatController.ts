@@ -63,7 +63,7 @@ export namespace ChatController {
 		for (const member of status) {
 			let memberId = String(member.user)
 			//read
-			if (memberId === session.userId || (SessionManager.hasSession(memberId) && SessionManager.getSessionByUserId(memberId).currentChatRoom === roomId))
+			if (memberId === session.userId || (SessionManager.hasSession(memberId) && SessionManager.isUserInChatRoom(memberId,roomId)))
 			{
 				await ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,memberId,serial)
 				//console.log(SessionManager.getSessionByUserId(memberId).username + " read chat")
@@ -125,7 +125,7 @@ export namespace ChatController {
 		await ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,session.userId,currentSerial)
 
 		let userLastSerials = (await ChatRoomJoinStatusSchema.findByRoom(roomId)).map(d=>d.lastSerial)
-		session.currentChatRoom = roomId
+		SessionManager.onEnterChatRoom(session,roomId)
 
 		let messages:ChatMessageModel[] = []
 
@@ -153,11 +153,11 @@ export namespace ChatController {
 	}
 	export async function leaveRoom(socket: Socket,session:ISession, roomId: string) {
 		socket.leave(ROOM_NAME_PREFIX + roomId)
-		delete session.currentChatRoom
+		SessionManager.onLeaveChatRoom(session,roomId)
 	}
 	export async function quitRoom(socket: Socket,session:ISession, roomId: string) {
 		socket.leave(ROOM_NAME_PREFIX + roomId)
-		delete session.currentChatRoom
+		SessionManager.onLeaveChatRoom(session,roomId)
 
 		let change = await ChatRoomJoinStatusSchema.left(roomId,session.userId)
 		if(change)

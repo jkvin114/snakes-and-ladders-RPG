@@ -18,7 +18,7 @@ export default function MarbleStatPage() {
 
 	const [games, setGames] = useState<any[]>([])
 	useEffect(() => {
-		AxiosApi.get("/stat/marble/all").then((res) => setGames(res.data))
+		AxiosApi.get("/stat/marble/all").then((res) => setGames(res.data.reverse()))
 	}, [])
 	return (
 		<div id="marble-stat-root">

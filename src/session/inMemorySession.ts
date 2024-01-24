@@ -2,6 +2,10 @@ import {Request} from 'express';
 import {  getNewJwt, getSessionId, getSessionIdFromSocket } from "./jwt"
 import { v4 as uuidv4 } from 'uuid';
 import type { Socket } from 'socket.io';
+import { Counter } from '../RPGGame/core/Util';
+import { MongoId } from '../mongodb/types';
+import { UserCache } from '../cache/cache';
+import { R } from '../Room/RoomStorage';
 
 export interface ISession{
     isLogined:boolean
@@ -14,24 +18,49 @@ export interface ISession{
     roomname?:string
     turn?:number
     ip?:string
-    status?:string
-    currentChatRoom?:string
+}
+
+export interface IUserStatus{
+    sessionIds:Set<string>
+    chatRooms:Set<string>
+    sockets:Counter<string>
+    username:string
+    lastActive?:Date
 }
 const SessionStore = new Map<string,ISession>()
-const SessionIds = new Map<string,string>() //session id => user id
+const UserStatus = new Map<string,IUserStatus>()  // user id  => status
+
+const STATUS_PRIPROTY = [
+    "rpggame","marblegame","matching","rpgspectate"
+]
 
 export namespace SessionManager{
 
     export function getAll(){
         return [...SessionStore.values()]
     }
-    export function hasSession(userId:string){
-        return SessionIds.has(userId)
+    export function getAllUsers(){
+        let users=[]
+        for(const [id,status] of UserStatus.entries()){
+            users.push({
+                id:id,
+                username:status.username,
+                chatRooms:[...status.chatRooms],
+                sessionIds:[...status.sessionIds],
+                lastActive:status.lastActive,
+                sockets:status.sockets.toArray()
+            })
+        }
+        return users
+
     }
-    export function getSessionByUserId(userId:string):ISession|undefined{
-        const id = SessionIds.get(userId)
-        if(!id) return undefined
-        return SessionStore.get(id)
+    export function hasSession(userId:string){
+        return UserStatus.has(userId)
+    }
+    export function getSessionsByUserId(userId:string):ISession[]{
+        const status = UserStatus.get(userId)
+        if(!status) return []
+        return [...status.sessionIds].map(id=>SessionStore.get(id))
     }
     /**
      * create a new session and return a jwt containing session id
@@ -59,16 +88,96 @@ export namespace SessionManager{
         let id= getSessionId(req)
         return SessionStore.has(id)
     }
-    export function login(req:Request,userId:string){
+    function isLoginValid(session:ISession){
+        if(!session || !session.isLogined || !session.userId || !UserStatus.has(session.userId)) return false
+        return true
+    }
+    export function onEnterChatRoom(session:ISession,roomId:MongoId){
+        if(!isLoginValid(session)) return
+        UserStatus.get(session.userId).chatRooms.add(String(roomId))
+
+    }
+    export function onLeaveChatRoom(session:ISession,roomId:MongoId){
+        if(!isLoginValid(session)) return
+        UserStatus.get(session.userId).chatRooms.delete(String(roomId))
+    }
+    export function isUserInChatRoom(userId:MongoId,roomId:MongoId){
+        if(!UserStatus.has(String(userId))) return false
+        return UserStatus.get(String(userId)).chatRooms.has(String(roomId))
+    }
+    export function onSocketConnect(session:ISession,type:string){
+        if(!isLoginValid(session) || !type) return
+        UserStatus.get(session.userId).sockets.add(type)
+        
+    }
+    export function onSocketAccess(session:ISession){
+        if(!isLoginValid(session)) return
+        UserStatus.get(session.userId).lastActive = new Date()
+        
+    }
+    export function onSocketDisconnect(session:ISession,type:string){
+        if(!isLoginValid(session) || !type) return
+
+        UserStatus.get(session.userId).sockets.delete(type)
+        UserStatus.get(session.userId).lastActive = new Date()
+        
+    }
+    export function getGameByUserId(userId:string):string|null{
+        const status = UserStatus.get(userId)
+        if(!status || status.sessionIds.size <=0 || status.sockets.countItem("rpggame") <=0) return null
+        
+        for(const sid of status.sessionIds){
+            if(SessionStore.get(sid).roomname && SessionStore.get(sid).turn!==undefined && SessionStore.get(sid).turn>=0)
+            {
+                let rname = SessionStore.get(sid).roomname
+                if(R.getRPGRoom(rname).isGameStarted)
+                    return rname
+            }
+        }
+        return null
+    }
+    /**
+     * 
+     * @param userId 
+     * @returns [last active date, status type]
+     */
+    export function getStatus(userId:MongoId):[Date,string|null]{
+        userId=String(userId)
+
+        if(UserStatus.has(userId)){
+            const statusSet = UserStatus.get(userId).sockets
+            const last=UserStatus.get(userId).lastActive
+            if(statusSet.size===0) return [last,null]
+            for(const type of STATUS_PRIPROTY){
+                if(statusSet.countItem(type)>0)
+                    return [last,type]
+            }
+            return [last,"online"]
+        }
+        else return [null,null]
+    }
+    export function login(req:Request,userId:string,username:string){
         try{
             let id= getSessionId(req)
             SessionStore.get(id).isLogined=true
             SessionStore.get(id).userId=userId
-            SessionIds.set(userId,id)
+         //   SessionIds.set(userId,id)
+            if(UserStatus.has(userId)){
+                UserStatus.get(userId).sessionIds.add(id)
+            }
+            else{
+                UserStatus.set(userId,{
+                    sessionIds:new Set<string>().add(id),
+                    sockets:new Counter<string>(),
+                    chatRooms:new Set<string>(),
+                    username:username
+                })
+            }
             return true
         }
         catch(e)
         {
+            console.error(e)
             return false
         }
     }
@@ -77,7 +186,10 @@ export namespace SessionManager{
             let id= getSessionId(req)
             const session = SessionStore.get(id)
             session.isLogined=false
-            SessionIds.delete(session.userId)
+           // SessionIds.delete(session.userId)
+           if(UserStatus.has(session.userId)){
+                UserStatus.get(session.userId).sessionIds.delete(id)
+            }
             delete session.userId
             delete session.username
             delete session.boardDataId
@@ -85,6 +197,7 @@ export namespace SessionManager{
         }
         catch(e)
         {
+            console.error(e)
             return false
         }
     }

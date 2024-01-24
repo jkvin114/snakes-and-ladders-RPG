@@ -1,8 +1,8 @@
 import multer = require("multer");
 import path = require("path");
 const PATH="./frontend/public/uploads"
-// const PATH_PROFILE="./frontend/public/uploads/profile"
-const PATH_PROFILE="./../uploads"
+const PATH_PROFILE="./frontend/public/uploads/profile"
+// const PATH_PROFILE="./../uploads"
 
 function getFilename() {
 	console.log(new Date().toISOString().slice(0, 19))

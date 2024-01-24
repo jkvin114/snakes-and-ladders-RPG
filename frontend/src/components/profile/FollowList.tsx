@@ -17,9 +17,9 @@ export default function FollowList({username,type}:Props){
 				setFollow(res.data as IFollow[])
 			})
     },[])
-
+    
     return (<div className="userlist">
-            {follow.map(f=><UserSummaryItem key={f.username} username={f.username} profileImgDir={f.profileImgDir} buttonType={f.isMyFollowing?"unfollow":"follow"}/>)}
+            {follow.map(f=><UserSummaryItem link={true} key={f.username} username={f.username} profileImgDir={f.profileImgDir} buttonType={f.isMyFollowing?"unfollow":"follow"}/>)}
 
     </div>)
 }

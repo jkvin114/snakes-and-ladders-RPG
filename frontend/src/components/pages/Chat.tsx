@@ -29,6 +29,6 @@ export default function ChatPage(){
 
     return (<div id="chatpage">
         <ChatRoomList></ChatRoomList>
-        {roomId && <ChatRoom roomId={roomId}/>}
+        {roomId && <ChatRoom roomId={roomId} onBack="/chat"/>}
     </div>)
 }

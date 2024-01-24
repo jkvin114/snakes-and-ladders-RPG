@@ -159,7 +159,7 @@ io.use((socket, next) => {
 	try{
 		const session =  SessionManager.getSessionById(SocketSession.getId(socket))
 		socket.data.session=session
-
+		SessionManager.onSocketAccess(session)
 		if(!session) {
 			throw new Error("invalid session for socket id:"+socket.id)
 		}
@@ -191,7 +191,7 @@ io.on("connection", function (socket: Socket) {
 	//console.log(`${socket.id} is connected`)
 	//console.log(socket.data.type)
 	const session =  socket.data.session
-	session.status="online"
+	SessionManager.onSocketConnect(session,socket.data.type)
 	
 	require("./sockets/RoomSocket")(socket)
 	require("./sockets/RpgRoomSocket")(socket)
@@ -200,6 +200,7 @@ io.on("connection", function (socket: Socket) {
 
 	socket.on("disconnect",function(){
 		const session = socket.data.session
+		SessionManager.onSocketDisconnect(session,socket.data.type)
 		delete session.status
 	})
 })

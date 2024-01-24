@@ -27,6 +27,7 @@ import { IRootContext, RootContext } from "./context/context"
 import { ToastHelper } from "./ToastHelper"
 import { limitString } from "./util"
 import { MakeGamePage } from "./components/pages/MakeGame"
+import FriendPage from "./components/pages/Friends"
 
 
 
@@ -159,6 +160,8 @@ function App() {
 						<Route path="/status" element={<StatusPage />}></Route>
 						<Route path="/writepost" element={<BoardPostWrite />}></Route>
 						<Route path="/chat" element={<ChatPage></ChatPage>}></Route>
+						<Route path="/friends" element={<FriendPage></FriendPage>}></Route>
+
 						<Route path="/marble_stat" element={<MarbleStatPage />}></Route>
 						<Route path="/notification" element={<Notifications newNoti={notiQueue} setCount={setNotiCount}/>}></Route>
 						<Route path="/create_game" element={<MakeGamePage />}></Route>

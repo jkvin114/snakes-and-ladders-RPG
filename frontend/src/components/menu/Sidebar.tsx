@@ -59,7 +59,7 @@ export default function SideBar({isOpen,openNavbar,notiCount}:Props){
           <li className="menu-item-container">
           <a className="menu-item"><RiBillFill /><b className="menu-name">Post</b></a>
             <ul className="sub-menu">
-              <li className="sub-menu-item"> <Link to="/board"><RiCompass3Line />View Posts</Link></li>
+              <li className="sub-menu-item"> <Link to="/board" reloadDocument><RiCompass3Line />View Posts</Link></li>
               <li className="sub-menu-item"><Link to="/board"><RiBallPenFill />Write Post</Link></li>
             </ul>
           </li>
@@ -69,6 +69,7 @@ export default function SideBar({isOpen,openNavbar,notiCount}:Props){
             <li className="menu-item-container">
             <a className="menu-item"><RiTeamFill /><b className="menu-name">Social</b></a>
               <ul className="sub-menu">
+              <li className="sub-menu-item"><Link to="/friends"><RiTeamFill/>Friends</Link></li>
                 <li className="sub-menu-item"><Link to="/"><RiNewspaperFill />Newsfeed</Link></li>
                 <li className="sub-menu-item"><Link to="/chat"><RiMessage2Fill/>Chat</Link></li>
               </ul>

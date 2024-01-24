@@ -215,7 +215,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			return
 		}
 		if (session) {
-			SessionManager.login(req,String(user._id))
+			SessionManager.login(req,String(user._id),user.username)
 			session.username = user.username
 
 			if (user.boardData == null) {

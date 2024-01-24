@@ -21,9 +21,10 @@ import { Link } from "react-router-dom"
 import RoomUserList from "./RoomUserList"
 type Props = {
 	roomId: string
+	onBack:string
 }
 
-export default function ChatRoom({ roomId }: Props) {
+export default function ChatRoom({ roomId,onBack }: Props) {
 	const [roomUsers, setRoomUsers] = useState<IChatUser[]>([])
 	const [messages, setMessages] = useState<IMessageData>({ messages: [], userLastSerials: [0] })
 	//const [maxSerial, setMaxSerial] = useState<number>(0)
@@ -183,7 +184,7 @@ export default function ChatRoom({ roomId }: Props) {
 				)}
 
 				<div className="contact bar">
-					<Link to="/chat" className="back">
+					<Link to={onBack} className="back">
 						<RiArrowLeftLine />{" "}
 					</Link>
 					<div className="pic"></div>

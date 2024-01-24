@@ -56,7 +56,7 @@ export default function HtmlPage({htmlPath}:Props){
   }
   useEffect(() => {
     fetchHtml();
-    if(htmlPath==="rpggame" || htmlPath==="marblegame" ){
+    if(htmlPath==="rpggame" || htmlPath==="marblegame" || htmlPath==="matching" ){
         setContext({...context,showToolbar:false})
         setIsGame(true)
     }

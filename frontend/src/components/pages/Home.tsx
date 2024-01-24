@@ -94,7 +94,7 @@ export default function HomePage() {
 					</div>
 
                     <div className="card card-1 divlink">
-                        <Link to="/" className="divlink"></Link>
+                        <Link to="/chat" className="divlink"></Link>
 
 						<div className="card__icon">
 							<RiMessage2Fill /> Group Chat

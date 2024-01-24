@@ -89,12 +89,12 @@ table.minimalistBlack tfoot td {
         
         <div>
             <h3>status</h3>
-            <div style="text-align: center;">
+            <!-- <div style="text-align: center;">
                 <h4>Database</h4>
                 <h4 id="ping-db"></h4>
                 <h4>Marble Game Server</h4>
                 <h4 id="ping-marble"></h4>
-            </div>
+            </div> -->
             <h3>rooms</h3>
             <div id="rooms" class="container">
                 <table class="minimalistBlack">
@@ -116,7 +116,7 @@ table.minimalistBlack tfoot td {
                 </tbody>
                 </table>
             </div>
-            <h3>users</h3>
+            <h3>Sessions</h3>
             <div id="users" class="container">
                 <table class="minimalistBlack">
                 <thead>
@@ -126,7 +126,6 @@ table.minimalistBlack tfoot td {
                     <th>logged in</th> 
                     <th>room name</th>
                     <th>turn</th>
-                    <th>status</th>
                 </tr>
                 </thead>
                 <tbody id="user-table">
@@ -134,7 +133,28 @@ table.minimalistBlack tfoot td {
                 </tbody>
                 </table>
             </div>
+
+
+            <h3>Users</h3>
+            <div id="userstatus" class="container">
+                <table class="minimalistBlack">
+                <thead>
+                <tr>
+                    <th>name</th>
+                    <th>id</th>
+                    <th>lastactive</th>
+                    <th>sockets</th> 
+                    <th>sessions</th>
+                    <th>chat rooms</th>
+                </tr>
+                </thead>
+                <tbody id="userstatus-table">
+                
+                </tbody>
+                </table>
+            </div>
         </div>
+        <button class="button" id="refresh"> refresh</button>
     </body>
     <script>
 

@@ -4,8 +4,10 @@ import { loginauth, sessionParser } from './jwt/auth';
 import { UserController } from './user/controller';
 import express = require("express")
 import { Router } from 'express';
+import { FriendController } from './user/friendController';
 
 const router = Router()
+router.get("/friend_status",loginauth,sessionParser,ControllerWrapper(FriendController.getFriendStatus))
 
 router.post("/friend_request",loginauth,sessionParser,ControllerWrapper(UserController.addFriend))
 

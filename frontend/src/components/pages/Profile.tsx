@@ -51,7 +51,7 @@ export default function ProfilePage({ modal }: Props) {
 					alert("User not found")
 				} else throw Error(e)
 			})
-	}, [])
+	}, [username])
 	useEffect(() => {
 		if (!name) {
 			navigate("/login")

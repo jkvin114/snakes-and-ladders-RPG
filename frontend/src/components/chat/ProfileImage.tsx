@@ -8,7 +8,7 @@ type Props={
 export default function ProfileImage({profileImgDir,username,customImage}:Props){
     return (<div
         className={
-            "profileimg-container divlink" + (!profileImgDir || profileImgDir === "" ? " " : " has-img")
+            "profileimg-container" + (!profileImgDir || profileImgDir === "" ? " " : " has-img")
         }>
         {customImage && customImage}
         {

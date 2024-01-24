@@ -21,3 +21,10 @@ export interface ChatMessageModel{
     createdAt?:string
     unread:number
 }
+export interface IFriendStatus{
+    _id:string
+    profileImgDir:string
+    username:string
+    status:string
+    lastActive:number //last active UTC milisecond. -1 if unavaliable.
+}

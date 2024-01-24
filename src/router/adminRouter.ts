@@ -9,9 +9,10 @@ import { SessionManager } from "../session/inMemorySession"
 
 router.get("/allusers",adminauth, async function (req: express.Request, res: express.Response) {
     try{
-        let users = SessionManager.getAll()
+        let sessions = SessionManager.getAll()
+        let users = SessionManager.getAllUsers()
 
-        return res.status(200).json(users)
+        return res.status(200).json({sessions:sessions,users:users})
     }
     catch(e){
         return res.status(500).end("server error")

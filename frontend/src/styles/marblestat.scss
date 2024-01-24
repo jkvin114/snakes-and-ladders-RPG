@@ -88,10 +88,12 @@
             align-items: center;
             cursor: pointer;
             border-radius: 4px;
+            svg{
+                width: 25px;
+                height: 25px;
+            }
         }
-        .stat-player-detail-btn img{
-            width: 20px;
-        }
+      
         .stat-player-detail-btn:hover{
             transform: scale(1.1);
         }

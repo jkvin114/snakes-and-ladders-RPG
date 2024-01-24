@@ -16,7 +16,7 @@ module.exports=function(socket:Socket){
 	    //console.log(session)
         //console.log('disconnected from '+socket.data.type)
         if(socket.data.type==="chat"){
-            delete session.currentChatRoom
+          //  delete session.currentChatRoom
         }
     })
 

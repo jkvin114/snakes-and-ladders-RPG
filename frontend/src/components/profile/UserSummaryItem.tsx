@@ -56,12 +56,12 @@ export default function UserSummaryItem({profileImgDir,username,buttonType,link}
 				) : (
 					<img className="profileimg" src={"/uploads/profile/" + profileImgDir}></img>
 				)}
-				{link && <a href={`/user/`+username} className="divlink" ></a>}
+				{link && <Link to={`/user/`+username} className="divlink" ></Link>}
 			</div>
 		</div>
         
         <div className="item-section name">
-			{link ? ( <a href={`/user/`+username}>{username}</a>): (<a>{username}</a>)}
+			{link ? ( <Link to={`/user/`+username}>{username}</Link>): (<a>{username}</a>)}
         </div>
         <div className="item-section">
             {(loggedin && localStorage.getItem("username")!==username) &&(<>
