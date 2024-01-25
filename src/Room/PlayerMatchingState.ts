@@ -1,4 +1,3 @@
-
 import { PlayerType, ProtoPlayer, shuffle } from "../RPGGame/core/Util"
 import SETTINGS = require("../../res/globalsettings.json")
 import { BaseProtoPlayer } from "./BaseProtoPlayer"

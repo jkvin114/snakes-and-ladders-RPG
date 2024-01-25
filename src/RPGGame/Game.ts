@@ -1255,11 +1255,12 @@ class Game {
 			killRecord: this.killRecord,
 			isTeam: this.isTeam,
 			replay:'',
-			setting: this.setting.serialize()
+			setting: this.setting.serialize(),
+			winners:new Set<number>()
 		}
 		
 		data.replay=undefined
-
+		const winnerTeam = this.pOfTurn(this.winner).team
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
 				return -1
@@ -1274,8 +1275,12 @@ class Game {
 				}
 			}
 		})
+		
 
 		for (let p of sortedplayers) {
+			if(p.turn===this.winner) data.winners.add(p.turn)
+			else if(this.isTeam && p.team === winnerTeam) data.winners.add(p.turn)
+		
 			data.players.push({
 				team: this.getTeamAsBool(p.team),
 				name: p.name,

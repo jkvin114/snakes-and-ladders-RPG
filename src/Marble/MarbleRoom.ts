@@ -89,11 +89,13 @@ class MarbleRoom extends Room{
 			})
 		})
 	}
-    onGameover(stat:any){
+    async onGameover(stat:any){
 		this.isGameRunning=false
 		try{
-			console.log(stat)
-			MarbleGameRecordSchema.create(stat)
+			// console.log(stat)
+			const data = await MarbleGameRecordSchema.create(stat)
+			this.onGameStatReady(data._id,"MARBLE",new Set([data.winner])).then()
+			console.log("saved marble game result")
 		}
 		catch(e){
 			console.error("Failed to save game record")

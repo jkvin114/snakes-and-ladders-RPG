@@ -1,9 +1,13 @@
 #marble-stat-root{
     text-align: center;
-        background-color: #5A4939;
+        // background-color: #5A4939;
         position: relative;
-        height: 100vh;
+        max-height: 100vh;
         overflow: auto;
+        h1,h3{
+            display: inline-block;
+            margin: 4px;
+        }
         #stat-container{
             display: inline-block;
             background-color: #452E1E;
@@ -25,6 +29,11 @@
             align-items: center;
             flex-direction: column;
             /* margin: -4px; */
+            &.lost{
+                border: 3px solid rgb(174, 174, 174);
+                // background-color: #5c5047;
+                color: #d96e6e;
+            }
         }
         .stat-win a{
             font-size: 10px;
@@ -48,7 +57,15 @@
             grid-template-columns: 1fr 1fr 30px;
             margin-top: 1px;
             margin-bottom: 1px;
-            color: #2d1d12;
+            // color: #2d1d12;
+            color: #291d14;
+            &.focus{
+                background-color: #c0835c;
+
+                .stat-player-name{
+                    color: rgb(255, 223, 178);
+                }
+            }
         }
         .stat-player.winner{
             outline: 2px solid gold;

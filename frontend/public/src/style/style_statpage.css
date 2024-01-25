@@ -395,6 +395,9 @@ table, th, td {
 .statTableRow:nth-child(even),.otherTableRow:nth-child(even),.itembuildTableRow:nth-child(even){
     /* background-color: rgb(94, 94, 94); */
 }
+.statTableRow.focus{
+    background:#552686;
+}
 .winimg{
     width: 20px;
 }
@@ -934,12 +937,27 @@ height:60vh;
     font-size: 20px;
 }
 .game-detail-header{
-    height: 40px;
+    /* height: 40px; */
     font-size: 30px;
     text-align: center;
 }
 #game-detail-table{
-    /* max-width: 1200px; */
+    text-align: center;
+    font-size: 11px;
+    margin-top: 0;
+    
+
+}
+#gamedetail-name{
+
+    width: 250px;   
+    display: inline-block;
+}
+#game-detail-table.lost #gamedetail-name{
+    background: linear-gradient(to left,#351954 0% ,rgb(255, 61, 61) 50%, #351954 100%);
+}
+#game-detail-table.win #gamedetail-name{
+    background: linear-gradient(to left,#351954 0% ,rgb(65, 65, 255) 50%, #351954 100%);
 }
 .game-detail-table-content{
 

@@ -6,6 +6,8 @@
     "expand":"expand",
     "list":"back to list",
     "gamedetail":"Game Details",
+    "win":"Victory",
+    "lost":"Defeat",
     "gamedetail_data":{
         "replay":"Watch Replay",
         "turn":"Total turn:",

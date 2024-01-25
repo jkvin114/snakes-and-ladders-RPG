@@ -6,6 +6,17 @@ import { encrypt } from "../router/board/helpers";
 import { SocketSession } from "../sockets/SocketSession";
 import { BaseProtoPlayer } from "./BaseProtoPlayer";
 import MarbleGameGRPCClient from "../grpc/marblegameclient";
+import { MongoId } from "../mongodb/types";
+import { UserGamePlay } from "../mongodb/UserGamePlaySchema";
+import { use } from "passport";
+import { Types } from "mongoose";
+
+
+interface UserInfo{
+	id:MongoId
+	username:string
+	turn:number
+}
 abstract class Room {
 	//simulation_total_count: number
 	// simulation_count: number
@@ -34,7 +45,7 @@ abstract class Room {
 	isLoggedInUserOnly:boolean
 	gametype:string
 	private guestSockets:Map<number,Socket>
-	
+	private registeredUsers:UserInfo[]
 	protected playerMatchingState:PlayerMatchingState
 	private playerSessions:Set<string>
 	abstract type:string
@@ -72,6 +83,9 @@ abstract class Room {
 		this.isLoggedInUserOnly=false
 		this.password=""
 		this.gametype="normal"
+
+		//saves which loggedin users are playing this game. initialized when users request initial setting for game.
+		this.registeredUsers=[]
 	}
 
 	setGameType(type:string){
@@ -111,6 +125,19 @@ abstract class Room {
 	getChangedTurn(original:number){
 		return this.playerMatchingState.getTurnMapping(original)
 	}
+	/**
+	 * called after the game is started and the user requests initial setting.
+	 * 
+	 * @param userId 
+	 * @param username 
+	 * @param turn 
+	 */
+	addRegisteredUser(turn:number,userId?:MongoId,username?:string){
+		if(!userId || !username) return
+		this.registeredUsers.push({
+			id:userId,username:username,turn:turn
+		})
+	}
 
 	get roomStatus(){
 		return {
@@ -122,7 +149,8 @@ abstract class Room {
 			type:this.type,
 			password:this.password,
 			loginonly:this.isLoggedInUserOnly,
-			isPublic:this.isPublic
+			isPublic:this.isPublic,
+			registeredUsers:this.registeredUsers
 		}
 	}
 	checkPassword(pw:string){
@@ -233,12 +261,31 @@ abstract class Room {
 		this.isGameStarted=true
 
 	}
+	/**
+	 * save registered users' game play data to DB
+	 * @param gameId 
+	 * @param type 
+	 * @param winner 
+	 */
+	async onGameStatReady(gameId:MongoId,type:"RPG" | "MARBLE",winner:Set<number>){
+		for(const user of this.registeredUsers){
+			await UserGamePlay.create({
+				user:user.id,
+				game:gameId,
+				type:type,
+				username:user.username,
+				turn:user.turn,
+				isWon:winner.has(user.turn)
+			})
+		}
+	}
 	user_reconnect(turn:number){
 
 	}
 	user_disconnect(turn:number){
 		
 	}
+
 	reset() {
 		// this.stopConnectionTimeout()
 		// this.stopIdleTimeout()
@@ -249,10 +296,10 @@ abstract class Room {
 		this.isTeam = false
 		// this.instant = false
 		this.map = 0
-		if(this.resetCallback!=null)
-			this.resetCallback()
 		if(this.idleTimeout) clearTimeout(this.idleTimeout)
 		if(this.connectionTimeout) clearTimeout(this.connectionTimeout)
+		if(this.resetCallback!=null)
+			this.resetCallback()
 	}
 }
 

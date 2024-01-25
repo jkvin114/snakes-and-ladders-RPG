@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import "../../styles/sidebar.scss"
-import { RiAccountCircleFill, RiBallPenFill, RiBarChartFill, RiBillFill, RiBroadcastFill, RiCloseLine, RiCompass3Line, RiEyeFill, RiFolderVideoFill, RiHome4Fill, RiMessage2Fill, RiNewspaperFill, RiNotification2Fill, RiPlayFill, RiSettings5Fill, RiStockLine, RiTeamFill, RiTrophyFill, RiUserReceived2Fill } from "react-icons/ri";
+import { RiAccountCircleFill, RiBallPenFill, RiBarChartFill, RiBillFill, RiBroadcastFill, RiCloseLine, RiCompass3Line, RiEyeFill, RiFolderVideoFill, RiHome4Fill, RiMessage2Fill, RiNewspaperFill, RiNotification2Fill, RiPieChartFill, RiPlayFill, RiSettings5Fill, RiStockLine, RiTeamFill, RiTrophyFill, RiUserReceived2Fill } from "react-icons/ri";
 import { TbWorldQuestion } from "react-icons/tb";
 import { GrGamepad } from "react-icons/gr";
 import { useContext, useState } from "react";
@@ -32,7 +32,8 @@ export default function SideBar({isOpen,openNavbar,notiCount}:Props){
               <li className="sub-menu-item"><a href="/create_game?type=rpg"><GrGamepad />Create Room</a></li>
               <li className="sub-menu-item"><a href="/find_room"><RiUserReceived2Fill />Join</a></li>
               <li className="sub-menu-item"><a href="/spectate"><RiEyeFill />Spectate</a></li>
-              <li className="sub-menu-item"><a href="/stat?page=game"><RiFolderVideoFill />Game Record</a></li>
+              {loggedin && <li className="sub-menu-item"><Link to={"/rpg_stat?username="+context.username}><RiPieChartFill />My Game Record</Link></li>}
+              <li className="sub-menu-item"><a href="/stat?page=game"><RiFolderVideoFill />All Game Record</a></li>
               <li className="sub-menu-item"><a href="/stat?page=analysis"><RiBarChartFill />Analysis</a></li>
               <li className="sub-menu-item"><a href="https://jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/index.html"><TbWorldQuestion />Wiki</a></li>
             </ul>
@@ -52,7 +53,8 @@ export default function SideBar({isOpen,openNavbar,notiCount}:Props){
             <ul className="sub-menu">
               <li className="sub-menu-item"><a href="/create_game?type=marble"><GrGamepad />Create Room</a></li>
               <li className="sub-menu-item"><a href="/find_room"><RiUserReceived2Fill />Join</a></li>
-              <li className="sub-menu-item"><Link to="/marble_stat"><RiFolderVideoFill />Game Record</Link></li>
+              {loggedin && <li className="sub-menu-item"><Link to={"/marble_stat?username="+context.username}><RiPieChartFill />My Game Record</Link></li>}
+              <li className="sub-menu-item"><Link to="/marble_stat"><RiFolderVideoFill />All Game Record</Link></li>
             </ul>
           </li>
 
@@ -86,7 +88,7 @@ export default function SideBar({isOpen,openNavbar,notiCount}:Props){
                 <button className="button gray" ><Link to={'/register'}>Register</Link></button>
             <button className="button"><Link to={'/login'}>Login</Link></button>
             </>)}
-            {loggedin && <Link className="menu-item menu-item-small" to={"/user"}><RiAccountCircleFill /><b className="menu-name">Profile</b></Link>}
+            {loggedin && <Link className="menu-item menu-item-small" to={"/user"}><RiAccountCircleFill /><b className="menu-name">My Profile</b></Link>}
            
             <br></br>
             <a className="menu-item menu-item-small" ><RiSettings5Fill /><b className="menu-name">Setting</b></a>

@@ -31,8 +31,6 @@ export let AxiosApi = {
 	},
 }
 
-export let abilitySound
-
 /**
  * axios throws error when status code is >= 300
  */
@@ -60,9 +58,11 @@ function main() {
 	$("#loadingtext").html("CONNECTING WITH SERVER..")
 	GAME = new Game()
 	openConnection(true)
-	abilitySound = new Howl({
-		src: ["res/sound/ability.mp3"],
+	let abilitySound = new Howl({
+		src: ["/res/sound/marble/ability.mp3"],
 	})
+
+	GAME.registerSound(abilitySound)
 	$("#testbtn").click(() => {
 		GAME.scene.test()
 	})
@@ -111,7 +111,9 @@ class Game {
 		}
 		return 0
 	}
-
+	registerSound(abilitySound) {
+		this.ui.abilityBuffer.forEach((b) => b.registerSound(abilitySound))
+	}
 	init(setting, num, turn) {
 		initDebug()
 
@@ -156,7 +158,7 @@ class Game {
 			this.sounds.set(
 				sound,
 				new Howl({
-					src: ["res/sound/marble/" + sound + ".mp3"],
+					src: ["/res/sound/marble/" + sound + ".mp3"],
 				})
 			)
 		}

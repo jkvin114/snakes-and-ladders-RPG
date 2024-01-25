@@ -189,6 +189,8 @@ export namespace SessionManager{
            // SessionIds.delete(session.userId)
            if(UserStatus.has(session.userId)){
                 UserStatus.get(session.userId).sessionIds.delete(id)
+                if(UserStatus.get(session.userId).sessionIds.size===0)
+                    UserStatus.get(session.userId).sockets.clear()
             }
             delete session.userId
             delete session.username

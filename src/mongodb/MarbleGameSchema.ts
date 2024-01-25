@@ -7,7 +7,9 @@ const marblePlayerSchema=new mongoose.Schema({
     name:String,
     char:Number,
     userId:String,
-    agentType:String
+    agentType:String,
+    turn:Number,
+    index:Number
 },{ _id : false })
 
 export const marbleGameRecordSchema=new mongoose.Schema({

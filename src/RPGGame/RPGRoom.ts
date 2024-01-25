@@ -128,17 +128,17 @@ class RPGRoom extends Room {
 		
 		this.reset()
 		try{
-
 			if(replayData.enabled){
 				const replay=await Replay.create(replayData)
 				stat.replay=replay.id.toString()
 			}
 			//dev setting 켜져있을때는 통계 저장안함
-			if(CONFIG.dev_settings.enabled){
+			if(CONFIG.dev_settings.enabled && !CONFIG.dev_settings.savestat){
 				this.eventObserver.gameStatReady('')
 			}
 			else{
-				const resolvedData=await GameRecord.create(stat)
+				const resolvedData = await GameRecord.create(stat)
+				await this.onGameStatReady(resolvedData.id,"RPG",stat.winners)
 				this.eventObserver.gameStatReady(resolvedData.id)
 			}
 		}

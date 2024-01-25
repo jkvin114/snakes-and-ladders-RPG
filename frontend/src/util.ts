@@ -32,3 +32,18 @@ export function getDateStringDifference(start:number,now:number) {
     return resultString.trim();
   }
   
+
+  /**
+ *
+ * @param end inclusive
+ * @param start inclusive
+ * @returns
+ */
+export function range(end: number, start?: number): number[] {
+	if (!start) start = 0
+	let list: number[] = []
+	for (let i = start; i <= end; ++i) {
+		list.push(i)
+	}
+	return list
+}

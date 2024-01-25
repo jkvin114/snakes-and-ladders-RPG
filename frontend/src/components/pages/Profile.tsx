@@ -9,6 +9,8 @@ import FriendList from "../profile/FriendList"
 import FollowList from "../profile/FollowList"
 import { RiCloseFill, RiEditBoxLine, RiSettings5Fill } from "react-icons/ri"
 import ProfileSetting from "../profile/ProfileSetting"
+import MarbleStatPage from "./MarbleStat"
+import RPGPlayerStatPage from "./RPGPlayerStat"
 
 type Props = {
 	modal?: "friend" | "follower" | "following" | "setting"
@@ -251,7 +253,15 @@ export default function ProfilePage({ modal }: Props) {
 							<a className="divlink" href={`/board/user/${profile.username}/likes`}></a>
 							<b data-lkey="mypage.likes">Liked Posts</b> <a className="count">{"(" + profile.counts[5] + ")"}</a>
 						</div>
+						<div className="linkbtn divlink">
+							<Link className="divlink" to={`/rpg_stat?username=${profile.username}`}></Link>
+							<b data-lkey="mypage.rpgggames">RPG Gameplays</b> 
+						</div>
 
+						<div className="linkbtn divlink">
+							<Link className="divlink" to={`/marble_stat?username=${profile.username}`}></Link>
+							<b data-lkey="mypage.marblegames">Marble Gameplays</b> 
+						</div>
 						{profile.isadmin && <button onClick={() => golink("/admin")}>Admin page</button>}
 					</div>
 				</div>

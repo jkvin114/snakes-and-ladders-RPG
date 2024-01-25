@@ -281,8 +281,8 @@ router.post(
 		}//find game that the user is currently in
 		else if(req.body.userId){
 
-			const roomname =SessionManager.getGameByUserId(req.body.userId)
-			if (!R.hasRPGRoom(roomname) || !R.getRPGRoom(roomname).gameStatus || !R.getRPGRoom(roomname).isGameStarted) {
+			const roomname = SessionManager.getGameByUserId(req.body.userId)
+			if (!roomname || !R.hasRPGRoom(roomname) || !R.getRPGRoom(roomname).gameStatus || !R.getRPGRoom(roomname).isGameStarted) {
 				console.error("access to unexisting game")
 				res.status(404).end()
 				return

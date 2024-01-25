@@ -1,4 +1,4 @@
-import { GAME, SOLOPLAY, abilitySound } from "./marble.js"
+import { GAME, SOLOPLAY } from "./marble.js"
 import { moneyToString, COLORS, COLORS_LIGHT } from "./marble_board.js"
 
 function addNumComma(num) {
@@ -142,12 +142,17 @@ class AbilityBuffer {
 	//pos:top or bottom
 	constructor(pos) {
 		this.pos = pos
+		this.sound = null
 		this.firstId = ""
 		this.secondId = ""
 		this.interval = null
 		this.queue = []
 		this.prevAbility = "" //능력 중복알림 방지용 저장
 	}
+	registerSound(sound) {
+		this.sound = sound
+	}
+
 	enqueue(ui, name, itemName, desc, isblocked) {
 		if (name === this.prevAbility && NO_DUPLICATE_ABILITIES.includes(name)) return
 
@@ -167,7 +172,7 @@ class AbilityBuffer {
 			this.prevAbility = ""
 			return
 		}
-		abilitySound.play()
+		if (this.sound) this.sound.play()
 		let id = String("ablilty_" + Math.floor(Math.random() * 10000))
 		const [ui, name, itemName, desc, isblocked] = this.queue.shift()
 		this.hideThird(this.secondId)
@@ -865,7 +870,8 @@ export class GameInterface {
 		$("#fortunecard-button-container p").html(FORTUNECARD[name].desc)
 		$(".fortunecard-button").hide()
 
-		if (FORTUNECARD[name].image !== "") $("#fortunecard-img img").attr("src", "res/" + FORTUNECARD[name].image)
+		if (FORTUNECARD[name].image !== "")
+			$("#fortunecard-img img").attr("src", "/res/img/marble/" + FORTUNECARD[name].image)
 		else $("#fortunecard-img img").attr("src", "")
 
 		if (level === 0) $("#fortunecard").addClass("trash")

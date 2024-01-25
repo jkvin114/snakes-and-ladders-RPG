@@ -75,17 +75,26 @@ module.exports=function(socket:Socket){
 			socket.join(rname)
 			let setting:ServerGameEventFormat.initialSetting = room.user_requestSetting()
 			let newturn=-1
+
+			//dont update if turn is -1(spectator)
 			if(turn!==-1){
 
-				newturn= turn
+				newturn = turn
+
 				//do not update turn from second access
 				if(!room.registeredSessions.has(SocketSession.getId(socket))){
 	
 					newturn=room.getChangedTurn(turn)
 					SocketSession.setTurn(socket,newturn)
+					
+					const session = SocketSession.getSession(socket)
+					if(session.isLogined){
+						room.addRegisteredUser(newturn,session.userId,session.username)
+					}
 				}
 				
 				room.registeredSessions.add(SocketSession.getId(socket))
+				
 			}
 			
 			socket.emit("server:initialsetting", setting, newturn, room.getGameTurnToken(newturn))

@@ -28,6 +28,11 @@ export namespace SocketSession {
 	export function getTurn(socket: Socket): number {
 		return getSession(socket)?.turn
 	}
+	/**
+	 * return session id of socket 
+	 * @param socket 
+	 * @returns 
+	 */
 	export function getId(socket: Socket): string {
 		return getSession(socket)?.id
 	}

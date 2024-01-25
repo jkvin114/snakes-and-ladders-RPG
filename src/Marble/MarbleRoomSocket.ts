@@ -100,7 +100,7 @@ module.exports = function (socket: Socket) {
 				randomCount: itemsetting.randomCount,
 			})
 			MarbleGameGRPCClient.InitGame(setting,()=>{
-
+				
 				MarbleGameGRPCClient.ListenGameEvent(rname, (event: marblegame.GameEvent) => {
 					if(event)
 						forwardGameEvent(rname, event)
@@ -117,6 +117,7 @@ module.exports = function (socket: Socket) {
 	socket.on(userEvents.REQUEST_SETTING, function () {
 		grpcController(socket, (room, rname, turn) => {
 			socket.join(rname)
+			
 
 			MarbleGameGRPCClient.RequestSetting(
 				new marblegame.GameSettingRequest({
@@ -129,6 +130,12 @@ module.exports = function (socket: Socket) {
 
 					let gameturn = setting.players[turn].turn
 					SocketSession.setTurn(socket, gameturn) //세선에 저장되있는 턴 진짜 게임 턴으로 변경
+					
+					const session = SocketSession.getSession(socket)
+					if(session.isLogined){
+						room.addRegisteredUser(gameturn,session.userId,session.username)
+					}
+
 					socket.emit("server:initialsetting", setting, turn, gameturn)
 				}
 			)

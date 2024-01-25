@@ -6,6 +6,7 @@ const userGamePlaySchema=new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
+    username:String,
     type:{
         required:true,
         type: String,

@@ -1195,7 +1195,7 @@ class MarbleGame {
 			stateVectors:this.getStateVectors(windata.rewards)
 		}
 	}
-	getResultStat(windata:GameOverAction){
+	getResultStat(windata:GameOverAction):ServerEventModel.GameResultStat{
 		let playerstats=this.mediator.players.map(p=>p.getResultStat())
 		for(let i=0;i<playerstats.length;++i){
 			if(i<windata.rewards.length)

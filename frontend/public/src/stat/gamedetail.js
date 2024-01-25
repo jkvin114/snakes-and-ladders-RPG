@@ -84,6 +84,17 @@ function multiKillText(count) {
 	}
 	return multiKillText
 }
+
+function setTitleForFocusedTurn(isWon) {
+	if (isWon) {
+		$("#gamedetail-name").html(LOCALE.win)
+		$("#game-detail-table").addClass("win")
+	} else {
+		$("#gamedetail-name").html(LOCALE.lost)
+		$("#game-detail-table").addClass("lost")
+	}
+}
+
 /**
  * display single game data
  * @param {*} data
@@ -121,7 +132,21 @@ function showSingleStat(data) {
 	$(smallGraphTypes[3]).html(LOCALE.smallgraph.heal)
 	$(smallGraphTypes[4]).html(LOCALE.smallgraph.money)
 	$(smallGraphTypes[5]).html(LOCALE.smallgraph.reduce)
+
+	$("#gamedetail-name").html(LOCALE.gamedetail)
+	$("#game-detail-table").removeClass("lost")
+	$("#game-detail-table").removeClass("win")
+	$(".statTableRow").removeClass("focus")
+	// console.log(data.createdAt)
+	$("#game-time").html(data.createdAt?.slice(0, 10))
 	let gameDetailValues = $(".game-detail-value").toArray()
+	const query = new URLSearchParams(window.location.search)
+	let turnfocus = -1
+	//highlight focused player in stat table
+	if (query.get("type") === "game" && query.has("statid") && query.has("turnfocus")) {
+		turnfocus = Number(query.get("turnfocus"))
+	}
+
 	$("#train_detail").hide()
 	$("#stattable").show()
 	// $("#detailbtn_container").show()
@@ -365,6 +390,9 @@ function showSingleStat(data) {
 		}
 
 		let p = data.players[i]
+		if (p.turn === turnfocus) {
+			$(table[i + 1]).addClass("focus")
+		}
 		visiblePlayerNames.push(p.turn + 1 + "P(" + p.champ + ")")
 
 		setItemList(i, p.items, data.version >= 2)
@@ -392,9 +420,13 @@ function showSingleStat(data) {
 			} else {
 				$(ranks[i]).html("WIN")
 			}
+
+			if (p.turn === turnfocus) setTitleForFocusedTurn(p.team === winner_team)
 		} else {
 			//개인전
 			$(ranks[i]).html(i + 1)
+			if (p.turn === turnfocus) setTitleForFocusedTurn(i === 0)
+
 			if (i === 0) {
 				$(ranks[i]).html("<img class=winimg src='res/img/svg/trophy.svg'>")
 				// charstr += " winner"

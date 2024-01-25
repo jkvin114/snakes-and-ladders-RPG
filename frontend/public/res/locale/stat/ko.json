@@ -6,6 +6,8 @@
     "expand":"펼치기",
     "list":"목록열기",
     "gamedetail":"게임 상세정보",
+    "win":"승리",
+    "lost":"패배",
     "gamedetail_data":{
         "replay":"리플레이 보기",
         "turn":"턴 수:",

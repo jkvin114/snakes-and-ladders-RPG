@@ -1,6 +1,7 @@
-import { SchemaType } from "mongoose"
+import { SchemaType, Types } from "mongoose"
 import { MarbleGameRecord } from "../MarbleGameSchema"
 import { SchemaTypes } from "../SchemaTypes"
+import { MongoId } from "../types"
 
 export namespace MarbleGameRecordSchema{
     
@@ -10,4 +11,10 @@ export namespace MarbleGameRecordSchema{
     export const findAll = async function () {
         return await MarbleGameRecord.find({})
     }
+    export const findById = async function (id:MongoId) {
+        return await MarbleGameRecord.findById(id)
+    }
+    export const findAllByIdList = function(ids: Types.ObjectId[]) {
+        return MarbleGameRecord.find({ _id:{$in:ids}}).sort({ createdAt: "desc" })
+    };
 }

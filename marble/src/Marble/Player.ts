@@ -9,6 +9,7 @@ import { ActionSelector } from "./Agent/ActionSelector/ActionSelector"
 import { PlayerState } from "./Agent/Utility/PlayerState"
 import { MONOPOLY } from "./GameMap"
 import { AbilityExecution } from "./Ability/Ability"
+import { ServerEventModel } from "../Model/ServerEventModel"
 
 class MarblePlayer{
     readonly name:string
@@ -240,8 +241,10 @@ class MarblePlayer{
             this.monopolyChancePos.set(p,type)
         }
     }
-    getResultStat(){
+    getResultStat():ServerEventModel.PlayerStat{
         return {
+            index:this.num,
+            turn:this.turn,
             stats:this.stat.serialize(),
             items:this.items,
             score:0,
