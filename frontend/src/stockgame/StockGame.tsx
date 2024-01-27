@@ -16,6 +16,7 @@ import { TranHistoryBoard } from "../components/stockgame/TranHistoryBoard"
 import { StatBoard } from "../components/stockgame/StatBoard"
 import Transaction from "./types/Transaction";
 import { RootContext } from "../context/context";
+import { stockgame_gen_url } from "../variables";
 
 // Main App We run for frontend
 function StockGame() {
@@ -144,7 +145,7 @@ function StockGame() {
 		let variance = 1
 		let scale = 50 + triDist(200, 200)
 		const data = await (
-			await fetch(`http://127.0.0.1:5000/gen_stock?variance=${variance}&scale=${scale}`, { mode: "cors" })
+			await fetch(stockgame_gen_url+`/gen_stock?variance=${variance}&scale=${scale}`, { mode: "cors" })
 		).json()
 		// console.log(data)
     const width = window.innerWidth
@@ -218,8 +219,7 @@ function StockGame() {
           <TranHistoryBoard record={tranHistory}></TranHistoryBoard>
         </div>
       </div>
-		</div>
-    <ToastContainer></ToastContainer></>
+		</div></>
 	)
 }
 

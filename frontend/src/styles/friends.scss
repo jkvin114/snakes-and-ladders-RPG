@@ -1,6 +1,6 @@
 #friends-root{
     position: absolute;
-	top:50%;
+	top:50vh;
 	left:50%;
 	transform: translate(-50%,-50%);
 	display: flex;
@@ -16,8 +16,9 @@
 	flex-direction: column;
     justify-content: flex-start;
 	
-	width: 24rem;
-	height: 38rem;
+	
+	width: min(24rem,97vw);
+	height: min(38rem,92vh);
 	box-sizing: border-box;
 	border-radius: 1rem;
 	text-align: center;

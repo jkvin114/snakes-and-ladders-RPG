@@ -87,7 +87,7 @@ function updateCandle(value: number, candle: CandleObj): CandleObj {
 	return candle
 }
 const ENTRIES_PER_DATE = 30
-const INITIAL_DATES = 15
+const INITIAL_DATES = 40
 const INTERVAL_MS = 200
 const MAX_LEN = 2500
 const DATE_RECORD_LEN = 20

@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { AxiosApi } from "../../api/axios"
 import { IChatRoom, IChatUser } from "../../types/chat"
 import ProfileImage from "./ProfileImage"
@@ -32,6 +32,15 @@ export default function ChatRoomList(){
     function hideFriend(){
         setIsNewRoomOpen(false)
     }
+    function resetUnread(roomId:string){
+        setRooms(rooms=>rooms.map(r=>(r._id===roomId)?{...r,unread:0}:r))
+    }
+    const [searchParams, setSearchParams]  = useSearchParams()
+    const room = searchParams.get("room")
+    useEffect(()=>{
+        if(room)
+            resetUnread(room)
+    },[searchParams])
     
     function load(){
         AxiosApi.get("/chat/rooms")
@@ -41,7 +50,9 @@ export default function ChatRoomList(){
                     room.lastMessage=ChatStorage.getLastMsg(room._id)
                 }
             }
-            setRooms(res.data)
+            const list = res.data
+            list.sort((a:IChatRoom,b:IChatRoom)=>b.unread - a.unread)
+            setRooms(list)
         })
         .catch(e=>{
             console.error(e)
@@ -65,17 +76,17 @@ export default function ChatRoomList(){
             Chat Rooms
         </div>
         <div className="rooms">
-        {rooms.map(r=> r&&<div key={r._id} className="divlink room">
+        {rooms.map(r=> r&&<div key={r._id} className="divlink room" onClick={()=>resetUnread(r._id)}>
             <Link className="divlink" to={"/chat?room="+r._id}></Link>
             <ProfileImage customImage={<RiTeamLine className="roomicon"/>}></ProfileImage>
             <div className="room-content">
                 <div className="room-text">
-                <b>{r.name}</b><br></br>
+                <b>{r.name}</b><a>{"  "}{r.size>2?r.size:""}</a><br></br>
                     <i>{limitString(r.lastMessage)}</i>
                 </div>
                 <div>
-                {(r.serial>0) && 
-                <span className="unread">{r.serial}</span>}
+                {(r.unread>0) && 
+                <span className="unread">{r.unread}</span>}
                 </div>
             </div>
             </div>)}

@@ -442,7 +442,7 @@ export class GameInterface {
 			this.clickEven()
 		})
 		$("#toggle_fullscreen").click(async function () {
-			console.log($(this).data("on"))
+			//console.log($(this).data("on"))
 			if (!GAME.ui.canChangeFullscreen) return
 
 			GAME.ui.canChangeFullscreen = false

@@ -1,5 +1,5 @@
 const CONNECTION_TIMEOUT = 2000
-import { GAME, server_url, CONNECTION_TYPE } from "./GameMain.js"
+import { GAME, CONNECTION_TYPE } from "./GameMain.js"
 // import { calculatePrize,randomObs } from "./roulette.js"
 export class GameClient {
 	constructor() {
@@ -62,7 +62,7 @@ export function openConnection(isInitial) {
 		} else if (GAME.begun) {
 			// console.log("reconnect" + RNAME)
 			socket.emit("user:reconnect")
-			console.log(GAME.scene.players)
+			//console.log(GAME.scene.players)
 		}
 		GAME.connection.requestItemStatus()
 	})
@@ -304,7 +304,7 @@ export function openConnection(isInitial) {
 		if (GAME.myturn !== data.turn || data.turn == null || !GAME.ui) {
 			return
 		}
-		console.log(data.values)
+		//console.log(data.values)
 		GAME.ui.updateSkillValues(data.values)
 	})
 	socket.on("server:start_timeout_countdown", function (crypt_turn, time) {
@@ -354,7 +354,7 @@ export function openConnection(isInitial) {
 		setTimeout(() => {
 			window.onbeforeunload = () => {}
 			if (statid === "" || GAME.is_spectator) window.location.href = "/"
-			else window.location.href = "/stat?type=game&statid=" + statid
+			else window.location.href = "/stat?type=game&statid=" + statid + "&turnfocus=" + GAME.myturn
 		}, 4000)
 	})
 

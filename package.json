@@ -58,6 +58,7 @@
     "@types/passport-jwt": "^4.0.0",
     "@types/passport-local": "^1.0.38",
     "@types/redis": "^4.0.11",
+    "@types/winston": "^2.4.4",
     "cookie": "^0.6.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -77,6 +78,7 @@
     "redis": "^4.6.12",
     "socketio": "^1.0.0",
     "ts-node": "^10.9.1",
-    "tsc": "^2.0.4"
+    "tsc": "^2.0.4",
+    "winston": "^3.11.0"
   }
 }

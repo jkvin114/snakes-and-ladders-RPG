@@ -1,4 +1,4 @@
-const server_url = "http://localhost:5000"
+// const server_url = "http://192.168.0.3:5000"
 let AxiosApi = {
 	get: () => {
 		throw Error("Axios api is not initialized")

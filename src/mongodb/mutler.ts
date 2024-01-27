@@ -5,7 +5,7 @@ const PATH_PROFILE="./frontend/public/uploads/profile"
 // const PATH_PROFILE="./../uploads"
 
 function getFilename() {
-	console.log(new Date().toISOString().slice(0, 19))
+	//console.log(new Date().toISOString().slice(0, 19))
 	return (
 		new Date().toISOString().slice(0, 19).replace("T", "_").replace(/:/g, "") + "_" + Math.floor(Math.random() * 999)
 	)

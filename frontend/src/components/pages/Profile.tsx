@@ -128,7 +128,7 @@ export default function ProfilePage({ modal }: Props) {
 	}
 
 	return (
-		<div style={{ position: "relative" }}>
+		<div id="profile-root" style={{ position: "relative" }}>
 			<div style={{ textAlign: "center" }}>
 				<div id="profilepage_container">
 					<div className="profile">

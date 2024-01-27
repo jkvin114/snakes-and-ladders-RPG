@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import {Helmet} from "react-helmet";
 import { PAGES } from "../rawpages";
 import { RootContext } from "../context/context";
+import { backend_url } from "../variables";
 
 type Props={
     htmlPath:string
@@ -70,9 +71,12 @@ export default function HtmlPage({htmlPath}:Props){
       </div>
         <div id="rawhtml" className={isGame? "gamepage":""} dangerouslySetInnerHTML={{ __html: htmlData.html }} style={{position:"relative",height: "100vh"}}></div>
         <Helmet>
+        <script> 
+					 {/*line break is required here*/}
+				{`const server_url = "${backend_url}"`}</script>
+
           {htmlData.scripts && htmlData.scripts.map((v,i)=>(<script src={v} key={i}></script>))}
           {htmlData.modules && htmlData.modules.map((v,i)=>(<script type="module" src={v} key={i}></script>))}
-
         </Helmet>
       
       

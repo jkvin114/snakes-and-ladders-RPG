@@ -38,7 +38,7 @@ export default function ChatRoom({ roomId,onBack }: Props) {
 		connected = true
 		//setMessages(ChatStorage.loadStoredMessages(roomId))
 		//setMaxSerial(ChatStorage.maxSerial(roomId))
-		setTimeout(() => ChatSocket.joinRoom(roomId, ChatStorage.maxSerial(roomId)), 500)
+		// setTimeout(() => ChatSocket.joinRoom(roomId, ChatStorage.maxSerial(roomId)), 500)
 		//console.log(messages[0])
 		//	console.log(messages.length)
 		ChatSocket.on("chat:message_received", (data) => {
@@ -90,6 +90,7 @@ export default function ChatRoom({ roomId,onBack }: Props) {
 				//	console.table(res.data)
 				setRoomUsers(res.data)
 				saveUser(res.data)
+				ChatSocket.joinRoom(roomId, ChatStorage.maxSerial(roomId))
 			})
 			.catch((e) => {
 				console.error(e)
@@ -115,6 +116,7 @@ export default function ChatRoom({ roomId,onBack }: Props) {
 	}, [messages])
 	function onFinishRoomLoad() {
 		setLoading(false)
+		
 	}
 
 	function updateUnread(userLastSerials: number[]) {

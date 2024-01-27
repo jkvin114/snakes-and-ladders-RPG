@@ -177,7 +177,7 @@ export function moneyToString(money, zero) {
 }
 function getCornerPos(uiPos, boardsize) {
 	//"top-left", "bottom-left", "top-right", "bottom-right"
-	console.log("uipos" + uiPos)
+	//console.log("uipos" + uiPos)
 	if (uiPos === -1) return { x: boardsize / 2, y: 0 }
 	if (uiPos === 0) return { x: 0, y: 0 }
 	if (uiPos === 1) return { x: 0, y: boardsize }
@@ -680,7 +680,7 @@ export class MarbleScene extends Board {
 		super.showObjects()
 
 		for (let i = 0; i < this.game.playerCount; ++i) {
-			console.log("addplayer")
+			//	console.log("addplayer")
 			let img = document.getElementById("playerimg" + (this.players[i].char + 1))
 			let player = this.players[i]
 
@@ -765,7 +765,7 @@ export class MarbleScene extends Board {
 		this.lock.image = lock
 	}
 	async showDefenceIndicator(type, pos) {
-		console.log("showDefenceIndicator" + type)
+		//	console.log("showDefenceIndicator" + type)
 		let image = "indicateblock"
 		let lightimage = "indicatelight"
 		let coord = this.getCoord(pos)

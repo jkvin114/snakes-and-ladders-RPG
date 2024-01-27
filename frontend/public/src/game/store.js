@@ -692,7 +692,7 @@ export class StoreInterface {
 		$("#store_buytoken").css("visibility", "hidden")
 	}
 	onTreeItemDoubleClick(item_id, price, currentPageItem) {
-		console.log("doubleclick" + item_id)
+		//console.log("doubleclick" + item_id)
 		let predicted_itemlist = Array.from(this.storeStatus.itemSlots)
 
 		this.storeInstance.calcDiscount(item_id, predicted_itemlist)

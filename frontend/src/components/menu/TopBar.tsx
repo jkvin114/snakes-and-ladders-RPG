@@ -14,14 +14,14 @@ export default function TopBar({openNavbar}:Props){
         <div>
             <RiMenuFill onClick={()=>openNavbar(true)} />
         </div>
-        <div>
+        <div onClick={()=>openNavbar(false)}>
             <Link to={"/"}><img src="/res/img/ui/logo3.png"></img></Link>
             
         </div>
-        <div>
-            {context.loggedin && <Link to={"/user"}><RiAccountCircleFill /></Link>}
+        <div  onClick={()=>openNavbar(false)}>
+            {context.loggedin && <Link to={"/user/"+context.username}><RiAccountCircleFill /></Link>}
 
-            {!context.loggedin && <button className="button"><Link to={'/login'}>Login</Link></button>}
+            {!context.loggedin && <button className="button" ><Link to={'/login'}>Login</Link></button>}
         </div>
         </div>)
 }

@@ -1,6 +1,6 @@
 import { Game } from "./RPGGame.js"
 // import { REPLAY } from "./replays/replay_test.js"
-import { server_url } from "./GameMain.js"
+import {} from "./GameMain.js"
 
 const sleep = (m) => new Promise((r) => setTimeout(r, m))
 

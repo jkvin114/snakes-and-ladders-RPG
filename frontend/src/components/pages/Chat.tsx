@@ -5,6 +5,7 @@ import { IChatMessage, IChatRoom, IChatUser } from "../../types/chat"
 import ChatRoom from "../chat/ChatRoom"
 import { RootContext } from "../../context/context"
 import ChatRoomList from "../chat/ChatRoomList"
+import { ChatSocket } from "../../api/chatsocket"
 
 
 export default function ChatPage(){
@@ -25,6 +26,7 @@ export default function ChatPage(){
         setRoomId(room)
 //659c2791dbc11e5a15ec6e5a
     },[searchParams])
+
     
 
     return (<div id="chatpage">

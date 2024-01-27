@@ -8,16 +8,16 @@ export namespace ChatSocket{
 		withCredentials: true,
 		query: { type: "chat" },
 	})
-	let connected = false
+	let inRoom = false
 	export function joinRoom(roomid: string, lastSerial: number) {
-		connected = true
+		inRoom = true
 		Socket.emit("user:chat:enter", roomid, lastSerial)
 	}
 	export function isConnected(){
-		return connected
+		return inRoom
 	}
 	export function leaveRoom(roomid: string) {
-		connected = false
+		inRoom = false
 		Socket.emit("user:chat:leave", roomid)
 	}
 	export function sendChat(roomid: string, message: string) {

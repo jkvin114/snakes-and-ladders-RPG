@@ -25,6 +25,7 @@ import { ISession, SessionManager } from "./session/inMemorySession"
 import cookieParser from "cookie-parser"
 import { setJwtCookie } from "./session/jwt"
 import { SocketSession } from "./sockets/SocketSession"
+import { Logger } from "./logger"
 
 declare module 'express-session' {
 	interface SessionData {
@@ -56,7 +57,9 @@ const clientPath = `${__dirname}/../public`
 const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 5000
 const app = express()
-const ORIGIN = "http://localhost:3000"
+ const ORIGIN = "http://localhost:3000"
+const ORIGIN2="http://192.168.0.3:3000"
+Logger.log("start")
 //temp ==============================
 
 /*
@@ -78,9 +81,10 @@ redisClient.connect().then(()=>{
 //==============================================
 
 app.use(session)
-app.use(cors({credentials: true, origin: ORIGIN}))
+app.use(cors({credentials: true, origin: [ORIGIN2]}))
 app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', ORIGIN);
+	res.setHeader('Access-Control-Allow-Origin', [ORIGIN2]);
+
 	res.setHeader('Access-Control-Allow-Credentials', "true");
 	res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
 
@@ -107,7 +111,7 @@ app.engine('html', require('ejs').renderFile);
 app.use(express.static(clientPath))
 app.use(errorHandler)
 const httpserver = createServer(app)
-httpserver.listen(PORT)
+httpserver.listen(PORT,"192.168.0.3")
 app.on("error", (err: any) => {
 	console.error("Server error:", err)
 })
@@ -140,7 +144,7 @@ function errorHandler(err: any, req: any, res: any, next: any) {
 
 export const io = new Server(httpserver, {
 	cors: {
-		origin: ORIGIN,
+		origin: [ORIGIN2],
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		credentials: true
 	},
@@ -201,7 +205,6 @@ io.on("connection", function (socket: Socket) {
 	socket.on("disconnect",function(){
 		const session = socket.data.session
 		SessionManager.onSocketDisconnect(session,socket.data.type)
-		delete session.status
 	})
 })
 

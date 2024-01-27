@@ -4,7 +4,7 @@ import { Player } from "./player.js"
 import { GAME, StringResource, registerSounds } from "./GameMain.js"
 import { GestureController } from "./gesturecontroller.js"
 import { SkillParser } from "./skillparser_module.js"
-import { server_url } from "./GameMain.js"
+import {} from "./GameMain.js"
 
 class Setting {
 	constructor(game) {

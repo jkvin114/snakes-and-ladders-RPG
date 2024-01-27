@@ -2,7 +2,7 @@ import { ReplayGame } from "./ReplayGame.js"
 import { PlayableGame } from "./PlayableGame.js"
 export const VOLUME = 0.4
 
-export const server_url = "http://localhost:5000"
+// export const server_url = "http://192.168.0.3:5000"
 export class StringResource {
 	constructor() {
 		this.EFFECTS

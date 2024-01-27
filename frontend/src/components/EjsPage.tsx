@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet"
 import { PAGES } from "../rawpages"
 import { AxiosApi } from "../api/axios"
 import { useLocation } from "react-router-dom"
+import { backend_url } from "../variables"
 type PageData = {
 	html: string
 	scripts?: string[]
@@ -51,6 +52,10 @@ export default function EjsPage() {
 			<div id="html-cover"></div>
 			<div id="rawhtml" dangerouslySetInnerHTML={{ __html: htmlData.html }}></div>
 			<Helmet>
+				<script> 
+					 {/*line break is required here*/}
+				{`const server_url = "${backend_url}"`}</script>
+
 				{htmlData.mainScript && <script src={htmlData.mainScript}></script>}
 				{htmlData.scripts && htmlData.scripts.map((v, i) => <script src={v} key={i}></script>)}
 			</Helmet>

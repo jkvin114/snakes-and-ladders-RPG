@@ -3,7 +3,7 @@ import { StoreStatus, StoreInstance, StoreInterface } from "./store.js"
 import GameInterface from "./gameinterface.js"
 import { openConnection } from "./SocketClient.js"
 import { SkillParser } from "./skillparser_module.js"
-import { AxiosApi, server_url } from "./GameMain.js"
+import { AxiosApi } from "./GameMain.js"
 export class PlayableGame extends Game {
 	constructor(is_spectator) {
 		super()
@@ -389,8 +389,8 @@ export class PlayableGame extends Game {
 				this.subwayTicket = data
 				break
 			case "removeSpecialEffect":
-				console.log("removeSpecialEffect")
-				console.log(data)
+				//console.log("removeSpecialEffect")
+				//console.log(data)
 				this.removeSpecialEffect(data)
 				break
 			case "skillImg":

@@ -148,7 +148,7 @@ function App() {
 		<>
 			<RootContext.Provider value={{context:rootState,setContext:setRootState}}>
 			<div id="page-root" className={rootState.showToolbar ?"":"hide-toolbar"}>
-				{rootState.showToolbar ?<SideBar isOpen={navbarOpen} openNavbar={setNavbarOpen} notiCount={notiCount}/>:<div></div>}
+				{rootState.showToolbar ?<SideBar isOpen={navbarOpen} closeNavbar={()=>setNavbarOpen(false)} notiCount={notiCount}/>:<div></div>}
 				<div>
 					{rootState.showToolbar && <TopBar openNavbar={setNavbarOpen}/>}
 					<div onClick={closeNavbar}>
@@ -193,8 +193,8 @@ function App() {
 
 					</Routes>
 					</div>
-					<button onClick={printsession}>session</button>
-				<button onClick={clearChatCache}>clear chat</button>
+					{/* <button onClick={printsession}>session</button>
+				<button onClick={clearChatCache}>clear chat</button> */}
 				</div>
 				
 

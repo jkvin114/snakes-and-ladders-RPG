@@ -18,7 +18,6 @@ const MESSAGE = {
 	forcemove_no_tile: "이동할 지역이 없습니다",
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
-export const server_url = "http://localhost:5000"
 const BGM = false
 export var GAME
 
@@ -452,7 +451,7 @@ class Game {
 		this.onGameOver(winner, scores, mul, winner + 1 + "P " + MONOPOLY[monopoly] + " 승리")
 	}
 	async onGameOver(winner, scores, mul, wintext) {
-		console.log(scores)
+		//console.log(scores)
 		await sleep(2000)
 		this.ui.showResult(winner, scores, mul, wintext)
 	}

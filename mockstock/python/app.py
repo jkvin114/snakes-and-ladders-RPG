@@ -28,7 +28,7 @@ def gen_stock():
         return str(e),500
 # CORS(api) 
 def main():
-    api.run()
+    api.run(port=5050)
 
 if __name__=="__main__":
     main()

@@ -34,6 +34,6 @@ export class Player {
 	clearhpIndicatorTimeout() {
 		clearTimeout(this.hpIndicatorFrameTimeout)
 		clearTimeout(this.hpIndicatorLostTimeout)
-		console.log(this.hpIndicatorLostTimeout)
+		//	console.log(this.hpIndicatorLostTimeout)
 	}
 }

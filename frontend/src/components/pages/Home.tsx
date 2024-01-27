@@ -57,7 +57,7 @@ export default function HomePage() {
 						</button>
 					</div>
 					<div>
-						<img className="largeimg" src="/home/bg.jpg"></img>
+						<img className="largeimg" src="stockgame.png"></img>
 					</div>
 				</div>
 				<div>

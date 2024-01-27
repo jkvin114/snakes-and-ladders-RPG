@@ -34,7 +34,7 @@ router.get(
 				_id: (status.room as any)._id,
 				name: status.room.name,
 				size: status.room.size,
-                serial: status.room.serial - status.lastSerial,
+                unread: status.room.serial - status.lastSerial,
 				admin: status.room.admin,
 				opponent: status.room.opponent,
 				lastMessage: lastmsg,

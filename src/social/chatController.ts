@@ -154,8 +154,9 @@ export namespace ChatController {
 	export async function leaveRoom(socket: Socket,session:ISession, roomId: string) {
 		socket.leave(ROOM_NAME_PREFIX + roomId)
 		SessionManager.onLeaveChatRoom(session,roomId)
+
 	}
-	export async function quitRoom(socket: Socket,session:ISession, roomId: string) {
+	export async function quitRoom(socket: Socket,session:ISession, roomId: string,callback:Function) {
 		socket.leave(ROOM_NAME_PREFIX + roomId)
 		SessionManager.onLeaveChatRoom(session,roomId)
 
@@ -168,6 +169,7 @@ export namespace ChatController {
 				username:session.username
 			})
 		}
+		callback()
 			
 	}
 }

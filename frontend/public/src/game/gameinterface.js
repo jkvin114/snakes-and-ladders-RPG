@@ -680,13 +680,13 @@ export default class GameInterface {
 	}
 	updateSkillInfoSingle(charId, skillId, toChange) {
 		if (this.game.is_spectator) return
-		console.log(charId, skillId)
+		//console.log(charId, skillId)
 		$(this.elements.skillinfos[toChange]).html((toChange === 0 ? "" : "<hr>") + SkillParser.parseSkill(charId, skillId))
 		this.addEffectTooltipEvent()
 		this.addSkillScaleTooltipEvent()
 	}
 	updateSkillValues(values) {
-		console.log(values)
+		//console.log(values)
 		SkillParser.populateSkillValues(values)
 	}
 	addSkillScaleTooltipEvent() {
