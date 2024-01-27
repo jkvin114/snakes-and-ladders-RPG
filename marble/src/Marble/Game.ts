@@ -87,6 +87,7 @@ import TileFocusVectorizer from "./Agent/Utility/Vectorize/TileFocusVectorizer"
 import { AbilityExecution } from "./Ability/Ability"
 import { GameType } from "./enum"
 import { ProtoPlayer } from "../Model/models"
+import { Logger } from "../logger"
 
 const MAP = ["world", "god_hand"]
 class MarbleGame {
@@ -189,7 +190,7 @@ class MarbleGame {
 		try {
 			this.mediator.registerAbilities(itemSetting)
 		} catch (e) {
-			console.error(e)
+			Logger.error("set items error",e)
 		}
 	}
 	turnToNum(turn: number) {

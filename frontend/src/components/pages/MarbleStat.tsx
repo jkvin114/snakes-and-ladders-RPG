@@ -55,7 +55,7 @@ export default function MarbleStatPage() {
 	function loadAll() {
 		AxiosApi.get("/stat/marble/all").then((res) =>
 			setGames(
-				res.data.map((g: any) => {
+				res.data.reverse().map((g: any) => {
 					return {
 						game: g,
 					}

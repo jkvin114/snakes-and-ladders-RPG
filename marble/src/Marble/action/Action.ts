@@ -1,3 +1,4 @@
+import { Logger } from "../../logger"
 import { AbilityExecution } from "../Ability/Ability"
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 import { cl, hexId } from "../util"
@@ -190,10 +191,10 @@ export abstract class Action {
 		if (this.id === id) this.off()
 	}
 	applyMultiplier(mul: number): void {
-		console.error("multiplier could not be applied")
+		Logger.err("multiplier could not be applied",this.id)
 	}
 	setValue(val: number) {
-		console.error(" could not set the value")
+		Logger.err(" could not set the value",this.id)
 	}
 	/**
 	 * action이 실행될띠 ability 알림 표시(아이템으로 인한 action만 적용)

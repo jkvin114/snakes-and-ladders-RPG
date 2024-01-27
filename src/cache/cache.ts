@@ -11,13 +11,22 @@ export interface IUserCache{
 }
 
 export namespace UserCache{
+    let cachehit=0
+    let cachemiss=0
     const userCache = new Map<string,IUserCache>()
 
+    export function getEval(){
+        if(cachehit+cachemiss===0) return ''
+        return `cache hit:${cachehit}, miss: ${cachemiss}. Hit rate: ${cachehit/(cachehit+cachemiss)}`
+    }
+
     function onCacheMiss(id:string|mongoose.Types.ObjectId){
+        cachemiss++
         return UserSchema.findById(id)
     }
     export async function getUser(id:string|mongoose.Types.ObjectId):Promise<IUserCache>{
         if(userCache.has(String(id))){
+            cachehit++
             return userCache.get(String(id))
         }
         const user = await onCacheMiss(id)

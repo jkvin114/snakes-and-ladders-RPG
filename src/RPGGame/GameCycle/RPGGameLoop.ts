@@ -7,6 +7,7 @@ import { GameSetting } from "../GameSetting"
 import SETTINGS = require("../../../res/globalsettings.json")
 import { GameCycleState, ArriveSquare, WaitingSkill, GameInitializer } from "./RPGGameCycleState"
 import { GAME_CYCLE } from "./StateEnum"
+import { Logger } from "../../logger"
 
 class EventResult {
 	result: boolean
@@ -231,7 +232,7 @@ class GameLoop {
 
 		if (!(this.state instanceof ArriveSquare)) {
 			this.startNextTurn(false)
-			console.error("invalid game cycle state, should be ArriveSquare but received" + this.state.id)
+			Logger.err("invalid rpg game cycle state, should be ArriveSquare but received" + this.state.id)
 			return
 		}
 
@@ -262,7 +263,7 @@ class GameLoop {
 			await this.state.getPromise()
 			this.nextGameCycle()
 		} else {
-			console.error("invalid user pendingobstacle input")
+			Logger.error("invalid rpg user pendingobstacle input",info)
 		}
 	}
 	async user_completePendingAction(info: ClientInputEventFormat.PendingAction, crypt_turn: string) {
@@ -274,7 +275,7 @@ class GameLoop {
 			await this.state.getPromise()
 			this.nextGameCycle()
 		} else {
-			console.error("invalid user pendingaction input")
+			Logger.error("invalid rpg user pendingaction input",info)
 		}
 		//this.setGameCycle(this.state.onUserCompletePendingAction(info))
 	}

@@ -582,7 +582,7 @@ class MatchInterface {
 			})
 		})
 
-		fetch(SERVER_URL + "/resource/marble_item_presets").then((response) => {
+		fetch("/res/data/marbleitempresets.json").then((response) => {
 			response.json().then((result) => {
 				let str = ""
 				// console.log(result)

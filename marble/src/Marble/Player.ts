@@ -77,7 +77,7 @@ class MarblePlayer{
     }
     incrementTotalBet(bet:number){
         this.totalBet+=bet
-        console.log(this.totalBet)
+        //console.log(this.totalBet)
     }
     clearPendingAction(){
         this.pendingActions=[]

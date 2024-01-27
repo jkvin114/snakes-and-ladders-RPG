@@ -10,6 +10,7 @@ import { SimulationEvalGenerator } from "./Simulation/eval/Generator"
 import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
+import { Logger } from "../logger"
 const path = require("path")
 
 function workerTs(data: unknown) {
@@ -108,6 +109,7 @@ class RPGRoom extends Room {
 		let canstart = this.gameloop.game.canStart()
 		if (!canstart) return false
 		else if (!this.gameloop.game.begun){
+			Logger.log("rpg game start ",this.name)
 			this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
 			this.isGameRunning=true
 		} 
@@ -143,7 +145,7 @@ class RPGRoom extends Room {
 			}
 		}
 		catch(e){
-			console.error(e)
+			Logger.error("rpg game over ",e)
 		}
 
 		this.eventObserver.gameOver(winner)
@@ -156,7 +158,7 @@ class RPGRoom extends Room {
 	) {
 		if (!isMainThread) return
 		if(CONFIG.dev_settings.enabled) {
-			console.error("ERROR: Dev setting is enabled!")
+			Logger.warn("ERROR: cannot run simulation if dev setting is enabled!")
 			return
 		}
 		// let setting = new SimulationSetting(isTeam, simulationsetting)
@@ -166,7 +168,7 @@ class RPGRoom extends Room {
 				this.onSimulationOver(true, stat)
 			})
 			.catch((e) => {
-				console.error(e)
+				Logger.error("rpg simulation",e)
 				this.onSimulationOver(false, e.toString())
 			})
 	}
@@ -226,7 +228,7 @@ class RPGRoom extends Room {
 				simEval.save()
 			}
 			catch(e){
-				console.error(e)
+				Logger.error("saving simulation eval",e)
 				this.eventObserver.simulationStatReady("error",(e as any).toString())
 			}
 			
@@ -234,7 +236,7 @@ class RPGRoom extends Room {
 
 		if (!stat) {
 			if (!simple_stat) {
-				console.log("simulation complete")
+				Logger.log("simulation complete")
 				this.eventObserver.simulationOver("no_stat")
 				return
 			}
@@ -244,7 +246,7 @@ class RPGRoom extends Room {
 				this.eventObserver.simulationStatReady("none","")
 			}
 			catch(e){
-				console.error(e)
+				Logger.error("saving simulation stat",e)
 				this.eventObserver.simulationStatReady("error",(e as any).toString())
 
 			}
@@ -262,12 +264,12 @@ class RPGRoom extends Room {
 				this.eventObserver.simulationStatReady(data.id,"")
 			}
 			catch(e){
-				console.error(e)
+				Logger.error("saving simulation stat",e)
 				this.eventObserver.simulationStatReady("error",(e as any).toString())
 			}
 			
 		}
-
+		Logger.log("rpg simulation finished")
 		this.eventObserver.simulationOver("success")
 		
 	}

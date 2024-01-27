@@ -12,6 +12,7 @@ import { ControllerWrapper } from "./ControllerWrapper"
 import { ISession, SessionManager } from "../session/inMemorySession"
 import type { Request, Response } from "express"
 import { randName } from "../RPGGame/data/names"
+import { Logger } from "../logger"
 
 function isUserInRPGRoom(req: Express.Request) {
 	return (
@@ -43,7 +44,7 @@ router.post("/create_rpg", function (req: express.Request, res: express.Response
 	let rname = String(body.roomname)
 
 	if (R.hasRPGRoom(rname)) {
-		console.log("exidt")
+		//console.log("exidt")
 		res.status(400).end("room name exists")
 		return
 	}
@@ -100,7 +101,7 @@ router.post(
 		let room = null
 		if (ismarble) {
 			let status = await MarbleGameGRPCClient.Ping()
-			console.log(status)
+			//console.log(status)
 			if (status < 0) {
 				res.status(500).end("service unavaliable")
 				return
@@ -110,7 +111,7 @@ router.post(
 			R.setMarbleRoom(rname, room)
 		} else {
 			let status = await RPGGameGRPCClient.Ping()
-			console.log(status)
+			//console.log(status)
 			//if(status<0) return res.status(500).end('service unavaliable')
 
 			if (isUserInRPGRoom2(session)) {
@@ -126,7 +127,7 @@ router.post(
 			delete session.roomname
 			delete session.turn
 		})
-
+		Logger.log("create room",rname)
 		if (body.password) room.setPassword(body.password)
 
 		room.setSettings(body.loggedinOnly, body.isPrivate)
@@ -138,7 +139,7 @@ router.post(
 			session.roomname = rname
 			session.turn = 0
 		}
-		console.log(session)
+	//	console.log(session)
 		res.status(201).end(rname)
 	}, 201)
 )
@@ -155,7 +156,7 @@ router.post(
 			res.status(307).end("previous room exists")
 			return
 		}
-
+		Logger.log("join room",session.id)
 		if (session) {
 			if ((!session.username || session.username==="") && !session.isLogined) {
 				session.username = randName()
@@ -187,8 +188,8 @@ router.post(
 	"/matching",
 	sessionParser,
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
-		console.log(session)
-		console.log("matching")
+		//console.log(session)
+		Logger.log("access matching page",session.id)
 		if (session) {
 			if (session.roomname === undefined) {
 				res.status(401).end()
@@ -202,7 +203,7 @@ router.post(
 			if (!R.hasRoom(session.roomname)) res.status(401).end()
 			else res.status(200).end(session.roomname)
 		} else {
-			console.error("unauthorized access to the matching page")
+			Logger.warn("unauthorized access to the matching page")
 			res.status(401).end()
 		}
 	})
@@ -250,12 +251,12 @@ router.post(
 	sessionParser,
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
 		if (session.turn === undefined) {
-			console.error("unauthorized access to the game page")
+			Logger.warn("unauthorized access to the game page")
 			res.status(401).end()
 			return
 		}
 		if (!R.hasRoom(session.roomname)) {
-			console.error("access to unexisting game")
+			Logger.warn("access to unexisting game")
 			delete session.roomname
 			delete session.turn
 			res.status(401).end()
@@ -267,10 +268,10 @@ router.post(
 	"/spectate_rpg",
 	sessionParser,
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
-		console.log(req.body)
+		Logger.log("spectate",session.id,req.body)
 		if (req.body.roomname) {
 			if (!R.hasRPGRoom(req.body.roomname) || !R.getRPGRoom(req.body.roomname).gameStatus) {
-				console.error("access to unexisting game")
+				Logger.warn("access to unexisting game")
 				res.status(404).end()
 				return
 			}
@@ -307,7 +308,7 @@ router.post(
 		}
 
 		if (!req.session.isLogined) {
-			console.error("unauthorized access to the simulation page")
+			Logger.warn("unauthorized access to the simulation page")
 			res.status(401).end()
 			return
 		}

@@ -2,6 +2,7 @@ import { ServerWritableStream } from "@grpc/grpc-js";
 import Room from "./Room";
 import { marblegame } from "./grpc/services/marblegame";
 import { GameType } from "./Marble/enum";
+import { Logger } from "./logger";
 
 export default class RoomStorage{
     private static readonly ROOMS = new Map<string,Room>()
@@ -21,6 +22,7 @@ export default class RoomStorage{
     
     static SubscribeEventEmitter(rname:string,call:ServerWritableStream<marblegame.String,marblegame.GameEvent>){
         if(!RoomStorage.ROOMS.has(rname)) return false
+        Logger.log("subscribed event emitter",rname)
         RoomStorage.ROOMS.get(rname)?.registerClientInterface(call)
         return true
     }
@@ -40,7 +42,7 @@ export default class RoomStorage{
         if(!room) return false
         let canstart=room.user_startGame()
 		if (!canstart) {
-			console.log("connecting incomplete")
+			Logger.log("connecting incomplete")
             return false
 		}
         return true

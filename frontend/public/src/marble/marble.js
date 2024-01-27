@@ -538,8 +538,8 @@ async function requestMap() {
 	var urls = ["/resource/marble_map", "/resource/marble_map_coordinates"]
 	let res = await AxiosApi.get("/resource/marble_map")
 	GAME.scene.setMap(res.data)
-	let res2 = await AxiosApi.get("/resource/marble_map_coordinates")
-	GAME.scene.setMapCoordinates(res2.data)
+	let res2 = await (await fetch("/res/data/marble_map_coordinates.json")).json()
+	GAME.scene.setMapCoordinates(res2)
 
 	GAME.scene.setToMarble()
 	GAME.scene.drawBoard()

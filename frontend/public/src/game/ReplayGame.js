@@ -85,7 +85,10 @@ export class ReplayGame extends Game {
 			})
 		})
 	}
-	requestFormat() {
+	async requestFormat() {
+		this.format = await (await fetch("/res/data/replay_record_format.json")).json()
+		return
+
 		return new Promise((resolve, reject) => {
 			$.ajax({
 				url: server_url + "/resource/replay_format",

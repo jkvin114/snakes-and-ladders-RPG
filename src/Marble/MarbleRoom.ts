@@ -5,6 +5,7 @@ import { MarbleGameRecordSchema } from "../mongodb/schemaController/MarbleGameRe
 
 import MarbleGameGRPCClient from "../grpc/marblegameclient";
 import { hasProp } from "../RPGGame/core/Util";
+import { Logger } from "../logger";
 
 const path = require("path")
 
@@ -95,10 +96,10 @@ class MarbleRoom extends Room{
 			// console.log(stat)
 			const data = await MarbleGameRecordSchema.create(stat)
 			this.onGameStatReady(data._id,"MARBLE",new Set([data.winner])).then()
-			console.log("saved marble game result")
+			Logger.log("saved marble game result")
 		}
 		catch(e){
-			console.error("Failed to save game record")
+			Logger.error("Failed to save game record",e)
 		}
 		finally{
 			this.reset()

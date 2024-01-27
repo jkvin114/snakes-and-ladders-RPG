@@ -3,6 +3,7 @@ import { MarbleGameLoop } from "../MarbleGameLoop"
 import { SimulationSetting } from "./SimulationSetting"
 import { GameResultStat } from "../../Model/GameResultStat"
 import SimulationWriter from "./writer"
+import { Logger } from "../../logger"
 const { parentPort } = require("worker_threads")
 export interface SimulationInit{
     setting:SimulationSetting,
@@ -40,7 +41,7 @@ export class Simulation{
 
 	async run(resolve: Function,reject:Function) {
 		
-		console.log("run"+this.count)
+		Logger.log("run"+this.count)
 		const PROGRESS_INTERVAL=Math.max(10,Math.floor(this.count/1000))
 		let consolelog = console.log
 		console.log = function () {}
@@ -75,7 +76,7 @@ export class Simulation{
 		let endTime: any = new Date()
 		let timeDiff: any = endTime - startTime
 		console.log = consolelog
-		console.log("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
+		Logger.log("total time:" + timeDiff + "ms, " + timeDiff / this.count + "ms per game")
 
 		// if(this.setting.isTrain){
 		// 	this.gameRecords=this.trainData.onFinish(this.setting.mapPool,this.setting)

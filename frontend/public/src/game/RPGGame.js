@@ -1014,7 +1014,10 @@ export class Game {
 		})
 	}
 
-	requestVisualEffect() {
+	async requestVisualEffect() {
+		this.strRes.VISUAL_EFFECTS = await (await fetch("/res/data/visualeffects.json")).json()
+
+		return
 		return new Promise((resolve, reject) => {
 			let request2 = new XMLHttpRequest()
 			request2.open("GET", server_url + `/resource/visualeffects`, true)

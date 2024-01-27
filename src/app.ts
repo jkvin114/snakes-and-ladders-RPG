@@ -26,6 +26,7 @@ import cookieParser from "cookie-parser"
 import { setJwtCookie } from "./session/jwt"
 import { SocketSession } from "./sockets/SocketSession"
 import { Logger } from "./logger"
+import { UserCache } from "./cache/cache"
 
 declare module 'express-session' {
 	interface SessionData {
@@ -59,7 +60,17 @@ const PORT = 5000
 const app = express()
  const ORIGIN = "http://localhost:3000"
 const ORIGIN2="http://192.168.0.3:3000"
-Logger.log("start")
+Logger.log("start");
+
+function onExit(){
+	Logger.log("user cache analysis:",UserCache.getEval())
+	Logger.log("process exit");
+}
+
+// [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+// 	process.on(eventType,onExit);
+// })
+  
 //temp ==============================
 
 /*
@@ -113,7 +124,7 @@ app.use(errorHandler)
 const httpserver = createServer(app)
 httpserver.listen(PORT,"192.168.0.3")
 app.on("error", (err: any) => {
-	console.error("Server error:", err)
+	Logger.error("Server error:",err)
 })
 
 connectMongoDB()
@@ -131,10 +142,9 @@ RPGGameGRPCClient.connect()
 // 	}
 // }
 
-console.log("start server")
 // console.log("IP Address:" + addresses[0])
-console.log("version " + SETTINGS.version)
-console.log("patch " + SETTINGS.patch_version)
+Logger.log("version " + SETTINGS.version)
+Logger.log("patch " + SETTINGS.patch_version)
 // function ROOMS.get(name: string): Room {
 // 	return ROOMS.get(name)
 // }
@@ -165,9 +175,12 @@ io.use((socket, next) => {
 		socket.data.session=session
 		SessionManager.onSocketAccess(session)
 		if(!session) {
+			Logger.warn("invalid session for socket id:"+socket.id)
 			throw new Error("invalid session for socket id:"+socket.id)
 		}
 		if(!socket.handshake.query || !socket.handshake.query.type){
+			Logger.warn("No connection type provided! socket id:"+socket.id)
+
 			throw new Error("No connection type provided! socket id:"+socket.id)
 		}
 		
@@ -176,7 +189,7 @@ io.use((socket, next) => {
 		next()
 	}
 	catch(e){
-		console.error(e)
+		Logger.warn(String(e))
 	}
 	
 });
@@ -246,6 +259,7 @@ app.post("/jwt/init",function(req:express.Request, res:express.Response){
 	}
 	let token = SessionManager.createSession()
 	setJwtCookie(res,token)
+	Logger.log("created new session")
 	res.send("ok")
 
 })

@@ -11,6 +11,7 @@ import { UserSchema } from "../mongodb/schemaController/User"
 import { ChatMessageSchema } from "../mongodb/schemaController/ChatMessage"
 import { IChatRoom } from "../mongodb/ChattingSchema"
 import { UserCache } from "../cache/cache"
+import { Logger } from "../logger"
 
 const MAX_MESSAGE_FETCH = 20
 
@@ -116,7 +117,7 @@ router.post(
 		}
 
 		const room = await ChatRoomSchema.create(session.userId, body.name)
-
+		Logger.log("create chat room ",room._id.toString())
 		//if the room size is 2(only one user invited),
 		//save id of both users in the room to make future search easier
 		if (users.length === 1) {

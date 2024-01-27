@@ -15,6 +15,7 @@ import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation"
 import crypto from "crypto";
 import { CharacterSimulationEval, SimulationEval } from "../../mongodb/SimulationEvalDBSchema";
 import { ISession, SessionManager } from "../../session/inMemorySession";
+import { Logger } from "../../logger";
 export function encrypt(pw: string, salt: string) {
 	return crypto
 		.createHash("sha512")
@@ -66,7 +67,10 @@ export const adminauth = async(req: express.Request, res: express.Response, next
 			res.status(401).end("unauthorized")
 		} else {
 			const user = await User.findById(session.userId)
-			if(user.role && user.role==="admin") next()
+			if(user.role && user.role==="admin") {
+				Logger.log("admin authorized")
+				next()
+			}
 			else
 				res.status(401).end("unauthorized")
 		}

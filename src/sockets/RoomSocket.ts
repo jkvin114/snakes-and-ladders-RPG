@@ -4,6 +4,7 @@ import { SocketSession } from "./SocketSession";
 import express = require("express")
 import { controlRoom } from "./Controller";
 import CONFIG from "./../../config/config.json"
+import { Logger } from "../logger";
 
 const validTypes = new Set<string>(["matching","rpggame","marblegame"])
 
@@ -28,7 +29,7 @@ module.exports=function(socket:Socket){
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
 				io.to(roomname).emit(type,...args)
 			}).setHostNickname(SocketSession.getUsername(socket), 0,SocketSession.getUserClass(socket))
-			
+			Logger.log("create new room",rname)
 			room.addSession(SocketSession.getId(socket))
 			socket.join(rname)
 		})

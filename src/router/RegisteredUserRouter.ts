@@ -12,6 +12,7 @@ import { ControllerWrapper } from "./ControllerWrapper"
 import { UserController } from "./user/controller"
 import { UserSchema } from "../mongodb/schemaController/User"
 import { userSchema } from "../mongodb/UserDBSchema"
+import { Logger } from "../logger"
 /**
  * https://icecokel.tistory.com/17?category=956647
  * 
@@ -93,11 +94,11 @@ router.post(
 	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
 		const imgfile = req.file
 		try {
-			console.log(imgfile)
 			if (imgfile) await UserSchema.updateProfileImage(session.userId, imgfile.filename)
+			Logger.log(session.username,"update profile image")
 			res.status(201).end()
 		} catch (e) {
-			console.error(e)
+			Logger.error("update profile image ",e)
 			res.status(500).end()
 		}
 	})
@@ -110,9 +111,10 @@ router.post(
 	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
 		try {
 			await UserSchema.updateProfileImage(session.userId, "")
+			Logger.log(session.username,"remove profile image")
 			res.status(200).end()
 		} catch (e) {
-			console.error(e)
+			Logger.error("remove profile image",e)
 			res.status(500).end()
 		}
 	})
@@ -170,15 +172,15 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 			role: "user",
 		})
 			.then((data: any) => {
-				console.log(data)
 				res.status(200).end(body.username)
+				Logger.log(body.username," registered")
 			})
 			.catch((err: Error) => {
-				console.log(err)
+				Logger.error("failed to register",err)
 				res.status(500).end()
 			})
 	} catch (e) {
-		console.error(e)
+		Logger.error("failed to register",e)
 		res.status(500).end()
 	}
 })
@@ -217,9 +219,8 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 		if (session) {
 			SessionManager.login(req,String(user._id),user.username)
 			session.username = user.username
-
 			if (user.boardData == null) {
-				console.log("added board data")
+				Logger.log("added board data",user.username)
 				let boardData = await UserBoardDataSchema.create({
 					_id: new mongoose.Types.ObjectId(),
 					articles: [],
@@ -231,7 +232,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 				user = await User.setBoardData(user._id, boardData._id)
 			}
 			session.boardDataId = String(user.boardData)
-			console.log(session.username + " has logged in")
+			Logger.log(session.username + " has logged in")
 		}
 		else{
 			return res.status(401).send("session does not exist")
@@ -243,7 +244,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			id: user._id,
 		})
 	} catch (e) {
-		console.error(e)
+		Logger.error("failed to login",e)
 		res.status(500).end()
 	}
 })
@@ -252,11 +253,11 @@ router.post("/logout", loginauth, function (req: express.Request, res: express.R
 	const session = SessionManager.getSession(req)
 
 	SessionManager.logout(req)
-	console.log(session.username + " has logged out")
+	Logger.log(session.username + " has logged out")
 	// req.session.destroy(function(e){
 	//     if(e) console.log(e)
 	// });
-	console.log(session)
+	// console.log(session)
 
 	res.clearCookie("sid")
 	res.status(200).redirect("/")
@@ -291,7 +292,7 @@ router.patch(
 		let id = user._id
 
 		await UserSchema.updatePassword(id, encryptedPw, salt)
-		console.log(body.username + " has changed password")
+		Logger.log(body.username + " has changed password")
 	},201)
 )
 
@@ -312,7 +313,7 @@ router.patch("/email", async function (req: express.Request, res: express.Respon
 			res.end("password not match")
 			return
 		}
-		console.log(body.username + " has changed email")
+		Logger.log(body.username + " has changed email")
 
 		let id = user._id
 
@@ -353,7 +354,7 @@ router.delete("/", async function (req: express.Request, res: express.Response) 
 		return
 	}
 
-	console.log(body.username + " has deleted account")
+	Logger.log(body.username + " has deleted account")
 
 	User.deleteOneById(user._id)
 		.then(() => {

@@ -58,7 +58,10 @@ router.get("/globalsetting", function (req:Request, res:Response) {
 	res.end(_GlobalSetting)
 })
 router.get("/visualeffects", function (req:Request, res:Response) {
+	return res.status(404).end("depricated")
 	fs.readFile(__dirname + RESOURCE_PATH+"visualeffects.json", "utf8", function (err, data) {
+		
+		
 		if(err){
 			res.status(500).send({err:"error while requesting visualeffects setting file"})
 		}
@@ -111,6 +114,7 @@ router.get("/string_resource", function (req:Request, res:Response) {
 	
 })
 router.get("/replay_format", function (req:Request, res:Response) {
+	return res.status(404).end("depricated")
 	fs.readFile(__dirname + RESOURCE_PATH+"replay_record_format.json", "utf8", function (err, data) {
 		if(err){
 			res.status(500).send({err:"error while requesting replay_record_format file"})
@@ -142,6 +146,7 @@ router.get("/marble_map",sessionParser, function (req:Request, res:Response) {
 })
 
 router.get("/marble_map_coordinates", function (req:Request, res:Response) {
+	return res.status(404).end("depricated")
 	res.end(_MarbleCoord)
 })
 
@@ -149,6 +154,8 @@ router.get("/marble_items", function (req:Request, res:Response) {
 	res.end(JSON.stringify(MarbleRoom.ItemDescriptionCache))
 })
 router.get("/marble_item_presets", async function (req:Request, res:Response) {
+	return res.status(404).end("depricated")
+
 	fs.readFile(__dirname + RESOURCE_PATH+"marble/marbleitempresets.json", "utf8", function (err, data) {
 		if(err){
 			res.status(500).send({err:"error while requesting resource file"})

@@ -5,12 +5,13 @@ import { SocketSession } from "./SocketSession";
 import { ClientInputEventFormat, ServerGameEventFormat } from "../RPGGame/data/EventFormat";
 import { RPGRoom } from "../RPGGame/RPGRoom";
 import { controlRoom, controlRPGRoom } from "./Controller";
+import { Logger } from "../logger";
 const { User } = require("../mongodb/UserDBSchema")
 module.exports=function(socket:Socket){
 
 	socket.on("user:simulationready", function (setting:ClientInputEventFormat.SimulationSetting, count:number, isTeam:boolean) {
 		if (!SocketSession.getUsername(socket)) {
-			console.error("user not logined for simulation")
+			Logger.err("user not logined for simulation")
 			return
 		}
 		
@@ -24,6 +25,7 @@ module.exports=function(socket:Socket){
 		}).registerResetCallback(() => {
 			R.remove(rname)
 		})
+		Logger.log("create simulation room",rname)
 
 		R.setRPGRoom(rname, room)
 
@@ -353,6 +355,7 @@ module.exports=function(socket:Socket){
 	socket.on("user:chat", function (turn,message) {
 		// let rname = SocketSession.getRoomName(socket)
 		controlRPGRoom(socket,(room,rname,turn)=>{
+			Logger.log("rpg game chat",rname,room.getPlayerMessageHeader(turn),message)
 			io.to(rname).emit("server:receive_message",room.getPlayerMessageHeader(turn),message)
 		},true)
 	})

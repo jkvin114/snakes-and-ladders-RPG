@@ -10,6 +10,7 @@ import { MongoId } from "../mongodb/types";
 import { UserGamePlay } from "../mongodb/UserGamePlaySchema";
 import { use } from "passport";
 import { Types } from "mongoose";
+import { Logger } from "../logger";
 
 
 interface UserInfo{
@@ -224,7 +225,7 @@ abstract class Room {
 		if(socket){
 			SocketSession.removeGameSession(socket)
 			this.deleteSession(SocketSession.getId(socket))
-			console.log("removeguest")
+			Logger.log("remove guest from room ",this.name)
 			SocketSession.print(socket)
 			socket.leave(this.name)
 			
@@ -259,7 +260,6 @@ abstract class Room {
 	onBeforeGameStart()
 	{
 		this.isGameStarted=true
-
 	}
 	/**
 	 * save registered users' game play data to DB
@@ -278,6 +278,7 @@ abstract class Room {
 				isWon:winner.has(user.turn)
 			})
 		}
+		Logger.log("save user gameplay data",this.name)
 	}
 	user_reconnect(turn:number){
 
@@ -289,7 +290,7 @@ abstract class Room {
 	reset() {
 		// this.stopConnectionTimeout()
 		// this.stopIdleTimeout()
-		console.log(this.name + "has been reset")
+		Logger.log(this.name + "has been reset")
 		this.name = "DELETED_ROOM"
 		this.playerSessions.clear()
 		

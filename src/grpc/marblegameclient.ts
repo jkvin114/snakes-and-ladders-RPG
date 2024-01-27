@@ -1,6 +1,7 @@
 import { credentials } from "@grpc/grpc-js";
 import { marblegame } from "./services/marblegame";
 import { MarbleRoom } from "../Marble/MarbleRoom";
+import { Logger } from "../logger";
 const PORT=50051
 
 export default class MarbleGameGRPCClient{
@@ -8,16 +9,16 @@ export default class MarbleGameGRPCClient{
     
 
     static connect(){
-        console.log("create marblegame grpc client")
         try{
-
+            
             MarbleGameGRPCClient.stub = new marblegame.MarbleGameClient('localhost:'+PORT,credentials.createInsecure());
             MarbleGameGRPCClient.RequestItem((items)=>{
                 MarbleRoom.ItemDescriptionCache = JSON.parse(items)
             })
+            // Logger.log("created marblegame grpc client")
         }
         catch(e){
-            console.error(e)
+            Logger.error("Failed to connect marble grpc server",String(e))
         }
    }
    /**
@@ -41,7 +42,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.RequestItem(new marblegame.Void(), (error:any, response:marblegame.String) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }else
             callback(response.val)
         });
@@ -51,7 +52,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.InitGame(setting, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }else
             callback()
         });
@@ -60,7 +61,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.RequestGameStart(new marblegame.String({val:rname}), (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
             else callback(response.val)
         });
@@ -70,7 +71,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.RequestSetting(req, (error:any, response:marblegame.GameSettingReponse) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
                 callback(null)
             }
             else callback(response)
@@ -84,21 +85,22 @@ export default class MarbleGameGRPCClient{
                 callback(data)
             })
             stream.on("end", () => {
-                console.log("end stream")
+                Logger.log("end marble grpc stream")
             })
             stream.on("error",(e)=>{
-                console.error(e)
+                Logger.err(String(e))
             })
         }
         catch(e){
-            
+            Logger.err(String(e))
+
         }
     }
     static ResetGame(rname:string){
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.ResetGame(new marblegame.String({val:rname}), (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -106,7 +108,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.PressDice(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -114,7 +116,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.SelectBuild(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -122,7 +124,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.SelectBuyout(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -130,7 +132,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.SelectLoan(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -138,7 +140,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.SelectTile(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -146,7 +148,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.ObtainCard(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -154,7 +156,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.ConfirmCardUse(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -162,7 +164,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.SelectGodhandSpecial(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
@@ -170,7 +172,7 @@ export default class MarbleGameGRPCClient{
         if(!MarbleGameGRPCClient.stub ) return
         MarbleGameGRPCClient.stub.SelectIsland(data, (error:any, response:marblegame.Bool) => {
             if (error) {
-                console.error(error);
+                Logger.err(error);
             }
         });
     }
