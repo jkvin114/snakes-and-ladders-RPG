@@ -7,7 +7,6 @@ import { useEffect, useState } from "react"
 import { RegisterPage } from "./components/pages/Register"
 import { backend_url } from "./variables"
 import StatusPage from "./components/pages/Status"
-import BoardPostWrite from "./components/pages/BoardPostWrite"
 import axios from "axios"
 import EjsPage from "./components/EjsPage"
 import ProfilePage from "./components/pages/Profile"
@@ -29,6 +28,7 @@ import { limitString } from "./util"
 import { MakeGamePage } from "./components/pages/MakeGame"
 import FriendPage from "./components/pages/Friends"
 import RPGPlayerStatPage from "./components/pages/RPGPlayerStat"
+import WritePostPage from "./components/pages/WritePost"
 
 
 
@@ -159,7 +159,7 @@ function App() {
 						<Route path="/login" element={<LoginPage />}></Route>
 						<Route path="/register" element={<RegisterPage />}></Route>
 						<Route path="/status" element={<StatusPage />}></Route>
-						<Route path="/writepost" element={<BoardPostWrite />}></Route>
+						<Route path="/writepost" element={<WritePostPage />}></Route>
 						<Route path="/chat" element={<ChatPage></ChatPage>}></Route>
 						<Route path="/friends" element={<FriendPage></FriendPage>}></Route>
 						<Route path="/rpg_stat" element={<RPGPlayerStatPage />}></Route>

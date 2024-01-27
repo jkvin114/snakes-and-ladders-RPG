@@ -60,6 +60,7 @@ export const PAGES={
         scripts:[
             "/lib/jquery-3.6.0.min.js",
             "/lib/axios.js",
+            "/lib/quill.min.js",
             "/src/localeManager.js",
             "/src/init.js"
         ]

@@ -62,7 +62,7 @@ export default function SideBar({isOpen,closeNavbar,notiCount}:Props){
           <a className="menu-item"><RiBillFill /><b className="menu-name">Post</b></a>
             <ul className="sub-menu"  onClick={closeNavbar}>
               <li className="sub-menu-item"> <Link to="/board" reloadDocument><RiCompass3Line />View Posts</Link></li>
-              <li className="sub-menu-item"><Link to="/board"><RiBallPenFill />Write Post</Link></li>
+              <li className="sub-menu-item"><Link to="/writepost"><RiBallPenFill />Write Post</Link></li>
             </ul>
           </li>
 

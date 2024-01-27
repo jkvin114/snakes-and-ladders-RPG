@@ -5,21 +5,15 @@
 	<link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
-  @font-face {
-    font-family: "nanumB";
-    src: url("/res/font/NanumSquareB.ttf");
-  }
   body{     
    background-color: var(--bg);
    color:white;
 
    margin: 0;
-  font-family: 'nanumB';
   text-align:center;
 
   }
   a,p{
-    font-family: 'nanumB';
   }
 
   
@@ -223,7 +217,6 @@
     background:none;
     border: none;
     border-bottom:2px solid rgb(210, 210, 210);
-    font-family: 'nanumB';
     flex-grow: 1;
   }
   .submit_comment{
@@ -233,7 +226,6 @@
     border: none;
     background-color: var(--col-primary);
     color: white;
-    font-family: 'nanumB';
     cursor: pointer;
   }
   .commententer{
@@ -283,6 +275,17 @@
     object-fit: cover;
     cursor: pointer;
   }
+  #post-container{
+    min-height: 150px;
+    position: relative;
+  }
+  #loadingimg{
+    position: absolute;
+    top:50%;
+    left:50%;
+    width: 100px;
+    transform: translate(-50%,-50%);
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -298,7 +301,7 @@
     <img src="/res/img/svg/list.svg" id="postlistbtn">
     <%if(canModify){%>
       <img src="/res/img/svg/trash.svg" class="delete_post" data-id="<%= id%>">
-      <img onclick="golink('/board/post/edit/<%=url%>')" src="/res/img/ui/write.png"class="edit_post">
+      <img onclick="golink('/writepost?postUrl=<%=url%>')" src="/res/img/ui/write.png"class="edit_post">
   
       <!-- <button value="<%= id%>" class="delete_post">&times;</button>
       <button onclick="golink('/board/post/edit/<%=url%>')" class="edit_post">edit</button> -->
@@ -325,9 +328,9 @@
       
   <hr>
       <%if(image!=="") {%>
-        <img class="postimg" src="/uploads/<%= image %>"> 
+        <img class="postimg" id="postimg" src="/uploads/<%= image %>"> 
      <% }  %>
-     <div class="content"><%- content %>  </div>
+     <div class="content" id="post-container"> <img id="loadingimg" src="/res/img/ui/loading_purple.gif"></div>
      
      <div class="vote upvote postvote <%=(myvote==='up'?'active':'')%>"  data-type="up" data-id="<%=id%>">
       <img src="/res/img/svg/like.svg">

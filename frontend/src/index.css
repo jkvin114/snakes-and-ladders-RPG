@@ -59,7 +59,10 @@ body {
 	#page-root{
 		display: block;
 	}
-	
+	#content-root
+	{
+		margin-top: 35px;
+	}
 
 }
 .divlink{

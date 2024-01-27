@@ -12,6 +12,9 @@ export namespace PostSchema{
         return await new Article(data).save()
     }
     export const findOneById = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findById(id)
+    }
+    export const findOneByIdPopulated = async function (id: mongoose.Types.ObjectId) {
         return await Article.findById(id).populate<{ comments:SchemaTypes.Comment[]}>("comments")
     }
     export const getUrlById = async function (id: mongoose.Types.ObjectId) {
@@ -56,6 +59,9 @@ export namespace PostSchema{
     }
     export const update = async function (url: number, title: string, content: string,visibility:string) {
         return await Article.findOneAndUpdate({ articleId: url }, { title: title, content: content,visibility:visibility })
+    }
+    export const updateWithFormat = async function (url: number, title: string, content: string,visibility:string,formattedContent:string) {
+        return await Article.findOneAndUpdate({ articleId: url }, { title: title, content: content,visibility:visibility,formattedContent:formattedContent })
     }
     export const updateImage = async function (url: number, image: string) {
         return await Article.findOneAndUpdate({ articleId: url }, { imagedir: image })

@@ -1,0 +1,78 @@
+#writepost-root{
+    height: 100vh;
+    position: relative;
+	overflow: auto;
+    text-align: center;
+    .toolbar{
+        position: sticky;
+        top:0;
+        height: 40px;
+        z-index: 1;
+        width: 100%;
+        text-align: center;
+        background-color: var(--col-bg-light);
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        b{
+            font-size: 26px;
+            
+        }
+        svg{
+            vertical-align: middle;
+        }
+    }
+    .editor{
+        margin-top: 20px;
+        width: min(93%, 900px);
+        display: inline-block;
+        min-height: 400px;
+    }
+    #title
+    {
+        width: 100%;
+        display: inline-block;
+        height: 40px;
+        font-size: 25px;
+        line-height: 40px;
+        border: 1px solid white;
+        background-color: var(--col-bg-light);
+        color: var(--col-font);
+        border-radius: 0;
+        box-sizing: border-box;
+    }
+    #quill-root
+    {
+        background-color: var(--col-bg-light);
+        max-height: 80vh;
+        overflow: auto;
+        min-height: 200px;
+    }
+    .ql-toolbar.ql-snow{
+        background-color: var(--col-bg-light);
+
+    }
+    .ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options{
+        background-color: var(--col-bg-lighter);
+    }
+    .ql-snow .ql-picker{
+        color: var(--col-font);
+        &.ql-header {
+            .ql-picker-item::before{
+                color: var(--col-font);
+            }
+        }
+    }
+    .ql-formats{
+        svg{
+            *{
+                // fill:var(--col-font);
+                stroke: var(--col-font);
+            }
+            color: var(--col-font);
+            
+        }
+    }
+}
+

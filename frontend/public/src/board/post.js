@@ -4,10 +4,48 @@ function golink(link) {
 function goLoginPage() {
 	golink("/login?redirect=" + window.location.pathname)
 }
+let blogquill
+function populatePostContent(data) {
+	const { content, formatted } = data
+	if (!formatted) {
+		$("#post-container").html(content)
+		return
+	}
+	$("#postimg").hide()
+	blogquill = new Quill(document.getElementById("post-container"), {
+		// bounds: ".blog-post",
+		modules: {
+			toolbar: false,
+		},
+	})
+	let format = {}
+	if (typeof content === "string") format = JSON.parse(content)
+	blogquill.setContents(format)
+	blogquill.enable(false)
+}
+function extractCurrentImages() {
+	if (!blogquill) return []
 
+	const contents = blogquill.getContents().ops
+	if (!contents) return []
+	let images = new Set()
+	for (const delta of contents) {
+		if (delta.insert && delta.insert.image) {
+			images.add(delta.insert.image.split("/").at(-1))
+		}
+	}
+	return Array.from(images)
+}
 let backend_url = ""
 function main(url) {
 	backend_url = url
+
+	let posturl = window.location.pathname.split("/")[3]
+	console.log(posturl)
+	AxiosApi.get("/board/post/content/" + posturl)
+		.then((res) => populatePostContent(res.data))
+		.catch((e) => console.error(e))
+
 	updateLocale("board")
 
 	$("#postlistbtn").click(() => {
@@ -34,9 +72,9 @@ function main(url) {
 	})
 	$(".delete_post").click(function () {
 		if (!confirm(LOCALE.msg.confirm_delete)) return
-
+		let imagesToRemove = extractCurrentImages()
 		let value = $(this).data("id")
-		AxiosApi.post("/board/post/delete", { id: value })
+		AxiosApi.post("/board/post/delete", { id: value, removedImages: imagesToRemove })
 			.then((res) => {
 				if (res.status == 200) {
 					window.location.href = "/board/"
