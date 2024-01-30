@@ -16,10 +16,21 @@ import { TranHistoryBoard } from "../components/stockgame/TranHistoryBoard"
 import { StatBoard } from "../components/stockgame/StatBoard"
 import Transaction from "./types/Transaction"
 import { RootContext } from "../context/context"
-import { stockgame_gen_url } from "../variables"
+import { stockgame_gen_url, stockgame_chartgenVersion } from "../variables"
+import { IStockGameResult } from "./types/Result"
+import { AxiosApi } from "../api/axios"
+import { randName } from "../types/names"
 
-function StockGame() {
+type Props = {
+	scale: number
+	variance: number
+	startMoney: number
+	ranked:boolean
+}
+
+function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	let theme = "dark"
+	const chartgenVersion = stockgame_chartgenVersion
 	const dataFetch = useRef(false)
 	const [val, setVal] = useState<DisplayData>({
 		value: 0,
@@ -35,7 +46,7 @@ function StockGame() {
 	})
 	const [dayRecord, setDayRecord] = useState<DayRecord[]>([])
 	const [stockChart, setStockChart] = useState<null | StockChart>(null)
-	const [gameState, setGameState] = useState<"none" | "running" | "ended">("none")
+	const [gameState, setGameState] = useState<"none" | "running" | "ended"|"paused">("none")
 	const [playerState, setPlayerState] = useState<PlayerState>({
 		money: 0,
 		initialMoney: 0,
@@ -49,21 +60,21 @@ function StockGame() {
 
 	const [tranHistory, setTranHistory] = useState<Transaction[]>([])
 	const [player, setPlayer] = useState<PlayerManager>(
-		new PlayerManager(10000, setPlayerState, setTranHistory, displayNews)
+		new PlayerManager(startMoney, setPlayerState, setTranHistory, displayNews)
 	)
 	function onTerminate() {
 		if (stockChart) {
-			player.sellPercent(stockChart.getCurrPrice, 1)
+			player.sellPercent(stockChart.getCurrPrice, 1, stockChart.getTime())
 		}
 		setGameState("ended")
-		let result = player.evalResult()
-		alert(`게임 종료, 수익률:${round(result.profitRate * 100, -2)}%`)
+		postResult()
 	}
 	function onDelist() {
-		player.delist()
+		if (!stockChart) return
+		let time= stockChart.getTime()
+		player.delist(time)
 		setGameState("ended")
-		let result = player.evalResult()
-		alert(`상장폐지!, 수익률:${round(result.profitRate * 100, -2)}%`)
+		postResult(time)
 	}
 	function stopChart() {
 		if (stockChart != null && gameState === "running") {
@@ -73,13 +84,13 @@ function StockGame() {
 	}
 	function sellFunc(percent: number) {
 		if (stockChart && gameState === "running") {
-			let count = player.sellPercent(stockChart.getCurrPrice, percent)
+			let count = player.sellPercent(stockChart.getCurrPrice, percent, stockChart.getTime())
 			stockChart.addMarker("sell", count)
 		}
 	}
 	function buyFunc(percent: number) {
 		if (stockChart && gameState === "running") {
-			let count = player.buyPercent(stockChart.getCurrPrice, percent)
+			let count = player.buyPercent(stockChart.getCurrPrice, percent, stockChart.getTime())
 			stockChart.addMarker("buy", count)
 		}
 	}
@@ -88,6 +99,39 @@ function StockGame() {
 			setGameState("running")
 			stockChart.start(onTerminate, onDelist)
 		}
+	}
+	function postResult(delistTime?: number) {
+		if (!stockChart || !playerState) return
+
+		const { transactionHistory, finaltotal, profitRate } = player.evalResult()
+
+		const result = {
+			transactionHistory: transactionHistory,
+			seed: stockChart.seed,
+			chartgenVersion: chartgenVersion,
+			variance: variance,
+			scale: scale,
+			score: finaltotal,
+			initialMoney:startMoney,
+			finaltotal : finaltotal
+		} as IStockGameResult
+
+		let percent = round(profitRate * 100, -2)
+		if (delistTime) {
+			result.delistAt = delistTime
+			alert(`상장폐지!, 수익률:${percent}%`)
+		}
+		else{
+			alert(`게임 종료, 수익률:${percent}%`)
+		}
+		AxiosApi.post("/stockgame/result",{
+			result:result,username:randName()
+		})
+		.then(res=>{
+			console.log(res.data)
+		})
+		.catch(e=>console.error(e))
+		
 	}
 	function displayNews(type: string, message: string, value: number) {
 		if (type === "mincloseprice") {
@@ -140,48 +184,53 @@ function StockGame() {
 		}
 	}
 	async function fetchstock() {
-		let variance = 1
-		let scale = 50 + triDist(200, 200)
-		const data = await (
-			await fetch(stockgame_gen_url + `/gen_stock?variance=${variance}&scale=${scale}`, { mode: "cors" })
-		).json()
-		// console.log(data)
-		const width = window.innerWidth
-		const height = window.innerHeight
+		try {
+			const data = await (
+				await fetch(stockgame_gen_url + `/gen_stock?variance=${variance}&scale=${scale}&version=${chartgenVersion}`, {
+					mode: "cors",
+				})
+			).json()
+			// console.log(data)
+			const width = window.innerWidth
+			const height = window.innerHeight
 
-		let layout = undefined
-		let grid = undefined
-		if (theme === "dark") {
-			layout = {
-				background: {
-					type: ColorType.Solid,
-					color: "#1d1d2d",
-				},
-				textColor: "#D9D9D9",
+			let layout = undefined
+			let grid = undefined
+			if (theme === "dark") {
+				layout = {
+					background: {
+						type: ColorType.Solid,
+						color: "#1d1d2d",
+					},
+					textColor: "#D9D9D9",
+				}
+				grid = {
+					vertLines: {
+						color: "#2B2B43",
+					},
+					horzLines: {
+						color: "#363C4E",
+					},
+				}
 			}
-			grid = {
-				vertLines: {
-					color: "#2B2B43",
+			const chart = createChart(document.getElementById("graph") as HTMLElement, {
+				width: width * 0.6,
+				height: height * 0.5,
+				crosshair: {
+					mode: CrosshairMode.Normal,
 				},
-				horzLines: {
-					color: "#363C4E",
-				},
-			}
+				layout: layout,
+				grid: grid,
+			})
+			const { prices, seed, trend_changes, steep_increase, steep_decrease } = data
+
+			let schart = new StockChart(prices, chart, setVal, setDayRecord, setStat, displayNews, player, String(seed))
+			schart.init()
+			setStockChart(schart)
+		} catch (e) {
+			// console.error(e)
+			console.trace(e)
 		}
-		const chart = createChart(document.getElementById("graph") as HTMLElement, {
-			width: width * 0.6,
-			height: height * 0.5,
-			crosshair: {
-				mode: CrosshairMode.Normal,
-			},
-			layout: layout,
-			grid: grid,
-		})
-		const { prices, seed, trend_changes, steep_increase, steep_decrease } = data
-
-		let schart = new StockChart(prices, chart, setVal, setDayRecord, setStat, displayNews, player)
-		schart.init()
-		setStockChart(schart)
 	}
 
 	useEffect(() => {

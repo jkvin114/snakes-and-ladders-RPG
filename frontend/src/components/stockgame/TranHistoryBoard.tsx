@@ -11,9 +11,9 @@ export function TranHistoryBoard({ record }: Props) {
 				{record.map((r) => (
 					<div className="history-item">
 						<div className="history-top">
-							<span>{r.type === "buy" ? "매수" : "매도"}</span>
-							<span className={r.type === "sell" ? "down" : "up"} style={{float:"right"}}>
-								{r.type === "sell" ? "-" : "+"} {r.shares} 주
+							<span>{r.type === "BUY" ? "매수" : "매도"}</span>
+							<span className={r.type === "SELL" ? "down" : "up"} style={{float:"right"}}>
+								{r.type === "SELL" ? "-" : "+"} {r.shares} 주
 							</span>
 						</div>
 						<div className="history-bottom">

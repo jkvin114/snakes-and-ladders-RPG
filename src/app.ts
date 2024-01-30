@@ -58,8 +58,8 @@ const clientPath = `${__dirname}/../public`
 const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 5000
 const app = express()
- const ORIGIN = "http://localhost:3000"
-const ORIGIN2="http://192.168.0.3:3000"
+ const ORIGIN2 = "http://localhost:3000"
+const ORIGIN="http://192.168.0.3:3000"
 Logger.log("start");
 
 function onExit(){
@@ -115,7 +115,7 @@ app.use("/board", require("./router/board/BoardRouter"))
 app.use("/ping", require("./router/pingRouter"))
 app.use("/chat", require("./router/chat"))
 app.use("/notification", require("./router/notification"))
-app.use("/stockgame", require("./router/stockGameRouter"))
+app.use("/stockgame", require("./router/stockgame/stockGameRouter"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
@@ -123,7 +123,7 @@ app.engine('html', require('ejs').renderFile);
 app.use(express.static(clientPath))
 app.use(errorHandler)
 const httpserver = createServer(app)
-httpserver.listen(PORT,"192.168.0.3")
+httpserver.listen(PORT)
 app.on("error", (err: any) => {
 	Logger.error("Server error:",err)
 })

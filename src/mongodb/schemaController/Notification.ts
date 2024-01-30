@@ -2,9 +2,11 @@ import type { Types } from "mongoose"
 import { INotification ,Notification} from "../NotificationSchema"
 import { NotificationCache } from "../../cache/cache"
 import { sleep } from "../../RPGGame/core/Util"
+import { MongoId } from "../types"
 
 export namespace NotificationSchema{
     
+
     export const create = function (data:INotification) {
         return new Notification(data).save()
     }
@@ -30,6 +32,14 @@ export namespace NotificationSchema{
             message:message
         }).save()
     }
+    export async function stockGameSurpass(receiver:MongoId,playerName:string,score:number) {
+        return new Notification({
+            receiver:receiver,
+            type:"STOCKGAME_SURPASS",
+            payload1:playerName,
+            payload2:score
+        }).save()
+    }
     export const newChat = async function (receiver:Types.ObjectId|string,roomId:Types.ObjectId|string,message:string,serial:number,
         sendername:string,senderProfile:string) {
         
@@ -49,8 +59,6 @@ export namespace NotificationSchema{
             payload3:sendername,
             payload4:senderProfile
         }).save()
-
-        
 
         return noti
     }

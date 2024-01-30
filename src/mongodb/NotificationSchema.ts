@@ -9,7 +9,7 @@ const notificationSchema=new mongoose.Schema({
     type:{
         required:true,
         type: String,
-        enum : ['EMPTY',"OTHER",'CHAT',"COMMENT","REPLY",'POST','FRIEND_REQUEST'],
+        enum : ['EMPTY',"OTHER",'CHAT',"COMMENT","REPLY",'POST','FRIEND_REQUEST',"STOCKGAME_SURPASS"],
         default: 'EMPTY',
     },
     message:{

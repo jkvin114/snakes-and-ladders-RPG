@@ -13,7 +13,7 @@ export default function BaseNotification({noti,deleteNoti,isNew}:Props){
     return (<div className={"notification "+(noti.read?"read":"") + (isNew?" new":"")}>
         <span className="close" onClick={()=>deleteNoti(noti._id)}>&times;</span>
         <div className="noti-body divlink">
-
+            {noti.type==="STOCKGAME_SURPASS" && < div>{noti.payload1} surpassed your score! ({noti.payload2})</div>}
             {noti.type==="CHAT" && <ChatNotification noti={noti}/>}
             {noti.type==="EMPTY" && <ChatNotification noti={noti}/>}
         </div>

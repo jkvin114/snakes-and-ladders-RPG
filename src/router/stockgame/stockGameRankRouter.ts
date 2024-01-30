@@ -1,9 +1,9 @@
 import express = require("express")
-import { ControllerWrapper, NoSessionControllerWrapper } from "./ControllerWrapper"
+import { ControllerWrapper, NoSessionControllerWrapper } from "../ControllerWrapper"
 const router = express.Router()
-import { loginauth, sessionParser } from "./jwt/auth"
-import { adminauth } from "./board/helpers"
-import { StockGameController } from "../stockgame/stockGameController"
+import { loginauth, sessionParser } from "../jwt/auth"
+import { adminauth } from "../board/helpers"
+import { StockGameController } from "./controllers/stockGameController"
 
 /**
  * 

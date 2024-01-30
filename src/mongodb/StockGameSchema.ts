@@ -5,16 +5,17 @@ import mongoose, { InferSchemaType, Schema } from "mongoose"
  */
 const tranHistorySchema = new mongoose.Schema(
 	{
-		time: Number,
+		time: Number, //tick pos number
 		type: {
 			required: true,
 			type: String,
 			enum: ["BUY", "SELL"],
 			default: "BUY",
 		},
-		amount: Number,
-		profit:Number,
-		date: String,
+		price:Number,  //share price
+		amount: Number, //share count 
+		profit:Number, 
+		date: String, //displayed date
 	},
 	{ _id: false }
 )
@@ -24,17 +25,20 @@ const stockGameResultSchema = new mongoose.Schema({
 		required: true,
 		type: Number,
 	},
+	initialMoney:Number,
+    finaltotal:Number,
 	user: {
 		type: Schema.Types.ObjectId,
 		ref: "User",
 		index:true
 	},
     transactionHistory: { type: [tranHistorySchema], required: true },
-    
+    delistAt:Number,
+
 	//metadata required to reproduce stock chart=============
 	seed: {
 		required: true,
-		type: Number,
+		type: String,
 	},
 	chartgenVersion: {
 		required: true,
@@ -43,7 +47,11 @@ const stockGameResultSchema = new mongoose.Schema({
     variance:{
         required: true,
 		type: Number,
-    }
+    },
+	scale:{
+		required: true,
+		type: Number,
+	}
 	//==================================================
 },{timestamps:true})
 
@@ -80,6 +88,24 @@ const stockGameBestScoreSchema = new mongoose.Schema({
 
 stockGameBestScoreSchema.index({ score: -1 });
 
+const userStockGameDataSchema = new mongoose.Schema({
+	user: {
+		type: Schema.Types.ObjectId,
+		ref: "User",
+		required:true
+	},
+	totalGames:{
+		type:Number,
+		required:true,
+		default:0
+	}
+})
+
+
+const StockGameUser = mongoose.model("StockGameUser", userStockGameDataSchema)
+
+type IStockGameUser = InferSchemaType<typeof userStockGameDataSchema>
+
 const StockGameResult = mongoose.model("StockGameResult", stockGameResultSchema)
 
 type IStockGameResult = InferSchemaType<typeof stockGameResultSchema>
@@ -88,4 +114,4 @@ const StockGameBestScore = mongoose.model("StockGameBestScore", stockGameBestSco
 
 type IStockGameBestScore = InferSchemaType<typeof stockGameBestScoreSchema>
 
-export {StockGameResult,IStockGameResult,StockGameBestScore,IStockGameBestScore}
+export {StockGameResult,IStockGameResult,StockGameBestScore,IStockGameBestScore,StockGameUser,IStockGameUser}

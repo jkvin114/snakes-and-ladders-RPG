@@ -12,7 +12,7 @@ type Props={
     price:DisplayData,
     startFunc:Function
     stopFunc:Function
-    gameState:"none"|"running"|"ended"
+    gameState:"none"|"running"|"ended"|"paused"
 }
 export function ScoreBoard({player,price,startFunc,stopFunc,gameState}:Props){
     const {initialMoney,money,profit,profitRate,shares,avgUnitPrice,totalAsset} = player

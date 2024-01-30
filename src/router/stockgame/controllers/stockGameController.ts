@@ -1,12 +1,14 @@
 import type { Request, Response } from "express"
-import { ISession } from "../session/inMemorySession"
-import { IStockGameResult, StockGameResult } from "../mongodb/StockGameSchema"
-import { StockGameSchema } from "../mongodb/schemaController/StockGame"
-import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
-import { MongoId } from "../mongodb/types"
-import { UserCache } from "../cache/cache"
-import { IPassedFriend, IStockGameResultResponse } from "../router/ResponseModel"
-import { isNumber } from "../router/board/helpers"
+import { ISession } from "../../../session/inMemorySession"
+import { IStockGameResult, StockGameResult } from "../../../mongodb/StockGameSchema"
+import { StockGameSchema } from "../../../mongodb/schemaController/StockGame"
+import { UserRelationSchema } from "../../../mongodb/schemaController/UserRelation"
+import { MongoId } from "../../../mongodb/types"
+import { UserCache } from "../../../cache/cache"
+import { IPassedFriend, IStockGameResultResponse } from "../../ResponseModel"
+import { isNumber } from "../../board/helpers"
+import { StockGameUserSchema } from "../../../mongodb/schemaController/StockGameUser"
+import { NotificationSchema } from "../../../mongodb/schemaController/Notification"
 
 export namespace StockGameController {
 	const LEADERBOARD_PAGE_SIZE = 100
@@ -97,13 +99,8 @@ export namespace StockGameController {
 		}
 		const username = session.isLogined ? session.username : req.body.username
 
-		const gameresult = {
-			score: game.score,
-			user: session.isLogined ? session.userId : null,
-			transactionHistory: game.transactionHistory,
-			seed: game.seed,
-			chartgenVersion: game.chartgenVersion,
-			variance: game.variance,
+		const gameresult = {...game,
+			user: session.isLogined ? session.userId : null
 		}
 
 		const gamedata = await StockGameResult.create(gameresult)
@@ -120,6 +117,8 @@ export namespace StockGameController {
 			isNewBest: false,
 		}
 		if (session.isLogined) {
+			StockGameUserSchema.incrementTotalGames(session.userId)
+
 			const lastbest = await StockGameSchema.findRecentBestByUser(session.userId)
 			let updated = false
 			if (!lastbest) {
@@ -131,7 +130,13 @@ export namespace StockGameController {
 			}
 			if (updated) {
 				result.isNewBest = true
-				result.passedFriends = await getPassedFriends(session, gamedata.score, lastbest ? lastbest.score : 0)
+				const passed = await getPassedFriends(session, gamedata.score, lastbest ? lastbest.score : 0)
+				result.passedFriends = passed
+
+				//send notifications for surpassing best score
+				for(const friend of passed){
+					NotificationSchema.stockGameSurpass(friend.userId,session.username,gamedata.score).then()
+				}
 			}
 		} else {
 			result.isNewBest = true

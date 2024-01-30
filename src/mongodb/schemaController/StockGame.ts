@@ -48,26 +48,31 @@ export namespace StockGameSchema {
 		let greater = await StockGameResult.countDocuments({ score: { $gt: score } })
 		return [greater, total]
 	}
-
+    /**
+	 *
+	 * @returns rank of a score based on best recent scores
+	 * [# of games better than score, # of total games]
+	 */
     export async function getRecentRank(score: number): Promise<[number, number]>  {
         let total = await StockGameBestScore.countDocuments({isRecent:true})
 		let greater = await StockGameBestScore.countDocuments({isRecent:true, score: { $gt: score } })
 		return [greater, total]
     }
 	export function findBestsByUsers(users: MongoId[]) {
-		return StockGameBestScore.distinct("user")
+		return StockGameBestScore
+        .find({ user: { $in: users }, loggedIn: true, isRecent: true })
 			.sort({ score: "desc" })
-			.find({ user: { $in: users }, loggedIn: true, isRecent: true })
 	}
 	export function findBestsByUsersInScoreRange(users: MongoId[], min: number, max: number) {
-		return StockGameBestScore.distinct("user")
+		return StockGameBestScore
+        .find({ user: { $in: users }, loggedIn: true, isRecent: true, score: { $gt: min, $lt: max } })
 			.sort({ score: "desc" })
-			.find({ user: { $in: users }, loggedIn: true, isRecent: true, score: { $gt: min, $lt: max } })
 	}
 
 	export function getLeaderboard(loggedIn: boolean, allTime: boolean, start: number, count: number) {
 		let filter = { loggedIn: loggedIn, isRecent: true }
 		if (allTime) delete filter.isRecent
+        if (!loggedIn) delete filter.loggedIn
 
 		return StockGameBestScore.find(filter).sort({ score: "desc" }).skip(start).limit(count)
 	}

@@ -41,10 +41,10 @@ export default function SideBar({isOpen,closeNavbar,notiCount}:Props){
           <li className="menu-item-container">
             <a className="menu-item"><img src="/stock.png"></img><b className="menu-name">Stock Game</b></a>
             <ul className="sub-menu"  onClick={closeNavbar}>
-              <li className="sub-menu-item"><Link to="/"><GrGamepad />Play</Link></li>
+              <li className="sub-menu-item"><Link to="/stockgame/play"><GrGamepad />Play</Link></li>
               <li className="sub-menu-item"><Link to="/"><RiTrophyFill />Play Ranked</Link></li>
-              <li className="sub-menu-item"><Link to="/"><RiFolderVideoFill />Game Record</Link></li>
-              <li className="sub-menu-item"><Link to="/"><RiBarChartFill />Leaderboard</Link></li>
+              {loggedin && <li className="sub-menu-item"><Link to="/"><RiFolderVideoFill />Game Record</Link></li>}
+              <li className="sub-menu-item"><Link to="/stockgame/leaderboard"><RiBarChartFill />Leaderboard</Link></li>
             </ul>
           </li>
 
@@ -62,7 +62,7 @@ export default function SideBar({isOpen,closeNavbar,notiCount}:Props){
           <a className="menu-item"><RiBillFill /><b className="menu-name">Post</b></a>
             <ul className="sub-menu"  onClick={closeNavbar}>
               <li className="sub-menu-item"> <Link to="/board" reloadDocument><RiCompass3Line />View Posts</Link></li>
-              <li className="sub-menu-item"><Link to="/writepost"><RiBallPenFill />Write Post</Link></li>
+              {loggedin &&  <li className="sub-menu-item"><Link to="/writepost"><RiBallPenFill />Write Post</Link></li>}
             </ul>
           </li>
 

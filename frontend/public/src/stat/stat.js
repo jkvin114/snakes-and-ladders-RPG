@@ -447,6 +447,12 @@ function main(url) {
 	loadScriptSync("https://cdn.amcharts.com/lib/4/core.js")
 	loadScriptSync("https://cdn.amcharts.com/lib/4/charts.js")
 	loadScriptSync("https://cdn.amcharts.com/lib/4/themes/dark.js")
+
+	//wait until amcharts scripts are loaded
+	if (!window.am4core) {
+		setTimeout(() => main(url), 200)
+		return
+	}
 	SERVER_URL = url
 
 	SkillParser.init("", SERVER_URL + "/resource/skill", currentLocale())

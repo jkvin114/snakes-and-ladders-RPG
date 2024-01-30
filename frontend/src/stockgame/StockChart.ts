@@ -89,17 +89,18 @@ function updateCandle(value: number, candle: CandleObj): CandleObj {
 const ENTRIES_PER_DATE = 30
 const INITIAL_DATES = 40
 const INTERVAL_MS = 200
-const MAX_LEN = 2500
+const MAX_LEN = 1500
 const DATE_RECORD_LEN = 20
 export default class StockChart {
 	private readonly stockvalues: number[]
 	private readonly graph: IChartApi
-	private readonly setval: React.Dispatch<React.SetStateAction<DisplayData>>
-	private readonly setDayRecord: React.Dispatch<React.SetStateAction<DayRecord[]>>
-	private readonly setStat: React.Dispatch<React.SetStateAction<StatData>>
+	private readonly setval: (data:DisplayData)=>void
+	private readonly setDayRecord:(data:DayRecord[])=>void
+	private readonly setStat: (data:StatData)=>void
 	private readonly displayNews:(type:string,message:string,value:number)=>void
 	private readonly player:PlayerManager
 	private running: boolean
+	private paused:boolean
 	private records: {
 		date: string
 		value: number
@@ -117,8 +118,12 @@ export default class StockChart {
 	
 	private minClosePrice:number
 	private maxClosePrice:number
-	constructor(stockvalues: number[], graph: IChartApi, setval: React.Dispatch<React.SetStateAction<DisplayData>>,setDayRecord: React.Dispatch<React.SetStateAction<DayRecord[]>>,
-		setStat: React.Dispatch<React.SetStateAction<StatData>>,displayNews:(type:string,message:string,value:number)=>void,player:PlayerManager) {
+
+	private time:number
+	private startTime:number
+	seed:string
+	constructor(stockvalues: number[], graph: IChartApi, setval: (data:DisplayData)=>void,setDayRecord:  (data:DayRecord[])=>void,
+		setStat:  (data:StatData)=>void,displayNews:(type:string,message:string,value:number)=>void,player:PlayerManager,seed:string) {
 		this.stockvalues = stockvalues
 		this.graph = graph
 		this.setval = setval
@@ -126,6 +131,7 @@ export default class StockChart {
 		this.setStat=setStat
 		this.displayNews=displayNews
 		this.running = false
+		this.paused=false
 		this.records = []
 		this.currPrice=-1
 		this.priceRecords=[]
@@ -133,11 +139,14 @@ export default class StockChart {
 		this.minClosePrice=Infinity
 		this.maxClosePrice=-Infinity
 		this.player=player
+		this.time=0
+		this.startTime = ENTRIES_PER_DATE * INITIAL_DATES
 		this.currDate= {
 			year: 2023,
 			month: 12,
 			date: 21,
 		}
+		this.seed=seed
 		
 		this.smaLine5 = this.graph.addLineSeries({
 			color: '#39ec39',
@@ -196,9 +205,13 @@ export default class StockChart {
 			this.markers.push({time:dateStr(this.currDate),position:'belowBar',
 			color:"#e91e63",shape:"arrowUp",text:amount+"주 매수"})
 		}
-		else{
+		else if(type==="sell"){
 			this.markers.push({time:dateStr(this.currDate),position:'aboveBar',
 			color:"#2196F3",shape:"arrowDown",text:amount+"주 매도"})
+		}
+		else if(type==="end"){
+			this.markers.push({time:dateStr(this.currDate),position:'aboveBar',
+			color:"#ff5900",shape:"arrowDown",text:"거래 종료"})
 		}
 		this.candleSeries.setMarkers(this.markers as SeriesMarker<any>[])
 	}
@@ -206,6 +219,11 @@ export default class StockChart {
 		// console.log("stop")
 		this.running = false
 	}
+	pause(){
+		this.running=false
+		this.paused=true
+	}
+
 	get getCurrPrice(){
 		return this.currPrice
 	}
@@ -232,7 +250,7 @@ export default class StockChart {
 	}
 	init(){
 
-		let split = ENTRIES_PER_DATE * INITIAL_DATES
+		const split = this.startTime
 		const initial = this.stockvalues.slice(0, split)
 		let initialData = []
 		let time = this.currDate
@@ -286,11 +304,38 @@ export default class StockChart {
 		this.graph.timeScale().fitContent()
 	}
 
+	getTime(){
+		return this.time + this.startTime
+	}
+
+	displayRemainingChart(start:number){
+		if(this.running || this.paused) return
+		this.addMarker("end",0)
+		let end = this.startTime + MAX_LEN
+		const values  = this.stockvalues.slice(start, end)
+		let time = this.currDate
+
+		for (let i=0;i<=Math.floor(values.length / ENTRIES_PER_DATE);++i) {
+			
+			const thisvalues = values.slice(i * ENTRIES_PER_DATE, (i + 1) * ENTRIES_PER_DATE)
+			const candle = fullCandle(thisvalues, time)
+			// data.push()
+			// this.addMovingAvg(candle.time)
+			time = nextBusinessDay(time)
+			this.candleSeries.update({...candle})
+			//상장폐지되면 차트 그만 표시함
+			if(candle.low <=0) break
+		}
+
+		// this.candleSeries.setData(data)
+		
+		this.graph.timeScale().fitContent()
+	}
 
 	async start(onTerminate: Function, onDelist: Function) {
 		if(this.running) return
 
-		let split = ENTRIES_PER_DATE * INITIAL_DATES
+		const split = this.startTime
 		const initial = this.stockvalues.slice(0, split)
 		const values = this.stockvalues.slice(split, Math.min(this.stockvalues.length, split + MAX_LEN))
 		let time = this.currDate
@@ -302,25 +347,25 @@ export default class StockChart {
 
 		let lastDayPrice = -1
 
-		let pos = 0
+		this.time = 0
 
 		this.currPrice = initial[initial.length - 1]
 		let candle = newCandle(this.currPrice, time)
 		lastDayPrice = initial[initial.length - 2]
 		let delisted = false
 		this.running = true
-		while (pos < values.length) {
-			if (pos % 2 === 1) {
-				pos++
+		while (this.time < values.length) {
+			if (this.time % 2 === 1) {
+				this.time++
 				continue
 			}
 
-			let val = values[pos]
+			let val = values[this.time]
 			this.currPrice = Math.max(0,val)
 			
 			maxVal = Math.max(maxVal,val)
 			minVal = Math.min(minVal,val)
-			if (pos % ENTRIES_PER_DATE === 0) {
+			if (this.time % ENTRIES_PER_DATE === 0) {
 				
 				let diff = this.priceDiff(candle.close, lastDayPrice)		
 				this.addRecord(candle.time, candle.close, diff)
@@ -365,7 +410,7 @@ export default class StockChart {
 				value: val,
 				lastDayValue: lastDayPrice,
 				totalCount: values.length,
-				currCount: pos
+				currCount: this.time
 			})
 			this.onPriceChange(val)
 			if (this.currPrice <= 0) {
@@ -374,11 +419,12 @@ export default class StockChart {
 				break
 			}
 			if (!this.running) {
+				this.displayRemainingChart(this.getTime())
 				break
 			}
 
 			await sleep(INTERVAL_MS)
-			pos++
+			this.time++
 		}
 		if (!delisted) onTerminate()
 	}

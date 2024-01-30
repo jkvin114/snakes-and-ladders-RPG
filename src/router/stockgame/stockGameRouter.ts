@@ -1,8 +1,8 @@
 import express = require("express")
-import { ControllerWrapper, NoSessionControllerWrapper } from "./ControllerWrapper"
+import { ControllerWrapper, NoSessionControllerWrapper } from "../ControllerWrapper"
 const router = express.Router()
-import { StockGameController } from "../stockgame/stockGameController"
-import { sessionParser } from "./jwt/auth"
+import { StockGameController } from "./controllers/stockGameController"
+import { sessionParser } from "../jwt/auth"
 
 router.post("/result", sessionParser, ControllerWrapper(StockGameController.postResult))
 
@@ -22,4 +22,6 @@ router.get("/user", NoSessionControllerWrapper(StockGameController.getUserResult
 router.get("/userbest", NoSessionControllerWrapper(StockGameController.getUserAllTimeBest))
 
 router.use("/rank", require("./stockGameRankRouter"))
+router.use("/user", require("./stockGameUserRouter"))
+
 module.exports = router
