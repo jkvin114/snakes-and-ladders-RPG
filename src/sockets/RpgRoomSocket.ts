@@ -117,7 +117,7 @@ module.exports=function(socket:Socket){
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			let canstart = room.user_startGame()
 			if (!canstart) {
-				console.log("connecting incomplete")
+				//console.log("connecting incomplete")
 			}
 		},true)
 		
@@ -329,7 +329,7 @@ module.exports=function(socket:Socket){
 
 		controlRPGRoom(socket,(room,rname,quitter)=>{
 			io.to(rname).emit("server:quit", quitter)
-			console.log("an user has been disconnected ")
+			Logger.log("user has been disconnected ",rname," turn:"+quitter)
 			room.reset()
 			R.remove(rname)
 		})

@@ -85,7 +85,7 @@ export default class MarbleGameGRPCClient{
                 callback(data)
             })
             stream.on("end", () => {
-                Logger.log("end marble grpc stream")
+                Logger.log("end marble grpc stream",rname)
             })
             stream.on("error",(e)=>{
                 Logger.err(String(e))

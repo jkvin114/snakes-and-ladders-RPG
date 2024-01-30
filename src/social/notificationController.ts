@@ -9,6 +9,7 @@ export namespace NotificationController{
     const MAX_TIMEOUT = 60 
     export async function notifyChat(user:string, room:string, message:string, serial:number,sendername: string, senderProfile: string){
         await NotificationSchema.newChat(user, room, message, serial,sendername,senderProfile)
+        NotificationCache.post(user)
     }
 
     export const poll = async function(receiver:Types.ObjectId|string){

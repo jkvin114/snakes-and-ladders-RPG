@@ -1,6 +1,6 @@
 import winston, { format } from "winston"
 import fs = require("fs")
-const timestamp = new Date().toISOString().slice(0, 19).replace("T", "_").replace(/:/g, "-")
+const timestamp = new Date().toISOString().slice(0, 19).replace("T", "_").replace(/:/g, ".")
 const filename = `./logs/log-marble-${timestamp}.txt`
 fs.writeFileSync(filename, "--begin-- \n")
 

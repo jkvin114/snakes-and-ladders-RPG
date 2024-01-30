@@ -1,19 +1,15 @@
-import { Link, Route, Routes, useLocation, useParams } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 import HtmlPage from "./components/HtmlPage"
 import "./index.css"
 import StockGame from "./stockgame/StockGame"
 import { LoginPage } from "./components/pages/Login"
 import { useEffect, useState } from "react"
 import { RegisterPage } from "./components/pages/Register"
-import { backend_url } from "./variables"
 import StatusPage from "./components/pages/Status"
-import axios from "axios"
 import EjsPage from "./components/EjsPage"
 import ProfilePage from "./components/pages/Profile"
-import RelationPage from "./components/pages/Relation"
 import { AxiosApi } from "./api/axios"
 import ChatPage from "./components/pages/Chat"
-import ChatRoom from "./components/chat/ChatRoom"
 import SideBar from "./components/menu/Sidebar"
 import TopBar from "./components/menu/TopBar"
 import HomePage from "./components/pages/Home"
@@ -23,7 +19,6 @@ import { ToastContainer, toast } from "react-toastify"
 import { RiMessage2Fill } from "react-icons/ri"
 import Notifications from "./components/notification/Notifications"
 import { IRootContext, RootContext } from "./context/context"
-import { ToastHelper } from "./ToastHelper"
 import { limitString } from "./util"
 import { MakeGamePage } from "./components/pages/MakeGame"
 import FriendPage from "./components/pages/Friends"
@@ -159,7 +154,7 @@ function App() {
 						<Route path="/login" element={<LoginPage />}></Route>
 						<Route path="/register" element={<RegisterPage />}></Route>
 						<Route path="/status" element={<StatusPage />}></Route>
-						<Route path="/writepost" element={<WritePostPage />}></Route>
+						<Route  path="/writepost" element={<WritePostPage/>}></Route>
 						<Route path="/chat" element={<ChatPage></ChatPage>}></Route>
 						<Route path="/friends" element={<FriendPage></FriendPage>}></Route>
 						<Route path="/rpg_stat" element={<RPGPlayerStatPage />}></Route>

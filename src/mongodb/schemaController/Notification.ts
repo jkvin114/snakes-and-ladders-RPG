@@ -50,7 +50,7 @@ export namespace NotificationSchema{
             payload4:senderProfile
         }).save()
 
-        NotificationCache.post(receiver)
+        
 
         return noti
     }

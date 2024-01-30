@@ -115,6 +115,7 @@ app.use("/board", require("./router/board/BoardRouter"))
 app.use("/ping", require("./router/pingRouter"))
 app.use("/chat", require("./router/chat"))
 app.use("/notification", require("./router/notification"))
+app.use("/stockgame", require("./router/stockGameRouter"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
@@ -176,12 +177,13 @@ io.use((socket, next) => {
 		SessionManager.onSocketAccess(session)
 		if(!session) {
 			Logger.warn("invalid session for socket id:"+socket.id)
-			throw new Error("invalid session for socket id:"+socket.id)
+			return
+			//throw new Error("invalid session for socket id:"+socket.id)
 		}
 		if(!socket.handshake.query || !socket.handshake.query.type){
 			Logger.warn("No connection type provided! socket id:"+socket.id)
-
-			throw new Error("No connection type provided! socket id:"+socket.id)
+			return
+			//throw new Error("No connection type provided! socket id:"+socket.id)
 		}
 		
 		socket.data.type = socket.handshake.query.type

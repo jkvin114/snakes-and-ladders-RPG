@@ -24,32 +24,32 @@
     justify-content:flex-start;
     flex-direction: row-reverse;
     align-items: stretch;
-    height: 40px;
-    background-color: rgb(36, 36, 36);
+    height: 30px;
+    background-color: var(--col-bg-dark);
     position: sticky;
     top: 0;
     padding: 5px;
     border-bottom: 1px solid rgb(95, 95, 95);
-    z-index: 3;
+    z-index: 1;
   }
   #navbar img, #navbar > div{
     color:white;
     /* background-color: #7E00BF; */
-    background: #505060;
-    line-height: 30px;
+    background: var(--col-bg-light);
+    line-height: 25px;
 
     cursor:pointer;
     text-align:center;
-    font-size: 20px;
+    font-size: 15px;
     border:none;
     vertical-align: middle;
     border-radius: 20%;
-    padding: 5px;
+    padding: 2px;
     margin-right: 5px;
-    height: 30px;
+    height: 25px;
   }
   #navbar img:hover,#navbar > div:hover{
-    background-color: #7a7a92;
+    background-color: var(--bg);
   }
   #navbar img.delete_post{
     /* background-color: #ff5656; */
@@ -403,7 +403,9 @@
      
  </div>
    
-</body>
+</body>    <br><br><br>
+
+
 <script>
   
 updateLocale("board")

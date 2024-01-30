@@ -1,9 +1,9 @@
 
-import { BaseProtoPlayer } from "../../Model/models";
+import { ProtoPlayer } from "../../Model/models";
 import { ServerEventModel } from "../../Model/ServerEventModel";
 
 export interface SimulationSetting{
-    players:BaseProtoPlayer[]
+    players:ProtoPlayer[]
     count:number
     map:number
     saveLabelCSV:boolean

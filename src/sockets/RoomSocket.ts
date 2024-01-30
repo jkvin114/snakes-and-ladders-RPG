@@ -57,7 +57,7 @@ module.exports=function(socket:Socket){
 				socket.emit("server:guest_join_room", rname, turn, room.getPlayerList())
 
 				socket.broadcast.to(rname).emit("server:update_playerlist", room.getPlayerList())
-
+				Logger.log("guest join",rname)
 			}
 			else{
 				socket.emit("server:unavaliable_room")
@@ -174,7 +174,7 @@ module.exports=function(socket:Socket){
 		controlRoom(socket,(room,rname)=>{
 			
 			room.user_reconnect(turn)
-			console.log("reconnect"+rname)
+			Logger.log("user reconnect",rname,"turn:"+turn)
 		})
 	})
 	
@@ -190,17 +190,18 @@ module.exports=function(socket:Socket){
 				if(turn===0){
 					room.reset()
 					io.to(rname).emit("server:quit")
+					Logger.log("host disconnected",rname)
 
 				}//if guest quits in the matching page
 				else{
-
+					Logger.log("guest disconnected",rname)
 					room.removeGuest(turn)
 					socket.broadcast.to(rname).emit("server:update_playerlist", room.removePlayer(turn))
 				}
 				SocketSession.removeGameSession(socket)
 			}
 			else{
-				console.log("disconnect")
+				Logger.log("user disconnected while game",rname)
 				if(CONFIG.dev_settings.enabled && CONFIG.dev_settings.reset_room_on_disconnect && room.isGameRunning){
 					room.reset()
 					io.to(rname).emit("server:quit")

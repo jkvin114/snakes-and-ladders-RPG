@@ -6,6 +6,8 @@ import { Counter } from '../RPGGame/core/Util';
 import { MongoId } from '../mongodb/types';
 import { UserCache } from '../cache/cache';
 import { R } from '../Room/RoomStorage';
+import { UserSchema } from '../mongodb/schemaController/User';
+import { User } from '../mongodb/UserDBSchema';
 
 export interface ISession{
     isLogined:boolean
@@ -110,7 +112,7 @@ export namespace SessionManager{
         UserStatus.get(session.userId).sockets.add(type)
         
     }
-    export function onSocketAccess(session:ISession){
+    export async function onSocketAccess(session:ISession){
         if(!isLoginValid(session)) return
         UserStatus.get(session.userId).lastActive = new Date()
         
@@ -120,7 +122,7 @@ export namespace SessionManager{
 
         UserStatus.get(session.userId).sockets.delete(type)
         UserStatus.get(session.userId).lastActive = new Date()
-        
+        UserSchema.updateLastActive(session.userId).then()
     }
     export function getGameByUserId(userId:string):string|null{
         const status = UserStatus.get(userId)
@@ -147,6 +149,7 @@ export namespace SessionManager{
         if(UserStatus.has(userId)){
             const statusSet = UserStatus.get(userId).sockets
             const last=UserStatus.get(userId).lastActive
+
             if(statusSet.size===0) return [last,null]
             for(const type of STATUS_PRIPROTY){
                 if(statusSet.countItem(type)>0)

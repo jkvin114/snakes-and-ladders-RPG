@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import "./../styles/stockgame/stockgame.css"
-import './../styles/stockgame/board.css';
+import "./../styles/stockgame/board.css"
 
 import { ColorType, createChart, CrosshairMode, IChartApi } from "lightweight-charts"
 import { DayRecord, DisplayData, StatData } from "./types/DisplayData"
@@ -14,13 +14,12 @@ import "react-toastify/dist/ReactToastify.css"
 import { TradeBoard } from "../components/stockgame/TradeBoard"
 import { TranHistoryBoard } from "../components/stockgame/TranHistoryBoard"
 import { StatBoard } from "../components/stockgame/StatBoard"
-import Transaction from "./types/Transaction";
-import { RootContext } from "../context/context";
-import { stockgame_gen_url } from "../variables";
+import Transaction from "./types/Transaction"
+import { RootContext } from "../context/context"
+import { stockgame_gen_url } from "../variables"
 
-// Main App We run for frontend
 function StockGame() {
-	let theme="dark"
+	let theme = "dark"
 	const dataFetch = useRef(false)
 	const [val, setVal] = useState<DisplayData>({
 		value: 0,
@@ -36,60 +35,59 @@ function StockGame() {
 	})
 	const [dayRecord, setDayRecord] = useState<DayRecord[]>([])
 	const [stockChart, setStockChart] = useState<null | StockChart>(null)
-  const [gameState,setGameState] = useState<"none"|"running"|"ended">("none")
+	const [gameState, setGameState] = useState<"none" | "running" | "ended">("none")
 	const [playerState, setPlayerState] = useState<PlayerState>({
 		money: 0,
-    initialMoney:0,
+		initialMoney: 0,
 		avgUnitPrice: 0,
 		shares: 0,
 		profit: 0,
 		profitRate: 0,
 		totalAsset: 0,
 	})
-	const {context,setContext}= useContext(RootContext);
+	const { context, setContext } = useContext(RootContext)
 
-  const [tranHistory, setTranHistory] = useState<Transaction[]>([])
-	const [player, setPlayer] = useState<PlayerManager>(new PlayerManager(10000, setPlayerState,
-    setTranHistory,displayNews))
+	const [tranHistory, setTranHistory] = useState<Transaction[]>([])
+	const [player, setPlayer] = useState<PlayerManager>(
+		new PlayerManager(10000, setPlayerState, setTranHistory, displayNews)
+	)
 	function onTerminate() {
 		if (stockChart) {
 			player.sellPercent(stockChart.getCurrPrice, 1)
 		}
-    setGameState("ended")
+		setGameState("ended")
 		let result = player.evalResult()
 		alert(`게임 종료, 수익률:${round(result.profitRate * 100, -2)}%`)
 	}
 	function onDelist() {
-		player.deList()
-    setGameState("ended")
+		player.delist()
+		setGameState("ended")
 		let result = player.evalResult()
 		alert(`상장폐지!, 수익률:${round(result.profitRate * 100, -2)}%`)
 	}
 	function stopChart() {
-		if (stockChart != null && gameState==="running") {
-      setGameState("ended")
+		if (stockChart != null && gameState === "running") {
+			setGameState("ended")
 			stockChart.stop()
 		}
 	}
-	function sellFunc(percent:number) {
-		if (stockChart && gameState==="running") {
-      let count=player.sellPercent(stockChart.getCurrPrice, percent)
-      stockChart.addMarker("sell",count)
-    }
-    
+	function sellFunc(percent: number) {
+		if (stockChart && gameState === "running") {
+			let count = player.sellPercent(stockChart.getCurrPrice, percent)
+			stockChart.addMarker("sell", count)
+		}
 	}
-	function buyFunc(percent:number) {
-		if (stockChart && gameState==="running") {
-      let count=player.buyPercent(stockChart.getCurrPrice, percent)
-      stockChart.addMarker("buy",count)
-    }
-    
+	function buyFunc(percent: number) {
+		if (stockChart && gameState === "running") {
+			let count = player.buyPercent(stockChart.getCurrPrice, percent)
+			stockChart.addMarker("buy", count)
+		}
 	}
 	function start() {
-		if (stockChart && gameState==="none") {
-      setGameState("running")
-      stockChart.start(onTerminate, onDelist)
-    }
+		if (stockChart && gameState === "none") {
+			setGameState("running")
+			stockChart.start(onTerminate, onDelist)
+		}
 	}
 	function displayNews(type: string, message: string, value: number) {
 		if (type === "mincloseprice") {
@@ -116,8 +114,8 @@ function StockGame() {
 				theme: "colored",
 			})
 		}
-    if(type==="tran"){
-      toast.info(message, {
+		if (type === "tran") {
+			toast.info(message, {
 				position: "bottom-right",
 				autoClose: 3000,
 				hideProgressBar: true,
@@ -127,9 +125,9 @@ function StockGame() {
 				progress: 0,
 				theme: "colored",
 			})
-    }
-    if(type==="tran-fail"){
-      toast.error(message, {
+		}
+		if (type === "tran-fail") {
+			toast.error(message, {
 				position: "bottom-right",
 				autoClose: 3000,
 				hideProgressBar: true,
@@ -139,48 +137,47 @@ function StockGame() {
 				progress: 0,
 				theme: "colored",
 			})
-    }
+		}
 	}
 	async function fetchstock() {
 		let variance = 1
 		let scale = 50 + triDist(200, 200)
 		const data = await (
-			await fetch(stockgame_gen_url+`/gen_stock?variance=${variance}&scale=${scale}`, { mode: "cors" })
+			await fetch(stockgame_gen_url + `/gen_stock?variance=${variance}&scale=${scale}`, { mode: "cors" })
 		).json()
 		// console.log(data)
-    const width = window.innerWidth
-    const height = window.innerHeight
+		const width = window.innerWidth
+		const height = window.innerHeight
 
-	let layout = undefined
-	let grid=undefined
-	if(theme==="dark"){
-		layout= {
-			background: {
-				type: ColorType.Solid,
-				color: '#1d1d2d',
-			},
-			textColor: '#D9D9D9',
+		let layout = undefined
+		let grid = undefined
+		if (theme === "dark") {
+			layout = {
+				background: {
+					type: ColorType.Solid,
+					color: "#1d1d2d",
+				},
+				textColor: "#D9D9D9",
+			}
+			grid = {
+				vertLines: {
+					color: "#2B2B43",
+				},
+				horzLines: {
+					color: "#363C4E",
+				},
+			}
 		}
-		grid= {
-			vertLines: {
-				color: '#2B2B43',
-			},
-			horzLines: {
-				color: '#363C4E',
-			},
-		}
-	}
 		const chart = createChart(document.getElementById("graph") as HTMLElement, {
-			width: width*0.6,
-			height: height*0.5,
+			width: width * 0.6,
+			height: height * 0.5,
 			crosshair: {
 				mode: CrosshairMode.Normal,
-			} ,
-			layout:layout,
-			grid:grid
-				
+			},
+			layout: layout,
+			grid: grid,
 		})
-    const {prices,seed,trend_changes,steep_increase,steep_decrease} = data
+		const { prices, seed, trend_changes, steep_increase, steep_decrease } = data
 
 		let schart = new StockChart(prices, chart, setVal, setDayRecord, setStat, displayNews, player)
 		schart.init()
@@ -188,38 +185,39 @@ function StockGame() {
 	}
 
 	useEffect(() => {
-		if (!dataFetch.current){
+		if (!dataFetch.current) {
 			dataFetch.current = true
 			fetchstock()
 		}
-		setContext({...context,showToolbar:false})
+		setContext({ ...context, showToolbar: false })
 
-		return ()=> {
-			setContext({...context,showToolbar:true})
+		return () => {
+			setContext({ ...context, showToolbar: true })
 		}
 	}, [])
 
 	return (
-    <>
-	<div className="root" id="root-stockgame" data-theme={theme}>
-      <div  className="section">
-        <div id="score-board" className="subsection ">
-          <ScoreBoard gameState={gameState} player={playerState}  price={val} startFunc={start} stopFunc={stopChart}/>
-        </div>
-        <div id="graph"></div>
-        <div id="trade-board" className="subsection bordered">
-          <TradeBoard player={playerState} price={val} buyFunc={buyFunc} sellFunc={sellFunc}></TradeBoard>
-        </div>
-      </div>
-      <div className="section">
-        <div id="stat-board" className="subsection bordered">
-          <StatBoard record={dayRecord} stats={stat}></StatBoard>
-        </div>
-        <div id="history-board" className="subsection bordered">
-          <TranHistoryBoard record={tranHistory}></TranHistoryBoard>
-        </div>
-      </div>
-		</div></>
+		<>
+			<div className="root" id="root-stockgame" data-theme={theme}>
+				<div className="section">
+					<div id="score-board" className="subsection ">
+						<ScoreBoard gameState={gameState} player={playerState} price={val} startFunc={start} stopFunc={stopChart} />
+					</div>
+					<div id="graph"></div>
+					<div id="trade-board" className="subsection bordered">
+						<TradeBoard player={playerState} price={val} buyFunc={buyFunc} sellFunc={sellFunc}></TradeBoard>
+					</div>
+				</div>
+				<div className="section">
+					<div id="stat-board" className="subsection bordered">
+						<StatBoard record={dayRecord} stats={stat}></StatBoard>
+					</div>
+					<div id="history-board" className="subsection bordered">
+						<TranHistoryBoard record={tranHistory}></TranHistoryBoard>
+					</div>
+				</div>
+			</div>
+		</>
 	)
 }
 

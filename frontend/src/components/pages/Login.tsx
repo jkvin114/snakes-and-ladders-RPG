@@ -2,8 +2,8 @@ import { useContext, useState } from "react"
 import "../../styles/login.css"
 import { RiArrowLeftLine, RiErrorWarningFill } from "react-icons/ri"
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
-import { backend_url } from "../../variables"
-import axios from "axios"
+
+import { AxiosApi } from "../../api/axios"
 export function LoginPage() {
 
 
@@ -12,7 +12,6 @@ export function LoginPage() {
 
     let [searchParams, setSearchParams] = useSearchParams()
     const redirect=searchParams.get("redirect")
-    const API = axios.create({ baseURL: backend_url })
     async function submitLogin(){
         
         const email = (document.getElementById("login-email") as HTMLInputElement).value
@@ -22,7 +21,7 @@ export function LoginPage() {
             return
         }
         try{
-            const res = await API.post("/user/login",{
+            const res = await AxiosApi.post("/user/login",{
                 username:email,
                 password:pw
             })

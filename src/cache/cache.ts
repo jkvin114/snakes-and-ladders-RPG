@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { UserSchema } from "../mongodb/schemaController/User";
+import { MongoId } from "../mongodb/types";
 
 
 
@@ -8,6 +9,7 @@ export interface IUserCache{
     profileImgDir:string
     email:string
     boardData:string|mongoose.Types.ObjectId
+    lastActive?:number
 }
 
 export namespace UserCache{
@@ -20,11 +22,11 @@ export namespace UserCache{
         return `cache hit:${cachehit}, miss: ${cachemiss}. Hit rate: ${cachehit/(cachehit+cachemiss)}`
     }
 
-    function onCacheMiss(id:string|mongoose.Types.ObjectId){
+    function onCacheMiss(id:MongoId){
         cachemiss++
         return UserSchema.findById(id)
     }
-    export async function getUser(id:string|mongoose.Types.ObjectId):Promise<IUserCache>{
+    export async function getUser(id:MongoId):Promise<IUserCache>{
         if(userCache.has(String(id))){
             cachehit++
             return userCache.get(String(id))
@@ -34,11 +36,12 @@ export namespace UserCache{
             username:user.username,
             profileImgDir:user.profileImgDir,
             boardData:user.boardData as mongoose.Types.ObjectId,
-            email:user.email
+            email:user.email,
+            lastActive:user.lastActive
         })
         return userCache.get(String(id))
     }
-    export function invalidate(id:string|mongoose.Types.ObjectId){
+    export function invalidate(id:MongoId){
         userCache.delete(String(id))
     }
 }
@@ -46,13 +49,16 @@ export namespace UserCache{
 
 export namespace NotificationCache{
     const users = new Set<string>()
-    export function post(userId:string|mongoose.Types.ObjectId){
+    export function post(userId:MongoId){
         users.add(String(userId))
     }
-    export function consume(userId:string|mongoose.Types.ObjectId){
+    export function consume(userId:MongoId){
         return users.delete(String(userId))
     }
     export function invalidateAll(){
         users.clear()
+    }
+    export function getAll(){
+        return [...users]
     }
 }

@@ -21,12 +21,16 @@ export namespace PostSchema{
         return await Article.findById(id).select("articleId")
     }
     export const findOneByArticleId = async function (id: number) {
+        if(isNaN(id))
+            return null
         return await Article.findOne({ articleId: id })
     }
     export const findMultipleByIdList = async function (id: mongoose.Types.ObjectId[]) {
         return await Article.find({ _id:{$in:id}}).select("createdAt articleId title views upvote downvote imagedir commentCount authorName author visibility")
     }
     export const findOneByArticleIdWithComment = async function (id: number) {
+        if(isNaN(id))
+            return null
         return await Article.findOne({ articleId: id }).populate<{ comments:SchemaTypes.Comment[]}>("comments")
     }
     export const findSummaryByRange = async function (start: number, count: number) {

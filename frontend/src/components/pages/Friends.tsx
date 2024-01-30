@@ -28,8 +28,6 @@ export default function FriendPage(){
 
     function createChat(userId:string,username:string){
         let name = limitString(context.username+","+username)
-        console.log(userId)
-        console.log(username)
         AxiosApi.post("/chat/room",{
             name:name,
             users:[userId]

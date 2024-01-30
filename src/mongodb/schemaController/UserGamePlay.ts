@@ -1,4 +1,5 @@
 import { SchemaTypes } from "../SchemaTypes";
+import { User } from "../UserDBSchema";
 import { IUserGamePlay, UserGamePlay } from "../UserGamePlaySchema";
 import { MongoId } from "../types";
 
@@ -20,6 +21,9 @@ export namespace UserGamePlaySchema{
     }
     export const findRPGByUsername = function(username:string) {
         return UserGamePlay.find({username:username,type:"RPG"}).sort({ createdAt: "desc" })
+    }
+    export const count = function(userId:MongoId,type:"RPG"|"MARBLE"){
+        return UserGamePlay.countDocuments({user:userId,type:type})
     }
 
 }

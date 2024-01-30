@@ -27,21 +27,22 @@ const  toolbarOptions = [
   const IMAGE_PATH="/uploads/"
   
 export default function WritePostPage(){
-    const {context} = useContext(RootContext)
     const navigate = useNavigate()
+    const {context,setContext}= useContext(RootContext);
     const loggedin = context.loggedin
     const [searchParams, setSearchParams]  = useSearchParams()
     const postUrl = searchParams.get("postUrl")
     let  quill:IQuill|null= null
     let loaded=false
       
+    // const [quill,setQuill] = useState<IQuill|null>(null)
     const allImages:string[] = []//stores all images that were uploaded or seen in editing
+    
 
     function onload(){
-        window.onbeforeunload=()=>{
-            return true
-        }
-        quill =  new Quill(document.getElementById("quill-root") as HTMLElement,{
+        
+
+       quill =  new Quill(document.getElementById("quill-root") as HTMLElement,{
             theme: "snow",
             bounds: ".editor",
             placeholder: "Write content..",
@@ -50,7 +51,6 @@ export default function WritePostPage(){
             },
         })
         quill.getModule("toolbar").addHandler("image",selectLocalImage);
-        
         if(postUrl){
             AxiosApi.get("/board/post/edit/"+postUrl)
             .then(res=>setData(res.data))
@@ -58,6 +58,8 @@ export default function WritePostPage(){
                 console.error(e)
             })
         }
+        
+        // window.onbeforeunload=()=>true;
         
     }
 
@@ -67,8 +69,10 @@ export default function WritePostPage(){
             navigate("/login?redirect=/writepost")
             return
         }
+        // setContext({...context,showToolbar:false})
         if(loaded) return
         loaded=true
+        
         onload()
 
     },[searchParams])
@@ -88,6 +92,7 @@ export default function WritePostPage(){
         allImages.push(...extractCurrentImages())
     }
     function save(){
+        console.log(quill)
         if(quill){
             const content = quill.getContents().ops
             const text = quill.getText()
@@ -113,6 +118,7 @@ export default function WritePostPage(){
             
             AxiosApi.post(url,body)
             .then(res=>{
+                window.onbeforeunload=()=>{}
                 //console.log(res.data)
                 window.location.href="/board/post/"+res.data.url
             })
@@ -190,7 +196,7 @@ export default function WritePostPage(){
         quill.formatText(idx, 1, 'width', '300px');
     }
     function cancel(){
-        navigate("/")
+        window.location.href="/"
     }
     
     

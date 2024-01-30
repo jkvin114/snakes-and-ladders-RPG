@@ -77,7 +77,7 @@ export default class PlayerManager {
 			profitRate: rel_diff(this.initialMoney, finaltotal),
 		}
 	}
-	deList() {
+	delist() {
 		this.sellPercent(0, 1)
 	}
 	addTranHistory(tran: Transaction) {
@@ -94,7 +94,7 @@ export default class PlayerManager {
 	}
 
 	sellPercent(price: number, percent: number) {
-		console.log("sell" + price)
+		//console.log("sell" + price)
 		let count =  Math.floor(this.shareCount * percent)
 		this.sell(price,count)
 		this.updateState(price)
@@ -102,7 +102,7 @@ export default class PlayerManager {
 	}
 	buyPercent(price: number, percent: number) {
 		let amt = this.buyableAmt(price, percent)
-		console.log("buy" + amt)
+		//console.log("buy" + amt)
 		this.buy(price, amt)
 		this.updateState(price)
 		return amt

@@ -7,7 +7,7 @@ import { ReplySchema } from "../../../mongodb/schemaController/Reply"
 import { UserBoardDataSchema } from "../../../mongodb/schemaController/UserData"
 import mongoose from "mongoose"
 import { UserSchema } from "../../../mongodb/schemaController/User"
-import { checkVoteRecord, renderEjs } from "../helpers"
+import { checkVoteRecord, isNumber, renderEjs } from "../helpers"
 import { Logger } from "../../../logger"
 import { UserCache } from "../../../cache/cache"
 import { ImageUploader } from "../../../mongodb/mutler"
@@ -15,7 +15,7 @@ import { ImageUploader } from "../../../mongodb/mutler"
 export namespace BoardPostController {
 	export async function getEditPost(req: Request, res: Response, session: ISession) {
 		let url = req.params.postUrl
-		if (isNaN(Number(url))) {
+		if (!isNumber(url)) {
 			res.status(400).end("url should be a number")
 			return
 		}
@@ -56,7 +56,7 @@ export namespace BoardPostController {
 
 	export async function editPost(req: Request, res: Response, session: ISession) {
 		const url = req.body.url
-		if (isNaN(Number(url))) {
+		if (!isNumber(url)) {
 			res.status(400).end("url should be a number")
 			return
 		}
@@ -316,7 +316,7 @@ export namespace BoardPostController {
 
 	export async function getPostContent(req: Request, res: Response, session: ISession) {
 		let url = Number(req.params.postUrl)
-		if (isNaN(url)) {
+		if (!isNumber(req.params.postUrl)) {
 			res.status(400).end("url should be a number")
 			return
 		}
@@ -340,7 +340,8 @@ export namespace BoardPostController {
 
 	export async function getPost(req: Request, res: Response, session: ISession) {
 		try {
-			if (isNaN(Number(req.params.postUrl))) {
+
+			if (!isNumber(req.params.postUrl)) {
 				res.status(400).end("url should be a number")
 				return
 			}

@@ -1,6 +1,7 @@
 import type { Types } from "mongoose"
 import { User } from "../UserDBSchema"
 import type { SchemaTypes } from "../SchemaTypes"
+import { MongoId } from "../types"
 
 
 export namespace UserSchema{
@@ -64,5 +65,7 @@ export namespace UserSchema{
     export const findOneByUsername = function(username:string) {
         return User.findOne({username:username})
     };
-
+    export const updateLastActive=function(id:MongoId){
+        return User.findByIdAndUpdate(id,{lastActive:Date.now()})
+    }
 }

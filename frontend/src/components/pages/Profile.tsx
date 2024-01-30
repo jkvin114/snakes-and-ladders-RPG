@@ -26,7 +26,7 @@ export default function ProfilePage({ modal }: Props) {
 		isme: false,
 		isadmin: false,
 		isLogined: false,
-		counts: [0, 0, 0, 0, 0, 0, 0],
+		counts: [0, 0, 0, 0, 0, 0, 0,0,0],
 	})
 	const { username } = useParams()
 	const navigate = useNavigate()
@@ -255,12 +255,12 @@ export default function ProfilePage({ modal }: Props) {
 						</div>
 						<div className="linkbtn divlink">
 							<Link className="divlink" to={`/rpg_stat?username=${profile.username}`}></Link>
-							<b data-lkey="mypage.rpgggames">RPG Gameplays</b> 
+							<b data-lkey="mypage.rpgggames">RPG Gameplays <a className="count">{"(" + profile.counts[8] + ")"}</a></b> 
 						</div>
 
 						<div className="linkbtn divlink">
 							<Link className="divlink" to={`/marble_stat?username=${profile.username}`}></Link>
-							<b data-lkey="mypage.marblegames">Marble Gameplays</b> 
+							<b data-lkey="mypage.marblegames">Marble Gameplays <a className="count">{"(" + profile.counts[7] + ")"}</a></b> 
 						</div>
 						{profile.isadmin && <button onClick={() => golink("/admin")}>Admin page</button>}
 					</div>

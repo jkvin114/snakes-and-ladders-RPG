@@ -1,10 +1,11 @@
-import { ISession } from "../../session/inMemorySession"
+import { ISession, SessionManager } from "../../session/inMemorySession"
 import type { Request, Response } from "express"
 import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation"
 import { UserSchema } from "../../mongodb/schemaController/User"
 import mongoose from "mongoose"
 import { IFollow, IFriend } from "../ResponseModel"
+import { UserGamePlaySchema } from "../../mongodb/schemaController/UserGamePlay"
 
 export namespace UserController {
 	export async function getProfile(req: Request, res: Response, session: ISession) {
@@ -24,6 +25,8 @@ export namespace UserController {
 		const friendcount = await UserRelationSchema.friendCount(user._id)
 		const followcount = await UserRelationSchema.followCount(user._id)
 		const followercount = await UserRelationSchema.followerCount(user._id)
+		const marblecount = await UserGamePlaySchema.count(user._id,"MARBLE")
+		const rpgcount = await UserGamePlaySchema.count(user._id,"RPG")
 
 		const counts = [
 			friendcount,
@@ -33,6 +36,8 @@ export namespace UserController {
 			boardData.comments.length + boardData.replys.length,
 			boardData.upvotedArticles.length,
 			followercount,
+			marblecount,
+			rpgcount
 		]
 
 		if (session.isLogined) {

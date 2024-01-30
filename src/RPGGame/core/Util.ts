@@ -1,4 +1,5 @@
 import fs = require("fs")
+import { Logger } from "../../logger"
 
 const CALC_TYPE = {
 	set: (o: number, n: number) => n,
@@ -151,16 +152,16 @@ export const getCurrentTime = function(){
 export function writeFile(data:string,dir:string,extension:string,onSuccess:string){
 	fs.writeFile(__dirname + "/../../"+dir +getCurrentTime()+ "."+extension, data, (err) => {
 		if (err) {
-			console.log(err)
+			Logger.error("write file",err)
 			throw err
 		}
-		console.log(onSuccess)
+		//console.log(onSuccess)
 	})
 }
 export function writeToFile(data:string,filename:string){
 	fs.appendFile(__dirname + "/../../"+filename, data, (err) => {
 		if (err) {
-			console.log(err)
+			Logger.error("write file",err)
 			throw err
 		}
 		// console.log("successfully")

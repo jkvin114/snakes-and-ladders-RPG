@@ -11,16 +11,16 @@ interface IStatus{
     rpgconnect:boolean
     marbleconnect:boolean
 }
-
-export default function StatusPage(){
-
-    const [status,setStatus] = useState<IStatus>()
-    const statuscodes = new Map()
+const statuscodes = new Map()
     .set(0,"Disconnected")
     .set(1,"Connected")
     .set(2,"Connecting")
     .set(3,"Disconnecting")
     .set(99,"Uninitialized")
+export default function StatusPage(){
+
+    const [status,setStatus] = useState<IStatus>()
+    
 
     function ping(){
         fetch(backend_url+"/ping")

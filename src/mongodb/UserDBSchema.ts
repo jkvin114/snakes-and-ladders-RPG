@@ -12,12 +12,15 @@ export const userSchema=new mongoose.Schema({
         type:mongoose.Types.ObjectId,ref:"UserBoardData"
     },
     friends:[{
+        //depricated
         type:mongoose.Types.ObjectId,ref:"User"
     }],
     follows:[{
+         //depricated
         type:mongoose.Types.ObjectId,ref:"User"
     }],
-    profileImgDir:String
+    profileImgDir:String,
+    lastActive:Number //last active timestamp in ms
 },{timestamps:true})
 
 

@@ -78,7 +78,10 @@ export const adminauth = async(req: express.Request, res: express.Response, next
 		res.status(401).end("unauthorized")
 	}
 }
-
+export function isNumber(str:string) {
+	return /^\d+$/.test(str);
+  }
+  
 export const renderEjs = function(res:express.Response,name:string,data:any){
 	return res.render(name, data,
 	(err,html)=>err?res.status(500).end(err.toString()):res.json({
@@ -87,19 +90,32 @@ export const renderEjs = function(res:express.Response,name:string,data:any){
 }
 
 export const postRoleChecker =  async (req: express.Request, res: express.Response, next: express.NextFunction)=>{
-	const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
-	const session=res.locals.session
-	if(!post) {
-		res.status(401).end("You are not allowed to view this post!")
+	try{
+
+		if (!isNumber(req.params.postUrl)) {
+			res.status(400).end("url should be a number")
+			return
+		}
+
+		const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
+		const session=res.locals.session
+		if(!post) {
+			res.status(401).end("You are not allowed to view this post!")
+			return
+		}
+		let isfriend=false
+		let currentUser:mongoose.Types.ObjectId|null=new ObjectID(session.userId)
+		if(session.isLogined && session.userId){
+			isfriend=await UserRelationSchema.isFriendWith(session.userId,post.author)
+		}
+		if(isPostVisibleToUser(post.visibility,post.author,currentUser,isfriend)) next()
+		else res.status(401).end("You are not allowed to view this post!")
+	}
+	catch(e){
+		Logger.error(" post role checker", e)
+		res.status(500).end()
 		return
 	}
-	let isfriend=false
-	let currentUser:mongoose.Types.ObjectId|null=new ObjectID(session.userId)
-	if(session.isLogined && session.userId){
-		isfriend=await UserRelationSchema.isFriendWith(session.userId,post.author)
-	}
-	if(isPostVisibleToUser(post.visibility,post.author,currentUser,isfriend)) next()
-	else res.status(401).end("You are not allowed to view this post!")
 }
 
 export const voteController = async function (req: express.Request, res: express.Response, type: ContentType) {

@@ -206,6 +206,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 			range[0] = backwardBy(pos, 4)
 			range[1] = forwardBy(pos, 4)
 		} else return triDist(1, 1)
+		
 		let enemies = this.game
 			.getPlayersBetween(range[0], range[1] + 1)
 			.filter((p) => p.turn !== this.myturn && p.pos !== pos).length

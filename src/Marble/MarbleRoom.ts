@@ -96,10 +96,10 @@ class MarbleRoom extends Room{
 			// console.log(stat)
 			const data = await MarbleGameRecordSchema.create(stat)
 			this.onGameStatReady(data._id,"MARBLE",new Set([data.winner])).then()
-			Logger.log("saved marble game result")
+			Logger.log("saved marble game result",this.name)
 		}
 		catch(e){
-			Logger.error("Failed to save game record",e)
+			Logger.error("Failed to save game record"+this.name,e)
 		}
 		finally{
 			this.reset()
