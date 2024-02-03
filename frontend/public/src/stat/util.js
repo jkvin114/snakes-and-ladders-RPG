@@ -64,11 +64,17 @@ function getItemDescription(item) {
 function addItemTooltipEvent() {
 	$(".item_tooltip").off()
 	$(".item_tooltip").mouseenter(function (e) {
+		const rootpos = $("#stat-root").offset()
+		// console.log(rootpos)
+		const pos = $(this).offset()
 		$(".tooltiptext")
 			.css({
 				visibility: "visible",
 			})
-			.css($(this).offset())
+			.css({
+				top: pos.top - rootpos.top,
+				left: pos.left - rootpos.left,
+			})
 
 		if ($(this).offset().left < window.innerWidth / 2) {
 			$(".tooltiptext").removeClass("rightside")
@@ -79,7 +85,7 @@ function addItemTooltipEvent() {
 		}
 
 		let item = ITEMS[Number($(this).attr("value"))]
-		console.log(chooseLang("ko", "en"))
+		// console.log(chooseLang("ko", "en"))
 		$(".tooltiptext h4").html(LOCALE_GAME.item[Number($(this).attr("value"))].name)
 		$(".tooltiptext p").html(getItemDescription(item))
 	})

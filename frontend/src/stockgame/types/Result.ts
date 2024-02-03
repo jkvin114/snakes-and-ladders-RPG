@@ -19,7 +19,7 @@ export interface IStockGameResult{
     chartgenVersion:string
     variance:number
     scale:number
-
+    username:string
     delistAt?:number
 }
 export interface IPassedFriend {
@@ -37,4 +37,6 @@ export interface IStockGameResultResponse {
 	better: number
 	total: number
 	isNewBest: boolean
+    friendRanking:number
+    
 }

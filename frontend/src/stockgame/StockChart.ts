@@ -87,9 +87,9 @@ function updateCandle(value: number, candle: CandleObj): CandleObj {
 	return candle
 }
 const ENTRIES_PER_DATE = 30
-const INITIAL_DATES = 40
-const INTERVAL_MS = 200
-const MAX_LEN = 1500
+const INITIAL_DATES = 20
+const INTERVAL_MS = 150
+const MAX_LEN = 2000
 const DATE_RECORD_LEN = 20
 export default class StockChart {
 	private readonly stockvalues: number[]
@@ -183,7 +183,6 @@ export default class StockChart {
 			value: value,
 			diff: diff,
 		})
-		console.log(date)
 		if (this.records.length > DATE_RECORD_LEN) {
 			this.records.shift()
 		}
@@ -265,7 +264,7 @@ export default class StockChart {
 		let lastDayPrice = -1
 
 		for (let i = 0; i < INITIAL_DATES; ++i) {
-			
+			console.log(i * ENTRIES_PER_DATE)
 			const thisvalues = initial.slice(i * ENTRIES_PER_DATE, (i + 1) * ENTRIES_PER_DATE)
 			const candle = fullCandle(thisvalues, time)
 			if(candle.low <=0) continue
@@ -312,6 +311,8 @@ export default class StockChart {
 		if(this.running || this.paused) return
 		this.addMarker("end",0)
 		let end = this.startTime + MAX_LEN
+		let mod = start %ENTRIES_PER_DATE
+		start -= mod
 		const values  = this.stockvalues.slice(start, end)
 		let time = this.currDate
 
@@ -355,7 +356,7 @@ export default class StockChart {
 		let delisted = false
 		this.running = true
 		while (this.time < values.length) {
-			if (this.time % 2 === 1) {
+			if (this.time % 2 >=1) {
 				this.time++
 				continue
 			}
@@ -396,7 +397,9 @@ export default class StockChart {
 					this.displayNews("mincloseprice",dateStr(time),candle.close)
 				}
 
-				await sleep(INTERVAL_MS)
+				await sleep(INTERVAL_MS * 2)
+			}else if(this.time % ENTRIES_PER_DATE === 2) {
+				await sleep(INTERVAL_MS * 5)
 			} else {
 				candle = updateCandle(val, candle)
 			}

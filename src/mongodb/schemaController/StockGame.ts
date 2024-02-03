@@ -68,7 +68,16 @@ export namespace StockGameSchema {
         .find({ user: { $in: users }, loggedIn: true, isRecent: true, score: { $gt: min, $lt: max } })
 			.sort({ score: "desc" })
 	}
-
+	/**
+	 * return number of friends that has better score
+	 * @param users 
+	 * @param score 
+	 * @returns 
+	 */
+	export function findRankInUsers(users: MongoId[],score:number) {
+		return StockGameBestScore
+        .countDocuments({ user: { $in: users },score: { $gt: score }, loggedIn: true, isRecent: true })
+	}
 	export function getLeaderboard(loggedIn: boolean, allTime: boolean, start: number, count: number) {
 		let filter = { loggedIn: loggedIn, isRecent: true }
 		if (allTime) delete filter.isRecent

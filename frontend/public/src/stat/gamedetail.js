@@ -100,6 +100,13 @@ function setTitleForFocusedTurn(isWon) {
  * @param {*} data
  */
 function showSingleStat(data) {
+	// console.log(data._id)
+	if (data._id) {
+		$("#game-share-btn").show()
+		$("#game-share-btn").val(data._id)
+	} else {
+		$("#game-share-btn").hide()
+	}
 	$("#overlay").addClass("visible")
 	onGameDetailShow()
 	let damagetakenC_graph = []

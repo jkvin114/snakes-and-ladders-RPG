@@ -4,6 +4,7 @@ from chartgen import *
 import random
 
 from chartgen.v1 import generate_v1
+from chartgen.v2 import generate_v2
 
 api = Flask(__name__)
 from flask_cors import CORS
@@ -16,7 +17,10 @@ def gen_stock():
         scale=request.args.get("scale", default=100, type=float)
         version = request.args.get("version", default="1", type=float)
         seed =  request.args.get("seed", default=random.randint(0,100000), type=float) 
-        arr,steep_increase,steep_decrease,trend_changes=generate_v1(scale,variance,seed=int(seed))
+        if version=="1":
+            arr,steep_increase,steep_decrease,trend_changes=generate_v1(scale,variance,seed=int(seed))
+        else:
+            arr,steep_increase,steep_decrease,trend_changes=generate_v2(scale,variance,seed=int(seed))
         return json.dumps({
             "prices":arr,
             "steep_increase":steep_increase,

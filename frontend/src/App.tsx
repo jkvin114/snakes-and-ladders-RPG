@@ -154,7 +154,7 @@ function App() {
 						<Route path="/" element={<HomePage/>}></Route>
 						<Route path="/stockgame/leaderboard" element={<StockGameLeaderboard/>}></Route>
 
-						<Route path="/stockgame/play" element={<StockGame scale={round(50 + triDist(200, 200))} variance={round(triDist(0.6,0.2),-2)} ranked={false} startMoney={10000} />}></Route>
+						<Route path="/stockgame/play" element={<StockGame scale={round(50 + triDist(200, 200))} variance={round(triDist(0.6,0.3),-2)} ranked={false} startMoney={10000} />}></Route>
 						<Route path="/login" element={<LoginPage />}></Route>
 						<Route path="/register" element={<RegisterPage />}></Route>
 						<Route path="/status" element={<StatusPage />}></Route>

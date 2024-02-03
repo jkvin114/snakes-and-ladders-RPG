@@ -22,6 +22,6 @@ export function randFloat(num:number){
 export const triDist=function(mean:number,range:number){
 	return mean + randFloat(range) + randFloat(range) - range
 }
-export const toPercentStr=function(val:number){
-   return (val>=0?"+":"")+round(val*100,-2)+"%"
+export const toPercentStr=function(val:number,noPlus?:boolean){
+   return (!noPlus?(val>=0?"+":""):"")+round(val*100,-2)+"%"
 }

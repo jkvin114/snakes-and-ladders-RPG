@@ -442,15 +442,20 @@ function loadScriptSync(src) {
 	s.async = false // <-- this is important
 	document.getElementsByTagName("head")[0].appendChild(s)
 }
-
+let loadattempts = 0
 function main(url) {
 	loadScriptSync("https://cdn.amcharts.com/lib/4/core.js")
 	loadScriptSync("https://cdn.amcharts.com/lib/4/charts.js")
 	loadScriptSync("https://cdn.amcharts.com/lib/4/themes/dark.js")
 
+	if (loadattempts > 30) {
+		alert("Failed to load script")
+		return
+	}
 	//wait until amcharts scripts are loaded
 	if (!window.am4core) {
 		setTimeout(() => main(url), 200)
+		loadattempts++
 		return
 	}
 	SERVER_URL = url
@@ -491,6 +496,13 @@ function main(url) {
 			showCharacterPage(e.state.version, e.state.map, e.state.gametype, e.state.charId, false, true)
 		}
 	}
+	$("#game-share-btn").click(function () {
+		const id = $(this).val()
+		if (id !== "") {
+			navigator.clipboard.writeText(window.location.origin + "/stat?type=game&statid=" + id)
+			alert("copied url to clipboard")
+		}
+	})
 	$("#langbtn").click(function () {
 		$(".lang_dropdown").show()
 	})

@@ -765,7 +765,12 @@ height:60vh;
     padding: 4px;
     border-radius: 5px;
 }
-#replay-btn:hover{
+#game-share-btn img{
+    width: 20px;
+    height: 20px;
+    filter: invert();
+}
+#replay-btn:hover,#game-share-btn:hover{
     background-color:#5c3481 ;
 }
 .game-detail-item{

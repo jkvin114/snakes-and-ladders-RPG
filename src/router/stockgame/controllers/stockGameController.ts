@@ -9,9 +9,21 @@ import { IPassedFriend, IStockGameResultResponse } from "../../ResponseModel"
 import { isNumber } from "../../board/helpers"
 import { StockGameUserSchema } from "../../../mongodb/schemaController/StockGameUser"
 import { NotificationSchema } from "../../../mongodb/schemaController/Notification"
+import { generateStockChart } from "../../../fetch/fetch"
 
 export namespace StockGameController {
 	const LEADERBOARD_PAGE_SIZE = 100
+	export async function generateChart(req: Request, res: Response, session: ISession) {
+		const variance = req.query.variance
+		const scale = req.query.scale
+		const version = req.query.version
+		const data = await generateStockChart(Number(variance),Number(scale),String(version))
+		if(!data){
+			res.status(500).end()
+		}
+		else
+			res.json(data)
+	}
 
     export async function resetBestScores(req: Request, res: Response) {
         await StockGameSchema.resetAllBest()
@@ -82,13 +94,14 @@ export namespace StockGameController {
 		res.json({ better: better, total: total }).end()
 	}
 
-	async function getPassedFriends(session: ISession, newScore: number, oldScore: number): Promise<IPassedFriend[]> {
+	async function getPassedFriendsAndRank(session: ISession, newScore: number, oldScore: number): Promise<[IPassedFriend[],number]> {
 		const friends = await UserRelationSchema.findFriends(session.userId)
 		const passedscores = await StockGameSchema.findBestsByUsersInScoreRange(friends as MongoId[], oldScore, newScore)
-
-		return passedscores.map((s) => {
+		const rank = await StockGameSchema.findRankInUsers(friends as MongoId[],newScore)
+		console.log(rank)
+		return [passedscores.map((s) => {
 			return { score: s.score, username: s.username, userId: String(s.user) }
-		})
+		}),rank+1]
 	}
 
 	export async function postResult(req: Request, res: Response, session: ISession) {
@@ -112,6 +125,7 @@ export namespace StockGameController {
 			better: 0,
 			total: 0,
 			passedFriends: [],
+			friendRanking:0,
 			_id: String(gamedata._id),
 			score: gamedata.score,
 			isNewBest: false,
@@ -130,13 +144,16 @@ export namespace StockGameController {
 			}
 			if (updated) {
 				result.isNewBest = true
-				const passed = await getPassedFriends(session, gamedata.score, lastbest ? lastbest.score : 0)
+				const [passed,rank] = await getPassedFriendsAndRank(session, gamedata.score, lastbest ? lastbest.score : 0)
 				result.passedFriends = passed
-
+				result.friendRanking = rank
 				//send notifications for surpassing best score
 				for(const friend of passed){
 					NotificationSchema.stockGameSurpass(friend.userId,session.username,gamedata.score).then()
 				}
+			}
+			else{
+
 			}
 		} else {
 			result.isNewBest = true

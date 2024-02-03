@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import "./../styles/stockgame/stockgame.css"
 import "./../styles/stockgame/board.css"
+import "./../styles/stockgame/result.scss"
 
 import { ColorType, createChart, CrosshairMode, IChartApi } from "lightweight-charts"
 import { DayRecord, DisplayData, StatData } from "./types/DisplayData"
@@ -16,10 +17,13 @@ import { TranHistoryBoard } from "../components/stockgame/TranHistoryBoard"
 import { StatBoard } from "../components/stockgame/StatBoard"
 import Transaction from "./types/Transaction"
 import { RootContext } from "../context/context"
-import { stockgame_gen_url, stockgame_chartgenVersion } from "../variables"
-import { IStockGameResult } from "./types/Result"
+import { stockgame_chartgenVersion } from "../variables"
+import { IStockGameResult, IStockGameResultResponse } from "./types/Result"
 import { AxiosApi } from "../api/axios"
 import { randName } from "../types/names"
+import ResultModal from "./ResultModal"
+import { ToastHelper } from "../ToastHelper"
+import { sleep } from "../util"
 
 type Props = {
 	scale: number
@@ -62,6 +66,11 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	const [player, setPlayer] = useState<PlayerManager>(
 		new PlayerManager(startMoney, setPlayerState, setTranHistory, displayNews)
 	)
+	const [modal,setModal] = useState(false)
+	const [processing,setProcessing] = useState(false)
+	const [clientResult,setClientResult] = useState<IStockGameResult|null>(null)
+	const [serverResult,setServerResult] = useState<IStockGameResultResponse|null>(null)
+
 	function onTerminate() {
 		if (stockChart) {
 			player.sellPercent(stockChart.getCurrPrice, 1, stockChart.getTime())
@@ -71,6 +80,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	}
 	function onDelist() {
 		if (!stockChart) return
+
 		let time= stockChart.getTime()
 		player.delist(time)
 		setGameState("ended")
@@ -100,11 +110,11 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 			stockChart.start(onTerminate, onDelist)
 		}
 	}
-	function postResult(delistTime?: number) {
+	async function postResult(delistTime?: number) {
 		if (!stockChart || !playerState) return
 
 		const { transactionHistory, finaltotal, profitRate } = player.evalResult()
-
+		const name = "(Anonymous) "+randName()+"_"+(Math.floor(Math.random() * 100))
 		const result = {
 			transactionHistory: transactionHistory,
 			seed: stockChart.seed,
@@ -113,22 +123,33 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 			scale: scale,
 			score: finaltotal,
 			initialMoney:startMoney,
-			finaltotal : finaltotal
+			finaltotal : finaltotal,
+			username:name
 		} as IStockGameResult
 
 		let percent = round(profitRate * 100, -2)
 		if (delistTime) {
 			result.delistAt = delistTime
-			alert(`상장폐지!, 수익률:${percent}%`)
+			// alert(`상장폐지!, 수익률:${percent}%`)
+			ToastHelper.InfoToast(`상장폐지!, 수익률:${percent}%`)
 		}
 		else{
-			alert(`게임 종료, 수익률:${percent}%`)
+			ToastHelper.InfoToast(`게임 종료, 수익률:${percent}%`)
 		}
+		setProcessing(true)
+		
+
+		await sleep(4000)
+
 		AxiosApi.post("/stockgame/result",{
-			result:result,username:randName()
+			result:result,username:name
 		})
 		.then(res=>{
-			console.log(res.data)
+			setProcessing(false)
+			setClientResult(result)
+			setServerResult(res.data)
+			setModal(true)
+			// console.log(res.data)
 		})
 		.catch(e=>console.error(e))
 		
@@ -185,11 +206,9 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	}
 	async function fetchstock() {
 		try {
-			const data = await (
-				await fetch(stockgame_gen_url + `/gen_stock?variance=${variance}&scale=${scale}&version=${chartgenVersion}`, {
-					mode: "cors",
-				})
-			).json()
+
+			const data = (await AxiosApi.get(`/stockgame/generate?variance=${variance}&scale=${scale}&version=${chartgenVersion}`)).data
+			if(!data) return
 			// console.log(data)
 			const width = window.innerWidth
 			const height = window.innerHeight
@@ -248,6 +267,10 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	return (
 		<>
 			<div className="root" id="root-stockgame" data-theme={theme}>
+				{modal && <div className="shadow"></div>}
+
+				{(modal && clientResult && serverResult) && 
+				<ResultModal clientResult={clientResult} serverResult={serverResult}/>}
 				<div className="section">
 					<div id="score-board" className="subsection ">
 						<ScoreBoard gameState={gameState} player={playerState} price={val} startFunc={start} stopFunc={stopChart} />
@@ -265,6 +288,11 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 						<TranHistoryBoard record={tranHistory}></TranHistoryBoard>
 					</div>
 				</div>
+				{processing && <div id="processing">
+					<img src="/res/img/ui/loading_purple.gif"></img><br></br>
+					Processing Result....
+				</div>}
+				
 			</div>
 		</>
 	)

@@ -8,8 +8,8 @@ export function TranHistoryBoard({ record }: Props) {
 		<>
 			<h2 className="board-title">Trade History</h2>
 			<div className="history">
-				{record.map((r) => (
-					<div className="history-item">
+				{record.map((r,i) => (
+					<div className="history-item" key={i}>
 						<div className="history-top">
 							<span>{r.type === "BUY" ? "매수" : "매도"}</span>
 							<span className={r.type === "SELL" ? "down" : "up"} style={{float:"right"}}>

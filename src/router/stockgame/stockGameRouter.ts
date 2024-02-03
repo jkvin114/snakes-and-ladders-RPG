@@ -21,6 +21,11 @@ router.get("/user", NoSessionControllerWrapper(StockGameController.getUserResult
  */
 router.get("/userbest", NoSessionControllerWrapper(StockGameController.getUserAllTimeBest))
 
+/**
+ * generate stock chart from python flask service
+ */
+router.get("/generate", sessionParser, ControllerWrapper(StockGameController.generateChart))
+
 router.use("/rank", require("./stockGameRankRouter"))
 router.use("/user", require("./stockGameUserRouter"))
 

@@ -40,4 +40,5 @@ export interface IStockGameResultResponse {
 	better: number
 	total: number
 	isNewBest: boolean
+	friendRanking:number
 }
