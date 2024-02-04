@@ -149,14 +149,14 @@ export default class StockChart {
 		this.seed=seed
 		
 		this.smaLine5 = this.graph.addLineSeries({
-			color: '#39ec39',
+			color: 'green',
 			lineWidth: 2,
 			priceLineVisible: false,
 			lastValueVisible: false,
 
 		});
 		this.smaLine20 = this.graph.addLineSeries({
-			color: '#fd68ee',
+			color: 'purple',
 			lineWidth: 2,
 			priceLineVisible: false,
 			lastValueVisible: false,

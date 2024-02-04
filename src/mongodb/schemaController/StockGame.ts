@@ -58,6 +58,11 @@ export namespace StockGameSchema {
 		let greater = await StockGameBestScore.countDocuments({isRecent:true, score: { $gt: score } })
 		return [greater, total]
     }
+	/**
+	 * 
+	 * @param users 
+	 * @returns best scores of users and loggedin=true and recent=true
+	 */
 	export function findBestsByUsers(users: MongoId[]) {
 		return StockGameBestScore
         .find({ user: { $in: users }, loggedIn: true, isRecent: true })

@@ -21,13 +21,13 @@ export function getDateStringDifference(start:number,now:number) {
       resultString = `${days} day${days > 1 ? 's' : ''} `;
     }
     else if (hours > 0) {
-      resultString = `${hours} hour${hours > 1 ? 's' : ''} `;
+      resultString = `${hours} hr${hours > 1 ? 's' : ''} `;
     }
     else if (minutes > 0) {
-      resultString = `${minutes} minute${minutes > 1 ? 's' : ''}`;
+      resultString = `${minutes} min${minutes > 1 ? 's' : ''}`;
     }
     else if (seconds > 0) {
-        resultString = `${seconds} second${seconds > 1 ? 's' : ''}`;
+        resultString = `${seconds} sec${seconds > 1 ? 's' : ''}`;
       }
     return resultString.trim();
   }

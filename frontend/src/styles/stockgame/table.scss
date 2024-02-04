@@ -1,0 +1,43 @@
+.stockgame-table{
+    // border: 1px solid #dededf;
+    height: 100%;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 1px;
+    text-align: center;
+    th,td{
+        padding: 7px;
+    }
+    tr{
+        height: 40px;
+    }
+    thead{
+        background: var(--col-bg-dark);
+    }
+    tbody{
+        color: var(--col-font-dim);
+        b{
+            color: var(--col-font);
+        }
+    }
+   .rank{
+        width: 40px;
+        .special{
+            
+            border-radius: 3px;
+            display: inline-block;
+            width: 20px;
+            color: white;
+        }
+        .first{
+            background-color: gold;
+        }
+        .second{
+            background-color: silver;
+        }
+        .third{
+            background-color: #D5A47D;
+        }
+    }
+}

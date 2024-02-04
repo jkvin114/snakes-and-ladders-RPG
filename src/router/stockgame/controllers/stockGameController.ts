@@ -5,7 +5,7 @@ import { StockGameSchema } from "../../../mongodb/schemaController/StockGame"
 import { UserRelationSchema } from "../../../mongodb/schemaController/UserRelation"
 import { MongoId } from "../../../mongodb/types"
 import { UserCache } from "../../../cache/cache"
-import { IPassedFriend, IStockGameResultResponse } from "../../ResponseModel"
+import { IPassedFriend, IStockGameFriendScore, IStockGameResultResponse } from "../../ResponseModel"
 import { isNumber } from "../../board/helpers"
 import { StockGameUserSchema } from "../../../mongodb/schemaController/StockGameUser"
 import { NotificationSchema } from "../../../mongodb/schemaController/Notification"
@@ -13,10 +13,10 @@ import { generateStockChart } from "../../../fetch/fetch"
 
 export namespace StockGameController {
 	const LEADERBOARD_PAGE_SIZE = 100
+	const version = "2"
 	export async function generateChart(req: Request, res: Response, session: ISession) {
 		const variance = req.query.variance
 		const scale = req.query.scale
-		const version = req.query.version
 		const data = await generateStockChart(Number(variance),Number(scale),String(version))
 		if(!data){
 			res.status(500).end()
@@ -40,8 +40,8 @@ export namespace StockGameController {
 	}
 
 	export async function getLeaderboard(req: Request, res: Response) {
-		const loggedIn = req.query.loggedIn ? Boolean(req.query.loggedIn) : false
-		const allTime = req.query.allTime ? Boolean(req.query.allTime) : false
+		const loggedIn = req.query.loggedIn ==="true"
+		const allTime = req.query.allTime ==="true"
 		const start = req.query.start ? Number(req.query.start) : 0
 
 		const result = await StockGameSchema.getLeaderboard(loggedIn, allTime, start, LEADERBOARD_PAGE_SIZE)
@@ -78,7 +78,31 @@ export namespace StockGameController {
 		friends.push(session.userId)
 
 		const friendScores = await StockGameSchema.findBestsByUsers(friends)
-		res.json({ result: friendScores }).end()
+		let result:IStockGameFriendScore[] = []
+		const hasScore = new Set<string>()
+		for(const friend of friendScores){
+			const user = await UserCache.getUser(friend.user)
+			hasScore.add(String(friend.user))
+			result.push({
+				user:String(friend.user),
+				username:user.username,
+				profileImgDir:user.profileImgDir,
+				score:friend.score,
+				game:String(friend.game),
+			})
+		}
+		// console.log(hasScore)
+		// console.log(friends)
+		for(const id of friends){
+			if(hasScore.has(String(id))) continue
+			const user = await UserCache.getUser(id)
+			result.push({
+				user:id,
+				username:user.username,
+				profileImgDir:user.profileImgDir
+			})
+		}	
+		res.json(result).end()
 	}
 	export async function getPosition(req: Request, res: Response) {
 		const gameId = req.query.gameId
@@ -98,7 +122,6 @@ export namespace StockGameController {
 		const friends = await UserRelationSchema.findFriends(session.userId)
 		const passedscores = await StockGameSchema.findBestsByUsersInScoreRange(friends as MongoId[], oldScore, newScore)
 		const rank = await StockGameSchema.findRankInUsers(friends as MongoId[],newScore)
-		console.log(rank)
 		return [passedscores.map((s) => {
 			return { score: s.score, username: s.username, userId: String(s.user) }
 		}),rank+1]
@@ -113,7 +136,8 @@ export namespace StockGameController {
 		const username = session.isLogined ? session.username : req.body.username
 
 		const gameresult = {...game,
-			user: session.isLogined ? session.userId : null
+			user: session.isLogined ? session.userId : null,
+			chartgenVersion:version
 		}
 
 		const gamedata = await StockGameResult.create(gameresult)
@@ -151,9 +175,6 @@ export namespace StockGameController {
 				for(const friend of passed){
 					NotificationSchema.stockGameSurpass(friend.userId,session.username,gamedata.score).then()
 				}
-			}
-			else{
-
 			}
 		} else {
 			result.isNewBest = true

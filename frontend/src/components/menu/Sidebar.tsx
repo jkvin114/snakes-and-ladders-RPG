@@ -41,6 +41,7 @@ export default function SideBar({isOpen,closeNavbar,notiCount}:Props){
           <li className="menu-item-container">
             <a className="menu-item"><img src="/stock.png"></img><b className="menu-name">Stock Game</b></a>
             <ul className="sub-menu"  onClick={closeNavbar}>
+              {loggedin &&<li className="sub-menu-item"><Link to="/stockgame/mypage"><RiAccountCircleFill />My Page</Link></li>}
               <li className="sub-menu-item"><Link to="/stockgame/play"><GrGamepad />Play</Link></li>
               <li className="sub-menu-item"><Link to="/"><RiTrophyFill />Play Ranked</Link></li>
               {loggedin && <li className="sub-menu-item"><Link to="/"><RiFolderVideoFill />Game Record</Link></li>}

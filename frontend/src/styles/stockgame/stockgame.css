@@ -24,7 +24,30 @@
 	background-color: var(--color-bg);
 	color: var(--color-text);
 }
-
+#root-stockgame.scroll-lock{
+	overflow: hidden;
+	height: 100vh;
+}
+@media only screen and (max-width: 768px) {
+	#root-stockgame{
+		display: block;
+		font-size: 12px;
+	}
+	#root-stockgame .graph{
+		visibility: collapse;
+		position: absolute;
+	}
+	#root-stockgame #score-top{
+		grid-template-columns: 1fr 1fr;
+	}
+	
+}
+#root-stockgame .btn-toolbar{
+	position: fixed;
+	z-index: 3;
+	bottom: 20px;
+	left: 20px;
+}
 .section{
 	
 }

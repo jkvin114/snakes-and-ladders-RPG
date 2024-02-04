@@ -17,7 +17,6 @@ import { TranHistoryBoard } from "../components/stockgame/TranHistoryBoard"
 import { StatBoard } from "../components/stockgame/StatBoard"
 import Transaction from "./types/Transaction"
 import { RootContext } from "../context/context"
-import { stockgame_chartgenVersion } from "../variables"
 import { IStockGameResult, IStockGameResultResponse } from "./types/Result"
 import { AxiosApi } from "../api/axios"
 import { randName } from "../types/names"
@@ -33,8 +32,7 @@ type Props = {
 }
 
 function StockGame({ scale, variance, startMoney,ranked }: Props) {
-	let theme = "dark"
-	const chartgenVersion = stockgame_chartgenVersion
+	let theme = "light"
 	const dataFetch = useRef(false)
 	const [val, setVal] = useState<DisplayData>({
 		value: 0,
@@ -118,7 +116,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 		const result = {
 			transactionHistory: transactionHistory,
 			seed: stockChart.seed,
-			chartgenVersion: chartgenVersion,
+			chartgenVersion: "",
 			variance: variance,
 			scale: scale,
 			score: finaltotal,
@@ -155,6 +153,8 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 		
 	}
 	function displayNews(type: string, message: string, value: number) {
+		if(window.innerWidth < 768) return
+
 		if (type === "mincloseprice") {
 			toast.error(`신저가 경신! (${value})`, {
 				position: "top-right",
@@ -207,11 +207,11 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	async function fetchstock() {
 		try {
 
-			const data = (await AxiosApi.get(`/stockgame/generate?variance=${variance}&scale=${scale}&version=${chartgenVersion}`)).data
+			const data = (await AxiosApi.get(`/stockgame/generate?variance=${variance}&scale=${scale}`)).data
 			if(!data) return
 			// console.log(data)
-			const width = window.innerWidth
-			const height = window.innerHeight
+			const width = window.innerWidth > 768 ? window.innerWidth * 0.6 : window.innerWidth*0.95
+			const height = window.innerHeight * 0.5
 
 			let layout = undefined
 			let grid = undefined
@@ -233,8 +233,8 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 				}
 			}
 			const chart = createChart(document.getElementById("graph") as HTMLElement, {
-				width: width * 0.6,
-				height: height * 0.5,
+				width: width ,
+				height: height,
 				crosshair: {
 					mode: CrosshairMode.Normal,
 				},
@@ -266,7 +266,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 
 	return (
 		<>
-			<div className="root" id="root-stockgame" data-theme={theme}>
+			<div className={"root " +(modal?"scroll-lock":"")} id="root-stockgame" data-theme={theme}>
 				{modal && <div className="shadow"></div>}
 
 				{(modal && clientResult && serverResult) && 
@@ -292,7 +292,10 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 					<img src="/res/img/ui/loading_purple.gif"></img><br></br>
 					Processing Result....
 				</div>}
-				
+				<div className="btn-toolbar">
+					{gameState==="none"?<div className="start-btn" onClick={start}>거래 시작</div>:""}
+					{gameState==="running"?<div className="stop-btn" onClick={stopChart}>전량 매도 후 거래 종료</div>:""}
+				</div>
 			</div>
 		</>
 	)

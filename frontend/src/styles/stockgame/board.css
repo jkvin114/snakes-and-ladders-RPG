@@ -6,10 +6,10 @@
 }
 
 #root-stockgame .down{
-    color: blue;
+    color: rgb(60, 60, 255);
 }
 #root-stockgame .up{
-    color: red;
+    color: rgb(255, 40, 40);
 }
 #root-stockgame .down-bg{
     background-color: rgb(117, 117, 255);
@@ -72,4 +72,15 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+
+@media only screen and (max-width: 768px) {
+    #root-stockgame .trade-status{
+        margin: 2px;
+        height: 30px;
+    }
+    #root-stockgame .trade-btn{
+        height: 30px;
+    margin: 5px;
+    }
 }

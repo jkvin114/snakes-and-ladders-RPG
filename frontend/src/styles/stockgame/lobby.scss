@@ -1,0 +1,60 @@
+#stockgame-lobby-root{
+    background: var(--col-bg-light);
+    text-align: center;
+    max-height: 95vh;
+    overflow: auto;
+    .friends{
+        background: var(--col-bg);
+
+        height: 400px;
+        overflow: auto;
+        width: 300px;
+        border: 2px solid var(--col-primary);
+    }
+    .stockgame-table{
+        height: fit-content;
+        tr{
+            border-bottom: 1px solid var(--col-bg-lighter);
+            &.me{
+                background-color: var(--col-bg-lighter);;
+            }
+            cursor: pointer;
+            &:hover{
+                background-color: var(--col-bg-light);
+
+            }
+        }
+    }
+    .content{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin: 10px;
+        padding: 10px;
+    }
+    .profile{
+        width: 40px;
+        div{
+
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border: 2px solid var(--col-primary);
+        }
+        img{
+            object-fit: cover;
+
+            width: 30px;
+            height: 30px;
+        }
+
+    }
+    .score{
+        font-size: 13px;
+        b{
+            font-size: 16px;
+        }
+        .name{
+            color: var(--col-font-dim);
+        }
+    }
+}

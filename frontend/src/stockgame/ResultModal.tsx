@@ -37,13 +37,13 @@ export default function ResultModal({clientResult,serverResult}:Props){
                <span >수익률: <b className={clientResult.finaltotal >= clientResult.initialMoney?"up":"down"}>{toPercentStr(rel_diff(clientResult.initialMoney,clientResult.finaltotal))}</b></span>
             </div>
             <div className="content-section">
-                전체랭킹 : <b>{serverResult.better+1}등 </b> <sub>(상위 {toPercentStr(serverResult.better/serverResult.total,true)})</sub>
+                전체랭킹 : <b>{serverResult.better+1}등 </b> <sub>(상위 {toPercentStr((serverResult.better+1)/serverResult.total,true)})</sub>
             </div>
             {
                 context.loggedin && 
                 <div className="content-section friend-section">
                     <div>
-                        {serverResult.isNewBest && <>친구랭킹 : <b  className={passedFriends? "up":""}> {passedFriends?<>&#9650;</>:""} {serverResult.friendRanking}등 </b><br></br></>}
+                        {serverResult.isNewBest && <>친구랭킹 :<br></br> <b  className={passedFriends? "up":""}> {passedFriends?<>&#9650;</>:""} {serverResult.friendRanking}등 </b><br></br></>}
                         {passedFriends&& <span> 이긴 친구수: <b>{serverResult.passedFriends.length}</b></span>}
                     </div>
                     {

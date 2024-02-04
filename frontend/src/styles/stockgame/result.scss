@@ -78,6 +78,9 @@
         border-bottom: 1px solid var(--col-font-light);
         font-size: 22px;
         color: var(--col-font-dim);
+        @media only screen and (max-width: 768px) {
+            margin: 25px 5px;
+        }
     }
     .content-section.friend-section{
         border: none;

@@ -49,7 +49,7 @@ export default function HomePage() {
 						<h1>MockStock</h1>
                         <p>Achieve a largest possible profit in trade simulation</p>
 						<button className="mainbtn button-19 divlink">
-                        <Link to="/stockgame" className="divlink"></Link>
+                        <Link to="/stockgame/play" className="divlink"></Link>
 							<img src="/stock.png"></img>
 							<b>Play Now</b>
 							<br></br>

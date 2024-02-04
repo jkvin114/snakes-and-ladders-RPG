@@ -42,3 +42,11 @@ export interface IStockGameResultResponse {
 	isNewBest: boolean
 	friendRanking:number
 }
+
+export interface IStockGameFriendScore{
+    user:string,
+	username:string,
+	profileImgDir:string,
+	score?:number,
+	game?:string,
+}

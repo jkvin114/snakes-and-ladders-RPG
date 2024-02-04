@@ -43,6 +43,7 @@ export function ScoreBoard({player,price,startFunc,stopFunc,gameState}:Props){
             <span style={{width:((currCount/(0.01+totalCount))*100)+"%"}}></span>
         </div>
         <div className="price">
+        
             <span className="price-val">${value} </span> 
             <span className={diff<0?"down":"up"}>
                 {diff<0?(
@@ -55,10 +56,7 @@ export function ScoreBoard({player,price,startFunc,stopFunc,gameState}:Props){
             <span className={diff<0?"down":"up"}>
                 {toPercentStr(reldiff)}
             </span>
-            <div className="btn-toolbar">
-                {gameState==="none"?<div className="start-btn" onClick={startFunc as MouseEventHandler}>거래 시작</div>:""}
-                {gameState==="running"?<div className="stop-btn" onClick={stopFunc as MouseEventHandler}>전량 매도 후 거래 종료</div>:""}
-            </div>
+            
         </div>
     </div>)
 }

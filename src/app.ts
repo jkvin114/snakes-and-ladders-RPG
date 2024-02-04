@@ -58,7 +58,7 @@ const clientPath = `${__dirname}/../public`
 const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 5000
 const app = express()
- const ORIGIN2 = "http://localhost:3000"
+//  const ORIGIN = "http://localhost:3000"
 const ORIGIN="http://192.168.0.3:3000"
 Logger.log("start");
 
@@ -92,9 +92,9 @@ redisClient.connect().then(()=>{
 //==============================================
 
 app.use(session)
-app.use(cors({credentials: true, origin: [ORIGIN2]}))
+app.use(cors({credentials: true, origin: [ORIGIN]}))
 app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', [ORIGIN2]);
+	res.setHeader('Access-Control-Allow-Origin', [ORIGIN]);
 
 	res.setHeader('Access-Control-Allow-Credentials', "true");
 	res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
@@ -155,7 +155,7 @@ function errorHandler(err: any, req: any, res: any, next: any) {
 
 export const io = new Server(httpserver, {
 	cors: {
-		origin: [ORIGIN2],
+		origin: [ORIGIN],
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		credentials: true
 	},

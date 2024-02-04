@@ -103,11 +103,11 @@ a.divlink{
 	font-family: 'Pretendard-Regular';
 
 	border-radius: 4px;
-	
+	box-sizing: border-box;
 }
 .button.dark{
 	background-color: transparent;
-	border: 2px solid var(--col-font-light);
+	outline: 2px solid var(--col-font-light);
 }
 
 .button:hover{

@@ -8,3 +8,10 @@ export interface ILeaderboard{
     username:string
     user?:string
 }
+export interface IFriendScore{
+    user:string,
+	username:string,
+	profileImgDir:string,
+	score?:number,
+	game?:string,
+}
