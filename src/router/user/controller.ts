@@ -54,6 +54,7 @@ export namespace UserController {
 			isadmin: user.role === "admin" && session.isLogined && session.userId === String(user._id),
 			isLogined: session.isLogined,
 			counts: counts,
+			id:String(user._id)
 		})
 	}
 

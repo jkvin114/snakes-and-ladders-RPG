@@ -1,0 +1,28 @@
+.score-report{
+    background-color: var(--col-bg-lighter);
+    position: relative;
+    font-size: 13px;
+    border-radius: 10px;
+    .content-section{
+        text-align: center;
+        margin: 15px;
+        margin-bottom: 5px;
+        padding-bottom: 10px;
+        // border-bottom: 1px solid var(--col-font-light);
+        font-size: 17px;
+        color: var(--col-font-dim);
+        @media only screen and (max-width: 768px) {
+            margin: 15px 5px;
+        }
+        
+        &.score{
+            color: var(--col-font);
+
+            h1{
+                font-size: 25px;
+                margin: 5px;
+            }
+            border-bottom: 2px dashed var(--col-font-light);
+        }
+    }
+}

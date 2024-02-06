@@ -1,15 +1,23 @@
 #stockgame-lobby-root{
     background: var(--col-bg-light);
     text-align: center;
-    max-height: 95vh;
+    max-height: 100vh;
     overflow: auto;
     .friends{
         background: var(--col-bg);
 
         height: 400px;
         overflow: auto;
-        width: 300px;
+        width: min(400px,95%);
         border: 2px solid var(--col-primary);
+        display: inline-block;
+    }
+ 
+    .score-report{
+        width: 300px;
+        display: inline-block;
+        margin-bottom: 10px;
+        margin-top: 10px;
     }
     .stockgame-table{
         height: fit-content;
@@ -24,12 +32,24 @@
 
             }
         }
+        .score{
+            font-size: 13px;
+            b{
+                font-size: 16px;
+            }
+            .name{
+                color: var(--col-font-dim);
+            }
+        }
     }
     .content{
         display: grid;
         grid-template-columns: 1fr 1fr;
         margin: 10px;
         padding: 10px;
+        @media only screen and (max-width: 768px) {
+            display: block;
+        }
     }
     .profile{
         width: 40px;
@@ -42,19 +62,41 @@
         }
         img{
             object-fit: cover;
-
             width: 30px;
             height: 30px;
         }
 
     }
-    .score{
-        font-size: 13px;
-        b{
-            font-size: 16px;
-        }
-        .name{
-            color: var(--col-font-dim);
+
+  
+}
+
+#stockgame-lobby-modal{
+    position: absolute;
+    width: min(700px, 90vw);    
+    height: 85vh;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 3px;
+    background-color: var(--col-bg-light);
+    border-radius: 10px;
+    border: 2px solid var(--col-primary);
+    #stockgame-profile-root{
+        height: 100%;
+    }
+    .close-modal{
+        position: fixed;
+        top:0;
+        right: 0;
+        z-index: 4;
+        background-color: var(--col-bg-lighter);
+        border-top-right-radius: 10px;
+        cursor: pointer;
+        svg{
+            width: 25px;
+            height: 25px;
         }
     }
 }

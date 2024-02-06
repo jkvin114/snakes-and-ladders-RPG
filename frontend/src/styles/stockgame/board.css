@@ -5,16 +5,16 @@
     padding-top: 0;
 }
 
-#root-stockgame .down{
+.stockgame-content .down{
     color: rgb(60, 60, 255);
 }
-#root-stockgame .up{
+.stockgame-content .up{
     color: rgb(255, 40, 40);
 }
-#root-stockgame .down-bg{
+.stockgame-content .down-bg{
     background-color: rgb(117, 117, 255);
 }
-#root-stockgame .up-bg{
+.stockgame-content .up-bg{
     background-color: rgb(255, 115, 115);
 }
 #root-stockgame .history-bottom{

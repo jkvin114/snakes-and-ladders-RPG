@@ -1,7 +1,7 @@
 #stockgame-leaderboard-root{
     background: var(--col-bg-light);
     text-align: center;
-    max-height: 95vh;
+    max-height: 100vh;
     overflow: auto;
     .toolbar{
         text-align: center;
@@ -9,7 +9,8 @@
     .leaderboard{
         background: var(--col-bg);
         display: inline-block;
-        width: min(1000px,92vw);
+        // width: min(1000px,92vw);
+        max-width: 1000px;
         margin: 10px;
         margin-top: 20px;
         text-align: center;
@@ -24,6 +25,7 @@
             }
             &.loggedin{
                 color: var(--col-font);
+                text-decoration: underline;
             }
         }
         .item:hover{

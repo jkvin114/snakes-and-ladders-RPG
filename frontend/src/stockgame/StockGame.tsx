@@ -266,7 +266,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 
 	return (
 		<>
-			<div className={"root " +(modal?"scroll-lock":"")} id="root-stockgame" data-theme={theme}>
+			<div className={"root stockgame-content " +(modal?"scroll-lock":"")} id="root-stockgame" data-theme={theme}>
 				{modal && <div className="shadow"></div>}
 
 				{(modal && clientResult && serverResult) && 

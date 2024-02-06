@@ -14,7 +14,8 @@ router.get("/result", NoSessionControllerWrapper(StockGameController.getResult))
 /**
  * get user data (all records, recent best score)
  */
-router.get("/user", NoSessionControllerWrapper(StockGameController.getUserResults))
+router.get("/profile/:userId", NoSessionControllerWrapper(StockGameController.getUserResults))
+
 
 /**
  * get all-time best of a user

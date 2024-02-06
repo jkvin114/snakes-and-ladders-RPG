@@ -14,7 +14,7 @@ export function ControllerWrapper(controller:IController,successCode?:number){
         const session=res.locals.session
         if(!session) 
         {
-            Logger.warn("unauthorized access without session",req.path)
+            Logger.warn("unauthorized access without session",req.url)
             return res.status(401).end("Session does not exists")
         }
         

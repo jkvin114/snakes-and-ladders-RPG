@@ -28,14 +28,38 @@ export namespace StockGameSchema {
 	export function resetAllBest() {
 		return StockGameBestScore.updateMany({ isRecent: true }, { isRecent: false })
 	}
+	/**
+	 * r
+	 * @param user 
+	 * @returns single recent best score of user, with game populated (initialMoney finalTotal delistAt)
+	 */
 	export function findRecentBestByUser(user: MongoId) {
 		return StockGameBestScore.findOne({ isRecent: true, user: user })
+		.populate<{ game:IStockGameResult}>("game","initialMoney finaltotal delistAt")
 	}
+	/**
+	 * 
+	 * @param user 
+	 * @returns single all-time best score of user, with game populated (initialMoney finalTotal delistAt)
+	 */
 	export async function findAllTimeBestByUser(user: MongoId) {
-		return (await StockGameBestScore.find({ user: user }).sort({ score: "desc" }))[0]
+		return (await StockGameBestScore.find({ user: user }).sort({ score: "desc" }).limit(1)
+		.populate<{ game:IStockGameResult}>("game","initialMoney finaltotal delistAt"))[0]
 	}
+	/**
+	 * fields returned: [score initialMoney finaltotal user transactionHistory delistAt createdAt updatedAt]
+	 * limit: 100
+	 * @param user 
+	 * @returns all records of user, sorted in desc
+	 */
 	export function findRecordsByUser(user: MongoId) {
 		return StockGameResult.find({ user: user }).sort({ createdAt: "desc" })
+		.limit(100)
+		.select("score initialMoney finaltotal user transactionHistory delistAt createdAt updatedAt")
+	}
+
+	export function countUserRecord(user: MongoId){
+		return StockGameResult.count({ user: user })
 	}
 
 	/**

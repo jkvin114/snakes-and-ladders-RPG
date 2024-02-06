@@ -9,8 +9,8 @@ export namespace StockGameUserSchema{
         return StockGameUser.create({user:userId,totalGames:0})
     }
     export function incrementTotalGames(userId: MongoId){
-        StockGameUser.findOneAndUpdate({user:userId},{
+        return StockGameUser.findOneAndUpdate({user:userId},{
             $inc:{totalGames:1}
-        }).then()
+        })
     }
 }

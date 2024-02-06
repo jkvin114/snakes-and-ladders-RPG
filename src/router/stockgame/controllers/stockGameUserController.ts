@@ -27,7 +27,7 @@ export namespace StockGameUserController{
             return
         }
         const newuser = await StockGameUserSchema.createUser(userId)
-
+        
         res.json(newuser).end()
     }
 }

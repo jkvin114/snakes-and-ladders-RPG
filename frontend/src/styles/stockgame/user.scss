@@ -1,0 +1,89 @@
+#stockgame-profile-root{
+    text-align: center;
+    max-height: 100vh;
+    overflow: auto;
+    .content{
+        margin: 20px;
+        max-width: 1000px;
+        width: 90%;
+        display: inline-block;
+    }
+    
+}
+.stockgame-user-content{
+    
+    .stat{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px;
+
+        .stat-item{
+            display: block;
+            background-color:  var(--col-bg-lighter);
+            padding: 5px;
+            margin: 5px;
+        }
+    }
+    .records{
+        background: var(--col-bg);
+
+        height: 500px;
+        overflow-y: scroll;
+        width: min(400px,95%);
+        border: 2px solid var(--col-primary);
+        display: inline-block;
+        .record-item{
+            display: grid;
+            grid-template-columns: auto 30px;
+            text-align: left;
+            border-bottom: 1px solid var(--col-bg-lighter);
+            color: var(--col-font-dim);
+            .record-item-content{
+                padding: 5px;
+                padding-left: 20px;
+    
+            }
+            b{
+                margin-right: 20px;
+                font-size: 20px;
+                color: var(--col-font);
+
+            }
+            .expand-btn{
+                cursor: pointer;
+                color: var(--col-font-light);
+                svg{
+                    width: 30px;
+                    height: 30px;
+                }
+                display: flex;
+                align-items: center;
+            }
+            .expand-btn:hover{
+                background-color: var(--col-bg-light);
+
+            }
+            sub{
+                float: right;
+            }
+        }
+        
+    }
+    .tran-record{
+        padding: 10px 5px;
+        .tran-record-item{
+            margin: 2px;
+            text-align: left;
+            color: var(--col-font-dim); 
+            padding-left: 20px;
+
+            sub{    
+                font-size: 10px;
+            }
+        }
+        border-bottom: 1px solid var(--col-bg-lighter);
+
+    }
+}

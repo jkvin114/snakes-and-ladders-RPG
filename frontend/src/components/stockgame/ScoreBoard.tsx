@@ -5,8 +5,6 @@ import { PlayerState } from "../../stockgame/types/PlayerState"
 import { rel_diff, round, toPercentStr } from "../../stockgame/util"
 import PieChart from "./PieChart"
 import ScoreBoardGraph from "../../stockgame/ScoreBoardGraph"
-import { MouseEventHandler } from "react"
-
 type Props={
     player:PlayerState,
     price:DisplayData,

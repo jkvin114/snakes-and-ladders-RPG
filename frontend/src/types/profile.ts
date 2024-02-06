@@ -23,4 +23,5 @@ export interface IUserProfile {
 	isadmin: boolean
 	isLogined: boolean
 	counts: number[] //length = 7
+	id:string
 }

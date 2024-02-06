@@ -37,13 +37,13 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
-.resulttext{
-    font-size: 40px;
-    font-weight: bolder;
-    color: gold;
-    margin: 20px;
+    .resulttext{
+        font-size: 40px;
+        font-weight: bolder;
+        color: gold;
+        margin: 20px;
 
-}
+    }
     .content{
         background-color: var(--col-bg-lighter);
         border-radius: 7px;

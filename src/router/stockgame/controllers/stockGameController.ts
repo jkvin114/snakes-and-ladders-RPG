@@ -5,7 +5,7 @@ import { StockGameSchema } from "../../../mongodb/schemaController/StockGame"
 import { UserRelationSchema } from "../../../mongodb/schemaController/UserRelation"
 import { MongoId } from "../../../mongodb/types"
 import { UserCache } from "../../../cache/cache"
-import { IPassedFriend, IStockGameFriendScore, IStockGameResultResponse } from "../../ResponseModel"
+import { IPassedFriend,  IStockGameBestScoreResponse,  IStockGameBestScoreResponsePopulated,  IStockGameFriendScore, IStockGameResultResponse, IStockGameUserRecordResponse } from "../../ResponseModel"
 import { isNumber } from "../../board/helpers"
 import { StockGameUserSchema } from "../../../mongodb/schemaController/StockGameUser"
 import { NotificationSchema } from "../../../mongodb/schemaController/Notification"
@@ -48,6 +48,21 @@ export namespace StockGameController {
 
 		res.json({ result: result }).end()
 	}
+	export async function getUserLobbyInfo(req: Request, res: Response,session:ISession) {
+		const userId = session.userId
+		const alltime = await StockGameSchema.findAllTimeBestByUser(String(userId))
+		const records = await StockGameSchema.findRecordsByUser(String(userId))
+		const best = await StockGameSchema.findRecentBestByUser(String(userId))
+		const count = await StockGameSchema.countUserRecord(String(userId))
+		res
+			.json({
+				records: records as IStockGameUserRecordResponse[],
+				best: best as IStockGameBestScoreResponsePopulated,
+				alltimeBest: alltime as IStockGameBestScoreResponsePopulated,
+				recordCount: count 
+			})
+			.end()
+	}
 	export async function getUserAllTimeBest(req: Request, res: Response) {
 		const userId = req.query.userId
 		if (!userId) {
@@ -55,26 +70,30 @@ export namespace StockGameController {
 			return
 		}
 		const result = await StockGameSchema.findAllTimeBestByUser(String(userId))
-		res.json({ result: result }).end()
+		res.json({ result: result as IStockGameBestScoreResponsePopulated }).end()
 	}
 	export async function getUserResults(req: Request, res: Response) {
-		const userId = req.query.userId
+		const userId = req.params.userId
 		if (!userId) {
 			res.status(404).end()
 			return
 		}
 		const records = await StockGameSchema.findRecordsByUser(String(userId))
 		const best = await StockGameSchema.findRecentBestByUser(String(userId))
-
+		const count = await StockGameSchema.countUserRecord(String(userId))
+		const user = await UserCache.getUser(String(userId))
 		res
 			.json({
-				records: records,
-				best: best,
+				records: records.slice(0,10) as IStockGameUserRecordResponse[],
+				best: best as IStockGameBestScoreResponsePopulated,
+				recordCount: count ,
+				username:user.username,
+				profileImgDir:user.profileImgDir
 			})
 			.end()
 	}
 	export async function getFriendBestScores(req: Request, res: Response, session: ISession) {
-		const friends = (await UserRelationSchema.findFriends(session.userId)) as string[]
+		const friends = (await UserRelationSchema.findFriends(session.userId)) as MongoId[]
 		friends.push(session.userId)
 
 		const friendScores = await StockGameSchema.findBestsByUsers(friends)
@@ -97,22 +116,34 @@ export namespace StockGameController {
 			if(hasScore.has(String(id))) continue
 			const user = await UserCache.getUser(id)
 			result.push({
-				user:id,
+				user:String(id),
 				username:user.username,
 				profileImgDir:user.profileImgDir
 			})
 		}	
 		res.json(result).end()
 	}
-	export async function getPosition(req: Request, res: Response) {
+	export async function getPositionByGame(req: Request, res: Response) {
 		const gameId = req.query.gameId
         const allTime = req.query.allTime ? Boolean(req.query.allTime) : false
 
 		if (!gameId) {
-			res.status(400).end("gameid or score is required")
+			res.status(400).end("gameid is required")
 			return
 		}
 		const score = (await StockGameSchema.getRecordById(String(gameId))).score
+		const [better, total] = allTime? await StockGameSchema.getGlobalRank(score): await StockGameSchema.getRecentRank(score)
+
+		res.json({ better: better, total: total }).end()
+	}
+	export async function getPositionByScore(req: Request, res: Response) {
+		const score = Number(req.query.score)
+        const allTime = req.query.allTime ? Boolean(req.query.allTime) : false
+
+		if (!score) {
+			res.status(400).end("score is required")
+			return
+		}
 		const [better, total] = allTime? await StockGameSchema.getGlobalRank(score): await StockGameSchema.getRecentRank(score)
 
 		res.json({ better: better, total: total }).end()
@@ -155,7 +186,7 @@ export namespace StockGameController {
 			isNewBest: false,
 		}
 		if (session.isLogined) {
-			StockGameUserSchema.incrementTotalGames(session.userId)
+			StockGameUserSchema.incrementTotalGames(session.userId).then()
 
 			const lastbest = await StockGameSchema.findRecentBestByUser(session.userId)
 			let updated = false

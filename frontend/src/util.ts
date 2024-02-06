@@ -4,6 +4,10 @@ export function limitString(str?:string,size?:number){
    return str.length > 15 ? str?.slice(0,15)+"..":str
 }
 
+export function getTimeAgo(start:string){
+  return getDateStringDifference(new Date(start).valueOf(),Date.now())
+}
+
 export function getDateStringDifference(start:number,now:number) {
     const ONE_MINUTE = 60 * 1000; // milliseconds in a minute
     const ONE_HOUR = 60 * ONE_MINUTE; // milliseconds in an hour
@@ -16,7 +20,7 @@ export function getDateStringDifference(start:number,now:number) {
     const minutes = Math.floor((timeDifference % ONE_HOUR) / ONE_MINUTE);
     const seconds = Math.floor((timeDifference % ONE_MINUTE) / 1000);
     // Build the result string
-    let resultString = '1 second';
+    let resultString = 'Now';
     if (days > 0) {
       resultString = `${days} day${days > 1 ? 's' : ''} `;
     }
@@ -26,9 +30,6 @@ export function getDateStringDifference(start:number,now:number) {
     else if (minutes > 0) {
       resultString = `${minutes} min${minutes > 1 ? 's' : ''}`;
     }
-    else if (seconds > 0) {
-        resultString = `${seconds} sec${seconds > 1 ? 's' : ''}`;
-      }
     return resultString.trim();
   }
   

@@ -13,7 +13,16 @@ router.get("/leaderboard", NoSessionControllerWrapper(StockGameController.getLea
 /**
  * return position(# of better scores, # of total scores) of a game
  */
-router.get("/position", NoSessionControllerWrapper(StockGameController.getPosition))
+router.get("/position/bygame", NoSessionControllerWrapper(StockGameController.getPositionByGame))
+
+
+router.get("/leaderboard", NoSessionControllerWrapper(StockGameController.getLeaderboard))
+
+/**
+ * return position(# of better scores, # of total scores) of a score
+ */
+router.get("/position/byscore", NoSessionControllerWrapper(StockGameController.getPositionByScore))
+
 
 /**
  * return all friends' best scores

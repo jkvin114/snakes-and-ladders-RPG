@@ -27,6 +27,8 @@ import WritePostPage from "./components/pages/WritePost"
 import { round, triDist } from "./stockgame/util"
 import StockGameLeaderboard from "./stockgame/LeaderBoard"
 import StockGameUserLobby from "./stockgame/UserLobby"
+import StockGameUserInfo from "./stockgame/UserInfo"
+import StockGameUserPage from "./components/pages/StockGameUser"
 
 
 
@@ -155,6 +157,7 @@ function App() {
 						<Route path="/" element={<HomePage/>}></Route>
 						<Route path="/stockgame/leaderboard" element={<StockGameLeaderboard/>}></Route>
 						<Route path="/stockgame/mypage" element={<StockGameUserLobby />}></Route>
+						<Route path="/stockgame/user/:userId" element={<StockGameUserPage />}></Route>
 
 						<Route path="/stockgame/play" element={<StockGame scale={round(50 + triDist(200, 200))} variance={round(triDist(0.6,0.3),-2)} ranked={false} startMoney={10000} />}></Route>
 						<Route path="/login" element={<LoginPage />}></Route>

@@ -43,8 +43,8 @@ export default function SideBar({isOpen,closeNavbar,notiCount}:Props){
             <ul className="sub-menu"  onClick={closeNavbar}>
               {loggedin &&<li className="sub-menu-item"><Link to="/stockgame/mypage"><RiAccountCircleFill />My Page</Link></li>}
               <li className="sub-menu-item"><Link to="/stockgame/play"><GrGamepad />Play</Link></li>
-              <li className="sub-menu-item"><Link to="/"><RiTrophyFill />Play Ranked</Link></li>
-              {loggedin && <li className="sub-menu-item"><Link to="/"><RiFolderVideoFill />Game Record</Link></li>}
+              {/* <li className="sub-menu-item"><Link to="/"><RiTrophyFill />Play Ranked</Link></li> */}
+              {/* {loggedin && <li className="sub-menu-item"><Link to="/"><RiFolderVideoFill />Game Record</Link></li>} */}
               <li className="sub-menu-item"><Link to="/stockgame/leaderboard"><RiBarChartFill />Leaderboard</Link></li>
             </ul>
           </li>
