@@ -1,11 +1,13 @@
 import multer = require("multer");
 import path = require("path");
 import { Logger } from "../logger";
-const PATH="./frontend/public/uploads"
-const PATH_PROFILE="./frontend/public/uploads/profile"
+// const PATH="./frontend/public/uploads"
+// const PATH_PROFILE="./frontend/public/uploads/profile"
 import sharp = require("sharp")
 
-// const PATH_PROFILE="./../uploads"
+const PATH = "./res/image/post"
+const PATH_PROFILE = "./res/image/profile"
+
 import fs from "fs";
 function getFilename() {
 	//console.log(new Date().toISOString().slice(0, 19))
@@ -80,7 +82,7 @@ namespace ImageUploader{
       },
     }),
     fileFilter : fileFilter,
-    limits: { fileSize: 30 * 1024 * 1024 },
+    // limits: { fileSize: 30 * 1024 * 1024 },
   });
   
   export const uploadProfile = multer({
@@ -97,7 +99,7 @@ namespace ImageUploader{
       },
     }),
     fileFilter : fileFilter,
-    limits: { fileSize: 30 * 1024 * 1024 },
+    // limits: { fileSize: 30 * 1024 * 1024 },
   });
 
 

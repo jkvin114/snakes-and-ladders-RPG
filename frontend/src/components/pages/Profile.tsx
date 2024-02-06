@@ -11,6 +11,7 @@ import { RiCloseFill, RiEditBoxLine, RiSettings5Fill } from "react-icons/ri"
 import ProfileSetting from "../profile/ProfileSetting"
 import MarbleStatPage from "./MarbleStat"
 import RPGPlayerStatPage from "./RPGPlayerStat"
+import ProfileImg from "../ProfileImg"
 
 type Props = {
 	modal?: "friend" | "follower" | "following" | "setting"
@@ -146,7 +147,8 @@ export default function ProfilePage({ modal }: Props) {
 							{!profile.profile || profile.profile === "" ? (
 								<a>{profile.username.charAt(0).toUpperCase()}</a>
 							) : (
-								<img className="profileimg" src={"/uploads/profile/" + profile.profile}></img>
+								<ProfileImg className="profileimg" src={profile.profile}/>
+								// <img className="profileimg" src={"/uploads/profile/" + profile.profile}></img>
 							)}
 							{profile.isme && (
 								<>

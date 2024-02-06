@@ -1,6 +1,6 @@
 import { RiDownloadCloudFill } from "react-icons/ri"
 import { IChatMessage, IMessageData } from "../../types/chat"
-import ProfileImage from "./ProfileImage"
+import ChatProfileImage from "./ChatProfileImage"
 
 type Props = {
 	messages: IMessageData
@@ -70,7 +70,7 @@ export default function Messages({ messages,fetchOld }: Props) {
 									</>
 								) : (
 									<>
-                                        {showname && <ProfileImage username={m.username} profileImgDir={m.profileImgDir} />}
+                                        {showname && <ChatProfileImage username={m.username} profileImgDir={m.profileImgDir} />}
 								        {!showname && <div className="profile-placeholder"></div>}
 										<div className="message-other">
 											{showname && <div className="name">{m.username} </div>}

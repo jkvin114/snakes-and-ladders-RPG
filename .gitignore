@@ -1,6 +1,10 @@
 node_modules/
 public/uploads/
 frontend/public/uploads/
+res/image/profile/*
+!res/image/profile/test.png
+res/image/post/*
+!res/image/post/test.png
 
 *.env
 config/

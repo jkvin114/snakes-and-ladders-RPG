@@ -10,6 +10,7 @@ import { AxiosApi } from "../../api/axios";
 import { ToastHelper } from "../../ToastHelper";
 import { IPostEdit } from "../../types/post";
 import { RiArrowLeftSLine, RiSave3Line } from "react-icons/ri";
+import { backend_url } from "../../variables";
 
 const  toolbarOptions = [
     ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
@@ -24,7 +25,7 @@ const  toolbarOptions = [
     [{ 'align': [] }],
     [ 'image'],
   ];
-  const IMAGE_PATH="/uploads/"
+  const IMAGE_PATH=backend_url+"/resource/image/"
   
 export default function WritePostPage(){
     const navigate = useNavigate()
@@ -37,7 +38,7 @@ export default function WritePostPage(){
       
     // const [quill,setQuill] = useState<IQuill|null>(null)
     const allImages:string[] = []//stores all images that were uploaded or seen in editing
-    
+    // const [images,setImages] = useState<string[]>([])
 
     function onload(){
         
@@ -50,6 +51,7 @@ export default function WritePostPage(){
                 toolbar: toolbarOptions,
             },
         })
+        console.log(postUrl)
         quill.getModule("toolbar").addHandler("image",selectLocalImage);
         if(postUrl){
             AxiosApi.get("/board/post/edit/"+postUrl)
@@ -89,10 +91,10 @@ export default function WritePostPage(){
             }
         }
         else quill?.setText(data.content)
+        // setImages([...images,])
         allImages.push(...extractCurrentImages())
     }
     function save(){
-        console.log(quill)
         if(quill){
             const content = quill.getContents().ops
             const text = quill.getText()
@@ -118,7 +120,7 @@ export default function WritePostPage(){
             
             AxiosApi.post(url,body)
             .then(res=>{
-                window.onbeforeunload=()=>{}
+                //window.onbeforeunload=()=>{}
                 //console.log(res.data)
                 window.location.href="/board/post/"+res.data.url
             })
@@ -145,9 +147,17 @@ export default function WritePostPage(){
 
 		AxiosApi.post("/board/post/image", formData)
 			.then((res) => {
+                if(!res.data){
+                    ToastHelper.ErrorToast("Failed to upload image")
+
+                    return
+                }
+                // alert(res.data)
 				ToastHelper.InfoToast("image uploaded")
-                insertToEditor(IMAGE_PATH+res.data)
+               insertToEditor(IMAGE_PATH+res.data)
+
                 allImages.push(res.data)
+                // setImages([...images,res.data])
 			})
 			.catch((e) => {
 				console.error(e)

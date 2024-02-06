@@ -319,7 +319,7 @@
   
   <div class="info_container">
     <%if(authorProfileImage!==""){%>
-      <img src="/uploads/profile/<%= authorProfileImage %>" class="author-img profileimg" onclick="golink('/board/user/<%=author%>/posts')">
+      <img data-src="<%= authorProfileImage %>" class="author-img profileimg uploaded-profile-image" onclick="golink('/board/user/<%=author%>/posts')">
     <%}%>
     <b class="info author" onclick="golink('/board/user/<%=author%>/posts')"><%= author %> </b><br>
     <a class="info"><%= createdAt.toString().substring(0,24) %></a>
@@ -328,7 +328,7 @@
       
   <hr>
       <%if(image!=="") {%>
-        <img class="postimg" id="postimg" src="/uploads/<%= image %>"> 
+        <img class="postimg uploaded-image" id="postimg" data-src="<%= image %>"> 
      <% }  %>
      <div class="content" id="post-container"> <img id="loadingimg" src="/res/img/ui/loading_purple.gif"></div>
      
@@ -372,7 +372,7 @@
             <div></div>
           <%}else{%>
             <%if(comm.authorProfileImage!==""){%>
-              <img class="profileimg comment-author-img" src="/uploads/profile/<%= comm.authorProfileImage %>" onclick="golink('/board/user/<%=comm.author%>/comments')">
+              <img class="profileimg comment-author-img uploaded-profile-image" data-src="<%= comm.authorProfileImage %>" onclick="golink('/board/user/<%=comm.author%>/comments')">
             <%}%>
           <u class="comment_info comment_author" onclick="golink('/board/user/<%=comm.author%>/comments')"> <%= comm.author %> </u>
             <a class="comment_info"><%= comm.createdAt.toString().substring(0,24) %></a>

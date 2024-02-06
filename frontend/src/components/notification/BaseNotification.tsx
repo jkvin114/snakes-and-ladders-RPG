@@ -1,6 +1,6 @@
 import { RiMessage2Fill } from "react-icons/ri"
 import { INotification } from "../../types/notification"
-import ProfileImage from "../chat/ProfileImage"
+import ChatProfileImage from "../chat/ChatProfileImage"
 import ChatNotification from "./ChatNotification"
 
 type Props= {

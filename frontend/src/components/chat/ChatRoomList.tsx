@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { AxiosApi } from "../../api/axios"
 import { IChatRoom, IChatUser } from "../../types/chat"
-import ProfileImage from "./ProfileImage"
+import ChatProfileImage from "./ChatProfileImage"
 import { RiChatNewLine, RiRefreshLine, RiTeamLine } from "react-icons/ri"
 import { ChatStorage } from "../../storage/chatStorage"
 import { limitString } from "../../util"
@@ -78,7 +78,7 @@ export default function ChatRoomList(){
         <div className="rooms">
         {rooms.map(r=> r&&<div key={r._id} className="divlink room" onClick={()=>resetUnread(r._id)}>
             <Link className="divlink" to={"/chat?room="+r._id}></Link>
-            <ProfileImage customImage={<RiTeamLine className="roomicon"/>}></ProfileImage>
+            <ChatProfileImage customImage={<RiTeamLine className="roomicon"/>}></ChatProfileImage>
             <div className="room-content">
                 <div className="room-text">
                 <b>{r.name}</b><a>{"  "}{r.size>2?r.size:""}</a><br></br>

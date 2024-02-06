@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { RootContext } from "../../context/context";
 import { IFriendStatus } from "../../types/chat";
 import { AxiosApi } from "../../api/axios";
-import ProfileImage from "./ProfileImage";
+import ChatProfileImage from "./ChatProfileImage";
 import { RiMessage2Fill, RiMoreFill, RiRefreshLine } from "react-icons/ri";
 import { getDateStringDifference } from "../../util";
 import { Tooltip } from 'react-tooltip';
@@ -94,7 +94,7 @@ export default function FriendStatusList({createChat}:Props){
 
         <div className="friendlist">
                 {friends.map((f,i)=><div key={i} className={"friend-item "+(f.status?"":"inactive")}>
-                <ProfileImage username={f.username} profileImgDir={f.profileImgDir}/>
+                <ChatProfileImage username={f.username} profileImgDir={f.profileImgDir}/>
                 <div>
                     <div className="name">{f.username}</div>
                     {f.status && <div><span className={"badge"}></span>{toStatusString(f.status)}</div>}

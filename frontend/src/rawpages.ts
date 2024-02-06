@@ -62,6 +62,7 @@ export const PAGES={
             "/lib/axios.js",
             "/lib/quill.min.js",
             "/src/localeManager.js",
+            "/src/imageloader.js",
             "/src/init.js"
         ]
     },matching:{

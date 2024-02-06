@@ -20,6 +20,7 @@ import StockGameScoreReport from "../components/stockgame/ScoreReport"
 import StockGameUserResultRecord from "../components/stockgame/UserResultRecord"
 import StockGameUserInfo from "./UserInfo"
 import { RiCloseLine } from "react-icons/ri"
+import ProfileImg from "../components/ProfileImg"
 
 export default function StockGameUserLobby() {
 	const [friendScores, setFriendScores] = useState<IFriendScore[]>([])
@@ -111,7 +112,8 @@ export default function StockGameUserLobby() {
 											<td className="profile">
 												{s.profileImgDir && s.profileImgDir !== "" ? (
 													<div>
-														<img src={profile_img_path + s.profileImgDir}></img>{" "}
+														<ProfileImg src={s.profileImgDir}/>
+														{/* <img ></img>{" "} */}
 													</div>
 												) : (
 													""

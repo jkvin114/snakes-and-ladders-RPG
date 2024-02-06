@@ -251,7 +251,7 @@
           <div></div>
         <%}else{%>
           <%if(authorProfileImage!==""){%>
-            <img src="/uploads/profile/<%= authorProfileImage %>" class="comment-author-img profileimg" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
+            <img data-src="<%= authorProfileImage %>" class="uploaded-profile-image comment-author-img profileimg" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
           <%}%> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
           <%= comment.authorName %> </u>
           <a class="comment_info"><%= comment.createdAt.toString().substring(0,24) %></a>
@@ -293,7 +293,7 @@
       </div>
         <div class="comment">
           <%if(r.authorProfileImage!==""){%>
-            <img src="/uploads/profile/<%= r.authorProfileImage %>" class="comment-author-img profileimg" onclick="golink('/board/user/<%=r.author%>/comments')">
+            <img data-src="<%= r.authorProfileImage %>" class="comment-author-img profileimg uploaded-profile-image" onclick="golink('/board/user/<%=r.author%>/comments')">
           <%}%> 
           <u class="comment_info comment_author" onclick="golink('/board/user/<%=r.author%>/comments')">
             <%=r.author %> </u>

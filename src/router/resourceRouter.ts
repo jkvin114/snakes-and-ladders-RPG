@@ -4,9 +4,13 @@ import { MAP_TYPE } from '../RPGGame/data/enum';
 import fs = require("fs")
 import { MarbleRoom } from '../Marble/MarbleRoom';
 const RESOURCE_PATH="/../../res/"
+const IMAGE_PATH = "./../../res/image/post/"
+const PROFILE_IMAGE_PATH = "./../../res/image/profile/"
+
 const router = express.Router()
 const{MarbleItemPreset} = require("../mongodb/GameDBSchema")
 const{Replay} = require("../mongodb/ReplayDBHandler")
+import path from 'path';
 
 import type { Request, Response } from "express"
 
@@ -176,7 +180,30 @@ router.get("/marble_item_presets", async function (req:Request, res:Response) {
 		res.status(500).end()
 	}
 })
-
+router.get("/image/:name",async function (req:Request, res:Response) {
+	try{
+		const name = req.params.name
+		const imagePath = path.join(__dirname,IMAGE_PATH+name);
+		// Send the image file in response
+		res.sendFile(imagePath);
+	}
+	catch(e){
+		res.status(500).end(e)
+	}
+  
+})
+router.get("/profileimage/:name",async function (req:Request, res:Response) {
+	try{
+		const name = req.params.name
+		const imagePath = path.join(__dirname,PROFILE_IMAGE_PATH+name);
+		// Send the image file in response
+		res.sendFile(imagePath);
+	}
+	catch(e){
+		res.status(500).end(e)
+	}
+  
+})
 router.post("/marble_item_presets", async function (req:Request, res:Response) {
 	if(!req.body) return
 	try{

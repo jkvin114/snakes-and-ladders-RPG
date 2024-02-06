@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import { RiCheckboxCircleLine, RiUserAddFill, RiUserFollowFill } from "react-icons/ri"
 import { AxiosApi } from "../../api/axios"
 import { Link } from "react-router-dom"
+import Image from "../ProfileImg"
+import ProfileImg from "../ProfileImg"
 
 type Props={
     profileImgDir:string
@@ -54,7 +56,7 @@ export default function UserSummaryItem({profileImgDir,username,buttonType,link}
 				{!profileImgDir || profileImgDir === "" ? (
 					<b>{username.charAt(0).toUpperCase()}</b>
 				) : (
-					<img className="profileimg" src={"/uploads/profile/" + profileImgDir}></img>
+					<ProfileImg className="profileimg" src={profileImgDir}/>
 				)}
 				{link && <Link to={`/user/`+username} className="divlink" ></Link>}
 			</div>

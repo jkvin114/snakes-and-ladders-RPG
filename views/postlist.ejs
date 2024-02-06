@@ -261,7 +261,7 @@ a.divlink{
            
             <%if(posts[i].imagedir!=="") {%>
               <div class="thumbnail-img-container">
-                <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
+                <img class="thumbnail-img uploaded-image" data-src="<%= posts[i].imagedir %>" alt="loading.."> 
               </div>
             <% } else{ %><div class="thumbnail-img-container"></div>
               <% }  %> 
