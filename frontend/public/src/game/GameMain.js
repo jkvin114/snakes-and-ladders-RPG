@@ -34,6 +34,7 @@ export let AxiosApi = {
 var everythingLoaded = setInterval(function () {
 	if (/loaded|complete/.test(document.readyState)) {
 		try {
+			if (!axios) return
 			axios.defaults.withCredentials = true
 			AxiosApi = axios.create({ baseURL: server_url })
 			if (main && $) {

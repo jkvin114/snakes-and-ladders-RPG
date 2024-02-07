@@ -39,6 +39,12 @@ export function openConnection(isInitial) {
 			socket.emit("user:reconnect")
 		}
 	})
+
+	socket.on("server:game_ready_status", function (status) {
+		// console.log("initialsetting")
+		console.log(status)
+		GAME.onPlayerGameReady(status.canStart, status.ready, status.total)
+	})
 	socket.on("server:initialsetting", function (setting, num, turn) {
 		// console.log("initialsetting")
 		GAME.init(setting, num, turn)

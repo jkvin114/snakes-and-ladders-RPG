@@ -174,7 +174,7 @@ class MatchStatus {
 	constructor() {
 		let param = new URLSearchParams(window.location.search)
 		if (param.has("gametype")) {
-			if (param.get("gametype") === "marble") this.gametype = param.get("gametype")
+			if (param.get("gametype") === "marble") this.gametype = "marble"
 			else this.gametype = "rpg"
 		} else this.gametype = "rpg"
 
@@ -415,8 +415,13 @@ class MatchStatus {
 	}
 	onReceiveMap(map) {
 		if (this.myturn !== 0 && sessionStorage.host !== "simulation") {
-			$(".mapbtn").hide()
-			$(this.ui.mapbtn[Number(map)]).show()
+			if (this.gametype === "marble") {
+				$(".mapbtn").hide()
+				$(this.ui.marble_mapbtn[Number(map)]).show()
+			} else {
+				$(".mapbtn").hide()
+				$(this.ui.mapbtn[Number(map)]).show()
+			}
 		}
 	}
 	onReceiveReady(turn, ready) {
@@ -497,6 +502,7 @@ class MatchInterface {
 		this.aicard = $(".aicard").toArray()
 		this.addai = $(".addai").toArray()
 		this.mapbtn = $(".mapbtn").toArray()
+		this.marble_mapbtn = $(".mapbtn-marble").toArray()
 		this.aichamp = $(".aichamp").toArray()
 		this.playerchamp = $(".playerchamp").toArray()
 
@@ -696,7 +702,12 @@ class MatchInterface {
 		$("#individual").hide()
 		$("#setting").hide()
 		// $("#map_choice a").hide()
-		$(this.mapbtn[0]).show()
+		if (this.gametype === "marble") {
+			$("#marble-item").hide()
+			$(this.marble_mapbtn[0]).show()
+		} else {
+			$(this.mapbtn[0]).show()
+		}
 	}
 
 	showAiCharacterList(turn, pos) {

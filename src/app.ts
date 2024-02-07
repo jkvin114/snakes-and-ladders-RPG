@@ -55,12 +55,11 @@ declare module 'express' {
 
 
 const clientPath = `${__dirname}/../public`
-const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
 const PORT = 5000
 const app = express()
 //  const ORIGIN = "http://localhost:3000"
 const ORIGIN="http://192.168.0.3:3000"
-Logger.log("start");
+Logger.log("start server at port ",String(PORT),", from origin",ORIGIN);
 
 function onExit(){
 	Logger.log("user cache analysis:",UserCache.getEval())
@@ -131,24 +130,9 @@ app.on("error", (err: any) => {
 connectMongoDB()
 MarbleGameGRPCClient.connect()
 RPGGameGRPCClient.connect()
-
-// const interfaces = os.networkInterfaces()
-// var addresses = []
-// for (var k in interfaces) {
-// 	for (var k2 in interfaces[k]) {
-// 		var address = interfaces[k][k2]
-// 		if (address.family === "IPv4" && !address.internal) {
-// 			addresses.push(address.address)
-// 		}
-// 	}
-// }
-
-// console.log("IP Address:" + addresses[0])
 Logger.log("version " + SETTINGS.version)
 Logger.log("patch " + SETTINGS.patch_version)
-// function ROOMS.get(name: string): Room {
-// 	return ROOMS.get(name)
-// }
+
 function errorHandler(err: any, req: any, res: any, next: any) {
 	res.send("error!!" + err)
 }
@@ -162,7 +146,7 @@ export const io = new Server(httpserver, {
 	allowEIO3: true
 })
 
-//for using sessing in socket.io
+//for using session in socket.io
 io.use((socket, next) => {
 	let req = socket.request as any
 	let res = req.res as any

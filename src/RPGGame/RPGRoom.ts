@@ -100,10 +100,13 @@ class RPGRoom extends Room {
 		return this.gameloop
 	}
 	/**
-	 *
-	 * @returns test if all players are connected
+	 *called when a client is ready.
+		If all clients are ready, start the game.
+	 * @returns true if all players are connected
 	 */
 	user_startGame(): boolean {
+		//depricated
+		return
 		if(!this.gameloop) return false
 
 		let canstart = this.gameloop.game.canStart()
@@ -114,6 +117,15 @@ class RPGRoom extends Room {
 			this.isGameRunning=true
 		} 
 		return true
+	}
+	onAllUserReady(){
+		if(!this.gameloop) return false
+
+		if (!this.gameloop.game.begun){
+			Logger.log("rpg game start ",this.name)
+			this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
+			this.isGameRunning=true
+		} 
 	}
 
 	async onGameover(isNormal:boolean) {

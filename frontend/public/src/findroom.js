@@ -15,9 +15,10 @@ async function main(url) {
 	})
 	$("#password-confirm").click(function () {
 		let name = $("#password-window").data("roomname")
+		let gametype = $("#password-window").data("gametype")
 		$("#password-window").hide()
 
-		joinRoom(name, $("#password").val())
+		joinRoom(name, gametype, $("#password").val())
 		$("#password").val("")
 	})
 	$("#password-cancel").click(function () {
@@ -25,7 +26,7 @@ async function main(url) {
 	})
 	getRooms()
 }
-async function joinRoom(name, password) {
+async function joinRoom(name, gametype, password) {
 	// let res = await fetch(SERVER_URL + "/room/verify_join", {
 	// 	method: "POST",
 	// 	headers: {
@@ -39,7 +40,7 @@ async function joinRoom(name, password) {
 		username: "",
 	})
 		.then((res) => {
-			window.location.href = "/match?join=true&roomname=" + name
+			window.location.href = `/match?join=true&roomname=${name}&gametype=${gametype}`
 		})
 		.catch((e) => {
 			if (e.response.status === 404) {
@@ -48,6 +49,8 @@ async function joinRoom(name, password) {
 				console.log(e.response.data)
 				if (e.response.data.message === "password") {
 					$("#password-window").data("roomname", name)
+					$("#password-window").data("gametype", gametype)
+
 					$("#password-window").show()
 					if (password !== "") alert("wrong password")
 				} else if (e.response.data.message === "login") {
@@ -63,7 +66,6 @@ async function getRooms() {
 
 	AxiosApi.get("/room/hosting")
 		.then((res) => {
-			console.log(res)
 			let rooms = res.data.rooms
 			if (rooms.length === 0) $("#emptyroom").show()
 			else $("#emptyroom").hide()
@@ -75,7 +77,7 @@ async function getRooms() {
 				</div>    `
 			for (const rm of rooms) {
 				str += `
-			<div class="divTableRow tablerow oneroom" data-roomname='${rm.name}'>
+			<div class="divTableRow tablerow oneroom" data-roomname='${rm.name}' data-gametype='${rm.type}'>
 				<div class="divTableCell">${rm.type}</div>
 				<div class="divTableCell">
 				${rm.hasPassword ? ' <img src="res/img/ui/lock.png" class="icon-img">' : ""}
@@ -88,7 +90,8 @@ async function getRooms() {
 			$(".oneroom").off()
 			$(".oneroom").click(async function () {
 				let name = $(this).data("roomname")
-				joinRoom(name, "")
+				let gametype = $(this).data("gametype")
+				joinRoom(name, gametype, "")
 			})
 		})
 		.catch((e) => console.error(e))

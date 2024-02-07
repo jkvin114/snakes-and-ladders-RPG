@@ -26,26 +26,24 @@ class MarbleRoom extends Room{
 	simulationRunning:boolean
 	static ItemDescriptionCache:any[]=[]
 	
+
     constructor(name:string){
         super(name)
 		this.type="marble"
-        //this.gameloop
-	//	this.eventObserver=new MarbleGameEventObserver(name)
 		this.simulationRunning=false
-		//this.gametype=GameType.NORMAL
+		this.restartResetTimeout()
     }
+	
+
 	registerClientInterface(callback:GameEventEmitter){
-		//this.eventObserver.registerCallback(callback)
 		return this
 	}
 	registerSimulationClientInterface(callback:GameEventEmitter){
-		
-	//	this.eventObserver.registerSimulationCallback(callback)
 		return this
 	}
 	user_startSimulation(setting:any){
 		return
-		this.gametype=""
+		//this.gametype=""
 		if (!isMainThread || this.simulationRunning) return
 		
 		this.simulationRunning=true

@@ -157,7 +157,7 @@
     
 
 
-    <div id=loadingoverlay class="hidden">
+    <div id=loadingoverlay>
         <h6 id=loadingtext>
           LOADING RESOURCE...
         </h6>
@@ -299,7 +299,7 @@
 
     <div class="window hidden" id="resultwindow" style="width: clamp(300px,70vw,600px);">
       <div class="window-header">
-        <a class="window-header-content goldtext" style="font-size: 25px;font-family: CookierunBlack;">
+        <a id="resulttext" class="window-header-content goldtext" style="font-size: 25px;font-family: CookierunBlack;">
           <!-- 1P 파산 승리!<a style="font-size: 19px;color: white;font-family: CookierunBlack;">(보너스 x2)</a> -->
         </a>
       </div>
@@ -466,10 +466,10 @@
       <h3>Select between two</h3>
       <div>
         <div class='selectbutton first' id=selecttruebutton>
-        <a></a>
+        <a></a><br>
         <img src="/res/img/marble/house.png"></div>
         <div class='selectbutton second' id=selectfalsebutton>
-        <a></a><img src="/res/img/marble/column.png"></div>
+        <a></a><br><img src="/res/img/marble/column.png"></div>
       </div>
 
     </div>
@@ -562,6 +562,7 @@
         
       </div>
     </div>
+    
 
 
     <div id="dice-number-container" class="hidden">

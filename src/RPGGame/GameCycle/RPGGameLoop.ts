@@ -44,7 +44,7 @@ class GameLoop {
 		return this
 	}
 
-	restartResetTimeout() {
+	private restartResetTimeout() {
 		if (this.resetTimeout != null) clearTimeout(this.resetTimeout)
 		this.resetTimeout = setTimeout(() => {
 			this.onGameover(false)
@@ -52,6 +52,7 @@ class GameLoop {
 	}
 
 	startTurn() {
+		this.game.onGameStart()
 		this.setGameCycle(new GameInitializer(this.game))
 		this.startNextTurn(false)
 		return this

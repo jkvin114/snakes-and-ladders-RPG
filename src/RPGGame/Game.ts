@@ -322,11 +322,12 @@ class Game {
 		if (this.clientsReady < this.PNUM) {
 			return false
 		}
-		if(!this.begun)
-			this.onGameStart()
+		// if(!this.begun)
+		// 	this.onGameStart()
 		return true
 	}
 	onGameStart(){
+		if(this.begun) return
 		for(const p of this.entityMediator.allPlayer()){
 			p.onGameStart()
 			if(p.AI) this.eventEmitter.message(this.getPlayerMessageHeader(p.turn),p.AiAgent.gameStartMessage)

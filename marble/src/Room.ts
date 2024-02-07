@@ -71,9 +71,9 @@ export default class Room {
 	 */
 	user_startGame(): boolean {
 		if (!this.gameloop) return false
-		let canstart = this.gameloop.game.canStart()
-		if (!canstart) return false
-		else if (!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
+		// let canstart = this.gameloop.game.canStart()
+		// if (!canstart) return false
+		if (!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
 		Logger.log("startgame",this.name)
 		return true
 	}

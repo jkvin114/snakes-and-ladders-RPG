@@ -965,13 +965,16 @@ export class GameInterface {
 		})
 		$("#dialog").show()
 	}
-	showResult(winner, scores, mul, wintext) {
+	showResult(winner, scores, mul, wintext, won) {
 		document.onbeforeunload = () => {}
 		$("#resultwindow .window-header-content").html(`
 		${wintext}<a style="font-size: 19px;color: white;font-family: CookierunBlack;">${
-			mul > 1 ? "(보너스 x" + mul + ")" : ""
+			mul > 1 ? `(${won ? "보너스" : "손실 점수"} x${mul})` : ""
 		}</a>
 		`)
+		if (won) $("#resulttext").addClass("goldtext")
+		else $("#resulttext").removeClass("goldtext")
+
 		let str = `<div class="result-winner-wrapper">
 		<div class="result-winner">
 		  <div>

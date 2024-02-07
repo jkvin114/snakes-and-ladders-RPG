@@ -309,14 +309,19 @@ export class Game {
 		$("#chat_text").scrollTop(900000)
 	}
 	mapLoadComplete() {
-		setTimeout(() => $(".progress").hide(), 500)
-		$("#loadingtext").html("")
-		$("#loadingoverlay").hide()
 		//this.connection.setupComplete()
-
 		//this.ui.onGameReady()
-		$(".start").show()
+		// $(".start").show()
 		this.scene.startRenderInterval()
+	}
+	onPlayerGameReady(canstart, ready, total) {
+		if (canstart) {
+			setTimeout(() => $(".progress").hide(), 500)
+			$("#loadingtext").html("")
+			$("#loadingoverlay").hide()
+		} else {
+			$("#loadingtext").html(`${ready}/${total} players ready`)
+		}
 	}
 
 	getInventoryTooltip() {

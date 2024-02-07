@@ -23,7 +23,7 @@ module.exports=function(socket:Socket){
 	socket.on("user:host_create_room", function () {
 
 		controlRoom(socket,(room,rname)=>{
-			if(room.hostSessionId!==SocketSession.getId(socket)) return
+			if(!room.isHost(SocketSession.getId(socket))) return
 
 			room.setSimulation(false)
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
@@ -90,6 +90,8 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 	socket.on("user:kick_player", function (turn: number) {
 		controlRoom(socket,(room,rname)=>{
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			io.to(rname).emit("server:kick_player", turn)
 			room.removeGuest(turn)
 		})
@@ -101,6 +103,8 @@ module.exports=function(socket:Socket){
 
 	socket.on("user:go_teampage", function () {
 		controlRoom(socket,(room,rname)=>{
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			room.setTeamGame()
 			io.to(rname).emit("server:go_teampage")
 		})
@@ -108,6 +112,8 @@ module.exports=function(socket:Socket){
 	})
 	socket.on("user:exit_teampage", function () {
 		controlRoom(socket,(room,rname)=>{
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			room.unsetTeamGame()
 			io.to(rname).emit("server:exit_teampage")
 		})
@@ -137,7 +143,8 @@ module.exports=function(socket:Socket){
 	socket.on("user:update_map", function (map: number) {
 
 		controlRoom(socket,(room,rname)=>{
-			
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			room.user_updateMap(map)
 			io.to(rname).emit("server:map", map)
 		})

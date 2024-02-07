@@ -179,7 +179,7 @@ class ServerConnection {
 			//window.location.href = "/rpggame"
 		} else if (gametype === "marble") {
 			socket.emit("marble:user:gameready", setting)
-			window.location.href = "/marblegame"
+			// window.location.href = "/marblegame"
 		}
 	}
 }

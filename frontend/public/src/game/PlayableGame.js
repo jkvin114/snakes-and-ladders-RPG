@@ -141,10 +141,11 @@ export class PlayableGame extends Game {
 	}
 	mapLoadComplete() {
 		super.mapLoadComplete()
+		$("#loadingtext").html("Waiting for players..")
 		this.connection.setupComplete()
-
 		this.ui.onGameReady()
 	}
+
 	getInventoryTooltip() {
 		let text = "<img src='res/img/store/life.png'><a> x" + (this.storeStatus.life + 1) + "</a> <br> "
 

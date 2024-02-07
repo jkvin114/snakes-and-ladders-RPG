@@ -1,5 +1,6 @@
 const CONNECTION_TIMEOUT = 2000
 import { GAME, CONNECTION_TYPE } from "./GameMain.js"
+import { sleep } from "./RPGGameScene.js"
 // import { calculatePrize,randomObs } from "./roulette.js"
 export class GameClient {
 	constructor() {
@@ -74,6 +75,10 @@ export function openConnection(isInitial) {
 	socket.on("server:item_status", function (items) {
 		GAME.setItemStatus(items)
 	})
+	socket.on("server:game_ready_status", function (status) {
+		console.log(status)
+		GAME.onPlayerGameReady(status.canStart, status.ready, status.total)
+	})
 	socket.on("server:nextturn", function (t) {
 		if (t == null) return
 		GAME.startTurn(t)
@@ -87,11 +92,6 @@ export function openConnection(isInitial) {
 		// console.log("rolldice")
 		GAME.rollDice(dice)
 	})
-	// socket.on("server:hp", function (val) {
-	// 	if (val == null) return
-	// 	console.log("changehp" + val.showTrajectory + " " + val.willRevive + " " + val.turn)
-	// 	GAME.scene.hpChanger.enqueueHpChange(val)
-	// })
 
 	socket.on("server:damage", function (val) {
 		if (val == null) return
@@ -367,7 +367,8 @@ export function openConnection(isInitial) {
 	// GAME.connection.startSimulation = function () {
 	// 	socket.emit("user:start_game", this.rname)
 	// }
-	GAME.connection.setupComplete = function () {
+	GAME.connection.setupComplete = async function () {
+		// await sleep(Math.random() * 5000 + 2000)
 		socket.emit("user:start_game")
 		socket.emit("user:reconnect")
 	}

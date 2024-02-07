@@ -13,6 +13,7 @@ export default class MarbleGameGRPCClient{
             
             MarbleGameGRPCClient.stub = new marblegame.MarbleGameClient('localhost:'+PORT,credentials.createInsecure());
             MarbleGameGRPCClient.RequestItem((items)=>{
+                Logger.log("marble items registered")
                 MarbleRoom.ItemDescriptionCache = JSON.parse(items)
             })
             // Logger.log("created marblegame grpc client")

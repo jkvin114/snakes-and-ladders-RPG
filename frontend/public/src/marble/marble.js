@@ -37,6 +37,7 @@ export let AxiosApi = {
 var everythingLoaded = setInterval(function () {
 	if (/loaded|complete/.test(document.readyState)) {
 		try {
+			if (!axios) return
 			axios.defaults.withCredentials = true
 			AxiosApi = axios.create({ baseURL: server_url })
 			if (main && $ && Howl) {
@@ -178,6 +179,17 @@ class Game {
 			elem.loop = true
 			elem.load()
 			elem.play()
+		}
+	}
+
+	onPlayerGameReady(canstart, ready, total) {
+		console.log("ready")
+		if (canstart) {
+			setTimeout(() => $(".progress").hide(), 500)
+			$("#loadingtext").html("")
+			$("#loadingoverlay").hide()
+		} else {
+			$("#loadingtext").html(`${ready}/${total} players ready`)
 		}
 	}
 	showMessage(msg) {
@@ -442,18 +454,24 @@ class Game {
 	}
 	gameoverBankrupt(winner, scores, mul) {
 		this.playsound("finish")
-		this.ui.largeText(winner + 1 + "P 파산 승리", false)
-		this.onGameOver(winner, scores, mul, winner + 1 + "P 파산 승리")
+		let won = winner === this.myTurn
+		let str = "파산 " + (won ? "승리!" : "패배!")
+		this.ui.largeText(str, won)
+		this.onGameOver(winner, scores, mul, str, won)
 	}
 	gameoverMonopoly(winner, monopoly, scores, mul) {
 		this.playsound("finish")
-		this.ui.largeText(winner + 1 + "P " + MONOPOLY[monopoly] + "으로 승리", false)
-		this.onGameOver(winner, scores, mul, winner + 1 + "P " + MONOPOLY[monopoly] + " 승리")
+		let won = winner === this.myTurn
+
+		let str = MONOPOLY[monopoly] + (won ? "승리!" : "패배!")
+
+		this.ui.largeText(str, won)
+		this.onGameOver(winner, scores, mul, str, won)
 	}
-	async onGameOver(winner, scores, mul, wintext) {
+	async onGameOver(winner, scores, mul, wintext, won) {
 		//console.log(scores)
 		await sleep(2000)
-		this.ui.showResult(winner, scores, mul, wintext)
+		this.ui.showResult(winner, scores, mul, wintext, won)
 	}
 	onQuit() {
 		this.ui.showDialog("정말 게임을 떠나시겠습니까?", () => {

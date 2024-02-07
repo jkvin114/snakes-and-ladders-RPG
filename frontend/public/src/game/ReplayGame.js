@@ -118,6 +118,11 @@ export class ReplayGame extends Game {
 	//start playing game
 	mapLoadComplete() {
 		super.mapLoadComplete()
+
+		setTimeout(() => $(".progress").hide(), 500)
+		$("#loadingtext").html("")
+		$("#loadingoverlay").hide()
+
 		$("#replaystart").show()
 		this.updateSpeed()
 	}
