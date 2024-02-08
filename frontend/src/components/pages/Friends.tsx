@@ -7,7 +7,6 @@ import "../../styles/friends.scss"
 import "../../styles/chat.scss"
 import { AxiosApi } from "../../api/axios"
 import { limitString } from "../../util"
-import { ChatSocket } from "../../api/chatsocket"
 
 export default function FriendPage(){
     const {context} = useContext(RootContext)

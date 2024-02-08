@@ -10,6 +10,7 @@ import { isNumber } from "../../board/helpers"
 import { StockGameUserSchema } from "../../../mongodb/schemaController/StockGameUser"
 import { NotificationSchema } from "../../../mongodb/schemaController/Notification"
 import { generateStockChart } from "../../../fetch/fetch"
+import { NotificationController } from "../../../social/notificationController"
 
 export namespace StockGameController {
 	const LEADERBOARD_PAGE_SIZE = 100
@@ -205,6 +206,7 @@ export namespace StockGameController {
 				//send notifications for surpassing best score
 				for(const friend of passed){
 					NotificationSchema.stockGameSurpass(friend.userId,session.username,gamedata.score).then()
+					NotificationController.addToCache(friend.userId)
 				}
 			}
 		} else {
@@ -212,7 +214,7 @@ export namespace StockGameController {
 			await StockGameSchema.setBest(username, gamedata._id, gamedata.score, false)
 		}
 
-		const [better, total] = await StockGameSchema.getGlobalRank(gamedata.score)
+		const [better, total] = await StockGameSchema.getRecentRank(gamedata.score)
 		result.better = better
 		result.total = total
 

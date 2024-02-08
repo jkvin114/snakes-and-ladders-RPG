@@ -36,9 +36,34 @@ export namespace NotificationSchema{
         return new Notification({
             receiver:receiver,
             type:"STOCKGAME_SURPASS",
+            message:"Someone topped your score!",
             payload1:playerName,
             payload2:score
         }).save()
+    }
+    export async function gameInvite(receiver:MongoId,senderName:string,roomId:string,type:string) {
+        await Notification.deleteMany({
+            receiver:receiver,
+            type:"GAME_INVITE",
+            payload2:String(roomId)
+        })
+
+        return new Notification({
+            receiver:receiver,
+            type:"GAME_INVITE",
+            message:"You are invited to game",
+            payload1:senderName,
+            payload2:roomId,
+            payload3:type,
+        }).save()
+    }
+    export async function revokeGameInvite(receiver:MongoId,roomId:string) {
+        //delete previous notifications
+        return Notification.deleteMany({
+            receiver:receiver,
+            type:"GAME_INVITE",
+            payload2:String(roomId)
+        })
     }
     export const newChat = async function (receiver:Types.ObjectId|string,roomId:Types.ObjectId|string,message:string,serial:number,
         sendername:string,senderProfile:string) {

@@ -6,22 +6,21 @@ import { UserSchema } from "../../mongodb/schemaController/User"
 import mongoose from "mongoose"
 import { IFollow, IFriend } from "../ResponseModel"
 import { UserGamePlaySchema } from "../../mongodb/schemaController/UserGamePlay"
+import { Logger } from "../../logger"
 
 export namespace UserController {
 	export async function getProfile(req: Request, res: Response, session: ISession) {
 		const user = await UserSchema.findOneByUsername(req.params.username)
 		if (!user) {
+			Logger.warn("user not found: ",req.params.username)
 			res.status(404).end()
 			return
 		}
 		let isFriend = false
 		let isFollowing = false
-		console.log(user.boardData)
+		// console.log(user.boardData)
 		const boardData = await UserBoardDataSchema.findOneById(user.boardData as mongoose.Types.ObjectId)
-		if (!boardData) {
-			res.status(404).end()
-			return
-		}
+		
 		const friendcount = await UserRelationSchema.friendCount(user._id)
 		const followcount = await UserRelationSchema.followCount(user._id)
 		const followercount = await UserRelationSchema.followerCount(user._id)
@@ -31,10 +30,10 @@ export namespace UserController {
 		const counts = [
 			friendcount,
 			followcount,
-			boardData.bookmarks.length,
-			boardData.articles.length,
-			boardData.comments.length + boardData.replys.length,
-			boardData.upvotedArticles.length,
+			boardData? boardData.bookmarks.length:0,
+			boardData? boardData.articles.length:0,
+			boardData? boardData.comments.length + boardData.replys.length:0,
+			boardData? boardData.upvotedArticles.length:0,
 			followercount,
 			marblecount,
 			rpgcount

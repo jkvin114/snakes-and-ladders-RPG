@@ -31,6 +31,10 @@ import StockGameUserInfo from "./stockgame/UserInfo"
 import StockGameUserPage from "./components/pages/StockGameUser"
 
 
+function getNotiMessage(noti:INotification){
+	if(noti.type==="CHAT") return "New Chat: "+limitString(noti.message)
+	return noti.message
+}
 
 
 // Main App We run for frontend
@@ -68,7 +72,8 @@ function App() {
 			return
 		}
 		else{
-			toast.info("New Message: "+limitString(notis[0].message), {
+			console.table(notis)
+			toast.info(getNotiMessage(notis[0]), {
 				position: "bottom-right",
 				autoClose: 3000,
 				hideProgressBar: true,

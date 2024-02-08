@@ -46,7 +46,8 @@ const chatMessageSchema = new mongoose.Schema({
     room:{
         required: true,
         type: Schema.Types.ObjectId,
-        ref: "ChatRoom"
+        ref: "ChatRoom",
+        index:true
     },
     sender:{
         required: true,
@@ -62,6 +63,8 @@ const chatMessageSchema = new mongoose.Schema({
         required:true,
     },
 },{ timestamps: true })
+
+chatMessageSchema.index({ serial: 1 });
 
 const userChatRoomSetting = new mongoose.Schema({
     room:{

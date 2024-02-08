@@ -251,16 +251,16 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 
 router.post("/logout", loginauth, function (req: express.Request, res: express.Response) {
 	const session = SessionManager.getSession(req)
-
-	SessionManager.logout(req)
+	
 	Logger.log(session.username + " has logged out")
+	SessionManager.logout(req)
 	// req.session.destroy(function(e){
 	//     if(e) console.log(e)
 	// });
 	// console.log(session)
 
 	res.clearCookie("sid")
-	res.status(200).redirect("/")
+	res.status(200).end()
 })
 
 /**

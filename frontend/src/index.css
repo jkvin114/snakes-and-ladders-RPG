@@ -109,8 +109,15 @@ a.divlink{
 	background-color: transparent;
 	outline: 2px solid var(--col-font-light);
 }
+.button.disabled{
+	background-color: transparent;
+	cursor: not-allowed;
+	outline: 2px solid var(--col-font-light);
+	color: var(--col-font-light);
 
-.button:hover{
+}
+
+.button:not(.disabled):hover{
 	filter: brightness(0.7);
   }
 

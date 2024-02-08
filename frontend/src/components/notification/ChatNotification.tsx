@@ -1,7 +1,7 @@
 import { RiMessage2Fill } from "react-icons/ri"
 import { INotification } from "../../types/notification"
 import ChatProfileImage from "../chat/ChatProfileImage"
-import { limitString } from "../../util"
+import { getTimeAgo, limitString } from "../../util"
 import { Link } from "react-router-dom"
 
 type Props= {
@@ -18,5 +18,6 @@ export default function ChatNotification({noti}:Props){
         </div>
         <div className="noti-content">{limitString(noti.message)}</div>
         {/* <div className="noti-footer"></div> */}
+
         </>)
 }

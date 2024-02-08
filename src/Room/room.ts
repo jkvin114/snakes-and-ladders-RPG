@@ -51,7 +51,7 @@ abstract class Room {
 	abstract registerClientInterface(callback: GameEventEmitter): Room
 	abstract registerSimulationClientInterface(callback: GameEventEmitter): Room
 	private resetTimeout: NodeJS.Timeout | null
-
+	private invitedUsers:Set<string> //stores invited user's userid
 	constructor(name: string) {
 		this.name = name
 		this.hosting = 0
@@ -73,7 +73,7 @@ abstract class Room {
 
 		//saves which loggedin users are playing this game. initialized when users request initial setting for game.
 		this.registeredUsers = []
-
+		this.invitedUsers = new Set<string>()
 		
 	}
 
@@ -138,6 +138,29 @@ abstract class Room {
 			username: username,
 			turn: turn,
 		})
+	}
+
+	invite(id:string){
+		this.invitedUsers.add(id)
+	}
+	/**
+	 * 
+	 * @param id 
+	 * @returns false if user hasnt invited
+	 */
+	cancelInvite(id:string){
+		return this.invitedUsers.delete(id)
+
+	}
+	/**
+	 * 
+	 * @param id 
+	 * @returns false it the user is not invited, or joining the room is unavalialble
+	 */
+	acceptInvite(id:string){
+		if(this.isGameStarted || this.hosting <= 0) return false
+
+		return this.invitedUsers.delete(id)
 	}
 
 	get roomStatus() {

@@ -15,7 +15,7 @@
 	display: flex;
 	flex-direction: column;
     justify-content: flex-start;
-	
+	position: relative;
 	
 	width: min(24rem,97vw);
 	height: min(38rem,92vh);
@@ -26,7 +26,64 @@
 	box-shadow: 
 		0 0 8rem 0 rgba(black, 0.1),
 		0rem 2rem 4rem -3rem rgba(black, 0.5);
-    
+    #search-modal{
+        position: absolute;
+        top:50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 3px;
+        background-color: var(--col-bg-light);
+        border-radius: 5px;
+        width: 70%;
+        z-index: 3;
+        box-sizing: content-box;
+
+        
+        .modal-content {
+            overflow: auto;
+            height: max(300px, 50vh);
+        }
+        .modal-toolbar {
+            position: relative;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            font-size: 25px;
+            border-bottom: 1px solid var(--col-font);
+        }
+        
+        .modal-close {
+            height: 40px;
+            width: 40px;
+            cursor: pointer;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        .modal-close svg {
+            height: 40px;
+            width: 40px;
+            color: var(--col-font);
+        }
+        
+        .searchbar{
+            display: grid;
+            grid-template-columns: auto 30px;
+            input{
+                background: var(--col-bg-lighter);
+                color: var(--col-font);
+                font-size: large;
+                border: none;
+            }
+        }
+        .search-btn{
+            background-color: var(--col-primary);
+            cursor: pointer;
+            svg{
+                vertical-align: text-top;
+            }
+        }
+    }
     #dropdown{
         position: absolute;
         z-index: 2;
@@ -42,7 +99,7 @@
             cursor: pointer;
         }
     }
-        .friendlist{
+    .friendlist{
         overflow: auto;
         // height: 35rem;
     }
@@ -52,9 +109,14 @@
         justify-content: center;
         align-items: center;
         border-bottom: 2px solid whitesmoke;
-    }
-    #refresh{
-        width: 3rem;
+        .button{
+            width: 3rem;
+
+            svg{
+                width: 1.2rem;
+                height: 1.2rem;
+            }
+        }
     }
 
     .profileimg-container{

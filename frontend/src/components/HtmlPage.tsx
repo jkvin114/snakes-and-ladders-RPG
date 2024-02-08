@@ -3,6 +3,8 @@ import {Helmet} from "react-helmet";
 import { PAGES } from "../rawpages";
 import { RootContext } from "../context/context";
 import { backend_url } from "../variables";
+import { useSearchParams } from "react-router-dom";
+import GameInviteModal from "./GameInviteModal";
 
 type Props={
     htmlPath:string
@@ -20,8 +22,8 @@ export default function HtmlPage({htmlPath}:Props){
     const {context,setContext}= useContext(RootContext);
     const [isGame,setIsGame] = useState(false)
     let loaded=false
-
-    
+    const [ searchParams,_] = useSearchParams()
+    const [isMatchingHost,setIsMatchingHost] = useState(false)
   async function fetchHtml() {
     if(loaded) return
     const pagedata:PageData=(PAGES as any)[htmlPath ]
@@ -61,7 +63,10 @@ export default function HtmlPage({htmlPath}:Props){
         setContext({...context,showToolbar:false})
         setIsGame(true)
     }
-
+    if(htmlPath==="matching" && searchParams.get("join")!=="true" && context.loggedin){
+      // alert("host")
+      setIsMatchingHost(true)
+    }
   }, []);
 
  
@@ -69,6 +74,8 @@ export default function HtmlPage({htmlPath}:Props){
     <div className="App" >
       <div id="html-cover">
       </div>
+      {isMatchingHost && 
+        <GameInviteModal/>}
         <div id="rawhtml" className={isGame? "gamepage":""} dangerouslySetInnerHTML={{ __html: htmlData.html }} style={{position:"relative",height: "100vh"}}></div>
         <Helmet>
         <script> 

@@ -7,12 +7,14 @@ import CONFIG from "./../../config/config.json"
 import SETTINGS = require("../../res/globalsettings.json")
 import MarbleGameGRPCClient from "../grpc/marblegameclient"
 import RPGGameGRPCClient from "../grpc/rpggameclient"
-import { sessionParser } from "./jwt/auth"
+import { loginauth, sessionParser } from "./jwt/auth"
 import { ControllerWrapper } from "./ControllerWrapper"
 import { ISession, SessionManager } from "../session/inMemorySession"
 import type { Request, Response } from "express"
 import { randName } from "../RPGGame/data/names"
 import { Logger } from "../logger"
+import { NotificationSchema } from "../mongodb/schemaController/Notification"
+import { NotificationController } from "../social/notificationController"
 
 function isUserInRPGRoom(req: Express.Request) {
 	return (
@@ -32,8 +34,8 @@ function isUserInRPGRoom2(session: ISession) {
 }
 /**
  * roomname:string,username:string
- * 
- * 
+ *
+ *
  */
 router.post("/create_rpg", function (req: express.Request, res: express.Response) {
 	let body = req.body
@@ -120,26 +122,25 @@ router.post(
 			}
 			room = new RPGRoom(rname)
 			R.setRPGRoom(rname, room)
-			
 		}
 		room.setHost(session.id).registerResetCallback(() => {
 			R.remove(rname)
 			delete session.roomname
 			delete session.turn
 		})
-		Logger.log("create room",rname)
+		Logger.log("create room", rname)
 		if (body.password) room.setPassword(body.password)
 
 		room.setSettings(body.loggedinOnly, body.isPrivate)
 
 		if (session) {
-			if ((!session.username || session.username==="") && !session.isLogined) {
+			if ((!session.username || session.username === "") && !session.isLogined) {
 				session.username = randName()
 			}
 			session.roomname = rname
 			session.turn = 0
 		}
-	//	console.log(session)
+		//	console.log(session)
 		res.status(201).end(rname)
 	}, 201)
 )
@@ -156,9 +157,9 @@ router.post(
 			res.status(307).end("previous room exists")
 			return
 		}
-		Logger.log("join room",session.id)
+		Logger.log("join room", session.id)
 		if (session) {
-			if ((!session.username || session.username==="") && !session.isLogined) {
+			if ((!session.username || session.username === "") && !session.isLogined) {
 				session.username = randName()
 			}
 			session.turn = 1
@@ -189,7 +190,7 @@ router.post(
 	sessionParser,
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
 		//console.log(session)
-		Logger.log("access matching page",session.id)
+		Logger.log("access matching page", session.id)
 		if (session) {
 			if (session.roomname === undefined) {
 				res.status(401).end()
@@ -209,6 +210,86 @@ router.post(
 	})
 )
 
+router.post(
+	"/accept_invite",
+	loginauth,
+	sessionParser,
+	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+		const rname = req.body.roomname
+		let game = SessionManager.getGameByUserId(session.userId)
+		if (game !== null) {
+			res.status(307).end("Already in game")
+			return
+		}
+		if (!R.hasRoom(rname)) {
+			res.status(404).end("Room does not exist")
+			return
+		}
+		const room = R.getRoom(rname)
+		if(room.hasSession(session.id)){
+			res.status(400).end("User already joined")
+			return
+		}
+		if(room.hosting <=0){
+			res.status(400).end("No open space available")
+			return
+		}
+		let result = room.acceptInvite(session.userId)
+		if(!result){
+			res.status(400).end("Failed to join")
+			return
+		}
+
+		//set guest session to detect if the user is successfully joined the room at matching page and socket connection
+		session.roomname = room.name
+
+		NotificationSchema.revokeGameInvite(session.userId,room.name).then()
+	})
+)
+
+router.post(
+	"/invite",
+	loginauth,
+	sessionParser,
+	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+		const invited = req.body.id
+		let game = SessionManager.getGameByUserId(invited)
+		const guestsessions = SessionManager.getSessionsByUserId(invited)
+		if (!invited || game !== null|| (guestsessions.some(s=>s.roomname && R.hasRoom(s.roomname)))) {
+			res.status(400).end("User already in game")
+			return
+		}
+		let myroom = session.roomname
+		if (!myroom || !R.hasRoom(myroom)) {
+			res.status(404).end("Room does not exist")
+			return
+		}
+		const room = R.getRoom(myroom)
+		if(!room.isHost(session.id)){
+			res.status(401).end("Unauthorized")
+			return
+		}
+
+		room.invite(invited)
+		NotificationSchema.gameInvite(invited, session.username, room.name, room.type).then()
+		NotificationController.addToCache(invited)
+	})
+)
+
+router.post(
+	"/cancel_invite",
+	loginauth,
+	sessionParser,
+	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+		const invited = req.body.id
+		let myroom = session.roomname
+		let room = R.getRoom(myroom)
+		if (myroom && room) {
+			let result = room.cancelInvite(invited)
+			if(result) NotificationSchema.revokeGameInvite(invited,room.name).then()
+		}
+	})
+)
 router.get(
 	"/hosting",
 	sessionParser,
@@ -268,7 +349,7 @@ router.post(
 	"/spectate_rpg",
 	sessionParser,
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
-		Logger.log("spectate",session.id,req.body)
+		Logger.log("spectate", session.id, req.body)
 		if (req.body.roomname) {
 			if (!R.hasRPGRoom(req.body.roomname) || !R.getRPGRoom(req.body.roomname).gameStatus) {
 				Logger.warn("access to unexisting game")
@@ -279,11 +360,15 @@ router.post(
 			session.turn = -1
 
 			res.status(200).end(req.body.roomname)
-		}//find game that the user is currently in
-		else if(req.body.userId){
-
+		} //find game that the user is currently in
+		else if (req.body.userId) {
 			const roomname = SessionManager.getGameByUserId(req.body.userId)
-			if (!roomname || !R.hasRPGRoom(roomname) || !R.getRPGRoom(roomname).gameStatus || !R.getRPGRoom(roomname).isGameStarted) {
+			if (
+				!roomname ||
+				!R.hasRPGRoom(roomname) ||
+				!R.getRPGRoom(roomname).gameStatus ||
+				!R.getRPGRoom(roomname).isGameStarted
+			) {
 				console.error("access to unexisting game")
 				res.status(404).end()
 				return

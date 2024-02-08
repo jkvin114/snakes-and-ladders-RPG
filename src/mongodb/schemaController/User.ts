@@ -68,4 +68,13 @@ export namespace UserSchema{
     export const updateLastActive=function(id:MongoId){
         return User.findByIdAndUpdate(id,{lastActive:Date.now()})
     }
+    /**
+     * 
+     * @param str 
+     * @returns find entries where the username field contains a given string
+     */
+    export const searchByName = function(str:string)
+    {
+        return User.find({ username: { $regex: str, $options: 'i' } });
+    }
 }

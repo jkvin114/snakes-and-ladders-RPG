@@ -85,7 +85,7 @@ export default function ChatRoomList(){
                     <i>{limitString(r.lastMessage)}</i>
                 </div>
                 <div>
-                {(r.unread>0) && 
+                {(r.unread>0 && room!==r._id) && 
                 <span className="unread">{r.unread}</span>}
                 </div>
             </div>

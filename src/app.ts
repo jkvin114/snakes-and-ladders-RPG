@@ -57,8 +57,8 @@ declare module 'express' {
 const clientPath = `${__dirname}/../public`
 const PORT = 5000
 const app = express()
-//  const ORIGIN = "http://localhost:3000"
-const ORIGIN="http://192.168.0.3:3000"
+ const ORIGIN = "http://localhost:3000"
+// const ORIGIN="http://192.168.0.3:3000"
 Logger.log("start server at port ",String(PORT),", from origin",ORIGIN);
 
 function onExit(){

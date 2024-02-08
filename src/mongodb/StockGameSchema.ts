@@ -87,6 +87,7 @@ const stockGameBestScoreSchema = new mongoose.Schema({
 },{timestamps:true})
 
 stockGameBestScoreSchema.index({ score: -1 });
+stockGameResultSchema.index({ score: -1 });
 
 const userStockGameDataSchema = new mongoose.Schema({
 	user: {

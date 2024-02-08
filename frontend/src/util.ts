@@ -20,7 +20,7 @@ export function getDateStringDifference(start:number,now:number) {
     const minutes = Math.floor((timeDifference % ONE_HOUR) / ONE_MINUTE);
     const seconds = Math.floor((timeDifference % ONE_MINUTE) / 1000);
     // Build the result string
-    let resultString = 'Now';
+    let resultString = 'Just';
     if (days > 0) {
       resultString = `${days} day${days > 1 ? 's' : ''} `;
     }

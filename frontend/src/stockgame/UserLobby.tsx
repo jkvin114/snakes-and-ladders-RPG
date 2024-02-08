@@ -140,12 +140,9 @@ export default function StockGameUserLobby() {
 								total={currBestPos.total}
 							/>
 						)}
-					</div>
-					<div>
-						<StockGameUserResultRecord record={record} count={recordCount} />
-						{alltimeBest && currentBest && alltimeBest._id !== currentBest._id && (
+						{alltimeBest && (
 							<StockGameScoreReport
-								header="Best Score"
+								header="All-time Best"
 								score={alltimeBest.score}
 								finalTotal={alltimeBest.game.finaltotal}
 								initialMoney={alltimeBest.game.initialMoney}
@@ -153,6 +150,10 @@ export default function StockGameUserLobby() {
 								total={alltimeBestPos.total}
 							/>
 						)}
+					</div>
+					<div>
+						<StockGameUserResultRecord record={record} count={recordCount} />
+						
 					</div>
 				</div>
 			</div>

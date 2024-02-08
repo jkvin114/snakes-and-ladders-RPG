@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { UserSchema } from "../mongodb/schemaController/User";
 import { MongoId } from "../mongodb/types";
+import { Logger } from "../logger";
 
 
 
@@ -50,6 +51,7 @@ export namespace UserCache{
 export namespace NotificationCache{
     const users = new Set<string>()
     export function post(userId:MongoId){
+        
         users.add(String(userId))
     }
     export function consume(userId:MongoId){

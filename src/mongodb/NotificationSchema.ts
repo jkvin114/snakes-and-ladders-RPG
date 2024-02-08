@@ -4,12 +4,13 @@ const notificationSchema=new mongoose.Schema({
     receiver:{
         required: true,
         type: Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        index:true
     },
     type:{
         required:true,
         type: String,
-        enum : ['EMPTY',"OTHER",'CHAT',"COMMENT","REPLY",'POST','FRIEND_REQUEST',"STOCKGAME_SURPASS"],
+        enum : ['EMPTY',"OTHER",'CHAT',"COMMENT","REPLY",'POST','FRIEND_REQUEST',"STOCKGAME_SURPASS","GAME_INVITE"],
         default: 'EMPTY',
     },
     message:{
