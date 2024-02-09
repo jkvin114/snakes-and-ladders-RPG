@@ -11,3 +11,15 @@ export interface INotification{
     payload5:any
     _id:string
 }
+export enum NOTI_TYPE{
+    Empty='EMPTY',
+    Other="OTHER",
+    Chat='CHAT',
+    Comment="COMMENT",
+    Reply="REPLY",
+    Post='POST',
+    FriendRequest='FRIEND_REQUEST',
+    StockGameSurpass="STOCKGAME_SURPASS",
+    GameInvite="GAME_INVITE",
+    NewFollower = "NEW_FOLLOWER"
+}

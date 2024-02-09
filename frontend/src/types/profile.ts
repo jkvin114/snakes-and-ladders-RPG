@@ -15,6 +15,7 @@ export interface IFollow{
 }
 export interface IUserProfile {
 	isFriend: boolean
+	requestedFrield:boolean
 	isFollowing: boolean
 	username: string
 	email: string

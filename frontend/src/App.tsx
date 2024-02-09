@@ -14,7 +14,7 @@ import SideBar from "./components/menu/Sidebar"
 import TopBar from "./components/menu/TopBar"
 import HomePage from "./components/pages/Home"
 import MarbleStatPage from "./components/pages/MarbleStat"
-import { INotification } from "./types/notification"
+import { INotification, NOTI_TYPE } from "./types/notification"
 import { ToastContainer, toast } from "react-toastify"
 import { RiMessage2Fill } from "react-icons/ri"
 import Notifications from "./components/notification/Notifications"
@@ -32,8 +32,8 @@ import StockGameUserPage from "./components/pages/StockGameUser"
 
 
 function getNotiMessage(noti:INotification){
-	if(noti.type==="CHAT") return "New Chat: "+limitString(noti.message)
-	return noti.message
+	if(noti.type===NOTI_TYPE.Chat) return "New Chat: "+limitString(noti.message)
+	return noti.message +"!"
 }
 
 
@@ -72,7 +72,6 @@ function App() {
 			return
 		}
 		else{
-			console.table(notis)
 			toast.info(getNotiMessage(notis[0]), {
 				position: "bottom-right",
 				autoClose: 3000,

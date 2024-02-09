@@ -86,7 +86,7 @@ export default function StockGameUserLobby() {
 				</>
 			)}
 
-			<div id="stockgame-lobby-root" className="stockgame-content stockgame-user-content">
+			<div id="stockgame-lobby-root" className="stockgame-content stockgame-user-content" data-locale={"eng"} >
 				<div className="content">
 					<div>
 						<h3>친구 랭킹</h3>

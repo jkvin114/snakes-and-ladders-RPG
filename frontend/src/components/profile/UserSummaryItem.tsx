@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { RiCheckboxCircleLine, RiUserAddFill, RiUserFollowFill } from "react-icons/ri"
+import { RiCheckboxCircleLine, RiMailCheckLine, RiUserAddFill, RiUserFollowFill } from "react-icons/ri"
 import { AxiosApi } from "../../api/axios"
 import { Link } from "react-router-dom"
 import Image from "../ProfileImg"
@@ -8,11 +8,11 @@ import ProfileImg from "../ProfileImg"
 type Props={
     profileImgDir:string
     username:string
-    buttonType:"follow"|"unfollow"|"friend"|"nofriend"|"checked"|null
+    buttonType:"follow"|"unfollow"|"friend"|"friend_requested"|"nofriend"|"checked"|null
 	link?:boolean
 }
 export default function UserSummaryItem({profileImgDir,username,buttonType,link}:Props){
-
+	console.log(buttonType)
     const [btnState,setBtnState]=useState(buttonType)
 	useEffect(()=>{
 		setBtnState(buttonType)
@@ -20,9 +20,9 @@ export default function UserSummaryItem({profileImgDir,username,buttonType,link}
 
     const loggedin = localStorage.getItem("username")!=null
     function friendRequest() {
-		AxiosApi.post("/user/relation/friend_request", { username: username })
+		AxiosApi.post("/user/relation/friend_request/send", { username: username })
 			.then((res) => {
-				if (res.status === 200) setBtnState("friend")
+				if (res.status === 200) setBtnState("friend_requested")
 			})
 			.catch((e) => {
 				if (e.response.status === 401) alert("login required")
@@ -71,6 +71,7 @@ export default function UserSummaryItem({profileImgDir,username,buttonType,link}
                 {btnState==="unfollow" && (<button className="dark" onClick={unfollow}>unfollow</button>)}
                 {btnState==="nofriend" && (<RiUserAddFill onClick={friendRequest} className="icon-btn btn"></RiUserAddFill>)}
                 {btnState==="friend" && (<RiUserFollowFill className="icon-btn green"></RiUserFollowFill>)}
+				{btnState==="friend_requested" && (<RiMailCheckLine className="icon-btn green"></RiMailCheckLine>)}
                 </>
             )}
 			{btnState==="checked" && (<RiCheckboxCircleLine  className="icon-btn green"></RiCheckboxCircleLine>)}

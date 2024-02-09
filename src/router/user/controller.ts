@@ -7,6 +7,7 @@ import mongoose from "mongoose"
 import { IFollow, IFriend } from "../ResponseModel"
 import { UserGamePlaySchema } from "../../mongodb/schemaController/UserGamePlay"
 import { Logger } from "../../logger"
+import { FriendRequestCache } from "../../cache/cache"
 
 export namespace UserController {
 	export async function getProfile(req: Request, res: Response, session: ISession) {
@@ -17,6 +18,7 @@ export namespace UserController {
 			return
 		}
 		let isFriend = false
+		let requestedFrield=false
 		let isFollowing = false
 		// console.log(user.boardData)
 		const boardData = await UserBoardDataSchema.findOneById(user.boardData as mongoose.Types.ObjectId)
@@ -42,10 +44,13 @@ export namespace UserController {
 		if (session.isLogined) {
 			isFriend = await UserRelationSchema.isFriendWith(session.userId, user._id)
 			isFollowing = await UserRelationSchema.isFollowTo(session.userId, user._id)
+			if(!isFriend)
+				requestedFrield = FriendRequestCache.has(session.userId,user._id)
 		}
 		res.json({
 			isFriend: isFriend,
 			isFollowing: isFollowing,
+			requestedFrield:requestedFrield,
 			username: user.username,
 			email: user.email,
 			profile: user.profileImgDir,
@@ -57,12 +62,7 @@ export namespace UserController {
 		})
 	}
 
-	export async function addFriend(req: Request, res: Response, session: ISession) {
-		const id = await UserSchema.findIdByUsername(req.body.username)
-		if (!id) throw Error("invaild username")
-		await UserRelationSchema.addFriend(session.userId, id)
-		await UserRelationSchema.addFriend(id, session.userId)
-	}
+	
 	export async function follow(req: Request, res: Response, session: ISession) {
 		const id = await UserSchema.findIdByUsername(req.body.username)
 		if (!id) throw Error("invaild username")
@@ -86,11 +86,16 @@ export namespace UserController {
 		const friendIds = await UserRelationSchema.findFriends(user._id)
 
 		const friends = await UserSchema.findAllSummaryByIdList(friendIds as mongoose.Types.ObjectId[])
+		
 		let data: IFriend[] = []
 		const login = session.isLogined && session.userId
+		const requested = login ?  FriendRequestCache.getRequested(session.userId):null
+
 		for (const fr of friends) {
 			let status = ""
 			if (login && (await UserRelationSchema.isFriendWith(session.userId, fr._id))) status = "friend"
+			else if(requested && requested.has(String(fr._id))) status = "friend_requested"
+
 			data.push({
 				username: fr.username,
 				email: fr.email,

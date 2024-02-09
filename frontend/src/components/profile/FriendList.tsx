@@ -18,8 +18,12 @@ export default function FriendList({username}:Props){
 				setFriends(res.data as IFriend[])
 			})
     },[])
+    function getBtn(status?:string){
+        if(status==="friend" || status==="friend_requested") return status
+        return "nofriend"
+    }
 
     return (<div className="userlist">
-        {friends.map(f=><UserSummaryItem link={true} key={f.username} username={f.username} profileImgDir={f.profileImgDir} buttonType={f.status==="friend"?"friend":"nofriend"}/>)}
+        {friends.map(f=><UserSummaryItem link={true} key={f.username} username={f.username} profileImgDir={f.profileImgDir} buttonType={getBtn(f.status)}/>)}
     </div>)
 }

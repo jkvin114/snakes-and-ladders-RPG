@@ -17,6 +17,21 @@
 .stockgame-content .up-bg{
     background-color: rgb(255, 115, 115);
 }
+
+.stockgame-content[data-locale=eng] .down{
+    color: #ff2828;
+}
+.stockgame-content[data-locale=eng] .up{
+    color: #52B047;
+}
+.stockgame-content[data-locale=eng] .down-bg{
+    background-color: rgb(255, 115, 115);
+}
+.stockgame-content[data-locale=eng] .up-bg{
+    background-color: #6fd463;
+}
+
+
 #root-stockgame .history-bottom{
     color: var(--color-text-secondary);
 }

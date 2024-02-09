@@ -123,7 +123,7 @@ export default class StockChart {
 	private startTime:number
 	seed:string
 	constructor(stockvalues: number[], graph: IChartApi, setval: (data:DisplayData)=>void,setDayRecord:  (data:DayRecord[])=>void,
-		setStat:  (data:StatData)=>void,displayNews:(type:string,message:string,value:number)=>void,player:PlayerManager,seed:string) {
+		setStat:  (data:StatData)=>void,displayNews:(type:string,message:string,value:number)=>void,player:PlayerManager,seed:string,locale:string) {
 		this.stockvalues = stockvalues
 		this.graph = graph
 		this.setval = setval
@@ -161,12 +161,14 @@ export default class StockChart {
 			priceLineVisible: false,
 			lastValueVisible: false,
 		});
+		let upcol = locale==="eng"?'#52B047': "#ff2828"
+		let downcol = locale==="eng"?'#ff2828':"#0000ff"
 		this.candleSeries = this.graph.addCandlestickSeries({
-			upColor: "#ff0000",
-			downColor: "#0000ff",
+			upColor:upcol,
+			downColor: downcol,
 			borderVisible: false,
-			wickUpColor: "#ff0000",
-			wickDownColor: "#0000ff",
+			wickUpColor: upcol,
+			wickDownColor: downcol,
 		})
 
 	}

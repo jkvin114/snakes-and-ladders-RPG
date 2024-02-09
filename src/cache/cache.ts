@@ -57,10 +57,43 @@ export namespace NotificationCache{
     export function consume(userId:MongoId){
         return users.delete(String(userId))
     }
-    export function invalidateAll(){
+    export function clear(){
         users.clear()
     }
     export function getAll(){
         return [...users]
+    }
+}
+export namespace FriendRequestCache{
+    const requests = new Map<string,Set<string>>()
+
+    export function add(from:MongoId,to:MongoId){
+        if(requests.has(String(from))){
+            requests.get(String(from)).add(String(to))
+        }
+        else{
+            requests.set(String(from),new Set<string>().add(String(to)))
+        }
+        console.log(requests)
+    }
+    export function getRequested(from:MongoId):Set<string>|undefined{
+        return requests.get(String(from))
+    }
+
+    export function remove(from:MongoId,to:MongoId){
+        console.log(requests)
+        return requests.get(String(from))?.delete(String(to))
+    }
+
+    export function has(from:MongoId,to:MongoId):boolean{
+        if(requests.has(String(from))){
+            return requests.get(String(from)).has(String(to))
+        }
+        else{
+            return false
+        }
+    }
+    export function clear(){
+        requests.clear()
     }
 }

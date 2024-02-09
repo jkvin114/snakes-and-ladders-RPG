@@ -120,7 +120,7 @@ export namespace ChatController {
 		
 		
 		if(notify)
-			NotificationSchema.consumeChat(session.userId, roomId).then()
+			NotificationSchema.deleteChat(session.userId, roomId).then()
 
 		await ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,session.userId,currentSerial)
 

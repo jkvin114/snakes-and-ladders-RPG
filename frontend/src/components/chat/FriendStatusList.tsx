@@ -109,6 +109,11 @@ export default function FriendStatusList({ createChat }: Props) {
             submitSearch()
         }
       };
+
+	  function getBtn(status?:string){
+        if(status==="friend" || status==="friend_requested") return status
+        return "nofriend"
+    }
 	return (
 		<div id="friendlist" onClick={closeDropdown} >
             
@@ -134,7 +139,7 @@ export default function FriendStatusList({ createChat }: Props) {
                     </div>
                     <div className="modal-content userlist">
                         {searchResult.length===0 && <span>No result</span>}
-                        {searchResult.map((f,i)=><UserSummaryItem link={true} key={i} username={f.username} profileImgDir={f.profileImgDir} buttonType={f.status==="friend"?"friend":"nofriend"}/>)}
+                        {searchResult.map((f,i)=><UserSummaryItem link={true} key={i} username={f.username} profileImgDir={f.profileImgDir} buttonType={getBtn(f.status)}/>)}
                     </div>
                 </div>
             </>}

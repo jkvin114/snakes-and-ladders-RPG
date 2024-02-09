@@ -33,6 +33,7 @@ type Props = {
 
 function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	let theme = "light"
+	let locale="eng"
 	const dataFetch = useRef(false)
 	const [val, setVal] = useState<DisplayData>({
 		value: 0,
@@ -243,8 +244,9 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 			})
 			const { prices, seed, trend_changes, steep_increase, steep_decrease } = data
 
-			let schart = new StockChart(prices, chart, setVal, setDayRecord, setStat, displayNews, player, String(seed))
+			let schart = new StockChart(prices, chart, setVal, setDayRecord, setStat, displayNews, player, String(seed),locale)
 			schart.init()
+
 			setStockChart(schart)
 		} catch (e) {
 			// console.error(e)
@@ -266,7 +268,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 
 	return (
 		<>
-			<div className={"root stockgame-content " +(modal?"scroll-lock":"")} id="root-stockgame" data-theme={theme}>
+			<div className={"root stockgame-content " +(modal?"scroll-lock":"")} id="root-stockgame" data-theme={theme} data-locale={locale}>
 				{modal && <div className="shadow"></div>}
 
 				{(modal && clientResult && serverResult) && 

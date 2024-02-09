@@ -27,7 +27,8 @@ export default function ProfilePage({ modal }: Props) {
 		isme: false,
 		isadmin: false,
 		isLogined: false,
-		counts: [0, 0, 0, 0, 0, 0, 0,0,0],
+		requestedFrield:false,
+		counts: [0, 0, 0, 0, 0, 0, 0,0,0,0],
 		id:""
 	})
 	const { username } = useParams()
@@ -81,7 +82,7 @@ export default function ProfilePage({ modal }: Props) {
 	}
 
 	function friendRequest() {
-		AxiosApi.post("/user/relation/friend_request", { username: profile.username })
+		AxiosApi.post("/user/relation/friend_request/send", { username: profile.username })
 			.then((res) => {
 				if (res.status === 200) setProfile({ ...profile, isFriend: true })
 			})
@@ -194,13 +195,20 @@ export default function ProfilePage({ modal }: Props) {
 											<b data-lkey="mypage.friend">Friend</b>
 										</b>
 									) : (
-										<button
-											className="button"
-											id="friend-request-btn"
-											onClick={friendRequest}
-											data-lkey="mypage.friendrequest">
-											Friend request
-										</button>
+										profile.requestedFrield ?
+										<b className="button">
+											<img src="/res/img/ui/confirm.png" style={{ width: "15px", verticalAlign: "middle" }} />
+											<b data-lkey="mypage.friend">Friend Request Sent</b>
+										</b> :
+											<button
+												className="button"
+												id="friend-request-btn"
+												onClick={friendRequest}
+												data-lkey="mypage.friendrequest">
+												Friend request
+											</button>
+										
+										
 									)}
 								</div>
 								<div style={{ display: "inline" }}>

@@ -25,7 +25,7 @@ interface GameReadyState{
 }
 abstract class Room {
 	name: string
-	hosting: number
+	private hosting: number
 	guestnum: number
 	isTeam: boolean
 
@@ -158,9 +158,12 @@ abstract class Room {
 	 * @returns false it the user is not invited, or joining the room is unavalialble
 	 */
 	acceptInvite(id:string){
-		if(this.isGameStarted || this.hosting <= 0) return false
+		if(this.isGameStarted || !this.canJoin()) return false
 
 		return this.invitedUsers.delete(id)
+	}
+	canJoin(){
+		return this.hosting > 0
 	}
 
 	get roomStatus() {
@@ -327,6 +330,7 @@ abstract class Room {
 		this.playerSessions.clear()
 
 		//if(this.idleTimeout) clearTimeout(this.idleTimeout)
+		if (this.resetTimeout != null) clearTimeout(this.resetTimeout)
 		//	if(this.connectionTimeout) clearTimeout(this.connectionTimeout)
 		if (this.resetCallback != null) this.resetCallback()
 	}

@@ -18,15 +18,25 @@ export default function StockGameLeaderboard() {
 	const { context } = useContext(RootContext)
 
 	const [stat, setStat] = useState<ILeaderboard[]>([])
+	const [pastRanks,setPastRanks] = useState<number[]>([]) // current rank => past rank (-1 if none)
 	const [pageState, setPageState] = useState<State>({
 		loggedIn: false,
 		allTime: true,
 		start: 0,
 	})
+
+	function calcPastRanks(scores:ILeaderboard[]){
+		for(let i=0;i<scores.length;++i){
+
+		}
+	}
 	useEffect(() => {
 		AxiosApi.get(
 			`/stockgame/rank/leaderboard?loggedIn=${pageState.loggedIn}&allTime=${pageState.allTime}&start=${pageState.start}`
-		).then((res) => setStat(res.data.result))
+		).then((res) =>{
+			//calcPastRanks(res.data.result)
+			setStat(res.data.result)
+		})
 
 		//		AxiosApi.get("/stockgame/user?userId=622bd1b14044e242102d1b66").then((res) => console.log(res.data))
 	}, [pageState])

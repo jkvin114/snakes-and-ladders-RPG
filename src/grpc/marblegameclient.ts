@@ -4,6 +4,7 @@ import { MarbleRoom } from "../Marble/MarbleRoom";
 import { Logger } from "../logger";
 const PORT=50051
 
+const HOST = "localhost:"
 export default class MarbleGameGRPCClient{
     private static stub:marblegame.MarbleGameClient=null 
     
@@ -11,7 +12,7 @@ export default class MarbleGameGRPCClient{
     static connect(){
         try{
             
-            MarbleGameGRPCClient.stub = new marblegame.MarbleGameClient('localhost:'+PORT,credentials.createInsecure());
+            MarbleGameGRPCClient.stub = new marblegame.MarbleGameClient(HOST+PORT,credentials.createInsecure());
             MarbleGameGRPCClient.RequestItem((items)=>{
                 Logger.log("marble items registered")
                 MarbleRoom.ItemDescriptionCache = JSON.parse(items)

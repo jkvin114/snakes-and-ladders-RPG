@@ -37,7 +37,7 @@ export default function Notifications({newNoti,setCount}:Props){
         .catch(e=>console.error(e))
     }
     return (<div id="notification-root">
-    {noti.map((n,i)=><BaseNotification deleteNoti={deleteNoti} noti={n} key={i} isNew={i<newNotiCount}/>)}
+    {noti.map((n,i)=><BaseNotification deleteNoti={deleteNoti} noti={n} key={n._id} isNew={i<newNotiCount}/>)}
     {noti.length===0 && <h3>You don't have any new notifications</h3>}
     </div>)
 }

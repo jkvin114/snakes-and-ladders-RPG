@@ -35,7 +35,7 @@ export default function StockGameUserInfo({userId}:{userId?:string}){
         })
         .catch((e) => console.error(e))
     },[userId])
-    return (<div className="stockgame-content stockgame-user-content" id="stockgame-profile-root">
+    return (<div className="stockgame-content stockgame-user-content" data-locale={"eng"} id="stockgame-profile-root">
         <div className="content">
         <div className="profile userlist">
             <UserSummaryItem username={username} profileImgDir={userProfile} link={true} buttonType={null}/>

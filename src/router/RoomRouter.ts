@@ -230,7 +230,7 @@ router.post(
 			res.status(400).end("User already joined")
 			return
 		}
-		if(room.hosting <=0){
+		if(!room.canJoin()){
 			res.status(400).end("No open space available")
 			return
 		}
@@ -243,7 +243,7 @@ router.post(
 		//set guest session to detect if the user is successfully joined the room at matching page and socket connection
 		session.roomname = room.name
 
-		NotificationSchema.revokeGameInvite(session.userId,room.name).then()
+		NotificationSchema.deleteGameInvite(session.userId,room.name).then()
 	})
 )
 
@@ -286,7 +286,7 @@ router.post(
 		let room = R.getRoom(myroom)
 		if (myroom && room) {
 			let result = room.cancelInvite(invited)
-			if(result) NotificationSchema.revokeGameInvite(invited,room.name).then()
+			if(result) NotificationSchema.deleteGameInvite(invited,room.name).then()
 		}
 	})
 )

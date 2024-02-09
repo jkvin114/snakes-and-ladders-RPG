@@ -10,7 +10,8 @@ const notificationSchema=new mongoose.Schema({
     type:{
         required:true,
         type: String,
-        enum : ['EMPTY',"OTHER",'CHAT',"COMMENT","REPLY",'POST','FRIEND_REQUEST',"STOCKGAME_SURPASS","GAME_INVITE"],
+        enum : ['EMPTY',"OTHER",'CHAT',"COMMENT","REPLY",'POST','FRIEND_REQUEST',
+        "STOCKGAME_SURPASS","GAME_INVITE","NEW_FOLLOWER"],
         default: 'EMPTY',
     },
     message:{
@@ -36,8 +37,32 @@ const notificationSchema=new mongoose.Schema({
     },
 },{timestamps:true})
 
+const userMutedNotification=new mongoose.Schema({
+    user:{
+        required: true,
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        index:true
+    },
+    all:{
+        type:Boolean,
+        required:true,
+        default:false
+    },
+    chat:Boolean,
+    comment:Boolean,
+    post:Boolean,
+    reply:Boolean,
+    stockgameSurpass:Boolean,
+    follower:Boolean
+})
 const Notification = mongoose.model("Notification", notificationSchema)
 
 type INotification = InferSchemaType<typeof notificationSchema>;
 
-export {Notification,INotification}
+
+const UserMutedNotification = mongoose.model("UserMutedNotification", userMutedNotification)
+
+type IUserMutedNotification = InferSchemaType<typeof userMutedNotification>;
+
+export {Notification,INotification,UserMutedNotification,IUserMutedNotification}

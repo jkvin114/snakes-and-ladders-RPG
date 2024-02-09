@@ -54,7 +54,6 @@ declare module 'express' {
 }
 
 
-const clientPath = `${__dirname}/../public`
 const PORT = 5000
 const app = express()
  const ORIGIN = "http://localhost:3000"
@@ -119,8 +118,6 @@ app.use("/stockgame", require("./router/stockgame/stockGameRouter"))
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
 
-app.use(express.static(clientPath))
-app.use(errorHandler)
 const httpserver = createServer(app)
 httpserver.listen(PORT)
 app.on("error", (err: any) => {
@@ -133,9 +130,6 @@ RPGGameGRPCClient.connect()
 Logger.log("version " + SETTINGS.version)
 Logger.log("patch " + SETTINGS.patch_version)
 
-function errorHandler(err: any, req: any, res: any, next: any) {
-	res.send("error!!" + err)
-}
 
 export const io = new Server(httpserver, {
 	cors: {

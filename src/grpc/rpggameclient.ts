@@ -3,13 +3,13 @@ import { marblegame } from "./services/marblegame";
 import { rpggame } from "./services/rpggame";
 import { Logger } from "../logger";
 const PORT=50052
-
+const HOST = "localhost:"
 export default class RPGGameGRPCClient{
     private static stub:rpggame.RPGGameClient=null 
     static connect(){
         try{
             
-            RPGGameGRPCClient.stub = new rpggame.RPGGameClient('localhost:'+PORT,credentials.createInsecure());
+            RPGGameGRPCClient.stub = new rpggame.RPGGameClient(HOST+PORT,credentials.createInsecure());
             // Logger.log("created rpggame grpc client")
 
         }
