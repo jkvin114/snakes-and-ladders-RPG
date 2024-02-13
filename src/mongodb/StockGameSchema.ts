@@ -83,7 +83,9 @@ const stockGameBestScoreSchema = new mongoose.Schema({
 		type:Boolean,
 		default:true,
 		required:true
-	}
+	},
+	season:Number,
+	scoredAt:{type: Date}
 },{timestamps:true})
 
 stockGameBestScoreSchema.index({ score: -1 });

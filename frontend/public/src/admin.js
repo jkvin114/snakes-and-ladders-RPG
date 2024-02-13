@@ -1,6 +1,11 @@
 let SERVER_URL = ""
 function main(url) {
 	SERVER_URL = url
+
+	// let cstr = LZString.compressToUTF16(str)
+	// console.log(cstr)
+	// let dstr = LZString.decompressFromUTF16(cstr)
+	// console.log(dstr)
 	$("#refresh").click(function () {
 		fetchdata()
 	})

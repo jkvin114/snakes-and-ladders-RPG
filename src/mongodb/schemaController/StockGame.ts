@@ -13,12 +13,14 @@ export namespace StockGameSchema {
 			username: username,
 			loggedIn: loggedIn,
 			isRecent: true,
+			scoredAt:new Date()
 		})
 	}
 	export function updateBest(id: MongoId, game: MongoId, score: number) {
 		return StockGameBestScore.findByIdAndUpdate(id, {
 			game: game,
 			score: score,
+			scoredAt:new Date()
 		})
 	}
     /**

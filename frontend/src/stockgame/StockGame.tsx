@@ -33,7 +33,7 @@ type Props = {
 
 function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	let theme = "light"
-	let locale="eng"
+	let locale="kor"
 	const dataFetch = useRef(false)
 	const [val, setVal] = useState<DisplayData>({
 		value: 0,

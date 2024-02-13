@@ -38,6 +38,11 @@ const replaySchema = new mongoose.Schema(
 	{ timestamps: true }
 )
 
+const compressedReplaySchema = new mongoose.Schema({
+    data : String
+},{ timestamps: true })
+
+
 replaySchema.statics.create=function(data){
     return (new Replay(data)).save()
 }
@@ -47,3 +52,4 @@ replaySchema.statics.findOneById = function(id) {
 };
 export const Replay=mongoose.model('Replay',replaySchema)
 
+export const CompressedReplay=mongoose.model('CompressedReplay',compressedReplaySchema)

@@ -12,7 +12,6 @@ type Props={
 	link?:boolean
 }
 export default function UserSummaryItem({profileImgDir,username,buttonType,link}:Props){
-	console.log(buttonType)
     const [btnState,setBtnState]=useState(buttonType)
 	useEffect(()=>{
 		setBtnState(buttonType)

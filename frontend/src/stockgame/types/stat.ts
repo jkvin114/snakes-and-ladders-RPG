@@ -1,5 +1,6 @@
 export interface ILeaderboard{
     createdAt: string
+    scoredAt?: string
     game:string
     isRecent:boolean
     loggedIn:boolean

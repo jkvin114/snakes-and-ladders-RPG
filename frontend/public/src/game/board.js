@@ -488,9 +488,14 @@ export class Board {
 	}
 
 	getCoord(i) {
-		if (!this.coordinates) return this.Map.coordinates[i]
+		let coord = undefined
+		if (i === undefined) i = 0
+		if (!this.coordinates) {
+			coord = this.Map.coordinates[Math.min(i, this.Map.coordinates.length - 1)]
+		} else coord = this.coordinates[Math.min(i, this.coordinates.length - 1)]
 
-		return this.coordinates[i]
+		if (!coord) return { x: 0, y: 0 }
+		else return coord
 	}
 	mapLength() {
 		if (this.Map.coordinates != null) return this.Map.coordinates.length

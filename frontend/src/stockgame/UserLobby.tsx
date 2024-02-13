@@ -41,10 +41,12 @@ export default function StockGameUserLobby() {
 	const { context } = useContext(RootContext)
 
 	function getScorePositions(curr: number, alltime: number) {
+		if(curr)
 		AxiosApi.get("/stockgame/rank/position/byscore?score=" + curr)
 			.then((res) => setCurrBestPos(res.data))
 			.catch((e) => console.error(e))
 
+		if(alltime)
 		AxiosApi.get("/stockgame/rank/position/byscore?allTime=true&score=" + alltime)
 			.then((res) => setAlltimeBestPos(res.data))
 			.catch((e) => console.error(e))
@@ -59,7 +61,8 @@ export default function StockGameUserLobby() {
 				setCurrentBest(res.data.best)
 				setRecord(res.data.records)
 				setRecordCount(res.data.recordCount)
-				getScorePositions(res.data.best.score, res.data.alltimeBest.score)
+				getScorePositions(res.data.best ? res.data.best.score : 0,
+					res.data.alltimeBest ? res.data.alltimeBest.score:0)
 			})
 			.catch((e) => console.error(e))
 	}, [])
@@ -86,7 +89,7 @@ export default function StockGameUserLobby() {
 				</>
 			)}
 
-			<div id="stockgame-lobby-root" className="stockgame-content stockgame-user-content" data-locale={"eng"} >
+			<div id="stockgame-lobby-root" className="stockgame-content stockgame-user-content" data-locale={"kor"} >
 				<div className="content">
 					<div>
 						<h3>친구 랭킹</h3>

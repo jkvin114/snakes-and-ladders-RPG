@@ -11,8 +11,9 @@ import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
 import { Logger } from "../logger"
+import { CompressedReplay } from "../mongodb/ReplayDBHandler"
 const path = require("path")
-
+import LZString from "lz-string"
 function workerTs(data: unknown) {
 	return new Worker(path.resolve(__dirname, `./../WorkerThread.js`), { workerData: data })
 }
@@ -143,7 +144,8 @@ class RPGRoom extends Room {
 		this.reset()
 		try{
 			if(replayData.enabled){
-				const replay=await Replay.create(replayData)
+				const compressedJson = LZString.compressToUTF16(JSON.stringify(replayData))
+				const replay=await CompressedReplay.create({data:compressedJson})
 				stat.replay=replay.id.toString()
 			}
 			//dev setting 켜져있을때는 통계 저장안함

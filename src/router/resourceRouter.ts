@@ -11,6 +11,7 @@ const router = express.Router()
 const{MarbleItemPreset} = require("../mongodb/GameDBSchema")
 const{Replay} = require("../mongodb/ReplayDBHandler")
 import path from 'path';
+import LZString from "lz-string"
 
 import type { Request, Response } from "express"
 
@@ -49,6 +50,7 @@ const _MarbleMap1 = JSON.stringify(marblemap1)
 
 import marblecoord from "../../res/marble/map_coordinates.json"
 import { sessionParser } from './jwt/auth';
+import { CompressedReplay } from '../mongodb/ReplayDBHandler';
 const _MarbleCoord = JSON.stringify(marblecoord)
 
 
@@ -128,9 +130,13 @@ router.get("/replay_format", function (req:Request, res:Response) {
 })
 
 router.get("/replay/:replayid", async function (req:Request, res:Response) {
-	let data=await Replay.findById(req.params.replayid)
+	let data=await CompressedReplay.findById(req.params.replayid)
+	if(data){
+		return res.send(data.data)
+	}
+	data = await Replay.findById(req.params.replayid)
 
-	res.end(JSON.stringify(data))
+	return res.json(data)
 })
 
 

@@ -28,14 +28,14 @@ export default function StockGameUserInfo({userId}:{userId?:string}){
             setRecordCount(res.data.recordCount)
             setUsername(res.data.username)
             setUserProfile(res.data.profileImgDir)
-
-            AxiosApi.get("/stockgame/rank/position/byscore?score=" + res.data.best.score)
-                .then((res) => setCurrBestPos(res.data))
-                .catch((e) => console.error(e))
+            if(res.data.best)
+                AxiosApi.get("/stockgame/rank/position/byscore?score=" + res.data.best.score)
+                    .then((res) => setCurrBestPos(res.data))
+                    .catch((e) => console.error(e))
         })
         .catch((e) => console.error(e))
     },[userId])
-    return (<div className="stockgame-content stockgame-user-content" data-locale={"eng"} id="stockgame-profile-root">
+    return (<div className="stockgame-content stockgame-user-content" data-locale={"kor"} id="stockgame-profile-root">
         <div className="content">
         <div className="profile userlist">
             <UserSummaryItem username={username} profileImgDir={userProfile} link={true} buttonType={null}/>

@@ -84,7 +84,9 @@ export const PAGES={
             "/lib/jquery-3.6.0.min.js",
             "/lib/axios.js",
             "/src/admin.js",
-            "/src/init.js"
+            "/src/init.js",
+            "/lib/lz-string.min.js"
+
         ]
     },
     rpggame:{
@@ -94,7 +96,8 @@ export const PAGES={
             "/lib/fabric.min.js",
             "/lib/howler.min.js",
             "/lib/socket.io.min.js",
-            "/lib/axios.js"
+            "/lib/axios.js",
+            "/lib/lz-string.min.js"
         ],
         modules:[
             "/src/game/GameMain.js"  

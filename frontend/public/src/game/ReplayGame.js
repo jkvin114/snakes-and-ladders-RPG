@@ -65,7 +65,7 @@ export class ReplayGame extends Game {
 			this.init(setting, 0, "")
 		} catch (e) {
 			alert("error while loading replay data")
-			window.location.href = "/"
+			// window.location.href = "/"
 		}
 		//this.loadResource()
 	}
@@ -75,8 +75,14 @@ export class ReplayGame extends Game {
 				url: server_url + "/resource/replay/" + this.replayId,
 				type: "GET",
 				success: (data) => {
-					this.replayData = JSON.parse(data)
-					resolve()
+					if (typeof data === "string") {
+						let decompressed = LZString.decompressFromUTF16(data)
+						this.replayData = JSON.parse(decompressed)
+						resolve()
+					} else {
+						this.replayData = data
+						resolve()
+					}
 				},
 				error: (e) => {
 					console.error(e)

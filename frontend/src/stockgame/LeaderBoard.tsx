@@ -93,7 +93,7 @@ export default function StockGameLeaderboard() {
 								<td>
 									<b>{addCommas(s.score)}</b>
 								</td>
-								<td className="date">{getDateStringDifference(new Date(s.updatedAt).valueOf(), Date.now())} ago </td>
+								<td className="date">{getDateStringDifference(new Date(s.scoredAt ? s.scoredAt : s.createdAt).valueOf(), Date.now())} ago </td>
 							</tr>
 						))}
 					</tbody>

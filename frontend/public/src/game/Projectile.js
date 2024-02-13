@@ -144,6 +144,8 @@ export class RangeTrapProjectile extends RangeProjectile {
 		this.icon = icon
 	}
 	show() {
+		if (!this.scene.Map.coordinates[this.scope[0]]) return
+
 		if (this.icon)
 			this.icon.set({
 				left: this.scene.Map.coordinates[this.scope[0]].x + BOARD_MARGIN + PROJ_DIFF_X[this.owner],
