@@ -1,0 +1,129 @@
+#root-stockgame {
+  
+    .shadow{
+        z-index: 3;
+    }
+    #processing{
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        background-color: rgba(0, 0, 0, 0.629);
+        padding: 20px;
+        text-align: center;
+        img{
+            width: 50px;
+            height: 50px;
+        }
+    }
+}
+
+#stockgame-result{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 3px;
+    background-color: var(--col-bg-light);
+    border-radius: 10px;
+    border: 2px solid var(--col-primary);
+    width: min(700px, 90vw);
+    height: fit-content;
+    box-sizing: content-box;
+    z-index: 4;
+    background-color: var(--col-bg-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    .resulttext{
+        font-size: 40px;
+        font-weight: bolder;
+        color: gold;
+        margin: 20px;
+
+    }
+    .username{
+        color: var(--col-font);
+        font-size: 20px;
+    }
+    .content{
+        background-color: var(--col-bg-lighter);
+        border-radius: 7px;
+        border: 2px solid var(--col-bg);
+        width: 90%;
+        height: fit-content;
+        position: relative;
+        .badge-container{
+            position: absolute;
+            top:10px;
+            right: 10px;
+            transform: rotate(20deg);
+            .badge{
+                color: white;
+                background-color: var(--col-secondary);
+                border-radius: 5px;
+                margin: 5px;
+                padding: 5px;
+                text-align: center;
+                &.delist{
+                    color: red;
+                    background-color: transparent;
+                    border: 2px dotted red;
+                }
+            }
+        }
+    }
+    .content-section{
+        text-align: center;
+        margin: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--col-font-light);
+        font-size: 22px;
+        color: var(--col-font-dim);
+        @media only screen and (max-width: 768px) {
+            margin: 25px 5px;
+        }
+    }
+    .content-section.friend-section{
+        border: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        span{
+            font-size: 15px;
+            color: var(--col-font-dim);
+
+        }
+        .friends{
+            font-size: 14px;
+            background-color: var(--col-bg-light);
+            padding: 5px;
+            >div{
+                text-align: center;
+                display: grid;
+                grid-template-columns: 0.5fr 1fr 1fr;
+                width: 80%;
+            }
+        }
+    }
+    .content-section.score{
+        color: var(--col-font);
+
+        h1{
+            font-size: 45px;
+        }
+        border-bottom: 2px dashed var(--col-font-light);
+    }
+    .buttons{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 10px;
+        .button{
+            font-size: 25px;
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+    }
+}

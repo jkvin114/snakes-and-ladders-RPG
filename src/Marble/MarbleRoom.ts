@@ -1,11 +1,11 @@
 import { GameEventEmitter } from "../sockets/GameEventEmitter";
 import { Room } from "../Room/room";
 import { Worker, isMainThread } from "worker_threads"
-import type { SchemaTypes } from "../mongodb/SchemaTypes";
 import { MarbleGameRecordSchema } from "../mongodb/schemaController/MarbleGameRecord";
 
 import MarbleGameGRPCClient from "../grpc/marblegameclient";
 import { hasProp } from "../RPGGame/core/Util";
+import { Logger } from "../logger";
 
 const path = require("path")
 
@@ -26,26 +26,24 @@ class MarbleRoom extends Room{
 	simulationRunning:boolean
 	static ItemDescriptionCache:any[]=[]
 	
+
     constructor(name:string){
         super(name)
 		this.type="marble"
-        //this.gameloop
-	//	this.eventObserver=new MarbleGameEventObserver(name)
 		this.simulationRunning=false
-		//this.gametype=GameType.NORMAL
+		this.restartResetTimeout()
     }
+	
+
 	registerClientInterface(callback:GameEventEmitter){
-		//this.eventObserver.registerCallback(callback)
 		return this
 	}
 	registerSimulationClientInterface(callback:GameEventEmitter){
-		
-	//	this.eventObserver.registerSimulationCallback(callback)
 		return this
 	}
 	user_startSimulation(setting:any){
 		return
-		this.gametype=""
+		//this.gametype=""
 		if (!isMainThread || this.simulationRunning) return
 		
 		this.simulationRunning=true
@@ -90,14 +88,16 @@ class MarbleRoom extends Room{
 			})
 		})
 	}
-    onGameover(stat:any){
+    async onGameover(stat:any){
 		this.isGameRunning=false
 		try{
-			console.log(stat)
-			MarbleGameRecordSchema.create(stat)
+			// console.log(stat)
+			const data = await MarbleGameRecordSchema.create(stat)
+			this.onGameStatReady(data._id,"MARBLE",new Set([data.winner])).then()
+			Logger.log("saved marble game result",this.name)
 		}
 		catch(e){
-			console.error("Failed to save game record")
+			Logger.error("Failed to save game record"+this.name,e)
 		}
 		finally{
 			this.reset()

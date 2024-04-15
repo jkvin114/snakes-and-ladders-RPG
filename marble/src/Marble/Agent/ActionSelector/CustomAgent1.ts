@@ -53,14 +53,14 @@ export class CustomAgent1 extends RationalRandomAgent {
 	}
 
 	chooseAttackDefenceCard(req: sm.AttackDefenceCardSelection) {
-		console.log(req)
+		//console.log(req)
 		if (req.cardname === CARD_NAME.ANGEL) return this.wrap<cm.UseCard>({ result: false, cardname: req.cardname })
 
 		return this.wrap<cm.UseCard>({ result: true, cardname: req.cardname })
 	}
 
 	chooseTollDefenceCard(req: sm.TollDefenceCardSelection) {
-		console.log(req)
+		//console.log(req)
 		if (req.before * triDist(1.3, 0.3) > this.game.me.money)
 			return this.wrap<cm.UseCard>({ result: true, cardname: req.cardname })
 		return this.wrap<cm.UseCard>({ result: false, cardname: req.cardname })
@@ -206,6 +206,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 			range[0] = backwardBy(pos, 4)
 			range[1] = forwardBy(pos, 4)
 		} else return triDist(1, 1)
+		
 		let enemies = this.game
 			.getPlayersBetween(range[0], range[1] + 1)
 			.filter((p) => p.turn !== this.myturn && p.pos !== pos).length

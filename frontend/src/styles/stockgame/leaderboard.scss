@@ -1,0 +1,44 @@
+#stockgame-leaderboard-root{
+    background: var(--col-bg-light);
+    text-align: center;
+    max-height: 100vh;
+    overflow: auto;
+    .toolbar{
+        text-align: center;
+    }
+    .leaderboard{
+        background: var(--col-bg);
+        display: inline-block;
+        // width: min(1000px,92vw);
+        max-width: 1000px;
+        margin: 10px;
+        margin-top: 20px;
+        text-align: center;
+        @media only screen and (max-width: 768px) {
+            .name{
+                font-size: 13px;
+            }
+        }
+        .name{
+            svg{
+                vertical-align: middle;
+            }
+            &.loggedin{
+                color: var(--col-font);
+                text-decoration: underline;
+            }
+        }
+        .item:hover{
+            background: var(--col-bg-light);
+            cursor: pointer;
+        }
+        .date{
+            font-size: 12px;
+            width: 60px;
+        }
+        .change{
+            width: 30px;
+        }
+    }
+
+}

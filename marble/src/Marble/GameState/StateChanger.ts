@@ -4,6 +4,7 @@ import { RollDiceAction, TeleportAction, MoveAction, PullAction } from "../actio
 import { DiceChanceAction, AskBuildAction, AskGodHandSpecialAction, AskBuyoutAction, AskLoanAction, MoveTileSelectionAction, TileSelectionAction, ObtainCardAction, LandSwapAction, AskDefenceCardAction, AskIslandAction } from "../action/QueryAction";
 import type { MarbleGame } from "../Game";
 import type MarbleGameCycleState from "./MarbleGameCycleState";
+import { Logger } from "../../logger";
 
 export default function StateChanger(action:Action|null,game:MarbleGame): MarbleGameCycleState<Action>{
     if(!action) return new ErrorState(game)
@@ -80,7 +81,7 @@ export default function StateChanger(action:Action|null,game:MarbleGame): Marble
                 break
         }
 
-        console.error("no next action registered")
+        Logger.err("no next action registered",action.getId())
 
         return new ErrorState(game)
 }

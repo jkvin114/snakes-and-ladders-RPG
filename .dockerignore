@@ -1,0 +1,7 @@
+frontend/
+marble/
+mockstock/
+stats/
+test/
+.vscode/
+logs/*.txt

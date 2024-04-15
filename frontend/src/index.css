@@ -1,0 +1,124 @@
+
+@font-face {
+    font-family: 'Pretendard-Regular';
+    src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+body {
+	margin: 0;
+	/* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+		"Droid Sans", "Helvetica Neue", sans-serif; */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-family: 'Pretendard-Regular';
+	--col-primary:#7e00bf;
+	--col-primary-light:#a438e4;
+	--col-secondary:#e11900;
+	--col-secondary-light:#f05b47;
+	--col-bg-dark:#10101e;
+	--col-bg:#1e1e2f;
+	--col-bg-light:hsl(240, 22%, 20%);
+	--col-bg-lighter:hsl(240, 22%, 25%);
+
+	--col-font:rgb(239, 239, 239);
+	--col-font-dim:rgb(216, 216, 216);
+
+	--col-font-light:rgb(130, 130, 130);
+	color: var(--col-font);
+	background-color: var(--col-bg);
+}
+#html-cover
+{
+	width: 100%;
+	height: 100%;
+	transition:  all 0.3s;
+	position: absolute;
+	top:0;
+	left: 0;
+	background-color: var(--col-bg);
+	z-index: 9999;
+}
+#rawhtml{
+	max-height: 100vh;
+	overflow: auto;
+}
+#rawhtml.gamepage{
+	overflow: hidden;
+}
+#page-root{
+	display: grid;
+	grid-template-columns: 50px auto;
+}
+#page-root.hide-toolbar{
+	display: block;
+}
+
+@media only screen and (max-width: 768px) {
+	#page-root{
+		display: block;
+	}
+	#content-root
+	{
+		margin-top: 35px;
+	}
+
+}
+.divlink{
+	position: relative;
+}
+a.divlink{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+.shadow{
+	position: absolute;
+	width: 100%;
+	height: max(100vh,100%);
+	top:0;
+	left: 0;
+	background-color: rgba(0,0,0,0.4);
+
+}
+.shadow-inner{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top:0;
+	left: 0;
+	background-color: rgba(0,0,0,0.4);
+}
+.button{
+	cursor: pointer;
+	background-color: var(--col-primary);
+	color: var(--col-font);
+	border: none;
+	font-size: 15px;
+	padding: 6px;
+	margin: 4px;
+	font-family: 'Pretendard-Regular';
+
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+.button.dark{
+	background-color: transparent;
+	outline: 2px solid var(--col-font-light);
+}
+.button.disabled{
+	background-color: transparent;
+	cursor: not-allowed;
+	outline: 2px solid var(--col-font-light);
+	color: var(--col-font-light);
+
+}
+
+.button:not(.disabled):hover{
+	filter: brightness(0.7);
+  }
+
+  

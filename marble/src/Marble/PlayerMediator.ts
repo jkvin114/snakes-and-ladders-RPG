@@ -127,9 +127,9 @@ class PlayerMediator {
 					this.game,
 					 AgentType.RATIONAL_RANDOM 
 				)
-
+				let playername = p.name===""?this.names[i]:p.name
 				this.players.push(
-					new MarblePlayer(i, this.names[i], champ, p.team, false, startmoney, new MarblePlayerStat(stats), agent)
+					new MarblePlayer(i, playername, champ, p.team, false, startmoney, new MarblePlayerStat(stats), agent)
 				)
 				this.playerCount += 1
 			}

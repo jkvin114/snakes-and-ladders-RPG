@@ -34,8 +34,8 @@ const playerSchema = new mongoose.Schema({
     kill:Number,
     death:Number,
     assist:Number
-
 });
+
 const killRecordSchema=new mongoose.Schema({
     killer:Number,
     dead:Number,

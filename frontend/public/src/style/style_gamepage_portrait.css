@@ -1,0 +1,116 @@
+@media screen and (orientation: portrait) {
+    #rpggame-root{
+        font-size: 1vh;
+    }
+.basicattackbtn{
+  bottom: 140px;
+
+}
+  #skillbtncontainer{
+    width: 220px;
+  }
+    .show_on_portraint{
+        display: block;
+      }
+    #infowindow{
+        grid-template-columns:auto;
+        top:3vh;
+    }
+    #skillinfowindow{
+      order: 1;
+      grid-template-columns:7rem auto;
+    }
+    #skillinfowindow .skillinfo{
+        line-height: 3rem;
+    }
+
+    #kdawindow{
+        order:2
+    }
+    .kdaimg{
+        width: 4rem;
+        height: 4rem;
+    }
+    #kdawindow a{
+        font-size: 2.5rem;
+    }
+    #newstore{
+      left: 2%;
+      top:20%;
+      height: 75%;
+      grid-template-columns: 10vw auto;
+    }
+    .levelitems {
+      /* grid-template-columns: auto; */
+    }
+    .itemdetail{
+      display: block;
+      left:10vw;
+    }
+    #newstorecurritem {
+      grid-template-columns: auto auto auto;
+      bottom:80%;
+      right:5%;
+      top:auto;
+      left: auto;
+    }
+    #newstoremoney{
+        bottom:80%;
+        left:2%;
+        top:auto
+    }
+    #buyitem,
+    #buytoken,
+    #buylife{
+        height: 10%;
+        width: 90%;
+    }
+    .store_thisitemimg{
+        transform: scale(0.6);
+        margin: -13px;
+        margin-bottom: -23px;
+    }
+    .typelistbtn img{
+        width: 6vw;
+        padding: 2vw;
+    }
+    
+  #skillbtncontainer{
+    /* transform: scale(0.7); */
+  }
+    .skillbtn{
+        /* margin-bottom: 10px; */
+    }
+    #dicecontrolbtn{
+        transform: translate(0,-32vw);        
+    }
+    #dicecontrolcool{
+        transform: translate(38px,-32vw);  
+    }
+    .mydisplay {
+        top:83px;
+        border-top-right-radius: 10px;
+
+    }
+    .mystatus {
+        left: 0;
+    }
+    #otherui_container {
+        /* top: 160px; */
+    }
+    #chat_enter{
+        /* top:40%;
+        width: 80%; */
+    }
+    .deathinfo-source{
+        grid-template-columns: auto;
+      }
+      #cancel_tileselection,#skillcancel,#confirm_tileselection{
+        bottom: 170px;
+      }
+    /* .store_treeitemimg {
+        margin: -20px;
+        transform: scale(0.6);
+        margin-bottom: -25px;
+      } */
+  }

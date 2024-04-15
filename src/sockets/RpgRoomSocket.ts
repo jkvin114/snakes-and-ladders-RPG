@@ -5,12 +5,13 @@ import { SocketSession } from "./SocketSession";
 import { ClientInputEventFormat, ServerGameEventFormat } from "../RPGGame/data/EventFormat";
 import { RPGRoom } from "../RPGGame/RPGRoom";
 import { controlRoom, controlRPGRoom } from "./Controller";
+import { Logger } from "../logger";
 const { User } = require("../mongodb/UserDBSchema")
 module.exports=function(socket:Socket){
 
 	socket.on("user:simulationready", function (setting:ClientInputEventFormat.SimulationSetting, count:number, isTeam:boolean) {
 		if (!SocketSession.getUsername(socket)) {
-			console.error("user not logined for simulation")
+			Logger.err("user not logined for simulation")
 			return
 		}
 		
@@ -24,6 +25,7 @@ module.exports=function(socket:Socket){
 		}).registerResetCallback(() => {
 			R.remove(rname)
 		})
+		Logger.log("create simulation room",rname)
 
 		R.setRPGRoom(rname, room)
 
@@ -44,13 +46,13 @@ module.exports=function(socket:Socket){
 
 	socket.on("user:gameready", function (setting:ClientInputEventFormat.GameSetting) {
 		let rname = SocketSession.getRoomName(socket)
-
+		console.log("gameready")
 		if (!R.hasRoom(rname)) return
 
 		R.getRPGRoom(rname)?.user_gameReady(setting, rname)
 
-		//게스트 페이지 바꾸기
-		socket.to(rname).emit("server:to_gamepage")
+		//호스트,게스트 페이지 바꾸기
+		io.to(rname).emit("server:to_gamepage")
 	})
 	
 	//==========================================================================================
@@ -75,17 +77,26 @@ module.exports=function(socket:Socket){
 			socket.join(rname)
 			let setting:ServerGameEventFormat.initialSetting = room.user_requestSetting()
 			let newturn=-1
+
+			//dont update if turn is -1(spectator)
 			if(turn!==-1){
 
-				newturn= turn
+				newturn = turn
+
 				//do not update turn from second access
 				if(!room.registeredSessions.has(SocketSession.getId(socket))){
 	
 					newturn=room.getChangedTurn(turn)
 					SocketSession.setTurn(socket,newturn)
+					
+					const session = SocketSession.getSession(socket)
+					if(session.isLogined){
+						room.addRegisteredUser(newturn,session.userId,session.username)
+					}
 				}
 				
 				room.registeredSessions.add(SocketSession.getId(socket))
+				
 			}
 			
 			socket.emit("server:initialsetting", setting, newturn, room.getGameTurnToken(newturn))
@@ -102,40 +113,24 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 
 	socket.on("user:start_game", function () {
-		//if (!room.game) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			let canstart = room.user_startGame()
-			if (!canstart) {
-				console.log("connecting incomplete")
-			}
+			const canstart = room.onUserGameReady(SocketSession.getId(socket))
+			if(canstart.canStart) room.onAllUserReady()
+
+			io.to(rname).emit("server:game_ready_status",canstart)
 		},true)
 		
 	})
 	//==========================================================================================
 	socket.on("start_instant_simulation", function () {
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-
-		//socket.join(rname)
-	//	R.getRPGRoom(rname).doInstantSimulation()
 	})
 
 	socket.on("user:update", function (type:string,data:any) {
-		//	console.log("action selection complete")
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_update(SocketSession.getTurn(socket),type,data)
 		},true)
 
-		// R.getRPGRoom(rname)
 	})
-	
-	//==========================================================================================
-
 	
 	//==========================================================================================
 
@@ -145,9 +140,6 @@ module.exports=function(socket:Socket){
 	 * -게임오버 체크
 	 */
 	socket.on("user:arrive_square", function () {
-		// let rname = SocketSession.getRoomName(socket)
-		// if (!R.hasRPGRoom(rname)) return
-		//ROOMS.get(rname).user_arriveSquare()
 	})
 	//==========================================================================================
 
@@ -155,10 +147,6 @@ module.exports=function(socket:Socket){
 	 * 클라이언트에서 장애물에 도착 후 0.5초 후에 실행
 	 */
 	socket.on("user:obstacle_complete", function () {
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		//ROOMS.get(rname).user_obstacleComplete()
 	})
 	//==========================================================================================
 
@@ -167,18 +155,9 @@ module.exports=function(socket:Socket){
 	 * 처리 후 선댁 action(잠수함, 갈림길선택 등) 체크
 	 */
 	socket.on("user:complete_obstacle_selection", function (crypt_turn:string,info: ClientInputEventFormat.PendingObstacle) {
-		//	console.log("obs selection complete")
-
-		// let rname = SocketSession.getRoomName(socket)
-
-	//	console.log("complete_obstacle_selection")
-
-		// if (!R.hasRPGRoom(rname)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_completePendingObs(info,crypt_turn)
 		},true)
-		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
-		// R.getRPGRoom(rname).getGameLoop().user_completePendingObs(info,crypt_turn)
 	})
 	//==========================================================================================
 	
@@ -187,152 +166,77 @@ module.exports=function(socket:Socket){
 	 * 처리 후 스킬 사용
 	 */
 	socket.on("user:complete_action_selection", function (crypt_turn:string,info: ClientInputEventFormat.PendingAction) {
-		//	console.log("action selection complete")
-
-		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_completePendingAction(info,crypt_turn)
 		},true)
-		// R.getRPGRoom(rname).getGameLoop().user_completePendingAction(info,crypt_turn)
 	})
+	//==========================================================================================
 	//execute when player clicks basic attack
 	socket.on("user:basicattack", function (crypt_turn: string) {
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_basicAttack(crypt_turn)
 		},true)
-		// room.getGameLoop().user_basicAttack(crypt_turn)
 	})
 	//==========================================================================================
 	socket.on("user:press_dice", function (crypt_turn: string, dicenum: number) {
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_pressDice(dicenum,crypt_turn)
-			// if(dice!=null)
-			// io.to(rname).emit("server:rolldice", dice)
 		},true)
-
-		// let dice = R.getRPGRoom(rname).getGameLoop().user_pressDice(dicenum,crypt_turn)
-		// //console.log("press_dice" + dice)
-		// if(dice!=null)
-		// 	io.to(rname).emit("server:rolldice", dice)
-
-		//	console.log("pressdice")
 	})
     //execute when player clicks skill button, use skill or return targets or return proj positions
 	socket.on("user:get_skill_data", function (crypt_turn: string, s: number) {
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
-		// let room = R.getRPGRoom(rname)
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			let result=room.getGameLoop.user_clickSkill(s,crypt_turn)
 			socket.emit("server:skill_data", result)
 		})
-
-	// 	let result = room.getGameLoop().user_clickSkill(s,crypt_turn)
-	// //	console.log(result)
-	// 	socket.emit("server:skill_data", result)
 	})
 	
 	//==========================================================================================
 	//execute when player chose a target
 	socket.on("user:chose_target", function (crypt_turn: string, target: number) {
-		//	console.log("sendtarget")
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_choseSkillTarget(target,crypt_turn)
 		},true)
-		// R.getRPGRoom(rname).getGameLoop().user_choseSkillTarget(target,crypt_turn)
-
-		// if (status != null) {
-		// 	setTimeout(() => socket.emit("server:used_skill", status), 500)
-		// }
 	})
 	//==========================================================================================
 	//execute when player chose a projectile location
 	socket.on("user:chose_location", function (crypt_turn: string, location: number) {
-		//	console.log("sendprojlocation")
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_choseSkillLocation(location,crypt_turn)
 		},true)
-		// R.getRPGRoom(rname).getGameLoop().user_choseSkillLocation(location,crypt_turn)
-		// socket.emit("server:used_skill", skillstatus)
 	})
 	socket.on("user:chose_area_skill_location", function (crypt_turn: string, location: number) {
-		//	console.log("sendprojlocation")
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		// if (!ROOMS.get(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_choseAreaSkillLocation(location,crypt_turn)
 		},true)
-		// R.getRPGRoom(rname).getGameLoop().user_choseAreaSkillLocation(location,crypt_turn)
-		// socket.emit("server:used_skill", skillstatus)
 	})
 	//==========================================================================================
 
 	socket.on("user:store_data", function (data: ClientInputEventFormat.ItemBought) {
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_storeComplete(data)
 		},true)
-		// R.getRPGRoom(rname).getGameLoop().user_storeComplete(data)
 	})
 
 	//==========================================================================================
 
 	socket.on("user:nextturn", function (crypt_turn: string) {
-		// let rname = SocketSession.getRoomName(socket)
-
-		// if (!R.hasRPGRoom(rname)) return
-		// if (!R.getRPGRoom(rname).isThisTurn(crypt_turn)) return
 		controlRPGRoom(socket,(room,rname,turn)=>{
 			room.getGameLoop.user_clickNextturn(crypt_turn)
 		},true)
-		// R.getRPGRoom(rname).getGameLoop().startNextTurn(false)
 	})
 
 	//==========================================================================================
 
 	socket.on("user:reset_game", function () {
-		// let rname = SocketSession.getRoomName(socket)
-		// let quitter = SocketSession.getTurn(socket)
-		//console.log(rname, quitter)
-		// if (!R.hasRPGRoom(rname)) return
-		// let room = R.getRPGRoom(rname)
 
 		controlRPGRoom(socket,(room,rname,quitter)=>{
 			io.to(rname).emit("server:quit", quitter)
-			console.log("an user has been disconnected ")
+			Logger.log("user has been disconnected ",rname," turn:"+quitter)
 			room.reset()
 			R.remove(rname)
 		})
-
-		// io.to(rname).emit("server:quit", quitter)
-		// console.log("an user has been disconnected " + R.getRPGRoom(rname))
-
-		// try {
-		// 	room.reset()
-		// } catch (e) {
-		// 	console.error("Error while resetting room " + e)
-		// }
-
-		// R.remove(rname)
 	})
 
 	socket.on("user:turn_roullete", function () {
@@ -342,9 +246,10 @@ module.exports=function(socket:Socket){
 		},true)
 	})
 	socket.on("user:chat", function (turn,message) {
-		// let rname = SocketSession.getRoomName(socket)
 		controlRPGRoom(socket,(room,rname,turn)=>{
-			io.to(rname).emit("server:receive_message",room.getPlayerMessageHeader(turn),message)
+			const header = room.getPlayerMessageHeader(turn)
+			Logger.log("rpg game chat",rname,header,message)
+			io.to(rname).emit("server:receive_message",header,message)
 		},true)
 	})
 }

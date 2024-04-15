@@ -48,7 +48,8 @@ const articleSchema = new mongoose.Schema(
 		category: Number,
 		articleId: Number,
 		commentCount: Number,
-		_id:Schema.Types.ObjectId
+		_id:Schema.Types.ObjectId,
+		formattedContent:String //json formatted content using Quill.js
 	},
 	{ timestamps: true }
 )
@@ -60,7 +61,8 @@ const commentSchema = new mongoose.Schema(
 			type: String
 		},
 		article: {
-			type: Schema.Types.ObjectId
+			type: Schema.Types.ObjectId,
+			index:true
 		},
 		author: {
 			required: true,
@@ -105,7 +107,8 @@ const commentReplySchema = new mongoose.Schema(
 	{
 		content: {
 			required: true,
-			type: String
+			type: String,
+			index:true
 		},
 		article: {
 			type: Schema.Types.ObjectId

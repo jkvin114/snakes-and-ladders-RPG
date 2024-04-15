@@ -55,7 +55,7 @@ export class GameEventObserver {
 		this.recordEvent(new EventRecord("moveByDice").setInvoker(data.turn).setNumberObject(data.actualdice)
 		.setNumberArgs(data.currpos,Number(data.died)))
 
-		console.log("rolldice")
+		//console.log("rolldice")
 		this.emit("rolldice",data)
 		// this.eventEmitter(this.rname, "server:rolldice", data)
 	}

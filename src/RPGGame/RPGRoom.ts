@@ -10,8 +10,10 @@ import { SimulationEvalGenerator } from "./Simulation/eval/Generator"
 import { GameLoop } from "./GameCycle/RPGGameLoop"
 import { GameEventEmitter } from "../sockets/GameEventEmitter"
 import { ClientInputEventFormat, ServerGameEventFormat } from "./data/EventFormat"
+import { Logger } from "../logger"
+import { CompressedReplay } from "../mongodb/ReplayDBHandler"
 const path = require("path")
-
+import LZString from "lz-string"
 function workerTs(data: unknown) {
 	return new Worker(path.resolve(__dirname, `./../WorkerThread.js`), { workerData: data })
 }
@@ -99,19 +101,32 @@ class RPGRoom extends Room {
 		return this.gameloop
 	}
 	/**
-	 *
-	 * @returns test if all players are connected
+	 *called when a client is ready.
+		If all clients are ready, start the game.
+	 * @returns true if all players are connected
 	 */
 	user_startGame(): boolean {
+		//depricated
+		return
 		if(!this.gameloop) return false
 
 		let canstart = this.gameloop.game.canStart()
 		if (!canstart) return false
 		else if (!this.gameloop.game.begun){
+			Logger.log("rpg game start ",this.name)
 			this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
 			this.isGameRunning=true
 		} 
 		return true
+	}
+	onAllUserReady(){
+		if(!this.gameloop) return false
+
+		if (!this.gameloop.game.begun){
+			Logger.log("rpg game start ",this.name)
+			this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
+			this.isGameRunning=true
+		} 
 	}
 
 	async onGameover(isNormal:boolean) {
@@ -128,22 +143,23 @@ class RPGRoom extends Room {
 		
 		this.reset()
 		try{
-
 			if(replayData.enabled){
-				const replay=await Replay.create(replayData)
+				const compressedJson = LZString.compressToUTF16(JSON.stringify(replayData))
+				const replay=await CompressedReplay.create({data:compressedJson})
 				stat.replay=replay.id.toString()
 			}
 			//dev setting 켜져있을때는 통계 저장안함
-			if(CONFIG.dev_settings.enabled){
+			if(CONFIG.dev_settings.enabled && !CONFIG.dev_settings.savestat){
 				this.eventObserver.gameStatReady('')
 			}
 			else{
-				const resolvedData=await GameRecord.create(stat)
+				const resolvedData = await GameRecord.create(stat)
+				await this.onGameStatReady(resolvedData.id,"RPG",stat.winners)
 				this.eventObserver.gameStatReady(resolvedData.id)
 			}
 		}
 		catch(e){
-			console.error(e)
+			Logger.error("rpg game over ",e)
 		}
 
 		this.eventObserver.gameOver(winner)
@@ -156,7 +172,7 @@ class RPGRoom extends Room {
 	) {
 		if (!isMainThread) return
 		if(CONFIG.dev_settings.enabled) {
-			console.error("ERROR: Dev setting is enabled!")
+			Logger.warn("ERROR: cannot run simulation if dev setting is enabled!")
 			return
 		}
 		// let setting = new SimulationSetting(isTeam, simulationsetting)
@@ -166,7 +182,7 @@ class RPGRoom extends Room {
 				this.onSimulationOver(true, stat)
 			})
 			.catch((e) => {
-				console.error(e)
+				Logger.error("rpg simulation",e)
 				this.onSimulationOver(false, e.toString())
 			})
 	}
@@ -226,7 +242,7 @@ class RPGRoom extends Room {
 				simEval.save()
 			}
 			catch(e){
-				console.error(e)
+				Logger.error("saving simulation eval",e)
 				this.eventObserver.simulationStatReady("error",(e as any).toString())
 			}
 			
@@ -234,7 +250,7 @@ class RPGRoom extends Room {
 
 		if (!stat) {
 			if (!simple_stat) {
-				console.log("simulation complete")
+				Logger.log("simulation complete")
 				this.eventObserver.simulationOver("no_stat")
 				return
 			}
@@ -244,7 +260,7 @@ class RPGRoom extends Room {
 				this.eventObserver.simulationStatReady("none","")
 			}
 			catch(e){
-				console.error(e)
+				Logger.error("saving simulation stat",e)
 				this.eventObserver.simulationStatReady("error",(e as any).toString())
 
 			}
@@ -262,12 +278,12 @@ class RPGRoom extends Room {
 				this.eventObserver.simulationStatReady(data.id,"")
 			}
 			catch(e){
-				console.error(e)
+				Logger.error("saving simulation stat",e)
 				this.eventObserver.simulationStatReady("error",(e as any).toString())
 			}
 			
 		}
-
+		Logger.log("rpg simulation finished")
 		this.eventObserver.simulationOver("success")
 		
 	}

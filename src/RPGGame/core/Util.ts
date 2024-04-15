@@ -1,4 +1,5 @@
 import fs = require("fs")
+import { Logger } from "../../logger"
 
 const CALC_TYPE = {
 	set: (o: number, n: number) => n,
@@ -151,16 +152,16 @@ export const getCurrentTime = function(){
 export function writeFile(data:string,dir:string,extension:string,onSuccess:string){
 	fs.writeFile(__dirname + "/../../"+dir +getCurrentTime()+ "."+extension, data, (err) => {
 		if (err) {
-			console.log(err)
+			Logger.error("write file",err)
 			throw err
 		}
-		console.log(onSuccess)
+		//console.log(onSuccess)
 	})
 }
 export function writeToFile(data:string,filename:string){
 	fs.appendFile(__dirname + "/../../"+filename, data, (err) => {
 		if (err) {
-			console.log(err)
+			Logger.error("write file",err)
 			throw err
 		}
 		// console.log("successfully")
@@ -177,8 +178,70 @@ export function normalize(list:number[]){
 	let sorted=list.sort((a,b)=>a-b)
 	return list.map((val)=>(val-sorted[0])/(sorted[sorted.length-1]-sorted[0]))
 }
+export function sum(list:number[]){
+	return list.reduce((pv,cr)=>pv+cr,0)
+}
+export function mean(list:number[]){
+	return sum(list)/list.length
+}
+export function std(list:number[]){
+	let avg=mean(list)
+	let v=0
+	for(let j=0;j<list.length;++j){
+		v+= (list[j]-avg)**2
+	}
+	return Math.sqrt(v/list.length)
+}
+
+/**
+ * normalize over columns to be standard normal distribution
+ * @param list 
+ */
+export function normalize2D(list:number[][])
+{
+	for(let i=0;i<list[0].length;++i){
+		let arr=[]
+		for(let j=0;j<list.length;++j){
+			arr.push(list[j][i])
+		}
+		let avg = mean(arr)
+		let sd = std(arr)
+		if(sd!==0)
+			arr=arr.map(v=>(v-avg)/sd)
+		for(let j=0;j<list.length;++j){
+			list[j][i]=roundToNearest(arr[j],-2)
+		}
+	}
+	return list
+}
+/**
+ * normalize over columns to be standard normal distribution for indices features
+ * @param list 
+ */
+export function normalize2DIndices(list:number[][],indices:number[])
+{
+	for(let i of indices){
+		if(i<0 || i >=list[0].length) continue
+
+		let arr=[]
+		for(let j=0;j<list.length;++j){
+			arr.push(list[j][i])
+		}
+		let avg = mean(arr)
+		let sd = std(arr)
+		if(sd!==0)
+			arr=arr.map(v=>(v-avg)/sd)
+		for(let j=0;j<list.length;++j){
+			list[j][i]=roundToNearest(arr[j],-2)
+		}
+	}
+	return list
+}
 export function removeDuplicate<T>(list:T[]):T[]{
 	return [...new Set<T>(list)]
+}
+export function normNRound(val: number, divide: number) {
+	return roundToNearest(val / divide, -3)
 }
 class PriorityArray<T> extends Array {
 	constructor() {
@@ -240,8 +303,10 @@ class PriorityArray<T> extends Array {
 }
 export class Counter<T>{
 	map:Map<T,number>
+	size:number
 	constructor(elem?:Iterable<T>){
 		this.map=new Map<T,number>()
+		this.size=0
 		if(elem!=null){
 			for(const e of elem){
 				this.add(e)
@@ -259,6 +324,7 @@ export class Counter<T>{
 		else{
 			this.map.set(toadd,1)
 		}
+		this.size++
 		return this
 	}
 	countItem(item:T){
@@ -268,6 +334,7 @@ export class Counter<T>{
 	delete(e:T){
 		let val=this.map.get(e)
 		if(val!==undefined){
+			this.size--
 			this.map.set(e,val-1)
 			if(this.map.get(e)===0) this.map.delete(e)
 		}
@@ -280,6 +347,7 @@ export class Counter<T>{
 	}
 	clear(){
 		this.map.clear()
+		this.size = 0 
 	}
 	toArray(){
 		let list=[]

@@ -322,11 +322,12 @@ class Game {
 		if (this.clientsReady < this.PNUM) {
 			return false
 		}
-		if(!this.begun)
-			this.onGameStart()
+		// if(!this.begun)
+		// 	this.onGameStart()
 		return true
 	}
 	onGameStart(){
+		if(this.begun) return
 		for(const p of this.entityMediator.allPlayer()){
 			p.onGameStart()
 			if(p.AI) this.eventEmitter.message(this.getPlayerMessageHeader(p.turn),p.AiAgent.gameStartMessage)
@@ -425,11 +426,28 @@ class Game {
 		// let str=`${this.mapHandler.mapId},${this.totalturn},${this.totalnum},${this.isTeam?1:0},${this.mapHandler.getFinishPos()},`+
 		// `${this.setting.additionalDiceAmount},${this.setting.diceControlItemFrequency},${this.setting.extraResistanceAmount},`+
 		// `${this.itemLimit},`
-		let str2=`${this.totalturn}`
+		const sampleProb=0.3
+
+		let str2=`${Util.normNRound(this.totalturn,20)}`
+		let labels=[]
 		for(let i=0;i<this.totalnum;i++){
-			str2+=","+this.pOfTurn(i).getStateLabel(this.mapHandler.getFinishPos())
+			labels.push(this.pOfTurn(i).getStateLabel(this.mapHandler.getFinishPos()))
 		}
-		this.trainLabels.push(str2)
+		labels=Util.normalize2DIndices(labels,[
+			0,1,2,3,4,5,6
+		])
+		
+		for(const label of labels){
+			let str=""
+			label.forEach((val, i) => {
+				if (i === 0) str += val
+				else return (str += "," + val)
+			}, "")
+			str2+=","+str
+		}
+		if(Math.random()<sampleProb)
+			this.trainLabels.push(str2)
+
 		if(!this.instant && CONFIG.useWinPrediction)
 			this.getPrediction(str2)
 	}
@@ -1238,11 +1256,12 @@ class Game {
 			killRecord: this.killRecord,
 			isTeam: this.isTeam,
 			replay:'',
-			setting: this.setting.serialize()
+			setting: this.setting.serialize(),
+			winners:new Set<number>()
 		}
 		
 		data.replay=undefined
-
+		const winnerTeam = this.pOfTurn(this.winner).team
 		let sortedplayers = this.entityMediator.allPlayer().sort((a, b) => {
 			if (a.turn === this.winner) {
 				return -1
@@ -1257,8 +1276,12 @@ class Game {
 				}
 			}
 		})
+		
 
 		for (let p of sortedplayers) {
+			if(p.turn===this.winner) data.winners.add(p.turn)
+			else if(this.isTeam && p.team === winnerTeam) data.winners.add(p.turn)
+		
 			data.players.push({
 				team: this.getTeamAsBool(p.team),
 				name: p.name,

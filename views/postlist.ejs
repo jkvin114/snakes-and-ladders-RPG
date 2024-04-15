@@ -6,29 +6,23 @@
 
 <style>
 
-  @font-face {
-    font-family: "cookierun";
-    src: url("/res/font/NanumSquareB.ttf");
-  }
   body{     
    background-color: var(--bg);
    color: rgb(254, 254, 245);
     margin: 0;
-    margin-bottom: 20px;
-  font-family: 'cookierun';
+    /* margin-bottom: 20px; */
     text-align: center;
   }
   a,p{
-    font-family: 'cookierun';
   }
   .post{
     background-color: var(--bg3);
-    margin: 5px;
+    margin: 2px;
     padding: 5px;
     cursor: pointer;
-    border-radius: 4px;
+    /* border-radius: 4px; */
     display: grid;
-    grid-template-columns: min-content auto max-content;
+    grid-template-columns: max-content auto  min-content;
     align-items: center;
   }
   .filter-white{
@@ -62,57 +56,21 @@
   .downvote img{
     transform: rotate(180deg);
   }
-  /* #navbar{
-    display: flex;
-    justify-content:flex-start;
-    flex-direction: row-reverse;
-    align-items: stretch;
-    height: 40px;
-    background-color: rgb(36, 36, 36);
-    position: sticky;
-    top: 0;
-    padding: 5px;
-    z-index: 3;
-    border-bottom: 1px solid rgb(95, 95, 95);
-  }
-  #navbar img,#navbar > div,.pagebtn{
-    font-family: 'cookierun';
-    color:white;
-    background-color: #7E00BF; 
-    background: transparent;
-    line-height: 30px;
-
-    cursor:pointer;
-    text-align:center;
-    font-size: 20px;
-    border:none;
-    vertical-align: middle;
-    border-radius: 5px;
-    padding: 5px;
-    margin-right: 5px;
-     height: 30px; 
-  }
-  #navbar img:hover,#navbar > div:hover,.pagebtn:hover{
-    background-color: rgb(75, 75, 75);
-  } */
   #header{
     text-align: center;
     /* border-radius: 10px; */
-    width: min(99%,1000px);
+    width: min(85%,1000px);
     display: inline-block;
     padding: 5px;
     background-color:  var(--bg3);
     margin-bottom: 10px;
-    margin-top: 20px;
   }
   .pagebtn:hover{
-    background-color: rgb(75, 75, 75);
+    background-color: var(--bg4);
   }
   .pagebtn{
-    font-family: 'cookierun';
     color:white;
-    background-color: #7E00BF; 
-    background: transparent;
+    background-color:var(--bg3);
     line-height: 30px;
 
     cursor:pointer;
@@ -139,22 +97,29 @@
   #post_container{
     width: min(99%,700px);
     display: inline-block;
+    margin-bottom: 20px;
   }
   .title{
     font-size: 17px;
   }
   .title_container{
-    padding: 7px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-left: 30px;
+    justify-content: space-evenly;
   }
   .subtext{
     font-size: 10px;
     /* color: #efa1ff; */
     color: var(--font-light);
     word-break: keep-all;
+    vertical-align: middle;
+
   }
   .subtext_container{
-    text-align: center;
-  }
+    text-align: left;  }
   .comment{
     margin-left: 3px;
     color: rgb(161, 195, 255);
@@ -176,6 +141,16 @@
     float: left;
     margin-bottom: 3px;
   }
+  .divlink{
+	position: relative;
+}
+a.divlink{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -186,7 +161,7 @@
 </head>
 
 <body>
-
+<!--
   <div id="navbar">
 
     <div id="navbar-btn-container">
@@ -200,7 +175,7 @@
             <img class='postbtn' src="/res/img/svg/note.svg"  title="post board">
             <a>Posts</a>
           </div>
-          <div class="navbtn" onclick="golink('/statpage.html')">
+          <div class="navbtn" onclick="golink('/stat')">
             <img id="statbtn" src="/res/img/svg/chart_white.svg" title="Statistics">
             <a>Statistics</a>
           </div>
@@ -232,13 +207,10 @@
             <%}%>
             
 
-        <!-- <img class="menubtn" id="loginbtn" onclick="open_login()" src="./res/img/svg/user.svg" title="Login">
-        <img class='menubtn hidden' id="logoutbtn" src="res/img/svg/out.svg" onclick="logout()" title="Logout"> -->
-        <!-- <img class=navbtn id="quitbtn" src="res/img/svg/out.svg"> -->
       </div>
     </div>
   </div>
-
+-->
   <div id="header">
     <%if(displayType==="all") {%>
       <h3 lkey="allpost">All Posts</h3>
@@ -253,20 +225,8 @@
      
     <div id="post_container">
         <% for(let i=0;i<posts.length;++i){%>
-          <div class="post" onclick="golink('/board/post/<%=posts[i].articleId%>')">
-            
-            <%if(posts[i].imagedir!=="") {%>
-              <div class="thumbnail-img-container">
-                <img class="thumbnail-img" src="/uploads/<%= posts[i].imagedir %>"> 
-              </div>
-            <% } else{ %><div></div>
-              <% }  %> 
-            <div class="title_container">
-              
-              
-              <a class="title">
-                <%= posts[i].title %> </a> 
-            </div>
+          <div class="post divlink">
+            <a class="divlink" href='/board/post/<%=posts[i].articleId%>'></a>
             <div class="vote_container">
               
               <%if(posts[i].visibility==="PRIVATE") {%>
@@ -285,15 +245,31 @@
                 <a><%= posts[i].downvote %></a>
               </div>
             </div>
+           
+            <div class="title_container">
+              <div>
+              <a class="title">
+                <%= posts[i].title %> </a> 
+                  <a class="subtext comment"><img src="/res/img/svg/comment.svg"> [<%= posts[i].commentCount %>]</a><br>
+              </div>
+                <div class="subtext_container">
+                  <a class="subtext"> <b lkey="author">author</b>: <%=posts[i].authorName%> | </a>
+                  <a class="subtext"> <%= posts[i].createdAt.toString().substring(0,16) %>  | </a>
+                  <a class="subtext">  <b lkey="view">views</b>:<%= posts[i].views %></a>
+                </div>
+            </div>
+           
+            <%if(posts[i].imagedir!=="") {%>
+              <div class="thumbnail-img-container">
+                <img class="thumbnail-img uploaded-image" data-src="<%= posts[i].imagedir %>" alt="loading.."> 
+              </div>
+            <% } else{ %><div class="thumbnail-img-container"></div>
+              <% }  %> 
+
+
             <div></div>
-            <div class="subtext_container">
-              <a class="subtext"><b lkey="author">author</b>: <%=posts[i].authorName%></a>
-              <a class="subtext"> <%= posts[i].createdAt.toString().substring(0,24) %></a>
-              <a class="subtext">  <b lkey="view">views</b>:<%= posts[i].views %></a>
-            </div>
-            <div>
-              <a class="subtext comment"><img src="/res/img/svg/comment.svg"> [<%= posts[i].commentCount %>]</a><br>
-            </div>
+            
+           
           </div>
       <% } %> 
       <%if(start>0){%>
@@ -308,6 +284,7 @@
 
 
     </div>
+    <br><br><br>
 </body>
 <script>
 function golink(link){

@@ -1,0 +1,13 @@
+#statuspage{
+    color: var(--col-font);
+    text-align: center;
+}
+#statuspage .status{
+    color: greenyellow;
+}
+#statuspage .status.red{
+    color: red;
+}
+#statuspage a{
+    color: var(--col-font);
+}

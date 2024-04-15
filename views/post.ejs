@@ -1,25 +1,19 @@
 <html>
   <script src="/lib/jquery-3.6.0.min.js"></script>
+  
   <script src="/src/localeManager.js"></script>
 	<link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
-  @font-face {
-    font-family: "nanumB";
-    src: url("/res/font/NanumSquareB.ttf");
-  }
   body{     
    background-color: var(--bg);
    color:white;
 
    margin: 0;
-    margin-bottom: 20px;
-  font-family: 'nanumB';
   text-align:center;
 
   }
   a,p{
-    font-family: 'nanumB';
   }
 
   
@@ -30,32 +24,32 @@
     justify-content:flex-start;
     flex-direction: row-reverse;
     align-items: stretch;
-    height: 40px;
-    background-color: rgb(36, 36, 36);
+    height: 30px;
+    background-color: var(--col-bg-dark);
     position: sticky;
     top: 0;
     padding: 5px;
     border-bottom: 1px solid rgb(95, 95, 95);
-    z-index: 3;
+    z-index: 1;
   }
   #navbar img, #navbar > div{
     color:white;
     /* background-color: #7E00BF; */
-    background: #505060;
-    line-height: 30px;
+    background: var(--col-bg-light);
+    line-height: 25px;
 
     cursor:pointer;
     text-align:center;
-    font-size: 20px;
+    font-size: 15px;
     border:none;
     vertical-align: middle;
     border-radius: 20%;
-    padding: 5px;
+    padding: 2px;
     margin-right: 5px;
-    height: 30px;
+    height: 25px;
   }
   #navbar img:hover,#navbar > div:hover{
-    background-color: #7a7a92;
+    background-color: var(--bg);
   }
   #navbar img.delete_post{
     /* background-color: #ff5656; */
@@ -150,6 +144,8 @@
     background-color: var(--bg2);
     padding: 10px;
     text-align: start;
+    margin-bottom: 20px;
+
   }
   .title_container{
     text-align: start;
@@ -221,7 +217,6 @@
     background:none;
     border: none;
     border-bottom:2px solid rgb(210, 210, 210);
-    font-family: 'nanumB';
     flex-grow: 1;
   }
   .submit_comment{
@@ -229,9 +224,8 @@
     font-size: 15px;
     padding: 6px;
     border: none;
-    background-color: #7E00BF;
+    background-color: var(--col-primary);
     color: white;
-    font-family: 'nanumB';
     cursor: pointer;
   }
   .commententer{
@@ -281,6 +275,17 @@
     object-fit: cover;
     cursor: pointer;
   }
+  #post-container{
+    min-height: 150px;
+    position: relative;
+  }
+  #loadingimg{
+    position: absolute;
+    top:50%;
+    left:50%;
+    width: 100px;
+    transform: translate(-50%,-50%);
+  }
 </style>
 <head>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.2, user-scalable=no" />
@@ -296,7 +301,7 @@
     <img src="/res/img/svg/list.svg" id="postlistbtn">
     <%if(canModify){%>
       <img src="/res/img/svg/trash.svg" class="delete_post" data-id="<%= id%>">
-      <img onclick="golink('/board/post/edit/<%=url%>')" src="/res/img/ui/write.png"class="edit_post">
+      <img onclick="golink('/writepost?postUrl=<%=url%>')" src="/res/img/ui/write.png"class="edit_post">
   
       <!-- <button value="<%= id%>" class="delete_post">&times;</button>
       <button onclick="golink('/board/post/edit/<%=url%>')" class="edit_post">edit</button> -->
@@ -314,7 +319,7 @@
   
   <div class="info_container">
     <%if(authorProfileImage!==""){%>
-      <img src="/uploads/profile/<%= authorProfileImage %>" class="author-img profileimg" onclick="golink('/board/user/<%=author%>/posts')">
+      <img data-src="<%= authorProfileImage %>" class="author-img profileimg uploaded-profile-image" onclick="golink('/board/user/<%=author%>/posts')">
     <%}%>
     <b class="info author" onclick="golink('/board/user/<%=author%>/posts')"><%= author %> </b><br>
     <a class="info"><%= createdAt.toString().substring(0,24) %></a>
@@ -323,9 +328,9 @@
       
   <hr>
       <%if(image!=="") {%>
-        <img class="postimg" src="/uploads/<%= image %>"> 
+        <img class="postimg uploaded-image" id="postimg" data-src="<%= image %>"> 
      <% }  %>
-     <div class="content"><%- content %>  </div>
+     <div class="content" id="post-container"> <img id="loadingimg" src="/res/img/ui/loading_purple.gif"></div>
      
      <div class="vote upvote postvote <%=(myvote==='up'?'active':'')%>"  data-type="up" data-id="<%=id%>">
       <img src="/res/img/svg/like.svg">
@@ -345,7 +350,7 @@
      <div id="comments">
       <%if(logined){%>
           
-        <form action="/board/post/comment" method="post"> 
+        <form id="commentform"> 
           <input type="hidden" name="postUrl" value="<%= url %>">  
           <input type="hidden" name="postId" value="<%= id %>">  
           <div class="commententer">
@@ -367,7 +372,7 @@
             <div></div>
           <%}else{%>
             <%if(comm.authorProfileImage!==""){%>
-              <img class="profileimg comment-author-img" src="/uploads/profile/<%= comm.authorProfileImage %>" onclick="golink('/board/user/<%=comm.author%>/comments')">
+              <img class="profileimg comment-author-img uploaded-profile-image" data-src="<%= comm.authorProfileImage %>" onclick="golink('/board/user/<%=comm.author%>/comments')">
             <%}%>
           <u class="comment_info comment_author" onclick="golink('/board/user/<%=comm.author%>/comments')"> <%= comm.author %> </u>
             <a class="comment_info"><%= comm.createdAt.toString().substring(0,24) %></a>
@@ -398,7 +403,9 @@
      
  </div>
    
-</body>
+</body>    <br><br><br>
+
+
 <script>
   
 updateLocale("board")
@@ -496,7 +503,8 @@ $(".bookmark").click(function(){
     })
 })
 
-
+  
+function main(){}
 function sendVote(kind,type,id,elem){
 
   let vote_count=$(elem).children('.vote_count').eq(0)

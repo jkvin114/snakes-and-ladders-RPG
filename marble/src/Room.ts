@@ -9,6 +9,7 @@ const path = require("path")
 import { Worker, isMainThread } from "worker_threads"
 import type { marblegame } from "./grpc/services/marblegame"
 import type { ServerWritableStream } from "@grpc/grpc-js"
+import { Logger } from "./logger"
 
 function workerTs(data: any) {
 	return new Worker(path.resolve(__dirname, `./WorkerThread.js`), { workerData: data })
@@ -48,6 +49,7 @@ export default class Room {
 		//this.onBeforeGameStart()
 		// this.instant = false
 		// this.gametype = gametype as GameType
+		Logger.log("create game loop",roomName)
 		this.gameloop = MarbleGameLoop.createLoop(roomName, this.isTeam, this.map, this.playerlist, this.gametype)
 		this.gameloop.registerItems(itemSetting)
 		this.gameloop.setGameEventObserver(this.eventObserver)
@@ -69,9 +71,10 @@ export default class Room {
 	 */
 	user_startGame(): boolean {
 		if (!this.gameloop) return false
-		let canstart = this.gameloop.game.canStart()
-		if (!canstart) return false
-		else if (!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
+		// let canstart = this.gameloop.game.canStart()
+		// if (!canstart) return false
+		if (!this.gameloop.game.begun) this.gameloop.setOnGameOver(this.onGameover.bind(this)).startTurn()
+		Logger.log("startgame",this.name)
 		return true
 	}
 	onClientEvent(event: string, invoker: number, args: any[]) {
@@ -85,13 +88,13 @@ export default class Room {
 		if (!isMainThread || this.simulationRunning) return
 
 		this.simulationRunning = true
-
+		Logger.log("start simulation",this.name)
 		this.doInstantSimulation(setting)
 			.then((stat: any) => {
 				this.onSimulationOver(true, stat)
 			})
 			.catch((e) => {
-				console.error(e)
+				Logger.error("simulation error",e)
 				this.onSimulationOver(false, e.toString())
 			})
 	}
@@ -138,6 +141,7 @@ export default class Room {
 	}
 	reset(): void {
 		//	super.reset()
+		Logger.log("reset room ",this.name)
 		if (this.gameloop != null) this.gameloop.onDestroy()
 		// this.simulation = null
 	}

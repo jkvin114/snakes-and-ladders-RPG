@@ -1,6 +1,9 @@
-import express, { Express, Request, Response } from 'express';
+import express, {  Request, Response } from 'express';
 import { R } from '../Room/RoomStorage';
 import { MarbleGameRecordSchema } from '../mongodb/schemaController/MarbleGameRecord';
+
+import { UserGamePlaySchema } from '../mongodb/schemaController/UserGamePlay';
+
 const router = express.Router()
 const{GameRecord,SimulationRecord,SimpleSimulationRecord} = require("../mongodb/GameDBSchema")
 
@@ -62,7 +65,6 @@ router.get('/simulation/game',function(req: express.Request, res:express.Respons
 router.get('/game' ,function (req: express.Request, res:express.Response) {
     let count=req.query.count
     let start=req.query.start?Number(req.query.start):0
-    console.log(count)
     if(start<0) return res.end()
 
     GameRecord.findByRange(Number(start),Number(count))
@@ -76,6 +78,39 @@ router.get('/game' ,function (req: express.Request, res:express.Response) {
         }));
     })
     .catch((err:any) => res.status(500).send(err))
+})
+
+router.get('/game/user' ,async function (req: express.Request, res:express.Response) {
+    const user = req.query.userId
+    const username = req.query.username
+    if(!user && !username) 
+        return res.status(400).end()
+    try{
+        let plays = user ? await UserGamePlaySchema.findRPGByUser(String(user))
+        :await UserGamePlaySchema.findRPGByUsername(String(username))
+        let result=[]
+        for(const game of plays){
+            const gamedata = await GameRecord.findOneById(game.game)
+            if(!gamedata || gamedata.players.length <= game.turn) continue
+            let pi = gamedata.players.findIndex((p:any)=>p.turn === game.turn)
+            result.push({
+                player:gamedata.players[pi],
+                map:gamedata.map_data?.name,
+                isTeam:gamedata.isTeam,
+                totalturn:gamedata.totalturn,
+                gameId:game.game,
+                isWon:game.isWon,
+                turn:game.turn,
+                user:game.user,
+                username:game.username,
+                createdAt:game.createdAt.valueOf()
+            })
+        }
+        return res.json(result).end()
+    }
+    catch(e){
+        console.error(e)
+    }
 })
 
 
@@ -153,6 +188,39 @@ router.get('/marble/all',function(req: express.Request, res:express.Response){
     })
     .catch((err:any) => res.status(500).send(err))
 })
+router.get('/marble/user',async function(req: express.Request, res:express.Response){
+    const user = req.query.userId
+    const username = req.query.username
+    if(!user && !username) 
+        return res.status(400).end()
+    try{
+
+        let plays = user ? await UserGamePlaySchema.findMarbleByUser(String(user))
+        :await UserGamePlaySchema.findMarbleByUsername(String(username))
+
+        let result = []
+        for(const game of plays){
+            const gamedata = await MarbleGameRecordSchema.findById(game.game)
+            if(!gamedata) continue
+            result.push({
+                game:gamedata,
+                isWon:game.isWon,
+                turn:game.turn,
+                user:game.user,
+                username:game.username,
+                gameId:game.game,
+                createdAt:game.createdAt.valueOf()
+            })
+        }
+        return res.json(result).end()
+    }
+    catch(e){
+        console.error(e)
+        res.status(500).send(e)
+    }
+})
+
+
 
 router.use("/eval", require("./statEvalRouter"))
 module.exports=router

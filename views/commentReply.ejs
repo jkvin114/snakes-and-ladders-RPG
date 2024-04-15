@@ -4,22 +4,15 @@
   <link rel="stylesheet" href="/src/style/board-global.css">
 
 <style>
-  @font-face {
-    font-family: "nanumB";
-    src: url("/res/font/NanumSquareB.ttf");
-  }
   body{     
    background-color: var(--bg);
    color:white;
    margin: 0;
-    margin-bottom: 20px;
 
-  font-family: 'nanumB';
   text-align:center;
 
   }
   a,p{
-    font-family: 'nanumB';
   }
   .filter-invert{
     filter: invert();
@@ -32,32 +25,32 @@
     justify-content:flex-start;
     flex-direction: row-reverse;
     align-items: stretch;
-    height: 40px;
-    background-color: rgb(36, 36, 36);
+    height: 30px;
+    background-color:var(--col-bg-dark);
     position: sticky;
     top: 0;
-    padding: 5px;
+    padding: 2px;
     border-bottom: 1px solid rgb(95, 95, 95);
-    z-index: 3;
+    z-index: 1;
   }
   #navbar img, #navbar > div{
     color:white;
     /* background-color: #7E00BF; */
-    background: #505060;
+    background:var(--col-bg-light);
 
     cursor:pointer;
     text-align:center;
-    font-size: 20px;
+    font-size: 15px;
     border:none;
     vertical-align: middle;
     border-radius: 5px;
-    padding: 5px;
+    padding: 3px;
     margin-right: 5px;
-    height: 30px;
-    line-height: 30px;
+    height: 25px;
+    line-height: 25px;
   }
-  #navbar img:hover,#navbar > div:hover,.submit_comment:hover{
-    background-color: #7a7a92;
+  #navbar img:hover,#navbar > div:hover{
+    background-color:var(--bg);
   }
   #comments form{
     width: 100%;
@@ -171,7 +164,6 @@
     background:none;
     border: none;
     border-bottom:2px solid rgb(210, 210, 210);
-    font-family: 'nanumB';
     flex-grow: 1;
   }
   .submit_comment{
@@ -182,10 +174,9 @@
     padding-right: 20px;
 
     border: none;
-    background-color: #7E00BF;
+    background-color: var(--col-primary);
     color: white;
     cursor: pointer;
-    font-family: "nanumB";
   }
   .commententer{
     display: flex;
@@ -205,6 +196,8 @@
     background: var(--font-light);
   }
   #reply-container{
+    margin-bottom: 20px;
+
     display: grid;
     grid-template-columns: 50px auto;
   }
@@ -258,7 +251,7 @@
           <div></div>
         <%}else{%>
           <%if(authorProfileImage!==""){%>
-            <img src="/uploads/profile/<%= authorProfileImage %>" class="comment-author-img profileimg" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
+            <img data-src="<%= authorProfileImage %>" class="uploaded-profile-image comment-author-img profileimg" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
           <%}%> <u class="comment_info comment_author" onclick="golink('/board/user/<%=comment.authorName%>/comments')">
           <%= comment.authorName %> </u>
           <a class="comment_info"><%= comment.createdAt.toString().substring(0,24) %></a>
@@ -277,7 +270,7 @@
     </div>
 
     <%if(logined && !comment.deleted){%>
-       <form action="/board/post/comment/reply" method="post"> 
+       <form id="commentform"> 
         <input type="hidden" name="commentId" value="<%= comment._id %>">  
         <div class="commententer">
           <input class="enter_comment" type="text" name="content" placeholder="reply" lkey-ph="ph.reply" required>
@@ -300,7 +293,7 @@
       </div>
         <div class="comment">
           <%if(r.authorProfileImage!==""){%>
-            <img src="/uploads/profile/<%= r.authorProfileImage %>" class="comment-author-img profileimg" onclick="golink('/board/user/<%=r.author%>/comments')">
+            <img data-src="<%= r.authorProfileImage %>" class="comment-author-img profileimg uploaded-profile-image" onclick="golink('/board/user/<%=r.author%>/comments')">
           <%}%> 
           <u class="comment_info comment_author" onclick="golink('/board/user/<%=r.author%>/comments')">
             <%=r.author %> </u>
@@ -325,7 +318,7 @@
     </div>
   </div>
 
-</body>
+</body> <br><br><br>
 <script>
 
 updateLocale("board")

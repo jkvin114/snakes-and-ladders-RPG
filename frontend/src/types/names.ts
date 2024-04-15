@@ -1,0 +1,35 @@
+const NAMES = [
+    "Ramon",
+    "Yaretzi",
+    "Elliott",
+    "Angelina",
+    "Hudson",
+    "Christian",
+    "Alessandro",
+    "Julia",
+    "Joseph",
+    "Hadley",
+    "Myah",
+    "Lilyana",
+    "Kaydence",
+    "Lorelei",
+    "Milo",
+    "Camila",
+    "Wilson",
+    "Frances",
+    "Iris",
+    "Leon",
+    "Wesley",
+    "Augustus",
+    "Brock",
+    "Kara",
+    "Zander",
+    "Alexandra",
+    "Skyla",
+    "Franco",
+    "Ashlynn",
+    "Ernesto"
+]
+export function randName(){
+    return NAMES[Math.floor(Math.random()*NAMES.length)]
+}

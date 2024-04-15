@@ -1,5 +1,14 @@
 import fetch from "node-fetch";
-const URL="http://127.0.0.1:5000/prediction"
+import { Logger } from "../logger";
+// import {stockgame_gen_url,prediction_url} from "../../config/config.json"
+require('dotenv').config({path:__dirname+'/../config/.env'})
+const prediction_url= process.env.PREDICTION_URL
+const stockgame_gen_url=process.env.STOCKGAME_URL
+const URL=prediction_url+"/prediction"
+console.log("prediction url: "+prediction_url)
+const stockgame_host="http://"+process.env.STOCKGAME_HOST || '127.0.0.1';
+const stockgame_port=5050
+console.log("stockgame url: "+stockgame_host+":"+stockgame_port)
 
 export function extractNumber(str: string) {
 	let s = str.match(/([0-9,.,\s]+)/g)?.join('')
@@ -19,9 +28,26 @@ export async function getPrediction(labels:string,playercount:number,map:number)
             else resolve([])
         }
         catch(e){
-            console.error("ERROR while fetching win prediction daa")
+            Logger.error("ERROR while fetching win prediction data",e)
            return resolve([])
         }
         return resolve([])
+    })
+}
+
+export async function generateStockChart(variance:number,scale:number,version:string){
+    return new Promise<string[]>(async (resolve,reject)=>{
+        try{
+            const data = await (
+				await fetch(stockgame_host +":"+stockgame_port+ `/gen_stock?variance=${variance}&scale=${scale}&version=${version}`,{})
+			).json()
+
+            resolve(data)
+        }
+        catch(e){
+            Logger.error("ERROR while fetching generating stock chart",e)
+           return resolve(null)
+        }
+        return resolve(null)
     })
 }

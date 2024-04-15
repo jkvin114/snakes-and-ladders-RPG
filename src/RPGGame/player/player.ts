@@ -1,4 +1,4 @@
-import {obstacles} from "../../../res/obstacle_data.json"
+import { obstacles } from "../../../res/obstacle_data.json"
 import SETTINGS = require("../../../res/globalsettings.json")
 import ABILITY = require("../../../res/character_ability.json")
 import CONFIG from "../../../config/config.json"
@@ -31,7 +31,7 @@ import {
 	INIT_SKILL_RESULT,
 } from "../data/enum"
 import { EFFECT } from "../StatusEffect/enum"
-import { AbilityUtilityScorecard, clamp, decrement, removeDuplicate, roundToNearest } from "../core/Util"
+import { AbilityUtilityScorecard, clamp, decrement, normalize2D, removeDuplicate, roundToNearest } from "../core/Util"
 import { CharacterSkillManager, EmptySkillManager } from "../characters/SkillManager/CharacterSkillManager"
 
 // if(isMainThread){
@@ -56,9 +56,9 @@ const initialSetting =
 
 console.log(initialSetting)
 
-class Player extends Entity{
+class Player extends Entity {
 	AI: boolean
-	
+
 	turn: number
 	name: string
 	isLoggedIn: boolean
@@ -94,18 +94,18 @@ class Player extends Entity{
 
 	bestMultiKill: number
 	thisTurnObstacleCount: number //variable to prevent infinite recursion error
-	
-	//skillManager and AiAgent will be initialized properly later
-	skillManager:CharacterSkillManager
-	AiAgent:AiAgent
 
-	constructor(turn: number, team: number, game: Game, ai: boolean, name: string,champ:number) {
+	//skillManager and AiAgent will be initialized properly later
+	skillManager: CharacterSkillManager
+	AiAgent: AiAgent
+
+	constructor(turn: number, team: number, game: Game, ai: boolean, name: string, champ: number) {
 		super(game, 200, initialSetting.pos, ENTITY_TYPE.PLAYER)
 		this.AI = ai //AI여부
 		this.turn = turn //턴 (0에서 시작)
 		this.name = name //이름
 		this.champ = champ //챔피언 코드
-		this.champ_name = '' //챔피언 이름
+		this.champ_name = "" //챔피언 이름
 		this.team = team //0:readteam  1:blue
 		this.lastpos = 0 //이전위치
 		this.dead = false
@@ -119,7 +119,6 @@ class Player extends Entity{
 		this.invulnerable = true
 		this.adice = 0 //추가 주사위숫자
 
-		
 		this.oneMoreDice = false
 		this.diceControl = false
 		this.diceControlCool = 0
@@ -145,14 +144,14 @@ class Player extends Entity{
 		this.bestMultiKill = 0
 		this.autoBuy = ai
 		this.thisTurnObstacleCount = 0
-		this.skillManager=new EmptySkillManager(this)
-		this.AiAgent=new DefaultAgent(this)
+		this.skillManager = new EmptySkillManager(this)
+		this.AiAgent = new DefaultAgent(this)
 	}
-	bindCharacter(id:number,skillManager:CharacterSkillManager,ai:AiAgent){
-		this.skillManager=skillManager
-        this.AiAgent=ai
-        this.champ=id
-        this.champ_name=SETTINGS.characters[id].name
+	bindCharacter(id: number, skillManager: CharacterSkillManager, ai: AiAgent) {
+		this.skillManager = skillManager
+		this.AiAgent = ai
+		this.champ = id
+		this.champ_name = SETTINGS.characters[id].name
 		this.ability.init(id)
 	}
 	transfer(func: Function, ...args: any[]) {
@@ -177,11 +176,11 @@ class Player extends Entity{
 	}
 	onGameStart() {
 		this.mapHandler.onGameStart()
-		const util=this.mediator.getOpponentTotalTypeUtility(this)
+		const util = this.mediator.getOpponentTotalTypeUtility(this)
 		this.AiAgent.applyInitialOpponentUtility(util)
 	}
 	calculateAdditionalDice(amount: number): number {
-		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this),e=>e.pos)
+		let first = this.mediator.selectBestOneFrom(EntityFilter.ALL_PLAYER(this), (e) => e.pos)
 
 		//자신이 1등보다 15칸이상 뒤쳐져있으면 주사위숫자 2 추가,
 		//자신이 1등보다 30칸이상 뒤쳐져있으면 주사위숫자 4 추가
@@ -216,7 +215,7 @@ class Player extends Entity{
 		}
 		return this.adice
 	}
-	
+
 	/**
 	 * can be targeted by the entity
 	 * @param e
@@ -241,12 +240,12 @@ class Player extends Entity{
 	canUseSkill(): boolean {
 		return !this.effects.has(EFFECT.SILENT) && !this.dead && this.mapHandler.canAttack()
 	}
-	getSkillStatus(): ServerGameEventFormat.SkillStatus{
-		let status=this.skillManager.getSkillStatus()
-		status.turn=this.turn
-		status.canBasicAttack=this.canBasicAttack()
-		status.canUseSkill=this.canUseSkill()
-		status.level=this.level
+	getSkillStatus(): ServerGameEventFormat.SkillStatus {
+		let status = this.skillManager.getSkillStatus()
+		status.turn = this.turn
+		status.canBasicAttack = this.canBasicAttack()
+		status.canUseSkill = this.canUseSkill()
+		status.level = this.level
 		return status
 	}
 	/**
@@ -278,10 +277,9 @@ class Player extends Entity{
 		}
 		return super.isEnemyOf(e)
 	}
-	
+
 	//========================================================================================================
 
-	
 	/**
 	 * show visual effect to client
 	 * @param type
@@ -290,24 +288,21 @@ class Player extends Entity{
 	showEffect(type: string, source: number) {
 		this.game.eventEmitter.visualEffect(this.pos, type, source)
 	}
-	private lifetimeMoneyMultiplier(){
-		return Math.max(1,this.lifeTime * 0.15)
+	private lifetimeMoneyMultiplier() {
+		return Math.max(1, this.lifeTime * 0.15)
 	}
 	//========================================================================================================
 	onMyTurnStart() {
 		this.thisTurnObstacleCount = 0
 		if (!this.oneMoreDice) {
-			
 			this.inven.giveTurnMoney(Math.floor(MAP.getTurnGold(this.mapId, this.level) * this.lifetimeMoneyMultiplier()))
 			this.effects.onTurnStart()
-			this.lifeTime+=1
+			this.lifeTime += 1
 		}
 		this.inven.onTurnStart()
 		this.skillManager.onTurnStart()
 		this.game.eventEmitter.update("skillstatus", this.turn, this.skillManager.getSkillStatus())
 	}
-
-	
 
 	//========================================================================================================
 	/**
@@ -343,8 +338,6 @@ class Player extends Entity{
 		}
 		this.effects.onAfterObs()
 	}
-
-	
 
 	//========================================================================================================
 
@@ -442,8 +435,6 @@ class Player extends Entity{
 	}
 	//========================================================================================================
 
-	
-
 	//========================================================================================================
 
 	//========================================================================================================
@@ -495,9 +486,9 @@ class Player extends Entity{
 	resetSkillImage(skill: SKILL) {
 		this.changeSkillImage("", skill)
 	}
-	
-	changeSkillInfo(skill:SKILL,toChange:SKILL){
-		this.game.eventEmitter.updateSkillInfoSingle(this.turn,this.champ,skill,toChange)
+
+	changeSkillInfo(skill: SKILL, toChange: SKILL) {
+		this.game.eventEmitter.updateSkillInfoSingle(this.turn, this.champ, skill, toChange)
 	}
 	/**
    * 체력 바꾸고 클라로 체력변화 전송
@@ -643,7 +634,6 @@ class Player extends Entity{
 	}
 	//========================================================================================================
 
-	
 	isFinished(pos: number) {
 		if (!this.mapHandler.isOnMainWay()) return false
 		return this.game.isFinishPosition(pos)
@@ -745,7 +735,7 @@ class Player extends Entity{
 	goStore(priceMultiplier?: number) {
 		if (!priceMultiplier) priceMultiplier = 1
 		if (this.autoBuy) {
-			const util=this.mediator.getOpponentTotalTypeUtility(this)
+			const util = this.mediator.getOpponentTotalTypeUtility(this)
 			this.AiAgent.store(util)
 		} else {
 			this.game.eventEmitter.goStore(this.turn, this.inven.getStoreData(priceMultiplier))
@@ -802,8 +792,8 @@ class Player extends Entity{
 		let totalkill = this.mediator.allPlayer().reduce(function (t: number, a: Player) {
 			return t + a.kill
 		}, 0)
-		const fbKillMoney=this.mapId===MAP_TYPE.RAPID?130:100
-		const killMoney= this.mapId===MAP_TYPE.RAPID?100:70
+		const fbKillMoney = this.mapId === MAP_TYPE.RAPID ? 130 : 100
+		const killMoney = this.mapId === MAP_TYPE.RAPID ? 100 : 70
 
 		this.inven.onKillEnemy()
 		// console.log("--------------addkill" + totalkill)
@@ -889,11 +879,10 @@ class Player extends Entity{
 	 */
 	doDamage(damage: number, changeData: HPChange): boolean {
 		try {
-			
 			// if (this.dead || this.invulnerable || damage === 0 || changeData.getSourceTurn() === this.turn) {
 			// 	return false
 			// }
-			
+
 			if (this.dead || this.invulnerable || damage === 0) {
 				return false
 			}
@@ -1003,7 +992,7 @@ class Player extends Entity{
 		}
 		this.thisLifeKillCount = 0
 		this.game.addKillData(killerturn, this.turn, this.pos)
-		this.lifeTime=0
+		this.lifeTime = 0
 		this.addAssist(killerturn)
 		this.HP = 0
 		this.dead = true
@@ -1095,10 +1084,9 @@ class Player extends Entity{
 		if (!this.effects.canBasicAttack()) {
 			return false
 		}
-		let attacked=this.skillManager.basicAttack()
+		let attacked = this.skillManager.basicAttack()
 
-		if(attacked) 
-			this.statistics.add(STAT.BASICATTACK, 1)
+		if (attacked) this.statistics.add(STAT.BASICATTACK, 1)
 
 		return attacked
 	}
@@ -1111,16 +1099,15 @@ class Player extends Entity{
 	}
 	getTargetParameters() {}
 
-	getCharacterTypeUtility():AbilityUtilityScorecard{
-
-		let util=this.inven.getItemBuildUtility()
-		let cats=ABILITY[this.champ].category
-		for(let i=0;i<cats.length;i++){
-			let weight=AiAgent.CHAR_TYPE_UTILITY_WEIGHTS[cats.length-1][i]
-			if(cats[i]==="attack") util.attack=weight*(10+util.attack)
-			if(cats[i]==="magic") util.magic=weight*(10+util.magic)
-			if(cats[i]==="defence") util.defence=weight*(10+util.defence)
-			if(cats[i]==="health") util.health=weight*(10+util.health)
+	getCharacterTypeUtility(): AbilityUtilityScorecard {
+		let util = this.inven.getItemBuildUtility()
+		let cats = ABILITY[this.champ].category
+		for (let i = 0; i < cats.length; i++) {
+			let weight = AiAgent.CHAR_TYPE_UTILITY_WEIGHTS[cats.length - 1][i]
+			if (cats[i] === "attack") util.attack = weight * (10 + util.attack)
+			if (cats[i] === "magic") util.magic = weight * (10 + util.magic)
+			if (cats[i] === "defence") util.defence = weight * (10 + util.defence)
+			if (cats[i] === "health") util.health = weight * (10 + util.health)
 		}
 		return util
 	}
@@ -1148,7 +1135,7 @@ class Player extends Entity{
 		ind.damage_reduction_rate =
 			this.statistics.stats[7] / Math.max(1, this.statistics.stats[7] + this.statistics.stats[0])
 		ind.heal_per_gold = this.statistics.stats[3] / this.statistics.stats[STAT.MONEY_EARNED]
-		ind.kda =(this.kill+this.assist)/Math.max(0.5,this.death)
+		ind.kda = (this.kill + this.assist) / Math.max(0.5, this.death)
 		//if(this.pos >= this.mapHandler.gamemap.finish)
 		//	ind.isWinner=true
 
@@ -1157,60 +1144,58 @@ class Player extends Entity{
 	getCoreItemBuild(): number[] {
 		return this.AiAgent.itemBuild.coreItemBuildRecord
 	}
-	private normNRound(val:number,divide:number){
-		return roundToNearest(val / divide,-3)
+	private normNRound(val: number, divide: number) {
+		return roundToNearest(val / divide, -3)
 	}
-	private hasE_01(...ef:EFFECT[]){
-		for(const e of ef){
-			if(this.effects.has(e)) return 1
+	private hasE_01(...ef: EFFECT[]) {
+		for (const e of ef) {
+			if (this.effects.has(e)) return 1
 		}
 		return 0
 	}
-	private getFinishProximity(finish:number):number{
-		let maxStep=6
-		if(this.effects.has(EFFECT.SPEED)) maxStep+=2
-		maxStep+=this.ability.moveSpeed.val
-		if(this.effects.has(EFFECT.SLOW)) maxStep-=2
-		if(this.effects.has(EFFECT.DOUBLEDICE)) maxStep*=2
-		let diff=Math.max(0.5,finish-this.pos)
+	private getFinishProximity(finish: number): number {
+		let maxStep = 6
+		if (this.effects.has(EFFECT.SPEED)) maxStep += 2
+		maxStep += this.ability.moveSpeed.val
+		if (this.effects.has(EFFECT.SLOW)) maxStep -= 2
+		if (this.effects.has(EFFECT.DOUBLEDICE)) maxStep *= 2
+		let diff = Math.max(0.5, finish - this.pos)
 
-		let proximity=0
+		let proximity = 0
 
-		if(diff <= maxStep*2) proximity=maxStep/diff
+		if (diff <= maxStep * 2) proximity = maxStep / diff
 
-		
-		if(this.waitingRevival || this.effects.has(EFFECT.INVISIBILITY) || this.effects.has(EFFECT.SHIELD)) proximity *=2
-		
-		proximity *= this.hasE_01(EFFECT.ROOT,EFFECT.GROUNGING,EFFECT.BACKDICE) * 0.5
-		proximity *= this.hasE_01(EFFECT.SLAVE) *0.25
-		
-		if(this.game.thisturn===this.turn) proximity*=3
+		if (this.waitingRevival || this.effects.has(EFFECT.INVISIBILITY) || this.effects.has(EFFECT.SHIELD)) proximity *= 2
 
-		return proximity 
+		proximity *= this.hasE_01(EFFECT.ROOT, EFFECT.GROUNGING, EFFECT.BACKDICE) * 0.5
+		proximity *= this.hasE_01(EFFECT.SLAVE) * 0.25
 
+		if (this.game.thisturn === this.turn) proximity *= 3
+
+		return proximity
 	}
-	getStateLabel(finish: number): string {
-		let states=[
-			this.champ,
-			this.normNRound(this.pos , finish),
-			roundToNearest(this.normNRound(this.pos , finish)**2,-3) ,
-			this.normNRound(this.statistics.stats[STAT.MONEY_SPENT],300),
-			this.normNRound(this.statistics.stats[STAT.MONEY_EARNED],300),
-			(this.dead)?0:1,
-			this.normNRound(this.kill,5),
-			this.normNRound(this.death , 5),
-			this.normNRound(this.level , 10),
+	private oneHotEncodeChamp() {
+		let arr = new Array(10).fill(0)
+		arr[this.champ] = 1
+		return arr
+	}
+	getStateLabel(finish: number): number[] {
+		let ind = this.getTrainIndicator(this.game.totalturn)
+		let states:number[] = [
+			this.normNRound(this.statistics.stats[STAT.MONEY_SPENT], 300),
+			this.normNRound(this.statistics.stats[STAT.MONEY_EARNED], 300),
+			this.normNRound(this.kill, 5),
+			this.normNRound(this.death, 5),
+			this.normNRound(this.level, 10),
 			this.normNRound(this.HP, 500),
-			(this.inven.life>0 || this.inven.isActiveItemAvailable(ITEM.GUARDIAN_ANGEL))?1:0,
-			this.getFinishProximity(finish)
+			this.getFinishProximity(finish),
+			this.normNRound(this.champ,10),
+			this.normNRound(this.pos, finish),
+			this.dead ? 0 : 1,
+			this.inven.life > 0 || this.inven.isActiveItemAvailable(ITEM.GUARDIAN_ANGEL) ? 1 : 0,
 		]
 
-		let str=""
-		states.forEach((val,i)=>{
-			if(i===0) str+=val
-			else return str+=","+val
-		},"")
-		return str
+		return states
 	}
 }
 

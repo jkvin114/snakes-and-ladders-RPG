@@ -1,4 +1,5 @@
 import SETTINGS = require("../res/globalsettings.json")
+require('dotenv').config({path:__dirname+'/../config/.env'})
 
 import { createServer } from "http"
 import {  Server, Socket } from "socket.io"
@@ -21,6 +22,13 @@ import express=require("express")
 import { connectMongoDB } from "./mongodb/connect"
 import MarbleGameGRPCClient from "./grpc/marblegameclient"
 import RPGGameGRPCClient from "./grpc/rpggameclient"
+import { ISession, SessionManager } from "./session/inMemorySession"
+import cookieParser from "cookie-parser"
+import { setJwtCookie } from "./session/jwt"
+import { SocketSession } from "./sockets/SocketSession"
+import { Logger } from "./logger"
+import { UserCache } from "./cache/cache"
+
 declare module 'express-session' {
 	interface SessionData {
         cookie: Cookie;
@@ -36,14 +44,32 @@ declare module 'express-session' {
   }
 // import session from 'express-session';
 
+interface Locals {
+  session: ISession;
+}
+
+declare module 'express' {
+  export interface Response  {
+    locals: Locals;
+  }
+}
 
 
-
-const clientPath = `${__dirname}/../public`
-const firstpage = fs.readFileSync(clientPath+"/index.html", "utf8")
-const PORT = 80
+const PORT = process.env.PORT
 const app = express()
+const ORIGIN = process.env.ORIGIN
+// const ORIGIN="http://192.168.0.3:3000"
+Logger.log("start server at port ",String(PORT),", from origin",ORIGIN);
 
+function onExit(){
+	Logger.log("user cache analysis:",UserCache.getEval())
+	Logger.log("process exit");
+}
+
+// [`exit`, `SIGINT`, `SIGUSR1`, `SIGUSR2`, `uncaughtException`, `SIGTERM`].forEach((eventType) => {
+// 	process.on(eventType,onExit);
+// })
+  
 //temp ==============================
 
 /*
@@ -65,7 +91,17 @@ redisClient.connect().then(()=>{
 //==============================================
 
 app.use(session)
-app.use(cors())
+app.use(cors({credentials: true, origin: [ORIGIN]}))
+app.use((req, res, next) => {
+	res.setHeader('Access-Control-Allow-Origin', [ORIGIN]);
+
+	res.setHeader('Access-Control-Allow-Credentials', "true");
+	res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+
+	next()
+})  
+app.use(cookieParser());
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use("/stat", require("./router/statRouter"))
@@ -76,74 +112,94 @@ app.use("/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
 app.use("/board", require("./router/board/BoardRouter"))
 app.use("/ping", require("./router/pingRouter"))
+app.use("/chat", require("./router/chat"))
+app.use("/notification", require("./router/notification"))
+app.use("/stockgame", require("./router/stockgame/stockGameRouter"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
 
-app.use(express.static(clientPath))
-app.use(errorHandler)
 const httpserver = createServer(app)
 httpserver.listen(PORT)
 app.on("error", (err: any) => {
-	console.error("Server error:", err)
+	Logger.error("Server error:",err)
 })
 
 connectMongoDB()
 MarbleGameGRPCClient.connect()
 RPGGameGRPCClient.connect()
+Logger.log("version " + SETTINGS.version)
+Logger.log("patch " + SETTINGS.patch_version)
 
-// const interfaces = os.networkInterfaces()
-// var addresses = []
-// for (var k in interfaces) {
-// 	for (var k2 in interfaces[k]) {
-// 		var address = interfaces[k][k2]
-// 		if (address.family === "IPv4" && !address.internal) {
-// 			addresses.push(address.address)
-// 		}
-// 	}
-// }
-
-console.log("start server")
-// console.log("IP Address:" + addresses[0])
-console.log("version " + SETTINGS.version)
-console.log("patch " + SETTINGS.patch_version)
-// function ROOMS.get(name: string): Room {
-// 	return ROOMS.get(name)
-// }
-function errorHandler(err: any, req: any, res: any, next: any) {
-	res.send("error!!" + err)
-}
 
 export const io = new Server(httpserver, {
 	cors: {
-		origin: "http://127.0.0.1:" + PORT,
+		origin: [ORIGIN],
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		credentials: true
 	},
 	allowEIO3: true
 })
 
-//for using sessing in socket.io
+//for using session in socket.io
 io.use((socket, next) => {
 	let req = socket.request as any
 	let res = req.res as any
 	session(req, res, next as express.NextFunction)
 })
 
+io.use((socket, next) => {
+
+	try{
+		const session =  SessionManager.getSessionById(SocketSession.getId(socket))
+		socket.data.session=session
+		SessionManager.onSocketAccess(session)
+		if(!session) {
+			Logger.warn("invalid session for socket id:"+socket.id)
+			return
+			//throw new Error("invalid session for socket id:"+socket.id)
+		}
+		if(!socket.handshake.query || !socket.handshake.query.type){
+			Logger.warn("No connection type provided! socket id:"+socket.id)
+			return
+			//throw new Error("No connection type provided! socket id:"+socket.id)
+		}
+		
+		socket.data.type = socket.handshake.query.type
+	
+		next()
+	}
+	catch(e){
+		Logger.warn(String(e))
+	}
+	
+});
+
+  
 io.on("listen", function () {
 	console.log("listen to socket")
 })
 io.on("error", function (e: any) {
-	console.log(e)
+	console.error(e)
 })
 
 
 
 io.on("connection", function (socket: Socket) {
 	//console.log(`${socket.id} is connected`)
+	//console.log(socket.data.type)
+	const session =  socket.data.session
+	SessionManager.onSocketConnect(session,socket.data.type)
+	
 	require("./sockets/RoomSocket")(socket)
 	require("./sockets/RpgRoomSocket")(socket)
 	require("./Marble/MarbleRoomSocket")(socket)
+	require("./social/chatSocket")(socket)
+
+	socket.on("disconnect",function(){
+		const session = socket.data.session
+		SessionManager.onSocketDisconnect(session,socket.data.type)
+	})
 })
 
 
@@ -156,6 +212,39 @@ app.get("/notfound", function (req:any, res:any) {
 app.get("/servererror", function (req:any, res:any) {
 	res.render("error",{status:500})
 })
+
+// import { createClient } from 'redis';
+
+// const redisClient = createClient(); //port 6379
+
+// redisClient.on('error', (err:any) => console.log('Redis Client Error', err));
+
+// redisClient.connect().then(()=>{
+// 	console.log("connected to redis")
+// });
+
+
+app.get("/jwt/verify",function(req:express.Request, res:express.Response){
+	let valid = SessionManager.isValid(req)
+	res.json({isVaild:valid})
+})	
+
+app.get("/session",function(req:express.Request, res:express.Response){
+	let session = SessionManager.getSession(req)
+	res.json(session).end()
+})	
+app.post("/jwt/init",function(req:express.Request, res:express.Response){
+
+	if(req.cookies && SessionManager.isValid(req)){
+		return res.status(204).send("ok")
+	}
+	let token = SessionManager.createSession()
+	setJwtCookie(res,token)
+	Logger.log("created new session")
+	res.send("ok")
+
+})
+
 /*
 
 app.get("/session", async function (req:any, res:any) {

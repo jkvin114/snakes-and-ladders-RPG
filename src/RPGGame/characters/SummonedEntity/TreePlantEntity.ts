@@ -17,7 +17,7 @@ class TreePlant extends SummonedEntity{
         super.basicAttack()
     }
     doDamage(source: Entity, damage: Damage): boolean {
-        console.log("dodamage treeplant")
+       // console.log("dodamage treeplant")
 
         return false
     }

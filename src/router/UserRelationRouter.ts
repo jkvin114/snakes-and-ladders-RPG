@@ -1,32 +1,22 @@
-import express = require('express');
-import session from 'express-session';
-import { UserSchema } from '../mongodb/schemaController/User';
-import { UserRelationSchema } from '../mongodb/schemaController/UserRelation';
-import { ajaxauth, auth } from './board/helpers';
-const {User} = require("../mongodb/UserDBSchema")
 
-const router = express.Router()
+import { ControllerWrapper } from './ControllerWrapper';
+import { loginauth, sessionParser } from './jwt/auth';
+import { UserController } from './user/controller';
+import express = require("express")
+import { Router } from 'express';
+import { FriendController } from './user/friendController';
 
-router.post("/friend_request",ajaxauth,async function (req:express.Request,res:express.Response) {
-    const id=await UserSchema.findIdByUsername(req.body.username)
-    await UserRelationSchema.addFriend(req.session.userId,id)
-    await UserRelationSchema.addFriend(id,req.session.userId)
-    
-    res.status(200).end()
-})
-router.post("/follow",ajaxauth,async function (req:express.Request,res:express.Response) {
-    const id=await UserSchema.findIdByUsername(req.body.username)
-    console.log(req.session.userId)
-    console.log(id)
-    let result= await UserRelationSchema.addFollow(req.session.userId,id)
-    if(!result) console.error("follow failed")
-    res.status(200).end()
-})
-router.post("/unfollow",ajaxauth,async function (req:express.Request,res:express.Response) {
-    const id=await UserSchema.findIdByUsername(req.body.username)
-    console.log(id)
-    let result=await UserRelationSchema.deleteFollow(req.session.userId,id)
-    if(!result) console.error("unfollow failed")
-    res.status(200).end()
-})
+const router = Router()
+router.get("/friend_status",loginauth,sessionParser,ControllerWrapper(FriendController.getFriendStatus))
+
+router.get("/friend_search",loginauth,sessionParser,ControllerWrapper(FriendController.friendSearch))
+
+router.post("/friend_request/send",loginauth,sessionParser,ControllerWrapper(FriendController.sendFriendRequest))
+
+router.post("/friend_request/accept",loginauth,sessionParser,ControllerWrapper(FriendController.acceptFriendRequest))
+
+router.post("/friend_request/reject",loginauth,sessionParser,ControllerWrapper(FriendController.rejectFriendRequest))
+
+router.post("/follow",loginauth,sessionParser,ControllerWrapper(UserController.follow))
+router.post("/unfollow",loginauth,sessionParser,ControllerWrapper(UserController.unfollow))
 module.exports=router

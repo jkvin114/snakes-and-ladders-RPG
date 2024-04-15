@@ -1,146 +1,201 @@
-import type { Socket } from "socket.io";
+import type { Socket } from "socket.io"
 import { PlayerType, ProtoPlayer } from "../RPGGame/core/Util"
-import { GameEventEmitter } from "../sockets/GameEventEmitter";
-import {PlayerMatchingState} from "./PlayerMatchingState"
-import { encrypt } from "../router/board/helpers";
-import { SocketSession } from "../sockets/SocketSession";
-import { BaseProtoPlayer } from "./BaseProtoPlayer";
-import MarbleGameGRPCClient from "../grpc/marblegameclient";
+import { GameEventEmitter } from "../sockets/GameEventEmitter"
+import { PlayerMatchingState } from "./PlayerMatchingState"
+import { encrypt } from "../router/board/helpers"
+import { SocketSession } from "../sockets/SocketSession"
+import { BaseProtoPlayer } from "./BaseProtoPlayer"
+import MarbleGameGRPCClient from "../grpc/marblegameclient"
+import { MongoId } from "../mongodb/types"
+import { UserGamePlay } from "../mongodb/UserGamePlaySchema"
+import { use } from "passport"
+import { Types } from "mongoose"
+import { Logger } from "../logger"
+
+import SETTINGS = require("./../../res/globalsettings.json")
+interface UserInfo {
+	id: MongoId
+	username: string
+	turn: number
+}
+interface GameReadyState{
+	canStart:boolean
+	ready:number
+	total:number
+}
 abstract class Room {
-	//simulation_total_count: number
-	// simulation_count: number
-	// gameCycle: GameCycleState
 	name: string
-	hosting: number
+	private hosting: number
 	guestnum: number
 	isTeam: boolean
-	//playerlist: ProtoPlayer[]
-	teams: boolean[]
-	
-	//simulation: boolean
-	// instant: boolean
-	map: number
-	idleTimeout: NodeJS.Timeout|null
-	connectionTimeout: NodeJS.Timeout|null
-	connectionTimeoutTurn: number
-	idleTimeoutTurn: number
-	resetCallback:Function
-	isGameStarted:boolean //true if matching is complete
-	isGameRunning:boolean // true if game is up and running
 
-	hostSessionId:string // session id of host user
-	password:string
-	isPublic:boolean
-	isLoggedInUserOnly:boolean
-	gametype:string
-	private guestSockets:Map<number,Socket>
-	
-	protected playerMatchingState:PlayerMatchingState
-	private playerSessions:Set<string>
-	abstract type:string
-	abstract user_message(turn:number,msg:string):string
-	abstract get getMapId():number
-	abstract registerClientInterface(callback:GameEventEmitter):Room
-	abstract registerSimulationClientInterface(callback:GameEventEmitter):Room
-	
-	
+	map: number
+	private resetCallback: Function
+	isGameStarted: boolean //true if matching is complete
+	isGameRunning: boolean // true if game is up and running
+
+	hostSessionId: string // session id of host user
+	password: string
+	isPublic: boolean
+	isLoggedInUserOnly: boolean
+	gametype: string
+	private guestSockets: Map<number, Socket>
+	private registeredUsers: UserInfo[]
+	protected playerMatchingState: PlayerMatchingState
+	private playerSessions: Set<string>
+	private gameReadySessions: Set<string>
+
+	abstract type: string
+	abstract user_message(turn: number, msg: string): string
+	abstract get getMapId(): number
+	abstract registerClientInterface(callback: GameEventEmitter): Room
+	abstract registerSimulationClientInterface(callback: GameEventEmitter): Room
+	private resetTimeout: NodeJS.Timeout | null
+	private invitedUsers:Set<string> //stores invited user's userid
 	constructor(name: string) {
-		//	this.simulation_total_count = 1
-		// this.simulation_count = 1
-		// this.game = null
 		this.name = name
-		this.teams = []
 		this.hosting = 0
 		this.guestnum = 0
 		this.isTeam = false
-	//	this.playerlist = this.makePlayerList()
-		//	this.simulation = false
-		// this.instant = false
 		this.map = 0
-		this.idleTimeout = null
-		this.idleTimeoutTurn = -1
-		this.connectionTimeout = null
-		this.connectionTimeoutTurn = -1
-		this.playerSessions=new Set<string>()
-		this.guestSockets=new Map<number,Socket>()
+		this.playerSessions = new Set<string>()
+		this.gameReadySessions = new Set<string>()
+		this.guestSockets = new Map<number, Socket>()
 
-		this.isGameStarted=false
-		this.resetCallback=()=>{}
-		this.playerMatchingState=new PlayerMatchingState()
-		this.hostSessionId=''
-		this.isPublic=true
-		this.isLoggedInUserOnly=false
-		this.password=""
-		this.gametype="normal"
+		this.isGameStarted = false
+		this.resetCallback = () => {}
+		this.playerMatchingState = new PlayerMatchingState()
+		this.hostSessionId = ""
+		this.isPublic = true
+		this.isLoggedInUserOnly = false
+		this.password = ""
+		this.gametype = "normal"
+
+		//saves which loggedin users are playing this game. initialized when users request initial setting for game.
+		this.registeredUsers = []
+		this.invitedUsers = new Set<string>()
+		
 	}
 
-	setGameType(type:string){
-		this.gametype=type
+	protected restartResetTimeout() {
+		console.log("restartResetTimeout")
+		if (this.resetTimeout != null) clearTimeout(this.resetTimeout)
+		this.resetTimeout = setTimeout(() => {
+			this.reset()
+		}, SETTINGS.resetTimeout)
+	}
+	
+	onUserInput(){
+		this.restartResetTimeout()
+	}
+
+	setGameType(type: string) {
+		this.gametype = type
 		return this
 	}
-	setHost(id:string)
-	{
-		this.hostSessionId=id
+	setHost(id: string) {
+		this.hostSessionId = id
 		return this
 	}
-	setPassword(pw:string)
-	{
-		this.password=encrypt(pw,this.name)
+	setPassword(pw: string) {
+		this.password = encrypt(pw, this.name)
 	}
-	setSettings(isLoggedInUserOnly:string,isPrivate:string){
-		this.isLoggedInUserOnly=isLoggedInUserOnly==="true"
-		this.isPublic=isPrivate==="false"
+	setSettings(isLoggedInUserOnly: boolean, isPrivate: boolean) {
+		this.isLoggedInUserOnly = isLoggedInUserOnly
+		this.isPublic = !isPrivate
 		console.log(this.isPublic)
 	}
-	registerResetCallback(onreset:Function){
-		this.resetCallback=onreset
+	registerResetCallback(onreset: Function) {
+		this.resetCallback = onreset
 		return this
 	}
-	addSession(id:string){
+	addSession(id: string) {
 		this.playerSessions.add(id)
 	}
-	hasSession(id:string){
+	hasSession(id: string) {
 		return this.playerSessions.has(id)
 	}
-	deleteSession(id:string){
+	deleteSession(id: string) {
 		this.playerSessions.delete(id)
 	}
-	getPlayerList(){
+	getPlayerList() {
 		return this.playerMatchingState.playerlist
 	}
-	getChangedTurn(original:number){
+	getChangedTurn(original: number) {
 		return this.playerMatchingState.getTurnMapping(original)
 	}
+	/**
+	 * called after the game is started and the user requests initial setting.
+	 *
+	 * @param userId
+	 * @param username
+	 * @param turn
+	 */
+	addRegisteredUser(turn: number, userId?: MongoId, username?: string) {
+		if (!userId || !username) return
+		this.registeredUsers.push({
+			id: userId,
+			username: username,
+			turn: turn,
+		})
+	}
 
-	get roomStatus(){
+	invite(id:string){
+		this.invitedUsers.add(id)
+	}
+	/**
+	 * 
+	 * @param id 
+	 * @returns false if user hasnt invited
+	 */
+	cancelInvite(id:string){
+		return this.invitedUsers.delete(id)
+
+	}
+	/**
+	 * 
+	 * @param id 
+	 * @returns false it the user is not invited, or joining the room is unavalialble
+	 */
+	acceptInvite(id:string){
+		if(this.isGameStarted || !this.canJoin()) return false
+
+		return this.invitedUsers.delete(id)
+	}
+	canJoin(){
+		return this.hosting > 0
+	}
+
+	get roomStatus() {
 		return {
-			name:this.name,
-			running:this.isGameRunning,
-			started:this.isGameStarted,
-			playerlist:this.playerMatchingState.playerlist,
-			hosting:this.hosting,
-			type:this.type,
-			password:this.password,
-			loginonly:this.isLoggedInUserOnly,
-			isPublic:this.isPublic
+			name: this.name,
+			running: this.isGameRunning,
+			started: this.isGameStarted,
+			playerlist: this.playerMatchingState.playerlist,
+			hosting: this.hosting,
+			type: this.type,
+			password: this.password,
+			loginonly: this.isLoggedInUserOnly,
+			isPublic: this.isPublic,
+			registeredUsers: this.registeredUsers,
 		}
 	}
-	checkPassword(pw:string){
-		if(this.password==="") return true
-		if(encrypt(pw,this.name)===this.password) return true
+	checkPassword(pw: string) {
+		if (this.password === "") return true
+		if (encrypt(pw, this.name) === this.password) return true
 		return false
 	}
-	canJoinPublic(loggedin:boolean){
-		if(!loggedin && this.isLoggedInUserOnly) return false
-		return this.hosting>0 && this.isPublic
+	canJoinPublic(loggedin: boolean) {
+		if (!loggedin && this.isLoggedInUserOnly) return false
+		return this.hosting > 0 && this.isPublic
 	}
-	get roomSummary(){
+	get roomSummary() {
 		return {
-			name:this.name,
-			hosting:this.hosting,
-			type:this.type,
-			hasPassword:this.password!=="",
-			loginonly:this.isLoggedInUserOnly
+			name: this.name,
+			hosting: this.hosting,
+			type: this.type,
+			hasPassword: this.password !== "",
+			loginonly: this.isLoggedInUserOnly,
 		}
 	}
 	/**
@@ -166,23 +221,22 @@ abstract class Room {
 
 		return this
 	}
-	setHostNickname(name: string, turn: number,userClass:number) {
-		this.playerMatchingState.setHostNickname(name,turn,userClass)
+	setHostNickname(name: string, turn: number, userClass: number) {
+		this.playerMatchingState.setHostNickname(name, turn, userClass)
 	}
-	
+	isHost(sessionId:string){
+		return this.hostSessionId === sessionId
+	}
+
 	user_updatePlayerList(playerlist: BaseProtoPlayer[]) {
-		
-		
 		this.playerMatchingState.setPlayerList(playerlist)
 		this.hosting = this.playerMatchingState.getHostingCount()
-
 	}
 
 	user_updateReady(turn: number, ready: boolean) {
-		this.playerMatchingState.setReady(turn,ready)
-		
+		this.playerMatchingState.setReady(turn, ready)
 	}
-	user_guestRegister(sessionId:string):boolean{
+	user_guestRegister(sessionId: string): boolean {
 		if (this.playerMatchingState.getHostingCount() <= 0) {
 			return false
 		}
@@ -190,36 +244,35 @@ abstract class Room {
 		this.playerMatchingState.guestnum += 1
 		return true
 	}
-	removeGuest(turn:number){
+	removeGuest(turn: number) {
 		// this.deleteSession(sessionId)
-		let socket=this.guestSockets.get(turn)
-		if(socket){
+		let socket = this.guestSockets.get(turn)
+		if (socket) {
 			SocketSession.removeGameSession(socket)
 			this.deleteSession(SocketSession.getId(socket))
-			console.log("removeguest")
+			Logger.log("remove guest from room ", this.name)
 			SocketSession.print(socket)
 			socket.leave(this.name)
-			
 		}
 		this.guestSockets.delete(turn)
 
 		this.playerMatchingState.guestnum -= 1
 	}
 
-	removePlayer(turn:number){
+	removePlayer(turn: number) {
 		return this.playerMatchingState.removePlayer(turn)
 	}
-	addGuestToPlayerList(username: string,userClass:number,socket:Socket) :number{
-		let turn= this.playerMatchingState.addGuestToPlayerList(username,userClass)
-		this.guestSockets.set(turn,socket)
+	addGuestToPlayerList(username: string, userClass: number, socket: Socket): number {
+		let turn = this.playerMatchingState.addGuestToPlayerList(username, userClass)
+		this.guestSockets.set(turn, socket)
 		return turn
 	}
 
-	getPlayerNamesForTeamSelection():{name:string,userClass:number}[] {
+	getPlayerNamesForTeamSelection(): { name: string; userClass: number }[] {
 		return this.playerMatchingState.getPlayerNamesForTeamSelection()
 	}
 	user_updateChamp(turn: number, champ_id: number) {
-		this.playerMatchingState.setChamp(turn,champ_id)
+		this.playerMatchingState.setChamp(turn, champ_id)
 	}
 
 	user_updateMap(map: number) {
@@ -228,31 +281,58 @@ abstract class Room {
 	user_updateTeams(teams: boolean[]) {
 		this.playerMatchingState.setTeams(teams)
 	}
-	onBeforeGameStart()
-	{
-		this.isGameStarted=true
+	onBeforeGameStart() {
+		this.isGameStarted = true
+	}
+	/**
+	 * called when a user is ready for game. 
+	 * @param sessionId 
+	 * @returns return true if all users are ready
+	 */
+	onUserGameReady(sessionId: string): GameReadyState {
+		if (!this.playerSessions.has(sessionId)) return {
+			total:0,ready:0,canStart:false
+		}
+		this.gameReadySessions.add(sessionId)
+		return {
+			total:this.playerSessions.size,
+			ready: this.gameReadySessions.size,
+			canStart:this.playerSessions.size === this.gameReadySessions.size
+		}
+	}
+	/**
+	 * save registered users' game play data to DB
+	 * @param gameId
+	 * @param type
+	 * @param winner
+	 */
+	async onGameStatReady(gameId: MongoId, type: "RPG" | "MARBLE", winner: Set<number>) {
+		for (const user of this.registeredUsers) {
+			await UserGamePlay.create({
+				user: user.id,
+				game: gameId,
+				type: type,
+				username: user.username,
+				turn: user.turn,
+				isWon: winner.has(user.turn),
+			})
+		}
+		Logger.log("save user gameplay data", this.name)
+	}
+	user_reconnect(turn: number) {}
+	user_disconnect(turn: number) {}
 
-	}
-	user_reconnect(turn:number){
-
-	}
-	user_disconnect(turn:number){
-		
-	}
 	reset() {
 		// this.stopConnectionTimeout()
 		// this.stopIdleTimeout()
-		console.log(this.name + "has been reset")
-		this.name = "DELETED_ROOM"
+		Logger.log(this.name + "has been reset")
+		// this.name = "DELETED_ROOM"
 		this.playerSessions.clear()
-		
-		this.isTeam = false
-		// this.instant = false
-		this.map = 0
-		if(this.resetCallback!=null)
-			this.resetCallback()
-		if(this.idleTimeout) clearTimeout(this.idleTimeout)
-		if(this.connectionTimeout) clearTimeout(this.connectionTimeout)
+
+		//if(this.idleTimeout) clearTimeout(this.idleTimeout)
+		if (this.resetTimeout != null) clearTimeout(this.resetTimeout)
+		//	if(this.connectionTimeout) clearTimeout(this.connectionTimeout)
+		if (this.resetCallback != null) this.resetCallback()
 	}
 }
 

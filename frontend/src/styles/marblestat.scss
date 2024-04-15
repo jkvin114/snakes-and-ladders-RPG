@@ -1,0 +1,117 @@
+#marble-stat-root{
+    text-align: center;
+        // background-color: #5A4939;
+        position: relative;
+        max-height: 100vh;
+        overflow: auto;
+        h1,h3{
+            display: inline-block;
+            margin: 4px;
+        }
+        #stat-container{
+            display: inline-block;
+            background-color: #452E1E;
+            border: 2px solid #A27E4B;
+            border-radius: 10px;
+            width: 98%;
+            max-width: 400px;
+        }
+        .stat-win{
+            background-color: #452E1E;
+            border: 3px solid gold;
+            color: #CFB790;
+            font-family: "cookierun";
+            font-size: larger;
+            word-break: keep-all;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            /* margin: -4px; */
+            &.lost{
+                border: 3px solid rgb(174, 174, 174);
+                // background-color: #5c5047;
+                color: #d96e6e;
+            }
+        }
+        .stat-win a{
+            font-size: 10px;
+            color: rgb(185, 183, 183);
+        }
+        .stat-game{
+            border-radius: 10px;
+            margin: 10px;
+            background-color: #945F3F;
+            display: grid;
+            grid-template-columns: 100px auto;
+        }
+        .stat-player-container{
+            background-color: #7a4e33;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .stat-player{
+            background-color: #945F3F;
+            display: grid;
+            grid-template-columns: 1fr 1fr 30px;
+            margin-top: 1px;
+            margin-bottom: 1px;
+            // color: #2d1d12;
+            color: #291d14;
+            &.focus{
+                background-color: #c0835c;
+
+                .stat-player-name{
+                    color: rgb(255, 223, 178);
+                }
+            }
+        }
+        .stat-player.winner{
+            outline: 2px solid gold;
+            border-radius: 5px;
+            
+        }
+        .stat-player-name{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        .stat-player-name svg{
+            width: 27px;
+            height: 27px;
+            margin-right: 10px;
+        }
+        .stat-player-score{
+            display: flex;
+            margin: 3px;
+            background-color: #744F34;
+            color: #CFB790;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        .stat-player-detail-btn{
+            margin-right: 5px;
+            margin-left: -5px;
+            border: 2px solid #7a4e33;
+            background-color: #E6989D;
+            font-weight: bold;
+            display: flex;
+            width: 23px;
+            height: 23px;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 4px;
+            svg{
+                width: 25px;
+                height: 25px;
+            }
+        }
+      
+        .stat-player-detail-btn:hover{
+            transform: scale(1.1);
+        }
+}

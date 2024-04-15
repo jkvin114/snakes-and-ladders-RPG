@@ -87,6 +87,7 @@ import TileFocusVectorizer from "./Agent/Utility/Vectorize/TileFocusVectorizer"
 import { AbilityExecution } from "./Ability/Ability"
 import { GameType } from "./enum"
 import { ProtoPlayer } from "../Model/models"
+import { Logger } from "../logger"
 
 const MAP = ["world", "god_hand"]
 class MarbleGame {
@@ -138,7 +139,7 @@ class MarbleGame {
 		this.saveStateVector=false
 		this.stateVectors=[]
 
-		this.debug=false
+		this.debug=true
 	}
 	test() {}
 	setClientInterface(ci: MarbleGameEventObserver) {
@@ -189,7 +190,7 @@ class MarbleGame {
 		try {
 			this.mediator.registerAbilities(itemSetting)
 		} catch (e) {
-			console.error(e)
+			Logger.error("set items error",e)
 		}
 	}
 	turnToNum(turn: number) {
@@ -1195,7 +1196,7 @@ class MarbleGame {
 			stateVectors:this.getStateVectors(windata.rewards)
 		}
 	}
-	getResultStat(windata:GameOverAction){
+	getResultStat(windata:GameOverAction):ServerEventModel.GameResultStat{
 		let playerstats=this.mediator.players.map(p=>p.getResultStat())
 		for(let i=0;i<playerstats.length;++i){
 			if(i<windata.rewards.length)

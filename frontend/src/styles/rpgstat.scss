@@ -1,0 +1,93 @@
+#rpg-stat-root
+{
+    text-align: center;
+    position: relative;
+    max-height: 100vh;
+    overflow: auto;
+    h1,h3{
+        display: inline-block;
+        margin: 4px;
+
+    }
+    #stat-container{
+        display: inline-block;
+        background-color: var(--col-bg-light);
+        border-radius: 10px;
+        width: 98%;
+        max-width: 400px;
+    }
+    .game-item{
+        display: grid;
+        grid-template-columns: 40px auto 80px;
+        border-bottom: 6px solid var(--col-bg);
+
+    }
+    .game-item:hover{
+        background-color: var(--col-bg-lighter);
+
+    }
+    .game-header{
+        color: white;
+        background-color: blue;
+        &.lost{
+            background-color: red;
+        }
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .game-content{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: flex-start;
+        padding-left: 10px;
+        .kda{
+            font-size: larger;
+        }
+    }
+    .game-desc{
+        font-size: 12px;
+        color: var(--col-font-dim);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px;
+        
+    }
+    .charimg{
+        display: inline-block;
+        overflow: hidden;    
+        vertical-align: middle;
+        margin-right: 10px;
+    }
+    .charimg > img
+    {
+        width: 30px;
+        height: 30px;
+        max-height: 40px;
+        transform: scale(0.9);
+        margin-right: 3px;
+        border-radius: 50%;
+    }
+    .multikill-text{
+        color: rgb(255, 209, 209);
+        background-color: rgb(255, 81, 0);
+        padding: 3px;
+        border-radius: 3px;
+        line-height: 12px;
+        font-size: 10px;
+        margin-top: 5px;
+    }
+    .toast_itemimg{
+        margin: -35px;
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        display: inline-block;
+        transform: scale(0.3);
+    }
+}

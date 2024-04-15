@@ -14,6 +14,8 @@ import { Friend, friendSchema } from "../../mongodb/UserRelationDBSchema";
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation";
 import crypto from "crypto";
 import { CharacterSimulationEval, SimulationEval } from "../../mongodb/SimulationEvalDBSchema";
+import { ISession, SessionManager } from "../../session/inMemorySession";
+import { Logger } from "../../logger";
 export function encrypt(pw: string, salt: string) {
 	return crypto
 		.createHash("sha512")
@@ -59,12 +61,16 @@ export const ajaxauth = (req: express.Request, res: express.Response, next: expr
 export const adminauth = async(req: express.Request, res: express.Response, next: express.NextFunction) => {
 	// next()
 	// return
+	const session = SessionManager.getSession(req)
 	try {
-		if (!req.session.isLogined) {
+		if (!session.isLogined) {
 			res.status(401).end("unauthorized")
 		} else {
-			const user = await User.findById(req.session.userId)
-			if(user.role && user.role==="admin") next()
+			const user = await User.findById(session.userId)
+			if(user.role && user.role==="admin") {
+				Logger.log("admin authorized")
+				next()
+			}
 			else
 				res.status(401).end("unauthorized")
 		}
@@ -72,25 +78,51 @@ export const adminauth = async(req: express.Request, res: express.Response, next
 		res.status(401).end("unauthorized")
 	}
 }
+export function isNumber(str:string) {
+	return /^\d+$/.test(str);
+  }
+  
+export const renderEjs = function(res:express.Response,name:string,data:any){
+	return res.render(name, data,
+	(err,html)=>err?res.status(500).end(err.toString()):res.json({
+		html:html,script:name
+	}))
+}
+
 export const postRoleChecker =  async (req: express.Request, res: express.Response, next: express.NextFunction)=>{
-	const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
-	if(!post) {
-		res.status(401).end("You are not allowed to view this post!")
+	try{
+
+		if (!isNumber(req.params.postUrl)) {
+			res.status(400).end("url should be a number")
+			return
+		}
+
+		const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
+		const session=res.locals.session
+		if(!post) {
+			res.status(401).end("You are not allowed to view this post!")
+			return
+		}
+		let isfriend=false
+		let currentUser:mongoose.Types.ObjectId|null=new ObjectID(session.userId)
+		if(session.isLogined && session.userId){
+			isfriend=await UserRelationSchema.isFriendWith(session.userId,post.author)
+		}
+		if(isPostVisibleToUser(post.visibility,post.author,currentUser,isfriend)) next()
+		else res.status(401).end("You are not allowed to view this post!")
+	}
+	catch(e){
+		Logger.error(" post role checker", e)
+		res.status(500).end()
 		return
 	}
-	let isfriend=false
-	let currentUser:mongoose.Types.ObjectId|null=null
-	if(req.session.isLogined){
-		isfriend=await UserRelationSchema.isFriendWith(req.session.userId,post.author)
-	}
-	if(isPostVisibleToUser(post.visibility,post.author,currentUser,isfriend)) next()
-	else res.status(401).end("You are not allowed to view this post!")
 }
 
 export const voteController = async function (req: express.Request, res: express.Response, type: ContentType) {
 	const id = new ObjectID(req.body.id) as mongoose.Types.ObjectId
 	let voters: { upvoters: mongoose.Types.ObjectId[]; downvoters: mongoose.Types.ObjectId[] }|null=null
 	console.log(type)
+	const session = res.locals.session
 	try{
 		if (type === ContentType.POST) {
 			voters = await PostSchema.getVotersById(id)
@@ -113,17 +145,17 @@ export const voteController = async function (req: express.Request, res: express
 		return
 	}
 
-	const voter = await User.findById(req.session.userId)
-	const user = await User.getBoardData(req.session.userId)
+	const voter = await User.findById(session.userId)
+	const user = await User.getBoardData(session.userId)
 	const voterBoardData = user.boardData
 	let change = 0
 
 	if (req.body.type === "up") {
 		//user already upvoted
-		if (voters.upvoters.some((id) => String(id) === req.session.userId)) {
+		if (voters.upvoters.some((id) => String(id) === session.userId)) {
 			change = -1
 		} //user already downvoted
-		else if (voters.downvoters.some((id) => String(id) === req.session.userId)) {
+		else if (voters.downvoters.some((id) => String(id) === session.userId)) {
 			change = 0
 		} else {
 			change = 1
@@ -152,10 +184,10 @@ export const voteController = async function (req: express.Request, res: express
 		}
 	} else if (req.body.type === "down") {
 		//user already downvoted
-		if (voters.downvoters.some((id) => String(id) === req.session.userId)) {
+		if (voters.downvoters.some((id) => String(id) === session.userId)) {
 			change = -1
 		} //user already downvoted
-		else if (voters.upvoters.some((id) => String(id) === req.session.userId)) {
+		else if (voters.upvoters.some((id) => String(id) === session.userId)) {
 			change = 0
 		} else {
 			change = 1
@@ -230,12 +262,12 @@ export function isPostVisibleToUser(
  * @param isLinkOnlyAllowed true if link-only posts should be visible
  * @returns 
  */
-export function filterPostSummary(session:any,posts:SchemaTypes.Article[],isLinkOnlyAllowed:boolean):Promise<SchemaTypes.Article[]>{
+export function filterPostSummary(session:ISession,posts:SchemaTypes.Article[],isLinkOnlyAllowed:boolean):Promise<SchemaTypes.Article[]>{
 	return new Promise(async (resolve,reject)=>{
 		let friends:any[]=[]
 		let currentUser:mongoose.Types.ObjectId|null=null
 		if(session.isLogined){
-			currentUser=session.userId
+			currentUser=new ObjectID(session.userId)
 			friends=await UserRelationSchema.findFriends(currentUser)
 		}
 

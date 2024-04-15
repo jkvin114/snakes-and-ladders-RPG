@@ -1,0 +1,15 @@
+:root {
+    /* --bg:#241c2a;
+    --bg2:#362a40;
+    --bg3:#493955;
+    --bg4:#5b476b; */
+    --bg:hsl(240, 22%, 15%);
+	--bg3:hsl(240, 20%, 22%);
+	--bg4:hsl(240, 20%, 25%);
+    --bg2:hsl(240, 20%, 18%);
+    --font-light:#b4a3c1;
+}
+
+.filter-invert{
+    filter: invert();
+  }

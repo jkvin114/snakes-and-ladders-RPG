@@ -116,7 +116,16 @@ export namespace ServerEventModel{
             category: string;
         }[]
     }
-
+    export interface PlayerStat{
+        index:number;
+        turn:number;
+        stats: number[];
+        items: number[];
+        score: number;
+        name: string;
+        char: number;
+        agentType: string;
+    }
   export interface GameResultStat{
         winner: number;
         winType: string;
@@ -124,14 +133,7 @@ export namespace ServerEventModel{
         map: string;
         isTeam: boolean;
         version: number;
-        players: {
-            stats: number[];
-            items: number[];
-            score: number;
-            name: string;
-            char: number;
-            agentType: string;
-        }[];
+        players: PlayerStat[];
         createdAt: any;
         updatedAt: any;
     }

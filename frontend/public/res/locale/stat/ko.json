@@ -1,0 +1,75 @@
+{
+    "games":"게임",
+    "simulations":"시뮬레이션",
+    "analysis":"분석",
+    "collapse":"숨기기",
+    "expand":"펼치기",
+    "list":"목록열기",
+    "gamedetail":"게임 상세정보",
+    "win":"승리",
+    "lost":"패배",
+    "gamedetail_data":{
+        "replay":"리플레이 보기",
+        "turn":"턴 수:",
+        "winner":"승리: ",
+        "map":"맵: ",
+        "itemlimit":"아이템 갯수제한:",
+        "winbydecision":"판정승: ",
+        "life":"추가 목숨: "
+    },
+    "kills":"킬/데스 기록",
+    "playerdetail_data":{
+        "moneyspent":"소모한 돈",
+        "moneytaken":"빼앗긴 돈",
+        "revive":"부활한 횟수",
+        "forcemove":"강제이동",
+        "basicattack":"기본공격 횟수",
+        "execute":"처형당한 횟수"
+    },
+    "player":"  플레이어",
+    "perfscore":"종합 스코어",
+    "game_2p":"2인 개인전",
+    "game_3p":"3인 개인전",
+    "game_4p":"4인 개인전",
+    "game_team":"2 vs 2 팀전",
+    "totalgame":"총 게임 수:",
+    "avgturn":"평균 턴 수:",
+    "char":"캐릭터",
+    "winrate":"승률",
+    "charpage":{
+        "itembuild":"아이템 빌드",
+        "pickrate":"픽률",
+        "item":"아이템",
+        "opponent":"상대별 승률",
+        "teammate":"팀원별 승률"
+    },
+    "multikill":{
+        "double":"더블킬",
+        "triple":"트리플킬",
+        "quad":"쿼드라킬",
+        "penta":"펜타킬"
+    },
+    "disabled":"미사용",
+    "enabled":"사용",
+    "graph":{
+        "kda":"KDA 스코어",
+        "money":"돈 획득",
+        "position":"위치",
+        "trend":"버젼별 승률"
+    },
+    "smallgraph":{
+        "dmgdealt":"입힌 피해량",
+        "playerdmg":"플레이어에게 받은 피해",
+        "obsdmg":"장애물에게 받은 피해",
+        "heal":"회복량",
+        "money":"획득한 돈",
+        "reduce":"피해 감소량"
+    },
+    "turn":"턴",
+    "item":{
+        "passive":"고유지속효과",
+        "cool":"쿨타임",
+        "price":"가격"
+    },
+    "recent":"최근"
+}

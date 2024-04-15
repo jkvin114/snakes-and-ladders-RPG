@@ -12,18 +12,25 @@ export namespace PostSchema{
         return await new Article(data).save()
     }
     export const findOneById = async function (id: mongoose.Types.ObjectId) {
+        return await Article.findById(id)
+    }
+    export const findOneByIdPopulated = async function (id: mongoose.Types.ObjectId) {
         return await Article.findById(id).populate<{ comments:SchemaTypes.Comment[]}>("comments")
     }
     export const getUrlById = async function (id: mongoose.Types.ObjectId) {
         return await Article.findById(id).select("articleId")
     }
     export const findOneByArticleId = async function (id: number) {
+        if(isNaN(id))
+            return null
         return await Article.findOne({ articleId: id })
     }
     export const findMultipleByIdList = async function (id: mongoose.Types.ObjectId[]) {
         return await Article.find({ _id:{$in:id}}).select("createdAt articleId title views upvote downvote imagedir commentCount authorName author visibility")
     }
     export const findOneByArticleIdWithComment = async function (id: number) {
+        if(isNaN(id))
+            return null
         return await Article.findOne({ articleId: id }).populate<{ comments:SchemaTypes.Comment[]}>("comments")
     }
     export const findSummaryByRange = async function (start: number, count: number) {
@@ -56,6 +63,9 @@ export namespace PostSchema{
     }
     export const update = async function (url: number, title: string, content: string,visibility:string) {
         return await Article.findOneAndUpdate({ articleId: url }, { title: title, content: content,visibility:visibility })
+    }
+    export const updateWithFormat = async function (url: number, title: string, content: string,visibility:string,formattedContent:string) {
+        return await Article.findOneAndUpdate({ articleId: url }, { title: title, content: content,visibility:visibility,formattedContent:formattedContent })
     }
     export const updateImage = async function (url: number, image: string) {
         return await Article.findOneAndUpdate({ articleId: url }, { imagedir: image })

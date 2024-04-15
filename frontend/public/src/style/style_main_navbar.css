@@ -1,0 +1,121 @@
+
+#navbar{
+    display: flex;
+    background-color: var(--col-bg);
+    border-bottom: 1px solid gray;
+    margin-top: 0;
+    padding-top: 4px;
+    justify-content:space-between;
+    align-items: stretch;
+    height: min-content;
+    max-height: 84px;
+    position: sticky;
+    top:0;
+    flex-wrap: wrap;
+    z-index: 10;
+  }
+  #navbar-btn-container{
+    display: flex;
+    justify-content:space-between;
+    flex-grow: 1;
+    margin-left: 5vw;
+    margin-right: 10px;
+
+  }
+  #title{
+    text-align: center;
+  }
+  #title h5{
+    padding: 10px;
+    /* width: 30vw; */
+    cursor: pointer;
+    font-family: 'nanumEB';
+    font-size: 30px;
+    color: #b895fc;
+    margin: 0;
+    line-height: 40px;
+    margin-left: 15px;
+  }
+  @media (max-width: 700px) {
+    #title h5{
+
+      font-size: 25px;
+    }
+    #navbar{
+      /* height:80px; */
+    }
+  }
+  @media (max-width: 900px) {
+    .navbtn > a{
+        display: none;
+    }
+  }
+  .navbtn,.menubtn{
+    display: inline-block;
+    color:white;
+    cursor:pointer;
+    text-align:center;
+    border:none;
+    vertical-align: middle;
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+  .navbtn{
+    font-family: 'nanumB';
+    /* background-color: #7E00BF; */
+    background: transparent;
+    font-size: 14px;
+    /* border-radius: 4px; */
+    /* height: 30px; */
+    height: 40px;
+    transition: all 0.5s;
+
+  }
+  .navbtn.active{
+    border-bottom: solid 4px var(--col-primary-light);
+
+  }
+  .navbtn:hover{
+    /* transform: scale(1.1); */
+    background-color: var(--col-bg-lighter);
+  }
+.navbtn > img{
+    height: 25px;
+    vertical-align: middle;
+    padding: 5px;
+    width: 25px;
+  }
+  .navbtn > a{
+    padding-right: 3px;
+    
+  }
+  .navbtn.active > a{
+    color: var(--col-primary-light);
+  }
+  .navbtn.active > img{
+    filter: invert(49%) sepia(89%) saturate(5585%) hue-rotate(252deg) brightness(99%) contrast(104%);
+
+}
+  .nav-section{
+    /* display: inline-flex; */
+  }
+  .menubtn{
+    background-color: transparent;
+    /* background-color: #7E00BF; */
+
+    margin-left: 2px;
+    margin-right: 2px;
+    /* border-radius: 4px; */
+    /* height: 30px; */
+    height: 23px;
+    width:23px;
+    padding: 5px;
+    /* border-radius: 50%; */
+    transition: all 0.5s;
+  }
+  .menubtn:hover{
+    background-color: var(--col-bg-lighter);
+  }
+  .hidden{
+    display: none;
+  }

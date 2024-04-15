@@ -2,6 +2,7 @@ import { ServerUnaryCall, sendUnaryData } from "@grpc/grpc-js";
 import { marblegame } from "../grpc/services/marblegame";
 import RoomStorage from "../RoomStorage";
 import { userEvents } from "../Model/models";
+import { Logger } from "../logger";
 interface ParsedPayload{
     rname:string,
     invoker:number,
@@ -18,7 +19,7 @@ function HandleEvent<T>(call: ServerUnaryCall<T,marblegame.Bool>,reqParser:(payl
         }
         catch(e){
             status=false
-            console.error(e)
+            Logger.error("handle event error",e)
         }
         finally{
             callback(null,new marblegame.Bool({val:status}))

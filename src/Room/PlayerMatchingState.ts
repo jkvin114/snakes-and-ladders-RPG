@@ -1,4 +1,3 @@
-
 import { PlayerType, ProtoPlayer, shuffle } from "../RPGGame/core/Util"
 import SETTINGS = require("../../res/globalsettings.json")
 import { BaseProtoPlayer } from "./BaseProtoPlayer"
@@ -48,7 +47,12 @@ export class PlayerMatchingState{
 		
 
 		for(let i=0;i<playerlist.length;++i){
-			playerlist[i].userClass=this.playerlist[i].userClass
+			
+
+			if(playerlist[i].type===PlayerType.PLAYER_CONNECED) {
+				playerlist[i].userClass=this.playerlist[i].userClass
+				playerlist[i].name=this.playerlist[i].name
+			}
 			if(playerlist[i].type===PlayerType.EMPTY) 
 				this.playerlist[i] = this.createEmptyPlayer()
 			else this.playerlist[i]=playerlist[i]

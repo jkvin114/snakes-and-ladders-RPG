@@ -1,19 +1,20 @@
 import { credentials } from "@grpc/grpc-js";
 import { marblegame } from "./services/marblegame";
 import { rpggame } from "./services/rpggame";
+import { Logger } from "../logger";
 const PORT=50052
-
+const HOST = "localhost:"
 export default class RPGGameGRPCClient{
     private static stub:rpggame.RPGGameClient=null 
     static connect(){
-        console.log("create rpggame grpc client")
         try{
-
-            RPGGameGRPCClient.stub = new rpggame.RPGGameClient('localhost:'+PORT,credentials.createInsecure());
+            
+            RPGGameGRPCClient.stub = new rpggame.RPGGameClient(HOST+PORT,credentials.createInsecure());
+            // Logger.log("created rpggame grpc client")
 
         }
         catch(e){
-            console.error(e)
+            Logger.error("Failed to connect rpg grpc server",String(e))
         }
    }
    /**

@@ -84,14 +84,22 @@ module.exports = function (socket: Socket) {
 
 	socket.on(userEvents.GAMEREADY, function (itemsetting: any) {
 		let setting = new marblegame.GameSetting()
+		
+
 
 		grpcController<MarbleRoom>(socket, (room, rname, turn) => {
+			
+
 			setting.isTeam = room.isTeam
 			setting.rname = rname
 			setting.map = room.map
 			setting.gametype=room.gametype
 			console.log(room.gametype)
 			setting.playerlist = room.getPlayerList().map((p) => {
+
+				//if user is not logged in, clear the user name so that it will be assigned randomly in marble service.
+				if(p.userClass===0) p.name=""
+
 				if (p.data) p.data = JSON.stringify(p.data)
 				return new marblegame.ProtoPlayer(p)
 			})
@@ -100,7 +108,7 @@ module.exports = function (socket: Socket) {
 				randomCount: itemsetting.randomCount,
 			})
 			MarbleGameGRPCClient.InitGame(setting,()=>{
-
+				
 				MarbleGameGRPCClient.ListenGameEvent(rname, (event: marblegame.GameEvent) => {
 					if(event)
 						forwardGameEvent(rname, event)
@@ -111,8 +119,8 @@ module.exports = function (socket: Socket) {
 			})
 			room.isGameStarted=true
 
-			
-
+			//호스트,게스트 페이지 바꾸기
+			io.to(rname).emit("server:to_marble_gamepage")
 		})
 
 	})
@@ -120,6 +128,7 @@ module.exports = function (socket: Socket) {
 	socket.on(userEvents.REQUEST_SETTING, function () {
 		grpcController(socket, (room, rname, turn) => {
 			socket.join(rname)
+			
 
 			MarbleGameGRPCClient.RequestSetting(
 				new marblegame.GameSettingRequest({
@@ -132,6 +141,12 @@ module.exports = function (socket: Socket) {
 
 					let gameturn = setting.players[turn].turn
 					SocketSession.setTurn(socket, gameturn) //세선에 저장되있는 턴 진짜 게임 턴으로 변경
+					
+					const session = SocketSession.getSession(socket)
+					if(session.isLogined){
+						room.addRegisteredUser(gameturn,session.userId,session.username)
+					}
+
 					socket.emit("server:initialsetting", setting, turn, gameturn)
 				}
 			)
@@ -150,6 +165,13 @@ module.exports = function (socket: Socket) {
 	socket.on(userEvents.START_GAME, function () {
 
 		grpcController(socket, (room, rname, turn) => {
+			const canstart = room.onUserGameReady(SocketSession.getId(socket))
+			console.log(canstart)
+			io.to(rname).emit("server:game_ready_status",canstart)
+			
+			if(!canstart.canStart) return
+
+			room.onUserInput()
 			MarbleGameGRPCClient.RequestGameStart(rname,(res)=>{
 				if(res) room.isGameRunning=true
 			})
@@ -165,6 +187,7 @@ module.exports = function (socket: Socket) {
 	socket.on(userEvents.PRESS_DICE, function (invoker: number, target: number, oddeven: number) {
 		const data=new marblegame.UserPressDice()
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			data.rname=rname
 			data.invoker=invoker
 			data.target=target
@@ -180,6 +203,7 @@ module.exports = function (socket: Socket) {
 
 		
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.UserSelectBuild({
 				invoker:invoker,
 				builds:builds,
@@ -194,6 +218,7 @@ module.exports = function (socket: Socket) {
 	socket.on(userEvents.SELECT_BUYOUT, function (invoker: number, result: boolean) {
 
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.BoolUserResponse({
 				invoker:invoker,
 				rname:rname,
@@ -211,6 +236,7 @@ module.exports = function (socket: Socket) {
 		// 	room.onClientEvent("select_loan", invoker, result)
 		// })
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.BoolUserResponse({
 				invoker:invoker,
 				rname:rname,
@@ -224,6 +250,7 @@ module.exports = function (socket: Socket) {
 		// 	room.onClientEvent("select_tile", invoker, pos, source, result)
 		// })
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.UserSelectTile({
 				invoker:invoker,
 				rname:rname,
@@ -240,6 +267,7 @@ module.exports = function (socket: Socket) {
 		// })
 
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.BoolUserResponse({
 				invoker:invoker,
 				rname:rname,
@@ -253,6 +281,7 @@ module.exports = function (socket: Socket) {
 		// 	room.onClientEvent("confirm_card_use", invoker, result, cardname)
 		// })
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.UserConfirmCardUse({
 				invoker:invoker,
 				rname:rname,
@@ -267,6 +296,7 @@ module.exports = function (socket: Socket) {
 		// 	room.onClientEvent("select_godhand_special", invoker, result)
 		// })
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.BoolUserResponse({
 				invoker:invoker,
 				rname:rname,
@@ -281,6 +311,7 @@ module.exports = function (socket: Socket) {
 		// })
 
 		grpcController(socket, (room, rname, turn) => {
+			room.onUserInput()
 			const data=new marblegame.BoolUserResponse({
 				invoker:invoker,
 				rname:rname,

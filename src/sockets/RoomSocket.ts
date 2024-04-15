@@ -4,6 +4,9 @@ import { SocketSession } from "./SocketSession";
 import express = require("express")
 import { controlRoom } from "./Controller";
 import CONFIG from "./../../config/config.json"
+import { Logger } from "../logger";
+
+const validTypes = new Set<string>(["matching","rpggame","marblegame"])
 
 module.exports=function(socket:Socket){
 
@@ -20,13 +23,13 @@ module.exports=function(socket:Socket){
 	socket.on("user:host_create_room", function () {
 
 		controlRoom(socket,(room,rname)=>{
-			if(room.hostSessionId!==SocketSession.getId(socket)) return
+			if(!room.isHost(SocketSession.getId(socket))) return
 
 			room.setSimulation(false)
 			.registerClientInterface(function(roomname:string,type:string,...args:unknown[]){
 				io.to(roomname).emit(type,...args)
 			}).setHostNickname(SocketSession.getUsername(socket), 0,SocketSession.getUserClass(socket))
-			
+			Logger.log("create new room",rname)
 			room.addSession(SocketSession.getId(socket))
 			socket.join(rname)
 		})
@@ -54,7 +57,7 @@ module.exports=function(socket:Socket){
 				socket.emit("server:guest_join_room", rname, turn, room.getPlayerList())
 
 				socket.broadcast.to(rname).emit("server:update_playerlist", room.getPlayerList())
-
+				Logger.log("guest join",rname)
 			}
 			else{
 				socket.emit("server:unavaliable_room")
@@ -87,6 +90,8 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 	socket.on("user:kick_player", function (turn: number) {
 		controlRoom(socket,(room,rname)=>{
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			io.to(rname).emit("server:kick_player", turn)
 			room.removeGuest(turn)
 		})
@@ -98,6 +103,8 @@ module.exports=function(socket:Socket){
 
 	socket.on("user:go_teampage", function () {
 		controlRoom(socket,(room,rname)=>{
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			room.setTeamGame()
 			io.to(rname).emit("server:go_teampage")
 		})
@@ -105,6 +112,8 @@ module.exports=function(socket:Socket){
 	})
 	socket.on("user:exit_teampage", function () {
 		controlRoom(socket,(room,rname)=>{
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			room.unsetTeamGame()
 			io.to(rname).emit("server:exit_teampage")
 		})
@@ -122,7 +131,7 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 
 	socket.on("user:update_champ", function (turn: number, champ: number) {
-		console.log("changechamp" + turn + champ)
+	//	console.log("changechamp" + turn + champ)
 		controlRoom(socket,(room,rname)=>{
 			
 			room.user_updateChamp(turn, champ)
@@ -134,11 +143,12 @@ module.exports=function(socket:Socket){
 	socket.on("user:update_map", function (map: number) {
 
 		controlRoom(socket,(room,rname)=>{
-			
+			if(!room.isHost(SocketSession.getId(socket))) return
+
 			room.user_updateMap(map)
 			io.to(rname).emit("server:map", map)
 		})
-		console.log("setmap" + map)
+		//console.log("setmap" + map)
 	})
 	//==========================================================================================
 
@@ -152,7 +162,7 @@ module.exports=function(socket:Socket){
 
 	
 	socket.on("user:reload_game", function () {
-		console.log("reloadgame")
+		//console.log("reloadgame")
 		let rname = SocketSession.getRoomName(socket)
 
 	})
@@ -171,31 +181,34 @@ module.exports=function(socket:Socket){
 		controlRoom(socket,(room,rname)=>{
 			
 			room.user_reconnect(turn)
-			console.log("reconnect"+rname)
+			Logger.log("user reconnect",rname,"turn:"+turn)
 		})
 	})
 	
 	socket.on("disconnect", function () {
-		console.log("disconnected")
-		let turn = SocketSession.getTurn(socket)
+		
+		if(!validTypes.has(socket.data.type)) return
+		let turn = SocketSession.getTurn(socket) 
 		if(!SocketSession.getRoomName(socket)) return
 		controlRoom(socket,(room,rname)=>{
 			
-			if(!room.isGameStarted){
+			if(!room.isGameStarted && socket.data.type==="matching"){
 				//if host quits in the matching page
 				if(turn===0){
 					room.reset()
 					io.to(rname).emit("server:quit")
+					Logger.log("host disconnected",rname)
 
 				}//if guest quits in the matching page
 				else{
-
+					Logger.log("guest disconnected",rname)
 					room.removeGuest(turn)
 					socket.broadcast.to(rname).emit("server:update_playerlist", room.removePlayer(turn))
 				}
 				SocketSession.removeGameSession(socket)
 			}
 			else{
+				Logger.log("user disconnected while game",rname)
 				if(CONFIG.dev_settings.enabled && CONFIG.dev_settings.reset_room_on_disconnect && room.isGameRunning){
 					room.reset()
 					io.to(rname).emit("server:quit")

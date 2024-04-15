@@ -33,10 +33,17 @@ export namespace UserRelationSchema{
         let follows= await Follow.find({source:id})
         return follows.map((f)=>f.target)
     }
+    export const findFollowers = async function (id: Types.ObjectId|string) {
+        let follows= await Follow.find({target:id})
+        return follows.map((f)=>f.source)
+    }
     export const isFollowTo = async function (source: Types.ObjectId|string,target: Types.ObjectId|string) :Promise<boolean> {
         return (await Follow.find({source:source,target:target})).length>0
     }
     export const followCount = async function (id: Types.ObjectId|string) {
         return await Follow.countDocuments({source:id})
+    }
+    export const followerCount = async function (id: Types.ObjectId|string) {
+        return await Follow.countDocuments({target:id})
     }
 }

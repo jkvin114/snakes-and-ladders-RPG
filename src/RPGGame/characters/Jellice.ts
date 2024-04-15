@@ -106,7 +106,7 @@ class Jellice extends CharacterSkillManager {
 		.addData(this.getSkillBaseDamage(ENUM.SKILL.W))
 	}
 	private useW() {
-		console.log("usew")
+		//console.log("usew")
 		this.player.effects.applySpecial(this.getWShield(), Jellice.EFFECT_W_SHIELD)
 		this.player.effects.applySpecial(this.getWEffect(), SpecialEffect.SKILL.MAGICIAN_W.name)
 

@@ -1,0 +1,142 @@
+#matching-invite-modal
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    // z-index: 5;
+    
+    .shadow{
+        z-index: 4;
+    }
+    .content{
+        position: relative;
+        display: flex;
+        flex-direction: row;
+    }
+    .open-btn{
+        z-index: 5;
+        border-left: none;
+        display: inline-block;
+        position: absolute;
+    }
+    .close-btn{
+        z-index: 5;
+        display: inline-block;
+        border-left: none;
+
+    }
+    .btn{
+        svg{
+            width: 20px;
+            height: 20px;
+        }
+        margin-left: -6px;
+        .button{
+            background-color: var(--col-bg-light);
+        }
+    }
+    .friendlist{
+        z-index: 6;
+
+        overflow: auto;
+        height: min(90vh,400px);
+        width: fit-content;
+        // height: 35rem;
+        padding: 5px;
+        background: var(--col-bg-light);
+        border: 2px solid var(--col-primary);
+        border-left: none;
+        border-top: none;
+    }
+    .friend-toolbar{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        border-bottom: 2px solid whitesmoke;
+        .button{
+            width: 3rem;
+
+            svg{
+                width: 1.2rem;
+                height: 1.2rem;
+            }
+        }
+    }
+
+    .profileimg-container{
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background-color: var(--col-primary);
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		align-self: flex-start;
+	  }
+	  .profileimg-container.has-img{
+		background-color: #ebebfd;
+	  }
+	  .profileimg-container > a{
+		user-select: none;
+		color: #ffffff;
+		font-size: 14px;
+		/* text-align: center; */
+	  }
+	  .profileimg{
+		object-fit: cover;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+	  }
+
+      .friend-item{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: stretch;
+            padding: 3px 2px;
+            color: var(--col-font-dim);
+            font-size: small;
+            text-align: center;
+            .name{
+                color: var(--col-font);
+                font-size: medium;
+                vertical-align: middle;
+                min-width: 120px;
+                justify-content: center;
+            }
+
+            &.inactive{
+                // filter: brightness(0.8);
+                color: var(--col-font-light);
+                background-color: var(--col-bg-light);
+                .name{
+                    color: var(--col-font-light);
+                }
+            }
+            .badge{
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                border: 2px solid rgb(24, 196, 24);
+                background-color: green;
+                display: inline-block;
+                vertical-align: middle;
+                margin-right: 2px;
+                &.unavailable{
+                    border: 2px solid orange;
+                    background-color: rgb(255, 117, 63) ;
+                }
+            }
+            .button{
+                width: 60px;
+            }
+            .waiting{
+                color: var(--col-secondary-light);
+            }
+      }
+
+}

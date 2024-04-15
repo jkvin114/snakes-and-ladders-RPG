@@ -1,0 +1,77 @@
+{
+    "games":"Games",
+    "simulations":"Simulations",
+    "analysis":"Analysis",
+    "collapse":"collapse",
+    "expand":"expand",
+    "list":"back to list",
+    "gamedetail":"Game Details",
+    "win":"Victory",
+    "lost":"Defeat",
+    "gamedetail_data":{
+        "replay":"Watch Replay",
+        "turn":"Total turn:",
+        "winner":"Winner: ",
+        "map":"Map: ",
+        "itemlimit":"Item Limit:",
+        "winbydecision":"Win by decision: ",
+        "life":"Additional life: "
+    },
+    "kills":"Kill Record",
+    "playerdetail_data":{
+        "moneyspent":"Money Spent",
+        "moneytaken":"Money taken",
+        "revive":"Revived",
+        "forcemove":"Forcemoved",
+        "basicattack":"Basic attack",
+        "execute":"Executed"
+    },
+    "player":"  Player",
+    "perfscore":"Overall Performance Score",
+    "game_2p":"2 Player Game",
+    "game_3p":"3 Player Game",
+    "game_4p":"4 Player Game",
+    "game_team":"2 vs 2 Game",
+    "totalgame":"Total Games:",
+    "avgturn":"Average Turns:",
+    "char":"Character",
+    "winrate":"Win rate",
+    "charpage":{
+        "itembuild":"Item Build",
+        "pickrate":"Pick rate",
+        "item":"Item",
+        "opponent":"Opponent Win Rates",
+        "teammate":"Teammate Win Rates"
+    },
+    "multikill":{
+        "double":"Double kill",
+        "triple":"Triple kill",
+        "quad":"Quadra kill",
+        "penta":"Penta kill"
+    },
+    "disabled":"Disabled",
+    "enabled":"Enabled",
+    "graph":{
+        
+        "kda":"KDA Score",
+        "money":"Money Obtain",
+        "position":"Positions",
+        "trend":"Win Rate Trend"
+
+    },
+    "smallgraph":{
+        "dmgdealt":"Damage Dealt",
+        "playerdmg":"Damage From Players",
+        "obsdmg":"Damage From Obstacle",
+        "heal":"Heal Amount",
+        "money":"Money Earned",
+        "reduce":"Damage Reduced"
+    },
+    "turn":"turn",
+    "item":{
+        "passive":"Unique passive",
+        "cool":"cooltime",
+        "price":"Price"
+    },
+    "recent":"recent"
+}

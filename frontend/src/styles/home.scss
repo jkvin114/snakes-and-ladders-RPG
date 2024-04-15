@@ -1,0 +1,216 @@
+#homepage-root{
+    text-align: center;
+    position: relative;
+    height: 100vh;
+    overflow: auto;
+    .section-dark{
+        background-color: var(--col-bg-light);
+        border-radius: 10px;
+    }
+    .section{
+        width: 92%;
+        margin: 30px 0px;
+        padding: 15px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-evenly;
+        align-items: center;
+        >div{
+            margin: 10px;
+            text-align: center;
+        }
+        @media only screen and (max-width: 1100px) {
+            flex-wrap: wrap;
+
+        }
+        p{
+            color: var(--col-font-dim);
+        }
+    }
+    .largeimg{
+        width: min(500px,50vw);
+
+    }
+    .homepage{
+        display: inline-block;
+        width: min(1200px,95%);
+        margin-top: 30px;
+    }
+    .mainbtn{
+        svg{
+            width: 30px;
+            height: 30px;
+            vertical-align: sub;
+            margin-right: 7px;
+        }
+        img{
+            width: 30px;
+            height: 30px;
+            vertical-align: sub;
+            margin-right: 7px;
+        }
+    }
+    
+/* CSS */
+.button-19 {
+    appearance: button;
+    background-color: var(--col-primary);
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    width: min(400px,60vw);
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    line-height: 20px;
+    margin: 4px;
+    outline: none;
+    overflow: visible;
+    padding: 13px 16px;
+    text-align: center;
+    touch-action: manipulation;
+    transform: translateZ(0);
+    transition: filter .2s;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    b{
+        font-size: 25px;
+        text-transform: uppercase;
+    }
+    
+  }.btn-dark{
+    background-color: var(--col-bg-lighter);
+    color: var(--col-font-dim);
+}
+.button-19.btn-dark:after{
+    background-color: var(--col-bg-lighter);
+}
+  .button-19:after {
+    background-clip: padding-box;
+    background-color: var(--col-primary-light);
+   
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    bottom: -4px;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+  
+  .button-19:main, .button-19:focus {
+    user-select: auto;
+  }
+  
+  .button-19:hover:not(:disabled) {
+    filter: brightness(1.1);
+    -webkit-filter: brightness(1.1);
+  }
+  
+  .button-19:disabled {
+    cursor: auto;
+  }
+  
+  .button-19:active {
+    border-width: 4px 0 0;
+    background: none;
+  }
+
+
+  
+  .card {
+    padding: 20px;
+    // max-width: 400px;
+    width: 270px;
+    min-height: 200px;
+    display: grid;
+    grid-template-rows: 20px 50px 1fr 50px;
+    border-radius: 10px;
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s;
+    margin: 40px;
+  }
+  
+  .card:hover {
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.4);
+    transform: scale(1.01);
+  }
+  
+  .card__link,
+  .card__exit,
+  .card__icon {
+    cursor: pointer;
+    position: relative;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .card__link::after {
+    position: absolute;
+    top: 25px;
+    left: 0;
+    content: "";
+    width: 0%;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.6);
+    transition: all 0.5s;
+  }
+  
+  .card__link:hover::after {
+    width: 100%;
+  }
+  
+  .card__exit {
+    grid-row: 1/2;
+    justify-self: end;
+  }
+  
+  .card__icon {
+    grid-row: 2/3;
+    font-size: 30px;
+    font-weight: bold;
+    svg{vertical-align: sub;
+        margin-right: 7px;
+        width: 40px;
+        height: 40px;
+    }
+  }
+  
+  .card__title {
+    grid-row: 3/4;
+    font-weight: 400;
+    color: #ffffff;
+  }
+  
+  .card__apply {
+    grid-row: 4/5;
+    align-self: center;
+  }
+  .card-1 {
+    background: radial-gradient(#1fe4f5, #3fbafe);
+  }
+  .card-2 {
+    background: linear-gradient(45deg,var(--col-primary),var(--col-secondary));
+  }
+  .card-3 {
+    background: radial-gradient(#60efbc, #58d5c9);
+  }
+  .card-4 {
+    background: radial-gradient(#76b2fe, #b69efe);
+  }.card-5 {
+    background: radial-gradient(#fbc1cc, #fa99b2);
+  }
+  .card-6 {
+    background: radial-gradient(#f588d8, #c0a3e5);
+  }
+}
+

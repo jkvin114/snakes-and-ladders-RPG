@@ -15,6 +15,7 @@ import { GameResultStat } from "../Model/GameResultStat";
 import { SimulationSetting } from "./Simulation/SimulationSetting";
 import { GameType } from "./enum";
 import { ProtoPlayer } from "../Model/models";
+import { Logger } from "../logger";
 const sleep = (m: any) => new Promise((r) => setTimeout(r, m))
 
 class MarbleGameLoop{
@@ -176,7 +177,7 @@ class MarbleGameLoop{
     async loop(){
         if(this.loopRunning || this.gameover) 
         {
-            console.error("multiple loop instances!")
+            Logger.error("multiple loop instances!",this.rname)
             return
         }
 
@@ -235,7 +236,7 @@ class MarbleGameLoop{
                 if(this.state.isAI){
                     let success= await this.state.runAISelection()
                     if(!success) {
-                        console.error("Error while AI selection, state id:"+GAME_CYCLE_NAME[this.state.id])
+                        Logger.err("Error while AI selection, state id:"+GAME_CYCLE_NAME[this.state.id],this.rname)
                         break
                     }
                     this.clearPriorityActions()

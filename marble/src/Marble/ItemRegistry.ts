@@ -2,6 +2,7 @@ import * as csvParse from "csv-parse"
 import fs from "fs"
 import { ABILITY_NAME, ABILITY_REGISTRY } from "./Ability/AbilityRegistry"
 import { AbilityAttributes } from "./Ability/AbilityValues"
+import { Logger } from "../logger"
 const headers = ["code", "name", "name_kor", "ability", "chance", "value", "upgradevalue", "firstonly", "limit", "cost"]
 
 const DEV = false
@@ -27,7 +28,7 @@ export function registerItems() {
 			.pipe(myParser)
 			.on("data", (data:itemData) => ITEMS.set(Number(data.code),data))
 			.on("end", () => {
-				console.log("marble items registered" )
+				Logger.log("marble items registered" )
 				res()
 			})
 	)
