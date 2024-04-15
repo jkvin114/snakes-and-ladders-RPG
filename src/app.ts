@@ -1,4 +1,5 @@
 import SETTINGS = require("../res/globalsettings.json")
+require('dotenv').config({path:__dirname+'/../config/.env'})
 
 import { createServer } from "http"
 import {  Server, Socket } from "socket.io"
@@ -54,9 +55,9 @@ declare module 'express' {
 }
 
 
-const PORT = 5000
+const PORT = process.env.PORT
 const app = express()
- const ORIGIN = "http://localhost:3000"
+const ORIGIN = process.env.ORIGIN
 // const ORIGIN="http://192.168.0.3:3000"
 Logger.log("start server at port ",String(PORT),", from origin",ORIGIN);
 

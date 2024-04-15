@@ -16,13 +16,13 @@ const packageDefinition = loadSync(PROTO_PATH, {
 	oneofs: true,
 })
 
-const PORT = 50051
+const PORT = process.env.PORT?process.env.PORT:50051
 
 export default function StartGRPCServer() {
 	const game_proto: any = loadPackageDefinition(packageDefinition).marblegame //package marblegame
 	const server = new Server()
 	server.bindAsync("0.0.0.0:" + PORT, ServerCredentials.createInsecure(), () => server.start())
-	Logger.log("start grpc server")
+	Logger.log("start grpc server at port:"+PORT)
 	server.addService(game_proto.MarbleGame.service, {
         InitGame:InitGame,
         PressDice:HandleClientEvent.PressDice,

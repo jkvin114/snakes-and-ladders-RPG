@@ -10,7 +10,7 @@ const logger = winston.createLogger({
 		format.timestamp({
 			format: "YYYY-MM-DD HH:mm:ss",
 		}),
-    format.json()
+		format.json()
 	),
 
 	//   defaultMeta: { service: 'user-service' },
@@ -24,10 +24,9 @@ const logger = winston.createLogger({
 	],
 })
 
-const logFormat = winston.format.printf(function(info) {
-  return `${info.level}: ${info.message}\n`;
-});
-
+const logFormat = winston.format.printf(function (info) {
+	return `${info.level}: ${info.message}\n`
+})
 
 // If we're not in production then log to the `console` with the format:
 // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
@@ -35,43 +34,29 @@ const logFormat = winston.format.printf(function(info) {
 if (process.env.NODE_ENV !== "production") {
 	logger.add(
 		new winston.transports.Console({
-			format: winston.format.combine(winston.format.colorize(),logFormat),
+			format: winston.format.combine(winston.format.colorize(), logFormat),
 		})
 	)
 }
 export namespace Logger {
 	export function log(...msg: string[]) {
-    try{
-      logger.info(msg.join(" "))
-    }
-    catch(e){
-      
-    }
+		try {
+			logger.info(msg.join(" "))
+		} catch (e) {}
 	}
 	export function warn(...msg: string[]) {
-    try{
-      logger.warn(msg.join(" "))
-    }
-    catch(e){
-
-    }
+		try {
+			logger.warn(msg.join(" "))
+		} catch (e) {}
 	}
-	export function error(msg: string,err:any) {
-    try{
-
-      logger.error(msg+" "+String(err))
-    }
-    catch(e){
-
-    }
+	export function error(msg: string, err: any) {
+		try {
+			logger.error(msg + " " + String(err))
+		} catch (e) {}
 	}
-  export function err(...msg: string[]) {
-    try{
-
-      logger.error(msg.join(" "))
-    }
-    catch(e){
-
-    }
+	export function err(...msg: string[]) {
+		try {
+			logger.error(msg.join(" "))
+		} catch (e) {}
 	}
 }

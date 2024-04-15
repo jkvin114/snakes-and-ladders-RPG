@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def fillSpace(arr,num_mean,num_std,min_bins):
@@ -110,7 +109,7 @@ def generate(scale,variance=0.5,seed=None):
 
 
 if __name__=="__main__":
-
+    pass
 # # lens =[]
 #     for var in [0,0.4,0.8,1,1.5,2]:
 #         maxes=np.zeros(1000)
@@ -126,6 +125,6 @@ if __name__=="__main__":
 #         print()
 # print(min(lens))
 # print(sum(lens)/len(lens))
-# print()
-    plt.plot(generate(10,0.3))
-    plt.show()
+# # print()
+#     plt.plot(generate(10,0.3))
+#     plt.show()

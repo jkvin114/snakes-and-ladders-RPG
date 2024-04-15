@@ -5,7 +5,8 @@
   "main": "src/app.ts",
   "scripts": {
     "test": "jest --forceExit ",
-    "dev": "ts-node src/app.ts "
+    "dev": "ts-node src/app.ts ",
+    "start": "ts-node src/app.ts "
   },
   "jest": {
     "transform": {

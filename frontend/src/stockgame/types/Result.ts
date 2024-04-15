@@ -50,7 +50,7 @@ interface ITransactionHistory{
 	profit:number
 	date:string
 }
-export interface IStockGameUserRecordResponse {
+export type IStockGameUserRecordResponse ={
 	score:number
 	initialMoney:number
 	finaltotal:number
@@ -61,7 +61,7 @@ export interface IStockGameUserRecordResponse {
 	createdAt:string
 	updatedAt:string
 }
-export interface IStockGameBestScoreResponse{
+export type IStockGameBestScoreResponse={
 	_id:string
 	createdAt:string
 	updatedAt:string
@@ -72,22 +72,14 @@ export interface IStockGameBestScoreResponse{
 	loggedIn:boolean
 	isRecent:boolean
 }
-export interface IStockGameBestScoreResponsePopulated{
-	_id:string
-	createdAt:string
-	updatedAt:string
-	score:number
+export type IStockGameBestScoreResponsePopulated=IStockGameBestScoreResponse & {
 	game:{
 		initialMoney:number
 		finaltotal:number
 		delistAt?:number
 	}
-	user:string
-	username:string
-	loggedIn:boolean
-	isRecent:boolean
 }
-export interface ScorePosition{
+export type ScorePosition={
 	total:number
 	better:number
 }

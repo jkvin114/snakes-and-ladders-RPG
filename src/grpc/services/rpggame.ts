@@ -1433,6 +1433,165 @@ export namespace rpggame {
             return SimulationEvent.deserialize(bytes);
         }
     }
+    export class SimulationSetting extends pb_1.Message {
+        #one_of_decls: number[][] = [];
+        constructor(data?: any[] | {
+            rname?: string;
+            count?: number;
+            isTeam?: boolean;
+            runnerId?: string;
+            simulationSettingJson?: string;
+        }) {
+            super();
+            pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
+            if (!Array.isArray(data) && typeof data == "object") {
+                if ("rname" in data && data.rname != undefined) {
+                    this.rname = data.rname;
+                }
+                if ("count" in data && data.count != undefined) {
+                    this.count = data.count;
+                }
+                if ("isTeam" in data && data.isTeam != undefined) {
+                    this.isTeam = data.isTeam;
+                }
+                if ("runnerId" in data && data.runnerId != undefined) {
+                    this.runnerId = data.runnerId;
+                }
+                if ("simulationSettingJson" in data && data.simulationSettingJson != undefined) {
+                    this.simulationSettingJson = data.simulationSettingJson;
+                }
+            }
+        }
+        get rname() {
+            return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+        }
+        set rname(value: string) {
+            pb_1.Message.setField(this, 1, value);
+        }
+        get count() {
+            return pb_1.Message.getFieldWithDefault(this, 2, 0) as number;
+        }
+        set count(value: number) {
+            pb_1.Message.setField(this, 2, value);
+        }
+        get isTeam() {
+            return pb_1.Message.getFieldWithDefault(this, 3, false) as boolean;
+        }
+        set isTeam(value: boolean) {
+            pb_1.Message.setField(this, 3, value);
+        }
+        get runnerId() {
+            return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+        }
+        set runnerId(value: string) {
+            pb_1.Message.setField(this, 4, value);
+        }
+        get simulationSettingJson() {
+            return pb_1.Message.getFieldWithDefault(this, 5, "") as string;
+        }
+        set simulationSettingJson(value: string) {
+            pb_1.Message.setField(this, 5, value);
+        }
+        static fromObject(data: {
+            rname?: string;
+            count?: number;
+            isTeam?: boolean;
+            runnerId?: string;
+            simulationSettingJson?: string;
+        }): SimulationSetting {
+            const message = new SimulationSetting({});
+            if (data.rname != null) {
+                message.rname = data.rname;
+            }
+            if (data.count != null) {
+                message.count = data.count;
+            }
+            if (data.isTeam != null) {
+                message.isTeam = data.isTeam;
+            }
+            if (data.runnerId != null) {
+                message.runnerId = data.runnerId;
+            }
+            if (data.simulationSettingJson != null) {
+                message.simulationSettingJson = data.simulationSettingJson;
+            }
+            return message;
+        }
+        toObject() {
+            const data: {
+                rname?: string;
+                count?: number;
+                isTeam?: boolean;
+                runnerId?: string;
+                simulationSettingJson?: string;
+            } = {};
+            if (this.rname != null) {
+                data.rname = this.rname;
+            }
+            if (this.count != null) {
+                data.count = this.count;
+            }
+            if (this.isTeam != null) {
+                data.isTeam = this.isTeam;
+            }
+            if (this.runnerId != null) {
+                data.runnerId = this.runnerId;
+            }
+            if (this.simulationSettingJson != null) {
+                data.simulationSettingJson = this.simulationSettingJson;
+            }
+            return data;
+        }
+        serialize(): Uint8Array;
+        serialize(w: pb_1.BinaryWriter): void;
+        serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+            const writer = w || new pb_1.BinaryWriter();
+            if (this.rname.length)
+                writer.writeString(1, this.rname);
+            if (this.count != 0)
+                writer.writeInt32(2, this.count);
+            if (this.isTeam != false)
+                writer.writeBool(3, this.isTeam);
+            if (this.runnerId.length)
+                writer.writeString(4, this.runnerId);
+            if (this.simulationSettingJson.length)
+                writer.writeString(5, this.simulationSettingJson);
+            if (!w)
+                return writer.getResultBuffer();
+        }
+        static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SimulationSetting {
+            const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SimulationSetting();
+            while (reader.nextField()) {
+                if (reader.isEndGroup())
+                    break;
+                switch (reader.getFieldNumber()) {
+                    case 1:
+                        message.rname = reader.readString();
+                        break;
+                    case 2:
+                        message.count = reader.readInt32();
+                        break;
+                    case 3:
+                        message.isTeam = reader.readBool();
+                        break;
+                    case 4:
+                        message.runnerId = reader.readString();
+                        break;
+                    case 5:
+                        message.simulationSettingJson = reader.readString();
+                        break;
+                    default: reader.skipField();
+                }
+            }
+            return message;
+        }
+        serializeBinary(): Uint8Array {
+            return this.serialize();
+        }
+        static deserializeBinary(bytes: Uint8Array): SimulationSetting {
+            return SimulationSetting.deserialize(bytes);
+        }
+    }
     interface GrpcUnaryServiceInterface<P, R> {
         (message: P, metadata: grpc_1.Metadata, options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
         (message: P, metadata: grpc_1.Metadata, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
@@ -1474,6 +1633,15 @@ export namespace rpggame {
                 responseStream: false,
                 requestSerialize: (message: GameSetting) => Buffer.from(message.serialize()),
                 requestDeserialize: (bytes: Buffer) => GameSetting.deserialize(new Uint8Array(bytes)),
+                responseSerialize: (message: Bool) => Buffer.from(message.serialize()),
+                responseDeserialize: (bytes: Buffer) => Bool.deserialize(new Uint8Array(bytes))
+            },
+            StartSimulation: {
+                path: "/rpggame.RPGGame/StartSimulation",
+                requestStream: false,
+                responseStream: false,
+                requestSerialize: (message: SimulationSetting) => Buffer.from(message.serialize()),
+                requestDeserialize: (bytes: Buffer) => SimulationSetting.deserialize(new Uint8Array(bytes)),
                 responseSerialize: (message: Bool) => Buffer.from(message.serialize()),
                 responseDeserialize: (bytes: Buffer) => Bool.deserialize(new Uint8Array(bytes))
             },
@@ -1652,6 +1820,7 @@ export namespace rpggame {
         [method: string]: grpc_1.UntypedHandleCall;
         abstract ResetGame(call: grpc_1.ServerUnaryCall<String, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
         abstract InitGame(call: grpc_1.ServerUnaryCall<GameSetting, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
+        abstract StartSimulation(call: grpc_1.ServerUnaryCall<SimulationSetting, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
         abstract RequestSetting(call: grpc_1.ServerUnaryCall<SimpleRequest, String>, callback: grpc_1.sendUnaryData<String>): void;
         abstract RequestGameStart(call: grpc_1.ServerUnaryCall<String, Bool>, callback: grpc_1.sendUnaryData<Bool>): void;
         abstract RequestItemStatus(call: grpc_1.ServerUnaryCall<String, JsonResponse>, callback: grpc_1.sendUnaryData<JsonResponse>): void;
@@ -1681,6 +1850,9 @@ export namespace rpggame {
         };
         InitGame: GrpcUnaryServiceInterface<GameSetting, Bool> = (message: GameSetting, metadata: grpc_1.Metadata | grpc_1.CallOptions | grpc_1.requestCallback<Bool>, options?: grpc_1.CallOptions | grpc_1.requestCallback<Bool>, callback?: grpc_1.requestCallback<Bool>): grpc_1.ClientUnaryCall => {
             return super.InitGame(message, metadata, options, callback);
+        };
+        StartSimulation: GrpcUnaryServiceInterface<SimulationSetting, Bool> = (message: SimulationSetting, metadata: grpc_1.Metadata | grpc_1.CallOptions | grpc_1.requestCallback<Bool>, options?: grpc_1.CallOptions | grpc_1.requestCallback<Bool>, callback?: grpc_1.requestCallback<Bool>): grpc_1.ClientUnaryCall => {
+            return super.StartSimulation(message, metadata, options, callback);
         };
         RequestSetting: GrpcUnaryServiceInterface<SimpleRequest, String> = (message: SimpleRequest, metadata: grpc_1.Metadata | grpc_1.CallOptions | grpc_1.requestCallback<String>, options?: grpc_1.CallOptions | grpc_1.requestCallback<String>, callback?: grpc_1.requestCallback<String>): grpc_1.ClientUnaryCall => {
             return super.RequestSetting(message, metadata, options, callback);

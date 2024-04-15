@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 def interp(start,end,t):
     return start + (end-start)*t

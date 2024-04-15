@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 
 from chartgen.util import *
@@ -281,8 +280,8 @@ if __name__=="__main__":
     arr,steep,_,trend=generate_v2(100,0.2)
     # print(steep)
     # print(trend)
-    plt.plot(arr)
-    plt.show()
+    # plt.plot(arr)
+    # plt.show()
 
 # # lens =[]
     

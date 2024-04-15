@@ -5,7 +5,8 @@ import random
 
 from chartgen.v1 import generate_v1
 from chartgen.v2 import generate_v2
-
+import os
+PORT=os.environ.get('PORT',5050)
 api = Flask(__name__)
 from flask_cors import CORS
 CORS(api)
@@ -33,7 +34,7 @@ def gen_stock():
         return str(e),500
 # CORS(api) 
 def main():
-    api.run(port=5050)
+    api.run(port=int(PORT),host="0.0.0.0")
 
 if __name__=="__main__":
     main()

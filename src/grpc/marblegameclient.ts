@@ -2,9 +2,12 @@ import { credentials } from "@grpc/grpc-js";
 import { marblegame } from "./services/marblegame";
 import { MarbleRoom } from "../Marble/MarbleRoom";
 import { Logger } from "../logger";
-const PORT=50051
+require('dotenv').config({path:__dirname+'/../../config/.env'})
 
-const HOST = "localhost:"
+const PORT=process.env.MARBLEGAME_PORT?process.env.MARBLEGAME_PORT:50051
+
+const HOST = process.env.MARBLE_HOST || '127.0.0.1';   
+console.log("marblegame host:"+HOST+":"+PORT)
 export default class MarbleGameGRPCClient{
     private static stub:marblegame.MarbleGameClient=null 
     
@@ -12,7 +15,7 @@ export default class MarbleGameGRPCClient{
     static connect(){
         try{
             
-            MarbleGameGRPCClient.stub = new marblegame.MarbleGameClient(HOST+PORT,credentials.createInsecure());
+            MarbleGameGRPCClient.stub = new marblegame.MarbleGameClient(HOST+":"+PORT,credentials.createInsecure());
             MarbleGameGRPCClient.RequestItem((items)=>{
                 Logger.log("marble items registered")
                 MarbleRoom.ItemDescriptionCache = JSON.parse(items)

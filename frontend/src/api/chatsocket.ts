@@ -3,7 +3,7 @@ import { io } from "socket.io-client"
 import { backend_url } from "../variables"
 
 export namespace ChatSocket{
-	export const Socket = io(backend_url, {
+	export const Socket = io(String(backend_url), {
 		autoConnect: true,
 		withCredentials: true,
 		query: { type: "chat" },

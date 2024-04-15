@@ -1,0 +1,45 @@
+name: salr
+version: "3.9"
+services:
+  frontend:
+    build:
+      context: ./frontend #set path for Dockerfile
+      dockerfile: Dockerfile
+    container_name: "frontend" #specify the name of container
+    environment:
+      - NODE_ENV=production
+    ports:
+      - 3000:3000 #expose port for access of local machine
+    working_dir: /app #added because of "WORKDIR /src" in dockerfile
+    # depends_on:
+    #   - backend
+  marble:
+    build: 
+      context: ./marble
+      dockerfile: Dockerfile
+    container_name: marble
+    working_dir: /app
+    environment:
+      - PORT=50051
+  stockgame:
+    build: 
+      context: ./mockstock
+      dockerfile: Dockerfile
+    container_name: mockstock
+    environment:
+      - PORT=5050
+    working_dir: /app
+  backend:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - 5000:5000 #expose port for access of local machine
+    working_dir: /app
+    depends_on:
+      - stockgame
+      - marble
+    environment:
+      STOCKGAME_HOST: stockgame
+      MARBLE_HOST: marble

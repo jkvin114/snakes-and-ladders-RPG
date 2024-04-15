@@ -1,7 +1,15 @@
 import fetch from "node-fetch";
 import { Logger } from "../logger";
-const URL="http://127.0.0.1:5000/prediction"
-const stockgame_gen_url="http://127.0.0.1:5050"
+// import {stockgame_gen_url,prediction_url} from "../../config/config.json"
+require('dotenv').config({path:__dirname+'/../config/.env'})
+const prediction_url= process.env.PREDICTION_URL
+const stockgame_gen_url=process.env.STOCKGAME_URL
+const URL=prediction_url+"/prediction"
+console.log("prediction url: "+prediction_url)
+const stockgame_host="http://"+process.env.STOCKGAME_HOST || '127.0.0.1';
+const stockgame_port=5050
+console.log("stockgame url: "+stockgame_host+":"+stockgame_port)
+
 export function extractNumber(str: string) {
 	let s = str.match(/([0-9,.,\s]+)/g)?.join('')
 	if (!s) return ''
@@ -31,7 +39,7 @@ export async function generateStockChart(variance:number,scale:number,version:st
     return new Promise<string[]>(async (resolve,reject)=>{
         try{
             const data = await (
-				await fetch(stockgame_gen_url + `/gen_stock?variance=${variance}&scale=${scale}&version=${version}`,{})
+				await fetch(stockgame_host +":"+stockgame_port+ `/gen_stock?variance=${variance}&scale=${scale}&version=${version}`,{})
 			).json()
 
             resolve(data)
