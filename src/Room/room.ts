@@ -78,7 +78,7 @@ abstract class Room {
 	}
 
 	protected restartResetTimeout() {
-		console.log("restartResetTimeout")
+		// console.log("restartResetTimeout")
 		if (this.resetTimeout != null) clearTimeout(this.resetTimeout)
 		this.resetTimeout = setTimeout(() => {
 			this.reset()

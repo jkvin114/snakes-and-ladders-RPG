@@ -4,9 +4,9 @@ import { MAP_TYPE } from '../RPGGame/data/enum';
 import fs = require("fs")
 import { MarbleRoom } from '../Marble/MarbleRoom';
 const RESOURCE_PATH="/../../res/"
-const IMAGE_PATH = "./../../res/image/post/"
-const PROFILE_IMAGE_PATH = "./../../res/image/profile/"
-
+const IMAGE_PATH =process.env.IMAGE_PATH?process.env.IMAGE_PATH+"/post": "./../../res/image/post/"
+const PROFILE_IMAGE_PATH = process.env.IMAGE_PATH?process.env.IMAGE_PATH+"/profile": "./../../res/image/profile/"
+console.log("image storage:"+IMAGE_PATH)
 const router = express.Router()
 const{MarbleItemPreset} = require("../mongodb/GameDBSchema")
 const{Replay} = require("../mongodb/ReplayDBHandler")

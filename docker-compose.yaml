@@ -6,8 +6,6 @@ services:
       context: ./frontend #set path for Dockerfile
       dockerfile: Dockerfile
     container_name: "frontend" #specify the name of container
-    environment:
-      - NODE_ENV=production
     ports:
       - 3000:3000 #expose port for access of local machine
     working_dir: /app #added because of "WORKDIR /src" in dockerfile
@@ -21,6 +19,8 @@ services:
     working_dir: /app
     environment:
       - PORT=50051
+    volumes:
+      - ./volume/logs:/app/logs
   stockgame:
     build: 
       context: ./mockstock
@@ -40,6 +40,10 @@ services:
     depends_on:
       - stockgame
       - marble
+    volumes:
+      - ./volume/image/profile:/app/res/image/profile  
+      - ./volume/image/post:/app/res/image/post  #mount /app/res/image/post directory to local /volume/image/post folder in volume for persistence
+      - ./volume/logs:/app/logs
     environment:
       STOCKGAME_HOST: stockgame
       MARBLE_HOST: marble

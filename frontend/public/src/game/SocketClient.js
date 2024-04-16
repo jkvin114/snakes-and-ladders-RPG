@@ -30,7 +30,7 @@ export class GameClient {
 }
 
 export function openConnection(isInitial) {
-	console.log("openconnection")
+	console.log("openconnection" + server_url)
 	const socket = io(server_url, {
 		autoConnect: true,
 		withCredentials: true,

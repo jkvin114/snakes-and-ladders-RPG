@@ -6,8 +6,8 @@ const prediction_url= process.env.PREDICTION_URL
 const stockgame_gen_url=process.env.STOCKGAME_URL
 const URL=prediction_url+"/prediction"
 console.log("prediction url: "+prediction_url)
-const stockgame_host="http://"+process.env.STOCKGAME_HOST || '127.0.0.1';
-const stockgame_port=5050
+const stockgame_host="http://"+(process.env.STOCKGAME_HOST?process.env.STOCKGAME_HOST:'127.0.0.1');
+const stockgame_port=process.env.STOCKGAME_PORT?process.env.STOCKGAME_PORT:5050
 console.log("stockgame url: "+stockgame_host+":"+stockgame_port)
 
 export function extractNumber(str: string) {
