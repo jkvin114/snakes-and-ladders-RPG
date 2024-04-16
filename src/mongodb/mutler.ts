@@ -5,8 +5,12 @@ import { Logger } from "../logger";
 // const PATH_PROFILE="./frontend/public/uploads/profile"
 import sharp = require("sharp")
 
-const PATH = "./res/image/post"
-const PATH_PROFILE = "./res/image/profile"
+// const PATH = "./res/image/post"
+// const PATH_PROFILE = "./res/image/profile"
+
+const PATH =process.env.IMAGE_PATH?process.env.IMAGE_PATH+"/post": "./res/image/post/"
+const PATH_PROFILE = process.env.IMAGE_PATH?process.env.IMAGE_PATH+"/profile": "./res/image/profile/"
+
 
 import fs from "fs";
 function getFilename() {

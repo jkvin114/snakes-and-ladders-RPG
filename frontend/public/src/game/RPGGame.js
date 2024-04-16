@@ -944,7 +944,7 @@ export class Game {
 						this.mapLoadComplete()
 					})
 					.catch((e) => {
-						//console.log(e)
+						console.log(e)
 					})
 			},
 			error: (e) => {

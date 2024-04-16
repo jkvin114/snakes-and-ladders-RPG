@@ -35,8 +35,15 @@ export default function HtmlPage({htmlPath}:Props){
     }
 
     try{
-        const html=await (await fetch("html/"+pagedata.html)).text()
-        
+        console.log(pagedata.html)
+        console.log(process.env.PUBLIC_URL)
+        let htmlname = pagedata.html
+        if(process.env.NODE_ENV==="production"){
+            htmlname=htmlname.replace(".html",".txt")
+        }
+        console.log(process.env.NODE_ENV)
+        console.log(htmlname)
+        const html=await (await fetch("html/"+htmlname)).text()
         
         setHtmlData({
           html:html,

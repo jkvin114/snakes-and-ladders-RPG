@@ -20,6 +20,7 @@ export default function EjsPage() {
 
 	function fetchHtml() {
 		if (loaded) return
+		console.log(process.env.NODE_ENV)
 		const pagedata: PageData = PAGES.board
 		if (!pagedata) {
 			setHtmlData({ html: `<h1>Cannot load a page</h1>` })

@@ -483,8 +483,166 @@
 
 
 
-<div data-html="/html/gamestore.html" id="newstore_container">
+<div id="newstore_container">
   
+
+<div id=newstoremoney  class=''>
+  <b id=storemoney>0$</b><br>
+  <img src="res/img/store/life.png"> <b id=storelife>&times;1</b>
+  <div id=store_token_indicator class=hidden>
+    <img src="res/img/store/token.png"> <b id=storetoken>&times;0</b><br>
+  </div>
+  
+</div>
+<div id=newstorecurritem class=''>
+  <!-- <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+  <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+  <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+  <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+  <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div>
+  <div class=store_curritemimg value=-1><img src='res/img/store/emptyslot.png'> </div> -->
+</div>
+<div id=newstore >
+  <!-- <button class="storeclose"> &times; </button> -->
+<!-- <img id="back" src="res/img/store/back.png" class=hidden> -->
+  <div id=typelist>
+    <div class='typelistbtn categorybtn' value="0"><img src="res/img/svg/home.svg"></div>
+    <div class='typelistbtn categorybtn' value="1"><img src="res/img/svg/skillinfo/pdamage.png"></div>
+    <div class='typelistbtn categorybtn' value="2"><img src="res/img/svg/skillinfo/mdamage.png"></div>
+    <div class='typelistbtn categorybtn' value="3"><img src="res/img/svg/skillinfo/shield.svg"></div>
+    <div class='typelistbtn categorybtn' value="4"><img src="res/img/svg/skillinfo/maxhp.png"></div>
+    <div class='typelistbtn categorybtn' value="5"><img src="res/img/svg/skillinfo/speed.png"></div>
+    <div class='typelistbtn' id="store-back-btn" value="back"><img src="res/img/svg/chevron-left.svg"></div>
+
+  </div>
+  <div>
+    <div class="storesetting">
+      <img src="res/img/svg/grid.svg" id="store_grid">
+      <img src="res/img/svg/list.svg" id="store_list">
+      <!-- <input type="checkbox" id="store_auto"><a id="store_auto_text">아이템 자동구매</a> -->
+      <button class="storeclose"> &times; </button>
+    </div>
+
+  
+  <div id=storecontent class='itemcontent hidden'>
+    
+    
+    <p>epic items</p>
+    <div class=levelitems>
+      
+    </div>
+   
+    <p>rare items</p>
+    <div class=levelitems>
+
+    </div>
+   
+    <p>common items</p>
+    <div class=levelitems>
+
+    </div>
+  </div>
+  <div id=storehome class='itemcontent hid2den'>
+    
+    <p lkey="storemenu.special">Special Items</p>
+    <div class=levelitems>
+      <div class='itemsummary store_life_summary hidden' value="-1">
+        <div>
+          <img src='res/img/store/life.png' class=store_specialitemimg >
+          <b class=summaryprice>$</b>
+        </div>
+        <p  lkey="storemenu.life"></p>
+      </div>
+      <div class='itemsummary store_token_summary hidden' value="-2">
+        <div>
+          <img src='res/img/store/token.png' class=store_specialitemimg >
+          <b class=summaryprice>$</b>
+        </div>
+        <p  lkey="storemenu.coin_desc"></p>
+      </div>
+    </div>
+    <p lkey="storemenu.recommend">Recommended Items</p>
+    <div class='levelitems recommendeditem'>
+   
+    </div>
+   
+  </div>
+</div>
+<div class=itemdetail id='store_buyitem' >
+  <button id=buyitem>300$</button>
+  <button class="detailclose storeclose"> &times; </button>
+  <button id=statinfo>!</button>
+  <p id=statinfopopup class="hidden">stat infos</p>
+  <!-- &#8251; -->
+  <div id=thisitem>
+    <h6 id=itemname>item name</h6>
+    <div class=store_thisitemimg ><img src='res/img/store/items.png' style='margin-left: -3200px;'; ></div>
+    <p class="item_description">item description</p>
+  </div>
+
+  <div id=otherlevel>
+    <div id=itemtree class="tf-tree">
+      <ul>
+        <li id=itemtreestart>
+
+
+          <!-- <span class="tf-nc parents">
+            <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b></div>
+            <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b></div>
+        </span>
+          <ul>
+            <li>
+              <span class="tf-nc"> <div class='onetreeitem '><div class='store_treeitemimg itemhave' ><img src='res/img/store/items.png' 
+                style='margin-left: -2400px'; ></div><b>100$</b><img class="itemcheck" src="res/img/ui/confirm.png"></div></span>
+              <ul>
+                <li>
+                  <span class="tf-nc">
+                    <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b><img class="itemcheck" src="res/img/ui/confirm.png"></div>
+                  </span>
+                </li>
+                <li>
+                  <span class="tf-nc">
+                    <div class=onetreeitem><div class=store_treeitemimg ><img src='res/img/store/items.png' style='margin-left: -2400px'; ></div><b>100$</b></div>
+                  </span>
+                </li>
+              </ul>
+            </li>
+          </ul> -->
+
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class='itemdetail hidden' id="store_buytoken" >
+  <button id=buytoken>$</button>
+  <button class="detailclose storeclose"> &times; </button>
+  <div id=thisitem>
+    <h6 id=itemname  lkey="storemenu.coin">item name</h6>
+    <img src='res/img/store/token.png'>
+    <p id="tokenprice">Current price:</p>
+    <div class="buytokentoken_slidecontainer">
+        <input type="range" class="slider" id="token_buy_range">
+    </div>
+    <p id="tokentotal"></p>
+    
+    <p id="token_description"></p>
+  </div>
+
+</div>
+<div class='itemdetail hidden' id="store_buylife" >
+  <button id=buylife>150$</button>
+  <button class="detailclose storeclose"> &times; </button>
+  <!-- &#8251; -->
+  <div id=thisitem>
+    <h6 id=itemname  lkey="storemenu.life">item name</h6>
+    <img src='res/img/store/life.png'>
+    <p id=life_description class="item_description">description</p>
+
+  </div>
+
+</div>
+</div>
 </div>
 
 
@@ -790,9 +948,105 @@
 
 
 </div>
-<div class="hidden" data-html="/html/gameimages.html" id="images_container">
+<div class="hidden"  id="images_container">
+  
+  <img class="hidden" src='res/img/board/emptyocean2.jpg' id="ocean_boardimg">
+  <img class="hidden" src='res/img/board/emptyboard.jpg' id="boardimg">
+  <img class="hidden" src='res/img/board/emptycasino.jpg' id="casino_boardimg">
+  <img class="hidden" src='res/img/board/emptyrapid.jpg' id="rapid_boardimg">
 
+  <img class="hidden" src='res/img/tileselection/stop_new.png' id="select_stop">
+  <img class="hidden" src='res/img/board/blocktile.png' id="tilelock">
+
+
+  <img class="hidden" src='res/img/character/reaper.png' id="playerimg1" >
+  <img class="hidden" src='res/img/character/knight.png' id="playerimg2">
+  <img class="hidden" src='res/img/character/knight_r.png' id="playerimg2_r">
+  <img class="hidden" src='res/img/character/ghost.png' id="playerimg3">
+  <img class="hidden" src='res/img/character/dinosaur.png' id="playerimg4">
+  <img class="hidden" src='res/img/character/sniper.png' id="playerimg5">
+  <img class="hidden" src='res/img/character/magician.png' id="playerimg6">
+  <img class="hidden" src='res/img/character/kraken.png' id="playerimg7">
+  <img class="hidden" src='res/img/character/bird.png' id="playerimg8">
+  <img class="hidden" src='res/img/character/tree.png' id="playerimg9">
+  <img class="hidden" src='res/img/character/tree_low_hp.png' id="playerimg9_low_hp">
+  <img class="hidden" src='res/img/character/hacker.png' id="playerimg10" >
+
+
+  <img class="hidden" src='res/img/character/bird_r.png' id="playerimg8_r">
+  <img class="hidden" src='res/img/entity/tree_plant_enemy.png' id="tree_plant_enemy" >
+  <img class="hidden" src='res/img/entity/tree_plant_ally.png' id="tree_plant_ally" >
+
+  <img class="hidden" src='res/img/entity/tree_plant_death.png' id="tree_plant_death" >
+
+
+  <img class="hidden" src='res/img/character/coffin.png' id="coffin" >
+  <img class="hidden" src='res/img/character/soul.png' id="soul" >
+  <img class="hidden" src='res/img/ui/target.png' id="targetimg">
+
+  <img class="hidden" src='res/img/status_effect/stun.png' id="stunindicator" >
+  <img class="hidden" src='res/img/status_effect/slave.png' id="slaveindicator" >
+  <img class="hidden" src='res/img/status_effect/radiation.png' id="radiindicator" >
+  <img class="hidden" src='res/img/status_effect/blind.png' id="blindindicator" >
+  <img class="hidden" src='res/img/status_effect/shield.png' id="shieldindicator" >
+  <img class="hidden" src='res/img/status_effect/slient.png' id="silentindicator" >
+
+
+
+  <img class="hidden" src='res/img/tileselection/tileselect.png' id="tileselectimg">
+  <img class="hidden" src='res/img/tileselection/shine_ally.png' id="shine_ally">
+  <img class="hidden" src='res/img/tileselection/shine_enemy.png' id="shine_enemy">
+  <img class="hidden" src='res/img/tileselection/tiletarget.png' id="tiletarget">
+  <img class="hidden" src='res/img/tileselection/tilewarn.png' id="tilewarn">
+
+
+  <img id="obstacles" class="hidden"src="res/img/board/obstacles.png">
+  <img id="tiles" class="hidden"src="res/img/board/tiles.png">
+  <img id="tiles_3d" class="hidden"src="res/img/board/tiles_3d.png">
+  <img id="tile_shadow" class="hidden"src="res/img/board/tile_shadow.png">
+
+  <img id="tiles_ocean" class="hidden"src="res/img/board/tiles_ocean_3d.png">
+  <img id="tiles_casino" class="hidden"src="res/img/board/tiles_casino_3d.png">
+ 
+
+  <img class="hidden" src='res/img/ui/arrow.png' id="arrow">
+  <img class="hidden" src='res/img/ui/store.png' id="storeimg">
+
+
+  <img class="hidden" src='res/img/effect/heal.png' id="healimg" >
+  <img class="hidden" src='res/img/effect/explosion.png' id="boom" >
+
+  <img class="hidden" src='res/img/effect/effects.png' id="visual_effect_sprite" >     
+  <img class="hidden" src='res/img/projicon/projectiles.png' id="projectile_sprite" >     
+  <img class="hidden" src='res/img/tileselection/proj_ranges.png' id="projectile_range_sprite" >     
+
+
+  <!-- <img class="hidden" src="res/img/dice/d1.png">
+  <img class="hidden" src="res/img/dice/d2.png">
+  <img class="hidden" src="res/img/dice/d3.png">
+  <img class="hidden" src="res/img/dice/d4.png">
+  <img class="hidden" src="res/img/dice/d5.png">
+  <img class="hidden" src="res/img/dice/d6.png">
+  <img class="hidden" src="res/img/dice/roll1.png">
+  <img class="hidden" src="res/img/dice/roll2.png">
+  <img class="hidden" src="res/img/dice/roll3.png">
+  <img class="hidden" src="res/img/dice/roll4.png">
+  <img class="hidden" src="res/img/dice/roll5.png">
+  <img class="hidden" src="res/img/dice/roll6.png">
+  <img class="hidden" src="res/img/dice/roll7.png">
+  <img class="hidden" src="res/img/dice/roll8.png">
+  <img class="hidden" src="res/img/dice/roll9.png">
+  <img class="hidden" src="res/img/dice/roll10.png"> -->
+  <img class="hidden" src="res/img/dice/stun.png"> 
+  <img class="hidden" id="finish" src="res/img/board/finish.png"> 
+
+  <img id="arrow" src="res/img/ui/arrow.png" class=hidden>
+  <img id="pin" src="res/img/ui/pin.png" class=hidden>
+  
 </div>
+<!-- <div class="hidden" data-html="/html/gameimages.html" id="images_container">
+
+</div> -->
 <script type="module" src="src/game/GameMain.js"></script>
 
 </html>

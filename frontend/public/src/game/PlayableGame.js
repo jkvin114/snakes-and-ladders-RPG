@@ -142,6 +142,10 @@ export class PlayableGame extends Game {
 	mapLoadComplete() {
 		super.mapLoadComplete()
 		$("#loadingtext").html("Waiting for players..")
+		if (this.myturn === -1) {
+			$("#loadingtext").html("")
+			$("#loadingoverlay").hide()
+		}
 		this.connection.setupComplete()
 		this.ui.onGameReady()
 	}

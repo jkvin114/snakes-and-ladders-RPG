@@ -19,6 +19,7 @@ var everythingLoaded = setInterval(function () {
 			AxiosApi = axios.create({ baseURL: server_url })
 
 			if (main) {
+				console.log("run main script")
 				main(server_url) // this is the function that gets called when everything is loaded
 				clearInterval(everythingLoaded)
 			}
