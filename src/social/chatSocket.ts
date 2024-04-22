@@ -10,9 +10,9 @@ enum Event{
 }
 
 module.exports=function(socket:Socket){
-    socket.on("disconnect", function () {
+    socket.on("disconnect",async  function () {
 
-        const session =  SocketSession.getSession(socket)
+        const session = await SocketSession.getSession(socket)
 	    //console.log(session)
         //console.log('disconnected from '+socket.data.type)
         if(socket.data.type==="chat"){

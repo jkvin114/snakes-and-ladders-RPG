@@ -1,54 +1,57 @@
 import type { Socket } from "socket.io"
 
-import { SessionManager } from "../session/inMemorySession"
+import { SessionManager } from "../session"
 import { getSessionIdFromSocket } from "../session/jwt"
 
 export namespace SocketSession {
 
-	export function getSession(socket:Socket){
+	export async function getSession(socket:Socket){
         let id = getSessionIdFromSocket(socket)
         if(!id || !id.id){
             return null
         }
-        const session =  SessionManager.getSessionById(id.id)
+        const session = await SessionManager.getSessionById(id.id)
         return session
     }
 	
-	export function getUsername(socket: Socket): string {
-		return getSession(socket)?.username
+	export async function getUsername(socket: Socket) {
+		return (await getSession(socket))?.username
 	}
-	export function getUserClass(socket: Socket): number {
-		return getSession(socket)?.isLogined?1:0
+	export async function getUserClass(socket: Socket) {
+		return (await getSession(socket))?.isLogined?1:0
 	}
-	export function setTurn(socket: Socket, turn: number) {
-		const session=getSession(socket)
+	export async function setTurn(socket: Socket, turn: number) {
+		const session=await getSession(socket)
 		if(!session) return
-		session.turn=turn
+		// session.turn=turn
+		await SessionManager.setTurn(session.id,turn)
 	}
-	export function getTurn(socket: Socket): number {
-		return getSession(socket)?.turn
+	export async function getTurn(socket: Socket) {
+		return (await getSession(socket))?.turn
 	}
 	/**
 	 * return session id of socket 
 	 * @param socket 
 	 * @returns 
 	 */
-	export function getId(socket: Socket): string {
-		return getSession(socket)?.id
+	export async function getId(socket: Socket) {
+		return (await getSession(socket)).id
 	}
-	export function setRoomName(socket: Socket, roomname: string) {
-		const session=getSession(socket)
+	export async function setRoomName(socket: Socket, roomname: string) {
+		const session=await getSession(socket)
 		if(!session) return
-		session.roomname=roomname
+		// session.roomname=roomname
+		await SessionManager.setRoomname(session.id,roomname)
 	}
-	export function getRoomName(socket: Socket): string {
-		return getSession(socket)?.roomname
+	export async  function getRoomName(socket: Socket) {
+		return (await getSession(socket)).roomname
 	}
-	export function removeGameSession(socket: Socket) {
-		const session=getSession(socket)
+	export async function removeGameSession(socket: Socket) {
+		const session=await getSession(socket)
 		if(!session) return
-		delete session.turn 
-		delete session.roomname
+		await SessionManager.removeGameSession(session.id)
+		// delete session.turn 
+		// delete session.roomname
 	}
 	export function print(socket: Socket){
 		console.log(getSession(socket))

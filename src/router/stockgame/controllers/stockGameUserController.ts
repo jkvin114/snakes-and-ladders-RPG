@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { ISession } from "../../../session/inMemorySession"
+import { ISession } from "../../../session/ISession"
 import { StockGameUserSchema } from "../../../mongodb/schemaController/StockGameUser"
 import { UserSchema } from "../../../mongodb/schemaController/User"
 export namespace StockGameUserController{

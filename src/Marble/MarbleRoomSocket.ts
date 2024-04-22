@@ -33,9 +33,9 @@ function onGameOver(room:MarbleRoom,jsonObj:string){
 	room.onGameover(data.stat)
 }
 module.exports = function (socket: Socket) {
-	socket.on("user:marble_simulation_ready", function (count: number, savelabel: boolean) {
+	socket.on("user:marble_simulation_ready", async function (count: number, savelabel: boolean) {
 		let rname = "simulation_marble_" + String(Math.floor(Math.random() * 1000000))
-		SocketSession.setRoomName(socket, rname)
+		await SocketSession.setRoomName(socket, rname)
 		socket.join(rname)
 
 		let room = new MarbleRoom(rname)
@@ -126,7 +126,7 @@ module.exports = function (socket: Socket) {
 	})
 
 	socket.on(userEvents.REQUEST_SETTING, function () {
-		grpcController(socket, (room, rname, turn) => {
+		grpcController(socket,  (room, rname, turn) => {
 			socket.join(rname)
 			
 
@@ -135,14 +135,14 @@ module.exports = function (socket: Socket) {
 					rname: rname,
 					turn: turn,
 				}),
-				(event: marblegame.GameSettingReponse) => {
+				async (event: marblegame.GameSettingReponse) => {
 					if(!event) return
 					const setting = JSON.parse(event.jsonPayload)
 
 					let gameturn = setting.players[turn].turn
-					SocketSession.setTurn(socket, gameturn) //세선에 저장되있는 턴 진짜 게임 턴으로 변경
+					await SocketSession.setTurn(socket, gameturn) //세선에 저장되있는 턴 진짜 게임 턴으로 변경
 					
-					const session = SocketSession.getSession(socket)
+					const session = await SocketSession.getSession(socket)
 					if(session.isLogined){
 						room.addRegisteredUser(gameturn,session.userId,session.username)
 					}
@@ -164,8 +164,8 @@ module.exports = function (socket: Socket) {
 
 	socket.on(userEvents.START_GAME, function () {
 
-		grpcController(socket, (room, rname, turn) => {
-			const canstart = room.onUserGameReady(SocketSession.getId(socket))
+		grpcController(socket,async (room, rname, turn) => {
+			const canstart = room.onUserGameReady(await SocketSession.getId(socket))
 			console.log(canstart)
 			io.to(rname).emit("server:game_ready_status",canstart)
 			

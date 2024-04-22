@@ -3,7 +3,11 @@ import { UserCache } from "../cache/cache"
 import { ChatMessageSchema } from "../mongodb/schemaController/ChatMessage"
 import { ChatRoomSchema } from "../mongodb/schemaController/ChatRoom"
 import { ChatRoomJoinStatusSchema } from "../mongodb/schemaController/ChatJoinStatus"
-import { ISession, SessionManager } from "../session/inMemorySession"
+import {  SessionManager } from "../session"
+import { ISession } from "../session/ISession"
+
+
+
 import { NotificationSchema } from "../mongodb/schemaController/Notification"
 import { NotificationController } from "./notificationController"
 import { ChatMessageModel } from "../router/ResponseModel"
@@ -63,7 +67,7 @@ export namespace ChatController {
 		for (const member of status) {
 			let memberId = String(member.user)
 			//read
-			if (memberId === session.userId || (SessionManager.hasSession(memberId) && SessionManager.isUserInChatRoom(memberId,roomId)))
+			if (memberId === session.userId || (await SessionManager.hasSession(memberId) && await SessionManager.isUserInChatRoom(memberId,roomId)))
 			{
 				await ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,memberId,serial)
 				//console.log(SessionManager.getSessionByUserId(memberId).username + " read chat")
@@ -125,7 +129,7 @@ export namespace ChatController {
 		await ChatRoomJoinStatusSchema.updateLastReadSerial(roomId,session.userId,currentSerial)
 
 		let userLastSerials = (await ChatRoomJoinStatusSchema.findByRoom(roomId)).map(d=>d.lastSerial)
-		SessionManager.onEnterChatRoom(session,roomId)
+		await SessionManager.onEnterChatRoom(session,roomId)
 
 		let messages:ChatMessageModel[] = []
 
@@ -153,12 +157,12 @@ export namespace ChatController {
 	}
 	export async function leaveRoom(socket: Socket,session:ISession, roomId: string) {
 		socket.leave(ROOM_NAME_PREFIX + roomId)
-		SessionManager.onLeaveChatRoom(session,roomId)
+		await SessionManager.onLeaveChatRoom(session,roomId)
 
 	}
 	export async function quitRoom(socket: Socket,session:ISession, roomId: string,callback:Function) {
 		socket.leave(ROOM_NAME_PREFIX + roomId)
-		SessionManager.onLeaveChatRoom(session,roomId)
+		await SessionManager.onLeaveChatRoom(session,roomId)
 
 		let change = await ChatRoomJoinStatusSchema.left(roomId,session.userId)
 		if(change)

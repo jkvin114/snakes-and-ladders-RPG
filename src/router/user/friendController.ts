@@ -1,7 +1,9 @@
 import mongoose from "mongoose"
 import { FriendRequestCache, UserCache } from "../../cache/cache"
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation"
-import { ISession, SessionManager } from "../../session/inMemorySession"
+import {  SessionManager } from "../../session"
+import { ISession } from "../../session/ISession"
+
 import { IFriend, IFriendStatus } from "../ResponseModel"
 import type { Request, Response } from "express"
 import { UserSchema } from "../../mongodb/schemaController/User"
@@ -14,7 +16,7 @@ export namespace FriendController {
 		for (const id of friendIds) {
 			if (String(id) === session.userId) continue
 			let user = await UserCache.getUser(id as mongoose.Types.ObjectId)
-			let status = SessionManager.getStatus(id as mongoose.Types.ObjectId)
+			let status =await SessionManager.getStatus(id as mongoose.Types.ObjectId)
 
 			let lastactive = status[0] ? status[0].valueOf() : null
 

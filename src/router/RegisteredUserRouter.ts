@@ -5,7 +5,8 @@ import { ImageUploader } from "../mongodb/mutler"
 import { ajaxauth, auth, containsId, encrypt } from "./board/helpers"
 import { UserBoardDataSchema } from "../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../mongodb/schemaController/UserRelation"
-import { ISession, SessionManager } from "../session/inMemorySession"
+import { SessionManager } from "../session"
+import {ISession} from "../session/ISession"
 import { getNewJwt, setJwtCookie } from "../session/jwt"
 import { loginauth, sessionParser } from "./jwt/auth"
 import { ControllerWrapper } from "./ControllerWrapper"
@@ -186,7 +187,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 })
 
 router.post("/current", async function (req: express.Request, res: express.Response) {
-	const session = SessionManager.getSession(req)
+	const session =await SessionManager.getSession(req)
 	if (session && session.isLogined) {
 		res.end(session.username)
 	} else res.end("")
@@ -196,13 +197,13 @@ router.post("/current", async function (req: express.Request, res: express.Respo
  */
 router.post("/login", async function (req: express.Request, res: express.Response) {
 	let body = req.body
-	let session = SessionManager.getSession(req)
+	let session =await SessionManager.getSession(req)
 
 	//create new session if session is not initialized
 	if(!session){
-		let token = SessionManager.createSession()
+		let token = await SessionManager.createSession()
 		setJwtCookie(res,token)
-		session = SessionManager.getSession(req)
+		session = await SessionManager.getSession(req)
 	}
 
 	try {
@@ -217,7 +218,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 			return
 		}
 		if (session) {
-			SessionManager.login(req,String(user._id),user.username)
+			await SessionManager.login(req,String(user._id),user.username)
 			session.username = user.username
 			if (user.boardData == null) {
 				Logger.log("added board data",user.username)
@@ -249,11 +250,11 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 	}
 })
 
-router.post("/logout", loginauth, function (req: express.Request, res: express.Response) {
-	const session = SessionManager.getSession(req)
+router.post("/logout", loginauth,async function (req: express.Request, res: express.Response) {
+	const session =await SessionManager.getSession(req)
 	
 	Logger.log(session.username + " has logged out")
-	SessionManager.logout(req)
+	await SessionManager.logout(req)
 	// req.session.destroy(function(e){
 	//     if(e) console.log(e)
 	// });

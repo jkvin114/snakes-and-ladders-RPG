@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { UserSchema } from "../mongodb/schemaController/User";
 import { MongoId } from "../mongodb/types";
 import { Logger } from "../logger";
+import { RedisClient } from "../redis/redis";
 
 
 
@@ -20,7 +21,7 @@ export namespace UserCache{
 
     export function getEval(){
         if(cachehit+cachemiss===0) return ''
-        return `cache hit:${cachehit}, miss: ${cachemiss}. Hit rate: ${cachehit/(cachehit+cachemiss)}`
+        return `user cache report: cache hit:${cachehit}, miss: ${cachemiss}. Hit rate: ${cachehit/(cachehit+cachemiss)}`
     }
 
     function onCacheMiss(id:MongoId){
@@ -30,6 +31,9 @@ export namespace UserCache{
     export async function getUser(id:MongoId):Promise<IUserCache>{
         if(userCache.has(String(id))){
             cachehit++
+            if(cachehit%100===99) {
+                Logger.log(UserCache.getEval())
+            }
             return userCache.get(String(id))
         }
         const user = await onCacheMiss(id)
@@ -50,18 +54,21 @@ export namespace UserCache{
 
 export namespace NotificationCache{
     const users = new Set<string>()
-    export function post(userId:MongoId){
+    const prefix="cache-notification"
+    export async function post(userId:MongoId){
         
-        users.add(String(userId))
+        // users.add(String(userId))
+        RedisClient.addToSet(prefix,String(userId))
     }
-    export function consume(userId:MongoId){
-        return users.delete(String(userId))
+    export async function consume(userId:MongoId):Promise<boolean>{
+        // return users.delete(String(userId))
+        return await RedisClient.removeFromSet(prefix,String(userId))
     }
     export function clear(){
-        users.clear()
+        //users.clear()
     }
-    export function getAll(){
-        return [...users]
+    export async function printAll(){
+        console.log(await RedisClient.getSet(prefix))
     }
 }
 export namespace FriendRequestCache{

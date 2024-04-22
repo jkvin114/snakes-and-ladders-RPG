@@ -8,19 +8,21 @@ import { UserCache } from '../cache/cache';
 import { R } from '../Room/RoomStorage';
 import { UserSchema } from '../mongodb/schemaController/User';
 import { User } from '../mongodb/UserDBSchema';
+import type { ISession } from './ISession';
+import ISessionManager from './ISessionManager';
 
-export interface ISession{
-    isLogined:boolean
-    id:string
-    time:Date
+// export interface ISession{
+//     isLogined:boolean
+//     id:string
+//     time:Date
     
-    userId?:string
-    username?:string
-    boardDataId?:string
-    roomname?:string
-    turn?:number
-    ip?:string
-}
+//     userId?:string
+//     username?:string
+//     boardDataId?:string
+//     roomname?:string
+//     turn?:number
+//     ip?:string
+// }
 
 export interface IUserStatus{
     sessionIds:Set<string>
@@ -29,21 +31,47 @@ export interface IUserStatus{
     username:string
     lastActive?:Date
 }
-const SessionStore = new Map<string,ISession>()
-const UserStatus = new Map<string,IUserStatus>()  // user id  => status
 
 const STATUS_PRIPROTY = [
     "rpggame","marblegame","matching","rpgspectate"
 ]
 
-export namespace SessionManager{
+export class InMemorySession implements ISessionManager{
+    private SessionStore = new Map<string,ISession>()
+    private UserStatus = new Map<string,IUserStatus>()  // user id  => status
+  
+    private static instance: InMemorySession;
 
-    export function getAll(){
-        return [...SessionStore.values()]
+    private constructor() {}
+   
+  
+    static getInstance() {
+      if (this.instance) {
+        return this.instance;
+      }
+      this.instance = new InMemorySession();
+      return this.instance;
     }
-    export function getAllUsers(){
+    async setTurn(id: string, turn: number): Promise<void> {
+        if(!this.SessionStore.has(id)) return
+        this.SessionStore.get(id).turn=turn
+    }
+    async setRoomname(id: string, roomname: string): Promise<void> {
+        if(!this.SessionStore.has(id)) return
+        this.SessionStore.get(id).roomname=roomname
+    }
+    async removeGameSession(id: string): Promise<void> {
+        if(!this.SessionStore.has(id)) return
+        const session = this.SessionStore.get(id)
+        delete session.turn 
+		delete session.roomname
+    }
+    async getAll(){
+        return [...this.SessionStore.values()]
+    }
+    async getAllUsers(){
         let users=[]
-        for(const [id,status] of UserStatus.entries()){
+        for(const [id,status] of this.UserStatus.entries()){
             users.push({
                 id:id,
                 username:status.username,
@@ -56,82 +84,82 @@ export namespace SessionManager{
         return users
 
     }
-    export function hasSession(userId:string){
-        return UserStatus.has(userId)
+    async hasSession(userId:string){
+        return this.UserStatus.has(userId)
     }
-    export function getSessionsByUserId(userId:string):ISession[]{
-        const status = UserStatus.get(userId)
+    async getSessionsByUserId(userId:string){
+        const status = this.UserStatus.get(userId)
         if(!status) return []
-        return [...status.sessionIds].map(id=>SessionStore.get(id))
+        return [...status.sessionIds].map(id=>this.SessionStore.get(id))
     }
     /**
      * create a new session and return a jwt containing session id
      * @returns 
      */
-    export function createSession(){
+    async createSession(){
         
         const id = uuidv4()
-        SessionStore.set(id,{id:id,isLogined:false,time:new Date()})
+        this.SessionStore.set(id,{id:id,isLogined:false,time:new Date()})
         return getNewJwt(id)
     }
-    export function getSessionById(id:string):ISession{
-        return SessionStore.get(id)
+    async getSessionById(id:string){
+        return this.SessionStore.get(id)
     }
-    export function getSession(req:Request):ISession{
+    async getSession(req:Request){
         
         let id= getSessionId(req)
-        return SessionStore.get(id)
+        return this.SessionStore.get(id)
     }
-    export function deleteSession(req:Request){
+    async deleteSession(req:Request){
         let id= getSessionId(req)
-        SessionStore.delete(id)
+        this.SessionStore.delete(id)
     }
-    export function isValid(req:Request){
+    async isValid(req:Request){
         let id= getSessionId(req)
-        return SessionStore.has(id)
+        return this.SessionStore.has(id)
     }
-    function isLoginValid(session:ISession){
-        if(!session || !session.isLogined || !session.userId || !UserStatus.has(session.userId)) return false
+    private isLoginValid(session:ISession){
+        if(!session || !session.isLogined || !session.userId || !this.UserStatus.has(session.userId)) return false
         return true
     }
-    export function onEnterChatRoom(session:ISession,roomId:MongoId){
-        if(!isLoginValid(session)) return
-        UserStatus.get(session.userId).chatRooms.add(String(roomId))
+    async onEnterChatRoom(session:ISession,roomId:MongoId){
+        if(!this.isLoginValid(session)) return
+        this.UserStatus.get(session.userId).chatRooms.add(String(roomId))
 
     }
-    export function onLeaveChatRoom(session:ISession,roomId:MongoId){
-        if(!isLoginValid(session)) return
-        UserStatus.get(session.userId).chatRooms.delete(String(roomId))
+    async onLeaveChatRoom(session:ISession,roomId:MongoId){
+        if(!this.isLoginValid(session)) return
+        this.UserStatus.get(session.userId).chatRooms.delete(String(roomId))
     }
-    export function isUserInChatRoom(userId:MongoId,roomId:MongoId){
-        if(!UserStatus.has(String(userId))) return false
-        return UserStatus.get(String(userId)).chatRooms.has(String(roomId))
+    async isUserInChatRoom(userId:MongoId,roomId:MongoId){
+        if(!this.UserStatus.has(String(userId))) return false
+        return this.UserStatus.get(String(userId)).chatRooms.has(String(roomId))
     }
-    export function onSocketConnect(session:ISession,type:string){
-        if(!isLoginValid(session) || !type) return
-        UserStatus.get(session.userId).sockets.add(type)
+    async onSocketConnect(session:ISession,type:string){
+        if(!this.isLoginValid(session) || !type) return
+        this.UserStatus.get(session.userId).sockets.add(type)
         
     }
-    export async function onSocketAccess(session:ISession){
-        if(!isLoginValid(session)) return
-        UserStatus.get(session.userId).lastActive = new Date()
+     async  onSocketAccess(session:ISession){
+        if(!this.isLoginValid(session)) return
+        this.UserStatus.get(session.userId).lastActive = new Date()
         
     }
-    export function onSocketDisconnect(session:ISession,type:string){
-        if(!isLoginValid(session) || !type) return
+    async onSocketDisconnect(session:ISession,type:string){
+        if(!this.isLoginValid(session) || !type) return
 
-        UserStatus.get(session.userId).sockets.delete(type)
-        UserStatus.get(session.userId).lastActive = new Date()
+        this.UserStatus.get(session.userId).sockets.delete(type)
+        this.UserStatus.get(session.userId).lastActive = new Date()
         UserSchema.updateLastActive(session.userId).then()
     }
-    export function getGameByUserId(userId:string):string|null{
-        const status = UserStatus.get(userId)
+    async getGameByUserId(userId:string){
+        const status = this.UserStatus.get(userId)
         if(!status || status.sessionIds.size <=0 || status.sockets.countItem("rpggame") <=0) return null
         
         for(const sid of status.sessionIds){
-            if(SessionStore.get(sid).roomname && SessionStore.get(sid).turn!==undefined && SessionStore.get(sid).turn>=0)
+            if(this.SessionStore.get(sid).roomname && this.SessionStore.get(sid).turn!==undefined && this.SessionStore.get(sid).turn>=0)
             {
-                let rname = SessionStore.get(sid).roomname
+                let rname = this.SessionStore.get(sid).roomname
                 if(R.getRPGRoom(rname).isGameStarted)
                     return rname
             }
@@ -143,12 +171,12 @@ export namespace SessionManager{
      * @param userId 
      * @returns [last active date, status type]
      */
-    export function getStatus(userId:MongoId):[Date,string|null]{
+    async getStatus(userId:MongoId): Promise<[Date, string]> {
         userId=String(userId)
 
-        if(UserStatus.has(userId)){
-            const statusSet = UserStatus.get(userId).sockets
-            const last=UserStatus.get(userId).lastActive
+        if(this.UserStatus.has(userId)){
+            const statusSet = this.UserStatus.get(userId).sockets
+            const last=this.UserStatus.get(userId).lastActive
 
             if(statusSet.size===0) return [last,null]
             for(const type of STATUS_PRIPROTY){
@@ -159,17 +187,17 @@ export namespace SessionManager{
         }
         else return [null,null]
     }
-    export function login(req:Request,userId:string,username:string){
+    async login(req:Request,userId:string,username:string){
         try{
             let id= getSessionId(req)
-            SessionStore.get(id).isLogined=true
-            SessionStore.get(id).userId=userId
+            this.SessionStore.get(id).isLogined=true
+            this.SessionStore.get(id).userId=userId
          //   SessionIds.set(userId,id)
-            if(UserStatus.has(userId)){
-                UserStatus.get(userId).sessionIds.add(id)
+            if(this.UserStatus.has(userId)){
+                this.UserStatus.get(userId).sessionIds.add(id)
             }
             else{
-                UserStatus.set(userId,{
+                this.UserStatus.set(userId,{
                     sessionIds:new Set<string>().add(id),
                     sockets:new Counter<string>(),
                     chatRooms:new Set<string>(),
@@ -184,16 +212,16 @@ export namespace SessionManager{
             return false
         }
     }
-    export function logout(req:Request){
+    async logout(req:Request){
         try{
             let id= getSessionId(req)
-            const session = SessionStore.get(id)
+            const session = this.SessionStore.get(id)
             session.isLogined=false
            // SessionIds.delete(session.userId)
-           if(UserStatus.has(session.userId)){
-                UserStatus.get(session.userId).sessionIds.delete(id)
-                if(UserStatus.get(session.userId).sessionIds.size===0)
-                    UserStatus.get(session.userId).sockets.clear()
+           if(this.UserStatus.has(session.userId)){
+                this.UserStatus.get(session.userId).sessionIds.delete(id)
+                if(this.UserStatus.get(session.userId).sessionIds.size===0)
+                    this.UserStatus.get(session.userId).sockets.clear()
             }
             delete session.userId
             delete session.username
@@ -206,5 +234,10 @@ export namespace SessionManager{
             return false
         }
     }
+
+}
+
+export namespace SessionManager{
+
 }
 

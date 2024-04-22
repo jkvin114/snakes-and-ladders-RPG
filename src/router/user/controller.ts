@@ -1,4 +1,4 @@
-import { ISession, SessionManager } from "../../session/inMemorySession"
+import type {ISession} from "../../session/ISession"
 import type { Request, Response } from "express"
 import { UserBoardDataSchema } from "../../mongodb/schemaController/UserData"
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation"

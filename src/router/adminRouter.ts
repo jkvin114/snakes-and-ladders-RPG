@@ -5,12 +5,12 @@ const router = express.Router()
 import { adminauth } from "./board/helpers"
 import mongoose from "mongoose"
 import MarbleGameGRPCClient from "../grpc/marblegameclient"
-import { SessionManager } from "../session/inMemorySession"
+import { SessionManager } from "../session"
 
 router.get("/allusers",adminauth, async function (req: express.Request, res: express.Response) {
     try{
-        let sessions = SessionManager.getAll()
-        let users = SessionManager.getAllUsers()
+        let sessions =await SessionManager.getAll()
+        let users =await SessionManager.getAllUsers()
 
         return res.status(200).json({sessions:sessions,users:users})
     }

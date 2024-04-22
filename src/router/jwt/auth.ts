@@ -1,7 +1,7 @@
 
 import { Request,Response,NextFunction } from "express"
 import CONFIG from "../../../config/config.json"
-import { SessionManager } from "../../session/inMemorySession"
+import { SessionManager } from "../../session"
 
 /**
  * checks whether the user is logged in
@@ -10,10 +10,10 @@ import { SessionManager } from "../../session/inMemorySession"
  * @param next 
  * @returns 
  */
-export const loginauth = (req: Request, res: Response, next: NextFunction) => {
+export const loginauth = async (req: Request, res: Response, next: NextFunction) => {
 	// next();
 	// return
-    const session = SessionManager.getSession(req)
+    const session =await SessionManager.getSession(req)
 	try {
 		if ( session && session.isLogined && session.userId) {
 			next()
@@ -33,8 +33,8 @@ export const loginauth = (req: Request, res: Response, next: NextFunction) => {
  * @param next 
  * @returns 
  */
-export const sessionParser = (req: Request, res: Response, next: NextFunction)=>{
-	const session = SessionManager.getSession(req)
+export const sessionParser = async (req: Request, res: Response, next: NextFunction)=>{
+	const session = await SessionManager.getSession(req)
 	if(!session) return res.status(401).end("invalid session")
 	res.locals.session = session
 	next()

@@ -3,6 +3,7 @@ marble/
 mockstock/
 stats/
 test/
+volume/
 .vscode/
 logs/*.txt
 node_modules

@@ -10,7 +10,7 @@ export namespace NotificationController {
 	const MAX_TIMEOUT = 60
 
 	export function addToCache(userId: MongoId) {
-		NotificationCache.post(userId)
+		NotificationCache.post(userId).then()
 	}
 
 	function isMuted(receiver: MongoId, type: NotificationSchema.TYPE) {
@@ -97,7 +97,7 @@ export namespace NotificationController {
 		let notis: INotification[] = []
 
 		for (let i = 0; i < MAX_TIMEOUT; i++) {
-			if (NotificationCache.consume(receiver)) {
+			if (await NotificationCache.consume(receiver)) {
 				notis = await NotificationSchema.findUnaccessed(receiver)
 				break
 			}

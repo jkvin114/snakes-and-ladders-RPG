@@ -17,7 +17,9 @@ function extractTokenPayload (req:Request) {
         return decodeToken(req.cookies.jwt);
     }
     return null;
+
 }
+
 function decodeToken(token:string){
 	try{
 		return Jwt.verify(token,key)

@@ -3,7 +3,7 @@ import express = require("express")
 import { ControllerWrapper } from "./ControllerWrapper"
 const router = express.Router()
 import type { Request, Response } from "express"
-import { ISession } from "../session/inMemorySession"
+import type { ISession } from "../session/ISession"
 import { loginauth, sessionParser } from "./jwt/auth"
 import { NotificationSchema } from "../mongodb/schemaController/Notification"
 import { NotificationCache } from "../cache/cache"
@@ -34,7 +34,7 @@ router.get("/poll",loginauth,sessionParser,ControllerWrapper(async function(req:
  router.post("/test",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
     let message = req.body.message
     NotificationSchema.createTest(message,session.userId)
-    NotificationCache.post(session.userId)
+   await NotificationCache.post(session.userId)
  }))
 
 

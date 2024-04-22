@@ -9,7 +9,8 @@ import MarbleGameGRPCClient from "../grpc/marblegameclient"
 import RPGGameGRPCClient from "../grpc/rpggameclient"
 import { loginauth, sessionParser } from "./jwt/auth"
 import { ControllerWrapper } from "./ControllerWrapper"
-import { ISession, SessionManager } from "../session/inMemorySession"
+import { SessionManager } from "../session"
+import {ISession} from "../session/ISession"
 import type { Request, Response } from "express"
 import { randName } from "../RPGGame/data/names"
 import { Logger } from "../logger"
@@ -216,7 +217,7 @@ router.post(
 	sessionParser,
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
 		const rname = req.body.roomname
-		let game = SessionManager.getGameByUserId(session.userId)
+		let game =await SessionManager.getGameByUserId(session.userId)
 		if (game !== null) {
 			res.status(307).end("Already in game")
 			return
@@ -253,8 +254,8 @@ router.post(
 	sessionParser,
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
 		const invited = req.body.id
-		let game = SessionManager.getGameByUserId(invited)
-		const guestsessions = SessionManager.getSessionsByUserId(invited)
+		let game = await SessionManager.getGameByUserId(invited)
+		const guestsessions =await SessionManager.getSessionsByUserId(invited)
 		if (!invited || game !== null|| (guestsessions.some(s=>s.roomname && R.hasRoom(s.roomname)))) {
 			res.status(400).end("User already in game")
 			return
@@ -362,7 +363,7 @@ router.post(
 			res.status(200).end(req.body.roomname)
 		} //find game that the user is currently in
 		else if (req.body.userId) {
-			const roomname = SessionManager.getGameByUserId(req.body.userId)
+			const roomname =await SessionManager.getGameByUserId(req.body.userId)
 			if (
 				!roomname ||
 				!R.hasRPGRoom(roomname) ||

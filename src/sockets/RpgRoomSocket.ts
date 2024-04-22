@@ -9,14 +9,14 @@ import { Logger } from "../logger";
 const { User } = require("../mongodb/UserDBSchema")
 module.exports=function(socket:Socket){
 
-	socket.on("user:simulationready", function (setting:ClientInputEventFormat.SimulationSetting, count:number, isTeam:boolean) {
-		if (!SocketSession.getUsername(socket)) {
+	socket.on("user:simulationready", async function (setting:ClientInputEventFormat.SimulationSetting, count:number, isTeam:boolean) {
+		if (!await SocketSession.getUsername(socket)) {
 			Logger.err("user not logined for simulation")
 			return
 		}
 		
 		let rname = "simulation_" + String(Math.floor(Math.random() * 1000000))
-		SocketSession.setRoomName(socket, rname)
+		await SocketSession.setRoomName(socket, rname)
 		socket.join(rname)
 
 		let room = new RPGRoom(rname).setSimulation(true)
@@ -29,7 +29,7 @@ module.exports=function(socket:Socket){
 
 		R.setRPGRoom(rname, room)
 
-		let u = SocketSession.getUsername(socket)
+		let u = await SocketSession.getUsername(socket)
 		User.findOneByUsername(u)
 			.then((user: any) => {
 				console.log(setting)
@@ -44,8 +44,8 @@ module.exports=function(socket:Socket){
 			})
 	})
 
-	socket.on("user:gameready", function (setting:ClientInputEventFormat.GameSetting) {
-		let rname = SocketSession.getRoomName(socket)
+	socket.on("user:gameready", async function (setting:ClientInputEventFormat.GameSetting) {
+		let rname = await SocketSession.getRoomName(socket)
 		console.log("gameready")
 		if (!R.hasRoom(rname)) return
 
@@ -68,7 +68,7 @@ module.exports=function(socket:Socket){
 
 	socket.on("user:requestsetting", function () {
 		
-		controlRPGRoom(socket,(room,rname,turn)=>{
+		controlRPGRoom(socket,async (room,rname,turn)=>{
 			if (!room.hasGameLoop()) {
 				socket.emit("server:quit")
 				return
@@ -84,18 +84,18 @@ module.exports=function(socket:Socket){
 				newturn = turn
 
 				//do not update turn from second access
-				if(!room.registeredSessions.has(SocketSession.getId(socket))){
+				if(!room.registeredSessions.has(await SocketSession.getId(socket))){
 	
 					newturn=room.getChangedTurn(turn)
-					SocketSession.setTurn(socket,newturn)
+					await SocketSession.setTurn(socket,newturn)
 					
-					const session = SocketSession.getSession(socket)
+					const session = await SocketSession.getSession(socket)
 					if(session.isLogined){
 						room.addRegisteredUser(newturn,session.userId,session.username)
 					}
 				}
 				
-				room.registeredSessions.add(SocketSession.getId(socket))
+				room.registeredSessions.add(await SocketSession.getId(socket))
 				
 			}
 			
@@ -113,8 +113,8 @@ module.exports=function(socket:Socket){
 	//==========================================================================================
 
 	socket.on("user:start_game", function () {
-		controlRPGRoom(socket,(room,rname,turn)=>{
-			const canstart = room.onUserGameReady(SocketSession.getId(socket))
+		controlRPGRoom(socket,async (room,rname,turn)=>{
+			const canstart = room.onUserGameReady(await SocketSession.getId(socket))
 			if(canstart.canStart) room.onAllUserReady()
 
 			io.to(rname).emit("server:game_ready_status",canstart)
@@ -126,8 +126,8 @@ module.exports=function(socket:Socket){
 	})
 
 	socket.on("user:update", function (type:string,data:any) {
-		controlRPGRoom(socket,(room,rname,turn)=>{
-			room.getGameLoop.user_update(SocketSession.getTurn(socket),type,data)
+		controlRPGRoom(socket,async (room,rname,turn)=>{
+			room.getGameLoop.user_update(await SocketSession.getTurn(socket),type,data)
 		},true)
 
 	})

@@ -2,7 +2,9 @@ import express = require("express")
 import { ControllerWrapper } from "./ControllerWrapper"
 const router = express.Router()
 import type { Request, Response } from "express"
-import { ISession, SessionManager } from "../session/inMemorySession"
+import {  SessionManager } from "../session"
+import type {  ISession } from "../session/ISession"
+
 import { loginauth, sessionParser } from "./jwt/auth"
 import { ChatRoomSchema } from "../mongodb/schemaController/ChatRoom"
 import { ChatRoomJoinStatusSchema } from "../mongodb/schemaController/ChatJoinStatus"
@@ -184,7 +186,7 @@ router.post(
 	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
 		const roomid = req.body.room
 		// delete session.currentChatRoom
-		SessionManager.onLeaveChatRoom(session,roomid)
+		await SessionManager.onLeaveChatRoom(session,roomid)
 
 		let change = await ChatRoomJoinStatusSchema.left(roomid, session.userId)
 		if (change) {

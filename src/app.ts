@@ -22,12 +22,14 @@ import express=require("express")
 import { connectMongoDB } from "./mongodb/connect"
 import MarbleGameGRPCClient from "./grpc/marblegameclient"
 import RPGGameGRPCClient from "./grpc/rpggameclient"
-import { ISession, SessionManager } from "./session/inMemorySession"
+import { SessionManager } from "./session"
+import {ISession} from "./session/ISession"
 import cookieParser from "cookie-parser"
 import { setJwtCookie } from "./session/jwt"
 import { SocketSession } from "./sockets/SocketSession"
 import { Logger } from "./logger"
 import { UserCache } from "./cache/cache"
+import { RedisClient } from "./redis/redis"
 
 declare module 'express-session' {
 	interface SessionData {
@@ -59,7 +61,7 @@ const PORT = process.env.PORT
 const app = express()
 const ORIGIN = process.env.ORIGIN
 // const ORIGIN="http://192.168.0.3:3000"
-Logger.log("start server at port ",String(PORT),", from origin",ORIGIN);
+Logger.log("start server at port ",String(PORT),", listen from origin",ORIGIN);
 
 function onExit(){
 	Logger.log("user cache analysis:",UserCache.getEval())
@@ -87,7 +89,16 @@ redisClient.connect().then(()=>{
 	console.log("connected to redis")
 });
 */
-
+const REDIS = process.env.REDIS_HOST
+const REDIS_PORT = process.env.REDIS_PORT?process.env.REDIS_PORT:6379
+if(REDIS)
+	RedisClient.connect(REDIS,Number(REDIS_PORT),async ()=>{
+		console.log(RedisClient.isAvailable())
+			console.log(await RedisClient.ping())
+			await RedisClient.set("1","1")
+			let val = await RedisClient.get("ggg")	
+			console.log(val)
+	})
 //==============================================
 
 app.use(session)
@@ -148,12 +159,12 @@ io.use((socket, next) => {
 	session(req, res, next as express.NextFunction)
 })
 
-io.use((socket, next) => {
+io.use(async (socket, next) => {
 
 	try{
-		const session =  SessionManager.getSessionById(SocketSession.getId(socket))
+		const session = await SessionManager.getSessionById(await SocketSession.getId(socket))
 		socket.data.session=session
-		SessionManager.onSocketAccess(session)
+		await SessionManager.onSocketAccess(session)
 		if(!session) {
 			Logger.warn("invalid session for socket id:"+socket.id)
 			return
@@ -185,20 +196,20 @@ io.on("error", function (e: any) {
 
 
 
-io.on("connection", function (socket: Socket) {
+io.on("connection", async function (socket: Socket) {
 	//console.log(`${socket.id} is connected`)
 	//console.log(socket.data.type)
 	const session =  socket.data.session
-	SessionManager.onSocketConnect(session,socket.data.type)
+	SessionManager.onSocketConnect(session,socket.data.type).then()
 	
 	require("./sockets/RoomSocket")(socket)
 	require("./sockets/RpgRoomSocket")(socket)
 	require("./Marble/MarbleRoomSocket")(socket)
 	require("./social/chatSocket")(socket)
 
-	socket.on("disconnect",function(){
+	socket.on("disconnect",async function(){
 		const session = socket.data.session
-		SessionManager.onSocketDisconnect(session,socket.data.type)
+		SessionManager.onSocketDisconnect(session,socket.data.type).then()
 	})
 })
 
@@ -224,21 +235,21 @@ app.get("/servererror", function (req:any, res:any) {
 // });
 
 
-app.get("/jwt/verify",function(req:express.Request, res:express.Response){
-	let valid = SessionManager.isValid(req)
+app.get("/jwt/verify",async function(req:express.Request, res:express.Response){
+	let valid = await SessionManager.isValid(req)
 	res.json({isVaild:valid})
 })	
 
-app.get("/session",function(req:express.Request, res:express.Response){
-	let session = SessionManager.getSession(req)
+app.get("/session",async function(req:express.Request, res:express.Response){
+	let session = await SessionManager.getSession(req)
 	res.json(session).end()
 })	
-app.post("/jwt/init",function(req:express.Request, res:express.Response){
+app.post("/jwt/init",async function(req:express.Request, res:express.Response){
 
-	if(req.cookies && SessionManager.isValid(req)){
+	if(req.cookies && await SessionManager.isValid(req)){
 		return res.status(204).send("ok")
 	}
-	let token = SessionManager.createSession()
+	let token = await SessionManager.createSession()
 	setJwtCookie(res,token)
 	Logger.log("created new session")
 	res.send("ok")

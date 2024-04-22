@@ -1,5 +1,5 @@
 import type {Request,Response} from 'express';
-import { ISession } from '../session/inMemorySession';
+import { ISession } from '../session/ISession';
 import { Logger } from '../logger';
 
 export type IController={

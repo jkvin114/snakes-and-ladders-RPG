@@ -244,12 +244,12 @@ abstract class Room {
 		this.playerMatchingState.guestnum += 1
 		return true
 	}
-	removeGuest(turn: number) {
+	async removeGuest(turn: number) {
 		// this.deleteSession(sessionId)
 		let socket = this.guestSockets.get(turn)
 		if (socket) {
-			SocketSession.removeGameSession(socket)
-			this.deleteSession(SocketSession.getId(socket))
+			await SocketSession.removeGameSession(socket)
+			this.deleteSession( await SocketSession.getId(socket))
 			Logger.log("remove guest from room ", this.name)
 			SocketSession.print(socket)
 			socket.leave(this.name)

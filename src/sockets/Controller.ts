@@ -6,20 +6,22 @@ import type { RPGRoom } from "../RPGGame/RPGRoom";
 import type { MarbleRoom } from "../Marble/MarbleRoom";
 
 interface RoomController{
-	(room:Room,rname:string):void
+	(room:Room,rname:string):void|Promise<void>
 }
 interface RPGRoomController{
-	(room:RPGRoom,rname:string,turn:number):void
+	(room:RPGRoom,rname:string,turn:number):void|Promise<void>
 }
+
 interface MarbleRoomController{
-	(room:MarbleRoom,rname:string,turn:number):void
+	(room:MarbleRoom,rname:string,turn:number):void|Promise<void>
 }
-export function controlRoom(socket:Socket,roomController:RoomController){
-	let rname = SocketSession.getRoomName(socket)
+
+export async function controlRoom(socket:Socket,roomController:RoomController){
+	let rname =await SocketSession.getRoomName(socket)
 	let room=R.getRoom(rname)
 	if(!room) return false
 	try{
-		roomController(room,rname)
+		await roomController(room,rname)
         return true
 	}
 	catch(e){
@@ -27,14 +29,14 @@ export function controlRoom(socket:Socket,roomController:RoomController){
         return false
 	}
 }
-export function controlRPGRoom(socket:Socket,roomController:RPGRoomController,playeronly?:boolean){
-	let rname = SocketSession.getRoomName(socket)
-    let turn = SocketSession.getTurn(socket)
+export async function controlRPGRoom(socket:Socket,roomController:RPGRoomController,playeronly?:boolean){
+	let rname =await SocketSession.getRoomName(socket)
+    let turn = await SocketSession.getTurn(socket)
 	let room=R.getRPGRoom(rname)
 	if(!room) return false
 	if(playeronly && turn<0) return false
 	try{
-		roomController(room,rname,turn)
+		await roomController(room,rname,turn)
         return true
 	}
 	catch(e){
@@ -42,15 +44,15 @@ export function controlRPGRoom(socket:Socket,roomController:RPGRoomController,pl
         return false
 	}
 }
-export function controlMarbleRoom(socket:Socket,roomController:MarbleRoomController,playeronly?:boolean){
-	let rname = SocketSession.getRoomName(socket)
-    let turn = SocketSession.getTurn(socket)
+export async function controlMarbleRoom(socket:Socket,roomController:MarbleRoomController,playeronly?:boolean){
+	let rname =await SocketSession.getRoomName(socket)
+    let turn =await SocketSession.getTurn(socket)
 	if (!R.hasMarbleRoom(rname)) return false
 	let room=R.getMarbleRoom(rname)
 	if(!room) return false
 	if(playeronly && turn<0) return false
 	try{
-		roomController(room,rname,turn)
+		await roomController(room,rname,turn)
         return true
 	}
 	catch(e){

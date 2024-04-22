@@ -11,6 +11,12 @@ services:
     working_dir: /app #added because of "WORKDIR /src" in dockerfile
     # depends_on:
     #   - backend
+  redis-server:
+    image: redis:7.2.4-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./volume/redis_data:/data
   marble:
     build: 
       context: ./marble
@@ -40,6 +46,7 @@ services:
     depends_on:
       - stockgame
       - marble
+      - redis-server
     volumes:
       - ./volume/image/profile:/app/res/image/profile  
       - ./volume/image/post:/app/res/image/post  #mount /app/res/image/post directory to local /volume/image/post folder in volume for persistence
@@ -47,3 +54,4 @@ services:
     environment:
       STOCKGAME_HOST: stockgame
       MARBLE_HOST: marble
+      REDIS_HOST: redis-server
