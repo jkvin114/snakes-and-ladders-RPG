@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io"
-import { UserCache } from "../cache/cache"
+import { UserCache } from "../cache"
 import { ChatMessageSchema } from "../mongodb/schemaController/ChatMessage"
 import { ChatRoomSchema } from "../mongodb/schemaController/ChatRoom"
 import { ChatRoomJoinStatusSchema } from "../mongodb/schemaController/ChatJoinStatus"

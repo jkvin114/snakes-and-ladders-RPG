@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import { FriendRequestCache, UserCache } from "../../cache/cache"
+import { FriendRequestCache, UserCache } from "../../cache"
 import { UserRelationSchema } from "../../mongodb/schemaController/UserRelation"
 import {  SessionManager } from "../../session"
 import { ISession } from "../../session/ISession"
@@ -85,7 +85,7 @@ export namespace FriendController {
 			res.status(400).end("invaild username")
 			return
 		}
-		FriendRequestCache.add(session.userId,id)
+		await FriendRequestCache.add(session.userId,id)
 		await NotificationController.sendFriendRequest(id,session.userId,session.username)
 	}
 
@@ -103,7 +103,7 @@ export namespace FriendController {
 			res.status(400).end("invaild senderId")
 			return
 		}
-		FriendRequestCache.remove(id,session.userId)
+		await FriendRequestCache.remove(id,session.userId)
 		await NotificationController.deleteFriendRequest(session.userId,id)
 	}
 
@@ -113,7 +113,8 @@ export namespace FriendController {
 		const matchedUsers = await UserSchema.searchByName(String(searchStr))
 		const friendIds = await UserRelationSchema.findFriends(session.userId)
 		const friends = new Set<string>(friendIds.map(id=>String(id)))
-		const requested = FriendRequestCache.getRequested(session.userId)
+		const requested = await FriendRequestCache.getRequested(session.userId)
+		console.log(requested)
 		let data: IFriend[] = []
 		for (const fr of matchedUsers) {
 			let status = ""

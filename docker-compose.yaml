@@ -27,14 +27,14 @@ services:
       - PORT=50051
     volumes:
       - ./volume/logs:/app/logs
-  stockgame:
-    build: 
-      context: ./mockstock
-      dockerfile: Dockerfile
-    container_name: mockstock
-    environment:
-      - PORT=5050
-    working_dir: /app
+  # stockgame:
+  #   build: 
+  #     context: ./mockstock
+  #     dockerfile: Dockerfile
+  #   container_name: mockstock
+  #   environment:
+  #     - PORT=5050
+  #   working_dir: /app
   backend:
     build: 
       context: ./

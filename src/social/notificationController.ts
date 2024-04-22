@@ -1,7 +1,7 @@
 import { INotification } from "../mongodb/NotificationSchema"
 import { NotificationSchema } from "../mongodb/schemaController/Notification"
 import { sleep } from "../RPGGame/core/Util"
-import { NotificationCache } from "../cache/cache"
+import { NotificationCache } from "../cache"
 import { MongoId } from "../mongodb/types"
 import { NotificationMuteSchema } from "../mongodb/schemaController/NotificationMute"
 

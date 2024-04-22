@@ -4,7 +4,7 @@ import { IStockGameResult, StockGameResult } from "../../../mongodb/StockGameSch
 import { StockGameSchema } from "../../../mongodb/schemaController/StockGame"
 import { UserRelationSchema } from "../../../mongodb/schemaController/UserRelation"
 import { MongoId } from "../../../mongodb/types"
-import { UserCache } from "../../../cache/cache"
+import { UserCache } from "../../../cache"
 import { IPassedFriend,  IStockGameBestScoreResponse,  IStockGameBestScoreResponsePopulated,  IStockGameFriendScore, IStockGameResultResponse, IStockGameUserRecordResponse } from "../../ResponseModel"
 import { isNumber } from "../../board/helpers"
 import { StockGameUserSchema } from "../../../mongodb/schemaController/StockGameUser"

@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Socket } from 'socket.io';
 import { Counter } from '../RPGGame/core/Util';
 import { MongoId } from '../mongodb/types';
-import { UserCache } from '../cache/cache';
 import { R } from '../Room/RoomStorage';
 import { UserSchema } from '../mongodb/schemaController/User';
 import { User } from '../mongodb/UserDBSchema';

@@ -1,7 +1,5 @@
 import type { Types } from "mongoose"
 import { INotification, Notification } from "../NotificationSchema"
-import { NotificationCache } from "../../cache/cache"
-import { sleep } from "../../RPGGame/core/Util"
 import { MongoId } from "../types"
 
 export namespace NotificationSchema {

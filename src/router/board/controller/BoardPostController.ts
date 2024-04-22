@@ -9,7 +9,7 @@ import mongoose from "mongoose"
 import { UserSchema } from "../../../mongodb/schemaController/User"
 import { checkVoteRecord, isNumber, renderEjs } from "../helpers"
 import { Logger } from "../../../logger"
-import { UserCache } from "../../../cache/cache"
+import { UserCache } from "../../../cache"
 import { ImageUploader } from "../../../mongodb/mutler"
 
 export namespace BoardPostController {

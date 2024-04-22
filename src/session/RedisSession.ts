@@ -3,7 +3,7 @@ import { MongoId } from "../mongodb/types";
 import { ISession } from "./ISession";
 import ISessionManager from "./ISessionManager";
 
-class RedisSession implements ISessionManager{
+export class RedisSession implements ISessionManager{
     private static instance: RedisSession;
 
     private constructor() {}

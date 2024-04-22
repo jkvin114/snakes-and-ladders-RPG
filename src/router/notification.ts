@@ -6,7 +6,7 @@ import type { Request, Response } from "express"
 import type { ISession } from "../session/ISession"
 import { loginauth, sessionParser } from "./jwt/auth"
 import { NotificationSchema } from "../mongodb/schemaController/Notification"
-import { NotificationCache } from "../cache/cache"
+import { NotificationCache } from "../cache"
 import { NotificationController } from "../social/notificationController"
 
 /**

@@ -7,7 +7,7 @@ import mongoose from "mongoose"
 import { IFollow, IFriend } from "../ResponseModel"
 import { UserGamePlaySchema } from "../../mongodb/schemaController/UserGamePlay"
 import { Logger } from "../../logger"
-import { FriendRequestCache } from "../../cache/cache"
+import { FriendRequestCache } from "../../cache"
 
 export namespace UserController {
 	export async function getProfile(req: Request, res: Response, session: ISession) {
@@ -45,7 +45,7 @@ export namespace UserController {
 			isFriend = await UserRelationSchema.isFriendWith(session.userId, user._id)
 			isFollowing = await UserRelationSchema.isFollowTo(session.userId, user._id)
 			if(!isFriend)
-				requestedFrield = FriendRequestCache.has(session.userId,user._id)
+				requestedFrield = await FriendRequestCache.has(session.userId,user._id)
 		}
 		res.json({
 			isFriend: isFriend,
@@ -89,7 +89,7 @@ export namespace UserController {
 		
 		let data: IFriend[] = []
 		const login = session.isLogined && session.userId
-		const requested = login ?  FriendRequestCache.getRequested(session.userId):null
+		const requested = login ?  await FriendRequestCache.getRequested(session.userId):null
 
 		for (const fr of friends) {
 			let status = ""

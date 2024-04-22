@@ -28,7 +28,7 @@ import cookieParser from "cookie-parser"
 import { setJwtCookie } from "./session/jwt"
 import { SocketSession } from "./sockets/SocketSession"
 import { Logger } from "./logger"
-import { UserCache } from "./cache/cache"
+import { UserCache } from "./cache"
 import { RedisClient } from "./redis/redis"
 
 declare module 'express-session' {
@@ -64,7 +64,7 @@ const ORIGIN = process.env.ORIGIN
 Logger.log("start server at port ",String(PORT),", listen from origin",ORIGIN);
 
 function onExit(){
-	Logger.log("user cache analysis:",UserCache.getEval())
+	//Logger.log("user cache analysis:",UserCache.getEval())
 	Logger.log("process exit");
 }
 

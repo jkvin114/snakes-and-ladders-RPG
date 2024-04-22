@@ -12,7 +12,6 @@ import { ChatRoomJoinStatusSchema } from "../mongodb/schemaController/ChatJoinSt
 import { UserSchema } from "../mongodb/schemaController/User"
 import { ChatMessageSchema } from "../mongodb/schemaController/ChatMessage"
 import { IChatRoom } from "../mongodb/ChattingSchema"
-import { UserCache } from "../cache/cache"
 import { Logger } from "../logger"
 
 const MAX_MESSAGE_FETCH = 20

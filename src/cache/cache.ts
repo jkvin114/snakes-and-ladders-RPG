@@ -3,22 +3,16 @@ import { UserSchema } from "../mongodb/schemaController/User";
 import { MongoId } from "../mongodb/types";
 import { Logger } from "../logger";
 import { RedisClient } from "../redis/redis";
+import { IUserCache } from "./interface/IUserCache";
+/**
+ * depricated
+ */
 
-
-
-export interface IUserCache{
-    username:string
-    profileImgDir:string
-    email:string
-    boardData:string|mongoose.Types.ObjectId
-    lastActive?:number
-}
-
-export namespace UserCache{
+namespace UserCache{
     let cachehit=0
     let cachemiss=0
     const userCache = new Map<string,IUserCache>()
-
+    const prefix="cache-user:"
     export function getEval(){
         if(cachehit+cachemiss===0) return ''
         return `user cache report: cache hit:${cachehit}, miss: ${cachemiss}. Hit rate: ${cachehit/(cachehit+cachemiss)}`
@@ -28,23 +22,25 @@ export namespace UserCache{
         cachemiss++
         return UserSchema.findById(id)
     }
-    export async function getUser(id:MongoId):Promise<IUserCache>{
+    export async function getUser(id:MongoId){
         if(userCache.has(String(id))){
             cachehit++
             if(cachehit%100===99) {
                 Logger.log(UserCache.getEval())
             }
-            return userCache.get(String(id))
+            //return RedisClient.getObj(prefix+String(id))
+          //  return userCache.get(String(id))
         }
         const user = await onCacheMiss(id)
-        userCache.set(String(id),{
+
+        await RedisClient.setObj(String(id),{
             username:user.username,
             profileImgDir:user.profileImgDir,
             boardData:user.boardData as mongoose.Types.ObjectId,
             email:user.email,
             lastActive:user.lastActive
         })
-        return userCache.get(String(id))
+     //   return await RedisClient.getObj(String(id))
     }
     export function invalidate(id:MongoId){
         userCache.delete(String(id))
@@ -52,7 +48,7 @@ export namespace UserCache{
 }
 
 
-export namespace NotificationCache{
+namespace NotificationCache{
     const users = new Set<string>()
     const prefix="cache-notification"
     export async function post(userId:MongoId){
@@ -71,28 +67,32 @@ export namespace NotificationCache{
         console.log(await RedisClient.getSet(prefix))
     }
 }
-export namespace FriendRequestCache{
+namespace FriendRequestCache{
     const requests = new Map<string,Set<string>>()
+    const prefix="cache-friend-request:"
+    export async function add(from:MongoId,to:MongoId){
+        // if(requests.has(String(from))){
+        //     requests.get(String(from)).add(String(to))
+        // }
+        // else{
+        //     requests.set(String(from),new Set<string>().add(String(to)))
+        // }
 
-    export function add(from:MongoId,to:MongoId){
-        if(requests.has(String(from))){
-            requests.get(String(from)).add(String(to))
-        }
-        else{
-            requests.set(String(from),new Set<string>().add(String(to)))
-        }
-        console.log(requests)
+        await RedisClient.addToSet(prefix+String(from),String(to))
     }
-    export function getRequested(from:MongoId):Set<string>|undefined{
-        return requests.get(String(from))
-    }
-
-    export function remove(from:MongoId,to:MongoId){
-        console.log(requests)
-        return requests.get(String(from))?.delete(String(to))
+    export async function getRequested(from:MongoId):Promise<Set<string>|undefined>{
+        //return requests.get(String(from))
+        return new Set(await RedisClient.getSet(prefix+String(from)))
     }
 
-    export function has(from:MongoId,to:MongoId):boolean{
+    export async function remove(from:MongoId,to:MongoId){
+        //console.log(requests)
+        // return requests.get(String(from))?.delete(String(to))
+        await RedisClient.removeFromSet(prefix+String(from),String(to))
+    }
+
+    export async function has(from:MongoId,to:MongoId):Promise<boolean>{
+        return await RedisClient.isInSet(prefix+String(from),String(to))
         if(requests.has(String(from))){
             return requests.get(String(from)).has(String(to))
         }
@@ -100,7 +100,7 @@ export namespace FriendRequestCache{
             return false
         }
     }
-    export function clear(){
+    export async function clear(){
         requests.clear()
     }
 }
