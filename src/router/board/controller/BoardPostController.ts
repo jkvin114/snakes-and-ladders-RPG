@@ -13,7 +13,7 @@ import { UserCache } from "../../../cache"
 import { ImageUploader } from "../../../mongodb/mutler"
 
 export namespace BoardPostController {
-	export async function getEditPost(req: Request, res: Response, session: ISession) {
+	export async function getEditPost(req: Request, res: Response, session: Readonly<ISession>) {
 		let url = req.params.postUrl
 		if (!isNumber(url)) {
 			res.status(400).end("url should be a number")
@@ -43,7 +43,7 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function uploadImage(req: Request, res: Response, session: ISession) {
+	export async function uploadImage(req: Request, res: Response, session: Readonly<ISession>) {
 		try {
 			const imgfile = req.file.filename
 
@@ -54,7 +54,7 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function editPost(req: Request, res: Response, session: ISession) {
+	export async function editPost(req: Request, res: Response, session: Readonly<ISession>) {
 		const url = req.body.url
 		if (!isNumber(url)) {
 			res.status(400).end("url should be a number")
@@ -100,7 +100,7 @@ export namespace BoardPostController {
 			res.status(500).end()
 		}
 	}
-	export async function writePost(req: Request, res: Response, session: ISession) {
+	export async function writePost(req: Request, res: Response, session: Readonly<ISession>) {
 		const imgfile = req.body.thumbnail
 		let postUrl = Date.now()
 		let title = req.body.title
@@ -139,7 +139,7 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function deletePost(req: Request, res: Response, session: ISession) {
+	export async function deletePost(req: Request, res: Response, session: Readonly<ISession>) {
 		try {
 			let id = new ObjectID(req.body.id)
 			const post = await PostSchema.findOneByIdPopulated(id)
@@ -176,7 +176,7 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function addComment(req: Request, res: Response, session: ISession) {
+	export async function addComment(req: Request, res: Response, session: Readonly<ISession>) {
 		try {
 			const postId = new ObjectID(req.body.postId) //objectid
 			const content = req.body.content
@@ -207,7 +207,7 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function deleteComment(req: Request, res: Response, session: ISession) {
+	export async function deleteComment(req: Request, res: Response, session: Readonly<ISession>) {
 		try {
 			let commid = new ObjectID(req.body.commentId)
 			const comment = await CommentSchema.findOneById(commid)
@@ -227,7 +227,7 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function deleteReply(req: Request, res: Response, session: ISession) {
+	export async function deleteReply(req: Request, res: Response, session: Readonly<ISession>) {
 		try {
 			let commid = new ObjectID(req.body.commentId)
 			const reply = await ReplySchema.findOneById(commid)
@@ -249,12 +249,12 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function getReply(req: Request, res: Response, session: ISession) {
+	export async function getReply(req: Request, res: Response, session: Readonly<ISession>) {
 		const comment = await CommentSchema.findOneById(new ObjectID(req.params.commentId))
 		const commentreply = await CommentSchema.getReplyById(new ObjectID(req.params.commentId))
 		const postUrl = await PostSchema.getUrlById(comment.article)
 		let voteRecords = null
-		if (session && session.isLogined) {
+		if (session && session.loggedin) {
 			const boarddata = await UserSchema.getBoardData(session.userId)
 			if (boarddata) voteRecords = await UserBoardDataSchema.getVoteRecords(boarddata)
 		}
@@ -263,7 +263,7 @@ export namespace BoardPostController {
 		for (let reply of commentreply.reply) {
 			const authorProfile = await UserSchema.findProfileImageById(reply.author)
 			replys.push({
-				canModify: session.isLogined && String(reply.author) === session.userId,
+				canModify: session.loggedin && String(reply.author) === session.userId,
 				content: reply.content,
 				authorProfileImage: authorProfile,
 				_id: String(reply._id),
@@ -281,12 +281,12 @@ export namespace BoardPostController {
 			authorProfileImage: authorProfile,
 			reply: replys,
 			postUrl: !postUrl ? "" : postUrl.articleId,
-			logined: session.isLogined,
+			logined: session.loggedin,
 			myvote: checkVoteRecord(comment._id, voteRecords),
 		})
 	}
 
-	export async function addReply(req: Request, res: Response, session: ISession) {
+	export async function addReply(req: Request, res: Response, session: Readonly<ISession>) {
 		const commentId = new ObjectID(req.body.commentId) //objectid
 		const content = req.body.content
 		const userId = new ObjectID(session.userId)
@@ -314,7 +314,7 @@ export namespace BoardPostController {
 		await PostSchema.addReply(comment.article)
 	}
 
-	export async function getPostContent(req: Request, res: Response, session: ISession) {
+	export async function getPostContent(req: Request, res: Response, session: Readonly<ISession>) {
 		let url = Number(req.params.postUrl)
 		if (!isNumber(req.params.postUrl)) {
 			res.status(400).end("url should be a number")
@@ -338,7 +338,7 @@ export namespace BoardPostController {
 		}
 	}
 
-	export async function getPost(req: Request, res: Response, session: ISession) {
+	export async function getPost(req: Request, res: Response, session: Readonly<ISession>) {
 		try {
 
 			if (!isNumber(req.params.postUrl)) {
@@ -354,7 +354,7 @@ export namespace BoardPostController {
 
 			let voteRecords = null
 			let isBookmarked = false
-			if (session && session.isLogined) {
+			if (session && session.loggedin) {
 				const boarddata = await UserSchema.getBoardData(session.userId)
 				if (!boarddata) {
 					res.status(401).end("")
@@ -378,7 +378,7 @@ export namespace BoardPostController {
 				let authorProfileImage = ""
 				authorProfileImage = await UserSchema.findProfileImageById(comm.author)
 				comment.push({
-					canModify: String(comm.author) === session.userId && session.isLogined,
+					canModify: String(comm.author) === session.userId && session.loggedin,
 					content: comm.content,
 					_id: String(comm._id),
 					upvotes: comm.upvote,
@@ -392,7 +392,7 @@ export namespace BoardPostController {
 				})
 			}
 			renderEjs(res, "post", {
-				canModify: String(post.author) === session.userId && session.isLogined,
+				canModify: String(post.author) === session.userId && session.loggedin,
 				comment: comment,
 				url: req.params.postUrl,
 				id: post._id,
@@ -401,7 +401,7 @@ export namespace BoardPostController {
 				image: post.imagedir,
 				views: post.views,
 				author: post.authorName,
-				logined: session.isLogined,
+				logined: session.loggedin,
 				upvotes: post.upvote,
 				downvotes: post.downvote,
 				createdAt: post.createdAt,

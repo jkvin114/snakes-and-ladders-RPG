@@ -85,7 +85,7 @@ router.post("/create_rpg", function (req: express.Request, res: express.Response
 router.post(
 	"/create",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		let body = req.body
 		let ismarble = req.body.type === "marble"
 		if (ismarble && !CONFIG.marble) {
@@ -126,8 +126,9 @@ router.post(
 		}
 		room.setHost(session.id).registerResetCallback(() => {
 			R.remove(rname)
-			delete session.roomname
-			delete session.turn
+			//delete session.roomname
+		//	delete session.turn
+			SessionManager.removeGameSession(session.id).then()
 		})
 		Logger.log("create room", rname)
 		if (body.password) room.setPassword(body.password)
@@ -135,11 +136,13 @@ router.post(
 		room.setSettings(body.loggedinOnly, body.isPrivate)
 
 		if (session) {
-			if ((!session.username || session.username === "") && !session.isLogined) {
-				session.username = randName()
+			if ((!session.username || session.username === "") && !session.loggedin) {
+			//	session.username = randName()
+				await SessionManager.setUsername(session.id,randName())
 			}
-			session.roomname = rname
-			session.turn = 0
+			//session.roomname = rname
+			await SessionManager.setRoomname(session.id,rname)
+			await SessionManager.setTurn(session.id,0)
 		}
 		//	console.log(session)
 		res.status(201).end(rname)
@@ -151,7 +154,7 @@ router.post(
 router.post(
 	"/join",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		let body = req.body
 
 		if (isUserInRPGRoom2(session)) {
@@ -160,19 +163,20 @@ router.post(
 		}
 		Logger.log("join room", session.id)
 		if (session) {
-			if ((!session.username || session.username === "") && !session.isLogined) {
-				session.username = randName()
+			if ((!session.username || session.username === "") && !session.loggedin) {
+				// session.username = randName()
+				await SessionManager.setUsername(session.id,randName())
 			}
-			session.turn = 1
+			await SessionManager.setTurn(session.id,1)
 		}
 	})
 )
 router.post(
 	"/home",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
-		session.ip = req.socket.remoteAddress
-		session.time = new Date()
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
+		//session.ip = req.socket.remoteAddress
+		//session.time = new Date()
 		let data = {
 			config: CONFIG,
 			reconnect: false,
@@ -189,7 +193,7 @@ router.post(
 router.post(
 	"/matching",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		//console.log(session)
 		Logger.log("access matching page", session.id)
 		if (session) {
@@ -215,7 +219,7 @@ router.post(
 	"/accept_invite",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const rname = req.body.roomname
 		let game =await SessionManager.getGameByUserId(session.userId)
 		if (game !== null) {
@@ -242,8 +246,8 @@ router.post(
 		}
 
 		//set guest session to detect if the user is successfully joined the room at matching page and socket connection
-		session.roomname = room.name
-
+		// session.roomname = room.name
+		await SessionManager.setRoomname(session.id,room.name)
 		NotificationSchema.deleteGameInvite(session.userId,room.name).then()
 	})
 )
@@ -252,7 +256,7 @@ router.post(
 	"/invite",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const invited = req.body.id
 		let game = await SessionManager.getGameByUserId(invited)
 		const guestsessions =await SessionManager.getSessionsByUserId(invited)
@@ -281,7 +285,7 @@ router.post(
 	"/cancel_invite",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const invited = req.body.id
 		let myroom = session.roomname
 		let room = R.getRoom(myroom)
@@ -294,15 +298,15 @@ router.post(
 router.get(
 	"/hosting",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		let li = []
 		for (let r of R.allRPG()) {
-			if (r.canJoinPublic(session.isLogined)) {
+			if (r.canJoinPublic(session.loggedin)) {
 				li.push(r.roomSummary)
 			}
 		}
 		for (let r of R.allMarble()) {
-			if (r.canJoinPublic(session.isLogined)) {
+			if (r.canJoinPublic(session.loggedin)) {
 				li.push(r.roomSummary)
 			}
 		}
@@ -313,25 +317,26 @@ router.get(
 router.post(
 	"/verify_join",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		let name = req.body.roomname
 
 		if (!R.hasRoom(name)) res.status(404).end()
 		else if (!R.getRoom(name).checkPassword(req.body.password)) res.status(401).json({ message: "password" })
-		else if (R.getRoom(name).isLoggedInUserOnly && !session.isLogined) res.status(401).json({ message: "login" })
+		else if (R.getRoom(name).isLoggedInUserOnly && !session.loggedin) res.status(401).json({ message: "login" })
 		else {
 			//set guest session to detect if the user is successfully joined the room at matching page and socket connection
-			session.roomname = name
+			// session.roomname = name
+			await SessionManager.setRoomname(session.id,name)
 
 			//set the guest username from client session storage if user is not logged in
-			if (!session.isLogined) session.username = randName()
+			if (!session.loggedin) await SessionManager.setUsername(session.id,randName())
 		}
 	})
 )
 router.post(
 	"/game",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		if (session.turn === undefined) {
 			Logger.warn("unauthorized access to the game page")
 			res.status(401).end()
@@ -339,8 +344,9 @@ router.post(
 		}
 		if (!R.hasRoom(session.roomname)) {
 			Logger.warn("access to unexisting game")
-			delete session.roomname
-			delete session.turn
+			// delete session.roomname
+			// delete session.turn
+			await SessionManager.removeGameSession(session.id)
 			res.status(401).end()
 			return
 		}
@@ -349,7 +355,7 @@ router.post(
 router.post(
 	"/spectate_rpg",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		Logger.log("spectate", session.id, req.body)
 		if (req.body.roomname) {
 			if (!R.hasRPGRoom(req.body.roomname) || !R.getRPGRoom(req.body.roomname).gameStatus) {
@@ -357,8 +363,10 @@ router.post(
 				res.status(404).end()
 				return
 			}
-			session.roomname = req.body.roomname
-			session.turn = -1
+			await SessionManager.setRoomname(session.id,req.body.roomname)
+			await SessionManager.setTurn(session.id,-1)
+			// session.roomname = req.body.roomname
+			// session.turn = -1
 
 			res.status(200).end(req.body.roomname)
 		} //find game that the user is currently in
@@ -374,8 +382,11 @@ router.post(
 				res.status(404).end()
 				return
 			}
-			session.roomname = roomname
-			session.turn = -1
+			await SessionManager.setRoomname(session.id,roomname)
+			await SessionManager.setTurn(session.id,-1)
+
+			// session.roomname = roomname
+			// session.turn = -1
 
 			res.status(200).end(roomname)
 		} else {
@@ -387,7 +398,7 @@ router.post(
 router.post(
 	"/simulation",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		if (!CONFIG.simulation) {
 			res.status(403).end()
 			return

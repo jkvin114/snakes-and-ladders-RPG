@@ -21,7 +21,7 @@ export function ChatControllerWrapper(socket:Socket,eventname:string,controller:
 		console.log(args)
 		const session = socket.data.session as ISession
 		console.log(session.username)
-		if(!session || !session.isLogined || !session.userId){
+		if(!session || !session.loggedin || !session.userId){
 			socket.emit("chat:error",{
 				eventname:eventname,
 				message:"invalid session or unauthorized"

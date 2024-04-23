@@ -23,7 +23,7 @@ router.get(
 	"/rooms",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const roomstatuses = await ChatRoomJoinStatusSchema.findByUserPopulated(session.userId)
 		let result: any[] = []
 		for (const status of roomstatuses) {
@@ -52,7 +52,7 @@ router.get(
 router.get(
 	"/users/:roomid",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const roomid = req.params.roomid
 		const users = await ChatRoomJoinStatusSchema.findByRoomPopulated(roomid)
 		res.json(users)
@@ -65,7 +65,7 @@ router.get(
 router.get(
 	"/message/:roomid",
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const roomid = req.params.roomid
 		const room = await ChatRoomSchema.findById(roomid)
 		if (!room) {
@@ -97,7 +97,7 @@ router.post(
 	"/room",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		let body = req.body
 		let users = body.users
 
@@ -158,7 +158,7 @@ router.post(
 	"/room/join",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const roomid = req.body.room
 		if (!(await ChatRoomSchema.findById(roomid))) {
 			res.status(404).send("invalid room")
@@ -182,7 +182,7 @@ router.post(
 	"/room/quit",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: Request, res: Response, session: ISession) {
+	ControllerWrapper(async function (req: Request, res: Response, session: Readonly<ISession>) {
 		const roomid = req.body.room
 		// delete session.currentChatRoom
 		await SessionManager.onLeaveChatRoom(session,roomid)

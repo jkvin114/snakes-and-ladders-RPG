@@ -17,6 +17,8 @@ services:
       - "6379:6379"
     volumes:
       - ./volume/redis_data:/data
+    environment:
+      - RI_APP_HOST=0.0.0.0
   marble:
     build: 
       context: ./marble
@@ -44,7 +46,7 @@ services:
       - 5000:5000 #expose port for access of local machine
     working_dir: /app
     depends_on:
-      - stockgame
+      #- stockgame
       - marble
       - redis-server
     volumes:
@@ -52,6 +54,6 @@ services:
       - ./volume/image/post:/app/res/image/post  #mount /app/res/image/post directory to local /volume/image/post folder in volume for persistence
       - ./volume/logs:/app/logs
     environment:
-      STOCKGAME_HOST: stockgame
+     # STOCKGAME_HOST: stockgame
       MARBLE_HOST: marble
       REDIS_HOST: redis-server

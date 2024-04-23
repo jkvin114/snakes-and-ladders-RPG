@@ -81,7 +81,7 @@ module.exports=function(socket:Socket){
 			let username =await SocketSession.getUsername(socket)
 			
 			let turn = room.addGuestToPlayerList(username,await SocketSession.getUserClass(socket),socket)
-			SocketSession.setTurn(socket, turn)
+			await SocketSession.setTurn(socket, turn)
 
 			socket.emit("server:guest_register", turn, room.getPlayerList())
 			socket.broadcast.to(rname).emit("server:update_playerlist", room.getPlayerList())

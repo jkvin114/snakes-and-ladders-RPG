@@ -92,7 +92,7 @@ router.post(
 	loginauth,
 	sessionParser,
 	ImageUploader.uploadProfile.single("img"),
-	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
+	ControllerWrapper(async function (req: express.Request, res: express.Response, session: Readonly<ISession>) {
 		const imgfile = req.file
 		try {
 			if (imgfile) await UserSchema.updateProfileImage(session.userId, imgfile.filename)
@@ -109,7 +109,7 @@ router.post(
 	"/remove_profileimg",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
+	ControllerWrapper(async function (req: express.Request, res: express.Response, session: Readonly<ISession>) {
 		try {
 			await UserSchema.updateProfileImage(session.userId, "")
 			Logger.log(session.username,"remove profile image")
@@ -123,7 +123,7 @@ router.post(
 
 router.get("/", sessionParser, async function (req: express.Request, res: express.Response) {
 	const session = res.locals.session
-	if (!session || !session.isLogined) {
+	if (!session || !session.loggedin) {
 		res.status(401).redirect("/")
 		return
 	}
@@ -188,7 +188,7 @@ router.post("/register", async function (req: express.Request, res: express.Resp
 
 router.post("/current", async function (req: express.Request, res: express.Response) {
 	const session =await SessionManager.getSession(req)
-	if (session && session.isLogined) {
+	if (session && session.loggedin) {
 		res.end(session.username)
 	} else res.end("")
 })
@@ -219,7 +219,7 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 		}
 		if (session) {
 			await SessionManager.login(req,String(user._id),user.username)
-			session.username = user.username
+			await SessionManager.setUsername(session.id,user.username)
 			if (user.boardData == null) {
 				Logger.log("added board data",user.username)
 				let boardData = await UserBoardDataSchema.create({
@@ -232,8 +232,9 @@ router.post("/login", async function (req: express.Request, res: express.Respons
 				})
 				user = await User.setBoardData(user._id, boardData._id)
 			}
-			session.boardDataId = String(user.boardData)
-			Logger.log(session.username + " has logged in")
+			await SessionManager.setBoardDataId(session.id,String(user.boardData))
+
+			Logger.log(user.username + " has logged in")
 		}
 		else{
 			return res.status(401).send("session does not exist")
@@ -271,7 +272,7 @@ router.patch(
 	"/password",
 	loginauth,
 	sessionParser,
-	ControllerWrapper(async function (req: express.Request, res: express.Response, session: ISession) {
+	ControllerWrapper(async function (req: express.Request, res: express.Response, session: Readonly<ISession>) {
 		let body = req.body
 		let user = await User.findById(session.userId)
 

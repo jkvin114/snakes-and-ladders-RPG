@@ -15,7 +15,7 @@ export const loginauth = async (req: Request, res: Response, next: NextFunction)
 	// return
     const session =await SessionManager.getSession(req)
 	try {
-		if ( session && session.isLogined && session.userId) {
+		if ( session && session.loggedin && session.userId) {
 			next()
 		} else {
 			res.status(401).end("unauthorized")

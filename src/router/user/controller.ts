@@ -10,7 +10,7 @@ import { Logger } from "../../logger"
 import { FriendRequestCache } from "../../cache"
 
 export namespace UserController {
-	export async function getProfile(req: Request, res: Response, session: ISession) {
+	export async function getProfile(req: Request, res: Response, session: Readonly<ISession>) {
 		const user = await UserSchema.findOneByUsername(req.params.username)
 		if (!user) {
 			Logger.warn("user not found: ",req.params.username)
@@ -41,7 +41,7 @@ export namespace UserController {
 			rpgcount
 		]
 
-		if (session.isLogined) {
+		if (session.loggedin) {
 			isFriend = await UserRelationSchema.isFriendWith(session.userId, user._id)
 			isFollowing = await UserRelationSchema.isFollowTo(session.userId, user._id)
 			if(!isFriend)
@@ -54,29 +54,29 @@ export namespace UserController {
 			username: user.username,
 			email: user.email,
 			profile: user.profileImgDir,
-			isme: session.isLogined && session.userId === String(user._id),
-			isadmin: user.role === "admin" && session.isLogined && session.userId === String(user._id),
-			isLogined: session.isLogined,
+			isme: session.loggedin && session.userId === String(user._id),
+			isadmin: user.role === "admin" && session.loggedin && session.userId === String(user._id),
+			isLogined: session.loggedin,
 			counts: counts,
 			id:String(user._id)
 		})
 	}
 
 	
-	export async function follow(req: Request, res: Response, session: ISession) {
+	export async function follow(req: Request, res: Response, session: Readonly<ISession>) {
 		const id = await UserSchema.findIdByUsername(req.body.username)
 		if (!id) throw Error("invaild username")
 		let result = await UserRelationSchema.addFollow(session.userId, id)
 		if (!result) console.error("follow failed")
 	}
-	export async function unfollow(req: Request, res: Response, session: ISession) {
+	export async function unfollow(req: Request, res: Response, session: Readonly<ISession>) {
 		const id = await UserSchema.findIdByUsername(req.body.username)
 		if (!id) throw Error("invaild username")
 		let result = await UserRelationSchema.deleteFollow(session.userId, id)
 		if (!result) console.error("unfollow failed")
 	}
 
-	export async function getFriend(req: Request, res: Response, session: ISession) {
+	export async function getFriend(req: Request, res: Response, session: Readonly<ISession>) {
 		const user = await UserSchema.findOneByUsername(req.params.username)
 		if (!user) {
 			res.status(404).end()
@@ -88,7 +88,7 @@ export namespace UserController {
 		const friends = await UserSchema.findAllSummaryByIdList(friendIds as mongoose.Types.ObjectId[])
 		
 		let data: IFriend[] = []
-		const login = session.isLogined && session.userId
+		const login = session.loggedin && session.userId
 		const requested = login ?  await FriendRequestCache.getRequested(session.userId):null
 
 		for (const fr of friends) {
@@ -108,7 +108,7 @@ export namespace UserController {
 		res.json(data)
 	}
 
-	export async function getFollowing(req: Request, res: Response, session: ISession) {
+	export async function getFollowing(req: Request, res: Response, session: Readonly<ISession>) {
 		const user = await UserSchema.findOneByUsername(req.params.username)
 		if (!user) {
 			res.status(404).end()
@@ -118,7 +118,7 @@ export namespace UserController {
 		const followIds = await UserRelationSchema.findFollows(user._id)
 		const follows = await UserSchema.findAllSummaryByIdList(followIds as mongoose.Types.ObjectId[])
 		let data: IFollow[] = []
-		const login = session.isLogined && session.userId
+		const login = session.loggedin && session.userId
 		for (const fr of follows) {
 			let fol = false
 			if (login && (await UserRelationSchema.isFollowTo(session.userId, fr._id))) fol = true
@@ -134,7 +134,7 @@ export namespace UserController {
 		res.json(data)
 	}
 
-	export async function getFollower(req: Request, res: Response, session: ISession) {
+	export async function getFollower(req: Request, res: Response, session: Readonly<ISession>) {
 		const user = await UserSchema.findOneByUsername(req.params.username)
 		if (!user) {
 			res.status(404).end()
@@ -144,7 +144,7 @@ export namespace UserController {
 		const followIds = await UserRelationSchema.findFollowers(user._id)
 		const follows = await UserSchema.findAllSummaryByIdList(followIds as mongoose.Types.ObjectId[])
 		let data: IFollow[] = []
-		const login = session.isLogined && session.userId
+		const login = session.loggedin && session.userId
 		for (const fr of follows) {
 			let fol = false
 			if (login && (await UserRelationSchema.isFollowTo(session.userId, fr._id))) fol = true

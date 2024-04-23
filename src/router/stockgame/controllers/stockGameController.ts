@@ -15,7 +15,7 @@ import { NotificationController } from "../../../social/notificationController"
 export namespace StockGameController {
 	const LEADERBOARD_PAGE_SIZE = 100
 	const version = "2"
-	export async function generateChart(req: Request, res: Response, session: ISession) {
+	export async function generateChart(req: Request, res: Response, session: Readonly<ISession>) {
 		const variance = req.query.variance
 		const scale = req.query.scale
 		const data = await generateStockChart(Number(variance),Number(scale),String(version))
@@ -49,7 +49,7 @@ export namespace StockGameController {
 
 		res.json({ result: result }).end()
 	}
-	export async function getUserLobbyInfo(req: Request, res: Response,session:ISession) {
+	export async function getUserLobbyInfo(req: Request, res: Response,session:Readonly<ISession>) {
 		const userId = session.userId
 		const alltime = await StockGameSchema.findAllTimeBestByUser(String(userId))
 		const records = await StockGameSchema.findRecordsByUser(String(userId))
@@ -93,7 +93,7 @@ export namespace StockGameController {
 			})
 			.end()
 	}
-	export async function getFriendBestScores(req: Request, res: Response, session: ISession) {
+	export async function getFriendBestScores(req: Request, res: Response, session: Readonly<ISession>) {
 		const friends = (await UserRelationSchema.findFriends(session.userId)) as MongoId[]
 		friends.push(session.userId)
 
@@ -150,7 +150,7 @@ export namespace StockGameController {
 		res.json({ better: better, total: total }).end()
 	}
 
-	async function getPassedFriendsAndRank(session: ISession, newScore: number, oldScore: number): Promise<[IPassedFriend[],number]> {
+	async function getPassedFriendsAndRank(session: Readonly<ISession>, newScore: number, oldScore: number): Promise<[IPassedFriend[],number]> {
 		const friends = await UserRelationSchema.findFriends(session.userId)
 		const passedscores = await StockGameSchema.findBestsByUsersInScoreRange(friends as MongoId[], oldScore, newScore)
 		const rank = await StockGameSchema.findRankInUsers(friends as MongoId[],newScore)
@@ -159,16 +159,16 @@ export namespace StockGameController {
 		}),rank+1]
 	}
 
-	export async function postResult(req: Request, res: Response, session: ISession) {
+	export async function postResult(req: Request, res: Response, session: Readonly<ISession>) {
 		const game = req.body.result
-		if (!game || (!session.isLogined && !req.body.username)) {
+		if (!game || (!session.loggedin && !req.body.username)) {
 			res.status(400).end("empty result or username")
 			return
 		}
-		const username = session.isLogined ? session.username : req.body.username
+		const username = session.loggedin ? session.username : req.body.username
 
 		const gameresult = {...game,
-			user: session.isLogined ? session.userId : null,
+			user: session.loggedin ? session.userId : null,
 			chartgenVersion:version
 		}
 
@@ -186,7 +186,7 @@ export namespace StockGameController {
 			score: gamedata.score,
 			isNewBest: false,
 		}
-		if (session.isLogined) {
+		if (session.loggedin) {
 			StockGameUserSchema.incrementTotalGames(session.userId).then()
 
 			const lastbest = await StockGameSchema.findRecentBestByUser(session.userId)

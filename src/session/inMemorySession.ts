@@ -1,13 +1,12 @@
 import {Request} from 'express';
-import {  getNewJwt, getSessionId, getSessionIdFromSocket } from "./jwt"
+import  * as Auth from "./jwt"
 import { v4 as uuidv4 } from 'uuid';
-import type { Socket } from 'socket.io';
-import { Counter } from '../RPGGame/core/Util';
+import { Counter } from '../util';
 import { MongoId } from '../mongodb/types';
 import { R } from '../Room/RoomStorage';
 import { UserSchema } from '../mongodb/schemaController/User';
 import { User } from '../mongodb/UserDBSchema';
-import type { ISession } from './ISession';
+import { STATUS_PRIPROTY, type ISession, type IUserStatus } from './ISession';
 import ISessionManager from './ISessionManager';
 
 // export interface ISession{
@@ -23,7 +22,10 @@ import ISessionManager from './ISessionManager';
 //     ip?:string
 // }
 
-export interface IUserStatus{
+
+
+
+interface InMemoryUserStatus{
     sessionIds:Set<string>
     chatRooms:Set<string>
     sockets:Counter<string>
@@ -31,13 +33,9 @@ export interface IUserStatus{
     lastActive?:Date
 }
 
-const STATUS_PRIPROTY = [
-    "rpggame","marblegame","matching","rpgspectate"
-]
-
 export class InMemorySession implements ISessionManager{
     private SessionStore = new Map<string,ISession>()
-    private UserStatus = new Map<string,IUserStatus>()  // user id  => status
+    private UserStatus = new Map<string,InMemoryUserStatus>()  // user id  => status
   
     private static instance: InMemorySession;
 
@@ -51,6 +49,9 @@ export class InMemorySession implements ISessionManager{
       this.instance = new InMemorySession();
       return this.instance;
     }
+    async onStart(): Promise<void> {
+        
+    }
     async setTurn(id: string, turn: number): Promise<void> {
         if(!this.SessionStore.has(id)) return
         this.SessionStore.get(id).turn=turn
@@ -58,6 +59,14 @@ export class InMemorySession implements ISessionManager{
     async setRoomname(id: string, roomname: string): Promise<void> {
         if(!this.SessionStore.has(id)) return
         this.SessionStore.get(id).roomname=roomname
+    }
+    async setUsername(id: string, username: string): Promise<void> {
+        if(!this.SessionStore.has(id)) return
+        this.SessionStore.get(id).username=username
+    }
+    async setBoardDataId(id: string, boarddataid: string): Promise<void> {
+        if(!this.SessionStore.has(id)) return
+        this.SessionStore.get(id).boardDataId=boarddataid
     }
     async removeGameSession(id: string): Promise<void> {
         if(!this.SessionStore.has(id)) return
@@ -72,7 +81,7 @@ export class InMemorySession implements ISessionManager{
         let users=[]
         for(const [id,status] of this.UserStatus.entries()){
             users.push({
-                id:id,
+                userId:id,
                 username:status.username,
                 chatRooms:[...status.chatRooms],
                 sessionIds:[...status.sessionIds],
@@ -98,58 +107,58 @@ export class InMemorySession implements ISessionManager{
     async createSession(){
         
         const id = uuidv4()
-        this.SessionStore.set(id,{id:id,isLogined:false,time:new Date()})
-        return getNewJwt(id)
+        this.SessionStore.set(id,{id:id,loggedin:false,time:new Date()})
+        return Auth.getNewJwt(id)
     }
     async getSessionById(id:string){
         return this.SessionStore.get(id)
     }
     async getSession(req:Request){
         
-        let id= getSessionId(req)
+        let id= Auth.getSessionId(req)
         return this.SessionStore.get(id)
     }
     async deleteSession(req:Request){
-        let id= getSessionId(req)
+        let id= Auth.getSessionId(req)
         this.SessionStore.delete(id)
     }
     async isValid(req:Request){
-        let id= getSessionId(req)
+        let id= Auth.getSessionId(req)
         return this.SessionStore.has(id)
     }
-    private isLoginValid(session:ISession){
-        if(!session || !session.isLogined || !session.userId || !this.UserStatus.has(session.userId)) return false
+    async isLoginValid(session:ISession){
+        if(!session || !session.loggedin || !session.userId || !this.UserStatus.has(session.userId)) return false
         return true
     }
     async onEnterChatRoom(session:ISession,roomId:MongoId){
-        if(!this.isLoginValid(session)) return
+        if(!await this.isLoginValid(session)) return
         this.UserStatus.get(session.userId).chatRooms.add(String(roomId))
 
     }
     async onLeaveChatRoom(session:ISession,roomId:MongoId){
-        if(!this.isLoginValid(session)) return
+        if(!await this.isLoginValid(session)) return
         this.UserStatus.get(session.userId).chatRooms.delete(String(roomId))
     }
     async isUserInChatRoom(userId:MongoId,roomId:MongoId){
-        if(!this.UserStatus.has(String(userId))) return false
+        if(!await this.UserStatus.has(String(userId))) return false
         return this.UserStatus.get(String(userId)).chatRooms.has(String(roomId))
     }
     async onSocketConnect(session:ISession,type:string){
-        if(!this.isLoginValid(session) || !type) return
+        if(!await this.isLoginValid(session) || !type) return
         this.UserStatus.get(session.userId).sockets.add(type)
         
     }
      async  onSocketAccess(session:ISession){
-        if(!this.isLoginValid(session)) return
+        if(!await this.isLoginValid(session)) return
         this.UserStatus.get(session.userId).lastActive = new Date()
         
     }
     async onSocketDisconnect(session:ISession,type:string){
-        if(!this.isLoginValid(session) || !type) return
+        if(!await this.isLoginValid(session) || !type) return
 
         this.UserStatus.get(session.userId).sockets.delete(type)
         this.UserStatus.get(session.userId).lastActive = new Date()
-        UserSchema.updateLastActive(session.userId).then()
+        //UserSchema.updateLastActive(session.userId).then()
     }
     async getGameByUserId(userId:string){
         const status = this.UserStatus.get(userId)
@@ -188,8 +197,8 @@ export class InMemorySession implements ISessionManager{
     }
     async login(req:Request,userId:string,username:string){
         try{
-            let id= getSessionId(req)
-            this.SessionStore.get(id).isLogined=true
+            let id= Auth.getSessionId(req)
+            this.SessionStore.get(id).loggedin=true
             this.SessionStore.get(id).userId=userId
          //   SessionIds.set(userId,id)
             if(this.UserStatus.has(userId)){
@@ -213,9 +222,9 @@ export class InMemorySession implements ISessionManager{
     }
     async logout(req:Request){
         try{
-            let id= getSessionId(req)
+            let id= Auth.getSessionId(req)
             const session = this.SessionStore.get(id)
-            session.isLogined=false
+            session.loggedin=false
            // SessionIds.delete(session.userId)
            if(this.UserStatus.has(session.userId)){
                 this.UserStatus.get(session.userId).sessionIds.delete(id)

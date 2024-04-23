@@ -8,7 +8,7 @@ import { COUNT_PER_PAGE, renderEjs } from "../helpers"
 import type { Request, Response } from "express"
 
 export namespace BoardController {
-	export async function allPost(req: Request, res: Response, session: ISession) {
+	export async function allPost(req: Request, res: Response, session: Readonly<ISession>) {
 		let start = 0
 		let count = COUNT_PER_PAGE
 		if (req.query.start) {
@@ -21,7 +21,7 @@ export namespace BoardController {
 		renderEjs(res, "postlist", {
 			displayType: "all",
 			posts: data,
-			logined: session.isLogined,
+			logined: session.loggedin,
 			user: null,
 			count: count,
 			start: start,
@@ -29,7 +29,7 @@ export namespace BoardController {
 		})
 	}
 
-    export async function addBookmark(req: Request, res: Response, session: ISession) {
+    export async function addBookmark(req: Request, res: Response, session: Readonly<ISession>) {
 		const boardDataId = await UserSchema.getBoardData(session.userId)
 		if(!boardDataId) return
 		const bookmarks = await UserBoardDataSchema.getBookmarks(boardDataId)

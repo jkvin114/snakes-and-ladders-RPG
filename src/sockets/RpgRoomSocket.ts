@@ -90,7 +90,7 @@ module.exports=function(socket:Socket){
 					await SocketSession.setTurn(socket,newturn)
 					
 					const session = await SocketSession.getSession(socket)
-					if(session.isLogined){
+					if(session.loggedin){
 						room.addRegisteredUser(newturn,session.userId,session.username)
 					}
 				}

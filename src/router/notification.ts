@@ -12,7 +12,7 @@ import { NotificationController } from "../social/notificationController"
 /**
  * return all notifications of this user
  */
-router.get("/all",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
+router.get("/all",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: Readonly<ISession>) {
     const notis = await NotificationSchema.findAll(session.userId)
     NotificationSchema.setAccessed(session.userId)
     res.json(notis)
@@ -21,17 +21,17 @@ router.get("/all",loginauth,sessionParser,ControllerWrapper(async function(req: 
  /**
   * return new notifications of this user once new notifications are posted
  */
-router.get("/poll",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
+router.get("/poll",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: Readonly<ISession>) {
 
     const notis = await NotificationController.poll(session.userId)
     res.json(notis)
  }))
- router.post("/delete",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
+ router.post("/delete",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: Readonly<ISession>) {
      await NotificationSchema.deleteById(req.body.id)
 }))
 
  
- router.post("/test",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: ISession) {
+ router.post("/test",loginauth,sessionParser,ControllerWrapper(async function(req: Request, res: Response, session: Readonly<ISession>) {
     let message = req.body.message
     NotificationSchema.createTest(message,session.userId)
    await NotificationCache.post(session.userId)

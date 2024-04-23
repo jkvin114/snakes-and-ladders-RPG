@@ -18,7 +18,7 @@ export namespace SocketSession {
 		return (await getSession(socket))?.username
 	}
 	export async function getUserClass(socket: Socket) {
-		return (await getSession(socket))?.isLogined?1:0
+		return (await getSession(socket))?.loggedin?1:0
 	}
 	export async function setTurn(socket: Socket, turn: number) {
 		const session=await getSession(socket)
@@ -53,7 +53,7 @@ export namespace SocketSession {
 		// delete session.turn 
 		// delete session.roomname
 	}
-	export function print(socket: Socket){
-		console.log(getSession(socket))
+	export async function print(socket: Socket){
+		console.log(await getSession(socket))
 	}
 }

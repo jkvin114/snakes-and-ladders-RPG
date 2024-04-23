@@ -3,7 +3,7 @@ import { ISession } from '../session/ISession';
 import { Logger } from '../logger';
 
 export type IController={
-    (req:Request,res:Response,session:ISession):Promise<void>
+    (req:Request,res:Response,session:Readonly<ISession>):Promise<void>
 }
 export type INoSessionController={
     (req:Request,res:Response):Promise<void>

@@ -1,5 +1,5 @@
 export interface ISession{
-    isLogined:boolean
+    loggedin:boolean
     id:string
     time:Date
     
@@ -10,3 +10,23 @@ export interface ISession{
     turn?:number
     ip?:string
 }
+
+export interface IUserStatus{
+    userId: string; 
+    username: string; 
+    chatRooms: string[]; 
+    sessionIds: string[]; 
+    lastActive: Date; 
+    sockets: string[];
+}
+export enum SocketStatus{
+   RPGGAME= "rpggame",
+   MARBLEGAME="marblegame",
+   MATCHING="matching",
+   RPGSPECTATE="rpgspectate"
+}
+export const STATUS_PRIPROTY = [
+   SocketStatus.RPGGAME,SocketStatus.MARBLEGAME,SocketStatus.MATCHING,
+   SocketStatus.RPGSPECTATE
+]
+export type SessionProps = "loggedin"|"id"|"time"|"userId"|"username"|"boardDataId"|"roomname"|"turn"|"ip"

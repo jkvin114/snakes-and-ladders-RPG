@@ -30,6 +30,7 @@ import { SocketSession } from "./sockets/SocketSession"
 import { Logger } from "./logger"
 import { UserCache } from "./cache"
 import { RedisClient } from "./redis/redis"
+import { UserSchema } from "./mongodb/schemaController/User"
 
 declare module 'express-session' {
 	interface SessionData {
@@ -47,7 +48,7 @@ declare module 'express-session' {
 // import session from 'express-session';
 
 interface Locals {
-  session: ISession;
+  session: Readonly<ISession>;
 }
 
 declare module 'express' {
@@ -93,11 +94,7 @@ const REDIS = process.env.REDIS_HOST
 const REDIS_PORT = process.env.REDIS_PORT?process.env.REDIS_PORT:6379
 if(REDIS)
 	RedisClient.connect(REDIS,Number(REDIS_PORT),async ()=>{
-		console.log(RedisClient.isAvailable())
-			console.log(await RedisClient.ping())
-			await RedisClient.set("1","1")
-			let val = await RedisClient.get("ggg")	
-			console.log(val)
+		await SessionManager.onStart()
 	})
 //==============================================
 
@@ -210,6 +207,9 @@ io.on("connection", async function (socket: Socket) {
 	socket.on("disconnect",async function(){
 		const session = socket.data.session
 		SessionManager.onSocketDisconnect(session,socket.data.type).then()
+		if(await SessionManager.isLoginValid(session))
+			UserSchema.updateLastActive(session.userId).then()
+
 	})
 })
 

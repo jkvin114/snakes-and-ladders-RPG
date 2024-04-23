@@ -1,8 +1,9 @@
 import Redis from "ioredis"
 import { Logger } from "../logger"
 
+//npx redis-commander --redis-host localhost
 export namespace RedisClient {
-	let redisClient: any = null
+	let redisClient: Redis = null
 
 	export function connect(host: string, port: number, callback: Function) {
 		Logger.log("redis host:" + host + ":" + port)
@@ -27,6 +28,31 @@ export namespace RedisClient {
 		if (!redisClient) return
 		try {
 			await redisClient.hset(key, obj)
+		} catch (e) {
+			Logger.error("Redis Client Error", e)
+		}
+	}
+	export async function setObjProp<TProp extends string>(key: string, prop:TProp,val:string):Promise<void> {
+		if (!redisClient) return
+		try {
+			await redisClient.hset(key, prop,val)
+		} catch (e) {
+			Logger.error("Redis Client Error", e)
+		}
+	}
+	export async function getObjProp<TProp extends string>(key: string, prop:TProp):Promise<string|null> {
+		if (!redisClient) return null
+		try {
+			await redisClient.hget(key, prop)
+		} catch (e) {
+			Logger.error("Redis Client Error", e)
+			return null
+		}
+	}
+	export async function removeObjProp<TProp extends string>(key: string, prop:TProp):Promise<void> {
+		if (!redisClient) return
+		try {
+			await redisClient.hdel(key, prop)
 		} catch (e) {
 			Logger.error("Redis Client Error", e)
 		}
@@ -134,6 +160,16 @@ export namespace RedisClient {
 		} catch (e) {
 			Logger.error("Redis Client Error", e)
 			return []
+		}
+	}
+	export async function clearAll(pattern: string): Promise<void> {
+		if (!redisClient) return 
+		try {
+			const keys = await redisClient.keys(pattern);
+			if(keys.length>0)
+				await redisClient.del(...keys);
+		} catch (e) {
+			Logger.error("Redis Client Error", e)
 		}
 	}
 }

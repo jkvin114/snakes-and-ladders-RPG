@@ -143,7 +143,7 @@ module.exports = function (socket: Socket) {
 					await SocketSession.setTurn(socket, gameturn) //세선에 저장되있는 턴 진짜 게임 턴으로 변경
 					
 					const session = await SocketSession.getSession(socket)
-					if(session.isLogined){
+					if(session.loggedin){
 						room.addRegisteredUser(gameturn,session.userId,session.username)
 					}
 

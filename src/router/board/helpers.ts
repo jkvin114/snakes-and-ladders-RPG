@@ -66,7 +66,7 @@ export const adminauth = async(req: express.Request, res: express.Response, next
 	// return
 	const session =await SessionManager.getSession(req)
 	try {
-		if (!session.isLogined) {
+		if (!session.loggedin) {
 			res.status(401).end("unauthorized")
 		} else {
 			const user = await User.findById(session.userId)
@@ -101,14 +101,14 @@ export const postRoleChecker =  async (req: express.Request, res: express.Respon
 		}
 
 		const post=await PostSchema.findOneByArticleId(Number(req.params.postUrl))
-		const session=res.locals.session
+		const session:Readonly<ISession>=res.locals.session
 		if(!post) {
 			res.status(401).end("You are not allowed to view this post!")
 			return
 		}
 		let isfriend=false
 		let currentUser:mongoose.Types.ObjectId|null=new ObjectID(session.userId)
-		if(session.isLogined && session.userId){
+		if(session.loggedin && session.userId){
 			isfriend=await UserRelationSchema.isFriendWith(session.userId,post.author)
 		}
 		if(isPostVisibleToUser(post.visibility,post.author,currentUser,isfriend)) next()
@@ -124,8 +124,7 @@ export const postRoleChecker =  async (req: express.Request, res: express.Respon
 export const voteController = async function (req: express.Request, res: express.Response, type: ContentType) {
 	const id = new ObjectID(req.body.id) as mongoose.Types.ObjectId
 	let voters: { upvoters: mongoose.Types.ObjectId[]; downvoters: mongoose.Types.ObjectId[] }|null=null
-	console.log(type)
-	const session = res.locals.session
+	const session:Readonly<ISession> = res.locals.session
 	try{
 		if (type === ContentType.POST) {
 			voters = await PostSchema.getVotersById(id)
@@ -265,11 +264,11 @@ export function isPostVisibleToUser(
  * @param isLinkOnlyAllowed true if link-only posts should be visible
  * @returns 
  */
-export function filterPostSummary(session:ISession,posts:SchemaTypes.Article[],isLinkOnlyAllowed:boolean):Promise<SchemaTypes.Article[]>{
+export function filterPostSummary(session:Readonly<ISession>,posts:SchemaTypes.Article[],isLinkOnlyAllowed:boolean):Promise<SchemaTypes.Article[]>{
 	return new Promise(async (resolve,reject)=>{
 		let friends:any[]=[]
 		let currentUser:mongoose.Types.ObjectId|null=null
-		if(session.isLogined){
+		if(session.loggedin){
 			currentUser=new ObjectID(session.userId)
 			friends=await UserRelationSchema.findFriends(currentUser)
 		}

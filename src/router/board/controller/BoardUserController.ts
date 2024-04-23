@@ -10,7 +10,7 @@ import { UserSchema } from "../../../mongodb/schemaController/User"
 import mongoose from "mongoose"
 
 export namespace BoardUserController {
-	export async function allPost(req: Request, res: Response, session: ISession) {
+	export async function allPost(req: Request, res: Response, session: Readonly<ISession>) {
 		let start = 0
 		let count = COUNT_PER_PAGE
 		if (req.query.start) {
@@ -26,7 +26,7 @@ export namespace BoardUserController {
 		renderEjs(res, "postlist", {
 			displayType: "user",
 			posts: postlist,
-			logined: session.isLogined,
+			logined: session.loggedin,
 			user: req.params.username,
 			start: start,
 			count: count,
@@ -34,7 +34,7 @@ export namespace BoardUserController {
 		})
 	}
 
-	export async function likes(req: Request, res: Response, session: ISession) {
+	export async function likes(req: Request, res: Response, session: Readonly<ISession>) {
 		let start = 0
 		let count = COUNT_PER_PAGE
 		if (req.query.start) {
@@ -55,14 +55,14 @@ export namespace BoardUserController {
 		renderEjs(res, "postlist", {
 			displayType: "userlikes",
 			posts: postlist,
-			logined: session.isLogined,
+			logined: session.loggedin,
 			user: req.params.username,
 			start: start,
 			count: count,
 			isEnd: start + count >= total,
 		})
 	}
-	export async function bookmarks(req: Request, res: Response, session: ISession) {
+	export async function bookmarks(req: Request, res: Response, session: Readonly<ISession>) {
 		let start = 0
 		let count = COUNT_PER_PAGE
 		if (req.query.start) {
@@ -86,7 +86,7 @@ export namespace BoardUserController {
 		renderEjs(res, "postlist", {
 			displayType: "bookmarks",
 			posts: postlist,
-			logined: session.isLogined,
+			logined: session.loggedin,
 			user: req.params.username,
 			start: start,
 			count: count,
@@ -94,7 +94,7 @@ export namespace BoardUserController {
 		})
 	}
 
-	export async function comments(req: Request, res: Response, session: ISession) {
+	export async function comments(req: Request, res: Response, session: Readonly<ISession>) {
 		let start = 0
 		let count = COUNT_PER_PAGE
 		let sortby = "new" ///new,old,upvote
@@ -180,7 +180,7 @@ export namespace BoardUserController {
 
 		//	console.log(list)
 		renderEjs(res, "comments", {
-			canModify: String(user._id) === session.userId && session.isLogined,
+			canModify: String(user._id) === session.userId && session.loggedin,
 			user: req.params.username,
 			comments: list,
 			start: start,

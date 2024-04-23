@@ -141,7 +141,7 @@ async function fetchdata() {
 			str += `
             <tr>
                 <td>${us.username}</td>
-                <td>${us.id}</td>
+                <td>${us.userId}</td>
                 <td>${us.lastActive}</td>
                 <td>${us.sockets.join(",")}</td>
                 <td>${us.sessionIds.join(",")}</td>
