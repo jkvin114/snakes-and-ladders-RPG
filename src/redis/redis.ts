@@ -172,4 +172,14 @@ export namespace RedisClient {
 			Logger.error("Redis Client Error", e)
 		}
 	}
+	export async function allKeys(pattern: string): Promise<string[]> {
+		if (!redisClient) return 
+		try {
+			const keys = await redisClient.keys(pattern);
+			return keys
+		} catch (e) {
+			Logger.error("Redis Client Error", e)
+		}
+	}
+
 }

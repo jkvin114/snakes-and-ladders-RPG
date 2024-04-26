@@ -20,18 +20,20 @@ function connectSocket(url) {
 		// $("#individual").removeClass("disabled")
 
 		// $("#connection").html("")
-
-		let param = new URLSearchParams(window.location.search)
-		if (param.get("join") !== "true") {
-			ServerConnection.makeroom()
-			MATCH.ui.revealContent()
-			MATCH.addAI(1)
-		} else {
-			let roomname = param.get("roomname")
-			$("#rname").html("Room name: " + roomname)
-			ServerConnection.register(roomname)
-			MATCH.setAsGuest()
-		}
+		setTimeout(() => {
+			let param = new URLSearchParams(window.location.search)
+			if (param.get("join") !== "true") {
+				ServerConnection.makeroom()
+				MATCH.ui.revealContent()
+				console.log("Add one AI")
+				MATCH.addAI(1)
+			} else {
+				let roomname = param.get("roomname")
+				$("#rname").html("Room name: " + roomname)
+				ServerConnection.register(roomname)
+				MATCH.setAsGuest()
+			}
+		}, 1000)
 	})
 
 	// socket.on("server:create_room", function (roomname) {})

@@ -127,7 +127,7 @@ async function fetchdata() {
             <tr>
                 <td>${us.username}</td>
                 <td>${us.time}</td>
-                <td>${us.isLogined}</td>
+                <td>${us.loggedin}</td>
                 <td>${us.roomname}</td>
                 <td>${us.turn}</td>
              </tr>

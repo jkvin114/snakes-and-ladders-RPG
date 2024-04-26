@@ -23,8 +23,8 @@ export class RedisSession implements ISessionManager {
 
     }
     async onStart(): Promise<void> {
-        RedisClient.clearAll(this.statusPrefix_sockets+"*").then()
-        RedisClient.clearAll(this.statusPrefix_chatrooms+"*").then()
+       await RedisClient.clearAll(this.statusPrefix_sockets+"*").then()
+       await RedisClient.clearAll(this.statusPrefix_chatrooms+"*").then()
     }
 
 	static getInstance() {
@@ -85,7 +85,7 @@ export class RedisSession implements ISessionManager {
 		await RedisClient.removeObjProp<SessionProps>(this.sessionPrefix + id, "roomname")
 	}
 	private async getUserStatus(userId: string): Promise<IUserStatus | null> {
-		if (await this.hasSession(userId)) return null
+		if (!(await this.hasSession(userId))) return null
         let sockets=await RedisClient.get(this.statusPrefix_sockets + userId)
 		return {
 			userId: userId,
@@ -97,10 +97,22 @@ export class RedisSession implements ISessionManager {
 		}
 	}
 	async getAll(): Promise<ISession[]> {
-		throw new Error("Method not implemented.")
+		let keys = await RedisClient.allKeys(this.sessionPrefix+"*")
+		let all = []
+		for(const key of keys){
+			all.push(await this.getSessionById(key.split(":")[1]))
+		}
+		return all
 	}
 	async getAllUsers(): Promise<IUserStatus[]> {
-		throw new Error("Method not implemented.")
+		let keys = await RedisClient.allKeys(this.statusPrefix_username+"*")
+		let all = []
+		for(const key of keys){
+			let status= await this.getUserStatus(key.split(":")[1])
+			if(status)
+				all.push(status)
+		}
+		return all
 	}
 	async hasSession(userId: string | undefined): Promise<boolean> {
 		if (!userId) return false
@@ -189,6 +201,7 @@ export class RedisSession implements ISessionManager {
 	async getStatus(userId: MongoId): Promise<[Date, string]> {
 		userId = String(userId)
 		const status = await this.getUserStatus(userId)
+		//console.log(status)
 		if (status != null) {
 			const statusSet = status.sockets
 			const last = status.lastActive

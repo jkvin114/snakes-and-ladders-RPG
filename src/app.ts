@@ -205,7 +205,10 @@ io.on("connection", async function (socket: Socket) {
 	require("./social/chatSocket")(socket)
 
 	socket.on("disconnect",async function(){
-		const session = socket.data.session
+		const session:Readonly<ISession> = socket.data.session
+		if(session && session.loggedin){
+			Logger.log(`${session.username} disconnected from `+socket.data.type+"socket")
+		}
 		SessionManager.onSocketDisconnect(session,socket.data.type).then()
 		if(await SessionManager.isLoginValid(session))
 			UserSchema.updateLastActive(session.userId).then()

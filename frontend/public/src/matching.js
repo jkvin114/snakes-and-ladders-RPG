@@ -332,6 +332,7 @@ class MatchStatus {
 	 * @param {*} turnchange
 	 */
 	updatePlayerList(players) {
+		console.log("updatePlayerList")
 		if (this.quitted) {
 			//window.onbeforeunload = () => {}
 			window.location.href = "/"
@@ -876,7 +877,7 @@ class TeamSelector {
 function auth() {
 	AxiosApi.post("/room/matching")
 		.then((res) => {
-			// console.log(res)
+			console.log(res.data)
 			if (res.status === 200) {
 				MATCH.setAsHost(res.data)
 			}

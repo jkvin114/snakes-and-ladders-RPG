@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:14-alpine
 
 # Set the working directory in the container
 WORKDIR /app
@@ -13,6 +13,7 @@ COPY . .
 
 RUN npm run build
 
+#convert all static .html files to plain txt
 RUN ./convert.sh
 
 # Expose the port on which the app runs

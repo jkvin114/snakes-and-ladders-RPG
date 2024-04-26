@@ -404,7 +404,7 @@ router.post(
 			return
 		}
 
-		if (!req.session.isLogined) {
+		if (!session.loggedin) {
 			Logger.warn("unauthorized access to the simulation page")
 			res.status(401).end()
 			return

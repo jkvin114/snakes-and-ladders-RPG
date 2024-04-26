@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:14-alpine
 
 # Set the working directory in the container
 WORKDIR /app
@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 # Copy the remaining source code to the working directory
 COPY . .
