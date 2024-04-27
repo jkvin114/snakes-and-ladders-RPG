@@ -5,6 +5,7 @@ export type IRootContext = {
     username : string|null
     loggedin:boolean
     showToolbar:boolean
+    lang?:string
 }
 export type ContextHook = {
     context:IRootContext,
@@ -15,7 +16,8 @@ export const RootContext = createContext<ContextHook>({
     context:{
         loggedin:false,
         username:null,
-        showToolbar:true
+        showToolbar:true,
+        lang:"en"
     },
     setContext:()=>{
     }

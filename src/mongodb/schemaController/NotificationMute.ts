@@ -2,6 +2,7 @@ import type { Types } from "mongoose"
 import { IUserMutedNotification,UserMutedNotification} from "../NotificationSchema"
 import { MongoId } from "../types"
 import { NotificationSchema } from "./Notification"
+import { Logger } from "../../logger"
 
 export namespace NotificationMuteSchema{
     export async function create(user:MongoId):Promise<void>{
@@ -14,8 +15,8 @@ export namespace NotificationMuteSchema{
     }
     export async function isMuted(user:MongoId,type:NotificationSchema.TYPE):Promise<boolean>{
         const status = await UserMutedNotification.findOne({user:user})
-        if(!status ||!status.all) return false
-        if(status.all) return true
+        //if(!status ||!status.all) return false
+        //if(status.all) return true
         switch(type){
             case NotificationSchema.TYPE.Chat:
                 return status.chat
@@ -34,6 +35,20 @@ export namespace NotificationMuteSchema{
     }
     export function setAll(user:MongoId,val:boolean){
         return UserMutedNotification.findOneAndUpdate({user:user},{all:val})
+    }
+    export async function getAll(user:MongoId){
+        const result = await UserMutedNotification.findOne({user:user})
+        if(result) return result
+        Logger.log("created NotificationMuteSchema for user :"+user)
+        //create one if it doesnt exist
+        await NotificationMuteSchema.create(user)
+
+        return await UserMutedNotification.findOne({user:user})
+    }
+    export function setByProp(user:MongoId,type:string,val:boolean){
+        let update = {[type]:val}
+        console.log(update)
+        return UserMutedNotification.findOneAndUpdate({user:user},update)
     }
 
     export function set(user:MongoId,type:NotificationSchema.TYPE,val:boolean){

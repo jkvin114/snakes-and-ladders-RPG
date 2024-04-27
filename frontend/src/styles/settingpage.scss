@@ -1,0 +1,41 @@
+.settingpage{
+    text-align: center;
+    height: 100vh;
+    overflow: auto;
+    .onesetting{
+        padding: 25px;;
+        border: 1px solid var(--col-bg-lighter);
+        border-radius: 15px;
+        margin: 15px 5px;
+    }
+    .form{
+        display: inline-block;
+        width: min(95%, 1000px);
+        text-align: left;
+        margin-top: 30px;
+        margin-bottom: 50px;
+
+    }
+    hr{
+        border: 1px solid var(--col-font-light);
+
+    }
+    .setting-name{
+        padding-bottom: 10px;
+        display: block;
+        font-size: 20px;
+    }
+    .setting-desc{
+        padding-bottom: 10px;
+        font-size: 15px;
+        color: var(--col-font-light);
+    }
+    .mainbtn{
+        svg{
+            width: 30px;
+            height: 30px;
+            vertical-align: sub;
+            margin-right: 7px;
+        }
+    }
+}

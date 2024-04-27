@@ -12,12 +12,12 @@ type Props={
     notiCount:number
 }
 
-export default function SideBar({isOpen,closeNavbar,notiCount}:Props){
+export default function SideBar({isOpen: isOpenInMobile,closeNavbar,notiCount}:Props){
     const {context} = useContext(RootContext)
 
     const loggedin = context.loggedin
 
-    return (<div id="sidebar" className={isOpen? "mobile-open":""}>
+    return (<div id="sidebar" className={isOpenInMobile? "mobile-open":""}>
         <nav className="sidebar-content">
         <ul>
             <li className="close-bar-mobile">
@@ -85,15 +85,14 @@ export default function SideBar({isOpen,closeNavbar,notiCount}:Props){
         </ul>
       </nav>
         <div className="bottom"  onClick={closeNavbar}>
-            {!loggedin && (<>
+            {!loggedin && !isOpenInMobile && (<>
                 <button className="button gray" ><Link to={'/register'}>Register</Link></button>
-            <button className="button"><Link to={'/login'}>Login</Link></button>
+                <button className="button"><Link to={'/login'}>Login</Link></button>
             </>)}
             {loggedin && <Link className="menu-item menu-item-small" to={"/user/"+context.username}><RiAccountCircleFill /><b className="menu-name">My Profile</b></Link>}
            
-            <br></br>
-            <a className="menu-item menu-item-small" ><RiSettings5Fill /><b className="menu-name">Setting</b></a>
-            <Link to="/status" className="menu-item menu-item-small" ><RiBroadcastFill /><b className="menu-name">Status</b></Link>
+            <Link className="menu-item menu-item-small" to={"/setting"} ><RiSettings5Fill /><b className="menu-name">Setting</b></Link>
+            {/* <Link to="/status" className="menu-item menu-item-small" ><RiBroadcastFill /><b className="menu-name">Status</b></Link> */}
         </div>
     </div>)
 }

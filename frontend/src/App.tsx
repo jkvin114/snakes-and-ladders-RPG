@@ -29,6 +29,7 @@ import StockGameLeaderboard from "./stockgame/LeaderBoard"
 import StockGameUserLobby from "./stockgame/UserLobby"
 import StockGameUserInfo from "./stockgame/UserInfo"
 import StockGameUserPage from "./components/pages/StockGameUser"
+import SettingPage from "./components/pages/Setting"
 
 
 function getNotiMessage(noti:INotification){
@@ -171,6 +172,7 @@ function App() {
 						<Route path="/chat" element={<ChatPage></ChatPage>}></Route>
 						<Route path="/friends" element={<FriendPage></FriendPage>}></Route>
 						<Route path="/rpg_stat" element={<RPGPlayerStatPage />}></Route>
+						<Route path="/setting" element={<SettingPage />}></Route>
 
 						<Route path="/marble_stat" element={<MarbleStatPage />}></Route>
 						<Route path="/notification" element={<Notifications newNoti={notiQueue} setCount={setNotiCount}/>}></Route>

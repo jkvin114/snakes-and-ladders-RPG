@@ -36,6 +36,8 @@ router.get("/poll",loginauth,sessionParser,ControllerWrapper(async function(req:
     NotificationSchema.createTest(message,session.userId)
    await NotificationCache.post(session.userId)
  }))
+ 
+ router.use("/setting", require("./notificationMute"))
 
 
  module.exports=router

@@ -52,79 +52,6 @@
         }
     }
     
-/* CSS */
-.button-19 {
-    appearance: button;
-    background-color: var(--col-primary);
-    border: solid transparent;
-    border-radius: 16px;
-    border-width: 0 0 4px;
-    width: min(400px,60vw);
-    box-sizing: border-box;
-    color: #FFFFFF;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: .8px;
-    line-height: 20px;
-    margin: 4px;
-    outline: none;
-    overflow: visible;
-    padding: 13px 16px;
-    text-align: center;
-    touch-action: manipulation;
-    transform: translateZ(0);
-    transition: filter .2s;
-    user-select: none;
-    -webkit-user-select: none;
-    vertical-align: middle;
-    b{
-        font-size: 25px;
-        text-transform: uppercase;
-    }
-    
-  }.btn-dark{
-    background-color: var(--col-bg-lighter);
-    color: var(--col-font-dim);
-}
-.button-19.btn-dark:after{
-    background-color: var(--col-bg-lighter);
-}
-  .button-19:after {
-    background-clip: padding-box;
-    background-color: var(--col-primary-light);
-   
-    border: solid transparent;
-    border-radius: 16px;
-    border-width: 0 0 4px;
-    bottom: -4px;
-    content: "";
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: -1;
-  }
-  
-  .button-19:main, .button-19:focus {
-    user-select: auto;
-  }
-  
-  .button-19:hover:not(:disabled) {
-    filter: brightness(1.1);
-    -webkit-filter: brightness(1.1);
-  }
-  
-  .button-19:disabled {
-    cursor: auto;
-  }
-  
-  .button-19:active {
-    border-width: 4px 0 0;
-    background: none;
-  }
-
 
   
   .card {
@@ -214,3 +141,78 @@
   }
 }
 
+
+
+/* CSS */
+.button-19 {
+  appearance: button;
+  background-color: var(--col-primary);
+  border: solid transparent;
+  border-radius: 16px;
+  border-width: 0 0 4px;
+  width: min(400px,60vw);
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  line-height: 20px;
+  margin: 4px;
+  outline: none;
+  overflow: visible;
+  padding: 13px 16px;
+  text-align: center;
+  touch-action: manipulation;
+  transform: translateZ(0);
+  transition: filter .2s;
+  user-select: none;
+  -webkit-user-select: none;
+  vertical-align: middle;
+  b{
+      font-size: 25px;
+      text-transform: uppercase;
+  }
+  
+}
+.btn-dark{
+  background-color: var(--col-bg-lighter);
+  color: var(--col-font-dim);
+}
+.button-19.btn-dark:after{
+  background-color: var(--col-bg-lighter);
+}
+.button-19:after {
+  background-clip: padding-box;
+  background-color: var(--col-primary-light);
+ 
+  border: solid transparent;
+  border-radius: 16px;
+  border-width: 0 0 4px;
+  bottom: -4px;
+  content: "";
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: -1;
+}
+
+.button-19:main, .button-19:focus {
+  user-select: auto;
+}
+
+.button-19:hover:not(:disabled) {
+  filter: brightness(1.1);
+  -webkit-filter: brightness(1.1);
+}
+
+.button-19:disabled {
+  cursor: auto;
+}
+
+.button-19:active {
+  border-width: 4px 0 0;
+  background: none;
+}

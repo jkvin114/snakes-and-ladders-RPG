@@ -44,11 +44,6 @@ const userMutedNotification=new mongoose.Schema({
         ref: "User",
         index:true
     },
-    all:{
-        type:Boolean,
-        required:true,
-        default:false
-    },
     chat:Boolean,
     comment:Boolean,
     post:Boolean,
