@@ -1,0 +1,159 @@
+{
+	"locale": "en",
+	"generic": {
+		"login": "Login",
+		"logout": "Logout",
+		"register": "Register",
+		"setting": "Setting",
+		"home": "home",
+		"username": "Username",
+		"pw": "Password",
+        "email":"Email",
+        "refresh":"Refresh",
+        "cancel":"Cancel",
+        "save":"Save",
+        "title":"Title",
+        "ago":"ago"
+
+	},
+	"sidebar": {
+		"rpggame": {
+			"create": "Create Room",
+			"join": "Join",
+			"spectate": "Spectate",
+			"my": "My Game Record",
+			"all": "All Game Record",
+			"analysis": "Analysis",
+			"wiki": "Wiki"
+		},
+		"stockgame": {
+			"my": "My Page",
+			"play": "Play",
+			"leaderboard": "Leaderboard"
+		},
+		"marblegame": {
+			"marble": "Marble Game",
+			"create": "Create Room",
+			"join": "Join",
+			"my": "My Game Record",
+			"all": "All Game Record"
+		},
+		"post": "Post",
+		"viewpost": "View Posts",
+		"writepost": "Write Post",
+		"social": "Social",
+		"friend": "Friends",
+		"newsfeed": "Newsfeed",
+		"chat": "Chat",
+		"noti": "Notifications",
+		"myprofile": "My Profile"
+	},
+	"settingpage": {
+		"status": "Service Status",
+		"name": {
+			"noti_chat": "New Chat",
+			"noti_comment": "New Comment",
+			"noti_post": "Following Post",
+			"noti_reply": "New Reply",
+			"noti_stockgame": "StockGame Score Surpass",
+			"noti_follower": "New Follower"
+		},
+		"desc": {
+			"noti_chat": "Manage alert for new chat",
+			"noti_comment": "Manage alert for new comment in your post",
+			"noti_post": "Manage alert for new reply in your comment",
+			"noti_reply": "Manage alert for new post from user that you follow",
+			"noti_stockgame": "Manage alert for your friend surpassing your stockgame score",
+			"noti_follower": "Manage alert for your new follower"
+		}
+	},
+	"homepage": {
+		"salr-desc": "A multiplayer role-playing game that combined traditional dice game(snakes-and-ladders) and RPG-style combat.",
+		"quickplay": "Quick Play",
+		"quickplay-desc": " with computer or other players",
+		"stat": "Statistics",
+		"stat-desc": "Check game records and character analysis",
+		"stockgame-desc": "Achieve a largest possible profit in trade simulation",
+		"other": {
+			"name": "Other Features",
+			"wiki": "Wiki Page",
+			"wiki-desc": "Visit wiki page of Snakes-and-Ladders RPG",
+			"post": "Post Board",
+			"post-desc": "Write and share post, and discuss with others.",
+			"chat": "Group Chat",
+			"chat-desc": "Chat with your friends."
+		}
+	},
+	"authpage": {
+		"error": {
+			"username": "Username does not exist",
+			"password": "Password does not match",
+			"email": "Not a valid email",
+			"username_length": "Username should be between 2~15 characters",
+			"password_condition": "Password should be longer than 3 characters containing both alphabet and number",
+			"username_duplicate": "Username duplicate",
+			"servererror": "Server Error",
+            "missing":"You need to enter all fields"
+		},
+        "verify-pw":"Verify Password",
+        "registered":"Register Success"
+	},
+    "createroompage":{
+        "room":{
+            "username":"Username(optional)",
+            "name":"Room Name(optional)",
+            "pw":"Room Password(optional)"
+        },
+        "setting":{
+            "private":"Make private",
+            "loginonly":"Accept logged in user only"
+        },
+        "name":"Create %d Game",
+        "create":"Create Game"
+    },
+    "statuspage":{
+        "status":{
+            "on":"Available",
+            "off":"Unavailable",
+            "none":"Disconnected"
+        },
+        "name":"Status",
+        "service":{
+            "db":"Database",
+            "rpg":"RPG Game Server",
+            "marble":"Marble Game Server"
+        }
+    },
+    "writepostpage":{
+        "msg":{
+            "image-fail":"Failed to upload image",
+            "image-upload":"image uploaded",
+            "missing":"title and content are required",
+            "save-fail":"failed to save"
+        },
+        "write-content":"Write content here",
+        "writepost":"Write Post",
+        "editpost":"Edit Post"
+
+    },
+    "rpgstat":{
+        "win":"Win",
+        "lose":"Lose",
+        "turn":"%dT",
+        "multikill":{
+            "double":"Double kill",
+            "triple":"Triple kill",
+            "quad":"Quadra kill",
+            "penta":"Penta kill"
+        }
+    },
+    "stock-leaderboard":{
+        "loggedin":"Logged In",
+        "alltime":"All-Time",
+        "rank":"Rank",
+        "score":"Score",
+        "name":"LeaderBoard",
+        "username":"Username"
+
+    }
+}

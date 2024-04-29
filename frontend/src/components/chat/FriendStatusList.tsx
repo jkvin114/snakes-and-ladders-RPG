@@ -29,10 +29,11 @@ export default function FriendStatusList({ createChat }: Props) {
 	})
     const [searchOpen,setSearchOpen] =useState<boolean>(false)
     const [searchResult,setSearchResult] = useState<IFriend[]>([])
+    const { context } = useContext(RootContext)
 
 	const dropdown = useRef(null)
 	function load() {
-		AxiosApi.get("/user/relation/friend_status")
+		AxiosApi.get("/api/user/relation/friend_status")
 			.then((res) => {
 				//  console.table(res.data)
 				setFriends((res.data as IFriendStatus[]).sort((a, b) => (!b.status ? -1 : 1)))
@@ -77,7 +78,7 @@ export default function FriendStatusList({ createChat }: Props) {
 
 	function spectate(userId?: string) {
 		if (!userId) return
-		AxiosApi.post("/room/spectate_rpg", { userId: userId })
+		AxiosApi.post("/api/room/spectate_rpg", { userId: userId })
 			.then((res) => {
 				window.location.href = "/rpggame?is_spectator=true"
 			})
@@ -97,7 +98,7 @@ export default function FriendStatusList({ createChat }: Props) {
     function submitSearch(){
         let str = (document.getElementById("search-input") as HTMLInputElement).value
         if(!str || str ==="") return
-        AxiosApi.get("/user/relation/friend_search?search="+str)
+        AxiosApi.get("/api/user/relation/friend_search?search="+str)
         .then(res=>setSearchResult(res.data))
         .catch((e) => {
             console.error(e)
@@ -172,7 +173,7 @@ export default function FriendStatusList({ createChat }: Props) {
 								</div>
 							)}
 							{!f.status && f.lastActive && f.lastActive >= 0 && (
-								<div>{getDateStringDifference(f.lastActive, Date.now())} ago</div>
+								<div>{getDateStringDifference(f.lastActive, Date.now(),context.lang)} ago</div>
 							)}
 						</div>
 						<div>

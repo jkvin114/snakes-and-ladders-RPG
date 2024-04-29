@@ -8,6 +8,7 @@ import "./../styles/stockgame/table.scss"
 
 import { RiCheckboxCircleFill } from "react-icons/ri"
 import { Link } from "react-router-dom"
+import Text from "../components/Text"
 type State = {
 	loggedIn: boolean
 	allTime: boolean
@@ -32,7 +33,7 @@ export default function StockGameLeaderboard() {
 	}
 	useEffect(() => {
 		AxiosApi.get(
-			`/stockgame/rank/leaderboard?loggedIn=${pageState.loggedIn}&allTime=${pageState.allTime}&start=${pageState.start}`
+			`/api/stockgame/rank/leaderboard?loggedIn=${pageState.loggedIn}&allTime=${pageState.allTime}&start=${pageState.start}`
 		).then((res) =>{
 			//calcPastRanks(res.data.result)
 			setStat(res.data.result)
@@ -55,13 +56,13 @@ export default function StockGameLeaderboard() {
 	}
 	return (
 		<div id="stockgame-leaderboard-root">
-			<h2>LeaderBoard</h2>
+			<h2><Text lkey="stock-leaderboard.name"/></h2>
 			<div className="toolbar">
 				<button onClick={toggleLoggedIn} className={"button " + (pageState.loggedIn ? "" : "dark")}>
-					Logged In
+				<Text lkey="stock-leaderboard.loggedin"/>
 				</button>
 				<button onClick={toggleAllTime} className={"button " + (pageState.allTime ? "" : "dark")}>
-					All-time
+				<Text lkey="stock-leaderboard.alltime"/>
 				</button>
 			</div>
 			<div className="leaderboard ">
@@ -69,9 +70,9 @@ export default function StockGameLeaderboard() {
 					<thead>
 						<tr>
 							<th className="change"></th>
-							<th className="rank">Rank</th>
-							<th>Username</th>
-							<th>Score</th>
+							<th className="rank"><Text lkey="stock-leaderboard.rank"/></th>
+							<th><Text lkey="stock-leaderboard.username"/></th>
+							<th><Text lkey="stock-leaderboard.score"/></th>
 							<th className="date"></th>
 						</tr>
 					</thead>
@@ -93,7 +94,7 @@ export default function StockGameLeaderboard() {
 								<td>
 									<b>{addCommas(s.score)}</b>
 								</td>
-								<td className="date">{getDateStringDifference(new Date(s.scoredAt ? s.scoredAt : s.createdAt).valueOf(), Date.now())} ago </td>
+								<td className="date">{getDateStringDifference(new Date(s.scoredAt ? s.scoredAt : s.createdAt).valueOf(), Date.now(),context.lang)} <Text lkey="generic.ago"/> </td>
 							</tr>
 						))}
 					</tbody>

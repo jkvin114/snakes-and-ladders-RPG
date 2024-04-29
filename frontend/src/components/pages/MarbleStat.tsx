@@ -23,12 +23,12 @@ export default function MarbleStatPage() {
 		const username =  searchParams.get("username")
 		setUsername(username)
 		if (username)
-			AxiosApi.get("/stat/marble/user?username=" + username).then((res) => {
+			AxiosApi.get("/api/stat/marble/user?username=" + username).then((res) => {
 				calcStat(res.data)
 				setGames(res.data)
 			})
 		else if (user)
-			AxiosApi.get("/stat/marble/user?userId=" + user).then((res) => {
+			AxiosApi.get("/api/stat/marble/user?userId=" + user).then((res) => {
 				calcStat(res.data)
 				setGames(res.data)
 			})
@@ -44,7 +44,7 @@ export default function MarbleStatPage() {
 		})
 	}
 	function loadAll() {
-		AxiosApi.get("/stat/marble/all").then((res) =>
+		AxiosApi.get("/api/stat/marble/all").then((res) =>
 			setGames(
 				res.data.reverse().map((g: any) => {
 					return {

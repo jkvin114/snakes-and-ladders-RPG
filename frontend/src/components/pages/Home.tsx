@@ -4,7 +4,7 @@ import { RiBarChartFill, RiBillFill, RiMessage2Fill } from "react-icons/ri"
 import { Link } from "react-router-dom"
 import { TbWorldQuestion } from "react-icons/tb"
 import { createRoom } from "../../api/room"
-import { randName } from "../../types/names"
+import Text from "../Text"
 
 export default function HomePage() {
 
@@ -23,22 +23,22 @@ export default function HomePage() {
 
 					<div>
 						<h1>Snakes-and-Ladders RPG</h1>
-                        <p>A multiplayer role-playing game that combined traditional dice game(snakes-and-ladders) and RPG-style combat.</p>
+                        <p><Text lkey="homepage.salr-desc"></Text></p>
 						<div>
 							<div className="mainbtn button-19 divlink" onClick={quickplay}>
                             {/* <Link to="/match" reloadDocument className="divlink"></Link> */}
 
 								<GrGamepad />
-								<b>Quick Play</b>
+								<b><Text lkey="homepage.quickplay"></Text></b>
 								<br></br>
-								Play with computer or other players
+								<Text lkey="homepage.quickplay-desc"></Text>
 							</div>
 							<div className="mainbtn btn-dark button-19 divlink">
                                 <Link reloadDocument to="/stat" className="divlink"></Link>
 								<RiBarChartFill />
-								<b>Statistics</b>
+								<b><Text lkey="homepage.stat"></Text></b>
 								<br></br>
-								Check game records and character analysis
+								<Text lkey="homepage.stat-desc"></Text>
 							</div>
 						</div>
 					</div>
@@ -47,7 +47,7 @@ export default function HomePage() {
 				<div className="section section-dark">
 					<div>
 						<h1>MockStock</h1>
-                        <p>Achieve a largest possible profit in trade simulation</p>
+                        <p><Text lkey="homepage.stockgame-desc"></Text></p>
 						<button className="mainbtn button-19 divlink">
                         <Link to="/stockgame/play" className="divlink"></Link>
 							<img src="/stock.png"></img>
@@ -61,7 +61,7 @@ export default function HomePage() {
 					</div>
 				</div>
 				<div>
-					<h1>Other Features</h1>
+					<h1><Text lkey="homepage.other.name"></Text></h1>
 				</div>
 				<div className="section section-dark" style={{flexWrap:"wrap"}}>
 
@@ -70,9 +70,9 @@ export default function HomePage() {
                         <Link to="https://jkvin114.github.io/Snakes-and-Ladders-RPG-wiki/index.html" className="divlink"></Link>
 
 						<div className="card__icon">
-							<TbWorldQuestion /> Wiki Page
+							<TbWorldQuestion /> <Text lkey="homepage.other.wiki"></Text>
 						</div>
-						<h2 className="card__title">Visit wiki page of Snakes-and-Ladders RPG</h2>
+						<h2 className="card__title"><Text lkey="homepage.other.wiki-desc"></Text></h2>
 						<p className="card__apply">
 							<a className="card__link">
                                 Try it
@@ -83,9 +83,9 @@ export default function HomePage() {
 					<div className="card card-4 divlink">
                         <Link to="/board" className="divlink"></Link>
 						<div className="card__icon">
-							<RiBillFill />Post Board
+							<RiBillFill /><Text lkey="homepage.other.post"></Text>
 						</div>
-						<h2 className="card__title">Write and share post, and discuss with others.</h2>
+						<h2 className="card__title"><Text lkey="homepage.other.post-desc"></Text></h2>
 						<p className="card__apply">
 							<a className="card__link">
 								Try it
@@ -97,9 +97,9 @@ export default function HomePage() {
                         <Link to="/chat" className="divlink"></Link>
 
 						<div className="card__icon">
-							<RiMessage2Fill /> Group Chat
+							<RiMessage2Fill /> <Text lkey="homepage.other.chat"></Text>
 						</div>
-						<h2 className="card__title">Chat with your friends.</h2>
+						<h2 className="card__title"><Text lkey="homepage.other.chat-desc"></Text></h2>
 						<p className="card__apply">
 							<a className="card__link">
                                 Try it

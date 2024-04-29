@@ -2,8 +2,8 @@ async function showAnalysisPage(version) {
 	$("#overlay").addClass("visible")
 	$("#character-table-container").addClass("hidden")
 	try {
-		let maps = await (await fetch(SERVER_URL + `/stat/eval/list/map/${version}`)).json()
-		let versions = await (await fetch(SERVER_URL + `/stat/eval/list/version`)).json()
+		let maps = await (await fetch(SERVER_URL + `/api/stat/eval/list/map/${version}`)).json()
+		let versions = await (await fetch(SERVER_URL + `/api/stat/eval/list/version`)).json()
 		let str = ` <li class="dropdown-item version-item" data-version="recent">${LOCALE.recent}</li>`
 		versions = versions.versions.reverse()
 		for (const v of versions) {
@@ -72,7 +72,6 @@ function charDataList() {
 }
 async function showAnalysisTable(version, map) {
 	let data
-	console.log(localStorage)
 	const isAdmin = localStorage.getItem("username") === "admin" && localStorage.getItem("loggedIn") === "true"
 	$(".character-table-delete-btn").off()
 	if (isAdmin) {
@@ -80,7 +79,7 @@ async function showAnalysisTable(version, map) {
 			console.log($(this).data("gametype"))
 			$.ajax({
 				method: "POST",
-				url: `/stat/eval/delete/${map}/${version}/${$(this).data("gametype")}`,
+				url: SERVER_URL + `/api/stat/eval/delete/${map}/${version}/${$(this).data("gametype")}`,
 				data: {},
 			})
 				.done(function (res, statusText, xhr) {
@@ -101,7 +100,7 @@ async function showAnalysisTable(version, map) {
 		$(".character-table-delete-btn").hide()
 	}
 	try {
-		data = await (await fetch(SERVER_URL + `/stat/eval/overview/${map}/${version}`)).json()
+		data = await (await fetch(SERVER_URL + `/api/stat/eval/overview/${map}/${version}`)).json()
 	} catch (e) {
 		console.error(e)
 		$("#overlay").removeClass("visible")

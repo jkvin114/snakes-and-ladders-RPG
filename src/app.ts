@@ -112,17 +112,17 @@ app.use(cookieParser());
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use("/stat", require("./router/statRouter"))
-app.use("/admin", require("./router/adminRouter"))
+app.use("/api/stat", require("./router/statRouter"))
+app.use("/api/admin", require("./router/adminRouter"))
 
-app.use("/user", require("./router/RegisteredUserRouter"))
-app.use("/room", require("./router/RoomRouter"))
+app.use("/api/user", require("./router/RegisteredUserRouter"))
+app.use("/api/room", require("./router/RoomRouter"))
 app.use("/resource", require("./router/resourceRouter"))
-app.use("/board", require("./router/board/BoardRouter"))
-app.use("/ping", require("./router/pingRouter"))
-app.use("/chat", require("./router/chat"))
-app.use("/notification", require("./router/notification"))
-app.use("/stockgame", require("./router/stockgame/stockGameRouter"))
+app.use("/api/board", require("./router/board/BoardRouter"))
+app.use("/api/ping", require("./router/pingRouter"))
+app.use("/api/chat", require("./router/chat"))
+app.use("/api/notification", require("./router/notification"))
+app.use("/api/stockgame", require("./router/stockgame/stockGameRouter"))
 
 app.set('view engine','ejs')
 app.engine('html', require('ejs').renderFile);
@@ -217,7 +217,7 @@ io.on("connection", async function (socket: Socket) {
 })
 
 
-app.get("/connection_check", function (req:any, res:any) {
+app.get("/api/connection_check", function (req:any, res:any) {
 	res.end()
 })
 app.get("/notfound", function (req:any, res:any) {
@@ -238,16 +238,16 @@ app.get("/servererror", function (req:any, res:any) {
 // });
 
 
-app.get("/jwt/verify",async function(req:express.Request, res:express.Response){
+app.get("/api/jwt/verify",async function(req:express.Request, res:express.Response){
 	let valid = await SessionManager.isValid(req)
 	res.json({isVaild:valid})
 })	
 
-app.get("/session",async function(req:express.Request, res:express.Response){
+app.get("/api/session",async function(req:express.Request, res:express.Response){
 	let session = await SessionManager.getSession(req)
 	res.json(session).end()
 })	
-app.post("/jwt/init",async function(req:express.Request, res:express.Response){
+app.post("/api/jwt/init",async function(req:express.Request, res:express.Response){
 
 	if(req.cookies && await SessionManager.isValid(req)){
 		return res.status(204).send("ok")

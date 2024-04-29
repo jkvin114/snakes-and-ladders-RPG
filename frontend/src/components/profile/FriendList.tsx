@@ -13,7 +13,7 @@ export default function FriendList({username}:Props){
     const [friends,setFriends] = useState<IFriend[]>([])
     useEffect(()=>{
         if(!username) return
-        AxiosApi.get("/user/" + username+"/friend")
+        AxiosApi.get("/api/user/" + username+"/friend")
 			.then((res) => {
 				setFriends(res.data as IFriend[])
 			})

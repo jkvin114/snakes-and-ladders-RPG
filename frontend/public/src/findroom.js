@@ -34,7 +34,7 @@ async function joinRoom(name, gametype, password) {
 	// 	},
 	// 	body: JSON.stringify({ roomname: name, password: password, username: sessionStorage.nickName }),
 	// })
-	AxiosApi.post("/room/verify_join", {
+	AxiosApi.post("/api/room/verify_join", {
 		roomname: name,
 		password: password,
 		username: "",
@@ -64,7 +64,7 @@ async function getRooms() {
 	$("#loading").show()
 	//let rooms = (await (await fetch(SERVER_URL + "/room/hosting")).json()).rooms
 
-	AxiosApi.get("/room/hosting")
+	AxiosApi.get("/api/room/hosting")
 		.then((res) => {
 			let rooms = res.data.rooms
 			if (rooms.length === 0) $("#emptyroom").show()

@@ -4,6 +4,7 @@ import "../../styles/makegame.scss"
 import "../../styles/form.scss"
 import { createRoom } from "../../api/room"
 import { randName } from "../../types/names"
+import Text from "../Text"
 
 export function MakeGamePage() {
 	const [searchParams, _] = useSearchParams()
@@ -26,16 +27,16 @@ export function MakeGamePage() {
 		<div id="makegame-root">
 			<div className="form">
 				<h1>
-					Create {gametype === "rpg" && "RPG"} {gametype === "marble" && "Marble"} Game
+					<Text lkey="createroompage.name" args={[(gametype === "rpg"? "RPG":"") + (gametype === "marble"? "Marble":"")]}/>
 				</h1>
 				<div className="inputBox">
-					<input type="text" name="room_name" id="room-name-input" lkey-ph="ph.room.name" />
-					<i>Room Name(optional)</i>
+					<input type="text" name="room_name" id="room-name-input"/>
+					<i><Text lkey="createroompage.room.name"/></i>
 				</div>
 
 				<div className="inputBox">
-					<input type="password" name="room_password" id="room-password-input" lkey-ph="ph.room.pw" />
-					<i>Room Password(optional)</i>
+					<input type="password" name="room_password" id="room-password-input" />
+					<i><Text lkey="createroompage.room.pw"/></i>
 				</div>
 
 				{/* <input type='text' name="room_name" value=""  placeholder="Room Name(optional)" id="room-name-input"></input> */}
@@ -47,8 +48,8 @@ export function MakeGamePage() {
 							<input type="checkbox" name="room_private" className="toggleallstat" id="room_private"></input>
 							<span className="switchslider"></span>
 						</label>
-						<label htmlFor="room_private" data-lkey="room.private">
-							Make private
+						<label htmlFor="room_private">
+						<Text lkey="createroompage.setting.private"/>
 						</label>
 					</div>
 					<div className="onesetting">
@@ -60,12 +61,12 @@ export function MakeGamePage() {
 								id="room_loggedin_only"></input>
 							<span className="switchslider"></span>
 						</label>
-						<label htmlFor="room_loggedin_only" data-lkey="room.loginonly">
-							Logged in user only
+						<label htmlFor="room_loggedin_only">
+						<Text lkey="createroompage.setting.loginonly"/>
 						</label>
 					</div>
 				</div>
-				<button className="button" onClick={submit}>Create Game</button>
+				<button className="button" onClick={submit}><Text lkey="createroompage.create"/></button>
 			</div>
 		</div>
 	)

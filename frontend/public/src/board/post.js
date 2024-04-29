@@ -42,7 +42,7 @@ function main(url) {
 
 	let posturl = window.location.pathname.split("/")[3]
 	console.log(posturl)
-	AxiosApi.get("/board/post/content/" + posturl)
+	AxiosApi.get("/api/board/post/content/" + posturl)
 		.then((res) => populatePostContent(res.data))
 		.catch((e) => console.error(e))
 
@@ -56,7 +56,7 @@ function main(url) {
 		if (!confirm(LOCALE.msg.confirm_delete)) return
 
 		let value = $(this).val()
-		AxiosApi.post("/board/post/comment/delete", { commentId: value })
+		AxiosApi.post("/api/board/post/comment/delete", { commentId: value })
 			.then((res) => {
 				if (res.status == 200) {
 					window.location.reload()
@@ -74,7 +74,7 @@ function main(url) {
 		if (!confirm(LOCALE.msg.confirm_delete)) return
 		let imagesToRemove = extractCurrentImages()
 		let value = $(this).data("id")
-		AxiosApi.post("/board/post/delete", { id: value, removedImages: imagesToRemove })
+		AxiosApi.post("/api/board/post/delete", { id: value, removedImages: imagesToRemove })
 			.then((res) => {
 				if (res.status == 200) {
 					window.location.href = "/board/"
@@ -99,7 +99,7 @@ function main(url) {
 		sendVote("comment", type, id, $(this))
 	})
 	$(".bookmark").click(function () {
-		AxiosApi.post("/board/bookmark", { id: $(this).data("postid") })
+		AxiosApi.post("/api/board/bookmark", { id: $(this).data("postid") })
 			.then((res) => {
 				if (res.status == 200) {
 					if (res.data.change === 1) {
@@ -126,7 +126,7 @@ function writeComment(e) {
 	let postId = $(this).find("input[name='postId']").val()
 	let content = $(this).find("input[name='content']").val()
 
-	let url = "/board/post/comment"
+	let url = "/api/board/post/comment"
 	AxiosApi.post(url, {
 		postUrl: postUrl,
 		postId: postId,
@@ -144,7 +144,7 @@ function writeComment(e) {
 }
 function sendVote(kind, type, id, elem) {
 	let vote_count = $(elem).children(".vote_count").eq(0)
-	AxiosApi.post("/board/" + kind + "/vote", { id: id, type: type })
+	AxiosApi.post("/api/board/" + kind + "/vote", { id: id, type: type })
 		.then((res) => {
 			const data = res.data
 			if (res.status == 200) {

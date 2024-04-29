@@ -9,6 +9,8 @@ import { Link } from "react-router-dom"
 import CheckBoxSetting from "../setting/CheckBoxSetting"
 import { toast } from "react-toastify"
 import { AxiosApi } from "../../api/axios"
+import { LocaleContext } from "../../context/localeContext"
+import Text from "../Text"
 
 const LANGUAGES = [
 	{ name: "English", value: "en" },
@@ -24,9 +26,10 @@ type INotiSettings = {
 }
 export default function SettingPage() {
 	const { context, setContext } = useContext(RootContext)
+	//console.log(context)
 	const loggedin = context.loggedin
-	const [lang, setLang] = useState(context.lang ? context.lang : "en")
-
+	const [lang, setLang] = useState<string>(context.lang!=null ? context.lang : "en")
+	//console.log(lang)
 	//
 	const [notiSettings, setNotiSettings] = useState<INotiSettings>({
 		chat: true,
@@ -38,7 +41,7 @@ export default function SettingPage() {
 	})
     useEffect(()=>{
         if(!loggedin) return
-        AxiosApi.get("/notification/setting")
+        AxiosApi.get("/api/notification/setting")
         .then(res=>{
             setNotiSettings({
                 chat:!res.data.chat,
@@ -58,7 +61,7 @@ export default function SettingPage() {
 
 	async function changeNoti(e: ChangeEvent<HTMLInputElement>, settingId: string) {
         let checked = e.target.checked
-        AxiosApi.post("/notification/setting",{
+        AxiosApi.post("/api/notification/setting",{
             type:settingId,
             value:!checked
         })
@@ -108,7 +111,7 @@ export default function SettingPage() {
 		<div className="settingpage">
 			<div className="form">
 				<div>
-					<h2>Preference</h2>
+					<h2><Text lkey="generic.setting"/> </h2>
 					<hr></hr>
 				</div>
 				<div className="onesetting">
@@ -121,7 +124,7 @@ export default function SettingPage() {
 										type="radio"
 										id={"lang_" + l.value}
 										value={l.value}
-										checked={l.value === lang}
+										checked={(l.value === lang || (lang==null && l.value==="en"))}
 									/>
 									<p className="select-box__input-text">{l.name}</p>
 								</div>
@@ -147,38 +150,38 @@ export default function SettingPage() {
 							<hr></hr>
 						</div>
 						<CheckBoxSetting
-							name="New Chat"
-							desc="Manage alert for new chat"
+							namekey="settingpage.name.noti_chat"
+							desckey="settingpage.desc.noti_chat"
 							id="chat"
 							onChange={changeNoti}
 							checked={notiSettings.chat}></CheckBoxSetting>
 						<CheckBoxSetting
-							name="New Comment"
-							desc="Manage alert for new comment in your post"
+							namekey="settingpage.name.noti_comment"
+							desckey="settingpage.desc.noti_comment"
 							id="comment"
 							onChange={changeNoti}
 							checked={notiSettings.comment}></CheckBoxSetting>
 						<CheckBoxSetting
-							name="New Reply"
-							desc="Manage alert for new reply in your comment"
+							namekey="settingpage.name.noti_post"
+							desckey="settingpage.desc.noti_post"
 							id="post"
 							onChange={changeNoti}
 							checked={notiSettings.post}></CheckBoxSetting>
 						<CheckBoxSetting
-							name="Following Post"
-							desc="Manage alert for new post from user that you follow"
+							namekey="settingpage.name.noti_reply"
+							desckey="settingpage.desc.noti_reply"
 							id="reply"
 							onChange={changeNoti}
 							checked={notiSettings.reply}></CheckBoxSetting>
 						<CheckBoxSetting
-							name="StockGame Score Surpass"
-							desc="Manage alert for your friend surpassing your stockgame score"
+							namekey="settingpage.name.noti_stockgame"
+							desckey="settingpage.desc.noti_stockgame"
 							id="stockgameSurpass"
 							onChange={changeNoti}
 							checked={notiSettings.stockgameSurpass}></CheckBoxSetting>
 						<CheckBoxSetting
-							name="New Follower"
-							desc="Manage alert for your new follower"
+							namekey="settingpage.name.noti_follower"
+							desckey="settingpage.desc.noti_follower"
 							id="follower"
 							onChange={changeNoti}
 							checked={notiSettings.follower}></CheckBoxSetting>
@@ -189,7 +192,7 @@ export default function SettingPage() {
 					<div className="mainbtn btn-dark button-19 divlink">
 						<Link to="/status" className="divlink"></Link>
 						<RiBroadcastFill />
-						<b>Service Status</b>
+						<b><Text lkey="settingpage.status"/></b>
 						<br></br>
 					</div>
 				</div>

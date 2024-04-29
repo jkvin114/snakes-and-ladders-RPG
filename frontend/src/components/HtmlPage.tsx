@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import {Helmet} from "react-helmet";
 import { PAGES } from "../rawpages";
 import { RootContext } from "../context/context";
-import { backend_url } from "../variables";
+import { backend_url,socket_url } from "../variables";
 import { useSearchParams } from "react-router-dom";
 import GameInviteModal from "./GameInviteModal";
 
@@ -86,6 +86,10 @@ export default function HtmlPage({htmlPath}:Props){
         <script> 
 					 {/*line break is required here*/}
 				{`const server_url = "${backend_url}"`}</script>
+
+        <script> 
+					 {/*line break is required here*/}
+				{`const socket_url = "${socket_url}"`}</script>
 
           {htmlData.scripts && htmlData.scripts.map((v,i)=>(<script src={v} key={i}></script>))}
           {htmlData.modules && htmlData.modules.map((v,i)=>(<script type="module" src={v} key={i}></script>))}

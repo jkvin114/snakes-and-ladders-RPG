@@ -34,7 +34,7 @@ export default function ProfileSetting({ username, hasImg }: Props) {
             setError("Password does not match")
             return
         }
-        AxiosApi.patch("/user/password",{
+        AxiosApi.patch("/api/user/password",{
             originalpw:formData.originalpw,
             newpw:formData.newpw
         })
@@ -72,7 +72,7 @@ export default function ProfileSetting({ username, hasImg }: Props) {
 
       function removeProfileImg(){
         if(!window.confirm("Delete profile image?")) return
-        AxiosApi.post("/user/remove_profileimg")
+        AxiosApi.post("/api/user/remove_profileimg")
         .then(r=>{
             alert("Profile image removed")
 			navigate(0)

@@ -7,7 +7,7 @@ export function createRoom(type:"rpg"|"marble",isPrivate:boolean,loggedinOnly:bo
     //this value will be retrieved in matching page to set nickname of the host
     sessionStorage.nickName = nickname
 
-    AxiosApi.post("/room/create",{
+    AxiosApi.post("/api/room/create",{
         roomname: roomname,
         username: nickname,
         type: type,

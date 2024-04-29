@@ -9,7 +9,7 @@ type Props = {
 export default function FriendRequestNotification({ noti }: Props) {
 	const [responded, setResponded] = useState(false)
 	function accept() {
-		AxiosApi.post("/user/relation/friend_request/accept", { senderId: noti.payload1 })
+		AxiosApi.post("/api/user/relation/friend_request/accept", { senderId: noti.payload1 })
 			.then((res) => {
 				setResponded(true)
 			})
@@ -19,7 +19,7 @@ export default function FriendRequestNotification({ noti }: Props) {
 			})
 	}
 	function reject() {
-		AxiosApi.post("/user/relation/friend_request/reject", { senderId: noti.payload1 })
+		AxiosApi.post("/api/user/relation/friend_request/reject", { senderId: noti.payload1 })
 			.then((res) => {
 				setResponded(true)
 			})

@@ -17,7 +17,7 @@ function main(url) {
 
 		let value = $(this).val()
 		let type = $(this).data("type")
-		AxiosApi.post("/board/post/" + type + "/delete", { commentId: value })
+		AxiosApi.post("/api/board/post/" + type + "/delete", { commentId: value })
 			.then((res) => window.location.reload())
 			.catch((e) => alert("error"))
 	})

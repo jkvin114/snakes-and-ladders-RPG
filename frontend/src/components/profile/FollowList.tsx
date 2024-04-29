@@ -12,7 +12,7 @@ export default function FollowList({username,type}:Props){
     const [follow,setFollow] = useState<IFollow[]>([])
     useEffect(()=>{
         if(!username) return
-        AxiosApi.get("/user/" + username+"/"+type)
+        AxiosApi.get("/api/user/" + username+"/"+type)
 			.then((res) => {
 				setFollow(res.data as IFollow[])
 			})

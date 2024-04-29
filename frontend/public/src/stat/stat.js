@@ -123,7 +123,7 @@ function requestStatAfterGame(params) {
 	console.log(params)
 	$("#main").css("grid-template-columns", "auto")
 	$("#overlay").addClass("visible")
-	$.get(SERVER_URL + "/stat/result?" + params).done((data) => showStat(data))
+	$.get(SERVER_URL + "/api/stat/result?" + params).done((data) => showStat(data))
 }
 /**
  * request simulation list as summary
@@ -132,7 +132,7 @@ function requestStatAfterGame(params) {
  */
 function requestSimulationSummary(start, count) {
 	$("#overlay").addClass("visible")
-	$.get(SERVER_URL + "/stat/simulation/summary?start=" + start + "&count=" + count).done((data) =>
+	$.get(SERVER_URL + "/api/stat/simulation/summary?start=" + start + "&count=" + count).done((data) =>
 		onReceiveSimulationSummary(data)
 	)
 }
@@ -143,7 +143,7 @@ function requestSimulationSummary(start, count) {
  */
 function requestGames(start, count) {
 	$("#overlay").addClass("visible")
-	$.get(SERVER_URL + "/stat/game?start=" + start + "&count=" + count).done((data) => onReceiveGames(data))
+	$.get(SERVER_URL + "/api/stat/game?start=" + start + "&count=" + count).done((data) => onReceiveGames(data))
 }
 /**
  * updates page number
@@ -280,7 +280,7 @@ function onReceiveSimulationSummary(data) {
  * @param {*} id
  */
 function requestStatById(id) {
-	let xhr = $.get(SERVER_URL + "/stat/simulation?statid=" + id)
+	let xhr = $.get(SERVER_URL + "/api/stat/simulation?statid=" + id)
 
 	$("#overlay").addClass("visible")
 	xhr.done((data) => {

@@ -17,7 +17,7 @@ export default function Notifications({newNoti,setCount}:Props){
 
     useEffect(()=>{
         setCount(0)
-        AxiosApi.get("/notification/all")
+        AxiosApi.get("/api/notification/all")
         .then(res=>{
             console.log(res.data)
             setNoti(res.data)
@@ -33,7 +33,7 @@ export default function Notifications({newNoti,setCount}:Props){
     },[newNoti])
     function deleteNoti(id:string){
         setNoti(no => no.filter(n=>n._id!==id))
-        AxiosApi.post("/notification/delete",{id:id})
+        AxiosApi.post("/api/notification/delete",{id:id})
         .catch(e=>console.error(e))
     }
     return (<div id="notification-root">

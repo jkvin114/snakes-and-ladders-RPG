@@ -875,7 +875,7 @@ class TeamSelector {
 	}
 }
 function auth() {
-	AxiosApi.post("/room/matching")
+	AxiosApi.post("/api/room/matching")
 		.then((res) => {
 			console.log(res.data)
 			if (res.status === 200) {

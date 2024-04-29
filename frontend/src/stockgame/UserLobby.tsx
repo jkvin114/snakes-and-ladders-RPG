@@ -42,20 +42,20 @@ export default function StockGameUserLobby() {
 
 	function getScorePositions(curr: number, alltime: number) {
 		if(curr)
-		AxiosApi.get("/stockgame/rank/position/byscore?score=" + curr)
+		AxiosApi.get("/api/stockgame/rank/position/byscore?score=" + curr)
 			.then((res) => setCurrBestPos(res.data))
 			.catch((e) => console.error(e))
 
 		if(alltime)
-		AxiosApi.get("/stockgame/rank/position/byscore?allTime=true&score=" + alltime)
+		AxiosApi.get("/api/stockgame/rank/position/byscore?allTime=true&score=" + alltime)
 			.then((res) => setAlltimeBestPos(res.data))
 			.catch((e) => console.error(e))
 	}
 	useEffect(() => {
-		AxiosApi.get(`/stockgame/user/friends`)
+		AxiosApi.get(`/api/stockgame/user/friends`)
 			.then((res) => setFriendScores(res.data))
 			.catch((e) => console.error(e))
-		AxiosApi.get("/stockgame/user/mylobby")
+		AxiosApi.get("/api/stockgame/user/mylobby")
 			.then((res) => {
 				setAlltimeBest(res.data.alltimeBest)
 				setCurrentBest(res.data.best)

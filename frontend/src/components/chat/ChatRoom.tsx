@@ -85,7 +85,7 @@ export default function ChatRoom({ roomId,onBack }: Props) {
 			alert("error")
 		})
 
-		AxiosApi.get("/chat/users/" + roomId)
+		AxiosApi.get("/api/chat/users/" + roomId)
 			.then((res) => {
 				//	console.table(res.data)
 				setRoomUsers(res.data)

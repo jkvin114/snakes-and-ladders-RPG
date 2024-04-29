@@ -32,7 +32,6 @@ function decodeToken(token:string){
 }
 
 export function getSessionIdFromSocket(socket:Socket){
-
 	const c = cookie.parse(socket.request.headers.cookie)
 	if(c  && c.jwt){
 		let token= decodeToken(c.jwt) as Jwt.CustomJwtPayload

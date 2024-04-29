@@ -12,7 +12,7 @@ export default function GameInviteModal() {
 
 	useEffect(reload, [open])
 	function reload() {
-		AxiosApi.get("/user/relation/friend_status")
+		AxiosApi.get("/api/user/relation/friend_status")
 			.then((res) => {
                 const friends = res.data as IFriendStatus[]
 				setFriends(friends.sort((a, b) => (!b.status ? -1 : 1)))
@@ -43,7 +43,7 @@ export default function GameInviteModal() {
 		return status === "online"
 	}
 	function inviteUser(id: string) {
-        AxiosApi.post("/room/invite",{id:id})
+        AxiosApi.post("/api/room/invite",{id:id})
         .then(res=>{
             setInvited(new Set(invited).add(id))
 
@@ -57,7 +57,7 @@ export default function GameInviteModal() {
 	}
 	function cancelInvite(id: string) {
 		
-        AxiosApi.post("/room/cancel_invite",{id:id})
+        AxiosApi.post("/api/room/cancel_invite",{id:id})
         .then(res=>{
             let inv = new Set(invited)
             inv.delete(id)

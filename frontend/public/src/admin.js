@@ -13,7 +13,7 @@ function main(url) {
 }
 async function spectate() {
 	let rname = $(this).data("roomname")
-	AxiosApi.post("/room/spectate_rpg", { roomname: rname })
+	AxiosApi.post("/api/room/spectate_rpg", { roomname: rname })
 		.then((res) => {
 			if (res.status === 200) window.location.href = "/rpggame?is_spectator=true"
 		})
@@ -25,7 +25,7 @@ async function spectate() {
 async function resetroom() {
 	let rname = $(this).data("roomname")
 
-	AxiosApi.post("/admin/reset_room/" + rname, { roomname: rname })
+	AxiosApi.post("/api/admin/reset_room/" + rname, { roomname: rname })
 		.then((res) => {
 			if (res.status === 200) {
 				fetchdata()
@@ -95,8 +95,8 @@ function healthcheck(data) {
 
 async function fetchdata() {
 	try {
-		const rooms = (await AxiosApi.get("/admin/allrooms")).data // (await (await fetch("/admin/allrooms")).json()).data
-		const users = (await AxiosApi.get("/admin/allusers")).data //(await (await fetch("/admin/allusers")).json()).data
+		const rooms = (await AxiosApi.get("/api/admin/allrooms")).data // (await (await fetch("/admin/allrooms")).json()).data
+		const users = (await AxiosApi.get("/api/admin/allusers")).data //(await (await fetch("/admin/allusers")).json()).data
 		let str = ``
 		for (const rm of rooms) {
 			let players = ""

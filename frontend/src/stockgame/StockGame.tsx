@@ -33,7 +33,8 @@ type Props = {
 
 function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	let theme = "light"
-	let locale="kor"
+	
+	
 	const dataFetch = useRef(false)
 	const [val, setVal] = useState<DisplayData>({
 		value: 0,
@@ -69,7 +70,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	const [processing,setProcessing] = useState(false)
 	const [clientResult,setClientResult] = useState<IStockGameResult|null>(null)
 	const [serverResult,setServerResult] = useState<IStockGameResultResponse|null>(null)
-
+	let locale=context.lang==="en"?"eng":"kor"
 	function onTerminate() {
 		if (stockChart) {
 			player.sellPercent(stockChart.getCurrPrice, 1, stockChart.getTime())
@@ -140,7 +141,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 
 		await sleep(4000)
 
-		AxiosApi.post("/stockgame/result",{
+		AxiosApi.post("/api/stockgame/result",{
 			result:result,username:name
 		})
 		.then(res=>{
@@ -208,7 +209,7 @@ function StockGame({ scale, variance, startMoney,ranked }: Props) {
 	async function fetchstock() {
 		try {
 
-			const data = (await AxiosApi.get(`/stockgame/generate?variance=${variance}&scale=${scale}`)).data
+			const data = (await AxiosApi.get(`/api/stockgame/generate?variance=${variance}&scale=${scale}`)).data
 			if(!data) return
 			// console.log(data)
 			const width = window.innerWidth > 768 ? window.innerWidth * 0.6 : window.innerWidth*0.95

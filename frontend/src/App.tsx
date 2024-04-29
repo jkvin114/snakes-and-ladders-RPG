@@ -30,6 +30,7 @@ import StockGameUserLobby from "./stockgame/UserLobby"
 import StockGameUserInfo from "./stockgame/UserInfo"
 import StockGameUserPage from "./components/pages/StockGameUser"
 import SettingPage from "./components/pages/Setting"
+import { LocaleContext } from "./context/localeContext"
 
 
 function getNotiMessage(noti:INotification){
@@ -45,8 +46,11 @@ function App() {
 	const [rootState,setRootState] = useState<IRootContext>({
 		username:localStorage.getItem("username"),
 		loggedin:localStorage.getItem("username") != null && localStorage.getItem("loggedIn") === "true",
-		showToolbar:true
+		showToolbar:true,
+		lang:sessionStorage.language?sessionStorage.language:"en"
 	})
+
+	const [locale,setLocale] = useState<any>(null)
 
 	const [notiQueue,setNotiQueue] = useState<INotification[]>([])
 	function updateNotiCount(count:number){
@@ -91,7 +95,7 @@ function App() {
 	}
 	function pollNotification(){
 		console.log("start polling")
-		AxiosApi.get("/notification/poll")
+		AxiosApi.get("/api/notification/poll")
 		.then(res=>{
 			if(!mountedRef.current) return
 			
@@ -116,9 +120,9 @@ function App() {
 		// API.get("/statustest")
 		// .then(res=>console.log(res))
 		// .catch(e=>console.log(e))
-		AxiosApi.post("/jwt/init")
+		AxiosApi.post("/api/jwt/init")
 		if(localStorage.getItem("username") != null)
-			AxiosApi.post("/user/current")
+			AxiosApi.post("/api/user/current")
 			.then(res=>{
 				if (res.data === "") {
 					localStorage.removeItem("username")
@@ -132,10 +136,23 @@ function App() {
 			};
 		  
 	}, [])
+	useEffect(()=>{
+		console.log(rootState.lang)
+		let la = "en"
+		if (rootState.lang === "eng" || rootState.lang === "en") la = "en"
+		else if (rootState.lang === "kor" || rootState.lang === "ko") la = "ko"
+		sessionStorage.language=rootState.lang
+		fetch("/res/locale/page/"+la+".json")
+		.then((res) => res.json())
+		.then((data) => {
+			setLocale(data)
+		});
+
+	},[rootState.lang])
 
 	const [navbarOpen,setNavbarOpen]=useState(false)
 	function printsession(){
-		AxiosApi.get("/session")
+		AxiosApi.get("/api/session")
 		.then(res=>console.log(res.data))
 	}
 	function closeNavbar(){
@@ -152,6 +169,7 @@ function App() {
 	return (
 		<>
 			<RootContext.Provider value={{context:rootState,setContext:setRootState}}>
+			<LocaleContext.Provider value={{locale:locale,setLocale:setLocale}}>
 			<div id="page-root" className={rootState.showToolbar ?"":"hide-toolbar"}>
 				{rootState.showToolbar ?<SideBar isOpen={navbarOpen} closeNavbar={()=>setNavbarOpen(false)} notiCount={notiCount}/>:<div></div>}
 				<div>
@@ -211,6 +229,7 @@ function App() {
 				{/* <StockGame/> */}
 			</div>
 			<ToastContainer></ToastContainer>
+			</LocaleContext.Provider>
 			</RootContext.Provider>
 		</>
 	)

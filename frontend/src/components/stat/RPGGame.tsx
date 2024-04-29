@@ -1,36 +1,41 @@
+import { useContext } from "react";
 import { RPGPlayerStat } from "../../types/stat";
 import { getDateStringDifference } from "../../util";
+import Text from "../Text";
 import RPGItem from "./RPGItem";
+import { RootContext } from "../../context/context";
 
-function multiKillText(count: number) {
-	let multiKillText = ""
-	if (count >= 2) {
-		multiKillText = "Double Kill"
-	}
-	if (count >= 3) {
-		multiKillText = "Triple Kill"
-	}
-	if (count >= 4) {
-		multiKillText = "Quadra Kill"
-	}
-	if (count >= 5) {
-		multiKillText = "Penta Kill"
-	}
-	return multiKillText
-}
+
 type Props = {
     g:RPGPlayerStat
     getCharImgUrl:(champ_id:number)=>string
 }
 
 export default function RPGGameStat({g,getCharImgUrl}:Props){
-    
+    const { context } = useContext(RootContext)
+
+    function multiKillText(count: number) {
+        let multiKillText = ""
+        if (count >= 2) {
+            multiKillText = "rpgstat.multikill.double"
+        }
+        if (count >= 3) {
+            multiKillText = "rpgstat.multikill.triple"
+        }
+        if (count >= 4) {
+            multiKillText = "rpgstat.multikill.quadra"
+        }
+        if (count >= 5) {
+            multiKillText = "rpgstat.multikill.penta"
+        }
+        return multiKillText
+    }
     return (
         <div className="game-item divlink">
             <a className="divlink" href={"/stat?type=game&statid=" + g.gameId + "&turnfocus=" + g.turn}></a>
             <div className={"game-header " + (g.isWon ? "" : "lost")}>
-                <div>{g.isWon ? "Win" : "Lose"}</div>
-                <a>{g.totalturn}T</a>
+                <div><Text lkey={g.isWon?"rpgstat.win":"rpgstat.lose"}/></div>
+                <a><Text lkey="rpgstat.turn" args={[g.totalturn]}/></a>
             </div>
             <div className="game-content">
                 <div>
@@ -45,10 +50,10 @@ export default function RPGGameStat({g,getCharImgUrl}:Props){
             </div>
             <div className="game-desc">
                 <div>{g.map} map</div>
-                <div>{getDateStringDifference(g.createdAt,Date.now())} ago</div>
+                <div>{getDateStringDifference(g.createdAt,Date.now(),context.lang)} <Text lkey="generic.ago"/></div>
                     {g.player.bestMultiKill>=2 && 
-                        <b className="multikill-text" data-lkey="multikill.double">
-                            {multiKillText(g.player.bestMultiKill)}
+                        <b className="multikill-text">
+                           <Text lkey={multiKillText(g.player.bestMultiKill)}/>
                         </b>
                     }
             </div>

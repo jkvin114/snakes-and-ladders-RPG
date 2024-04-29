@@ -25,8 +25,8 @@ export default function RPGPlayerStatPage() {
 		const username = searchParams.get("username")
 		setUsername(username)
 		let url = null
-		if (username) url = "/stat/game/user?username=" + username
-		else if (user) url = "/stat/game/user?userId=" + user
+		if (username) url = "/api/stat/game/user?username=" + username
+		else if (user) url = "/api/stat/game/user?userId=" + user
 
 		let settings = await AxiosApi.get("/resource/globalsetting")
 		setSetting(settings.data)

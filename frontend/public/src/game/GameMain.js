@@ -35,9 +35,10 @@ var everythingLoaded = setInterval(function () {
 	if (/loaded|complete/.test(document.readyState)) {
 		try {
 			if (!axios) return
-			axios.defaults.withCredentials = true
-			AxiosApi = axios.create({ baseURL: server_url })
+
 			if (main && $) {
+				axios.defaults.withCredentials = true
+				AxiosApi = axios.create({ baseURL: server_url })
 				main() // this is the function that gets called when everything is loaded
 				clearInterval(everythingLoaded)
 			}
@@ -95,7 +96,7 @@ async function main() {
 // })
 
 function auth() {
-	AxiosApi.post("/room/game")
+	AxiosApi.post("/api/room/game")
 		.then()
 		.catch((e) => {
 			if (e.response.status === 401) {

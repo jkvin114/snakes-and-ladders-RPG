@@ -51,7 +51,7 @@ export default function InviteUserList({ roomUsers, onClose }: Props) {
         }
         const invited = users.filter(u=>u.selected)
         let name = limitString(context.username+","+invited.map(u=>u.username).join(","),30)
-        AxiosApi.post("/chat/room",{
+        AxiosApi.post("/api/chat/room",{
             name:name,
             users:invited.map(u=>u._id)
         })

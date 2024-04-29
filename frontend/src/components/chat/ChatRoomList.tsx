@@ -23,7 +23,7 @@ export default function ChatRoomList(){
 
         //only fetch once
         if(!friends){
-            const res = await  AxiosApi.get("/user/" + context.username+"/friend")
+            const res = await  AxiosApi.get("/api/user/" + context.username+"/friend")
             setFriends((res.data as IChatUser[]).filter(u=>u.username!==context.username))
         }
         setIsNewRoomOpen(true)
@@ -43,7 +43,7 @@ export default function ChatRoomList(){
     },[searchParams])
     
     function load(){
-        AxiosApi.get("/chat/rooms")
+        AxiosApi.get("/api/chat/rooms")
         .then(res=>{
             for(const room of res.data as IChatRoom[]){
                 if(!room.lastMessage){

@@ -46,7 +46,7 @@ export default function ProfilePage({ modal }: Props) {
 			window.location.href="/user/" + name
 			return
 		}
-		AxiosApi.get("/user/" + name)
+		AxiosApi.get("/api/user/" + name)
 			.then((res) => {
 				console.log(res.data)
 				setProfile(res.data as IUserProfile)
@@ -69,7 +69,7 @@ export default function ProfilePage({ modal }: Props) {
 	}, [modal])
 	function logout() {
 		if (!window.confirm("Are you sure you want to log out?")) return
-		AxiosApi.post("/user/logout")
+		AxiosApi.post("/api/user/logout")
 			.then((r) => {
 				localStorage.removeItem("username")
 				localStorage.removeItem("loggedin")
@@ -82,7 +82,7 @@ export default function ProfilePage({ modal }: Props) {
 	}
 
 	function friendRequest() {
-		AxiosApi.post("/user/relation/friend_request/send", { username: profile.username })
+		AxiosApi.post("/api/user/relation/friend_request/send", { username: profile.username })
 			.then((res) => {
 				if (res.status === 200) setProfile({ ...profile, isFriend: true })
 			})
@@ -92,7 +92,7 @@ export default function ProfilePage({ modal }: Props) {
 			})
 	}
 	function follow() {
-		AxiosApi.post("/user/relation/follow", { username: profile.username })
+		AxiosApi.post("/api/user/relation/follow", { username: profile.username })
 			.then((res) => {
 				if (res.status === 200) setProfile({ ...profile, isFollowing: true })
 			})
@@ -102,7 +102,7 @@ export default function ProfilePage({ modal }: Props) {
 			})
 	}
 	function unfollow() {
-		AxiosApi.post("/user/relation/unfollow", { username: profile.username })
+		AxiosApi.post("/api/user/relation/unfollow", { username: profile.username })
 			.then((res) => {
 				if (res.status === 200) setProfile({ ...profile, isFollowing: false })
 			})
@@ -118,7 +118,7 @@ export default function ProfilePage({ modal }: Props) {
 			const formData = new FormData()
 			formData.append("img", selectedImage)
 
-			AxiosApi.post("/user/profileimg", formData)
+			AxiosApi.post("/api/user/profileimg", formData)
 				.then((res) => {
 					alert("Profile image updated")
 					navigate(0)

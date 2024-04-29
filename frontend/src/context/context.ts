@@ -5,7 +5,7 @@ export type IRootContext = {
     username : string|null
     loggedin:boolean
     showToolbar:boolean
-    lang?:string
+    lang?:string|null
 }
 export type ContextHook = {
     context:IRootContext,

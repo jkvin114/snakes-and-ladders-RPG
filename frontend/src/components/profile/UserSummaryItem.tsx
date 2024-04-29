@@ -19,7 +19,7 @@ export default function UserSummaryItem({profileImgDir,username,buttonType,link}
 
     const loggedin = localStorage.getItem("username")!=null
     function friendRequest() {
-		AxiosApi.post("/user/relation/friend_request/send", { username: username })
+		AxiosApi.post("/api/user/relation/friend_request/send", { username: username })
 			.then((res) => {
 				if (res.status === 200) setBtnState("friend_requested")
 			})
@@ -29,7 +29,7 @@ export default function UserSummaryItem({profileImgDir,username,buttonType,link}
 			})
 	}
 	function follow() {
-		AxiosApi.post("/user/relation/follow", { username: username })
+		AxiosApi.post("/api/user/relation/follow", { username: username })
 			.then((res) => {
 				if (res.status === 200) setBtnState("unfollow")
 			})
@@ -39,7 +39,7 @@ export default function UserSummaryItem({profileImgDir,username,buttonType,link}
 			})
 	}
 	function unfollow() {
-		AxiosApi.post("/user/relation/unfollow", { username: username })
+		AxiosApi.post("/api/user/relation/unfollow", { username: username })
 			.then((res) => {
 				if (res.status === 200) setBtnState("follow")
 			})

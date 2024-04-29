@@ -3,13 +3,17 @@ import "../../styles/login.css"
 import { RiArrowLeftLine, RiErrorWarningFill } from "react-icons/ri"
 import { backend_url } from "../../variables"
 import { Link } from "react-router-dom"
+import Text from "../Text"
+import { LocaleContext } from "../../context/localeContext"
+import { lText } from "../../util"
 
 export function RegisterPage() {
 
 
     const [error,setError] =useState("")
 
-    const url = backend_url+"/user/register"
+    const url = backend_url+"/api/user/register"
+    const { locale } = useContext(LocaleContext)
 
     async function submitLogin(){
         const email = (document.getElementById("register-email") as HTMLInputElement).value
@@ -19,15 +23,15 @@ export function RegisterPage() {
         const pw2 = (document.getElementById("register-password2") as HTMLInputElement).value
 
         if(username==="" ||email==="" || pw === "" || pw2 === ""){
-            setError("Missing values")
+            setError("authpage.error.missing")
             return
         }
         if(pw !== pw2){
-            setError("Passwords not match")
+            setError("authpage.error.password")
             return
         }
         if (email.match(/[^@]+@[^.]+\.[a-z]+/) == null) {
-			setError("Invalid email")
+			setError("authpage.error.email")
 			return
 		}
         try{
@@ -46,24 +50,24 @@ export function RegisterPage() {
             })
 
             if(res.status===200){
-                alert("Registered")
+                alert(lText(locale,"authpage.registered"))
                 window.location.href="/login"
             }
             const data = await res.text()
             if(data==="username"){
-                setError("invalid username length")
+                setError("authpage.error.username_length")
             }
             else if(data==="password"){
-                setError("invalid password")
+                setError("authpage.error.password_condition")
             }
             else if(data==="duplicate username")
             {
-                setError("duplicate username")
+                setError("authpage.error.username_duplicate")
             }
         }
         catch(e){
             console.error(e)
-            setError("Server Error")
+            setError("authpage.error.servererror")
         }
         
     }
@@ -78,34 +82,34 @@ export function RegisterPage() {
             <Link to="/" className="back"><RiArrowLeftLine  /> </Link>
 
 				<div className="content">
-					<h2>Register</h2>
+					<h2><Text lkey="generic.register"/></h2>
 
 					<div className="form">
 						
                         <div className="inputBox">
 							<input type="text" id="register-username" required/>
-								<i>Username</i>
+								<i><Text lkey="generic.username"/></i>
 						</div>
 						<div className="inputBox">
 							<input type="password" id="register-password" required/>
-								<i>Password</i>
+								<i><Text lkey="generic.pw"/></i>
 						</div>
                         <div className="inputBox">
 							<input type="password" id="register-password2" required/>
-								<i>Verify Password</i>
+								<i><Text lkey="authpage.verify-pw"/></i>
 						</div>
                         <div className="inputBox">
 							<input type="text" id="register-email" required/>
-								<i>Email</i>
+								<i><Text lkey="generic.email"/></i>
 						</div>
 						<div className="links">
-                            {error!=="" && (<i id="login-error"><RiErrorWarningFill /> {error}</i>)}
+                            {error!=="" && (<i id="login-error"><RiErrorWarningFill /> <Text lkey={error}/></i>)}
                             <br></br>
-                            <Link to={"/login"}>Login</Link>
+                            <Link to={"/login"}><Text lkey="generic.login"/></Link>
 						</div>
 
 						<div className="inputBox">
-							<input type="submit" value="Register" onClick={submitLogin}/>
+							<input type="submit" value={lText(locale,"generic.register")} onClick={submitLogin}/>
 						</div>
 					</div>
 				</div>

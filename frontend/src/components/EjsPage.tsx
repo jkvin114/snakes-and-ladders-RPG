@@ -26,7 +26,7 @@ export default function EjsPage() {
 			setHtmlData({ html: `<h1>Cannot load a page</h1>` })
 			return
 		}
-		AxiosApi.get(pathname + search)
+		AxiosApi.get("/api"+pathname + search)
 			.then((res) => {
 				setHtmlData({
 					html: res.data.html,

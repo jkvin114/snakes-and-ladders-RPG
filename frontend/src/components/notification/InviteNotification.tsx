@@ -11,7 +11,7 @@ type Props= {
 export default function InviteNotification({noti}:Props){
 
     function accept(){
-        AxiosApi.post("/room/accept_invite",{roomname:noti.payload2})
+        AxiosApi.post("/api/room/accept_invite",{roomname:noti.payload2})
         .then(res=>{
             window.location.href=`/match?join=true&roomname=${noti.payload2}&gametype=${noti.payload3}`
         })

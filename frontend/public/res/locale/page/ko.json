@@ -1,0 +1,161 @@
+{
+	"locale": "ko",
+	"generic": {
+		"login": "로그인",
+		"logout": "로그아웃",
+		"register": "회원가입",
+		"setting": "설정",
+		"home": "홈",
+		"username": "아이디",
+		"pw": "비밀번호",
+        "email":"이메일",
+        "refresh":"새로고침",
+        "cancel":"취소",
+        "save":"저장",
+        "title":"제목",
+        "ago":"전"
+
+	},
+	"sidebar": {
+		"rpggame": {
+			"create": "방 만들기",
+			"join": "방 참가",
+			"spectate": "관전하기",
+			"my": "내 전적",
+			"all": "전체 전적",
+			"analysis": "분석",
+			"wiki": "위키"
+		},
+		"stockgame": {
+			"my": "내 페이지",
+			"play": "게임하기",
+			"leaderboard": "리더보드"
+		},
+		"marblegame": {
+			"marble": "모두의마블",
+			"create": "방 만들기",
+			"join": "방 참가",
+			"my": "내 전적",
+			"all": "전체 전적"
+		},
+		"post": "게시판",
+		"viewpost": "게시물 보기",
+		"writepost": "게시물 작성",
+		"social": "소셜",
+		"friend": "친구",
+		"newsfeed": "뉴스피드",
+		"chat": "채팅",
+		"noti": "알림",
+		"myprofile": "내 프로필"
+	},
+    
+	"settingpage": {
+		"status": "서비스 상태",
+		"name": {
+			"noti_chat": "채팅 알림",
+			"noti_comment": "새 댓글",
+			"noti_post": "팔로잉 게시글",
+			"noti_reply": "새 답글",
+			"noti_stockgame": "StockGame 점수 역전",
+			"noti_follower": "새 팔로워"
+		},
+		"desc": {
+			"noti_chat": "Manage alert for new chat",
+			"noti_comment": "Manage alert for new comment in your post",
+			"noti_post": "Manage alert for new reply in your comment",
+			"noti_reply": "Manage alert for new post from user that you follow",
+			"noti_stockgame": "Manage alert for your friend surpassing your stockgame score",
+			"noti_follower": "Manage alert for your new follower"
+		}
+	},
+	"homepage": {
+		"salr-desc": "RPG 스타일의 전투와 주사위 게임을 결합한 형식의 멀티플레이 보드게임",
+		"quickplay": "빠른 대전",
+		"quickplay-desc": "AI 혹은 다른 플레이어와 플레이할 수 있습니다",
+		"stat": "통계",
+		"stat-desc": "게임 통계 기록과 캐릭터 승률 분석",
+		"stockgame-desc": "주식 시뮬레이션에서 최대한의 수익률을 기록해 보세요",
+		"other": {
+			"name": "기타 기능",
+			"wiki": "위키 페이지",
+			"wiki-desc": "Snakes-and-Ladders RPG의 위키 페이지 방문",
+			"post": "게시판",
+			"post-desc": "게시물을 올리고 댓글/답글을 달 수 있습니다",
+			"chat": "그룹 채팅",
+			"chat-desc": "친구들과 채팅을 할 수 있습니다."
+		}
+	},
+	"authpage": {
+		"error": {
+            "username":"존재하지 않는 아이디입니다",
+            "password":"비밀번호가 틀립니다",
+            "email":"유효한 이메일을 입력하세요",
+            "username_length":"아이디는 2~15글자 사이여야 합니다",
+            "password_condition":"비밀번호는 숫자와 영문포함 3글자 이상이어야 합니다",
+            "username_duplicate":"아이디 중복",
+            "servererror": "서버 오류",
+            "missing":"모든 입력란을 작성하세요",
+            "registered":"회원가입 완료"
+		},
+        "verify-pw":"비밀번호 확인",
+        "registered":"회원가입 완료"
+	},
+    "createroompage":{
+        "room":{
+            "username":"닉네임(선택)",
+            "name":"방제(선택)",
+            "pw":"방 비밀번호(선택)"
+        },
+        "setting":{
+            "private":"비공개",
+            "loginonly":"로그인한 유저만 받기"
+        },
+        "name":"새 %d게임 생성",
+        "create":"게임 생성"
+
+    },
+    "statuspage":{
+        "status":{
+            "on":"정상",
+            "off":"연결 끊김",
+            "none":"연결 불가"
+        },
+        "name":"서비스 상태",
+        "service":{
+            "db":"데이터베이스",
+            "rpg":"RPG 게임 서버",
+            "marble":"모두의마블 게임 서버"
+        }
+    },
+    "writepostpage":{
+        "msg":{
+            "image-fail":"이미지 업로드 실패",
+            "image-upload":"이미지 업로드 완료",
+            "missing":"제목과 내용을 입력하세요",
+            "save-fail":"게시물 저장 실패"
+        },
+        "write-content":"여기에 내용을 작성하세요",
+        "writepost":"게시물 작성",
+        "editpost":"게시물 수정"
+    },
+    "rpgstat":{
+        "win":"승리",
+        "lose":"패배",
+        "turn":"%d턴",
+        "multikill":{
+            "double":"더블킬",
+            "triple":"트리플킬",
+            "quad":"쿼드라킬",
+            "penta":"펜타킬"
+        }
+    },
+    "stock-leaderboard":{
+        "loggedin":"로그인한 유저",
+        "alltime":"전체 기간",
+        "rank":"순위",
+        "score":"점수",
+        "name":"리더보드",
+        "username":"닉네임"
+
+    }
+}

@@ -497,7 +497,7 @@ function toast2(msg) {
 }
 
 function auth() {
-	AxiosApi.post("/room/game")
+	AxiosApi.post("axios.defaults.withCredentials = true/room/game")
 		.then()
 		.catch((e) => {
 			if (e.response.status === 401) {

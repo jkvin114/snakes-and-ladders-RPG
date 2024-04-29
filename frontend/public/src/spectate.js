@@ -66,7 +66,7 @@ function genTable(game) {
 	return tables
 }
 async function refreshGame(rname) {
-	let game = await (await fetch(SERVER_URL + "/room/rpg_game/" + rname)).json()
+	let game = await (await fetch(SERVER_URL + "/api/room/rpg_game/" + rname)).json()
 	if (!game) {
 		alert("Game does not exist")
 		return
@@ -75,7 +75,7 @@ async function refreshGame(rname) {
 }
 
 async function getlist() {
-	let games = await (await fetch(SERVER_URL + "/room/all_rpg_games")).json()
+	let games = await (await fetch(SERVER_URL + "/api/room/all_rpg_games")).json()
 	let str = ""
 	if (games.games.length === 0) $("#title").html("There are no games currently playing")
 
@@ -134,7 +134,7 @@ async function getlist() {
 
 	$(".spectate-btn").click(async function () {
 		let rname = $(this).data("roomname")
-		AxiosApi.post("/room/spectate_rpg", { roomname: rname })
+		AxiosApi.post("/api/room/spectate_rpg", { roomname: rname })
 			.then((res) => {
 				window.location.href = "/rpggame?is_spectator=true"
 			})

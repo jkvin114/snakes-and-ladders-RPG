@@ -11,6 +11,9 @@ import { ToastHelper } from "../../ToastHelper";
 import { IPostEdit } from "../../types/post";
 import { RiArrowLeftSLine, RiSave3Line } from "react-icons/ri";
 import { backend_url } from "../../variables";
+import { LocaleContext } from "../../context/localeContext";
+import { lText } from "../../util";
+import Text from "../Text";
 
 const  toolbarOptions = [
     ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
@@ -39,6 +42,7 @@ export default function WritePostPage(){
     // const [quill,setQuill] = useState<IQuill|null>(null)
     const allImages:string[] = []//stores all images that were uploaded or seen in editing
     // const [images,setImages] = useState<string[]>([])
+    const { locale } = useContext(LocaleContext)
 
     function onload(){
         
@@ -46,7 +50,7 @@ export default function WritePostPage(){
        quill =  new Quill(document.getElementById("quill-root") as HTMLElement,{
             theme: "snow",
             bounds: ".editor",
-            placeholder: "Write content..",
+            placeholder: lText(locale,"writepostpage.write-content")+"..",
             modules: {
                 toolbar: toolbarOptions,
             },
@@ -54,7 +58,7 @@ export default function WritePostPage(){
         console.log(postUrl)
         quill.getModule("toolbar").addHandler("image",selectLocalImage);
         if(postUrl){
-            AxiosApi.get("/board/post/edit/"+postUrl)
+            AxiosApi.get("/api/board/post/edit/"+postUrl)
             .then(res=>setData(res.data))
             .catch(e=>{
                 console.error(e)
@@ -102,7 +106,7 @@ export default function WritePostPage(){
             const removedImages = getRemovedImages(images)
             const title = (document.getElementById("title") as HTMLInputElement).value
             const thumbnail = images.length>0? images[0]:""
-            let url = postUrl?"/board/post/edit":"/board/post/write"
+            let url = postUrl?"/api/board/post/edit":"/api/board/post/write"
             //PUBLIC,FRIENDS,LINK_ONLY,PRIVATE
             let body={
                 removedImages:removedImages,
@@ -114,7 +118,7 @@ export default function WritePostPage(){
                 url:postUrl
             }
             if(!title || !text.replaceAll(" ","").replaceAll("\n","")){
-                ToastHelper.ErrorToast("title and content are required")
+                ToastHelper.ErrorToast(lText(locale,"writepostpage.msg.missing"))
                 return
             }
             
@@ -126,7 +130,7 @@ export default function WritePostPage(){
             })
             .catch(e=>{
                 console.error(e)
-                ToastHelper.ErrorToast("failed to save")
+                ToastHelper.ErrorToast(lText(locale,"writepostpage.msg.save-fail"))
             })
         }
     }
@@ -145,15 +149,15 @@ export default function WritePostPage(){
         // console.log(file)
 		formData.append("img", file)
 
-		AxiosApi.post("/board/post/image", formData)
+		AxiosApi.post("/api/board/post/image", formData)
 			.then((res) => {
                 if(!res.data){
-                    ToastHelper.ErrorToast("Failed to upload image")
+                    ToastHelper.ErrorToast(lText(locale,"writepostpage.msg.image-fail"))
 
                     return
                 }
                 // alert(res.data)
-				ToastHelper.InfoToast("image uploaded")
+				ToastHelper.InfoToast(lText(locale,"writepostpage.msg.image-upload"))
                insertToEditor(IMAGE_PATH+res.data)
 
                 allImages.push(res.data)
@@ -161,7 +165,7 @@ export default function WritePostPage(){
 			})
 			.catch((e) => {
 				console.error(e)
-				ToastHelper.ErrorToast("Failed to upload image")
+				ToastHelper.ErrorToast(lText(locale,"writepostpage.msg.image-fail"))
 			})
     }
 
@@ -214,12 +218,12 @@ export default function WritePostPage(){
        
 
         <div className="toolbar">
-            <button className="button dark" onClick={cancel}><RiArrowLeftSLine />Cancel</button>
-            <b>{postUrl?"Edit":"Write"} Post</b>
-            <button className="button" onClick={save}><RiSave3Line />Save</button>
+            <button className="button dark" onClick={cancel}><RiArrowLeftSLine /><Text lkey="generic.cancel"/></button>
+            <b><Text lkey={postUrl?"editpost.writepost":"writepostpage.writepost"}/></b>
+            <button className="button" onClick={save}><RiSave3Line /><Text lkey="generic.save"/></button>
         </div>
         <div className="editor">
-            <div id="title-container"><input id="title" placeholder="Title"></input></div>
+            <div id="title-container"><input id="title" placeholder={lText(locale,"generic.title")}></input></div>
             <div id="content">
                 <div id="image"></div>
                 <div id="quill-root">

@@ -21,7 +21,7 @@ export default function StockGameUserInfo({userId}:{userId?:string}){
     
     useEffect(()=>{
         if(!userId) return
-        AxiosApi.get("/stockgame/profile/"+userId)
+        AxiosApi.get("/api/stockgame/profile/"+userId)
         .then((res) => {
             setCurrentBest(res.data.best)
             setRecord(res.data.records)
@@ -29,7 +29,7 @@ export default function StockGameUserInfo({userId}:{userId?:string}){
             setUsername(res.data.username)
             setUserProfile(res.data.profileImgDir)
             if(res.data.best)
-                AxiosApi.get("/stockgame/rank/position/byscore?score=" + res.data.best.score)
+                AxiosApi.get("/api/stockgame/rank/position/byscore?score=" + res.data.best.score)
                     .then((res) => setCurrBestPos(res.data))
                     .catch((e) => console.error(e))
         })

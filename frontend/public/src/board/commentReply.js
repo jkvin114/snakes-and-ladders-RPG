@@ -16,7 +16,7 @@ function main(url) {
 		if (!confirm(LOCALE.msg.confirm_delete)) return
 
 		let value = $(this).val()
-		AxiosApi.post("/board/post/reply/delete", { commentId: value })
+		AxiosApi.post("/api/board/post/reply/delete", { commentId: value })
 			.then((res) => {
 				if (res.status == 200) {
 					window.location.reload()
@@ -48,7 +48,7 @@ function writeComment(e) {
 	let commentId = $(this).find("input[name='commentId']").val()
 	let content = $(this).find("input[name='content']").val()
 
-	let url = "/board/post/comment/reply"
+	let url = "/api/board/post/comment/reply"
 	AxiosApi.post(url, {
 		commentId: commentId,
 		content: content,
@@ -66,7 +66,7 @@ function writeComment(e) {
 
 function sendVote(kind, type, id, elem) {
 	let vote_count = $(elem).children(".vote_count").eq(0)
-	AxiosApi.post("/board/" + kind + "/vote", { id: id, type: type })
+	AxiosApi.post("/api/board/" + kind + "/vote", { id: id, type: type })
 		.then((res) => {
 			const data = res.data
 			if (res.status == 200) {
