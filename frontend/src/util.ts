@@ -4,8 +4,8 @@ export function limitString(str?: string, size?: number) {
 	return str.length > 15 ? str?.slice(0, 15) + ".." : str
 }
 
-export function getTimeAgo(start: string) {
-	return getDateStringDifference(new Date(start).valueOf(), Date.now())
+export function getTimeAgo(start: string,lang?:string|null) {
+	return getDateStringDifference(new Date(start).valueOf(), Date.now(),lang)
 }
 
 export function getDateStringDifference(start: number, now: number,lang?:string|null) {
@@ -65,23 +65,35 @@ export function addCommas(num: number): string {
 }
 const ARG_SYNTAX = "%d"
 
-export function lText(locale: any, lkey: string, args?: (string | number)[]) {
+export function lText(locale: any, lkey: string, args?: (string | number)[],defaultStr?:string) {
 	let text = ""
 	if (!lkey) return text
 	let classes = lkey.split(".")
-	if (classes.length === 0 || !locale)return text
+
+	function wrap(t:string){
+		if(t==="" && defaultStr){
+			t = defaultStr
+		}
+		return t
+	}
+	
+	if (classes.length === 0 || !locale) return wrap(text)
 	try {
 		let translation = locale
 		for (const c of classes) {
-			if (!translation)return text
+			if (!translation)return wrap(text)
 			translation = translation[c]
 		}
-		if (translation) text = translation
-	} catch (e) {}
-	if (args) {
-		for (const arg of args) {
-			text = text.replace(ARG_SYNTAX, String(arg))
+		if (translation && typeof translation === "string") text = translation
+
+		if (args) {
+			for (const arg of args) {
+				text = text.replace(ARG_SYNTAX, String(arg))
+			}
 		}
+	} catch (e) {
+		console.error(e)
 	}
-	return text
+	
+	return wrap(text)
 }

@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import "../styles/gameinvite.scss"
 import { IFriendStatus } from "../types/chat"
 import { AxiosApi } from "../api/axios"
-import { getDateStringDifference } from "../util"
+import { getDateStringDifference, lText } from "../util"
 import ChatProfileImage from "./chat/ChatProfileImage"
 import { RiArrowDropRightLine, RiArrowDropLeftLine, RiRefreshLine, RiMailSendLine } from "react-icons/ri"
+import { LocaleContext } from "../context/localeContext"
+import Text from "./Text"
 export default function GameInviteModal() {
 	const [open, setOpen] = useState(false)
 	const [friends, setFriends] = useState<IFriendStatus[]>([])
 	const [invited, setInvited] = useState<Set<string>>(new Set<string>())
+    const { locale } = useContext(LocaleContext)
 
 	useEffect(reload, [open])
 	function reload() {
@@ -29,13 +32,16 @@ export default function GameInviteModal() {
 
 	function toStatusString(status: string) {
 		if (status === "rpggame") {
-			return "Playing game"
+			return lText(locale,"friends.status.rpg")
 		}
 		if (status === "marblegame") {
-			return "Playing game"
+			return lText(locale,"friends.status.marble")
 		}
 		if (status === "rpgspectate") {
-			return "Spectating game"
+			return lText(locale,"friends.status.rpgspectate")
+		}
+		if (status === "online") {
+			return lText(locale,"friends.status.online")
 		}
 		return status
 	}
@@ -89,7 +95,7 @@ export default function GameInviteModal() {
 								<div>
 									<div className="name">{f.username}</div>
 									{f.status && (
-										<div>{(invited.has(f._id) && canInvite(f.status)) ?<span className="waiting">Waiting response..</span> :
+										<div>{(invited.has(f._id) && canInvite(f.status)) ?<span className="waiting"><Text lkey="friends.waiting"/></span> :
                                         <><span className={"badge "+(canInvite(f.status)?"":"unavailable")}></span>
                                         {toStatusString(f.status)}</>}
 										</div>
@@ -98,12 +104,12 @@ export default function GameInviteModal() {
 								<div>
 									{!invited.has(f._id) && (
 										<button className={"button "+(canInvite(f.status)?"":"disabled")} onClick={canInvite(f.status) ?() => inviteUser(f._id):()=>{}}>
-											invite
+											<Text lkey="generic.invite"/>
 										</button>
 									)}
 									{invited.has(f._id) && (
 										<button className={"button dark "+(canInvite(f.status)?"":"disabled")} onClick={() => cancelInvite(f._id)}>
-											cancel
+											<Text lkey="generic.cancel"/>
 										</button>
 									)}
 								</div>

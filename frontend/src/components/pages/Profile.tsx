@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react"
+import { ChangeEvent, useContext, useEffect, useState } from "react"
 import { AxiosApi } from "../../api/axios"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import "../../styles/profile.scss"
@@ -12,6 +12,9 @@ import ProfileSetting from "../profile/ProfileSetting"
 import MarbleStatPage from "./MarbleStat"
 import RPGPlayerStatPage from "./RPGPlayerStat"
 import ProfileImg from "../ProfileImg"
+import { lText } from "../../util"
+import { LocaleContext } from "../../context/localeContext"
+import Text from "../Text"
 
 type Props = {
 	modal?: "friend" | "follower" | "following" | "setting"
@@ -33,6 +36,7 @@ export default function ProfilePage({ modal }: Props) {
 	})
 	const { username } = useParams()
 	const navigate = useNavigate()
+    const { locale } = useContext(LocaleContext)
 
 	let storedName = localStorage.getItem("username")
 	const name = username ? username : storedName
@@ -68,7 +72,7 @@ export default function ProfilePage({ modal }: Props) {
 		}
 	}, [modal])
 	function logout() {
-		if (!window.confirm("Are you sure you want to log out?")) return
+		if (!window.confirm(lText(locale,"profilepage.message.confirm_logout"))) return
 		AxiosApi.post("/api/user/logout")
 			.then((r) => {
 				localStorage.removeItem("username")
@@ -120,12 +124,12 @@ export default function ProfilePage({ modal }: Props) {
 
 			AxiosApi.post("/api/user/profileimg", formData)
 				.then((res) => {
-					alert("Profile image updated")
+					alert(lText(locale,"profilepage.message.image_update"))
 					navigate(0)
 				})
 				.catch((e) => {
 					console.error(e)
-					alert("Failed to update progile image")
+					alert(lText(locale,"profilepage.message.image_update_fail"))
 				})
 		}
 	}
@@ -171,14 +175,13 @@ export default function ProfilePage({ modal }: Props) {
 							<div className="username" style={{ fontSize: "25px", margin: "4px" }}>
 								<b>{profile.username}</b>
 							</div>
-							<div className="email">Email:{profile.email} </div>
+							<div className="email"><Text lkey="generic.email"/>: {profile.email} </div>
 							{profile.isme && (
 								<>
 									<a
 										style={{ textDecoration: "underline", cursor: "pointer" }}
-										onClick={logout}
-										{...{ lkey: "logout" }}>
-										Logout
+										onClick={logout}>
+										<Text lkey="generic.logout"/>
 									</a>
 								</>
 							)}
@@ -192,29 +195,26 @@ export default function ProfilePage({ modal }: Props) {
 									{profile.isFriend ? (
 										<b className="button" style={{ color: "rgb(135, 255, 126)" }}>
 											<img src="/res/img/ui/confirm.png" style={{ width: "15px", verticalAlign: "middle" }} />
-											<b data-lkey="mypage.friend">Friend</b>
+											<b><Text lkey="profilepage.friend"/></b>
 										</b>
 									) : (
 										profile.requestedFrield ?
 										<b className="button">
 											<img src="/res/img/ui/confirm.png" style={{ width: "15px", verticalAlign: "middle" }} />
-											<b data-lkey="mypage.friend">Friend Request Sent</b>
+											<b><Text lkey="profilepage.friendrequestsent"/></b>
 										</b> :
 											<button
 												className="button"
 												id="friend-request-btn"
-												onClick={friendRequest}
-												data-lkey="mypage.friendrequest">
-												Friend request
+												onClick={friendRequest}>
+												<Text lkey="profilepage.friendrequest"/>
 											</button>
-										
-										
 									)}
 								</div>
 								<div style={{ display: "inline" }}>
 									{profile.isFollowing ? (
-										<button className="button" id="unfollow-btn" onClick={unfollow} data-lkey="mypage.unfollow">
-											Unfollow
+										<button className="button" id="unfollow-btn" onClick={unfollow}>
+											<Text lkey="profilepage.unfollow"/>
 										</button>
 									) : (
 										<button
@@ -222,8 +222,8 @@ export default function ProfilePage({ modal }: Props) {
 											id="follow-btn"
 											onClick={follow}
 											style={{ background: "#7E00BF" }}
-											data-lkey="mypage.follow">
-											Follow
+											>
+											<Text lkey="profilepage.follow"/>
 										</button>
 									)}
 								</div>
@@ -233,49 +233,49 @@ export default function ProfilePage({ modal }: Props) {
 					<div className="content">
 						<div className="linkbtn divlink">
 							<Link to={`/user/${name}/friend`} preventScrollReset={true} className="divlink" replace={true}></Link>
-							<b data-lkey="mypage.friends">Friends</b> <a className="count">{"(" + profile.counts[0] + ")"}</a>
+							<b ><Text lkey="profilepage.friends"/></b> <a className="count">{"(" + profile.counts[0] + ")"}</a>
 						</div>
 						{profile.isme && (
 							<>
 								<div className="linkbtn divlink">
 									<Link className="divlink" to={`/user/${name}/following`} replace={true}></Link>
-									<b>Following</b> <a className="count">{"(" + profile.counts[1] + ")"}</a>
+									<b><Text lkey="profilepage.following"/></b> <a className="count">{"(" + profile.counts[1] + ")"}</a>
 								</div>
 								<div className="linkbtn divlink">
 									<Link className="divlink" to={`/user/${name}/follower`} replace={true}></Link>
-									<b>Followers</b> <a className="count">{"(" + profile.counts[6] + ")"}</a>
+									<b><Text lkey="profilepage.followers"/></b> <a className="count">{"(" + profile.counts[6] + ")"}</a>
 								</div>
 								<div className="linkbtn divlink">
 									<a className="divlink" href={`/board/user/${profile.username}/bookmarks`}></a>
-									<b data-lkey="mypage.bookmarks">Bookmarks</b> <a className="count">{"(" + profile.counts[2] + ")"}</a>
+									<b data-lkey="mypage.bookmarks"><Text lkey="profilepage.bookmarks"/></b> <a className="count">{"(" + profile.counts[2] + ")"}</a>
 								</div>
 							</>
 						)}
 
 						<div className="linkbtn divlink">
 							<a className="divlink" href={`/board/user/${profile.username}/posts`}></a>
-							<b data-lkey="mypage.posts">Posts</b> <a className="count">{"(" + profile.counts[3] + ")"}</a>
+							<b ><Text lkey="profilepage.posts"/></b> <a className="count">{"(" + profile.counts[3] + ")"}</a>
 						</div>
 						<div className="linkbtn divlink">
 							<a className="divlink" href={`/board/user/${profile.username}/comments`}></a>
-							<b data-lkey="mypage.comments">Comments</b> <a className="count">{"(" + profile.counts[4] + ")"}</a>
+							<b ><Text lkey="profilepage.comments"/></b> <a className="count">{"(" + profile.counts[4] + ")"}</a>
 						</div>
 						<div className="linkbtn divlink">
 							<a className="divlink" href={`/board/user/${profile.username}/likes`}></a>
-							<b data-lkey="mypage.likes">Liked Posts</b> <a className="count">{"(" + profile.counts[5] + ")"}</a>
+							<b ><Text lkey="profilepage.likes"/></b> <a className="count">{"(" + profile.counts[5] + ")"}</a>
 						</div>
 						<div className="linkbtn divlink">
 							<Link className="divlink" to={`/rpg_stat?username=${profile.username}`}></Link>
-							<b data-lkey="mypage.rpgggames">RPG Gameplays <a className="count">{"(" + profile.counts[8] + ")"}</a></b> 
+							<b ><Text lkey="profilepage.rpggames"/> <a className="count">{"(" + profile.counts[8] + ")"}</a></b> 
 						</div>
 
 						<div className="linkbtn divlink">
 							<Link className="divlink" to={`/marble_stat?username=${profile.username}`}></Link>
-							<b data-lkey="mypage.marblegames">Marble Gameplays <a className="count">{"(" + profile.counts[7] + ")"}</a></b> 
+							<b ><Text lkey="profilepage.marblegames"/> <a className="count">{"(" + profile.counts[7] + ")"}</a></b> 
 						</div>
 						<div className="linkbtn divlink">
 							<Link className="divlink" to={`/stockgame/user/${profile.id}`}></Link>
-							<b data-lkey="mypage.marblegames">MockStock Profile </b> 
+							<b ><Text lkey="profilepage.stockgame"/> </b> 
 						</div>
 						{profile.isadmin && <button onClick={() => golink("/admin")}>Admin page</button>}
 					</div>
@@ -290,10 +290,10 @@ export default function ProfilePage({ modal }: Props) {
 				<div className={"profile-modal "+ (modal==="setting"?"wide":"")} >
 					<div className="modal-toolbar">
 						<b>
-							{modal === "friend" && "Friends"}
-							{modal === "follower" && "Follower"}
-							{modal === "following" && "Following"}
-							{modal === "setting" && "Setting"}
+							{modal === "friend" && <Text lkey="profilepage.friends"/>}
+							{modal === "follower" && <Text lkey="profilepage.follower"/>}
+							{modal === "following" && <Text lkey="profilepage.following"/>}
+							{modal === "setting" && <Text lkey="profilepage.setting"/>}
 						</b>
 						<div className="divlink modal-close">
 							<Link className="divlink" to={`/user/${name}`} replace={true}>

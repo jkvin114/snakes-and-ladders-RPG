@@ -13,8 +13,11 @@
         "cancel":"Cancel",
         "save":"Save",
         "title":"Title",
-        "ago":"ago"
-
+        "ago":"ago",
+		"servererror":"Server Error",
+		"invite":"Invite",
+		"accept":"Accept",
+		"reject":"Reject"
 	},
 	"sidebar": {
 		"rpggame": {
@@ -154,6 +157,93 @@
         "score":"Score",
         "name":"LeaderBoard",
         "username":"Username"
+    },
+	"profilepage":{
+		"friend":"Friend",
+        "friendrequest":"Friend request",
+		"friendrequestsent":"Friend request sent",
+        "unfollow":"Unfollow",
+        "follow":"Follow",
+        "bookmarks":"Bookmarks",
+        "following":"Following",
+        "posts":"Posts",
+        "comments":"Comments",
 
-    }
+        "friends":"Friends",
+		"followers":"Followers",
+        "likes":"Liked Posts",
+        "setting":"User Settings",
+        "profile":"Profile Image",
+        "confirm":"Confirm change",
+        "removeprofile":"Remove profile image",
+        "prevpw":"previous password",
+        "pw":"new password",
+        "pw2":"new password check",
+        "rpggames":"RPG Gameplays",
+		"marblegames":"Marble Gameplays",
+		"stockgame":"MockStock Profile",
+        "changepw":"Change Password",
+        "security":"Security",
+        "error":{
+			"pw_old":"Old password does not match",
+            "pw":"Password does not match",
+            "pw_condition":"Password should be longer than 3 characters containing both alphabet and number"
+        },
+		"message":{
+			"pw_changed":"changed password",
+			"confirm_logout":"Are you sure you want to log out?",
+			"image_update":"Profile image updated",
+			"image_update_fail":"Failed to update progile image",
+			"confirm_image_remove":"Do you want to delete profile image?"
+		}
+        
+	},
+	"friends":{
+		"status":{
+			"rpg":"Playing RPG game",
+			"marble":"Playing Marble game",
+			"rpgspectate":"Spectating RPG game",
+			"online":"Online"
+		},
+		"error":{
+			"gameunexist":"the game does not exist"
+		},
+		"search":"Search user",
+		"noresult":"No result",
+		"viewprofile":"View Profile",
+		"specatate":"Spectate Game",
+		"waiting":"Waiting response.."
+	},
+	"chat":{
+		"rooms":"Chat Rooms",
+		"error":{
+			"nouserselected":"You must select at least 1 user"
+		},
+		"newroom":"New Room",
+		"confirmnewroom":"confirm (%d users)",
+		"enter-ph":"Type your message here",
+		"users":"Members"
+	},
+	"noti":{
+		"toast":{
+			"StockGameSurpass":"Someone topped your score",
+			"GameInvite": "You are invited to a game",
+			"FriendRequest": "You have new friend request",
+        	"NewFollower":"Someone is following you",
+			"chat":"New Chat: "
+		},
+		"stockgame":"MockStock: %d surpassed your score!",
+		"friendrequest":"%d sent you friend request.",
+		"rpginvite":"RPG game invitation: from %d",
+		"marbleinvite":"Marble game invitation: from %d",
+		"none":"You don't have any new notifications"
+	},
+	"gameinvite":{
+		"accept":{
+			
+		},
+		"send":{
+
+		}
+	}
 }

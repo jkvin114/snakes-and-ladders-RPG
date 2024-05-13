@@ -15,11 +15,12 @@ export namespace NotificationSchema {
 		GameInvite = "GAME_INVITE",
 		NewFollower = "NEW_FOLLOWER",
 	}
-	const DEFAULT_MESSAGES = {
-		StockGameSurpass: "Someone topped your score",
-		GameInvite: "You are invited to game",
-		FriendRequest: "You have new friend request",
-        NewFollower:"Someone is following you"
+	//locale id for toast messages
+	const TOAST_MESSAGE_LOCALE_ID = {
+		StockGameSurpass: "StockGameSurpass",
+		GameInvite: "GameInvite",
+		FriendRequest: "FriendRequest",
+        NewFollower:"NewFollower"
 	}
 
 	export const create = function (data: INotification) {
@@ -55,7 +56,7 @@ export namespace NotificationSchema {
 		return new Notification({
 			receiver: receiver,
 			type: TYPE.StockGameSurpass,
-			message: DEFAULT_MESSAGES.StockGameSurpass,
+			message: TOAST_MESSAGE_LOCALE_ID.StockGameSurpass,
 			payload1: playerName,
 			payload2: score,
 		}).save()
@@ -64,7 +65,7 @@ export namespace NotificationSchema {
 		return new Notification({
 			receiver: receiver,
 			type: TYPE.GameInvite,
-			message: DEFAULT_MESSAGES.GameInvite,
+			message: TOAST_MESSAGE_LOCALE_ID.GameInvite,
 			payload1: senderName,
 			payload2: roomId,
 			payload3: type,
@@ -165,7 +166,7 @@ export namespace NotificationSchema {
 		return new Notification({
 			receiver: receiver,
 			type: TYPE.FriendRequest,
-			message: DEFAULT_MESSAGES.FriendRequest,
+			message: TOAST_MESSAGE_LOCALE_ID.FriendRequest,
             payload1:senderId,
 			payload2: senderName,
 		}).save()
@@ -187,7 +188,7 @@ export namespace NotificationSchema {
 		return new Notification({
 			receiver: receiver,
 			type: TYPE.NewFollower,
-			message: DEFAULT_MESSAGES.NewFollower,
+			message: TOAST_MESSAGE_LOCALE_ID.NewFollower,
 			payload1: followerName,
 		}).save()
 	}

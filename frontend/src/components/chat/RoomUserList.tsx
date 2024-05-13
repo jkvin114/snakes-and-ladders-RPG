@@ -2,6 +2,7 @@ import { RiCloseFill, RiCloseLine } from "react-icons/ri"
 import { IChatUser } from "../../types/chat"
 import UserSummaryItem from "../profile/UserSummaryItem"
 import { MouseEventHandler } from "react"
+import Text from "../Text"
 
 type Props={
     roomUsers:IChatUser[]
@@ -12,7 +13,7 @@ export default function RoomUserList({roomUsers,onClose}:Props){
     return (<div id="chatusers" >
     <div className="modal-toolbar">
         <b>
-            Users
+            <Text lkey="chat.users"/>
         </b>
         <div className="divlink modal-close">
             <a className="divlink" onClick={onClose}>

@@ -4,8 +4,10 @@ import UserSummaryItem from "../profile/UserSummaryItem"
 import { MouseEventHandler, useContext, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import { AxiosApi } from "../../api/axios"
-import { limitString } from "../../util"
+import { lText, limitString } from "../../util"
 import { RootContext } from "../../context/context"
+import { LocaleContext } from "../../context/localeContext"
+import Text from "../Text"
 
 type Props = {
 	roomUsers: IChatUser[]
@@ -17,6 +19,7 @@ export default function InviteUserList({ roomUsers, onClose }: Props) {
     const [users,setUsers] = useState<EChatUser[]>([...roomUsers])
     const [count,setCount] = useState(0)
     const {context} = useContext(RootContext)
+    const {locale} = useContext(LocaleContext)
 
 	function onSelect(id: string) {
 		
@@ -37,7 +40,7 @@ export default function InviteUserList({ roomUsers, onClose }: Props) {
 	}
     function onConfirm(){
         if(count < 1) {
-            toast.error(`You must select at least 1 user`, {
+            toast.error(lText(locale,"chat.error.nouserselected"), {
 				position: "top-right",
 				autoClose: 3000,
 				hideProgressBar: true,
@@ -59,14 +62,14 @@ export default function InviteUserList({ roomUsers, onClose }: Props) {
             window.location.href="/chat?room="+res.data.id
         })
         .catch(e=>{
-            alert("failed to create room")
+            alert(lText(locale,"generic.servererror"))
             console.error(e)
         })
     }
 	return (
 		<div id="inviteusers">
 			<div className="modal-toolbar">
-				<b>New Room</b>
+				<b><Text lkey="chat.newroom"/></b>
 				<div className="divlink modal-close">
 					<a className="divlink" onClick={onClose}>
 						<RiCloseFill />
@@ -82,7 +85,7 @@ export default function InviteUserList({ roomUsers, onClose }: Props) {
 					</div>
 				))}
 			</div>
-			<div className="confirm" onClick={onConfirm}> confirm ({count} users)</div>
+			<div className="confirm" onClick={onConfirm}><Text lkey="chat.confirmnewroom" args={[count]}/></div>
 		</div>
 	)
 }

@@ -19,7 +19,7 @@ import { ToastContainer, toast } from "react-toastify"
 import { RiMessage2Fill } from "react-icons/ri"
 import Notifications from "./components/notification/Notifications"
 import { IRootContext, RootContext } from "./context/context"
-import { limitString } from "./util"
+import { lText, limitString } from "./util"
 import { MakeGamePage } from "./components/pages/MakeGame"
 import FriendPage from "./components/pages/Friends"
 import RPGPlayerStatPage from "./components/pages/RPGPlayerStat"
@@ -31,12 +31,10 @@ import StockGameUserInfo from "./stockgame/UserInfo"
 import StockGameUserPage from "./components/pages/StockGameUser"
 import SettingPage from "./components/pages/Setting"
 import { LocaleContext } from "./context/localeContext"
+import NotificationControl from "./components/NotificationControl"
 
 
-function getNotiMessage(noti:INotification){
-	if(noti.type===NOTI_TYPE.Chat) return "New Chat: "+limitString(noti.message)
-	return noti.message +"!"
-}
+
 
 
 // Main App We run for frontend
@@ -53,68 +51,8 @@ function App() {
 	const [locale,setLocale] = useState<any>(null)
 
 	const [notiQueue,setNotiQueue] = useState<INotification[]>([])
-	function updateNotiCount(count:number){
-		let username = localStorage.getItem("username")
-		if(!username) return
-		
-		let unread = localStorage.getItem("noti-unread-"+username)
-		if(!unread) {
-			setNotiCount(count)
-			localStorage.setItem("noti-unread-"+username,String(count))
-		}
-		else{
-			setNotiCount(Number(unread)+count)
-			localStorage.setItem("noti-unread-"+username,String(Number(unread)+count))
-		} 
-	}
-	function onReceiveNoti(notis:INotification[]){
-		if(notis.length===0) return
-		
-		if(window.location.pathname.split("/")[1] === "notification"){
-			setNotiQueue(notis)
-			setNotiCount(0)
-			localStorage.removeItem("noti-unread-"+rootState.username)
-			return
-		}
-		else{
-			toast.info(getNotiMessage(notis[0]), {
-				position: "bottom-right",
-				autoClose: 3000,
-				hideProgressBar: true,
-				closeOnClick: true,
-				pauseOnHover: false,
-				draggable: false,
-				progress: 0,
-				theme: "colored",
-				icon:(<RiMessage2Fill/>)
-			})
-			// ToastHelper.ChatToast("New Message: "+notis[0].message,)
-			updateNotiCount(notis.length)
-		}
-		
-	}
-	function pollNotification(){
-		console.log("start polling")
-		AxiosApi.get("/api/notification/poll")
-		.then(res=>{
-			if(!mountedRef.current) return
-			
-			onReceiveNoti(res.data as INotification[])
-			pollNotification()
-		})
-		.catch(e=>{
-			if(e.response.status !== 401)
-				console.error(e)
-			if(!mountedRef.current) return
-			setTimeout(pollNotification,5*1000)
-		})
-	}
+
 	useEffect(() => {
-		if(!mountedRef.current && localStorage.getItem("username") != null && localStorage.getItem("loggedIn"))
-		{
-			pollNotification()
-			updateNotiCount(0)
-		}	
 		mountedRef.current=true
 		console.log(rootState)
 		// API.get("/statustest")
@@ -171,6 +109,7 @@ function App() {
 			<RootContext.Provider value={{context:rootState,setContext:setRootState}}>
 			<LocaleContext.Provider value={{locale:locale,setLocale:setLocale}}>
 			<div id="page-root" className={rootState.showToolbar ?"":"hide-toolbar"}>
+			<NotificationControl setNotiCount={setNotiCount} setNotiQueue={setNotiQueue}/>
 				{rootState.showToolbar ?<SideBar isOpen={navbarOpen} closeNavbar={()=>setNavbarOpen(false)} notiCount={notiCount}/>:<div></div>}
 				<div>
 					{rootState.showToolbar && <TopBar openNavbar={setNavbarOpen}/>}

@@ -2,6 +2,7 @@ import { RiCheckFill, RiCheckboxCircleLine, RiCloseFill, RiMessage2Fill, RiUserA
 import { INotification } from "../../types/notification"
 import { AxiosApi } from "../../api/axios"
 import { useState } from "react"
+import Text from "../Text"
 
 type Props = {
 	noti: INotification
@@ -32,16 +33,16 @@ export default function FriendRequestNotification({ noti }: Props) {
 		<>
 			<div>
                 <RiUserAddFill  className="invite-img"/>
-				<b>{noti.payload2}</b> sent you friend request.
+				<Text lkey="noti.friendrequest" args={[noti.payload2]}/>
 				{!responded && (
 					<div style={{ textAlign: "center" }}>
 						<button onClick={accept} className="button invite-btn">
 							<RiCheckboxCircleLine />
-							accept
+							<Text lkey="generic.accept"/>
 						</button>
 						<button onClick={reject} className="button dark invite-btn">
 							<RiCloseFill />
-							reject
+							<Text lkey="generic.reject"/>
 						</button>
 					</div>
 				)}

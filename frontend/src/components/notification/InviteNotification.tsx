@@ -4,6 +4,7 @@ import ChatProfileImage from "../chat/ChatProfileImage"
 import { getTimeAgo, limitString } from "../../util"
 import { Link } from "react-router-dom"
 import { AxiosApi } from "../../api/axios"
+import Text from "../Text"
 
 type Props= {
     noti:INotification
@@ -22,9 +23,10 @@ export default function InviteNotification({noti}:Props){
     }
     return (<><div>
     <img className="invite-img" src={noti.payload3==="marble"?"/res/img/marble/icon.jpg":"/favicon.png"}></img>
-    <b>{noti.payload3} game invitation: from {noti.payload1}</b>
+    <b>{noti.payload3==="rpg" && <Text lkey="noti.rpginvite" args={[noti.payload1]}/>}
+    {noti.payload3==="marble" && <Text lkey="noti.marbleinvite" args={[noti.payload1]}/>}</b>
     <div style={{textAlign:"center"}}>
-        <button  onClick={accept} className="button invite-btn"><RiCheckboxCircleLine/>accept</button>
+        <button  onClick={accept} className="button invite-btn"><RiCheckboxCircleLine/><Text lkey="generic.accept"/></button>
             
         </div>
     

@@ -9,6 +9,7 @@ import { limitString } from "../../util"
 import { IFriend } from "../../types/profile"
 import { RootContext } from "../../context/context"
 import InviteUserList from "./InviteUserList"
+import Text from "../Text"
 export default function ChatRoomList(){
     const [rooms,setRooms] = useState<IChatRoom[]>([])
 
@@ -40,6 +41,7 @@ export default function ChatRoomList(){
     useEffect(()=>{
         if(room)
             resetUnread(room)
+        load()
     },[searchParams])
     
     function load(){
@@ -73,7 +75,7 @@ export default function ChatRoomList(){
             </>
         )}
         <div className="topbar">
-            Chat Rooms
+            <Text lkey="chat.rooms"/>
         </div>
         <div className="rooms">
         {rooms.map(r=> r&&<div key={r._id} className="divlink room" onClick={()=>resetUnread(r._id)}>

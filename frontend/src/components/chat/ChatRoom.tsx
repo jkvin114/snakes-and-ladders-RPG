@@ -1,4 +1,4 @@
-import { ChangeEvent, useRef, useState } from "react"
+import { ChangeEvent, useContext, useRef, useState } from "react"
 import { ChatStorage } from "../../storage/chatStorage"
 import { IChatUser, IChatMessage, IMessageData } from "../../types/chat"
 import { AxiosApi } from "../../api/axios"
@@ -19,6 +19,8 @@ import { UserStorage } from "../../storage/userStorage"
 import Messages from "./Messages"
 import { Link } from "react-router-dom"
 import RoomUserList from "./RoomUserList"
+import { LocaleContext } from "../../context/localeContext"
+import { lText } from "../../util"
 type Props = {
 	roomId: string
 	onBack:string
@@ -32,6 +34,8 @@ export default function ChatRoom({ roomId,onBack }: Props) {
 	const [loading, setLoading] = useState(true)
 	const [usersOpen, setUsersOpen] = useState(false)
 	let connected = false
+    const {locale} = useContext(LocaleContext)
+
 
 	function onload() {
 		if (connected) return
@@ -223,7 +227,7 @@ export default function ChatRoom({ roomId,onBack }: Props) {
 					<i>
 						<RiImageFill />
 					</i>
-					<input name="message" id="msginput" placeholder="Type your message here!" type="text" />
+					<input name="message" id="msginput" placeholder={lText(locale,"chat.enter-ph")} type="text" />
 					<i className="icon-primary">
 						<RiSendPlane2Fill onClick={sendMessage} />
 					</i>

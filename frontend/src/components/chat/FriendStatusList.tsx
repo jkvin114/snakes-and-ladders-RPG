@@ -4,11 +4,13 @@ import { IFriendStatus } from "../../types/chat"
 import { AxiosApi } from "../../api/axios"
 import ChatProfileImage from "./ChatProfileImage"
 import { RiCloseFill, RiMailSendFill, RiMessage2Fill, RiMoreFill, RiRefreshLine, RiSearch2Line } from "react-icons/ri"
-import { getDateStringDifference } from "../../util"
+import { getDateStringDifference, lText } from "../../util"
 import { Tooltip } from "react-tooltip"
 import { Link } from "react-router-dom"
 import { IFriend } from "../../types/profile"
 import UserSummaryItem from "../profile/UserSummaryItem"
+import { LocaleContext } from "../../context/localeContext"
+import Text from "../Text"
 
 type Props = {
 	createChat: (userId: string, username: string) => void
@@ -30,6 +32,7 @@ export default function FriendStatusList({ createChat }: Props) {
     const [searchOpen,setSearchOpen] =useState<boolean>(false)
     const [searchResult,setSearchResult] = useState<IFriend[]>([])
     const { context } = useContext(RootContext)
+    const { locale } = useContext(LocaleContext)
 
 	const dropdown = useRef(null)
 	function load() {
@@ -45,13 +48,16 @@ export default function FriendStatusList({ createChat }: Props) {
 
 	function toStatusString(status: string) {
 		if (status === "rpggame") {
-			return "Playing RPG game"
+			return lText(locale,"friends.status.rpg")
 		}
 		if (status === "marblegame") {
-			return "Playing Marble game"
+			return lText(locale,"friends.status.marble")
 		}
 		if (status === "rpgspectate") {
-			return "Spectating RPG game"
+			return lText(locale,"friends.status.rpgspectate")
+		}
+		if (status === "online") {
+			return lText(locale,"friends.status.online")
 		}
 		return status
 	}
@@ -83,7 +89,7 @@ export default function FriendStatusList({ createChat }: Props) {
 				window.location.href = "/rpggame?is_spectator=true"
 			})
 			.catch((e) => {
-				if (e.response.status === 404) alert("the game does not exist")
+				if (e.response.status === 404) alert(lText(locale,"friends.error.gameunexist"))
 			})
 	}
 	useEffect(load, [])
@@ -122,7 +128,7 @@ export default function FriendStatusList({ createChat }: Props) {
                 <div id="shadow"  className="shadow-inner"></div>
                 <div id="search-modal" onKeyDown={handleKeyPress}>
                     <div className="modal-toolbar">
-                        <b>Search user</b>
+                        <b><Text lkey="friends.search"/></b>
                         <div className="divlink modal-close">
                             <a className="divlink" onClick={closeSearch}>
                                 <RiCloseFill />
@@ -139,7 +145,7 @@ export default function FriendStatusList({ createChat }: Props) {
                          
                     </div>
                     <div className="modal-content userlist">
-                        {searchResult.length===0 && <span>No result</span>}
+                        {searchResult.length===0 && <span><Text lkey="friends.noresult"/></span>}
                         {searchResult.map((f,i)=><UserSummaryItem link={true} key={i} username={f.username} profileImgDir={f.profileImgDir} buttonType={getBtn(f.status)}/>)}
                     </div>
                 </div>
@@ -147,9 +153,9 @@ export default function FriendStatusList({ createChat }: Props) {
 
 			<div id="dropdown" className={menuState.open ? "" : "hidden"} ref={dropdown}>
 				<div className="divlink">
-					<Link to={"/user/" + menuState.username} className="divlink"></Link>View Profile
+					<Link to={"/user/" + menuState.username} className="divlink"></Link><Text lkey="friends.viewprofile"/>
 				</div>
-				{menuState.spectate && <div onClick={() => spectate(menuState.userId)}>Spectate Game</div>}
+				{menuState.spectate && <div onClick={() => spectate(menuState.userId)}><Text lkey="friends.spectate"/></div>}
 			</div>
 			<div className="friend-toolbar">
 				<button className="button dark" id="refresh" onClick={load}>
@@ -173,7 +179,7 @@ export default function FriendStatusList({ createChat }: Props) {
 								</div>
 							)}
 							{!f.status && f.lastActive && f.lastActive >= 0 && (
-								<div>{getDateStringDifference(f.lastActive, Date.now(),context.lang)} ago</div>
+								<div>{getDateStringDifference(f.lastActive, Date.now(),context.lang)} <Text lkey="generic.ago"/></div>
 							)}
 						</div>
 						<div>

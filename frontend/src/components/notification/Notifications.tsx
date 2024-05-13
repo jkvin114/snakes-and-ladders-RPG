@@ -5,6 +5,7 @@ import ChatNotification from "./ChatNotification"
 import "../../styles/notification.scss"
 import BaseNotification from "./BaseNotification"
 import { RootContext } from "../../context/context"
+import Text from "../Text"
 type Props={
     newNoti:INotification[]
     setCount:React.Dispatch<React.SetStateAction<number>>
@@ -38,6 +39,6 @@ export default function Notifications({newNoti,setCount}:Props){
     }
     return (<div id="notification-root">
     {noti.map((n,i)=><BaseNotification deleteNoti={deleteNoti} noti={n} key={n._id} isNew={i<newNotiCount}/>)}
-    {noti.length===0 && <h3>You don't have any new notifications</h3>}
+    {noti.length===0 && <h3><Text lkey="noti.none"/></h3>}
     </div>)
 }

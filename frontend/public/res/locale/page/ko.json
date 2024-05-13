@@ -13,7 +13,11 @@
         "cancel":"취소",
         "save":"저장",
         "title":"제목",
-        "ago":"전"
+        "ago":"전",
+		"servererror":"서버 오류",
+		"invite":"초대",
+		"accept":"수락",
+		"reject":"거절"
 
 	},
 	"sidebar": {
@@ -157,5 +161,89 @@
         "name":"리더보드",
         "username":"닉네임"
 
-    }
+    },
+	"profilepage":{
+		"friend":"친구",
+        "friendrequest":"친구 요청",
+		"friendrequestsent":"친구 요청 전송됨",
+
+        "unfollow":"언팔로우",
+        "follow":"팔로우",
+        "bookmarks":"북마크",
+        "following":"팔로잉",
+        "posts":"게시물",
+        "comments":"댓글",
+
+        "friends":"친구 목록",
+		"followers":"팔로워",
+        "likes":"좋아요한 게시물",
+        "setting":"설정",
+        "profile":"프로필 이미지",
+        "confirm":"확인",
+        "removeprofile":"프로필 이미지 제거",
+        "prevpw":"이전 비밀전호",
+        "pw":"새 비밀번호",
+        "pw2":"새 비밀번호 확인",
+		"rpggames":"RPG 게임 전적",
+		"marblegames":"모두의마블 전적",
+		"stockgame":"MockStock 전적",
+        "changepw":"비밀번호 변경",
+        "security":"보안",
+        "error":{
+			"pw_old":"이전 비밀번호가 틀립니다",
+            "pw":"비밀번호가 틀립니다",
+            "pw_condition":"비밀번호는 숫자와 영문포함 3글자 이상이어야 합니다"
+        },
+		"message":{
+			"pw_changed":"비밀번호 변경됨",
+			"confirm_logout":"정말 로그아웃 하기겠습니까?",
+			"image_update":"프로필 이미지 변경됨",
+			"image_update_fail":"프로필 이미지 변경 실패",
+			"confirm_image_remove":"정말 프로필 이미지를 제거하시갰습니까?"
+		}
+
+	},
+	"friends":{
+		"status":{
+			"rpg":"RPG 게임 중",
+			"marble":"모두의마블 플레이중",
+			"rpgspectate":"RPG 게임 관전중",
+			"online":"온라인"
+		},
+		"error":{
+			"gameunexist":"존재하지 않는 게임입니다"
+		},
+		"search":"유저 검색",
+		"noresult":"결과 없음",
+		"viewprofile":"프로필 보기",
+		"specatate":"관전하기",
+		"waiting":"응답을 기다리는 중.."
+	},
+	"chat":{
+		"rooms":"채팅방 목록",
+		"error":{
+			"nouserselected":"최소 1명을 선택하야 합니다"
+		},
+		"newroom":"새 채팅방",
+		"confirmnewroom":"확인 (%d명 선택됨)",
+		"enter-ph":"메세지를 입력하세요",
+		"users":"대화상대"
+	},
+	"noti":{
+		"toast":{
+			"StockGameSurpass":"이런! 점수를 역전당했어요",
+			"GameInvite": "게임에 초대되었습니다",
+			"FriendRequest": "새 친구 요청이 들어왔습니다",
+        	"NewFollower":"누군가가 당신을 팔로우했습니다",
+			"chat":"새 메세지: "
+		},
+		"stockgame":"MockStock: %d 님에게 점수를 역전당했습니다!",
+		"friendrequest":"%d 님이 친구 요청을 보냈습니다.",
+		"rpginvite":"%d 님이 RPG게임에 초대했습니다",
+		"marbleinvite":"%d 님이 모두의마블 게임에 초대했습니다",
+		"none":"새 알림 없음"
+	},
+	"gameinvite":{
+		
+	}
 }
