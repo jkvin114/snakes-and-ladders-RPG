@@ -12,7 +12,7 @@ RUN npm ci
 # Copy the remaining source code to the working directory
 COPY . .
 # Expose the port on which the app runs
-EXPOSE 5000
+EXPOSE 50051
 
 # Start the React app
 CMD ["npm", "run","start"]

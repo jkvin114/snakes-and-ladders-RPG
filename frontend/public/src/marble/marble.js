@@ -18,7 +18,7 @@ const MESSAGE = {
 	forcemove_no_tile: "이동할 지역이 없습니다",
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
-const BGM = false
+const BGM = true
 export var GAME
 
 export let AxiosApi = {

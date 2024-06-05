@@ -7,14 +7,14 @@ services:
       dockerfile: Dockerfile
     container_name: "frontend" #specify the name of container
     ports:
-      - 3000:3000 #expose port for access of local machine
+      - 80:3000 #expose port for access of local machine
     working_dir: /app #added because of "WORKDIR /src" in dockerfile
     # depends_on:
     #   - backend
   redis-server:
     image: redis:7.2.4-alpine
-    ports:
-      - "6379:6379"
+    # ports:
+    #   - "6379:6379"
     volumes:
       - ./volume/redis_data:/data
     environment:
@@ -29,14 +29,6 @@ services:
       - PORT=50051
     volumes:
       - ./volume/logs:/app/logs
-  # stockgame:
-  #   build: 
-  #     context: ./mockstock
-  #     dockerfile: Dockerfile
-  #   container_name: mockstock
-  #   environment:
-  #     - PORT=5050
-  #   working_dir: /app
   backend:
     build: 
       context: ./

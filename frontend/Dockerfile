@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 #convert all static .html files to plain txt
-RUN ./convert.sh
+RUN sh ./convert.sh
 
 # Expose the port on which the app runs
 EXPOSE 3000

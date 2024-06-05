@@ -266,6 +266,12 @@ export class StoreInterface {
 		this.isAuto = false
 		this.categorybtn = $(".categorybtn").toArray()
 		this.naviRecord = []
+
+		$("#newstore").css("visibility", "hidden")
+		$("#newstoremoney").css("visibility", "hidden")
+		$("#newstorecurritem").css("visibility", "hidden")
+		$(".itemdetail").css("visibility", "hidden")
+		$("#statinfopopup").hide()
 	}
 
 	naviBack() {
@@ -1205,14 +1211,6 @@ export class StoreInstance {
 		return itemslots
 	}
 }
-
-$(document).ready(function () {
-	$("#newstore").css("visibility", "hidden")
-	$("#newstoremoney").css("visibility", "hidden")
-	$("#newstorecurritem").css("visibility", "hidden")
-	$(".itemdetail").css("visibility", "hidden")
-	$("#statinfopopup").hide()
-})
 
 /**
  * 5:3%

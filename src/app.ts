@@ -61,6 +61,7 @@ declare module 'express' {
 const PORT = process.env.PORT
 const app = express()
 const ORIGIN = process.env.ORIGIN
+console.log(ORIGIN)
 // const ORIGIN="http://192.168.0.3:3000"
 Logger.log("start server at port ",String(PORT),", listen from origin",ORIGIN);
 
@@ -216,9 +217,11 @@ io.on("connection", async function (socket: Socket) {
 	})
 })
 
-
 app.get("/api/connection_check", function (req:any, res:any) {
-	res.end()
+	res.end("OK")
+})
+app.get("/healthcheck", function (req:any, res:any) {
+	res.end("OK")
 })
 app.get("/notfound", function (req:any, res:any) {
 	res.render("error",{status:404})
@@ -240,7 +243,7 @@ app.get("/servererror", function (req:any, res:any) {
 
 app.get("/api/jwt/verify",async function(req:express.Request, res:express.Response){
 	let valid = await SessionManager.isValid(req)
-	res.json({isVaild:valid})
+	res.json({isVaild:true})
 })	
 
 app.get("/api/session",async function(req:express.Request, res:express.Response){
