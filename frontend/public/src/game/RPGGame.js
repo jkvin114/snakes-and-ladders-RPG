@@ -23,10 +23,12 @@ class Setting {
 
 		this.fullScreen = false
 		this.fps = 33.3
-		this.inputs = $(".setting-input").toArray()
-		this.names = $(".settingname").toArray()
+		this.inputs = []
+		this.names = []
 	}
 	init() {
+		this.inputs = $(".setting-input").toArray()
+		this.names = $(".settingname").toArray()
 		this.setLang(this.lang)
 
 		let _this = this
@@ -104,8 +106,7 @@ export class Game {
 		this.sounds = new Map()
 		this.begun = false
 		this.map = 0
-		this.multikillimg = $(".multikillimg").toArray()
-
+		this.multikillimg = []
 		this.multikillAlertTimeout = null
 		this.killTextTimeout = null
 		this.gestureController = new GestureController(this)
@@ -119,7 +120,7 @@ export class Game {
 		this.gestureController.addTouchEvent()
 		this.gestureController.addMouseEvent()
 		$("#quit").click(() => this.onQuit())
-
+		this.multikillimg = $(".multikillimg").toArray()
 		$("#toggle_fullscreen").click(function () {
 			if (!$(this).data("on")) {
 				document.documentElement.requestFullscreen()

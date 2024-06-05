@@ -58,12 +58,12 @@ export const GAME = isReplay ? new ReplayGame(params.get("replayid")) : new Play
 export const CONNECTION_TYPE = isReplay ? "rpgreplay" : isSpectate ? "rpgspectate" : "rpggame"
 
 //when html document is loaded
-$(document).ready(function () {
-	includeHTML()
+window.onload = function () {
+	//includeHTML()
 	window.onbeforeunload = function (e) {
 		return ""
 	}
-})
+}
 
 export function format(str, values) {
 	for (const v of values) {
