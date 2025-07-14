@@ -42,11 +42,11 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 		if (this.is3double) {
 			//뜻초
 			if (!this.tripleDoubleOverrider(pkg)) {
-				pkg.addAfter(new RequestMoveAction(this.invoker.turn, ISLAND_POS, MOVETYPE.TELEPORT))
+				pkg.addAfter(new RequestMoveAction(this.invoker.turn, ISLAND_POS, MOVETYPE.TELEPORT,this.game.thisturn))
 			}
 		} else {
 			if(!this.diceOverrider(pkg)){
-				pkg.addAfter(new RequestMoveAction(this.invoker.turn, forwardBy(this.invoker.pos, this.distance), MOVETYPE.WALK))
+				pkg.addAfter(new RequestMoveAction(this.invoker.turn, forwardBy(this.invoker.pos, this.distance), MOVETYPE.WALK,this.game.thisturn))
 			}
 		}
 		return pkg.addMain(this.main)
@@ -84,7 +84,7 @@ export class ThrowDiceActionBuilder extends ActionPackageBuilder {
 
 		} else if (onThreeDoubleAbility.has(invitation)) {
 			pkg.addExecuted(invitation, this.invoker.turn)
-			pkg.addAction(new RequestMoveAction(this.invoker.turn, this.game.map.travel, MOVETYPE.FORCE_WALK), invitation)
+			pkg.addAction(new RequestMoveAction(this.invoker.turn, this.game.map.travel, MOVETYPE.FORCE_WALK,this.game.thisturn), invitation)
             return true
 		}
         return false

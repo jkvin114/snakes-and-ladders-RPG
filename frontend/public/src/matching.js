@@ -452,6 +452,7 @@ class MatchStatus {
 					{
 						randomCount: Number($("#marble-item-random-count").val()),
 						items: this.ui.marbleItemState,
+						pool: JSON.stringify(this.ui.marbleItemPool),
 					},
 					this.gametype
 				)
@@ -512,6 +513,8 @@ class MatchInterface {
 
 		this.marbleItemState = []
 		this.marbleItemPresets = []
+		this.marbleItemPool = {}
+
 		if (MatchInterface._instance) {
 			return MatchInterface._instance
 		}
@@ -589,17 +592,23 @@ class MatchInterface {
 			})
 		})
 
-		fetch("/res/data/marbleitempresets.json").then((response) => {
+		fetch("/res/data/marbleitempresets_new.json").then((response) => {
 			response.json().then((result) => {
 				let str = ""
 				// console.log(result)
-				for (const [i, preset] of result.entries()) {
-					let locked = preset.items.reduce((prev, curr) => (curr === 2 ? prev + 1 : prev))
-					let selected = preset.items.reduce((prev, curr) => (curr === 1 ? prev + 1 : prev))
 
-					this.marbleItemPresets.push(preset)
-					str += `<option value="${i}">${preset.name}[고정:${locked},선택:${preset.randomCount}/${selected}]</option>`
+				for (const [i, preset] of result.entries()) {
+					if (preset.version === 2) {
+						this.marbleItemPool = preset
+					} else {
+						let locked = preset.locked.length
+						let selected = preset.optional.length
+
+						this.marbleItemPresets.push(preset)
+						str += `<option value="${i}">${preset.name}[고정:${locked},선택:${preset.randomCount}/${selected}]</option>`
+					}
 				}
+
 				$("#marble-item-preset").append(str)
 				$("#marble-item-preset").change(function () {
 					let index = $(this).val()
@@ -651,9 +660,20 @@ class MatchInterface {
 		}
 		let count = this.marbleItemPresets[idx].randomCount
 		$("#marble-item-random-count").val(count)
-		for (const [i, itemstatus] of this.marbleItemPresets[idx].items.entries()) {
-			this.setMarbleItemStatus(i, itemstatus)
+
+		for (let i = 0; i < this.marbleItemState.length; ++i) {
+			if (this.marbleItemPresets[idx].locked.includes(i)) {
+				this.setMarbleItemStatus(i, 2)
+			} else if (this.marbleItemPresets[idx].optional.includes(i)) {
+				this.setMarbleItemStatus(i, 1)
+			} else {
+				this.setMarbleItemStatus(i, 0)
+			}
 		}
+
+		// for (const [i, itemstatus] of this.marbleItemPresets[idx].items.entries()) {
+		// 	this.setMarbleItemStatus(i, itemstatus)
+		// }
 	}
 	/**
 	 *
@@ -1021,7 +1041,19 @@ function main(url) {
 	$("#marble-item-close").click(function () {
 		$("#marble-item-page").hide()
 		$("#overlay").hide()
-		// // console.log(MATCH.setting.getSummary())
+
+		let obj = {
+			name: "",
+			randomCount: Number($("#marble-item-random-count").val()),
+			locked: [],
+			optional: [],
+		}
+		for (const item of MATCH.ui.marbleItemState) {
+			if (item.locked) obj.locked.push(item.code)
+			if (item.selected) obj.optional.push(item.code)
+		}
+
+		console.log(JSON.stringify(obj))
 	})
 	$("#marble-item").click(function () {
 		$("#marble-item-page").show()

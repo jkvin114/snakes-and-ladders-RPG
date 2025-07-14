@@ -214,8 +214,8 @@ export function openConnection(isInitial) {
 		GAME.scene.modifyLand(data.pos, data.type, data.val)
 	})
 	socket.on("server:tile_state_update", function (turn, change) {
-		// console.log("tile_state_update")
-		// console.log(change)
+		console.log("tile_state_update  ")
+		console.log(change)
 		GAME.scene.setTileState(change)
 	})
 	socket.on("server:monopoly_alert", function (player, data) {

@@ -41,6 +41,8 @@ import { RandomAgent } from "./Agent/ActionSelector/RandomAgent"
 import { CustomAgent1 } from "./Agent/ActionSelector/CustomAgent1"
 import { AgentType, GameType, PlayerType } from "./enum"
 import { ProtoPlayer } from "../Model/models"
+import type { ItemPreset } from "./ItemPool"
+import { Logger } from "../logger"
 const PLAYER_NAMES = [
 	"데니스",
 	"슬기",
@@ -159,15 +161,46 @@ class PlayerMediator {
 		})
 	}
 	registerAbilities(itemSetting: ServerEventModel.ItemSetting) {
-		const selectedItems = itemSetting.items.filter((item) => item.selected || item.locked)
-		let meanItemCost =
-			selectedItems.reduce((total, item) => {
-				const Item = ITEM_REGISTRY.get(item.code)
-				if(!Item) return 0
-				return (total += Item[2])
+		let pool:ItemPreset=null
+		console.log(itemSetting.poolJson)
+		let meanItemCost = 0;
+		if(itemSetting.poolJson && false){
+			try{
+				pool = JSON.parse(itemSetting.poolJson) as ItemPreset
+				console.log(pool)
+				meanItemCost =
+				pool.selectedItems().reduce((total, item) => {
+					const Item = ITEM_REGISTRY.get(item)
+					if(!Item || Item[0].length==0) return 0
 
-			}, 0) / selectedItems.length / 10
-		if (selectedItems.length === 0) meanItemCost = 0
+					return (total += Item[1])
+
+				}, 0) / pool.selectedItems().length / 10
+
+			}
+			catch(e){
+				Logger.error("Failed to parse marble item pool",e)
+			}
+			
+		}
+
+		if(!pool){
+			const selectedItems = itemSetting.items.filter((item) => item.selected || item.locked)
+			if (selectedItems.length === 0) meanItemCost = 0
+			else{
+
+			meanItemCost =
+				selectedItems.reduce((total, item) => {
+					const Item = ITEM_REGISTRY.get(item.code)
+					if(!Item || Item[0].length==0) return 0
+
+					return (total += Item[1])
+
+				}, 0) / selectedItems.length / 10
+			}
+				
+		}
+		
 		const baseStats = [
 			35 + meanItemCost * 90,
 			55 + meanItemCost * 110,
@@ -182,18 +215,27 @@ class PlayerMediator {
 				if (rand < 0.3) p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
 				else if (rand < 0.7) p.saveCardAbility(ABILITY_NAME.DISCOUNT_CARD)
 			}
+			let itemcodes:number[] = []
+			if(pool){
+				itemcodes = pool.roll()
+			}
+			else{
+				let randitems: number[] = itemSetting.items.filter((item) => item.selected).map((item) => item.code)
 
+				itemcodes = chooseRandomMultiple(randitems, itemSetting.randomCount).sort((a: number, b: number) => a - b)
+				itemcodes.push(...itemSetting.items.filter((item) => item.locked).map((item) => item.code))
+			}
+			
+			
+			
 			let abs: [ABILITY_NAME, AbilityAttributes][] = []
-			let randitems: number[] = itemSetting.items.filter((item) => item.selected).map((item) => item.code)
-
-			let itemcodes = chooseRandomMultiple(randitems, itemSetting.randomCount).sort((a: number, b: number) => a - b)
-			itemcodes.push(...itemSetting.items.filter((item) => item.locked).map((item) => item.code))
-
 			for (const c of itemcodes) {
 				let item = ITEM_REGISTRY.get(c)
 
-				if (!item) continue
-				abs.push([item[0], item[1]])
+				if (!item || item[0].length==0) continue
+				for(const ab of item[0]){
+					abs.push([ab.name,ab.attribute])
+				}
 			}
 			p.registerPermanentAbilities(abs, itemcodes)
 			p.stat = new MarblePlayerStat(baseStats.map((val) => Math.floor(triDist(val, 6))))

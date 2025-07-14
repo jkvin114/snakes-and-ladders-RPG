@@ -972,6 +972,7 @@ export class MarbleScene extends Board {
 		let image
 		if (type === "red") image = document.getElementById("tile_highlight_red")
 		else if (type === "yellow") image = document.getElementById("tile_highlight_yellow")
+		else if (type === "water") image = document.getElementById("tile_highlight_water")
 		else if (type === "shine") return this.getShine(coord)
 		else if (type === "blocker") image = document.getElementById("tile_blocker")
 		else image = document.getElementById("tile_highlight_white")
@@ -1396,9 +1397,15 @@ export class MarbleScene extends Board {
 			this.setTileStatusEffect(change.pos, "", 0)
 		} else if (change.state === "lift") {
 			let img = this.getTileOverlay(this.getCoord(change.pos), "blocker")
-			//this.canvas.add(img)
 			tile.addBlocker(img)
 		} else if (change.state === "unlift") {
+			let b = tile.blocker
+			this.canvas.remove(b)
+			tile.removeBlocker()
+		} else if (change.state === "waterpump_on") {
+			let img = this.getTileOverlay(this.getCoord(change.pos), "water")
+			tile.addBlocker(img)
+		} else if (change.state === "waterpump_off") {
 			let b = tile.blocker
 			this.canvas.remove(b)
 			tile.removeBlocker()
@@ -1666,6 +1673,30 @@ export class MarbleScene extends Board {
 		this.animateY(this.players[player].playerimg, coord.y + PLAYER_POS_DIFF[player][1], 500)
 		this.removeBlackHole()
 	}
+	async playerWaterstreamMove(target, pos) {
+		this.focusPlayer(target)
+		this.render()
+
+		pos = Math.max(pos, 0)
+		let x = this.getCoord(pos).x
+		let y = this.getCoord(pos).y
+
+		this.players[target].pos = pos
+		let time = 1000
+
+		this.players[target].playerimg.animate("top", y + PLAYER_POS_DIFF[target][1], {
+			onChange: this.render.bind(this),
+			duration: time,
+			//	easing: fabric.util.ease.easeOutBack,
+		})
+		this.players[target].playerimg.animate("left", x + PLAYER_POS_DIFF[target][0], {
+			onChange: this.render.bind(this),
+			duration: time,
+			//	easing: fabric.util.ease.easeOutBack,
+		})
+		this.render()
+	}
+
 	removePlayer(player) {
 		this.players[player].retired = true
 		this.players[player].playerimg.set({ opacity: 0 })

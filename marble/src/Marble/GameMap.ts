@@ -11,10 +11,11 @@ import { LandTile } from "./tile/LandTile"
 import { SightTile } from "./tile/SightTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
 import { TileFilter } from "./tile/TileFilter"
-import { arrayOf, cl, countFrom, distance,  pos2Line, range } from "./util"
+import { arrayOf, backwardBy, cl, countFrom, distance,  getTilesBewteen,  pos2Line, range } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/godhand_map.json")
 const WORLD_MAP = require("./../../res/world_map.json")
+const WATER_MAP = require("./../../res/water_map.json")
 
 
 
@@ -47,6 +48,8 @@ class MarbleGameMap{
     blockingTiles:Set<number>
     liftedTile:number
     lockedTile:number
+    waterstreamTiles:number[]
+
     readonly bankruptWinMultiplier:number
     constructor(map:string){ 
         this.buildableTiles=new Map<number,BuildableTile>()
@@ -55,6 +58,7 @@ class MarbleGameMap{
         this.sameColors=new Map<number,LandTile[]>()
         this.specials=new Set<Tile>()
         this.sights=[]
+        this.waterstreamTiles = []
         this.name=map
         this.bankruptWinMultiplier=1
         this.cycleStart=1
@@ -74,6 +78,13 @@ class MarbleGameMap{
             this.island=WORLD_MAP.island
             this.olympic=WORLD_MAP.olympic
             this.travel=WORLD_MAP.travel
+        }
+        else if(map==='water'){
+            this.setMap(WATER_MAP)
+            this.start=WATER_MAP.start
+            this.island=WATER_MAP.island
+            this.olympic=WATER_MAP.olympic
+            this.travel=WATER_MAP.travel
         }
         else{
             this.start=START_POS
@@ -235,6 +246,30 @@ class MarbleGameMap{
             this.sendTileState("lift",pos)
             this.liftedTile=pos
         }
+    }
+    /**
+     * return [start,end] of water stream
+     * @param sourcePos 
+     * @param targetPos 
+     * @returns 
+     */
+    activateWaterPump(sourcePos:number,targetPos:number):number[]{
+        if(this.name!=="water") return [-1,-1]
+
+        for(const pos of this.waterstreamTiles){
+            this.sendTileState("waterpump_off",pos)
+        }
+        this.waterstreamTiles =[]
+        let tiles = getTilesBewteen(sourcePos,targetPos)
+        tiles.push(sourcePos)
+        tiles.push(backwardBy(sourcePos,1))
+
+        for(const pos of tiles){
+            this.sendTileState("waterpump_on",pos)
+        }
+        this.waterstreamTiles = tiles
+
+        return [backwardBy(sourcePos,1),backwardBy(targetPos,1)]
     }
 
     private filterFromBuildable(filter:TileFilter,source:MarblePlayer):Set<number>{

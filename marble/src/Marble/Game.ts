@@ -88,8 +88,9 @@ import { AbilityExecution } from "./Ability/Ability"
 import { GameType } from "./enum"
 import { ProtoPlayer } from "../Model/models"
 import { Logger } from "../logger"
+import { RideWaterStreamActionBuilder } from "./action/PackageBuilder/RideWaterStreamActionBuilder"
 
-const MAP = ["world", "god_hand"]
+const MAP = ["world", "god_hand","water"]
 class MarbleGame {
 	readonly map: MarbleGameMap
 	//cycle: number
@@ -151,6 +152,9 @@ class MarbleGame {
 	}
 	thisPlayer() {
 		return this.mediator.pOfTurn(this.thisturn)
+	}
+	isCurrentTurn(turn:number) {
+		return turn === this.thisturn
 	}
 	nextAction() {
 		if(this.debug)
@@ -384,7 +388,7 @@ class MarbleGame {
 		// source.reset()
 		if (moveType === MOVETYPE.FORCE_WALK) this.requestForceWalkMove(turn, pos, source)
 		if (moveType === MOVETYPE.WALK || moveType === MOVETYPE.TRAVEL) this.requestWalkMove(turn, pos, source, moveType)
-		if (moveType === MOVETYPE.TELEPORT || moveType === MOVETYPE.BLACKHOLE)
+		if (moveType === MOVETYPE.TELEPORT || moveType === MOVETYPE.BLACKHOLE || moveType === MOVETYPE.WATERSTREAM)
 			this.pushSingleAction(new TeleportAction(turn, pos, moveType), source)
 		if (moveType === MOVETYPE.PULL) this.requestPullMove(turn, pos, source)
 	}
@@ -477,6 +481,17 @@ class MarbleGame {
 
 		return true
 	}
+	checkWaterStream(player: MarblePlayer, pos: number, source: ActionTrace): boolean {
+		//console.log(this.map.waterstreamTiles)
+	//	console.log(pos)
+		if(this.map.waterstreamTiles.length===0 || !this.map.waterstreamTiles.includes(pos)) return false
+		
+		let last = Math.max(...this.map.waterstreamTiles)
+		let dest = forwardBy(last,1)
+		let action=new RideWaterStreamActionBuilder(this, source, player, dest).build()
+		this.pushActions(action)
+		return true
+	}
 	/**
 	 * 걸어서 이동(주사위,세계여행,힐링,포춘카드,끌어당김)
 	 * @param turn
@@ -524,6 +539,7 @@ class MarbleGame {
 		//도착 안하면 arrivatileaction 취소
 		if (
 			this.mediator.checkPlayerMeet(player.turn, newpos, source, movetype) ||
+			this.checkWaterStream(player, newpos, source) ||
 			this.checkBlackHole(player, newpos, source)
 		) {
 			this.actionStack.findById(action.getId())?.off()
@@ -610,6 +626,9 @@ class MarbleGame {
 			if (this.map.name === "god_hand") {
 				this.arriveGodHandSpecialTile(tile, moverTurn, source)
 			}
+			else if (this.map.name === "water") {
+				this.arriveGodHandSpecialTile(tile, moverTurn, source)
+			}
 		} else if (tile.type === TILE_TYPE.ISLAND) {
 			this.arriveIslandTile(moverTurn, source)
 		}
@@ -648,20 +667,20 @@ class MarbleGame {
 		let currpos = this.mediator.pOfTurn(invoker).pos
 		switch (card.name) {
 			case CARD_NAME.GO_START:
-				this.pushSingleAction(new RequestMoveAction(invoker, this.map.start, MOVETYPE.FORCE_WALK), source)
+				this.pushSingleAction(new RequestMoveAction(invoker, this.map.start, MOVETYPE.FORCE_WALK,this.thisturn), source)
 				break
 			case CARD_NAME.GO_OLYMPIC:
 				if (this.map.olympicPos === -1) this.pushMessageAction(invoker, "forcemove_to_tile")
-				else this.pushSingleAction(new RequestMoveAction(invoker, this.map.olympicPos, MOVETYPE.FORCE_WALK), source)
+				else this.pushSingleAction(new RequestMoveAction(invoker, this.map.olympicPos, MOVETYPE.FORCE_WALK,this.thisturn), source)
 				break
 			case CARD_NAME.OLYMPIC:
 				this.arriveOlympicTile(invoker, source)
 				break
 			case CARD_NAME.GO_TRAVEL:
-				this.pushSingleAction(new RequestMoveAction(invoker, this.map.travel, MOVETYPE.FORCE_WALK), source)
+				this.pushSingleAction(new RequestMoveAction(invoker, this.map.travel, MOVETYPE.FORCE_WALK,this.thisturn), source)
 				break
 			case CARD_NAME.GO_ISLAND:
-				this.pushSingleAction(new RequestMoveAction(invoker, this.map.island, MOVETYPE.TELEPORT), source)
+				this.pushSingleAction(new RequestMoveAction(invoker, this.map.island, MOVETYPE.TELEPORT,this.thisturn), source)
 
 				break
 			case CARD_NAME.DONATE_LAND:
@@ -806,7 +825,7 @@ class MarbleGame {
 		this.pushActions(new ActionPackage(source).addMain(this.getAskBuildAction(turn, tile, source)))
 	}
 	onSelectMovePosition(turn: number, pos: number, action: MoveTileSelectionAction) {
-		this.pushSingleAction(new RequestMoveAction(turn, pos, action.moveType), action.source)
+		this.pushSingleAction(new RequestMoveAction(turn, pos, action.moveType,this.thisturn), action.source)
 	}
 	onBeforeAskMoveTile(sourceAction: MoveTileSelectionAction) {
 		if (sourceAction instanceof MoveToPlayerSelectionAction) {
@@ -822,8 +841,34 @@ class MarbleGame {
 	}
 
 	onSelectTileLiftPosition(turn: number, pos: number, source: ActionTrace) {
-		this.map.liftTile(pos)
+		if(this.map.name==="water"){
+			this.onSelectWaterPumpPosition(turn,pos,source)
+		}
+		else{
+			this.map.liftTile(pos)
+		}
 	}
+
+	onSelectWaterPumpPosition(turn: number, pos: number, source: ActionTrace) {
+		const player = this.mediator.pOfTurn(turn)
+		if(signedShortestDistance(player.pos,pos) <=0) {
+			Logger.warn(`Invaild water pump target position. source ${player.pos}, target:${pos}`)
+			return
+		}
+
+		const range = this.map.activateWaterPump(player.pos,pos)
+		const others = this.mediator.getOtherPlayers(turn).filter(p=>p.pos>=range[0] && p.pos <= range[1])
+		//턴 반대 순서대로 push 
+		for(const other of others.reverse()){
+		//	console.log(other.turn)
+			this.checkWaterStream(other,other.pos,source)
+		}
+		//작동시킨 플레이어 우선
+		this.checkWaterStream(player,player.pos,source)
+		
+
+	}
+
 	/**
 	 *
 	 * @param turn

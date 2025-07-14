@@ -3,6 +3,7 @@ import type { ActionTrace } from "./ActionTrace"
 import { BuildableTile } from "./../tile/BuildableTile"
 import type { MarbleGame } from "../Game"
 import { BUILDING } from "../tile/Tile"
+import type { ActionStack } from "./ActionStack"
 
 /**
  * 즉시 실행됨(통행료지불,배수변화,자동건설,디버프,향수 등)
@@ -336,11 +337,13 @@ export class RequestMoveAction extends InstantAction{
 	pos:number
 	moveType:MOVETYPE
 	forward:boolean
-	constructor(turn: number,pos:number,type:MOVETYPE){
+	thisturn:number
+	constructor(turn: number,pos:number,type:MOVETYPE,thisturn:number){
 		super(ACTION_TYPE.REQUEST_MOVE,turn)
 		this.pos=pos
 		this.moveType=type
 		this.forward=true
+		this.thisturn=thisturn
 	}
 	reverseDirection(){
 		this.forward=false
@@ -348,6 +351,12 @@ export class RequestMoveAction extends InstantAction{
 	}
 	execute(game: MarbleGame): void {
 		game.requestMove(this.turn,this.pos,this.source,this.moveType)
+	}
+	canBePushed( stack:ActionStack){
 		
+		//이번턴이 아니면 중복 불가 
+		if (this.turn!==this.thisturn && stack.hasValidTypeAndTurn(this.type, this.turn)) return false
+
+		return super.canBePushed(stack)
 	}
 }

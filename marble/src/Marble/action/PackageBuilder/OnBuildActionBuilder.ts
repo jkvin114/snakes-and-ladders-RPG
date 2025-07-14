@@ -46,14 +46,14 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 		if (nextbuild !== BUILDING.LANDMARK) return false
 
 		if(this.offences.has(inplace_construction)){
-			pkg.addAction(new RequestMoveAction(this.invoker.turn, this.invoker.pos, MOVETYPE.FORCE_WALK)
+			pkg.addAction(new RequestMoveAction(this.invoker.turn, this.invoker.pos, MOVETYPE.FORCE_WALK,this.game.thisturn)
 			.reserveAbilityIndicatorOnPop(inplace_construction, this.invoker.turn), inplace_construction)
 			return true
 		}
 		else if(this.offences.has(construction)){
 
 			// pkg.addExecuted(construction, this.invoker.turn)
-			pkg.addAction(new RequestMoveAction(this.invoker.turn, 0, MOVETYPE.FORCE_WALK)
+			pkg.addAction(new RequestMoveAction(this.invoker.turn, 0, MOVETYPE.FORCE_WALK,this.game.thisturn)
 			.reserveAbilityIndicatorOnPop(construction, this.invoker.turn), construction)
 			return true
 		}

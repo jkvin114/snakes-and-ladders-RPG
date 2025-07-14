@@ -46,17 +46,17 @@ export namespace Logger {
 	}
 	export function warn(...msg: string[]) {
 		try {
-			logger.warn(msg.join(" "))
+			logger.warn(msg.join(" ")+new Error().stack)
 		} catch (e) {}
 	}
 	export function error(msg: string, err: any) {
 		try {
-			logger.error(msg + " " + String(err))
+			logger.error(msg + " " + String(err)+new Error().stack)
 		} catch (e) {}
 	}
 	export function err(...msg: string[]) {
 		try {
-			logger.error(msg.join(" "))
+			logger.error(msg.join(" ")+new Error().stack)
 		} catch (e) {}
 	}
 }

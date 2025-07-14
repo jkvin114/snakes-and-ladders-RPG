@@ -74,6 +74,11 @@ export function format(str, values) {
 
 async function main() {
 	if (!isReplay) auth()
+
+	window.onbeforeunload = function (e) {
+		return ""
+	}
+
 	extendJqueryEasing()
 	console.log("main")
 	await GAME.updateLocale()

@@ -74,7 +74,9 @@ export class ActionStack {
 	 */
 	pushAll(...action: Action[]) {
 		for (let i = action.length - 1; i >= 0; --i) {
-			if (!action[i].duplicateAllowed && this.hasValidTypeAndTurn(action[i].type, action[i].turn)) continue
+			if(!action[i].canBePushed(this)) continue
+
+			
 
 			let skip = false
 			for (const incompatiable of action[i].incompatiableWith) {

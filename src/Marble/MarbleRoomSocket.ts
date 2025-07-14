@@ -106,6 +106,7 @@ module.exports = function (socket: Socket) {
 			setting.items = new marblegame.ItemSetting({
 				items: itemsetting.items.map((i:any) => new marblegame.Item(i)),
 				randomCount: itemsetting.randomCount,
+				poolJson:itemsetting.pool
 			})
 			MarbleGameGRPCClient.InitGame(setting,()=>{
 				

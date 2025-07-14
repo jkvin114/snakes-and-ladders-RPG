@@ -129,7 +129,7 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 				let targets = this.game.mediator.getPlayersAt([TRAVEL_POS])
 				pkg.addExecuted(call, this.invoker.turn)
 				for (const p of targets) {
-					pkg.addAction(new RequestMoveAction(p.turn, this.invoker.pos, MOVETYPE.TELEPORT), call)
+					pkg.addAction(new RequestMoveAction(p.turn, this.invoker.pos, MOVETYPE.TELEPORT,this.game.thisturn), call)
 				}
 			} else if (linemg != null) {
 				// pkg.addExecuted(line_magnetic,this.invoker.turn)
@@ -157,7 +157,7 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 		if (this.teleportMoveAbilities(pkg)) {
 		} else if (this.offences.has(ehealing)) {
 			pkg.addExecuted(ehealing, this.invoker.turn)
-			pkg.addAction(new RequestMoveAction(this.invoker.turn, TRAVEL_POS, MOVETYPE.FORCE_WALK), ehealing)
+			pkg.addAction(new RequestMoveAction(this.invoker.turn, TRAVEL_POS, MOVETYPE.FORCE_WALK,this.game.thisturn), ehealing)
 		}
 
 		return pkg.addMain(this.main)

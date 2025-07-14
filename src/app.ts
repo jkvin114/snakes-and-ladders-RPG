@@ -179,7 +179,7 @@ io.use(async (socket, next) => {
 		next()
 	}
 	catch(e){
-		Logger.warn(String(e))
+		Logger.log(String(e))
 	}
 	
 });

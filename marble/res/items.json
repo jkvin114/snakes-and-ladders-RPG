@@ -1,0 +1,1312 @@
+[
+    {
+        "code": 0,
+        "item_name": "first_turn_double",
+        "itemname_kor": "주사위더블",
+        "abilities": [
+            {
+                "ability_name": "first_turn_double",
+                "chance": 0,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 1
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 1,
+        "item_name": "golden_bell",
+        "itemname_kor": "구원의 골든벨",
+        "abilities": [
+            {
+                "ability_name": "salary_bonus",
+                "chance": 0,
+                "value": 50,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 2
+    },
+    {
+        "code": 2,
+        "item_name": "annonymous_1",
+        "itemname_kor": "초월의 빛",
+        "abilities": [
+            {
+                "ability_name": "money_on_dice",
+                "chance": 0,
+                "value": 700000,
+                "upgrade_value": 0,
+                "first_only": true,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 3,
+        "item_name": "helmet",
+        "itemname_kor": "탑 레이서의 헬멧",
+        "abilities": [
+            {
+                "ability_name": "dice_control_accuracy",
+                "chance": 30,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 4,
+        "item_name": "compass",
+        "itemname_kor": "황금 나침반",
+        "abilities": [
+            {
+                "ability_name": "get_travel_on_draw_card",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": true,
+                "limit": 0
+            }
+        ],
+        "tier": 2
+    },
+    {
+        "code": 5,
+        "item_name": "annonymous_2",
+        "itemname_kor": "야바위꾼의 컵사위",
+        "abilities": [
+            {
+                "ability_name": "dice_double",
+                "chance": 20,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 6,
+        "item_name": "perfume",
+        "itemname_kor": "매혹의 향수",
+        "abilities": [
+            {
+                "ability_name": "perfume",
+                "chance": 0,
+                "value": 17,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 2
+    },
+    {
+        "code": 7,
+        "item_name": "badge",
+        "itemname_kor": "보안관 뱃지",
+        "abilities": [
+            {
+                "ability_name": "badge",
+                "chance": 0,
+                "value": 15,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 2
+    },
+    {
+        "code": 8,
+        "item_name": "bear",
+        "itemname_kor": "나나의 곰돌이",
+        "abilities": [
+            {
+                "ability_name": "additional_toll",
+                "chance": 0,
+                "value": 25,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 2
+    },
+    {
+        "code": 9,
+        "item_name": "blackcard",
+        "itemname_kor": "블랙카드",
+        "abilities": [
+            {
+                "ability_name": "free_toll",
+                "chance": 95,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": true,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 10,
+        "item_name": "healing",
+        "itemname_kor": "힐링 여행권",
+        "abilities": [
+            {
+                "ability_name": "healing",
+                "chance": 18,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 3
+    },
+    {
+        "code": 11,
+        "item_name": "ring",
+        "itemname_kor": "앙리의 반지",
+        "abilities": [
+            {
+                "ability_name": "ring",
+                "chance": 0,
+                "value": 60,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 2
+    },
+    {
+        "code": 12,
+        "item_name": "coin",
+        "itemname_kor": "모험왕의 기념 주화",
+        "abilities": [
+            {
+                "ability_name": "salary_bonus",
+                "chance": 0,
+                "value": 300,
+                "upgrade_value": 0,
+                "first_only": true,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 13,
+        "item_name": "freepass",
+        "itemname_kor": "황금 프리패스",
+        "abilities": [
+            {
+                "ability_name": "freepass",
+                "chance": 35,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 14,
+        "item_name": "construction_tool",
+        "itemname_kor": "대가의 건설장비",
+        "abilities": [
+            {
+                "ability_name": "construction",
+                "chance": 33,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 15,
+        "item_name": "agreement",
+        "itemname_kor": "궁극의 합의서",
+        "abilities": [
+            {
+                "ability_name": "agreement",
+                "chance": 70,
+                "value": 9,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 3
+    },
+    {
+        "code": 16,
+        "item_name": "reverse_agreement",
+        "itemname_kor": "반격의 합의서",
+        "abilities": [
+            {
+                "ability_name": "reverse_agreement",
+                "chance": 70,
+                "value": 8,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 3
+    },
+    {
+        "code": 17,
+        "item_name": "boss_healing",
+        "itemname_kor": "사장님의 힐링 여행권",
+        "abilities": [
+            {
+                "ability_name": "boss_healing",
+                "chance": 20,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 18,
+        "item_name": "taxi",
+        "itemname_kor": "공항 택시",
+        "abilities": [
+            {
+                "ability_name": "taxi",
+                "chance": 45,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 19,
+        "item_name": "speaker",
+        "itemname_kor": "승리의 확성기",
+        "abilities": [
+            {
+                "ability_name": "speaker",
+                "chance": 45,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 20,
+        "item_name": "travel_companion",
+        "itemname_kor": "여행의 동반자",
+        "abilities": [
+            {
+                "ability_name": "follow_on_enemy_healing",
+                "chance": 80,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 21,
+        "item_name": "unexpected_invitation",
+        "itemname_kor": "뜻밖의 초대권",
+        "abilities": [
+            {
+                "ability_name": "travel_on_triple_double",
+                "chance": 95,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 22,
+        "item_name": "flag_of_landowner",
+        "itemname_kor": "대지주의 깃발",
+        "abilities": [
+            {
+                "ability_name": "flag",
+                "chance": 75,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 23,
+        "item_name": "annonymous_3",
+        "itemname_kor": "사장님의 방패",
+        "abilities": [
+            {
+                "ability_name": "defend_attack",
+                "chance": 50,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 24,
+        "item_name": "annonymous_4",
+        "itemname_kor": "사장님의 창",
+        "abilities": [
+            {
+                "ability_name": "ignore_attack_defend",
+                "chance": 50,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 3
+    },
+    {
+        "code": 25,
+        "item_name": "annonymous_5",
+        "itemname_kor": "신비한 원석",
+        "abilities": [
+            {
+                "ability_name": "ignore_angel",
+                "chance": 65,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 26,
+        "item_name": "magnetic core",
+        "itemname_kor": "마그네틱 코어",
+        "abilities": [
+            {
+                "ability_name": "range_pull_on_arrive_landmark",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 27,
+        "item_name": "magnetic field",
+        "itemname_kor": "전자기장 발생기",
+        "abilities": [
+            {
+                "ability_name": "range_pull_on_build_landmark",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 28,
+        "item_name": "remote magnetic core",
+        "itemname_kor": "원격 마그네틱 코어",
+        "abilities": [
+            {
+                "ability_name": "iaan",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 29,
+        "item_name": "dual magnetic core",
+        "itemname_kor": "듀얼 마그네틱 코어",
+        "abilities": [
+            {
+                "ability_name": "line_pull",
+                "chance": 85,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
+    },
+    {
+        "code": 30,
+        "item_name": "bubble",
+        "itemname_kor": "비눗방울 장난감",
+        "abilities": [
+            {
+                "ability_name": "bubble",
+                "chance": 65,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 31,
+        "item_name": "boss call",
+        "itemname_kor": "사장님의 긴급 호출",
+        "abilities": [
+            {
+                "ability_name": "boss_call",
+                "chance": 95,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 32,
+        "item_name": "annonymous_6",
+        "itemname_kor": "풍요신의 문장",
+        "abilities": [
+            {
+                "ability_name": "apply_multiplier_on_build_landmark",
+                "chance": 85,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 33,
+        "item_name": "monument",
+        "itemname_kor": "왕가의 기념비",
+        "abilities": [
+            {
+                "ability_name": "monument",
+                "chance": 0,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 34,
+        "item_name": "inheritance_document",
+        "itemname_kor": "재벌가의 상속문서",
+        "abilities": [
+            {
+                "ability_name": "inheritance_document",
+                "chance": 75,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 4
+    },
+    {
+        "code": 35,
+        "item_name": "bear2",
+        "itemname_kor": "각성 도깨비 곰돌이",
+        "abilities": [
+            {
+                "ability_name": "additional_toll",
+                "chance": 0,
+                "value": 75,
+                "upgrade_value": 100,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 36,
+        "item_name": "blackhole_build",
+        "itemname_kor": "블랙홀 추진기",
+        "abilities": [
+            {
+                "ability_name": "blackhole_on_build_landmark",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 37,
+        "item_name": "blackhole_arrive",
+        "itemname_kor": "블랙홀 발생기",
+        "abilities": [
+            {
+                "ability_name": "blackhole_on_arrive_landmark",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 38,
+        "item_name": "guidebook",
+        "itemname_kor": "잘못된 가이드북",
+        "abilities": [
+            {
+                "ability_name": "wrong_guidebook",
+                "chance": 70,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 39,
+        "item_name": "blackhole_multiplier",
+        "itemname_kor": "블랙홀 증폭기",
+        "abilities": [
+            {
+                "ability_name": "blackhole_on_arrive_landmark",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            },
+              {
+                "ability_name": "blackhole_on_build_landmark",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            },
+            {
+                "ability_name": "add_multiplier_on_blackhole",
+                "chance": 80,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
+    },
+    {
+        "code": 40,
+        "item_name": "blueprint",
+        "itemname_kor": "위조된 설계 도면",
+        "abilities": [
+            {
+                "ability_name": "blueprint",
+                "chance": 75,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 41,
+        "item_name": "blueprint_lock",
+        "itemname_kor": "봉인된 설계 도면",
+        "abilities": [
+            {
+                "ability_name": "blueprint_and_lock",
+                "chance": 75,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 42,
+        "item_name": "every_healing",
+        "itemname_kor": "어디서나 힐링 여행권",
+        "abilities": [
+            {
+                "ability_name": "healing_everywhere",
+                "chance": 25,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 43,
+        "item_name": "policecar",
+        "itemname_kor": "일단정지 경찰차",
+        "abilities": [
+            {
+                "ability_name": "police_car",
+                "chance": 75,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 44,
+        "item_name": "islandescape",
+        "itemname_kor": "마이더스의 지도",
+        "abilities": [
+            {
+                "ability_name": "instant_escape_island",
+                "chance": 80,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 5
+    },
+    {
+        "code": 45,
+        "item_name": "redsticker",
+        "itemname_kor": "공포의 빨간 딱지",
+        "abilities": [
+            {
+                "ability_name": "red_sticker",
+                "chance": 33,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 46,
+        "item_name": "newtown",
+        "itemname_kor": "뉴타운 확장권",
+        "abilities": [
+            {
+                "ability_name": "newtown",
+                "chance": 25,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
+    },
+    {
+        "code": 47,
+        "item_name": "fortune_trampoline",
+        "itemname_kor": "행운의 트램폴린",
+        "abilities": [{
+                "ability_name": "monument",
+                "chance": 0,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            },
+            {
+                "ability_name": "line_trampoline",
+                "chance": 35,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 48,
+        "item_name": "jester_trampoline",
+        "itemname_kor": "곡예사의 트램폴린",
+        "abilities": [
+            {
+                "ability_name": "my_land_trampoline",
+                "chance": 40,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 49,
+        "item_name": "space_trampoline",
+        "itemname_kor": "반중력 트램폴린",
+        "abilities": [
+            {
+                "ability_name": "enemy_land_trampoline",
+                "chance": 35,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 50,
+        "item_name": "ninja_scroll",
+        "itemname_kor": "괴도의 인술서",
+        "abilities": [
+            {
+                "ability_name": "ninja_scroll",
+                "chance": 65,
+                "value": 20,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 51,
+        "item_name": "teleport_invitation",
+        "itemname_kor": "순간이동 초대권",
+        "abilities": [
+            {
+                "ability_name": "teleport_invitation",
+                "chance": 95,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
+    },
+    {
+        "code": 52,
+        "item_name": "newdouble",
+        "itemname_kor": "슈퍼 야뱌위꾼의 컵사위",
+        "abilities": [
+            {
+                "ability_name": "dice_double",
+                "chance": 35,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 53,
+        "item_name": "perfect speaker",
+        "itemname_kor": "퍼펙트 승리의 확성기",
+        "abilities": [
+            {
+                "ability_name": "speaker",
+                "chance": 0,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": true,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 54,
+        "item_name": "new construction tool",
+        "itemname_kor": "최첨단 건설장비",
+        "abilities": [
+            {
+                "ability_name": "construction",
+                "chance": 80,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 2
+            },{
+                "ability_name": "my_land_move_on_build_landmark",
+                "chance": 40,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 55,
+        "item_name": "pharaoh helmet",
+        "itemname_kor": "파라오의 헬멧",
+        "abilities": [
+            {
+                "ability_name": "dice_chance_on_build_landmark",
+                "chance": 45,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 56,
+        "item_name": "ninja helmet",
+        "itemname_kor": "닌자 헬멧",
+        "abilities": [
+            {
+                "ability_name": "my_land_move_on_build_landmark",
+                "chance": 45,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 57,
+        "item_name": "kings contruction toll",
+        "itemname_kor": "제왕의 건설장비",
+        "abilities": [
+            {
+                "ability_name": "upgrade_construction_tool",
+                "chance": 33,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 58,
+        "item_name": "rocket construction tool",
+        "itemname_kor": "로켓엔진 건설장비",
+        "abilities": [
+            {
+                "ability_name": "in_place_construction_tool",
+                "chance": 33,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
+    },
+    {
+        "code": 59,
+        "item_name": "watson",
+        "itemname_kor": "왓슨의 돋보기",
+        "abilities": [
+            {
+                "ability_name": "corner_special_move_on_arrive_corner",
+                "chance": 50,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 60,
+        "item_name": "blackhole escaper",
+        "itemname_kor": "블랙홀 탈출선",
+        "abilities": [
+            {
+                "ability_name": "my_land_move_on_blackhole",
+                "chance": 70,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 61,
+        "item_name": "cloe shield",
+        "itemname_kor": "클로이의 방패",
+        "abilities": [
+            {
+                "ability_name": "block_buyout",
+                "chance": 40,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 10
+    },
+    {
+        "code": 62,
+        "item_name": "super helmet",
+        "itemname_kor": "슈퍼 탑 레이서의 헬멧",
+        "abilities": [
+            {
+                "ability_name": "dice_control_accuracy",
+                "chance": 60,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
+    },
+    {
+        "code": 63,
+        "item_name": "sophie luggage",
+        "itemname_kor": "소피의 여행가방",
+        "abilities": [
+            {
+                "ability_name": "sophie",
+                "chance": 50,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 10
+    },
+    {
+        "code": 64,
+        "item_name": "nirvana crown",
+        "itemname_kor": "니르바나의 왕관",
+        "abilities": [
+            {
+                "ability_name": "additional_landmark_on_build",
+                "chance": 30,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 65,
+        "item_name": "levataine sword",
+        "itemname_kor": "레바테인의 칼",
+        "abilities": [
+            {
+                "ability_name": "move_in_dice_range_after_dice",
+                "chance": 33,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 10
+    },
+    {
+        "code": 66,
+        "item_name": "donate_guidebook",
+        "itemname_kor": "기부왕의 지옥가이드북",
+        "abilities": [
+            {
+                "ability_name": "donate_guidebook",
+                "chance": 70,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 67,
+        "item_name": "healing_trampoline",
+        "itemname_kor": "힐링 트램폴린",
+        "abilities": [
+            {
+                "ability_name": "enemy_land_trampoline_freemove",
+                "chance": 35,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 7
+    },
+    {
+        "code": 68,
+        "item_name": "locker",
+        "itemname_kor": "봉인의 자물쇠",
+        "abilities": [
+            {
+                "ability_name": "lock_multiplier_and_double_on_start_build",
+                "chance": 50,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 69,
+        "item_name": "white_card",
+        "itemname_kor": "화이트 카드",
+        "abilities": [
+            {
+                "ability_name": "toll_reflection",
+                "chance": 25,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 70,
+        "item_name": "fake_buyout_document",
+        "itemname_kor": "위조된 인수증서",
+        "abilities": [
+            {
+                "ability_name": "free_buyout_and_double",
+                "chance": 40,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 71,
+        "item_name": "helmet",
+        "itemname_kor": "[난투전] 탑 레이서의 헬멧",
+        "abilities": [
+            {
+                "ability_name": "dice_control_accuracy",
+                "chance": 100,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 72,
+        "item_name": "perfume",
+        "itemname_kor": "[난투전] 매혹의 향수",
+        "abilities": [
+            {
+                "ability_name": "perfume",
+                "chance": 0,
+                "value": 100,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 73,
+        "item_name": "badge",
+        "itemname_kor": "[난투전] 보안관 뱃지",
+        "abilities": [
+            {
+                "ability_name": "badge",
+                "chance": 0,
+                "value": 100,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 74,
+        "item_name": "bear",
+        "itemname_kor": "[난투전] 나나의 곰돌이",
+        "abilities": [
+            {
+                "ability_name": "additional_toll",
+                "chance": 0,
+                "value": 100,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 75,
+        "item_name": "healing",
+        "itemname_kor": "[난투전] 힐링 여행권",
+        "abilities": [
+            {
+                "ability_name": "healing",
+                "chance": 100,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 76,
+        "item_name": "construction_tool",
+        "itemname_kor": "[난투전] 대가의 건설장비",
+        "abilities": [
+            {
+                "ability_name": "construction",
+                "chance": 100,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 77,
+        "item_name": "magnetic core",
+        "itemname_kor": "[난투전] 마그네틱 코어",
+        "abilities": [
+            {
+                "ability_name": "range_pull_on_arrive_landmark",
+                "chance": 100,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 78,
+        "item_name": "speaker",
+        "itemname_kor": "[난투전] 승리의 확성기",
+        "abilities": [
+            {
+                "ability_name": "speaker",
+                "chance": 100,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    },
+    {
+        "code": 79,
+        "item_name": "policecar",
+        "itemname_kor": "[난투전] 일단정지 경찰차",
+        "abilities": [
+            {
+                "ability_name": "police_car",
+                "chance": 100,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 1
+    }
+]

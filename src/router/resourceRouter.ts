@@ -48,6 +48,9 @@ const _MarbleMap0 = JSON.stringify(marblemap0)
 import marblemap1 from "../../res/marble/godhand_map.json"
 const _MarbleMap1 = JSON.stringify(marblemap1)
 
+import marblemap2 from "../../res/marble/water_map.json"
+const _MarbleMap2 = JSON.stringify(marblemap2)
+
 import marblecoord from "../../res/marble/map_coordinates.json"
 import { sessionParser } from './jwt/auth';
 import { CompressedReplay } from '../mongodb/ReplayDBHandler';
@@ -152,7 +155,9 @@ router.get("/marble_map",sessionParser, function (req:Request, res:Response) {
 	else if(room.getMapId===1){
 		res.end(_MarbleMap1)
 	}
-	
+	else if(room.getMapId===2){
+		res.end(_MarbleMap2)
+	}
 })
 
 router.get("/marble_map_coordinates", function (req:Request, res:Response) {

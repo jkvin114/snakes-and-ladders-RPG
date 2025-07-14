@@ -118,6 +118,19 @@ export class AbilityStorage {
                 name:value.getItemKorName(),desc:value.getDescription(ability.description)
             })
         }
+        let itemDescs = new Map<string,string>()
+        for(const item of arr){
+            if(itemDescs.has(item.name)){
+                itemDescs.set(item.name,itemDescs.get(item.name) +" | "+item.desc)
+            }
+            else{
+                itemDescs.set(item.name,item.desc)
+            }
+        }
+        arr=[]
+        for(const [name,desc] of itemDescs.entries()){
+            arr.push({name:name,desc:desc})
+        }
         return arr
     }
     getAbilityStringOf(ab:AbilityExecution):{name:string,desc:string}|null{

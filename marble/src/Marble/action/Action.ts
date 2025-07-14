@@ -2,6 +2,7 @@ import { Logger } from "../../logger"
 import { AbilityExecution } from "../Ability/Ability"
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 import { cl, hexId } from "../util"
+import type { ActionStack } from "./ActionStack"
 import { ActionTrace, ActionTraceTag } from "./ActionTrace"
 
 export enum ACTION_TYPE {
@@ -111,7 +112,7 @@ export const ACTION_LIST = [
 ]
 
 export enum MOVETYPE{
-	WALK="walk",FORCE_WALK="force_walk",TELEPORT="tp",PULL="pull",BLACKHOLE="blackhole",TRAVEL="travel"
+	WALK="walk",FORCE_WALK="force_walk",TELEPORT="tp",PULL="pull",BLACKHOLE="blackhole",TRAVEL="travel",WATERSTREAM="waterstream",
 }
 export abstract class Action {
 	type: ACTION_TYPE
@@ -218,6 +219,11 @@ export abstract class Action {
 		if(this.priority!==Action.PRIORITY_IMMEDIATE)
 			this.priority=Action.PRIORITY_ACTIONPACKAGE_AFTER_MAIN
 		return this
+	}
+	canBePushed( stack:ActionStack){
+		if (!this.duplicateAllowed && stack.hasValidTypeAndTurn(this.type, this.turn)) return false
+
+		return true
 	}
 }
 

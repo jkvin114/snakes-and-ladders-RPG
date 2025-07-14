@@ -21,7 +21,7 @@ export class PullActionBuilder extends DefendableActionBuilder {
 		return this
 	}
 	build(): ActionPackage {
-		let pkg = super.build().addMain(new RequestMoveAction(this.defender.turn, this.pos, MOVETYPE.PULL))
+		let pkg = super.build().addMain(new RequestMoveAction(this.defender.turn, this.pos, MOVETYPE.PULL,this.game.thisturn))
 
 		const defence = ABILITY_NAME.DEFEND_ATTACK
         const ignore=ABILITY_NAME.IGNORE_ATTACK_DEFEND

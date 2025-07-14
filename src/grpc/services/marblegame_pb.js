@@ -930,7 +930,8 @@ proto.marblegame.ItemSetting.toObject = function(includeInstance, msg) {
   var f, obj = {
     itemsList: jspb.Message.toObjectList(msg.getItemsList(),
     proto.marblegame.Item.toObject, includeInstance),
-    randomcount: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    randomcount: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    pooljson: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -976,6 +977,10 @@ proto.marblegame.ItemSetting.deserializeBinaryFromReader = function(msg, reader)
       var value = /** @type {number} */ (reader.readInt32());
       msg.setRandomcount(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPooljson(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1017,6 +1022,13 @@ proto.marblegame.ItemSetting.serializeBinaryToWriter = function(message, writer)
   if (f !== 0) {
     writer.writeInt32(
       2,
+      f
+    );
+  }
+  f = message.getPooljson();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
       f
     );
   }
@@ -1076,6 +1088,24 @@ proto.marblegame.ItemSetting.prototype.getRandomcount = function() {
  */
 proto.marblegame.ItemSetting.prototype.setRandomcount = function(value) {
   return jspb.Message.setProto3IntField(this, 2, value);
+};
+
+
+/**
+ * optional string poolJson = 3;
+ * @return {string}
+ */
+proto.marblegame.ItemSetting.prototype.getPooljson = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.marblegame.ItemSetting} returns this
+ */
+proto.marblegame.ItemSetting.prototype.setPooljson = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 

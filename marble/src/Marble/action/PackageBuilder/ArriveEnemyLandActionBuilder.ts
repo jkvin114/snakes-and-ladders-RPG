@@ -42,7 +42,7 @@ export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
 	}
 	addHealing(pkg: ActionPackage, name: ABILITY_NAME) {
 		pkg.addExecuted(name, this.invoker.turn)
-		pkg.addAction(new RequestMoveAction(this.invoker.turn, TRAVEL_POS, MOVETYPE.FORCE_WALK), name)
+		pkg.addAction(new RequestMoveAction(this.invoker.turn, TRAVEL_POS, MOVETYPE.FORCE_WALK,this.game.thisturn), name)
 	}
 
 	healing(pkg: ActionPackage) {
@@ -132,7 +132,7 @@ export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
 
 		if (healing_invoked && this.defences.has(follow_healing)) {
 			pkg.addExecuted(follow_healing, this.defender.turn)
-			pkg.addAction(new RequestMoveAction(this.defender.turn, this.game.map.travel, MOVETYPE.FORCE_WALK), follow_healing)
+			pkg.addAction(new RequestMoveAction(this.defender.turn, this.game.map.travel, MOVETYPE.FORCE_WALK,this.game.thisturn), follow_healing)
 		}
 
 		if(!this.tollFree)

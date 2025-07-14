@@ -50,6 +50,7 @@ message Item{
 message ItemSetting{
     repeated Item items = 1;
     int32 randomCount = 2;
+    string poolJson = 3;
 }
 message GameSetting{
     string rname=1;

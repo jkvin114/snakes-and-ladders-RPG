@@ -6,7 +6,7 @@ export namespace ServerEventModel{
         state:string,pos:number,duration?:number
     }
     export interface ItemSetting{
-        randomCount:number,items:{code:number,locked:boolean,selected:boolean}[]
+        randomCount:number,items:{code:number,locked:boolean,selected:boolean}[],poolJson:string
     }
     export interface ThrowDiceData{
         dice: number[];

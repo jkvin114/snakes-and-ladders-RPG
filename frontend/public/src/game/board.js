@@ -535,7 +535,11 @@ export class Board {
 			boardimg = document.getElementById("ocean_boardimg")
 		} else if (this.mapname === "casino") {
 			boardimg = document.getElementById("casino_boardimg")
-		} else if (this.mapname === "marble_godhand" || this.mapname === "marble_world") {
+		} else if (
+			this.mapname === "marble_godhand" ||
+			this.mapname === "marble_world" ||
+			this.mapname === "marble_water"
+		) {
 			boardimg = document.getElementById("marble_boardimg")
 		} else if (this.mapname === "rapid") {
 			boardimg = document.getElementById("rapid_boardimg")

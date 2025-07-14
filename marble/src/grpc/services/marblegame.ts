@@ -329,6 +329,7 @@ export namespace marblegame {
         constructor(data?: any[] | {
             items?: Item[];
             randomCount?: number;
+            poolJson?: string;
         }) {
             super();
             pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [1], this.#one_of_decls);
@@ -338,6 +339,9 @@ export namespace marblegame {
                 }
                 if ("randomCount" in data && data.randomCount != undefined) {
                     this.randomCount = data.randomCount;
+                }
+                if ("poolJson" in data && data.poolJson != undefined) {
+                    this.poolJson = data.poolJson;
                 }
             }
         }
@@ -353,9 +357,16 @@ export namespace marblegame {
         set randomCount(value: number) {
             pb_1.Message.setField(this, 2, value);
         }
+        get poolJson() {
+            return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+        }
+        set poolJson(value: string) {
+            pb_1.Message.setField(this, 3, value);
+        }
         static fromObject(data: {
             items?: ReturnType<typeof Item.prototype.toObject>[];
             randomCount?: number;
+            poolJson?: string;
         }): ItemSetting {
             const message = new ItemSetting({});
             if (data.items != null) {
@@ -364,18 +375,25 @@ export namespace marblegame {
             if (data.randomCount != null) {
                 message.randomCount = data.randomCount;
             }
+            if (data.poolJson != null) {
+                message.poolJson = data.poolJson;
+            }
             return message;
         }
         toObject() {
             const data: {
                 items?: ReturnType<typeof Item.prototype.toObject>[];
                 randomCount?: number;
+                poolJson?: string;
             } = {};
             if (this.items != null) {
                 data.items = this.items.map((item: Item) => item.toObject());
             }
             if (this.randomCount != null) {
                 data.randomCount = this.randomCount;
+            }
+            if (this.poolJson != null) {
+                data.poolJson = this.poolJson;
             }
             return data;
         }
@@ -387,6 +405,8 @@ export namespace marblegame {
                 writer.writeRepeatedMessage(1, this.items, (item: Item) => item.serialize(writer));
             if (this.randomCount != 0)
                 writer.writeInt32(2, this.randomCount);
+            if (this.poolJson.length)
+                writer.writeString(3, this.poolJson);
             if (!w)
                 return writer.getResultBuffer();
         }
@@ -401,6 +421,9 @@ export namespace marblegame {
                         break;
                     case 2:
                         message.randomCount = reader.readInt32();
+                        break;
+                    case 3:
+                        message.poolJson = reader.readString();
                         break;
                     default: reader.skipField();
                 }

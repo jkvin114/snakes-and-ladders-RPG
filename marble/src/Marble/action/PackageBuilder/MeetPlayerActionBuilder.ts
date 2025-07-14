@@ -60,7 +60,7 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 		if (pos === -1) return false
 		if(defences.get(donate_guidebook) && !this.trace.hasActionAndAbility(ACTION_TYPE.REQUEST_MOVE,donate_guidebook)){
 			pkg.addAction(
-				new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT).reserveAbilityIndicatorOnPop(
+				new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT,this.game.thisturn).reserveAbilityIndicatorOnPop(
 					donate_guidebook,
 					stayed.turn
 				),
@@ -75,7 +75,7 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 		}
 		else if(defences.get(guidebook) && !this.trace.hasActionAndAbility(ACTION_TYPE.REQUEST_MOVE,guidebook)){
 			pkg.addAction(
-				new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT).reserveAbilityIndicatorOnPop(
+				new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT,this.game.thisturn).reserveAbilityIndicatorOnPop(
 					guidebook,
 					stayed.turn
 				),

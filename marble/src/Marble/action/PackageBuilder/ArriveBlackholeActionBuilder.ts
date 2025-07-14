@@ -29,7 +29,7 @@ export class ArriveBlackholeActionBuilder extends ActionPackageBuilder {
 			pkg.addExecuted(escape,this.invoker.turn)
 		}
 		else{
-			pkg.addMain(new RequestMoveAction(this.invoker.turn, this.white, MOVETYPE.BLACKHOLE))
+			pkg.addMain(new RequestMoveAction(this.invoker.turn, this.white, MOVETYPE.BLACKHOLE,this.game.thisturn))
 		}
 		pkg.addMain(new SimpleInstantAction(ACTION_TYPE.REMOVE_BLACKHOLE))
 		return pkg

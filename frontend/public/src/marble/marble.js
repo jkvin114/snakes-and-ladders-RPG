@@ -18,7 +18,7 @@ const MESSAGE = {
 	forcemove_no_tile: "이동할 지역이 없습니다",
 	choose_to_tile: "선택 가능 지역이 없습니다",
 }
-const BGM = true
+const BGM = false
 export var GAME
 
 export let AxiosApi = {
@@ -177,8 +177,10 @@ class Game {
 			}
 			elem.volume = 0.6
 			elem.loop = true
-			elem.load()
-			elem.play()
+			setTimeout(() => {
+				elem.load()
+				elem.play()
+			}, 2000)
 		}
 	}
 
@@ -241,6 +243,7 @@ class Game {
 		this.playsound("teleport")
 		this.scene.focusPlayer(this.turnToPlayerNum(player))
 		if (movetype === "blackhole") this.scene.playerBlackholeMove(this.turnToPlayerNum(player), pos)
+		else if (movetype === "waterstream") this.scene.playerWaterstreamMove(this.turnToPlayerNum(player), pos)
 		else this.scene.teleportPlayer(this.turnToPlayerNum(player), pos, "levitate")
 	}
 	playerEffect(turn, effect, pos, status) {
@@ -555,6 +558,7 @@ async function requestMap() {
 
 	var urls = ["/resource/marble_map", "/resource/marble_map_coordinates"]
 	let res = await AxiosApi.get("/resource/marble_map")
+	console.log(res.data)
 	GAME.scene.setMap(res.data)
 	let res2 = await (await fetch("/res/data/marble_map_coordinates.json")).json()
 	GAME.scene.setMapCoordinates(res2)
