@@ -17,15 +17,16 @@ export default class WaitingMoveTileSelection extends WaitingState<MoveTileSelec
     async runAISelection(): Promise<boolean> {
         this.game.onBeforeAskMoveTile(this.sourceAction)
 
-        let result=await this.playerAgent.chooseTile(this.sourceAction.serialize())
+        let result =  await this.playerAgent.chooseMoveTile(this.sourceAction.serialize())
         this.onUserSelectTile(result.pos,result.name,result.result)
         // if(result.name !== this.sourceAction.name) return false
         return true
 
     }
     sendQueryRequest(): void {
+
         this.game.onBeforeAskMoveTile(this.sourceAction)
-        this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.tiles,this.sourceAction.name)
+        this.game.eventEmitter.askMoveTileSelection(this.turn,this.sourceAction.serialize())
     }
     onUserSelectTile(pos: number,name:string,result:boolean): QueryEventResult {
         if(name !== this.sourceAction.name) return new QueryEventResult(false)

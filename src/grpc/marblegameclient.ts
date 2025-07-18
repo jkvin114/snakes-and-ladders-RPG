@@ -38,8 +38,15 @@ export default class MarbleGameGRPCClient{
             MarbleGameGRPCClient.stub.Ping(new marblegame.Int(), (error:any, response:marblegame.Int) => {
             if (error) {
                 res(-2)
-            }else
-            res(1)
+            }else{
+                if(MarbleRoom.ItemDescriptionCache.length===0){
+                        MarbleGameGRPCClient.RequestItem((items)=>{
+                        Logger.log("marble items registered")
+                        MarbleRoom.ItemDescriptionCache = JSON.parse(items)
+                    })
+                }
+                res(1)
+            }
         });
      })
    }

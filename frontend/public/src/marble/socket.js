@@ -189,11 +189,11 @@ export function openConnection(isInitial) {
 		// console.log(data)
 		GAME.ui.askAttackDefenceCard(data.cardname, data.attackName)
 	})
-	socket.on("server:ask_godhand_special", function (turn, canlift) {
+	socket.on("server:ask_godhand_special", function (turn, data) {
 		if (!checkTurn(turn)) return
 		// console.log("ask_godhand_special")
 		// console.log(turn, canlift)
-		GAME.ui.showGodHandSpecial(canlift.canLiftTile)
+		GAME.ui.showGodHandSpecial(data.canLiftTile, data.specialType)
 	})
 	socket.on("server:ability", function (turn, data) {
 		// console.log("ability")

@@ -91,7 +91,9 @@ export enum ABILITY_NAME {
 
 	LOCK_MULTIPLIER_AND_DOUBLE_ON_START_BUILD="lock_multiplier_and_double_on_start_build",
 	TOLL_REFLECTION="toll_reflection",
-	FREE_BUYOUT_AND_DOUBLE="free_buyout_and_double"
+	FREE_BUYOUT_AND_DOUBLE="free_buyout_and_double",
+	
+	THROW_TO_LANDMARK_WITH_MULTIPLIER="hell_guidebook"
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -595,5 +597,12 @@ ABILITY_REGISTRY.set(
 	.on(EVENT_TYPE.BUYOUT_PRICE_CLAIMED)
 	.desc("인수 시 $c% 확률로 인수비용 면제,인수시 통행료 2배 적용")
 	.setAlerts(["인수비용 면제!","통행료 2배 적용!"])
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.THROW_TO_LANDMARK_WITH_MULTIPLIER,
+	new Ability(ABILITY_NAME.THROW_TO_LANDMARK_WITH_MULTIPLIER)
+	.on(EVENT_TYPE.ENEMY_ARRIVE_TO_ME)
+	.desc("상대가 나에게 도착하면 $c% 확률로 내 랜드마크로 날려보냄(통행료 3배)")
+	.setAlerts(["내 랜드마크로 날려보냄!","통행료 3배 적용!"])
 )
 export { ABILITY_REGISTRY }

@@ -122,13 +122,25 @@ export class BlackholeTileSelectionAction extends TileSelectionAction {
 }
 export class MoveTileSelectionAction extends TileSelectionAction{
 	moveType:MOVETYPE
+	sourcePos:number
 	constructor(turn: number,tiles:number[],moveType:MOVETYPE,name?:string){
 		if(!name) name="free_move"
 		super(ACTION_TYPE.CHOOSE_MOVE_POSITION,turn,tiles,name)
 		this.moveType=moveType
 		this.duplicateAllowed=false
-		
 		this.cancels.add(ACTION_TYPE.REQUEST_MOVE)
+	}
+	setSourcePos(sourcePos:number){
+		this.sourcePos=sourcePos
+	}
+	serialize():ServerRequestModel.MoveTileSelection {
+		return {
+			tiles:this.tiles,
+			source:this.name,
+			actionType:this.type,
+			moveType:this.moveType,
+			sourcePos:this.sourcePos
+		}
 	}
 }
 export class MoveToPlayerSelectionAction extends MoveTileSelectionAction{
@@ -230,14 +242,18 @@ export class AskTollDefenceCardAction extends AskDefenceCardAction{
 }
 
 export class AskGodHandSpecialAction extends QueryAction{
+	//lift_tile, water_pump
 	canLiftTile:boolean
-	constructor(turn: number,canLiftTile:boolean) {
+	specialType:string
+	constructor(turn: number,canLiftTile:boolean,specialType:string) {
 		super(ACTION_TYPE.CHOOSE_GODHAND_SPECIAL,turn)
 		this.canLiftTile=canLiftTile
+		this.specialType=specialType
 	}
 	serialize():ServerRequestModel.GodHandSpecialSelection{
 		return {
-			canLiftTile:this.canLiftTile
+			canLiftTile:this.canLiftTile,
+			specialType:this.specialType
 		}
 	}
 }

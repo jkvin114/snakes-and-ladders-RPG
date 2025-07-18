@@ -1,3 +1,4 @@
+import { Logger } from "../../logger"
 import type { MarbleGame } from "../Game"
 import QueryEventResult from "../QueryEventResult"
 import { ACTION_TYPE } from "../action/Action"
@@ -15,7 +16,13 @@ export default class WaitingTileSelection extends WaitingState<TileSelectionActi
     }
    async runAISelection(): Promise<boolean> {
         let result=await this.playerAgent.chooseTile(this.sourceAction.serialize())
-        this.onUserSelectTile(result.pos,result.name,result.result)
+        try{
+
+            this.onUserSelectTile(result.pos,result.name,result.result)
+        }catch(e){
+            console.log(this.sourceAction)
+            Logger.error("",e)
+        }
      //   if(result.name !== this.sourceAction.name) return false
         return true
     }

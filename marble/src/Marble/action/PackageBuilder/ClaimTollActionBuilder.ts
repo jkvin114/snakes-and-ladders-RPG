@@ -54,6 +54,11 @@ export class ClaimTollActionBuilder extends DefendableActionBuilder {
 			main.applyMultiplier(2)
 		}
 		
+		if(this.trace.thisMoveHasAbility(ABILITY_NAME.THROW_TO_LANDMARK_WITH_MULTIPLIER)){
+			pkg.addExecuted(ABILITY_NAME.THROW_TO_LANDMARK_WITH_MULTIPLIER,this.invoker.turn,1)
+			main.applyMultiplier(3)
+		}
+
 		if(this.trace.thisMoveHasAbility(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK)){
 			pkg.addExecuted(ABILITY_NAME.STOP_ENEMY_ON_MY_LANDMARK,this.invoker.turn,1)
 			main.applyMultiplier(2)

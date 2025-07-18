@@ -36,7 +36,7 @@ export class RationalRandomAgent extends RandomAgent{
 	chooseBuyout(req: sm.BuyoutSelection): Promise<boolean> {
 		return new Promise((resolve) => resolve(true))
 	}
-	chooseTravelTile(req: sm.TileSelection): Promise<cm.SelectTile> {
+	chooseMoveTileFor(req: sm.TileSelection): Promise<cm.SelectTile> {
         let tiles=new TileChoice().generateNoCancel(req)
         let choices:cm.SelectTile[]=[]
 
@@ -48,7 +48,7 @@ export class RationalRandomAgent extends RandomAgent{
 			if(this.game.tileAt(tile.pos).type==TILE_TYPE.SIGHT && this.game.tileAt(tile.pos).owner!==-1) continue
             choices.push(tile)
         }
-		if(choices.length===0) return super.chooseTravelTile(req)
+		if(choices.length===0) return super.chooseMoveTileFor(req)
 		
 		return new Promise((resolve) => resolve(chooseRandom(choices)))
 	}

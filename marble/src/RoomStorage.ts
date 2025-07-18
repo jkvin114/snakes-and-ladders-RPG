@@ -7,6 +7,9 @@ import { Logger } from "./logger";
 export default class RoomStorage{
     private static readonly ROOMS = new Map<string,Room>()
     static create(setting:marblegame.GameSetting){
+        
+        setting.gametype =GameType.SIMULATION
+
         const room=new Room(setting.rname,setting.map,setting.gametype,setting.isTeam,setting.playerlist)
         RoomStorage.ROOMS.set(setting.rname,room)
         room.user_gameReady(setting.rname,setting.items,setting.gametype)

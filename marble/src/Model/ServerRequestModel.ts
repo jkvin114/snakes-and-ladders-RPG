@@ -30,6 +30,10 @@ export namespace ServerRequestModel{
         source:string
         actionType?:ACTION_TYPE
     }
+    export interface MoveTileSelection extends TileSelection{
+        sourcePos:number
+        moveType:string
+    }
     export interface CardSelection{
         cardname:string
     }
@@ -43,6 +47,7 @@ export namespace ServerRequestModel{
     }
     export interface GodHandSpecialSelection{
         canLiftTile:boolean
+        specialType:string
     }
     export interface IslandSelection{
         canEscape:boolean

@@ -16,7 +16,6 @@ export abstract class ActionSelector{
     abstract ChooseDice(req:sm.DiceSelection):Promise<cm.PressDice>
     abstract chooseLoan(amount:number):Promise<boolean>
     abstract chooseBuyout(req:sm.BuyoutSelection):Promise<boolean>
-    protected abstract chooseTravelTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseStartBuildTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseOlympicTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseAttackTile(req:sm.TileSelection):Promise<cm.SelectTile>
@@ -24,7 +23,9 @@ export abstract class ActionSelector{
     protected abstract chooseDonateTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseBlackholeTile(req:sm.TileSelection):Promise<cm.SelectTile>
     protected abstract chooseBuyoutTile(req:sm.TileSelection):Promise<cm.SelectTile>
-    protected abstract chooseGodHandTileLift(req:sm.TileSelection):Promise<cm.SelectTile>
+    protected abstract chooseSpecial(req:sm.TileSelection):Promise<cm.SelectTile>
+
+    protected abstract chooseMoveTileFor(req:sm.MoveTileSelection):Promise<cm.SelectTile>
 
     abstract chooseBuild(req:sm.LandBuildSelection):Promise<number[]>
     abstract chooseCardObtain(req:sm.ObtainCardSelection):Promise<boolean>
@@ -47,13 +48,21 @@ export abstract class ActionSelector{
     get myPlayer(){
         return this.game.getPlayer(this.myturn)
     }
-    chooseTile(req:sm.TileSelection):Promise<cm.SelectTile>{
+    chooseMoveTile(req:sm.MoveTileSelection):Promise<cm.SelectTile>{
 
         if(req.tiles.length===0) return new Promise((resolve)=>resolve({result:false,pos:0,name:""})) 
         
         if(req.actionType===ACTION_TYPE.CHOOSE_MOVE_POSITION){
-            return this.chooseTravelTile(req)
+            return this.chooseMoveTileFor(req)
         }
+        return new Promise((resolve)=>resolve({result:false,pos:0,name:""})) 
+    }
+
+    
+    chooseTile(req:sm.TileSelection):Promise<cm.SelectTile>{
+        if(req.tiles.length===0) return new Promise((resolve)=>resolve({result:false,pos:0,name:""})) 
+
+        
         if(req.actionType===ACTION_TYPE.CHOOSE_BUILD_POSITION){
             if(req.source==="start_build") return this.chooseStartBuildTile(req)
             if(req.source==="godhand_special_build") {
@@ -75,7 +84,7 @@ export abstract class ActionSelector{
         if(req.actionType===ACTION_TYPE.CHOOSE_BUYOUT_POSITION)
             return this.chooseBuyoutTile(req)
         if(req.actionType===ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT)
-            return this.chooseGodHandTileLift(req)
+            return this.chooseSpecial(req)
         return new Promise((resolve)=>resolve({result:false,pos:0,name:""})) 
     }
 }

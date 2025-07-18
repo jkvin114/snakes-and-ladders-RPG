@@ -152,6 +152,7 @@ class Game {
 			"money",
 			"defencecard",
 			"buyout",
+			"waterpump",
 		]
 
 		for (const sound of sounds) {
@@ -240,7 +241,8 @@ class Game {
 		this.scene.movePlayerThrough(list, this.turnToPlayerNum(player), movetype, (turn) => this.moveComplete(turn))
 	}
 	playerTeleport(player, pos, movetype) {
-		this.playsound("teleport")
+		if (movetype !== "waterstream") this.playsound("teleport")
+
 		this.scene.focusPlayer(this.turnToPlayerNum(player))
 		if (movetype === "blackhole") this.scene.playerBlackholeMove(this.turnToPlayerNum(player), pos)
 		else if (movetype === "waterstream") this.scene.playerWaterstreamMove(this.turnToPlayerNum(player), pos)
@@ -419,6 +421,9 @@ class Game {
 
 	onTileSelect(pos, type) {
 		this.ui.hideSelectionTitle()
+		if (type === "waterpump") {
+			this.playsound("waterpump")
+		}
 		this.connection.onTileSelect(pos, type, true)
 	}
 	onTileSelectCancel(type) {

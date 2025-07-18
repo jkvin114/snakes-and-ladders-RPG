@@ -11,7 +11,7 @@ import { LandTile } from "./tile/LandTile"
 import { SightTile } from "./tile/SightTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
 import { TileFilter } from "./tile/TileFilter"
-import { arrayOf, backwardBy, cl, countFrom, distance,  getTilesBewteen,  pos2Line, range } from "./util"
+import { arrayOf, backwardBy, cl, countFrom, distance,  forwardBy,  getSameLineTiles,  getTilesBewteen,  pos2Line, range } from "./util"
 
 const GOD_HAND_MAP = require("./../../res/godhand_map.json")
 const WORLD_MAP = require("./../../res/world_map.json")
@@ -271,6 +271,14 @@ class MarbleGameMap{
 
         return [backwardBy(sourcePos,1),backwardBy(targetPos,1)]
     }
+    getWaterStreamTargetPos(){
+        if(this.name!=="water" || this.waterstreamTiles.length===0) return -1
+        
+        let last = Math.max(...this.waterstreamTiles)
+        let dest = forwardBy(last,1)
+        return dest
+    }
+
 
     private filterFromBuildable(filter:TileFilter,source:MarblePlayer):Set<number>{
         let tiles=new Set<number>()
@@ -563,7 +571,7 @@ class MarbleGameMap{
         }
         //라독
         let m=true
-        for(const tile of SAME_LINE_TILES[pos2Line(changedTile.position)]){
+        for(const tile of getSameLineTiles(changedTile.position)){
             if(this.tileAt(tile) instanceof BuildableTile && this.tileOwners[tile]!==invoker) m=false
         }
         if(m) return MONOPOLY.LINE

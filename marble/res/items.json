@@ -1308,5 +1308,21 @@
             }
         ],
         "tier": 1
+    },
+    {
+        "code": 80,
+        "item_name": "hell guidebook",
+        "itemname_kor": "지옥행 가이드북",
+        "abilities": [
+            {
+                "ability_name": "hell_guidebook",
+                "chance": 75,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
     }
 ]

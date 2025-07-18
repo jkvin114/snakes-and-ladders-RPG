@@ -25,7 +25,7 @@ export class ArriveCornerTileActionBuilder extends ActionPackageBuilder {
 					this.invoker.turn,
 					this.game.map.getSpecialPositions().concat(this.game.map.getCornerPositions())
 					.filter(p=>p!==this.game.mediator.pOfTurn(this.invoker.turn).pos),
-					MOVETYPE.TELEPORT
+					MOVETYPE.TELEPORT,
 				),
 				watson
                 )

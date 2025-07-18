@@ -18,7 +18,6 @@ router.get("/",async function(req: express.Request, res: express.Response){
     time2 = new Date().valueOf()
 
     if(rpgping!==-1 && rpgping!==-2) rpgping = time2-time
-
     return res.status(200).json({
         mongodb:mongoose.connection.readyState,
         marblegame:marbleping,

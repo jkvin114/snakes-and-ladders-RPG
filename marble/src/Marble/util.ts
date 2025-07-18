@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto"
-import { MAP_SIZE } from "./mapconfig"
+import { MAP_SIZE, SAME_LINE_TILES } from "./mapconfig"
 import { AgentType, PlayerType } from "./enum"
 /**
  *
@@ -49,6 +49,10 @@ export function sample(probability: number): boolean {
 export function randDice() {
 	return Math.ceil(Math.random() * 6)
 }
+export function randBool(prob: number) {
+	return randInt(prob) === 0
+}
+
 /**
  *
  * @param num
@@ -73,6 +77,10 @@ export function signedShortestDistance(pos1: number, pos2: number) {
 	if (forward < backward) return distance(pos1, pos2)
 	else return -distance(pos1, pos2)
 }
+export function getSameLineTiles(pos:number){
+	return [...SAME_LINE_TILES[pos2Line(pos)]]
+}
+
 /**
  * index start at 0
  * @param pos 

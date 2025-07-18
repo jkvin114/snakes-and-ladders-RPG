@@ -20,6 +20,8 @@ export default class WaitingBuild extends WaitingState<AskBuildAction>{
 
     async runAISelection(): Promise<boolean> {
         let result= await this.playerAgent.chooseBuild(this.sourceAction.serialize())
+        console.log(result)
+        if(!result) result = []
         this.onUserSelectBuild(result)
         return true
     }

@@ -313,6 +313,10 @@ const TILE_SELECTIONS = {
 		title: "이동하기",
 		desc: "이동할 곳을 선택하세요",
 	},
+	waterpump: {
+		title: "워터 펌프",
+		desc: "물을 틀 범위를 선택하세요",
+	},
 }
 const FORTUNECARD = {
 	shield: {
@@ -928,10 +932,19 @@ export class GameInterface {
 		$("#confirmwindow .window-content-text-nobackground").html(FORTUNECARD[cardname].title + "카드를 사용할까요?")
 		$("#confirmwindow").show()
 	}
-	showGodHandSpecial(canlift) {
+	showGodHandSpecial(canlift, specialType) {
 		$("#select h3").html("특수 지역")
 		$("#selecttruebutton a").html("건설")
-		$("#selectfalsebutton a").html("블록 상승")
+		if (specialType === "godhand_special_tile_lift") {
+			$("#selectfalsebutton a").html("블록 상승")
+
+			$("#selectfalsebutton img").attr("src", "/res/img/marble/column.png")
+		}
+		if (specialType === "water_pump") {
+			$("#selectfalsebutton a").html("물 틀기")
+			$("#selectfalsebutton img").attr("src", "/res/img/marble/tile_highlight_water.png")
+		}
+
 		$("#selectfalsebutton").show()
 
 		if (!canlift) $("#selectfalsebutton").hide()

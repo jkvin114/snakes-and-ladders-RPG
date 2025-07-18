@@ -549,15 +549,24 @@ export class MarbleScene extends Board {
 			let tile = new Tile("특수 지역", sp, "special", this.getUnrotatedCoord(sp))
 			this.tileData.set(sp, tile)
 
-			let tileobj = this.getTileOf(12, this.getUnrotatedCoord(sp))
-			let coord = this.getUnrotatedCoord(sp)
-			this.canvas.add(tileobj)
+			if (this.Map.mapname === "marble_godhand") {
+				let tileobj = this.getTileOf(12, this.getUnrotatedCoord(sp))
+				let coord = this.getUnrotatedCoord(sp)
+				this.canvas.add(tileobj)
 
-			let pos = getCenterCoord(coord)
-			let column = this.getDecorator("tile_column", pos, getAngle(coord.rot), 1.1, 1)
-			const group = this.createTileGroup(tileobj, column)
-			this.tileObj.set(sp, new TileObject(tile, group).setDecorator(column))
-			tileobjects.push(group)
+				let pos = getCenterCoord(coord)
+				let column = this.getDecorator("tile_column", pos, getAngle(coord.rot), 1.1, 1)
+				const group = this.createTileGroup(tileobj, column)
+				this.tileObj.set(sp, new TileObject(tile, group).setDecorator(column))
+				tileobjects.push(group)
+			} else if (this.Map.mapname === "marble_water") {
+				let tileobj = this.getTileOf(7, this.getUnrotatedCoord(sp))
+				this.canvas.add(tileobj)
+
+				const group = this.createTileGroup(tileobj)
+				this.tileObj.set(sp, new TileObject(tile, group))
+				tileobjects.push(group)
+			}
 		}
 
 		for (const cn of this.Map.corners) {
@@ -1064,6 +1073,7 @@ export class MarbleScene extends Board {
 	 * @param {*} animateType  fade/create
 	 */
 	async animateBuildingBuild(elem, coord, buildingType, animateType) {
+		if (!elem) return
 		if (animateType === "create") {
 			let offset = 40
 

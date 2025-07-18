@@ -153,6 +153,9 @@ class MarbleGame {
 	thisPlayer() {
 		return this.mediator.pOfTurn(this.thisturn)
 	}
+	playerPos(turn:number) {
+		return this.mediator.pOfTurn(turn).pos
+	}
 	isCurrentTurn(turn:number) {
 		return turn === this.thisturn
 	}
@@ -486,8 +489,9 @@ class MarbleGame {
 	//	console.log(pos)
 		if(this.map.waterstreamTiles.length===0 || !this.map.waterstreamTiles.includes(pos)) return false
 		
-		let last = Math.max(...this.map.waterstreamTiles)
-		let dest = forwardBy(last,1)
+		let dest = this.map.getWaterStreamTargetPos()
+		if(dest===-1) return false
+
 		let action=new RideWaterStreamActionBuilder(this, source, player, dest).build()
 		this.pushActions(action)
 		return true
@@ -624,10 +628,10 @@ class MarbleGame {
 			this.arriveStartTile(moverTurn, source)
 		} else if (tile.type === TILE_TYPE.SPECIAL) {
 			if (this.map.name === "god_hand") {
-				this.arriveGodHandSpecialTile(tile, moverTurn, source)
+				this.arriveSpecialTile(tile, moverTurn, source,"godhand_special_tile_lift")
 			}
 			else if (this.map.name === "water") {
-				this.arriveGodHandSpecialTile(tile, moverTurn, source)
+				this.arriveSpecialTile(tile, moverTurn, source,"water_pump")
 			}
 		} else if (tile.type === TILE_TYPE.ISLAND) {
 			this.arriveIslandTile(moverTurn, source)
@@ -773,9 +777,9 @@ class MarbleGame {
 	arriveStartTile(moverTurn: number, source: ActionTrace) {
 		this.pushActions(new ArriveStartActionBuilder(this, source, this.mediator.pOfTurn(moverTurn)).build())
 	}
-	arriveGodHandSpecialTile(tile: Tile, moverTurn: number, source: ActionTrace) {
+	arriveSpecialTile(tile: Tile, moverTurn: number, source: ActionTrace,specialType:string) {
 		const tileLiftStart = 0
-		this.pushSingleAction(new AskGodHandSpecialAction(moverTurn, true), source)
+		this.pushSingleAction(new AskGodHandSpecialAction(moverTurn, true,specialType), source)
 	}
 	chooseGodHandSpecialBuild(moverTurn: number, source: ActionTrace) {
 		let targetTiles = this.map.getTiles(
@@ -790,8 +794,29 @@ class MarbleGame {
 				source
 			)
 	}
+	chooseWaterPumpTile(moverTurn: number, source: ActionTrace) {
+		let targetTiles = this.map.getTiles(this.mediator.pOfTurn(moverTurn), new TileFilter().setSameLineOnly())
+		
+		let pos = this.mediator.pOfTurn(moverTurn).pos
+
+		targetTiles = targetTiles.filter(t=>t!==pos && t!==backwardBy(pos,1))
+
+		if (targetTiles.length === 0) return
+		this.pushSingleAction(
+			new TileSelectionAction(
+				ACTION_TYPE.CHOOSE_GODHAND_TILE_LIFT,
+				moverTurn,
+				targetTiles,
+				"waterpump"
+			),
+			source
+		)
+	}
+
 	chooseGodHandSpecialLiftTile(moverTurn: number, source: ActionTrace) {
 		let targetTiles = this.map.getTiles(this.mediator.pOfTurn(moverTurn), new TileFilter().setSameLineOnly())
+		
+
 		if (targetTiles.length === 0) return
 		this.pushSingleAction(
 			new TileSelectionAction(
@@ -803,6 +828,7 @@ class MarbleGame {
 			source
 		)
 	}
+
 	arriveBuildableTile(tile: BuildableTile, moverTurn: number, source: ActionTrace) {
 		//empty land
 		if (tile.isEmpty()) {
@@ -832,6 +858,8 @@ class MarbleGame {
 			let targets = sourceAction.targetPlayers
 			sourceAction.setPositions(targets.map((turn) => this.mediator.pOfTurn(turn).pos))
 		}
+		
+        sourceAction.setSourcePos(this.playerPos(sourceAction.turn))
 	}
 	onSelectOlympicPosition(turn: number, pos: number, source: ActionTrace) {
 		let tile = this.map.buildableTileAt(pos)
@@ -842,21 +870,21 @@ class MarbleGame {
 
 	onSelectTileLiftPosition(turn: number, pos: number, source: ActionTrace) {
 		if(this.map.name==="water"){
-			this.onSelectWaterPumpPosition(turn,pos,source)
+			this.onSelectWaterPumpPosition(turn,this.mediator.pOfTurn(turn).pos,pos,source)
 		}
 		else{
 			this.map.liftTile(pos)
 		}
 	}
 
-	onSelectWaterPumpPosition(turn: number, pos: number, source: ActionTrace) {
+	onSelectWaterPumpPosition(turn: number,sourcePos:number, pos: number, source: ActionTrace) {
 		const player = this.mediator.pOfTurn(turn)
-		if(signedShortestDistance(player.pos,pos) <=0) {
-			Logger.warn(`Invaild water pump target position. source ${player.pos}, target:${pos}`)
+		if(signedShortestDistance(sourcePos,pos) <=0) {
+			Logger.warn(`Invaild water pump target position. source ${sourcePos}, target:${pos}`)
 			return
 		}
 
-		const range = this.map.activateWaterPump(player.pos,pos)
+		const range = this.map.activateWaterPump(sourcePos,pos)
 		const others = this.mediator.getOtherPlayers(turn).filter(p=>p.pos>=range[0] && p.pos <= range[1])
 		//턴 반대 순서대로 push 
 		for(const other of others.reverse()){
@@ -864,7 +892,7 @@ class MarbleGame {
 			this.checkWaterStream(other,other.pos,source)
 		}
 		//작동시킨 플레이어 우선
-		this.checkWaterStream(player,player.pos,source)
+		this.checkWaterStream(player,sourcePos,source)
 		
 
 	}
@@ -1144,8 +1172,8 @@ class MarbleGame {
 		victim.ownedLands.add(tile1.position)
 		invoker.ownedLands.add(tile2.position)
 
-		this.checkMonopoly(tile2, invoker)
-		this.checkMonopoly(tile1, victim)
+		this.checkMonopoly(tile2, invoker,victim.turn)
+		this.checkMonopoly(tile1, victim,invoker.turn)
 	}
 	setPositionOwner(pos: number, turn: number) {
 		let tile = this.map.tileAt(pos)
@@ -1166,13 +1194,13 @@ class MarbleGame {
 			this.mediator.pOfTurn(originalOwner).ownedLandMarks.delete(tile.position)
 			player.ownedLandMarks.add(tile.position)
 		}
-		this.checkMonopoly(tile, player)
+		this.checkMonopoly(tile, player,originalOwner)
 	}
 	onConfirmLoan(player: number, receiver: number, loanamount: number, result: boolean) {
 		if (result) this.mediator.onLoanConfirm(loanamount, player, receiver)
 		else this.mediator.playerBankrupt(player, receiver, loanamount + this.mediator.pOfTurn(player).money)
 	}
-	checkMonopoly(tile: BuildableTile, invoker: MarblePlayer) {
+	checkMonopoly(tile: BuildableTile, invoker: MarblePlayer,originalOwner:number) {
 		let monopoly = this.map.checkMonopoly(tile, invoker.turn)
 		if (monopoly !== MONOPOLY.NONE) {
 			this.gameOverWithMonopoly(invoker.turn, monopoly)
@@ -1181,9 +1209,22 @@ class MarbleGame {
 		let monopolyAlert = this.map.checkMonopolyAlert(tile, invoker.turn)
 
 		if (monopolyAlert.type !== MONOPOLY.NONE) {
-			invoker.addMonopolyChancePos(monopolyAlert.pos,monopolyAlert.type)
+			invoker.setMonopolyChancePos(monopolyAlert.pos,monopolyAlert.type)
 			this.eventEmitter.monopolyAlert(invoker.turn, monopolyAlert.type, monopolyAlert.pos)
 			this.mediator.onMonopolyChance(invoker, monopolyAlert.pos)
+		}
+		else{
+			invoker.monopolyChancePos.clear()
+		}
+
+		if(originalOwner!==-1){
+			let ownerAlert = this.map.checkMonopolyAlert(tile, originalOwner)
+			if(ownerAlert.type !== MONOPOLY.NONE){
+				this.mediator.pOfTurn(originalOwner).setMonopolyChancePos(ownerAlert.pos,ownerAlert.type)
+			}
+			else{
+				this.mediator.pOfTurn(originalOwner).monopolyChancePos.clear()
+			}
 		}
 	}
 	getPlayerWinScores(winner: number, multiplier: number) {

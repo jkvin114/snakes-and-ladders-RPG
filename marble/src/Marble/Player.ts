@@ -10,6 +10,7 @@ import { PlayerState } from "./Agent/Utility/PlayerState"
 import { MONOPOLY } from "./GameMap"
 import { AbilityExecution } from "./Ability/Ability"
 import { ServerEventModel } from "../Model/ServerEventModel"
+import { AbilityTag } from "./Tags"
 
 class MarblePlayer{
     readonly name:string
@@ -30,7 +31,7 @@ class MarblePlayer{
     cycleLevel:number
     num:number  //index of this player in player array
     totalBet:number
-    monopolyChancePos:Map<number,number> //pos => cost
+    monopolyChancePos:Map<number,MONOPOLY> //pos => cost
     items:number[]
     private turnsOnIsland:number
     private pendingActions:Action[]
@@ -185,7 +186,7 @@ class MarblePlayer{
     sampleAbility(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValue>{
         return this.abilityStorage.getAbilityForEvent(event,source)
     }
-    hasOneAbilities(abilities:Set<ABILITY_NAME>){
+    hasOneAbilities(abilities:AbilityTag){
         return this.abilityStorage.hasOneAbilities(abilities)
     }
     getAbilityValueAmount(ability:ABILITY_NAME){
@@ -236,7 +237,7 @@ class MarblePlayer{
      //   console.log("bankrupt")
         this.retired=true
     }
-    addMonopolyChancePos(pos:number[],type:MONOPOLY){
+    setMonopolyChancePos(pos:number[],type:MONOPOLY){
         for(const p of pos){
             this.monopolyChancePos.set(p,type)
         }

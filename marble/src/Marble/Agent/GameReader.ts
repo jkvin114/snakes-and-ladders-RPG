@@ -1,7 +1,12 @@
 import { ABILITY_NAME } from "../Ability/AbilityRegistry"
 import type { MarbleGame } from "../Game"
-import { TILE_TYPE } from "../tile/Tile"
+import { MONOPOLY } from "../GameMap"
+import { SAME_LINE_TILES } from "../mapconfig"
+import { AbilityTag } from "../Tags"
+import { LandTile } from "../tile/LandTile"
+import { BUILDING, TILE_TYPE } from "../tile/Tile"
 import { TileFilter } from "../tile/TileFilter"
+import { backwardBy, forwardBy, getSameLineTiles, maxFor, pos2Line, shuffle } from "../util"
 
 export default class GameReader {
 	private readonly game: MarbleGame
@@ -23,6 +28,20 @@ export default class GameReader {
     get blackholepos(){
         return this.game.map.blackholeTile
     }
+    get whiteholepos(){
+        return this.game.map.whiteholeTile
+    }
+    get mapName(){
+        return this.game.map.name
+    }
+    specialPos() {
+        return {
+            lifted : this.game.map.liftedTile,
+            waterStreams : this.game.map.waterstreamTiles,
+            waterStreamTarget:this.game.map.getWaterStreamTargetPos()
+        }
+	}
+
 	enemyPos() {
         return this.enemies.map(p=>p.pos)
 	}
@@ -32,17 +51,36 @@ export default class GameReader {
     isEnemyLand(pos:number){
         return this.tileAt(pos).owner!==this.myturn && this.tileAt(pos).owner!==-1
     }
-
+    isEmptyLand(pos:number){
+       return  this.tileAt(pos).isBuildable && this.landAt(pos).isEmpty()
+    }
     landAt(pos:number){
         let land= this.game.map.buildableTileAt(pos)
         if(!land) throw new Error("position "+pos+" is not a buildable tile")
         return land
+    }
+    isMyLand(pos:number){
+        return this.tileAt(pos).owner === this.myturn
+    }
+    is3Build(pos:number){
+       return this.tileAt(pos).isBuildable && this.landAt(pos).getNextBuild() === BUILDING.LANDMARK
+    }
+    logToll(pos:number){
+        if(!this.tileAt(pos).isBuildable) return 0.1
+        return Math.log10(this.landAt(pos).getToll() / 100000)
+    }
+    toll(pos:number){
+        if(!this.tileAt(pos).isBuildable) return 0
+        return this.landAt(pos).getToll()
     }
 	mostExpensiveEnemyLand() {
 		return this.game.map.getMostExpensiveIn(this.me, TileFilter.ENEMY_LAND())
 	}
 	mostExpensiveMyLand() {
 		return this.game.map.getMostExpensiveIn(this.me, TileFilter.MY_LAND())
+	}
+    has3BuildLands() {
+		return this.game.map.getTiles(this.me, TileFilter.MY_LAND()).some(p=>this.is3Build(p))
 	}
 	mostExpensiveEnemyLandmark() {
 		return this.game.map.getMostExpensiveIn(this.me, TileFilter.ENEMY_LAND().setLandMarkOnly())
@@ -51,31 +89,77 @@ export default class GameReader {
 		return this.game.map.getMostExpensiveIn(this.me, TileFilter.MY_LANDMARK())
 	}
 
-	hasOneAbility(turn: number, abilities: Set<ABILITY_NAME>) {
+	hasOneAbility(turn: number, abilities: AbilityTag) {
 		return this.getPlayer(turn).hasOneAbilities(abilities)
 	}
 
     willBeMyColorMonopoly(pos:number){
         return this.game.map.willBeColorMonopoly(this.myturn,pos)
     }
+    isColorMonopolyOf(pos:number,turn:number){
+        const tile = this.tileAt(pos)
+        if(tile.isBuildable && tile instanceof LandTile){
+            let color = (tile as LandTile).color
+            return this.game.map.colorMonopolys.get(color) === turn
+        }
+        return false
+        
+    }
+    getEnemyMonopolyAlerts():{type:MONOPOLY,turn:number}[]{
+        let players= this.game.mediator.getEnemiesOf(this.myturn).map(t=>this.getPlayer(t))
+        let alerts:{type:MONOPOLY,turn:number}[] = []
+        for(const p of players){
+            let monopolies = [...p.monopolyChancePos.values()]
+            alerts.push(...monopolies.map(m=>{return {turn:p.turn,type:m}}))
+        }
+        return alerts
+    }
 
-    playerAtHasOneAbility(pos:number,abilities: Set<ABILITY_NAME>){
+    getWorstEnemyMonopolyAlertPosition():number{
+        let players= this.game.mediator.getEnemiesOf(this.myturn).map(t=>this.getPlayer(t))
+        let alerts:[number, MONOPOLY][]= []
+        for(const p of players){
+            alerts.push(...p.monopolyChancePos.entries())
+        }
+        if(alerts.length===0) return -1
+
+        alerts = shuffle(alerts)
+
+        return maxFor(alerts,a=>a[1])[0]
+    }
+
+    playerAtHasOneAbility(pos:number,abilities: AbilityTag){
        return this.game.mediator.getPlayersAt([pos]).some(p=>p.hasOneAbilities(abilities))
     }
     getPlayersBetween(start:number,end:number){
         return this.game.mediator.getPlayersBetween(start,end)
     }
+    getOtherPlayersBetween(start:number,end:number){
+        return this.game.mediator.getPlayersBetween(start,end).filter(p=>p.turn!==this.myturn)
+    }
+    /**
+     * forward and backward are inclusive
+     * @param forward 
+     * @param backward 
+     * @returns 
+     */
+    countPlayersNearby(pos:number,forward:number,backward:number){
+        return this.getOtherPlayersBetween(backwardBy(pos,backward+1),forwardBy(pos,forward+1)).length
+    }
+
     getPlayersAt(pos:number){
         return this.game.mediator.getPlayersAt([pos])
     }
-    getGodHandPossibleBuildPos(){
+    getPossibleBuildPosInLine(){
         return this.game.map.getTiles(
 			this.game.mediator.pOfTurn(this.myturn),
 			TileFilter.EMPTY_LANDTILE().setSameLineOnly(),
 			TileFilter.MY_LANDTILE().setOnlyMoreBuildable().setSameLineOnly()
 		)
     }
-
+    getVaildWaterPumpTargets(pos:number){
+        return getSameLineTiles(pos).filter(t=>t!==pos && t!==backwardBy(pos,1))
+    }
     /**
      * if percent is not set, return true if one or more enemy has it
      * 

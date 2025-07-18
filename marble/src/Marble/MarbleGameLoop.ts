@@ -182,74 +182,83 @@ class MarbleGameLoop{
         }
 
         this.loopRunning=true
-        while(!this.gameover){
-            this.clearPriorityActions()
-            
-            let action=this.game.nextAction()
-            if(!action || this.gameover) {
-                this.loopRunning=false
-                break
-            }
+        try{
 
-            
-            
-            // 액션 무시
-            if(!action.valid || action.type===ACTION_TYPE.EMPTY) {
-             //   console.log("action ignored")
-                continue
-            }
-
-            //방어된 액션 처리
-            if(action.blocked){
-                this.game.handleBlockedAction(action)
-                continue
-            }
-
-            //상태 변화 없이 즉시 실행되는 액션
-            if(action instanceof InstantAction){
-                this.game.executeAction(action)
-                continue
-            }
-            if(!this.isSimulation)
-                await sleep(500)
-            let nextstate=this.state.getNext(action)
-      //      console.log('set state: '+GAME_CYCLE_NAME[nextstate.id])
-
-            if(nextstate.id===MarbleGameCycleState.ERROR_STATE) {
-                this.loopRunning=false
-                break
-            }
-            
-            this.state.onDestroy()
-            nextstate.onCreate()
-            this.state=nextstate
-            if(action instanceof DelayedAction){
+        
+            while(!this.gameover){
                 this.clearPriorityActions()
-                if(!this.isSimulation)
-                    await sleep(action.delay)
-                this.state.afterDelay()
-            }
-            else if(action instanceof QueryAction && this.state instanceof WaitingState){
-                // this.startTimeOut(()=>{})
-
                 
-                if(this.state.isAI){
-                    let success= await this.state.runAISelection()
-                    if(!success) {
-                        Logger.err("Error while AI selection, state id:"+GAME_CYCLE_NAME[this.state.id],this.rname)
-                        break
-                    }
-                    this.clearPriorityActions()
-                    if(!this.isSimulation)
-                        await sleep(300)
-                }
-                else{
-                    this.state.sendQueryRequest()
-                    this.clearPriorityActions()
+                let action=this.game.nextAction()
+                if(!action || this.gameover) {
                     this.loopRunning=false
                     break
                 }
+
+                
+                
+                // 액션 무시
+                if(!action.valid || action.type===ACTION_TYPE.EMPTY) {
+                //   console.log("action ignored")
+                    continue
+                }
+
+                //방어된 액션 처리
+                if(action.blocked){
+                    this.game.handleBlockedAction(action)
+                    continue
+                }
+
+                //상태 변화 없이 즉시 실행되는 액션
+                if(action instanceof InstantAction){
+                    this.game.executeAction(action)
+                    continue
+                }
+                if(!this.isSimulation)
+                    await sleep(500)
+                let nextstate=this.state.getNext(action)
+        //      console.log('set state: '+GAME_CYCLE_NAME[nextstate.id])
+
+                if(nextstate.id===MarbleGameCycleState.ERROR_STATE) {
+                    this.loopRunning=false
+                    break
+                }
+                
+                this.state.onDestroy()
+                nextstate.onCreate()
+                this.state=nextstate
+                if(action instanceof DelayedAction){
+                    this.clearPriorityActions()
+                    if(!this.isSimulation)
+                        await sleep(action.delay)
+                    this.state.afterDelay()
+                }
+                else if(action instanceof QueryAction && this.state instanceof WaitingState){
+                    // this.startTimeOut(()=>{})
+
+                    
+                    if(this.state.isAI){
+                        let success= await this.state.runAISelection()
+                        if(!success) {
+                            Logger.err("Error while AI selection, state id:"+GAME_CYCLE_NAME[this.state.id],this.rname)
+                            break
+                        }
+                        this.clearPriorityActions()
+                        if(!this.isSimulation)
+                            await sleep(300)
+                    }
+                    else{
+                        this.state.sendQueryRequest()
+                        this.clearPriorityActions()
+                        this.loopRunning=false
+                        break
+                    }
+                }
             }
+        }
+        catch(e){
+            this.loopRunning=false
+            Logger.err("Fatal error",e)
+            console.log((e as Error).stack)
         }
     }
 
@@ -263,35 +272,41 @@ class MarbleGameLoop{
         // args=args[0]
    //     console.log(args)
         if(args.length===0) return
-        
-        switch(event){
-            case 'press_dice':
-                result=this.state.onUserPressDice(args[0],args[1])
-                break
-            case 'select_build':
-                result=this.state.onUserSelectBuild(args[0])
-                break
-            case 'select_buyout':
-                result=this.state.onUserBuyOut(args[0])
-                break
-            case 'select_loan':
-                result=this.state.onUserConfirmLoan(args[0])
-                break
-            case 'select_tile':
-                result=this.state.onUserSelectTile(args[0],args[1],args[2])
-                break
-            case 'obtain_card':
-                result=this.state.onUserConfirmObtainCard(args[0])
-                break
-            case 'confirm_card_use':
-                result=this.state.onUserConfirmUseCard(args[0],args[1])
-                break
-            case 'select_godhand_special':
-                result=this.state.onUserSelectGodHandSpecial(args[0])
-                break
-            case 'select_island':
-                result=this.state.onUserSelectIsland(args[0])
-                break
+        try{
+
+            switch(event){
+                case 'press_dice':
+                    result=this.state.onUserPressDice(args[0],args[1])
+                    break
+                case 'select_build':
+                    result=this.state.onUserSelectBuild(args[0])
+                    break
+                case 'select_buyout':
+                    result=this.state.onUserBuyOut(args[0])
+                    break
+                case 'select_loan':
+                    result=this.state.onUserConfirmLoan(args[0])
+                    break
+                case 'select_tile':
+                    result=this.state.onUserSelectTile(args[0],args[1],args[2])
+                    break
+                case 'obtain_card':
+                    result=this.state.onUserConfirmObtainCard(args[0])
+                    break
+                case 'confirm_card_use':
+                    result=this.state.onUserConfirmUseCard(args[0],args[1])
+                    break
+                case 'select_godhand_special':
+                    result=this.state.onUserSelectGodHandSpecial(args[0])
+                    break
+                case 'select_island':
+                    result=this.state.onUserSelectIsland(args[0])
+                    break
+            }
+        }
+        catch(e){
+            Logger.err("Fatal error",e)
+            return
         }
      //   console.log(result)
 //

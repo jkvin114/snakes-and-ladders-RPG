@@ -142,6 +142,10 @@ export class MarbleGameEventObserver {
 
 		this.emit(  serverEvents.ASK_TILE_SELECTION, payload,player)
 	}
+	askMoveTileSelection(player: number,payload: sm.MoveTileSelection) {
+
+		this.emit(  serverEvents.ASK_TILE_SELECTION, payload,player)
+	}
 	askAttackDefenceCard(player: number, cardname: string, attackName: string) {
 		const payload:sm.AttackDefenceCardSelection={
             cardname:cardname,attackName:attackName
@@ -154,9 +158,9 @@ export class MarbleGameEventObserver {
         }
 		this.emit(  serverEvents.ASK_TOLL_DEFENCE_CARD, payload,player)
 	}
-	askGodHandSpecial(player: number, canLiftTile: boolean) {
+	askGodHandSpecial(player: number, canLiftTile: boolean,specialType:string) {
         const payload:sm.GodHandSpecialSelection={
-            canLiftTile:canLiftTile
+            canLiftTile:canLiftTile,specialType:specialType
         }
 		this.emit(  serverEvents.ASK_GODHAND_SPECIAL, payload,player)
 	}

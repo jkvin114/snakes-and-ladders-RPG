@@ -1,3 +1,4 @@
+import { Logger } from "../../logger"
 import type { MarbleGame } from "../Game"
 import QueryEventResult from "../QueryEventResult"
 import type { AskGodHandSpecialAction } from "../action/QueryAction"
@@ -20,13 +21,22 @@ export default class WaitingGodHandSpecial extends WaitingState<AskGodHandSpecia
         return true
     }
     sendQueryRequest(): void {
-        this.game.eventEmitter.askGodHandSpecial(this.turn,this.sourceAction.canLiftTile)
+        this.game.eventEmitter.askGodHandSpecial(this.turn,this.sourceAction.canLiftTile,this.sourceAction.specialType)
     }
     onUserSelectGodHandSpecial(isBuild:boolean){
         if(isBuild)
             this.game.chooseGodHandSpecialBuild(this.turn,this.sourceAction.source)
-        else
+        else if(this.sourceAction.specialType==="godhand_special_tile_lift"){
+
             this.game.chooseGodHandSpecialLiftTile(this.turn,this.sourceAction.source)
+        }
+        else if(this.sourceAction.specialType==="water_pump"){
+            
+            this.game.chooseWaterPumpTile(this.turn,this.sourceAction.source)
+        }
+        else{
+            Logger.warn("invaild special type "+this.sourceAction.specialType)
+        }
         return new QueryEventResult(true)
     }
 }

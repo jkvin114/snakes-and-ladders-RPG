@@ -1,4 +1,5 @@
 import { ActionTrace } from "../action/ActionTrace";
+import { AbilityTag } from "../Tags";
 import { sample } from "../util";
 import { Ability, AbilityExecution } from "./Ability";
 import { ABILITY_NAME, ABILITY_REGISTRY } from "./AbilityRegistry";
@@ -142,7 +143,7 @@ export class AbilityStorage {
             name:value.getItemKorName(),desc:ability.getAlert(ab.id)
         }
     }
-    hasOneAbilities(abilities:Set<ABILITY_NAME>){
+    hasOneAbilities(abilities:AbilityTag){
         for(const name of this.abilityValues.keys())
             if(abilities.has(name)) return true
         for(const name of this.temporaryAbility)

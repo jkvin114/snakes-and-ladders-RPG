@@ -52,6 +52,7 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 	private guidebook(pkg: ActionPackage, defences: Map<ABILITY_NAME, AbilityValue>, stayed: MarblePlayer) {
 		const guidebook = ABILITY_NAME.THROW_TO_LANDMARK_ON_ENEMY_ARRIVE_TO_ME
 		const donate_guidebook=ABILITY_NAME.THROW_TO_LANDMARK_AND_DONATE_ON_ENEMY_ARRIVE_TO_ME
+		const hell_guidebook = ABILITY_NAME.THROW_TO_LANDMARK_WITH_MULTIPLIER
 
 		if(this.trace.thisMoveHasAbility(ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND))
          	return
@@ -71,6 +72,16 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 				pkg.addAction(new ChangeLandOwnerAction(stayed.turn,donatePos,stayed.turn).setPriorityNormal(),donate_guidebook)
 			}
 			this.trace.addTag(ActionTraceTag.GUIDEBOOK).setName("지옥가북")
+			return true
+		}else if(defences.get(hell_guidebook) && !this.trace.hasActionAndAbility(ACTION_TYPE.REQUEST_MOVE,hell_guidebook)){
+			pkg.addAction(
+				new RequestMoveAction(this.invoker.turn, pos, MOVETYPE.TELEPORT,this.game.thisturn).reserveAbilityIndicatorOnPop(
+					hell_guidebook,
+					stayed.turn
+				),
+				hell_guidebook
+			)
+			this.trace.addTag(ActionTraceTag.GUIDEBOOK)
 			return true
 		}
 		else if(defences.get(guidebook) && !this.trace.hasActionAndAbility(ACTION_TYPE.REQUEST_MOVE,guidebook)){

@@ -31,6 +31,7 @@ import { Logger } from "./logger"
 import { UserCache } from "./cache"
 import { RedisClient } from "./redis/redis"
 import { UserSchema } from "./mongodb/schemaController/User"
+import mongoose from "mongoose"
 
 declare module 'express-session' {
 	interface SessionData {
@@ -133,10 +134,31 @@ httpserver.listen(PORT)
 app.on("error", (err: any) => {
 	Logger.error("Server error:",err)
 })
-
 connectMongoDB()
+
+setInterval(() => {
+	if(mongoose.connection.readyState!==1 ){
+		try{
+			mongoose.connection.close()
+			connectMongoDB()
+		}catch(e){
+			Logger.error("",e)
+		}
+	}
+}, 10000);
+
+setInterval(async () => {
+	if( await MarbleGameGRPCClient.Ping()!==1 ){
+		try{
+			MarbleGameGRPCClient.connect()
+		}catch(e){
+			Logger.error("",e)
+		}
+	}
+}, 10000);
+
 MarbleGameGRPCClient.connect()
-RPGGameGRPCClient.connect()
+// RPGGameGRPCClient.connect()
 Logger.log("version " + SETTINGS.version)
 Logger.log("patch " + SETTINGS.patch_version)
 
