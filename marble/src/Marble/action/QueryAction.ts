@@ -145,10 +145,23 @@ export class MoveTileSelectionAction extends TileSelectionAction{
 }
 export class MoveToPlayerSelectionAction extends MoveTileSelectionAction{
 	targetPlayers:number[]
-	constructor(turn: number,moveType:MOVETYPE,targetPlayers:number[]){
+	ability:ABILITY_NAME
+	constructor(turn: number,moveType:MOVETYPE,targetPlayers:number[],ability:ABILITY_NAME){
 		super(turn,[],moveType)
 		this.targetPlayers=targetPlayers
+		this.ability=ability
 	}
+	serialize():ServerRequestModel.MoveTileSelection {
+		return {
+			tiles:this.tiles,
+			source:this.name,
+			actionType:this.type,
+			moveType:this.moveType,
+			sourcePos:this.sourcePos,
+			ability:this.ability
+		}
+	}
+
 }
 export class ObtainCardAction extends QueryAction {
     card:FortuneCard
@@ -169,25 +182,20 @@ export class ObtainCardAction extends QueryAction {
 export class LandSwapAction extends QueryAction{
 	myLands:number[]
 	enemyLands:number[]
-	status:string
 	constructor(turn: number, myLands:number[],enemyLands:number[]) {
 		super(ACTION_TYPE.CHOOSE_LAND_CHANGE,turn)
         this.myLands=myLands
 		this.enemyLands=enemyLands
-		this.status="init"
-	}
-	getTargetTiles(){
-		if(this.status==="init"){
-			this.status="choosing_my_land"
-			return this.myLands
-		}
-		if(this.status==="choosing_my_land"){
-			this.status="choosing_enemy_land"
-			return this.enemyLands
-		}
-		return []
 	}
 }
+export class AskForceMoveAction extends QueryAction{
+	playerPos:number[]
+	constructor(turn: number, playerPos:number[]) {
+		super(ACTION_TYPE.CHOOSE_FORCEMOVE,turn)
+        this.playerPos=playerPos
+	}
+}
+
 export class AskDefenceCardAction extends QueryAction{
 	cardname:string
 	toBlock:string

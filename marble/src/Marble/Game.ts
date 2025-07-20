@@ -42,6 +42,7 @@ import {
 	AskAttackDefenceCardAction,
 	AskBuildAction,
 	AskDefenceCardAction,
+	AskForceMoveAction,
 	AskGodHandSpecialAction,
 	AskIslandAction,
 	AskTollDefenceCardAction,
@@ -85,12 +86,12 @@ import GameState from "./Agent/Utility/GameState"
 import SimpleVectorizer from "./Agent/Utility/Vectorize/SimpleVectorizer"
 import TileFocusVectorizer from "./Agent/Utility/Vectorize/TileFocusVectorizer"
 import { AbilityExecution } from "./Ability/Ability"
-import { GameType } from "./enum"
+import { GAME_EFFECT, GameType } from "./enum"
 import { ProtoPlayer } from "../Model/models"
 import { Logger } from "../logger"
 import { RideWaterStreamActionBuilder } from "./action/PackageBuilder/RideWaterStreamActionBuilder"
 
-const MAP = ["world", "god_hand","water"]
+const MAP = ["world", "god_hand","water","magicgarden"]
 class MarbleGame {
 	readonly map: MarbleGameMap
 	//cycle: number
@@ -265,6 +266,8 @@ class MarbleGame {
 		if (this.over) return
 		let lastturn=this.thisturn
 		this.thisturn = this.getNextTurn()
+		//바가지 클리어
+		this.mediator.getNonRetiredPlayers().forEach(p=>p.clearEffect("toll_double"))
 
 		this.thisPlayer().onTurnStart()
 		this.map.onTurnStart(this.thisturn)
@@ -291,8 +294,8 @@ class MarbleGame {
 		if (type === ACTION_TYPE.REMOVE_BLACKHOLE) this.eventEmitter.removeBlackHole()
 	}
 
-	getDiceModifiers(source: ActionTrace, oddEven: number) {
-		let dc = sample(this.thisPlayer().getDiceControlChance())
+	getDiceModifiers(source: ActionTrace, oddEven: number,dcMultiplier:number = 1) {
+		let dc = sample(this.thisPlayer().getDiceControlChance() * dcMultiplier)
 		let abilities = this.thisPlayer().sampleAbility(EVENT_TYPE.GENERATE_DICE_NUMBER, source)
 		let isExactDc = false
 		let isDouble = false
@@ -336,8 +339,6 @@ class MarbleGame {
 	}
 	throwDice(target: number, oddeven: number, action: DiceChanceAction) {
 
-		
-
 		let modifiers = this.getDiceModifiers(action.source, oddeven)
 		let multiplier = modifiers.multiplier
 		let player = this.thisPlayer()
@@ -345,6 +346,45 @@ class MarbleGame {
 
 		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven, modifiers)
 		return this.onThrowDice(dice1, dice2, multiplier, modifiers.dc, action)
+	}
+
+	onSelectForcemove(target: number, oddeven: number,selectedPos:number, action: Action) {
+		let player = this.thisPlayer()
+
+		if(player.oddeven <= 0) oddeven = 0
+		
+		//주컨 능력치 상승
+		let modifiers = this.getDiceModifiers(action.source, oddeven,2)
+		if (oddeven > 0) player.useOddEven()
+
+		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven, modifiers)
+		const diceresult = {
+				dice: [dice1, dice2],
+				isDouble: dice1 === dice2,
+				dc: modifiers.dc,
+			}
+		const targetPos = forwardBy(selectedPos, dice1+dice2)
+		const invoker = action.turn
+		const targets = this.mediator.getPlayersAt([selectedPos])
+
+		
+		action.source.addTag(ActionTraceTag.FORCEMOVED)
+
+		//move other players
+		for(const p of targets.filter(p=>p.turn !== invoker)){
+			p.applyEffect("toll_double")
+			this.pushSingleAction(new RequestMoveAction(p.turn, targetPos, MOVETYPE.FORCEMOVE_WALK,this.thisturn),action.source)
+		}
+
+		//move invoker first
+		if(targets.some(p=>p.turn === invoker)){
+			
+			this.pushSingleAction(new RequestMoveAction(invoker, targetPos, MOVETYPE.FORCEMOVE_WALK,this.thisturn),action.source)
+		}
+
+		//role dice before move
+		this.pushSingleAction(new RollDiceAction(this.thisturn, diceresult),action.source)
+		return diceresult
 	}
 
 	onThrowDice(dice1: number, dice2: number, multiplier: number, dc: boolean, action: DiceChanceAction) {
@@ -389,7 +429,7 @@ class MarbleGame {
 		let player = this.mediator.pOfTurn(turn)
 
 		// source.reset()
-		if (moveType === MOVETYPE.FORCE_WALK) this.requestForceWalkMove(turn, pos, source)
+		if (moveType === MOVETYPE.FORCE_WALK || moveType === MOVETYPE.FORCEMOVE_WALK) this.requestForceWalkMove(turn, pos, source,moveType)
 		if (moveType === MOVETYPE.WALK || moveType === MOVETYPE.TRAVEL) this.requestWalkMove(turn, pos, source, moveType)
 		if (moveType === MOVETYPE.TELEPORT || moveType === MOVETYPE.BLACKHOLE || moveType === MOVETYPE.WATERSTREAM)
 			this.pushSingleAction(new TeleportAction(turn, pos, moveType), source)
@@ -425,12 +465,12 @@ class MarbleGame {
 	 * @param turn
 	 * @param source
 	 */
-	requestForceWalkMove(moverTurn: number, newpos: number, source: ActionTrace) {
+	requestForceWalkMove(moverTurn: number, newpos: number, source: ActionTrace,moveType:MOVETYPE) {
 		let pos = this.mediator.pOfTurn(moverTurn).pos
 		if (this.thisturn !== moverTurn) this.mediator.pOfTurn(moverTurn).clearPendingAction()
 
 		this.pushSingleAction(
-			new MoveAction(ACTION_TYPE.FORCE_WALK_MOVE, moverTurn, pos, forwardDistance(pos, newpos), MOVETYPE.FORCE_WALK),
+			new MoveAction(ACTION_TYPE.FORCE_WALK_MOVE, moverTurn, pos, forwardDistance(pos, newpos), moveType ),
 			source
 		)
 	}
@@ -633,9 +673,13 @@ class MarbleGame {
 			else if (this.map.name === "water") {
 				this.arriveSpecialTile(tile, moverTurn, source,"water_pump")
 			}
+			else if (this.map.name === "magicgarden") {
+				this.arriveSpecialTile(tile, moverTurn, source,"forcemove")
+			}
 		} else if (tile.type === TILE_TYPE.ISLAND) {
 			this.arriveIslandTile(moverTurn, source)
 		}
+		source.useTag(ActionTraceTag.FORCEMOVED)
 		//this.pushActions(new ActionPackage(this, source))
 	}
 	forceEndTurn(turn: number) {
@@ -779,6 +823,10 @@ class MarbleGame {
 	}
 	arriveSpecialTile(tile: Tile, moverTurn: number, source: ActionTrace,specialType:string) {
 		const tileLiftStart = 0
+		console.log(source.toString())
+
+		if(source.hasTag(ActionTraceTag.FORCEMOVED) || this.thisturn !== moverTurn) return
+
 		this.pushSingleAction(new AskGodHandSpecialAction(moverTurn, true,specialType), source)
 	}
 	chooseGodHandSpecialBuild(moverTurn: number, source: ActionTrace) {
@@ -824,6 +872,18 @@ class MarbleGame {
 				moverTurn,
 				targetTiles,
 				"godhand_special_tile_lift"
+			),
+			source
+		)
+	}
+	chooseForceMove(moverTurn: number, source: ActionTrace) {
+		let targetTiles = [...new Set(this.mediator.getNonRetiredPlayers().map(p=>p.pos))]
+		
+		if (targetTiles.length === 0) return
+		this.pushSingleAction(
+			new AskForceMoveAction(
+				moverTurn,
+				targetTiles
 			),
 			source
 		)
@@ -953,9 +1013,9 @@ class MarbleGame {
 			this.eventEmitter.indicateDefence("attack", action.tile.position)
 		}
 		if (action.name === CARD_NAME.LAND_CHANGE && action.landChangeTile != null) {
-			this.swapLand(action.landChangeTile, action.tile)
 			this.eventEmitter.indicateDefence("change", action.landChangeTile.position)
 			this.eventEmitter.indicateDefence("change", action.tile.position)
+			this.swapLand(action.landChangeTile, action.tile)
 		}
 	}
 	getAskBuildAction(playerTurn: number, tile: BuildableTile, source: ActionTrace): Action {
@@ -1232,6 +1292,7 @@ class MarbleGame {
 	}
 
 	gameOverWithMonopoly(winner: number, monopoly: MONOPOLY) {
+		if(this.over) return
 		this.over = true
 		let mul = 2
 		let winType="triple"
@@ -1263,6 +1324,8 @@ class MarbleGame {
 		if (left.length === 1) this.gameoverWithBankrupt(left[0].turn)
 	}
 	gameoverWithBankrupt(winner: number) {
+		if(this.over) return
+
 		let scores=this.getPlayerWinScores(winner, this.map.bankruptWinMultiplier)
 		let windata=new GameOverAction(winner,"bankrupt",scores)
 		this.eventEmitter.gameoverWithBankrupt(

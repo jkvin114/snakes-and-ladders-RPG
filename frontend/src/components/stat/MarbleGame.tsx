@@ -12,8 +12,8 @@ function getWinType(win: string) {
 }
 function getMapName(map: string) {
 	if (map === "god_hand") return "신의손"
-	
 	if (map === "water") return "수상도시"
+	if (map === "magicgarden") return "마법의 정원"
 	return "월드맵"
 }
 export default function MarbleGame({ game }: Props) {

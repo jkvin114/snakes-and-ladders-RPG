@@ -3,7 +3,7 @@ import { ACTION_LIST, ACTION_TYPE } from "./Action"
 
 export enum ActionTraceTag{
     BUBBLE_ROOT,TRAVEL,SOPHIE_TRAVEL,GUIDEBOOK,IGNORE_BLOCK_BUYOUT,START_BUILD,
-    FREE_BUYOUT
+    FREE_BUYOUT,FORCEMOVED
 }
 export class ActionTrace {
 	// private eventType: ACTION_SOURCE_TYPE //이벤트 종류(이동/통행료/인수 등 행동 분류)
@@ -161,7 +161,7 @@ export class ActionTrace {
         if(depth===0) return ""
         // let str=`[type:${ACTION_LIST[this.actionType]},abilityname:${this.abilityName}]`
         let str=ACTION_LIST[this.actionType]
-        if(!this.prev) return `[${str} ${this.abilityName}]`
-        return this.prev.toString(depth-1) + `-> [${str} ${this.abilityName}]`
+        if(!this.prev) return `[${str} ${this.abilityName} ${[...this.tags].join(",")}]`
+        return this.prev.toString(depth-1) + `-> [${str} ${this.abilityName} ${[...this.tags].join(",")}]`
     }
 }

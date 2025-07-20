@@ -426,6 +426,7 @@ export class MarbleScene extends Board {
 		this.lock = new MapFeature("lock")
 		this.tilegroup
 		this.tileoutergroup
+		this.forcemove_pin
 
 		this.tilegroup_copy
 		this.tileoutergroup_copy
@@ -564,6 +565,16 @@ export class MarbleScene extends Board {
 				this.canvas.add(tileobj)
 
 				const group = this.createTileGroup(tileobj)
+				this.tileObj.set(sp, new TileObject(tile, group))
+				tileobjects.push(group)
+			} else if (this.Map.mapname === "marble_magicgarden") {
+				let tileobj = this.getTileOf(1, this.getUnrotatedCoord(sp))
+				this.canvas.add(tileobj)
+				let coord = this.getUnrotatedCoord(sp)
+				let pos = getCenterCoord(coord)
+				let column = this.getDecorator("magic_tree", pos, getAngle(coord.rot), 1, 1)
+				const group = this.createTileGroup(tileobj, column)
+
 				this.tileObj.set(sp, new TileObject(tile, group))
 				tileobjects.push(group)
 			}
@@ -772,6 +783,36 @@ export class MarbleScene extends Board {
 		this.lockFabricObject(lock)
 		this.canvas.add(lock)
 		this.lock.image = lock
+
+		//강제이동 도착지점 핀 =============================================================================
+
+		let forcemove_pin = new fabric.Image(document.getElementById("magic_staff"), {
+			evented: false,
+			opacity: 0,
+			left: 0,
+			top: 0,
+			scaleX: 2,
+			scaleY: 2,
+			objectCaching: false,
+		})
+		this.lockFabricObject(forcemove_pin)
+		this.canvas.add(forcemove_pin)
+		this.forcemove_pin = forcemove_pin
+
+		//강제이동 =============================================================================
+
+		let forcemove_puppet = new fabric.Image(document.getElementById("magic_puppet"), {
+			evented: false,
+			opacity: 0,
+			left: 0,
+			top: 0,
+			scaleX: 1.3,
+			scaleY: 1.3,
+			objectCaching: false,
+		})
+		this.lockFabricObject(forcemove_puppet)
+		this.canvas.add(forcemove_puppet)
+		this.forcemove_puppet = forcemove_puppet
 	}
 	async showDefenceIndicator(type, pos) {
 		//	console.log("showDefenceIndicator" + type)
@@ -1705,6 +1746,27 @@ export class MarbleScene extends Board {
 			//	easing: fabric.util.ease.easeOutBack,
 		})
 		this.render()
+	}
+	showMagicForceMovePin(pos) {
+		pos = this.getTilePos(pos)
+		//	//console.log(pos)
+
+		this.forcemove_pin.set({ top: pos.y - 250, left: pos.x, opacity: 1 }).bringToFront()
+		this.animateY(this.forcemove_pin, pos.y - 30, 200, true)
+		this.forceRender()
+	}
+	showMagicForceMovePuppet(pos) {
+		pos = this.getTilePos(pos)
+		//	//console.log(pos)
+		this.forcemove_puppet.set({ top: pos.y - 150, left: pos.x, opacity: 1 }).bringToFront()
+		this.animateY(this.forcemove_puppet, pos.y - 85, 700)
+
+		this.forceRender()
+	}
+	moveComplete(turn) {
+		super.moveComplete(turn)
+		this.animateOpacity(this.forcemove_puppet, 0, 1000)
+		this.animateOpacity(this.forcemove_pin, 0, 1000)
 	}
 
 	removePlayer(player) {

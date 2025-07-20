@@ -1,4 +1,5 @@
 import type { ABILITY_NAME } from "../Marble/Ability/AbilityRegistry";
+import type { GAME_EFFECT } from "../Marble/enum";
 import type { BUILDING } from "../Marble/tile/Tile";
 
 export namespace ServerEventModel{
@@ -44,6 +45,9 @@ export namespace ServerEventModel{
     }
     export interface Pull{
         tiles:number[]
+    }export interface Effect{
+        pos:number
+        type:GAME_EFFECT
     }
     export interface PlayerEffect{
         effect:string

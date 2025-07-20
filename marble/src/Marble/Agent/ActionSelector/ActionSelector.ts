@@ -33,6 +33,10 @@ export abstract class ActionSelector{
     abstract chooseTollDefenceCard(req:sm.TollDefenceCardSelection):Promise<cm.UseCard>
     abstract chooseGodHand(req:sm.GodHandSpecialSelection):Promise<boolean>
     abstract chooseIsland(req:sm.IslandSelection):Promise<boolean>
+    
+    abstract chooseLandSwap(mylands:number[],enemyLands:number[]):Promise<cm.SelectLandSwap>
+
+    abstract chooseForcemove(playerPos:number[]):Promise<cm.SelectForcemove>
 
 
     constructor(state:PlayerState,game:MarbleGame,type:AgentType){

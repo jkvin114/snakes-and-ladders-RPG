@@ -98,6 +98,7 @@ export namespace FortuneCardRegistry{
     }
     export function draw(goldCardChance:number,ability:ABILITY_NAME){
 
+
         if(ability===ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD) return GO_TRAVEL
 
 

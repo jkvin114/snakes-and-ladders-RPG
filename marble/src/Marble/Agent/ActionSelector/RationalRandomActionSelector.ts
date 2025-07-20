@@ -14,6 +14,10 @@ import { RandomAgent } from "./RandomAgent"
  */
 export class RationalRandomAgent extends RandomAgent{
 
+	chooseForcemove(playerPos: number[]): Promise<cm.SelectForcemove> {
+		return new Promise((resolve) => resolve({result:false,targetDice:2,oddeven:0,playerPos:-1}))
+	}
+
 	chooseCardObtain(req: sm.ObtainCardSelection): Promise<boolean> {
 		let result=true
 
@@ -24,7 +28,9 @@ export class RationalRandomAgent extends RandomAgent{
 
 		return new Promise((resolve) => resolve(result))
 	}
-
+	chooseLandSwap(mylands: number[], enemyLands: number[]): Promise<cm.SelectLandSwap> {
+		return new Promise((resolve) => resolve({result:false,enemyLand:-1,myland:-1}))
+	}
 	chooseBuild(req: sm.LandBuildSelection): Promise<number[]> {
         let actions=new BuildChoice().generate(req).filter(b=>b.length>0)
         let a=actions.length===0?[]:chooseRandom(actions)

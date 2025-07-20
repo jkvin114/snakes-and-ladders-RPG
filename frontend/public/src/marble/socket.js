@@ -91,6 +91,11 @@ export function openConnection(isInitial) {
 		// console.log(data)
 		GAME.playerEffect(turn, data.effect, data.pos, data.status)
 	})
+	socket.on("server:effect", function (turn, data) {
+		console.log("effect")
+		console.log(data)
+		GAME.effect(data.type, data.pos)
+	})
 	socket.on("server:choose_build", function (player, data) {
 		if (!checkTurn(player)) return
 		// console.log("choose_build")

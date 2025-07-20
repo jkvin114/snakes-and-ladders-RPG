@@ -5,6 +5,7 @@ import { BUILDING } from "./tile/Tile"
 import type { ServerWritableStream } from "@grpc/grpc-js"
 import { marblegame } from "../grpc/services/marblegame"
 import { GameResultStat } from "../Model/GameResultStat"
+import type { GAME_EFFECT } from "./enum"
 const prefix = "server:"
 namespace serverEvents {
 	export const NEXTTURN = prefix + "nextturn"
@@ -49,6 +50,7 @@ namespace serverEvents {
 	export const SIM_PROGRESS = prefix + "sim_progress"
 	export const SIM_OVER = prefix + "sim_over"
 	export const DEBUG_STACK = prefix + "debug_stack"
+	export const EFFECT = prefix + "effect"
 }
 export interface GameEventEmitter extends ServerWritableStream<marblegame.String,marblegame.GameEvent>{
 }
@@ -212,6 +214,12 @@ export class MarbleGameEventObserver {
             tiles:tiles
         }
 		this.emit(  serverEvents.PULL, payload)
+	}
+	effect(type:GAME_EFFECT,pos:number = -1) {
+        const payload:se.Effect={
+            pos:pos,type:type
+        }
+		this.emit(serverEvents.EFFECT, payload)
 	}
 	setPlayerEffect(player: number, effect: string, pos: number, status: boolean) {
         const payload:se.PlayerEffect={

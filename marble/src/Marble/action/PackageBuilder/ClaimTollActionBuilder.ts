@@ -8,7 +8,7 @@ import type { BuildableTile } from "../../tile/BuildableTile"
 import {  forwardBy, percentValueToMultiplier } from "../../util"
 import { ACTION_TYPE, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
-import type { ActionTrace } from "../ActionTrace"
+import { ActionTraceTag, type ActionTrace } from "../ActionTrace"
 import {   PayTollAction } from "../InstantAction"
 import { AskTollDefenceCardAction } from "../QueryAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
@@ -64,6 +64,12 @@ export class ClaimTollActionBuilder extends DefendableActionBuilder {
 			main.applyMultiplier(2)
 		}
 
+		//바가지 효과
+		if(this.defender.hasEffect("toll_double")){
+			main.applyMultiplier(2)
+			this.defender.clearEffect("toll_double")
+		}
+		
 		if(this.defences.has(ABILITY_NAME.TOLL_REFLECTION)){
 			main = new PayTollAction(this.invoker.turn, this.defender.turn, main.amount)
 			pkg.addExecuted(ABILITY_NAME.TOLL_REFLECTION,this.defender.turn)

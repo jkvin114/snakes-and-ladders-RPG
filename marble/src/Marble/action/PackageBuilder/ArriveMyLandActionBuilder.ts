@@ -39,7 +39,7 @@ export class ArriveMyLandActionBuilder extends ActionPackageBuilder {
 
 			// this.trace.setAbilityName(players).setName("인술서")
 			pkg.addExecuted(players, this.invoker.turn)
-			pkg.addAction(new MoveToPlayerSelectionAction(this.invoker.turn,MOVETYPE.TELEPORT,this.game.mediator.getEnemiesOf(this.invoker.turn)),players)
+			pkg.addAction(new MoveToPlayerSelectionAction(this.invoker.turn,MOVETYPE.TELEPORT,this.game.mediator.getEnemiesOf(this.invoker.turn),players),players)
 			return true
 			
 		} else if (this.offences.has(myland) && !this.trace.hasActionAndAbility(ACTION_TYPE.CHOOSE_MOVE_POSITION,myland)) {

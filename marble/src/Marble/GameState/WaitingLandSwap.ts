@@ -17,14 +17,16 @@ export default class WaitingLandSwap extends WaitingState<LandSwapAction>{
     onCreate(): void {
         
     }
-    /***
-     * not implemented. will be skipped
-     */
+    
     async runAISelection(): Promise<boolean> {
+        let result = await this.playerAgent.chooseLandSwap(this.sourceAction.myLands,this.sourceAction.enemyLands)
+
+        this.myland = result.myland
+        this.onUserSelectTile(result.enemyLand,"land_change_2",result.result)
         return true
     }
     sendQueryRequest(): void {
-        this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_1")
+        this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.myLands,"land_change_1")
     }
     onUserSelectTile(pos: number,name:string,result:boolean){
         if(name !== "land_change_1" && name!=="land_change_2") return new QueryEventResult(false)
@@ -34,7 +36,7 @@ export default class WaitingLandSwap extends WaitingState<LandSwapAction>{
         if(name==="land_change_1"){
             this.myland=pos
             setTimeout(()=>{
-                this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.getTargetTiles(),"land_change_2")
+                this.game.eventEmitter.askTileSelection(this.turn,this.sourceAction.enemyLands,"land_change_2")
             },500)
             
             return new QueryEventResult(false)

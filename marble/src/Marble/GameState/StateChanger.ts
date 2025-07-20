@@ -1,7 +1,7 @@
 import { ACTION_TYPE, Action } from "../action/Action";
-import {ErrorState, Moving, Pulling, Teleporting, ThrowingDice, TurnInitializer, WaitingBuild, WaitingBuyOut, WaitingCardObtain, WaitingDefenceCardUse, WaitingDice, WaitingGodHandSpecial, WaitingIsland, WaitingLandSwap, WaitingLoan, WaitingMoveTileSelection, WaitingTileSelection} from ".";
+import {ErrorState, Moving, Pulling, Teleporting, ThrowingDice, TurnInitializer, WaitingBuild, WaitingBuyOut, WaitingCardObtain, WaitingDefenceCardUse, WaitingDice, WaitingForceMove, WaitingGodHandSpecial, WaitingIsland, WaitingLandSwap, WaitingLoan, WaitingMoveTileSelection, WaitingTileSelection} from ".";
 import { RollDiceAction, TeleportAction, MoveAction, PullAction } from "../action/DelayedAction";
-import { DiceChanceAction, AskBuildAction, AskGodHandSpecialAction, AskBuyoutAction, AskLoanAction, MoveTileSelectionAction, TileSelectionAction, ObtainCardAction, LandSwapAction, AskDefenceCardAction, AskIslandAction } from "../action/QueryAction";
+import { DiceChanceAction, AskBuildAction, AskGodHandSpecialAction, AskBuyoutAction, AskLoanAction, MoveTileSelectionAction, TileSelectionAction, ObtainCardAction, LandSwapAction, AskDefenceCardAction, AskIslandAction, AskForceMoveAction } from "../action/QueryAction";
 import type { MarbleGame } from "../Game";
 import type MarbleGameCycleState from "./MarbleGameCycleState";
 import { Logger } from "../../logger";
@@ -65,6 +65,10 @@ export default function StateChanger(action:Action|null,game:MarbleGame): Marble
             case ACTION_TYPE.CHOOSE_LAND_CHANGE:
                 if(action instanceof LandSwapAction)
                     return new WaitingLandSwap(game,action)
+                break
+            case ACTION_TYPE.CHOOSE_FORCEMOVE:
+                if(action instanceof AskForceMoveAction)
+                    return new WaitingForceMove(game,action)
                 break
             case ACTION_TYPE.CHOOSE_ATTACK_DEFENCE_CARD_USE:
             case ACTION_TYPE.CHOOSE_TOLL_DEFENCE_CARD_USE:

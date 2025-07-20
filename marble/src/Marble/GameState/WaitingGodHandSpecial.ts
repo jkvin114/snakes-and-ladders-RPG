@@ -33,6 +33,9 @@ export default class WaitingGodHandSpecial extends WaitingState<AskGodHandSpecia
         else if(this.sourceAction.specialType==="water_pump"){
             
             this.game.chooseWaterPumpTile(this.turn,this.sourceAction.source)
+        }else if(this.sourceAction.specialType==="forcemove"){
+            this.game.chooseForceMove(this.turn,this.sourceAction.source)
+          //  this.game.chooseWaterPumpTile(this.turn,this.sourceAction.source)
         }
         else{
             Logger.warn("invaild special type "+this.sourceAction.specialType)

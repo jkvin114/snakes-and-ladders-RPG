@@ -1,3 +1,4 @@
+import { ABILITY_NAME } from "../Marble/Ability/AbilityRegistry";
 import { ACTION_TYPE } from "../Marble/action/Action";
 import type { BUILDING } from "../Marble/tile/Tile";
 import { BuildType } from "../Marble/tile/enum";
@@ -29,6 +30,7 @@ export namespace ServerRequestModel{
         tiles:number[]
         source:string
         actionType?:ACTION_TYPE
+        ability?:ABILITY_NAME
     }
     export interface MoveTileSelection extends TileSelection{
         sourcePos:number

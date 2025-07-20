@@ -238,6 +238,7 @@ class Game {
 			}
 		}
 		this.scene.focusPlayer(this.turnToPlayerNum(player))
+		if (movetype === "forcemove_walk") this.scene.showMagicForceMovePin(list[list.length - 1])
 		this.scene.movePlayerThrough(list, this.turnToPlayerNum(player), movetype, (turn) => this.moveComplete(turn))
 	}
 	playerTeleport(player, pos, movetype) {
@@ -250,6 +251,14 @@ class Game {
 	}
 	playerEffect(turn, effect, pos, status) {
 		this.scene.playerEffect(this.turnToPlayerNum(turn), effect, pos, status)
+	}
+	effect(type, pos) {
+		if (type === "water_pump_activate") {
+			this.playsound("waterpump")
+		}
+		if (type === "forcemove_select" && pos !== -1) {
+			this.scene.showMagicForceMovePuppet(pos)
+		}
 	}
 	payMoney(payer, receiver, amount, type) {
 		if (type === "toll" && amount > 200 * 10000) this.playsound("toll")
@@ -421,9 +430,7 @@ class Game {
 
 	onTileSelect(pos, type) {
 		this.ui.hideSelectionTitle()
-		if (type === "waterpump") {
-			this.playsound("waterpump")
-		}
+
 		this.connection.onTileSelect(pos, type, true)
 	}
 	onTileSelectCancel(type) {

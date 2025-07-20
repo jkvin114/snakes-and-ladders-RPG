@@ -75,7 +75,7 @@ export interface AbilityValue{
         return {value:this.getValue()}
     }
     getValue(){
-        if(this.upgraded) return this.upgradeValue
+        if(this.upgraded && this.upgradeValue!==0) return this.upgradeValue
         return this.value
     }
     sample():boolean{

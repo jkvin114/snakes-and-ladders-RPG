@@ -317,6 +317,10 @@ const TILE_SELECTIONS = {
 		title: "워터 펌프",
 		desc: "물을 틀 범위를 선택하세요",
 	},
+	forcemove_player: {
+		title: "강제 이동",
+		desc: "강제이동시킬 플레이어를 선택하세요",
+	},
 }
 const FORTUNECARD = {
 	shield: {
@@ -944,7 +948,10 @@ export class GameInterface {
 			$("#selectfalsebutton a").html("물 틀기")
 			$("#selectfalsebutton img").attr("src", "/res/img/marble/tile_highlight_water.png")
 		}
-
+		if (specialType === "forcemove") {
+			$("#selectfalsebutton a").html("강제 이동")
+			$("#selectfalsebutton img").attr("src", "/res/img/marble/staff.png")
+		}
 		$("#selectfalsebutton").show()
 
 		if (!canlift) $("#selectfalsebutton").hide()

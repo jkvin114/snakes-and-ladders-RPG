@@ -16,6 +16,8 @@ import WaitingLandSwap from "./WaitingLandSwap"
 import WaitingLoan from "./WaitingLoan"
 import WaitingTileSelection from "./WaitingTileSelection"
 import WaitingMoveTileSelection from "./WaitingMoveTileSelection"
+import WaitingForceMove from "./WaitingForceMove"
+
 export {
 	GameInitializer,
 	ErrorState,
@@ -33,5 +35,5 @@ export {
 	WaitingIsland,
 	WaitingLandSwap,
 	WaitingLoan,
-	WaitingMoveTileSelection,WaitingTileSelection
+	WaitingMoveTileSelection,WaitingTileSelection,WaitingForceMove
 }

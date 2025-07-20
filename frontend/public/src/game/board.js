@@ -538,7 +538,8 @@ export class Board {
 		} else if (
 			this.mapname === "marble_godhand" ||
 			this.mapname === "marble_world" ||
-			this.mapname === "marble_water"
+			this.mapname === "marble_water" ||
+			this.mapname === "marble_magicgarden"
 		) {
 			boardimg = document.getElementById("marble_boardimg")
 		} else if (this.mapname === "rapid") {
@@ -836,7 +837,9 @@ export class Board {
 		this.hideNameText(turn)
 		// this.players[turn].nametext.set("text", "")
 		this.players[turn].playerimg.bringToFront()
-		this.showPin(poslist[poslist.length - 1])
+
+		if (movetype !== "forcemove_walk") this.showPin(poslist[poslist.length - 1])
+
 		let count = 0
 		const interval = setInterval(() => {
 			if (count >= poslist.length) {

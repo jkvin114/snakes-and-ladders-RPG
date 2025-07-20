@@ -203,7 +203,9 @@ export const maxFor = function <T>(arr: Iterable<T>, priority: (e: T) => number)
 	}
 	return maxElem
 }
-
+export const uniDist=function(start:number,end:number){
+	return start + randFloat(end-start)
+}
 export const triDist=function(mean:number,range:number){
 	return mean + randFloat(range) + randFloat(range) - range
 }

@@ -51,6 +51,9 @@ const _MarbleMap1 = JSON.stringify(marblemap1)
 import marblemap2 from "../../res/marble/water_map.json"
 const _MarbleMap2 = JSON.stringify(marblemap2)
 
+import marblemap3 from "../../res/marble/magicgarden_map.json"
+const _MarbleMap3 = JSON.stringify(marblemap3)
+
 import marblecoord from "../../res/marble/map_coordinates.json"
 import { sessionParser } from './jwt/auth';
 import { CompressedReplay } from '../mongodb/ReplayDBHandler';
@@ -157,6 +160,8 @@ router.get("/marble_map",sessionParser, function (req:Request, res:Response) {
 	}
 	else if(room.getMapId===2){
 		res.end(_MarbleMap2)
+	}else if(room.getMapId===3){
+		res.end(_MarbleMap3)
 	}
 })
 

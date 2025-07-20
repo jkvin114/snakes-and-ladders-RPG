@@ -41,7 +41,9 @@ export default class GameReader {
             waterStreamTarget:this.game.map.getWaterStreamTargetPos()
         }
 	}
-
+    playerPos() {
+        return [...new Set(this.game.mediator.getNonRetiredPlayers().map(p=>p.pos))]
+	}
 	enemyPos() {
         return this.enemies.map(p=>p.pos)
 	}
@@ -65,6 +67,11 @@ export default class GameReader {
     is3Build(pos:number){
        return this.tileAt(pos).isBuildable && this.landAt(pos).getNextBuild() === BUILDING.LANDMARK
     }
+    /**
+     * 1000만: 2, 1억:3
+     * @param pos 
+     * @returns 
+     */
     logToll(pos:number){
         if(!this.tileAt(pos).isBuildable) return 0.1
         return Math.log10(this.landAt(pos).getToll() / 100000)
@@ -78,6 +85,9 @@ export default class GameReader {
 	}
 	mostExpensiveMyLand() {
 		return this.game.map.getMostExpensiveIn(this.me, TileFilter.MY_LAND())
+	}
+    myLands() {
+		return this.game.map.getOwnedLandsOf(this.me.turn)
 	}
     has3BuildLands() {
 		return this.game.map.getTiles(this.me, TileFilter.MY_LAND()).some(p=>this.is3Build(p))
@@ -96,6 +106,9 @@ export default class GameReader {
     willBeMyColorMonopoly(pos:number){
         return this.game.map.willBeColorMonopoly(this.myturn,pos)
     }
+    canMakeMonopolyAfterSwap(oldpos:number,newpos:number,currentLands:number[]){
+        return this.game.map.checkMonopolyExistsFor([...currentLands.filter(p=>p!==oldpos),newpos]) !== MONOPOLY.NONE
+    }
     isColorMonopolyOf(pos:number,turn:number){
         const tile = this.tileAt(pos)
         if(tile.isBuildable && tile instanceof LandTile){
@@ -105,12 +118,12 @@ export default class GameReader {
         return false
         
     }
-    getEnemyMonopolyAlerts():{type:MONOPOLY,turn:number}[]{
+    getEnemyMonopolyAlerts():{type:MONOPOLY,turn:number,pos:number}[]{
         let players= this.game.mediator.getEnemiesOf(this.myturn).map(t=>this.getPlayer(t))
-        let alerts:{type:MONOPOLY,turn:number}[] = []
+        let alerts:{type:MONOPOLY,turn:number,pos:number}[] = []
         for(const p of players){
-            let monopolies = [...p.monopolyChancePos.values()]
-            alerts.push(...monopolies.map(m=>{return {turn:p.turn,type:m}}))
+            let monopolies = [...p.monopolyChancePos.entries()]
+            alerts.push(...monopolies.map(m=>{return {turn:p.turn,type:m[1],pos:m[0]}}))
         }
         return alerts
     }
@@ -146,7 +159,9 @@ export default class GameReader {
     countPlayersNearby(pos:number,forward:number,backward:number){
         return this.getOtherPlayersBetween(backwardBy(pos,backward+1),forwardBy(pos,forward+1)).length
     }
-
+    getEnemiesAt(pos:number){
+        return this.game.mediator.getPlayersAt([pos]).filter(p=>p.turn!==this.myturn)
+    }
     getPlayersAt(pos:number){
         return this.game.mediator.getPlayersAt([pos])
     }

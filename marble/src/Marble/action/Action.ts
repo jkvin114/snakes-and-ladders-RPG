@@ -55,7 +55,8 @@ export enum ACTION_TYPE {
 	CHANGE_LAND_OWNER,
 	MESSAGE,
 	INDICATE_DEFENCE,
-	REMOVE_BLACKHOLE
+	REMOVE_BLACKHOLE,
+	CHOOSE_FORCEMOVE
 }
 
 export const ACTION_LIST = [
@@ -108,11 +109,12 @@ export const ACTION_LIST = [
 	"CHANGE_LAND_OWNER",
 	"MESSAGE",
 	"INDICATE_DEFENCE",
-	"REMOVE_BLACKHOLE"
+	"REMOVE_BLACKHOLE",
+	"CHOOSE_FORCEMOVE"
 ]
 
 export enum MOVETYPE{
-	WALK="walk",FORCE_WALK="force_walk",TELEPORT="tp",PULL="pull",BLACKHOLE="blackhole",TRAVEL="travel",WATERSTREAM="waterstream",
+	WALK="walk",FORCE_WALK="force_walk",TELEPORT="tp",PULL="pull",BLACKHOLE="blackhole",TRAVEL="travel",WATERSTREAM="waterstream",FORCEMOVE_WALK="forcemove_walk"
 }
 export abstract class Action {
 	type: ACTION_TYPE

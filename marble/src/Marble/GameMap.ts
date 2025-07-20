@@ -2,6 +2,7 @@ import { MOVETYPE } from "./action/Action"
 import { ActionTrace } from "./action/ActionTrace"
 import GameState from "./Agent/Utility/GameState"
 import { PlayerState } from "./Agent/Utility/PlayerState"
+import { GAME_EFFECT } from "./enum"
 import type { MarbleGame } from "./Game"
 import { ISLAND_POS, MAP_SIZE, OLYMPIC_POS, SAME_LINE_TILES, START_POS, TRAVEL_POS } from "./mapconfig"
 import { MarbleGameEventObserver } from "./MarbleGameEventObserver"
@@ -16,6 +17,7 @@ import { arrayOf, backwardBy, cl, countFrom, distance,  forwardBy,  getSameLineT
 const GOD_HAND_MAP = require("./../../res/godhand_map.json")
 const WORLD_MAP = require("./../../res/world_map.json")
 const WATER_MAP = require("./../../res/water_map.json")
+const MAGICGARDEN_MAP = require("./../../res/magicgarden_map.json")
 
 
 
@@ -85,6 +87,12 @@ class MarbleGameMap{
             this.island=WATER_MAP.island
             this.olympic=WATER_MAP.olympic
             this.travel=WATER_MAP.travel
+        }else if(map==='magicgarden'){
+            this.setMap(MAGICGARDEN_MAP)
+            this.start=MAGICGARDEN_MAP.start
+            this.island=MAGICGARDEN_MAP.island
+            this.olympic=MAGICGARDEN_MAP.olympic
+            this.travel=MAGICGARDEN_MAP.travel
         }
         else{
             this.start=START_POS
@@ -227,7 +235,7 @@ class MarbleGameMap{
     }
     onHitBlockingTile(pos:number){
         if(this.name==="god_hand"){
-            this.tileAt(pos).unlift()
+          //  this.tileAt(pos).unlift()
             this.blockingTiles.delete(pos)
             this.sendTileState("unlift",pos)
             this.liftedTile=-1
@@ -237,11 +245,11 @@ class MarbleGameMap{
     liftTile(pos:number){
         if(this.name==="god_hand"){
             if(this.liftedTile!==-1){
-                this.tileAt(this.liftedTile).unlift()
+             //   this.tileAt(this.liftedTile).unlift()
                 this.blockingTiles.delete(this.liftedTile)
                 this.sendTileState("unlift",this.liftedTile)
             }
-            this.tileAt(pos).lift()
+         //   this.tileAt(pos).lift()
             this.blockingTiles.add(pos)
             this.sendTileState("lift",pos)
             this.liftedTile=pos
@@ -255,6 +263,7 @@ class MarbleGameMap{
      */
     activateWaterPump(sourcePos:number,targetPos:number):number[]{
         if(this.name!=="water") return [-1,-1]
+        this.eventEmitter.effect(GAME_EFFECT.WATER_PUMP_ACTIVATE)
 
         for(const pos of this.waterstreamTiles){
             this.sendTileState("waterpump_off",pos)
@@ -561,6 +570,30 @@ class MarbleGameMap{
         const tile=this.tileAt(pos)
         if(!(tile instanceof LandTile)) return false
         return this.sameColors.get(tile.color)?.every(t=>((t.position===pos && t.owner !== turn) || t.owner === turn))
+    }
+    getOwnedLandsOf(turn:number){
+        return this.tiles.filter(t=>t.owner === turn).map(t=>t.position)
+    }
+    checkMonopolyExistsFor(occupiedLands:number[]):MONOPOLY{
+        //관독
+        if(this.sights.every(p=>occupiedLands.includes(p))){
+                return MONOPOLY.SIGHT
+        }
+        
+        //라독
+        for(const line of SAME_LINE_TILES){
+            if([...line].every(p=>!this.tileAt(p).isBuildable || occupiedLands.includes(p))){
+                return MONOPOLY.LINE
+            }
+        }
+
+        let colorCount = 0
+        for(const [_,tiles] of this.sameColors){
+            if(tiles.map(t=>t.position).every(p=>occupiedLands.includes(p))){
+                colorCount ++ 
+            }
+        }
+        return colorCount >= 3 ? MONOPOLY.TRIPLE:MONOPOLY.NONE
     }
     checkMonopoly(changedTile:BuildableTile,invoker:number):MONOPOLY{
         //관독

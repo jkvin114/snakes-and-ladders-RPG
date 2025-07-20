@@ -3,6 +3,7 @@ import { ISLAND_POS, MAP_SIZE, OLYMPIC_POS, START_POS, TRAVEL_POS } from "../../
 import { BUILDING, TILE_TYPE } from "../../tile/Tile"
 import {
 	backwardBy,
+	backwardDistance,
 	chooseRandom,
 	clamp,
 	forwardBy,
@@ -15,7 +16,9 @@ import {
 	randFloat,
 	randInt,
 	range,
+	shuffle,
 	triDist,
+	uniDist,
 } from "../../util"
 import { ServerRequestModel as sm } from "../../../Model/ServerRequestModel"
 import { ClientResponseModel as cm } from "../../../Model/ClientResponseModel"
@@ -30,8 +33,13 @@ import { MONOPOLY } from "../../GameMap"
 interface EnemyMonopoly {
 	type: MONOPOLY
 	turn: number
+	pos: number
 }
-;[]
+interface ForceMoveSelection {
+	target: number
+	targetPos: number
+	reward: number
+}
 
 export class CustomAgent1 extends RationalRandomAgent {
 	wrap<T>(data: T): Promise<T | null> {
@@ -69,38 +77,33 @@ export class CustomAgent1 extends RationalRandomAgent {
 
 	chooseMoveTileFor(req: sm.MoveTileSelection): Promise<cm.SelectTile> {
 		let choices = new TileChoice().generateNoCancel(req)
-		let canBeBlocked = false
-		if (req.moveType === MOVETYPE.TRAVEL || req.moveType === MOVETYPE.WALK) canBeBlocked = true
-
-		const specialPos = this.game.specialPos()
-		if (specialPos.lifted !== -1) {
-			let unreachable = [...getTilesBewteen(specialPos.lifted, req.sourcePos), specialPos.lifted, req.sourcePos]
-			if (canBeBlocked) {
+		if (req.moveType === MOVETYPE.TRAVEL || req.moveType === MOVETYPE.WALK) {
+			const specialPos = this.game.specialPos()
+			if (specialPos.lifted !== -1) {
+				let unreachable = [...getTilesBewteen(specialPos.lifted, req.sourcePos), specialPos.lifted, req.sourcePos]
 				let available = choices.filter((p) => !unreachable.includes(p.pos))
 				if (available.length > 0) choices = available
 			}
 		}
-
-		return this.selectCancelableMovePos(choices)
+		return this.selectCancelableMovePos(choices,req.ability)
 	}
 
 	chooseBuild(req: sm.LandBuildSelection): Promise<number[]> {
 		let choices = new BuildChoice().generate(req)
 		//[3건, 건설암함,2건] or [랜마] or [관광지]
 
-		if (this.myPlayer.hasOneAbilities(AbilityTags.CONSTRUCTION_TOOLS) && choices.length>0)
+		if (this.myPlayer.hasOneAbilities(AbilityTags.CONSTRUCTION_TOOLS) && choices.length > 0)
 			return this.wrap(maxFor(choices, (buildings) => buildings.length))
-		else if(choices.length===2){
-
+		else if (choices.length === 2) {
 			//아무 건설시에 발동되는 능력있으면 최대한 추가건설. 아닐시 20%로
-			if(this.myPlayer.hasOneAbilities(AbilityTags.ON_ANY_BUILD_ABILITY) || randBool(5)){
+			if (this.myPlayer.hasOneAbilities(AbilityTags.ON_ANY_BUILD_ABILITY) || randBool(5)) {
 				return this.wrap(choices[0])
 			}
-		}
-		else if(!randBool(10) && choices.length>2 && choices[2].length>0){ //90%
+		} else if (!randBool(10) && choices.length > 2 && choices[2].length > 0) {
+			//90%
 			return this.wrap(choices[2])
 		}
-		
+
 		return super.chooseBuild(req)
 	}
 
@@ -150,9 +153,10 @@ export class CustomAgent1 extends RationalRandomAgent {
 		let choices = new TileChoice().generateNoCancel(req)
 		let monopolypos = this.selectPosForMonopoly(choices.map((p) => p.pos))
 		if (monopolypos !== -1) return this.wrap<cm.SelectTile>({ pos: monopolypos, name: req.source, result: true })
-		
-		let colormonopoly = choices.filter(p=>this.game.willBeMyColorMonopoly(p.pos))
-		if(colormonopoly.length>0) return this.wrap<cm.SelectTile>({ pos: colormonopoly[0].pos, name: req.source, result: true })
+
+		let colormonopoly = choices.filter((p) => this.game.willBeMyColorMonopoly(p.pos))
+		if (colormonopoly.length > 0)
+			return this.wrap<cm.SelectTile>({ pos: colormonopoly[0].pos, name: req.source, result: true })
 
 		return super.chooseBuyoutTile(req)
 	}
@@ -166,11 +170,10 @@ export class CustomAgent1 extends RationalRandomAgent {
 		let empty = choices.filter((p) => this.game.tileAt(p.pos).owner === -1)
 
 		let monopolypos = this.selectPosForMonopoly(choices.map((p) => p.pos))
-		
-		if (monopolypos !== -1 && empty.some(p=>p.pos === monopolypos)) 
+
+		if (monopolypos !== -1 && empty.some((p) => p.pos === monopolypos))
 			return this.wrap<cm.SelectTile>({ pos: monopolypos, name: req.source, result: true })
 
-		
 		let mylands = choices.filter((p) => this.game.tileAt(p.pos).owner === this.game.myturn)
 		let addbuild = this.chooseAddBuildTile(mylands)
 
@@ -194,7 +197,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 	protected chooseBlackholeTile(req: sm.TileSelection): Promise<cm.SelectTile> {
 		let choices = new TileChoice().generateNoCancel(req)
 		let pos = this.selectPosForBlackhole(choices.map((p) => p.pos))
-		return this.wrap<cm.SelectTile>({ pos: pos, name: choices[0].name, result: pos!==-1 })
+		return this.wrap<cm.SelectTile>({ pos: pos, name: choices[0].name, result: pos !== -1 })
 	}
 	protected selectNonCancelableMovePos(avaliablePos: cm.SelectTile[]): Promise<cm.SelectTile> {
 		return this.wrap<cm.SelectTile>({
@@ -208,8 +211,8 @@ export class CustomAgent1 extends RationalRandomAgent {
 	 * @param avaliablePos
 	 * @returns
 	 */
-	protected selectCancelableMovePos(avaliablePos: cm.SelectTile[]): Promise<cm.SelectTile> {
-		let pos = this.selectMovePos(avaliablePos, null)
+	protected selectCancelableMovePos(avaliablePos: cm.SelectTile[],ability?:ABILITY_NAME): Promise<cm.SelectTile> {
+		let pos = this.selectMovePos(avaliablePos, null,false,AbilityTags.IGNORES_GUIDEBOOK.has(ability))
 		let result = pos.reward >= 0
 		return this.wrap<cm.SelectTile>({ pos: pos.pos, name: avaliablePos[0].name, result: result })
 	}
@@ -240,7 +243,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 		} else if (this.myPlayer.hasOneAbilities(new Set([ABILITY_NAME.RANGE_PULL_ON_ARRIVE_LANDMARK]))) {
 			range[0] = backwardBy(pos, 4)
 			range[1] = forwardBy(pos, 4)
-		} else return triDist(0.6,0.3)
+		} else return triDist(0.6, 0.3)
 
 		if (this.myPlayer.hasOneAbilities(AbilityTags.GUIDEBOOK)) toll *= 1.5
 
@@ -253,7 +256,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 		return toll * Math.max(1, enemies * 2)
 	}
 
-	protected getPosReward(pos: number, enemyMonopoly: EnemyMonopoly[]) {
+	protected getPosReward(pos: number, enemyMonopoly: EnemyMonopoly[],isForcemove:boolean,ignoreGuidebook:boolean) {
 		let reward = 0
 
 		let specials = this.game.specialPos()
@@ -267,14 +270,15 @@ export class CustomAgent1 extends RationalRandomAgent {
 		let tileObj = this.game.tileAt(pos)
 
 		if (pos === ISLAND_POS) reward = -1
-		else if (pos === TRAVEL_POS) reward = triDist(1.5, 1)
+		else if (tileObj.type === TILE_TYPE.CARD) {
+			//reward = uniDist(0.5, 1.3)
+		} else if (pos === TRAVEL_POS) reward = uniDist(0.5, 1.3)
 		else if (tileObj.isBuildable && tileObj.isLandMark()) {
-			let ismine = !this.game.isEnemyLand(pos)
-			if (!ismine) reward = -4
+			// let ismine = !this.game.isEnemyLand(pos)
+			if (!this.game.isMyLand(pos)) reward = -4
 			else reward = this.getMyLandmarkReward(pos)
-		} else if (tileObj.type == TILE_TYPE.SIGHT ) {
-			if(tileObj.owner !== -1)
-				reward = 0
+		} else if (tileObj.type == TILE_TYPE.SIGHT) {
+			if (tileObj.owner !== -1) reward = 0
 			else if (tileObj.type == TILE_TYPE.SIGHT && tileObj.owner === -1) {
 				if (enemyMonopoly.some((m) => m.type === MONOPOLY.SIGHT)) {
 					reward = triDist(6, 0.5)
@@ -284,40 +288,42 @@ export class CustomAgent1 extends RationalRandomAgent {
 					reward = triDist(1.5, 0.5)
 				}
 			}
-		} else if (tileObj.isSpecial) {
+		} else if (tileObj.isSpecial && !isForcemove) {
 			let specialpos = this.getGoodSpecialSelectionFromPos(pos)
 			if (specialpos !== -1) reward = triDist(3, 0.5)
 			else reward = triDist(1.2, 1)
 		} else if (pos === START_POS) {
-			if(this.game.has3BuildLands())
-				reward = triDist(1.7, 0.5)
+			if (this.game.has3BuildLands()) reward = triDist(1.7, 0.5)
 			else reward = 0.1
-		}else if (pos === OLYMPIC_POS) {
+		} else if (pos === OLYMPIC_POS) {
 			reward = 0.3
-		}
-		else if (tileObj.isBuildable && this.game.landAt(pos).isEmpty()) {
+		} else if (tileObj.isBuildable && this.game.landAt(pos).isEmpty()) {
 			reward = triDist(1.5, 0.5)
-		}
-		else if (this.game.isMyLand(pos)) {
+		} else if (this.game.isMyLand(pos)) {
 			if (this.game.is3Build(pos)) reward = triDist(1.7, 0.5)
 			else reward = triDist(0.3, 0.3)
-
 		} else if (tileObj.isBuildable && this.game.isEnemyLand(pos)) {
 			const hasEnoughMoneyForBuyout = this.hasEnoughMoneyForBuyout(pos)
 
-			if (hasEnoughMoneyForBuyout && enemyMonopoly.some((m) => m.type === MONOPOLY.LINE && m.turn === tileObj.owner)) { 
-				if(enemyMonopoly.some((m) => m.type === MONOPOLY.LINE && m.turn === tileObj.owner && this.game.isColorMonopolyOf(pos,m.turn)))
+			if (hasEnoughMoneyForBuyout && enemyMonopoly.some((m) => m.type === MONOPOLY.LINE && m.turn === tileObj.owner)) {
+				if (
+					enemyMonopoly.some(
+						(m) => m.type === MONOPOLY.LINE && m.turn === tileObj.owner && this.game.isColorMonopolyOf(pos, m.turn)
+					)
+				)
 					reward = triDist(4, 0.5)
 				else reward = triDist(2, 0.5)
-
 			} else if (
 				hasEnoughMoneyForBuyout &&
 				enemyMonopoly.some((m) => m.type === MONOPOLY.TRIPLE && m.turn === tileObj.owner)
 			) {
-
-				if(enemyMonopoly.some((m) => m.type === MONOPOLY.TRIPLE && m.turn === tileObj.owner && this.game.isColorMonopolyOf(pos,m.turn)))
+				if (
+					enemyMonopoly.some(
+						(m) => m.type === MONOPOLY.TRIPLE && m.turn === tileObj.owner && this.game.isColorMonopolyOf(pos, m.turn)
+					)
+				)
 					reward = triDist(5, 0.5)
-				else{
+				else {
 					reward = triDist(2, 0.5)
 				}
 			} else {
@@ -328,7 +334,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 			}
 		}
 		//else if (tileObj.isBuildable) reward = triDist(1, 1)
-		if (this.game.playerAtHasOneAbility(pos, AbilityTags.GUIDEBOOK)) reward -= 6
+		if (this.game.playerAtHasOneAbility(pos, AbilityTags.GUIDEBOOK) && !ignoreGuidebook) reward -= 6
 		if (this.game.willBeMyColorMonopoly(pos)) {
 			// console.log("colormonopoly")
 			reward *= 2
@@ -343,22 +349,22 @@ export class CustomAgent1 extends RationalRandomAgent {
 
 		return reward
 	}
-	protected hasEnoughMoneyForBuyout(pos:number){
+	protected hasEnoughMoneyForBuyout(pos: number) {
 		return this.game.toll(pos) * triDist(2.5, 0.5) < this.myPlayer.money
 	}
 
-
-	protected isReachable(pos:number){
-		if(this.game.playerAtHasOneAbility(pos, AbilityTags.GUIDEBOOK)) return false
-		if(this.game.blackholepos===pos) return false
-		if(this.game.specialPos().waterStreams.includes(pos)) return false
+	protected isReachable(pos: number) {
+		if (this.game.playerAtHasOneAbility(pos, AbilityTags.GUIDEBOOK)) return false
+		if (this.game.blackholepos === pos) return false
+		if (this.game.specialPos().waterStreams.includes(pos)) return false
 		return true
-
 	}
 
 	protected selectMovePos(
 		avaliablePos: cm.SelectTile[],
 		rewardMulFunc?: (pos: number, idx: number) => number
+		,isForcemove:boolean = false,ignoreGuidebook:boolean = false
+
 	): { pos: number; reward: number } {
 		let unreachables = this.game.specialPos().waterStreams
 
@@ -368,7 +374,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 		const enemyMonopoly = this.game.getEnemyMonopolyAlerts()
 
 		let choices = avaliablePos.map((tile, i) => {
-			let reward = this.getPosReward(tile.pos, enemyMonopoly)
+			let reward = this.getPosReward(tile.pos, enemyMonopoly,isForcemove,ignoreGuidebook)
 			if (rewardMulFunc) reward *= rewardMulFunc(tile.pos, i)
 			return { pos: tile.pos, reward: reward }
 		})
@@ -380,7 +386,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 	 * otherwise, return the best pos to acquire monopoly
 	 * @param avaliablePos
 	 */
-	protected selectPosForMonopoly(avaliablePos: number[]) {
+	protected selectPosForMonopoly(avaliablePos: number[], needToBuy: boolean = true) {
 		let maxreward = 0
 		let bestpos = -1
 		for (const p of avaliablePos) {
@@ -390,7 +396,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 				this.game.landAt(p).isEmptyOrBuyable()
 			) {
 				//if toll is more than 3x my money and i don`t have angel card, skip this position
-				if (this.game.toll(p) * triDist(2, 0.5) > this.myPlayer.money) {
+				if (needToBuy && this.game.toll(p) * triDist(2, 0.5) > this.myPlayer.money) {
 					if (!this.game.hasOneAbility(this.myturn, AbilityTags.ANGEL)) continue
 				}
 				if (this.myPlayer.monopolyChancePos.get(p) > maxreward) bestpos = p
@@ -443,8 +449,8 @@ export class CustomAgent1 extends RationalRandomAgent {
 		} else if (enemylandmark > -1) return enemylandmark
 		else {
 			//내땅은 무조건 제외
-			let vaild=	avaliablePos.filter(p=>!this.game.isMyLand(p))
-			if(vaild.length===0) return -1
+			let vaild = avaliablePos.filter((p) => !this.game.isMyLand(p))
+			if (vaild.length === 0) return -1
 			return chooseRandom(vaild)
 		}
 	}
@@ -459,16 +465,13 @@ export class CustomAgent1 extends RationalRandomAgent {
 		let monopolypos = this.selectPosForMonopolyNoBuyout(list)
 
 		if (monopolypos !== -1) return true
-		if(this.myPlayer.money < 500000) return false
+		if (this.myPlayer.money < 500000) return false
 
 		for (const pos of list) {
 			if (this.game.willBeMyColorMonopoly(pos)) return true
 
-			if (
-				this.game.isMyLand(pos) &&
-				this.game.is3Build(pos)
-			) {
-				if (this.game.mapName === "god_hand" && randBool(2)) return true
+			if (this.game.isMyLand(pos) && this.game.is3Build(pos)) {
+				if (this.game.mapName !== "water" && randBool(2)) return true
 			}
 		}
 
@@ -483,25 +486,32 @@ export class CustomAgent1 extends RationalRandomAgent {
 			return this.getGoodSpecialSelection(getSameLineTiles(pos), pos, "godhand_special_tile_lift")
 		} else if (this.game.mapName === "water") {
 			return this.getGoodSpecialSelection(this.game.getVaildWaterPumpTargets(pos), pos, "waterpump")
+		} else if (this.game.mapName === "magicgarden") {
+			return this.getGoodForceMoveSelection(pos).target
 		}
 		return -1
 	}
 
-	protected getGoodSpecialSelection(list: number[], sourcePos: number, source: string,requireSelection :boolean=false) {
+	protected getGoodSpecialSelection(
+		list: number[],
+		sourcePos: number,
+		source: string,
+		requireSelection: boolean = false
+	) {
 		let _pos = -1
 		let _maxreward = -Infinity
-		if(!requireSelection && randBool(5)) return -1
+		if (!requireSelection && randBool(5)) return -1
 
 		try {
 			function trySetMax(newreward: number, newpos: number) {
-				if(newreward===0) return
+				if (newreward === 0) return
 				newreward *= triDist(1, 0.3)
 				if (_maxreward <= newreward) {
 					_pos = newpos
 					_maxreward = newreward
 				}
 			}
-			const has_guidebook=this.game.hasOneAbility(this.myturn, AbilityTags.GUIDEBOOK)
+			const has_guidebook = this.game.hasOneAbility(this.myturn, AbilityTags.GUIDEBOOK)
 			const mostexpensive = this.game.mostExpensiveMyLandmark()
 
 			if (source === "waterpump") {
@@ -509,41 +519,35 @@ export class CustomAgent1 extends RationalRandomAgent {
 					let targetPos = pos
 					let reward = 0
 
-					let enemiesInRange = this.game
-								.getOtherPlayersBetween(backwardBy(sourcePos, 2), targetPos).length
+					let enemiesInRange = this.game.getOtherPlayersBetween(backwardBy(sourcePos, 2), targetPos).length
 
-					if(enemiesInRange===0 && !requireSelection) continue
+					if (enemiesInRange === 0 && !requireSelection) continue
 
 					if (this.game.tileAt(targetPos).isBuildable) {
 						if (this.game.tileAt(targetPos).isLandMark() && this.game.isMyLand(targetPos)) {
 							reward = this.game.logToll(targetPos)
+						} else if (this.game.is3Build(targetPos) && this.game.isMyLand(targetPos)) {
+							reward = this.game.logToll(targetPos) * 5
 						} else if (
 							this.game.is3Build(targetPos) &&
-							this.game.isMyLand(targetPos)
+							this.game.isEnemyLand(targetPos) &&
+							this.hasEnoughMoneyForBuyout(targetPos)
 						) {
-							reward = this.game.logToll(targetPos) * 5
-						}else if(this.game.is3Build(targetPos) && this.game.isEnemyLand(targetPos) && this.hasEnoughMoneyForBuyout(targetPos)){
 							reward = this.game.logToll(targetPos) * 3
-						}
-						else if (!this.game.isEnemyLand(targetPos) && requireSelection) reward = 1
+						} else if (!this.game.isEnemyLand(targetPos) && requireSelection) reward = 1
 					}
 
-					if (
-						!this.game.isEnemyLand(targetPos) && has_guidebook
-					) {
-						
+					if (!this.game.isEnemyLand(targetPos) && has_guidebook) {
 						if (mostexpensive !== -1) {
 							reward += 1
 							reward *= 2
-							reward *= Math.max(1, enemiesInRange * 2)//make sure not to multiply by 0
+							reward *= Math.max(1, enemiesInRange * 2) //make sure not to multiply by 0
 						}
 
 						trySetMax(reward, targetPos)
-					}
-					else if(requireSelection){
+					} else if (requireSelection) {
 						trySetMax(reward, targetPos)
-					}
-					else if(randBool(2)) trySetMax(reward, targetPos)
+					} else if (randBool(2)) trySetMax(reward, targetPos)
 				}
 			}
 			if (source === "godhand_special_tile_lift") {
@@ -552,16 +556,20 @@ export class CustomAgent1 extends RationalRandomAgent {
 					let reward = 0
 					if (
 						this.game.tileAt(targetPos).isLandMark() &&
-						this.game.countPlayersNearby(sourcePos, -1, randInt(4)+6) > 0 && !this.game.isEnemyLand(targetPos)
+						this.game.countPlayersNearby(sourcePos, -1, randInt(4) + 6) > 0 &&
+						!this.game.isEnemyLand(targetPos)
 					) {
 						reward = this.game.logToll(targetPos)
-						if (targetPos < sourcePos) reward *= 1.5 //현재위치보다 뒤에 세울경우
+						if (targetPos < sourcePos) reward *= 1.2 //현재위치보다 뒤에 세울경우
 						//else if (this.game.hasOneAbility(this.myturn, AbilityTags.LANDMARK_PULLS)) reward *= 1.5
 						trySetMax(reward, pos)
 					}
 
-					if (this.game.blackholepos === targetPos && this.game.tileAt(this.game.whiteholepos).owner === this.myturn && 
-					(requireSelection || randBool(1))) {
+					if (
+						this.game.blackholepos === targetPos &&
+						this.game.tileAt(this.game.whiteholepos).owner === this.myturn &&
+						(requireSelection || randBool(1))
+					) {
 						reward = this.game.logToll(targetPos)
 						trySetMax(reward, pos)
 					}
@@ -569,7 +577,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 						targetPos === sourcePos &&
 						has_guidebook &&
 						this.myPlayer.doubles === 0 &&
-						this.game.countPlayersNearby(sourcePos, 0, randInt(4)+4) > 0 &&
+						this.game.countPlayersNearby(sourcePos, 0, randInt(4) + 4) > 0 &&
 						(requireSelection || !randBool(3))
 					) {
 						// 2/3 prob
@@ -581,7 +589,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 					}
 				}
 			}
-			if(_maxreward < 2 && !requireSelection) return -1
+			if (_maxreward < 2 && !requireSelection) return -1
 
 			return _pos
 		} catch (e) {
@@ -596,8 +604,150 @@ export class CustomAgent1 extends RationalRandomAgent {
 		var pos = this.getGoodSpecialSelection(
 			choices.map((c) => c.pos),
 			this.myPlayer.pos,
-			req.source,true
+			req.source,
+			true
 		)
 		return this.wrap({ pos: pos, name: req.source, result: pos !== -1 })
+	}
+	chooseLandSwap(mylands: number[], enemyLands: number[]): Promise<cm.SelectLandSwap> {
+	
+		let mymonopolypos = [...this.myPlayer.monopolyChancePos.entries()].filter((p) => enemyLands.includes(p[0]))
+
+		//독점찬스 없으면
+		if (mymonopolypos.length === 0) {
+			return this.chooseLandSwapNoMonopolyAlert(mylands, enemyLands)
+		}
+
+		//check best monopolies first
+		mymonopolypos.sort((a, b) => b[1] - a[1])
+
+		let currentlands = this.game.myLands()
+		for (const toTake of mymonopolypos) {
+			for (const toGive of mylands) {
+				//변경 후에 독점자리 유지할수 있는지 체크
+				if (this.game.canMakeMonopolyAfterSwap(toGive, toTake[0], currentlands)) {
+					return this.wrap({ result: true, enemyLand: toTake[0], myland: toGive })
+				}
+			}
+		}
+
+		return this.chooseLandSwapNoMonopolyAlert(mylands, enemyLands)
+	}
+	protected chooseLandSwapNoMonopolyAlert(mylands: number[], enemyLands: number[]): Promise<cm.SelectLandSwap> {
+		let enemymonopolyalerts = this.game.getEnemyMonopolyAlerts()
+
+		let vaildMyLands = mylands.filter((p) => enemymonopolyalerts.some((a) => a.pos === p))
+		if (vaildMyLands.length === 0) return this.wrap({ result: false, enemyLand: -1, myland: -1 })
+
+		return this.wrap({ result: false, enemyLand: -1, myland: -1 })
+	}
+	protected getGoodForceMoveSelection(mypos: number, requireSelection: boolean = false): ForceMoveSelection {
+		//playerposition,targetpos,reward
+		let enemypos = this.game.enemyPos()
+		const landmark = this.game.mostExpensiveMyLandmark()
+		const has_guidebook = this.game.hasOneAbility(this.myturn, AbilityTags.GUIDEBOOK) && landmark !== -1
+		let _pos = -1
+		let _targetPos = -1
+		let _maxreward = -Infinity
+		function trySetMax(newreward: number, newpos: number, newTargetpos: number) {
+			if (newreward === 0) return
+			newreward *= triDist(1, 0.3)
+			if (_maxreward <= newreward) {
+				_pos = newpos
+				_targetPos = newTargetpos
+				_maxreward = newreward
+			}
+		}
+
+		//가장 비싼 내땅 통행료
+		const maxLandmarkToll = landmark !== -1 ? this.game.logToll(landmark) : 0
+
+		if (!requireSelection) {
+			if (maxLandmarkToll < uniDist(2.1, 3)) return { reward: 0, target: -1, targetPos: -1 }
+		} else if (maxLandmarkToll < 2) {
+			//자신 이동
+			let candidates = range(12, 2).map((d) => (mypos + d) % MAP_SIZE)
+			let pos = this.selectMovePos(
+				candidates.map((p) => {
+					return { pos: p, name: "", result: true }
+				}),null,true
+			)
+			return { reward: pos.reward, target: mypos, targetPos: pos.pos }
+		}
+
+		//적  : 내 랜마 혹은 나(잘가북시)
+		//적+나(잘가북) : 1. 내 3건 혹은 2. 내 랜마 혹은 3. 적땅,포춘카드 제외 모든땅
+		//적+나(잘가북x): 내 랜마
+		for (const p of new Set(enemypos)) {
+			let enemyCount = this.game.getEnemiesAt(p).length
+			for (const dist of range(12, 2)) {
+				const target = forwardBy(p, dist)
+				const ismylandmark = this.game.isMyLand(target) && this.game.landAt(target).isLandMark() && this.game.blackholepos !== target
+
+				if (mypos === p) {
+					//블랙홀 있는곳은 자신이동 안함
+					if (this.game.blackholepos === target && this.game.isEnemyLand(this.game.whiteholepos)) {
+						continue
+					}
+					//적+나(잘가북) : 1. 내 3건 혹은 2. 내 랜마 혹은 3. 적땅,포춘카드 제외 모든땅
+					if (has_guidebook) {
+						//내 3건
+						if (this.game.is3Build(target) && this.game.isMyLand(target)) {
+							//잘가북으로 날릴곳 존재
+							if (landmark !== -1) trySetMax(maxLandmarkToll * enemyCount + 1, p, target)
+							else trySetMax((this.game.logToll(target) + 1) * enemyCount + 1, p, target) //날릴곳 없을경우 3건땅 통행료 사용
+						} else if (ismylandmark && landmark !== -1) {
+							trySetMax(maxLandmarkToll * enemyCount, p, target)
+						} else if (!this.game.isEnemyLand(target)) {
+							trySetMax(triDist(1, 0.5), p, target)
+						}
+					} else if (ismylandmark) {
+						//적+나(잘가북x): 내 랜마
+						trySetMax(this.game.logToll(target) * enemyCount, p, target)
+					}
+				} else {
+
+					//적  : 내 랜마 혹은 나(잘가북시)
+					if (has_guidebook && landmark !== -1 && target === mypos) {
+						//잘가북으로 날릴곳 존재
+						trySetMax(maxLandmarkToll  * enemyCount, p, target)
+					} else if(ismylandmark){
+						trySetMax(this.game.logToll(target) * enemyCount, p, target)
+					}
+				}
+			}
+		}
+		if (_maxreward < 2.5 && !requireSelection) return { reward: 0, target: -1, targetPos: -1 }
+		//if(requireSelection) console.log(_maxreward)
+		return { reward: _maxreward, target: _pos, targetPos: _targetPos }
+	}
+
+	chooseForcemove(playerPos: number[]): Promise<cm.SelectForcemove> {
+		try{
+			let selection = this.getGoodForceMoveSelection(this.myPlayer.pos, true)
+			console.log(selection)
+
+			if (selection.target === -1 || !playerPos.includes(selection.target)) {
+				return this.wrap({ result: false, targetDice: 2, oddeven: 0, playerPos: -1 })
+			}
+
+			let oddeven = 0
+			let distance = forwardDistance(selection.target, selection.targetPos)
+			if (selection.reward > 5) oddeven = distance % 2 === 1 ? 1 : 2
+
+			if(distance<2 || distance>12) {
+				Logger.err(`invaild forcemove distance. from ${selection.target} to ${selection.targetPos}`)
+				return this.wrap({ result: false, targetDice: 2, oddeven: 0, playerPos: -1 })
+			}
+
+
+			return this.wrap({ result: true, targetDice: distance, oddeven: oddeven, playerPos: selection.target })
+		}
+		catch(e){
+			Logger.error("",e)
+			console.log(new Error().stack)
+			return this.wrap({ result: false, targetDice: 2, oddeven: 0, playerPos: -1 })
+		}
+		
 	}
 }

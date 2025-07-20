@@ -13,7 +13,7 @@ class Tile{
     readonly type:TILE_TYPE
     name:string
     owner:number
-    private lifted:boolean
+  //  private lifted:boolean
     constructor(position:number,type:TILE_TYPE,name?:string){
         this.type=type
         if(name)
@@ -27,16 +27,7 @@ class Tile{
         this.isCorner = (this.type===TILE_TYPE.START || this.type===TILE_TYPE.ISLAND|| this.type===TILE_TYPE.OLYMPIC|| this.type===TILE_TYPE.TRAVEL)
         this.isSpecial = this.type===TILE_TYPE.SPECIAL
         this.owner=-1
-        this.lifted=false
-    }
-    lift(){
-        this.lifted=true
-    }
-    unlift(){
-        this.lifted=false
-    }
-    isLifted(){
-        return this.lifted
+    //    this.lifted=false
     }
     isLandMark(){
         return false

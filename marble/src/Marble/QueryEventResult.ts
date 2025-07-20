@@ -1,7 +1,7 @@
 
 export default class QueryEventResult
 {
-    data:any
+    private data:any
     result:boolean
     constructor(goNextState:boolean){
         this.result=goNextState

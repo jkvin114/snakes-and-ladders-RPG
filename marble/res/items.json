@@ -914,6 +914,14 @@
         "item_name": "pharaoh helmet",
         "itemname_kor": "파라오의 헬멧",
         "abilities": [
+             {
+                "ability_name": "dice_control_accuracy",
+                "chance": 60,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            },
             {
                 "ability_name": "dice_chance_on_build_landmark",
                 "chance": 45,
@@ -930,6 +938,14 @@
         "item_name": "ninja helmet",
         "itemname_kor": "닌자 헬멧",
         "abilities": [
+            {
+                "ability_name": "dice_control_accuracy",
+                "chance": 60,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            },
             {
                 "ability_name": "my_land_move_on_build_landmark",
                 "chance": 45,

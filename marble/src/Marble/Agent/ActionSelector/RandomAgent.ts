@@ -8,6 +8,12 @@ import { ActionSelector } from "./ActionSelector"
  * select action 100% randomly among all possible actions(even if it is not rational)
  */
 export class RandomAgent extends ActionSelector {
+	chooseForcemove(playerPos: number[]): Promise<cm.SelectForcemove> {
+		return new Promise((resolve) => resolve({result:false,targetDice:2,oddeven:0,playerPos:-1}))
+	}
+	chooseLandSwap(mylands: number[], enemyLands: number[]): Promise<cm.SelectLandSwap> {
+		return new Promise((resolve) => resolve({result:false,enemyLand:-1,myland:-1}))
+	}
 	protected chooseBlackholeTile(req: sm.TileSelection): Promise<cm.SelectTile> {
 		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
 	}
