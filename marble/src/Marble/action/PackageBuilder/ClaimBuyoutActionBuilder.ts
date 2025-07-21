@@ -32,8 +32,13 @@ export class ClaimBuyoutActionBuilder extends DefendableActionBuilder {
 		let price = originalprice * this.defender.getBuyoutDiscount()
 		let pkg = super.build()
 		const free=ABILITY_NAME.FREE_BUYOUT_AND_DOUBLE
+		const multiply = ABILITY_NAME.MULTIPLY_BUYOUT_PRICE
+		if(this.offences.has(multiply)){
+			price = price * this.invoker.getAbilityValueAmount(multiply)
+			pkg.addExecuted(multiply,this.invoker.turn)
+		}
 		if(this.defences.has(free)){
-			price=0
+			price = 0
 			pkg.addExecuted(free,this.defender.turn)
 			this.trace.addTag(ActionTraceTag.FREE_BUYOUT)
 		}

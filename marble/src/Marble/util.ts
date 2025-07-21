@@ -49,7 +49,7 @@ export function sample(probability: number): boolean {
 export function randDice() {
 	return Math.ceil(Math.random() * 6)
 }
-export function randBool(prob: number) {
+export function randBool(prob: number = 2) {
 	return randInt(prob) === 0
 }
 

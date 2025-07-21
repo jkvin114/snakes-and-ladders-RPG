@@ -224,6 +224,11 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 				this.redSticker(pkg)
 			}
 		} else {
+			if (this.isDirectBuild && this.tile.isLandMark()) {
+				this.multiplier(pkg)
+				this.pull(pkg)
+			}
+
 			// this.olympicPull(pkg)
 		}
 		return pkg

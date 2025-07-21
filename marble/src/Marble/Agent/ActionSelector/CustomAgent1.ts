@@ -90,14 +90,21 @@ export class CustomAgent1 extends RationalRandomAgent {
 
 	chooseBuild(req: sm.LandBuildSelection): Promise<number[]> {
 		let choices = new BuildChoice().generate(req)
-		//[3건, 건설암함,2건] or [랜마] or [관광지]
-
+		//[3건, 건설암함,2건] or [건, 건설암함] or [랜마,] or [관광지,]
+		console.log(choices)
 		if (this.myPlayer.hasOneAbilities(AbilityTags.CONSTRUCTION_TOOLS) && choices.length > 0)
 			return this.wrap(maxFor(choices, (buildings) => buildings.length))
 		else if (choices.length === 2) {
+			if(choices[0].includes(BUILDING.LANDMARK) || choices[0].includes(BUILDING.SIGHT)|| choices[0].includes(BUILDING.LAND)){
+				return this.wrap(choices[0])
+			}
+
 			//아무 건설시에 발동되는 능력있으면 최대한 추가건설. 아닐시 20%로
 			if (this.myPlayer.hasOneAbilities(AbilityTags.ON_ANY_BUILD_ABILITY) || randBool(5)) {
 				return this.wrap(choices[0])
+			}
+			else{
+				return this.wrap(choices[1])
 			}
 		} else if (!randBool(10) && choices.length > 2 && choices[2].length > 0) {
 			//90%
@@ -324,7 +331,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 				)
 					reward = triDist(5, 0.5)
 				else {
-					reward = triDist(2, 0.5)
+					reward = triDist(3, 0.5)
 				}
 			} else {
 				reward = hasEnoughMoneyForBuyout ? triDist(1.5, 0.5) : -2
@@ -416,12 +423,11 @@ export class CustomAgent1 extends RationalRandomAgent {
 	}
 	protected selectPosForBlackhole(avaliablePos: number[]) {
 		// 2/3 chance
-		if (randBool(3)) {
-			let enemyMonopolyAlert = this.game.getWorstEnemyMonopolyAlertPosition()
-			if (enemyMonopolyAlert !== -1 && avaliablePos.includes(enemyMonopolyAlert)) {
-				return enemyMonopolyAlert
-			}
+		let enemyMonopolyAlert = this.game.getWorstEnemyMonopolyAlertPosition(true)
+		if (enemyMonopolyAlert !== -1 && avaliablePos.includes(enemyMonopolyAlert)) {
+			return enemyMonopolyAlert
 		}
+		
 
 		if (randBool(2)) {
 			const specials = this.game.specialPos()
@@ -555,9 +561,9 @@ export class CustomAgent1 extends RationalRandomAgent {
 					let targetPos = backwardBy(pos, 1)
 					let reward = 0
 					if (
-						this.game.tileAt(targetPos).isLandMark() &&
-						this.game.countPlayersNearby(sourcePos, -1, randInt(4) + 6) > 0 &&
-						!this.game.isEnemyLand(targetPos)
+						this.game.tileAt(targetPos).isLandMark() && this.game.isMyLand(targetPos) && 
+						(this.game.blackholepos !== targetPos || requireSelection) &&
+						(this.game.countPlayersNearby(targetPos, 0, randInt(4) + 6) > 0  || requireSelection)
 					) {
 						reward = this.game.logToll(targetPos)
 						if (targetPos < sourcePos) reward *= 1.2 //현재위치보다 뒤에 세울경우
@@ -567,7 +573,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 
 					if (
 						this.game.blackholepos === targetPos &&
-						this.game.tileAt(this.game.whiteholepos).owner === this.myturn &&
+						this.game.isMyLand(this.game.whiteholepos) &&
 						(requireSelection || randBool(1))
 					) {
 						reward = this.game.logToll(targetPos)
@@ -577,7 +583,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 						targetPos === sourcePos &&
 						has_guidebook &&
 						this.myPlayer.doubles === 0 &&
-						this.game.countPlayersNearby(sourcePos, 0, randInt(4) + 4) > 0 &&
+						this.game.countPlayersNearby(targetPos, 0, randInt(4) + 4) > 0  &&
 						(requireSelection || !randBool(3))
 					) {
 						// 2/3 prob
@@ -679,9 +685,10 @@ export class CustomAgent1 extends RationalRandomAgent {
 		//적+나(잘가북) : 1. 내 3건 혹은 2. 내 랜마 혹은 3. 적땅,포춘카드 제외 모든땅
 		//적+나(잘가북x): 내 랜마
 		for (const p of new Set(enemypos)) {
-			let enemyCount = this.game.getEnemiesAt(p).length
+			const enemyCount = this.game.getEnemiesAt(p).length
 			for (const dist of range(12, 2)) {
 				const target = forwardBy(p, dist)
+				const diceUtility = ((5 - Math.abs(7-dist))/5) * 0.2 + 0.9 //2,12: 0.9,  7: 1.1
 				const ismylandmark = this.game.isMyLand(target) && this.game.landAt(target).isLandMark() && this.game.blackholepos !== target
 
 				if (mypos === p) {
@@ -694,25 +701,25 @@ export class CustomAgent1 extends RationalRandomAgent {
 						//내 3건
 						if (this.game.is3Build(target) && this.game.isMyLand(target)) {
 							//잘가북으로 날릴곳 존재
-							if (landmark !== -1) trySetMax(maxLandmarkToll * enemyCount + 1, p, target)
-							else trySetMax((this.game.logToll(target) + 1) * enemyCount + 1, p, target) //날릴곳 없을경우 3건땅 통행료 사용
+							if (landmark !== -1) trySetMax(maxLandmarkToll * enemyCount * diceUtility, p, target)
+							else trySetMax((this.game.logToll(target) + 1) * enemyCount * diceUtility, p, target) //날릴곳 없을경우 3건땅 통행료 사용
 						} else if (ismylandmark && landmark !== -1) {
-							trySetMax(maxLandmarkToll * enemyCount, p, target)
+							trySetMax(maxLandmarkToll * enemyCount * diceUtility, p, target)
 						} else if (!this.game.isEnemyLand(target)) {
 							trySetMax(triDist(1, 0.5), p, target)
 						}
 					} else if (ismylandmark) {
 						//적+나(잘가북x): 내 랜마
-						trySetMax(this.game.logToll(target) * enemyCount, p, target)
+						trySetMax(this.game.logToll(target) * enemyCount * diceUtility, p, target)
 					}
 				} else {
 
 					//적  : 내 랜마 혹은 나(잘가북시)
 					if (has_guidebook && landmark !== -1 && target === mypos) {
 						//잘가북으로 날릴곳 존재
-						trySetMax(maxLandmarkToll  * enemyCount, p, target)
+						trySetMax(maxLandmarkToll  * enemyCount * diceUtility, p, target)
 					} else if(ismylandmark){
-						trySetMax(this.game.logToll(target) * enemyCount, p, target)
+						trySetMax(this.game.logToll(target) * enemyCount * diceUtility, p, target)
 					}
 				}
 			}

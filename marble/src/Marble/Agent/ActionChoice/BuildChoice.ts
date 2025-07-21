@@ -39,9 +39,10 @@ export class BuildChoice extends ActionChoice<ServerRequestModel.LandBuildSelect
                 //exclude first building except for the land
                 choices.push(avaliableBuilds.filter((b,i)=>i!==1))
             }
-            else{
+            else if(avaliableBuilds.length>1){
                 //exclude first building
                 choices.push(avaliableBuilds.filter((b,i)=>i>0))
+                
             }
         }
 

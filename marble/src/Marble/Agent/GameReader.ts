@@ -56,6 +56,9 @@ export default class GameReader {
     isEmptyLand(pos:number){
        return  this.tileAt(pos).isBuildable && this.landAt(pos).isEmpty()
     }
+    isLandmark(pos:number){
+       return  this.tileAt(pos).isBuildable && this.landAt(pos).isLandMark()
+    }
     landAt(pos:number){
         let land= this.game.map.buildableTileAt(pos)
         if(!land) throw new Error("position "+pos+" is not a buildable tile")
@@ -128,12 +131,22 @@ export default class GameReader {
         return alerts
     }
 
-    getWorstEnemyMonopolyAlertPosition():number{
+    getWorstEnemyMonopolyAlertPosition(excludeSafeLands:boolean = true):number{
         let players= this.game.mediator.getEnemiesOf(this.myturn).map(t=>this.getPlayer(t))
         let alerts:[number, MONOPOLY][]= []
         for(const p of players){
             alerts.push(...p.monopolyChancePos.entries())
         }
+
+        if(excludeSafeLands){
+
+            //건설된 관광지와 랜마 제외
+            alerts = alerts.filter(p=>
+                !(this.tileAt(p[0]).type === TILE_TYPE.SIGHT && !this.isEmptyLand(p[0])) &&
+                !this.isLandmark(p[0])
+            )
+        }
+        
         if(alerts.length===0) return -1
 
         alerts = shuffle(alerts)

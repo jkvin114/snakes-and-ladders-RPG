@@ -104,7 +104,7 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
         if(this.trace.thisMoveHasAbility(ninjascroll))
         {
             let value = this.invoker.getAbilityValueAmount(ninjascroll)
-            pkg.addExecuted(ninjascroll, this.invoker.turn)
+            pkg.addExecuted(ninjascroll, this.invoker.turn,1)
 			console.log(value)
 		    pkg.addBefore(new PayPercentMoneyAction(stayed.turn, this.invoker.turn, value))
             pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong([CARD_NAME.BLACKOUT,CARD_NAME.LAND_CHANGE,CARD_NAME.LAND_CHANGE])))

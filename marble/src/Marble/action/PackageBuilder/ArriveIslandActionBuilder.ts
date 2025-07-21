@@ -19,7 +19,7 @@ export class ArriveIslandActionBuilder extends ArriveCornerTileActionBuilder {
 		const escape = ABILITY_NAME.INSTANT_ESCAPE_ISLAND
 
 		if(!this.applyMoveOverrideAbility(pkg)){
-			if (this.offences.has(escape)) {
+			if (this.offences.has(escape) && this.isInvokersTurn()) {
 				pkg.addExecuted(escape, this.invoker.turn)
 				pkg.addMain(new DiceChanceAction(this.invoker.turn, true))
 			} else{

@@ -110,6 +110,24 @@ export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
         }
         return false
     }
+	enemyMoveAbility(pkg:ActionPackage){
+		if(!this.isInvokersTurn()) return false
+		const freud=ABILITY_NAME.THROW_ENEMY_ON_ARRIVE_ENEMY_LANDMARK
+		if(this.offences.has(freud)){
+			let pos = this.game.map.getMostExpensiveIn(this.invoker, TileFilter.MY_LANDMARK())
+			if(pos===-1) return false
+
+			pkg.addAction(
+				new RequestMoveAction(this.tile.owner, pos, MOVETYPE.TELEPORT,this.game.thisturn).reserveAbilityIndicatorOnPop(
+					freud,
+					this.invoker.turn
+				),
+				freud
+			)
+            return true
+		}
+		return false
+	}
 	build(): ActionPackage {
 		let pkg = super.build()
 
@@ -129,8 +147,10 @@ export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
 
         if(!this.teleportAbility(pkg))
             healing_invoked=this.healing(pkg)
+		
+		let enemyMoved = this.enemyMoveAbility(pkg)
 
-		if (healing_invoked && this.defences.has(follow_healing)) {
+		if (healing_invoked && this.defences.has(follow_healing) && !enemyMoved) {
 			pkg.addExecuted(follow_healing, this.defender.turn)
 			pkg.addAction(new RequestMoveAction(this.defender.turn, this.game.map.travel, MOVETYPE.FORCE_WALK,this.game.thisturn), follow_healing)
 		}

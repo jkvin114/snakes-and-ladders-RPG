@@ -93,7 +93,13 @@ export enum ABILITY_NAME {
 	TOLL_REFLECTION="toll_reflection",
 	FREE_BUYOUT_AND_DOUBLE="free_buyout_and_double",
 	
-	THROW_TO_LANDMARK_WITH_MULTIPLIER="hell_guidebook"
+	THROW_TO_LANDMARK_WITH_MULTIPLIER="hell_guidebook",
+	
+	MULTIPLY_BUYOUT_PRICE="multiply_buyout_price",
+	BUILD_LANDMARK_ON_PASS_START="build_landmark_on_pass_start",
+	PAINT_ON_ARRIVE_ENEMY_LANDMARK="paint_on_arrive_enemy_landmark",
+	THROW_ENEMY_ON_ARRIVE_ENEMY_LANDMARK="throw_enemy_on_arrive_enemy_landmark",
+	MOVE_TO_PLAYER_AND_STEAL_CARD_ON_ARRIVE_MY_LAND="ninja_scroll_steal_card",
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -117,7 +123,7 @@ ABILITY_REGISTRY.set(
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.SALARY_BONUS,
 	new ValueModifierAbility(ABILITY_NAME.SALARY_BONUS).on(
-		EVENT_TYPE.RECEIVE_SALARY
+		EVENT_TYPE.PASS_START
 	)
 	.desc("출발지 경유시 월급 $v% 추가 획득")
 	.setAlerts(["월급 추가획득!"])
@@ -365,7 +371,7 @@ ABILITY_REGISTRY.set(
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.ADD_MULTIPLIER_ON_PASS_START,
 	new Ability(ABILITY_NAME.ADD_MULTIPLIER_ON_PASS_START)
-	.on(EVENT_TYPE.RECEIVE_SALARY)
+	.on(EVENT_TYPE.PASS_START)
 	.desc("출발지 경유 시 내 땅중 한곳 배수 4배 증가")
 	.setAlerts(["통행료 증가!"])
 )
@@ -481,7 +487,7 @@ ABILITY_REGISTRY.set(
 	new MoveAbilty(ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND)
 	.on(EVENT_TYPE.ARRIVE_MY_LAND)
 	.desc("내 땅 도착시 $c% 확률로 원하는 상대에게 이동 후 보유돈 $v% 강탈/공격카드(정전,매각,체인지) 발동")
-	.setAlerts(["원하는 상대에게 이동 후 보유돈 강탈/공격카드 획득!"])
+	.setAlerts(["원하는 상대에게 이동!","보유돈 강탈/공격카드 획득!"])
 )
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.LINE_MOVE_ON_TRIPLE_DOUBLE,
@@ -604,5 +610,42 @@ ABILITY_REGISTRY.set(
 	.on(EVENT_TYPE.ENEMY_ARRIVE_TO_ME)
 	.desc("상대가 나에게 도착하면 $c% 확률로 내 랜드마크로 날려보냄(통행료 3배)")
 	.setAlerts(["내 랜드마크로 날려보냄!","통행료 3배 적용!"])
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MULTIPLY_BUYOUT_PRICE,
+	new Ability(ABILITY_NAME.MULTIPLY_BUYOUT_PRICE)
+	.on(EVENT_TYPE.CLAIM_BUYOUT_PRICE)
+	.desc("상대방이 내땅을 인수할 경우 $c% 확률로 인수비용이 $v%배 증가")
+	.setAlerts(["인수비용 증가!"])
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.BUILD_LANDMARK_ON_PASS_START,
+	new Ability(ABILITY_NAME.BUILD_LANDMARK_ON_PASS_START)
+	.on(EVENT_TYPE.PASS_START)
+	.desc("시작지점 지나칠 시 $c%로 내 땅 중 한 곳에 랜드마크 무료 건설 후 통행료 2배 증가")
+	.setAlerts(["랜드마크 건설 후 통행료 증가!"])
+)
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.THROW_ENEMY_ON_ARRIVE_ENEMY_LANDMARK,
+	new Ability(ABILITY_NAME.THROW_ENEMY_ON_ARRIVE_ENEMY_LANDMARK)
+	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
+	.desc("내 턴에 상대 땅 도착 시 $c%확률로 상대땅 주인을 통행료가 가장 비싼 내 랜드마크로 이동")
+	.setAlerts(["내 랜드마크로 날려보냄!"])
+)
+
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.PAINT_ON_ARRIVE_ENEMY_LANDMARK,
+	new Ability(ABILITY_NAME.PAINT_ON_ARRIVE_ENEMY_LANDMARK)
+	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
+	.desc("상대 랜드마크 도착 시 $c%로 통행료 면제 후 2턴 동안 내 땅으로 만듬(페인트)")
+	.setAlerts(["통행료 면제!","2턴간 주인 변경!"])
+)
+
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_CARD_ON_ARRIVE_MY_LAND,
+	new Ability(ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_CARD_ON_ARRIVE_MY_LAND)
+	.on(EVENT_TYPE.ARRIVE_MY_LAND)
+	.desc("내 땅에 도착할 경우 $c%확률로 다른 유저의 위치로 선택 이동 후 찬스카드 강탈")
+	.setAlerts(["원하는 상대에게 이동!","찬스카드 강탈!"])
 )
 export { ABILITY_REGISTRY }

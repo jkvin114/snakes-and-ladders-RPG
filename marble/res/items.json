@@ -1340,5 +1340,85 @@
             }
         ],
         "tier": 8
+    },
+    {
+        "code": 81,
+        "item_name": "freud",
+        "itemname_kor": "프로이트의 조수",
+        "abilities": [
+            {
+                "ability_name": "throw_enemy_on_arrive_enemy_landmark",
+                "chance": 30,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 6
+    },
+    {
+        "code": 82,
+        "item_name": "odinspear",
+        "itemname_kor": "오딘의 창",
+        "abilities": [
+            {
+                "ability_name": "build_landmark_on_pass_start",
+                "chance": 60,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 8
+    },
+    {
+        "code": 83,
+        "item_name": "odinspear",
+        "itemname_kor": "사장님의 인수거부서",
+        "abilities": [
+            {
+                "ability_name": "multiply_buyout_price",
+                "chance": 60,
+                "value": 3,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 84,
+        "item_name": "paint",
+        "itemname_kor": "사장님의 페인트",
+        "abilities": [
+            {
+                "ability_name": "paint_on_arrive_enemy_landmark",
+                "chance": 90,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 2
+            }
+        ],
+        "tier": 10
+    },
+    {
+        "code": 85,
+        "item_name": "thief_scroll",
+        "itemname_kor": "사기꾼의 인술서",
+        "abilities": [
+            {
+                "ability_name": "ninja_scroll_steal_card",
+                "chance": 65,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
     }
 ]
