@@ -86,6 +86,9 @@ export interface AbilityValue{
 
         return result
     }
+    isAvailable(){
+        return this.limitLeft >= 0
+    }
     /**
      * 확률 성장
      * @param change 

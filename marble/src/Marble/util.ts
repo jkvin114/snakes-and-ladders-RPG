@@ -117,7 +117,7 @@ export function getTilesBewteen(start: number, dest: number): number[] {
 		return range(31, start + 1).concat(range(dest - 1, 0))
 	}
 }
-export function countFrom<T>(list: IterableIterator<T>, condition: Function): number {
+export function countFrom<T>(list: Iterable<T>, condition: (val:T)=>boolean): number {
 	let count = 0
 	for (const i of list) {
 		if (condition(i)) count += 1

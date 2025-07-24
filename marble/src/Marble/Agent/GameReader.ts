@@ -185,6 +185,14 @@ export default class GameReader {
 			TileFilter.MY_LANDTILE().setOnlyMoreBuildable().setSameLineOnly()
 		)
     }
+    getPossibleBuildPosInLineFrom(pos:number){
+        return this.game.map.getTilesFromAnchor(
+			this.game.mediator.pOfTurn(this.myturn),pos,
+			TileFilter.EMPTY_LANDTILE().setSameLineOnly(),
+			TileFilter.MY_LANDTILE().setOnlyMoreBuildable().setSameLineOnly()
+		)
+    }
+
     getVaildWaterPumpTargets(pos:number){
         return getSameLineTiles(pos).filter(t=>t!==pos && t!==backwardBy(pos,1))
     }

@@ -92,8 +92,8 @@ export function openConnection(isInitial) {
 		GAME.playerEffect(turn, data.effect, data.pos, data.status)
 	})
 	socket.on("server:effect", function (turn, data) {
-		console.log("effect")
-		console.log(data)
+		//console.log("effect")
+		//console.log(data)
 		GAME.effect(data.type, data.pos)
 	})
 	socket.on("server:choose_build", function (player, data) {
@@ -219,8 +219,8 @@ export function openConnection(isInitial) {
 		GAME.scene.modifyLand(data.pos, data.type, data.val)
 	})
 	socket.on("server:tile_state_update", function (turn, change) {
-		console.log("tile_state_update  ")
-		console.log(change)
+		//	console.log("tile_state_update  ")
+		//	console.log(change)
 		GAME.scene.setTileState(change)
 	})
 	socket.on("server:monopoly_alert", function (player, data) {

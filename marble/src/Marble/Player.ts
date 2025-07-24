@@ -7,7 +7,7 @@ import { AbilityAttributes, AbilityValue } from "./Ability/AbilityValues"
 import { ServerRequestModel } from "../Model/ServerRequestModel"
 import { ActionSelector } from "./Agent/ActionSelector/ActionSelector"
 import { PlayerState } from "./Agent/Utility/PlayerState"
-import { MONOPOLY } from "./GameMap"
+import type { MONOPOLY, MonopolyAlert } from "./GameMap"
 import { AbilityExecution } from "./Ability/Ability"
 import { ServerEventModel } from "../Model/ServerEventModel"
 import { AbilityTag } from "./Tags"
@@ -237,10 +237,13 @@ class MarblePlayer{
      //   console.log("bankrupt")
         this.retired=true
     }
-    setMonopolyChancePos(pos:number[],type:MONOPOLY){
-        for(const p of pos){
-            this.monopolyChancePos.set(p,type)
+    setMonopolyChancePos(alerts:MonopolyAlert[]){
+        for(const alert of alerts){
+            for(const p of alert.pos){
+            this.monopolyChancePos.set(p,alert.type)
         }
+        }
+        
     }
     getResultStat():ServerEventModel.PlayerStat{
         return {

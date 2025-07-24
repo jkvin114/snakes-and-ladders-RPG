@@ -144,8 +144,10 @@ export class AbilityStorage {
         }
     }
     hasOneAbilities(abilities:AbilityTag){
-        for(const name of this.abilityValues.keys())
-            if(abilities.has(name)) return true
+        for(const [name,attr] of this.abilityValues.entries())
+            if(abilities.has(name) && attr.isAvailable()) {
+                return true
+            }
         for(const name of this.temporaryAbility)
             if(abilities.has(name)) return true
         return false

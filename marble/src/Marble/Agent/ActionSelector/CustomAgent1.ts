@@ -72,6 +72,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 		let choices = new TileChoice().generateNoCancel(req)
 		let monopolypos = this.selectPosForMonopoly(choices.map((p) => p.pos))
 		if (monopolypos !== -1) return this.wrap<cm.SelectTile>({ pos: monopolypos, name: req.source, result: true })
+
 		return this.wrap(maxFor(choices, (t) => this.game.toll(t.pos)))
 	}
 
@@ -91,7 +92,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 	chooseBuild(req: sm.LandBuildSelection): Promise<number[]> {
 		let choices = new BuildChoice().generate(req)
 		//[3건, 건설암함,2건] or [건, 건설암함] or [랜마,] or [관광지,]
-		console.log(choices)
+		//console.log(choices)
 		if (this.myPlayer.hasOneAbilities(AbilityTags.CONSTRUCTION_TOOLS) && choices.length > 0)
 			return this.wrap(maxFor(choices, (buildings) => buildings.length))
 		else if (choices.length === 2) {
@@ -282,7 +283,15 @@ export class CustomAgent1 extends RationalRandomAgent {
 		} else if (pos === TRAVEL_POS) reward = uniDist(0.5, 1.3)
 		else if (tileObj.isBuildable && tileObj.isLandMark()) {
 			// let ismine = !this.game.isEnemyLand(pos)
-			if (!this.game.isMyLand(pos)) reward = -4
+			if (!this.game.isMyLand(pos)) {
+				if(this.myPlayer.hasOneAbilities(AbilityTags.LANDMARK_PAINT)){
+					if(this.myPlayer.monopolyChancePos.has(pos)) reward = 10
+					else reward = triDist(-1,1)
+				}
+				else{
+					reward = -4
+				}
+			}
 			else reward = this.getMyLandmarkReward(pos)
 		} else if (tileObj.type == TILE_TYPE.SIGHT) {
 			if (tileObj.owner !== -1) reward = 0
@@ -298,7 +307,7 @@ export class CustomAgent1 extends RationalRandomAgent {
 		} else if (tileObj.isSpecial && !isForcemove) {
 			let specialpos = this.getGoodSpecialSelectionFromPos(pos)
 			if (specialpos !== -1) reward = triDist(3, 0.5)
-			else reward = triDist(1.2, 1)
+			else reward = this.specialBuildReward(pos)
 		} else if (pos === START_POS) {
 			if (this.game.has3BuildLands()) reward = triDist(1.7, 0.5)
 			else reward = 0.1
@@ -465,6 +474,19 @@ export class CustomAgent1 extends RationalRandomAgent {
 		if (!req.canLiftTile) return this.wrap(true)
 		let buildpos = this.game.getPossibleBuildPosInLine()
 		return this.wrap(this.shouldBuildOnSpecial(buildpos))
+	}
+	protected specialBuildReward(pos:number){
+		let buildpos = this.game.getPossibleBuildPosInLineFrom(pos)
+		if(buildpos.length===0) return uniDist(0,0.5)
+
+		let monopolypos = this.selectPosForMonopolyNoBuyout(buildpos)
+
+		if (monopolypos !== -1) return 9999
+
+		if(buildpos.some(p=>this.game.willBeMyColorMonopoly(p))) return triDist(2,0.5)
+		if(buildpos.some(p=>this.game.isMyLand(p) && this.game.is3Build(p))) return triDist(1.6,0.5)
+		if(buildpos.some(p=>this.game.isEmptyLand(p))) return triDist(1.3,0.5)
+		return triDist(0.5, 0.5)
 	}
 
 	protected shouldBuildOnSpecial(list: number[]): boolean {

@@ -271,6 +271,11 @@ class MarbleGame {
 
 		this.thisPlayer().onTurnStart()
 		this.map.onTurnStart(this.thisturn)
+		
+		for(const paintReset of this.map.cooldownPaint(this.thisturn)){
+			this.paintEndTile(paintReset.owner,paintReset.pos)
+		}
+
 		this.pushSingleAction(
 			new StateChangeAction(ACTION_TYPE.END_TURN, this.thisturn),
 			new ActionTrace(ACTION_TYPE.TURN_START)
@@ -280,6 +285,9 @@ class MarbleGame {
 
 		this.thisPlayer().clearPendingAction()
 		this.pushActions(pkg)
+
+
+		
 
 		if (this.thisturn < lastturn) {
 			this.totalturn += 1
@@ -999,10 +1007,35 @@ class MarbleGame {
 		if (!tile) return
 		this.mediator.claimBuyOut(turn, tile, action.source)
 	}
+	paintTile(newOwner: number, pos: number,duration:number){
+		let tile = this.map.buildableTileAt(pos)
+		if (!tile || !tile.owned()) return
+		let originalowner = tile.owner
+		this.eventEmitter.setTileState({pos:pos,state:"paint",duration:duration,invoker:originalowner})
+		this.eventEmitter.indicateDefence("change", pos)
+		this.setLandOwner(tile, this.mediator.pOfTurn(newOwner))
+		tile.setPaint(originalowner,duration)
+	}
+	paintEndTile(originalOwner: number, pos: number){
+		let tile = this.map.buildableTileAt(pos)
+		if (!tile || !tile.owned()) return
+
+		//원 주인이 살아있는 경우
+		if(!this.mediator.retiredPlayers.has(originalOwner)){
+			this.eventEmitter.indicateDefence("change", pos)
+			this.setLandOwner(tile, this.mediator.pOfTurn(originalOwner))
+		}
+
+		this.eventEmitter.setTileState({pos:pos,state:"clear_paint",duration:0})
+	}
+
 	attackTile(action: TileAttackAction) {
 		if (action.name === CARD_NAME.SELLOFF) {
 			this.map.clearTile(action.tile)
 			this.eventEmitter.indicateDefence("selloff", action.tile.position)
+		}
+		if (action.name === CARD_NAME.PAINT) {
+			this.paintTile(action.turn,action.tile.position,2)
 		}
 		if (action.name === CARD_NAME.EARTHQUAKE) {
 			this.map.removeOneBuild(action.tile)
@@ -1266,21 +1299,25 @@ class MarbleGame {
 			this.gameOverWithMonopoly(invoker.turn, monopoly)
 			return
 		}
-		let monopolyAlert = this.map.checkMonopolyAlert(tile, invoker.turn)
+		
+		let currentMonopolyAlert = this.map.checkMonopolyAlert(tile,invoker.turn)
+		if(currentMonopolyAlert.pos.length>0){
+			this.eventEmitter.monopolyAlert(invoker.turn, currentMonopolyAlert.type, currentMonopolyAlert.pos)
+		}
 
-		if (monopolyAlert.type !== MONOPOLY.NONE) {
-			invoker.setMonopolyChancePos(monopolyAlert.pos,monopolyAlert.type)
-			this.eventEmitter.monopolyAlert(invoker.turn, monopolyAlert.type, monopolyAlert.pos)
-			this.mediator.onMonopolyChance(invoker, monopolyAlert.pos)
+		let monopolyAlert = this.map.checkAllMonopolyAlerts( invoker.turn)
+		if (monopolyAlert.length>0) {
+			invoker.setMonopolyChancePos(monopolyAlert)
+			this.mediator.onMonopolyChance(invoker, monopolyAlert[0].pos)
 		}
 		else{
 			invoker.monopolyChancePos.clear()
 		}
 
 		if(originalOwner!==-1){
-			let ownerAlert = this.map.checkMonopolyAlert(tile, originalOwner)
-			if(ownerAlert.type !== MONOPOLY.NONE){
-				this.mediator.pOfTurn(originalOwner).setMonopolyChancePos(ownerAlert.pos,ownerAlert.type)
+			let ownerAlert = this.map.checkAllMonopolyAlerts(originalOwner)
+			if(ownerAlert.length >0){
+				this.mediator.pOfTurn(originalOwner).setMonopolyChancePos(ownerAlert)
 			}
 			else{
 				this.mediator.pOfTurn(originalOwner).monopolyChancePos.clear()

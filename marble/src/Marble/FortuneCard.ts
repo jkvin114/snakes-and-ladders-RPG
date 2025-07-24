@@ -21,7 +21,8 @@ export enum CARD_NAME{
     LAND_CHANGE="land_change",
     EARTHQUAKE="earthquake",
     PANDEMIC="pandemic",
-    BLACKOUT="blackout"
+    BLACKOUT="blackout",
+    PAINT = "paint"
 }
 export abstract class FortuneCard{
     readonly name:string
@@ -87,11 +88,12 @@ export namespace FortuneCardRegistry{
     const EARTHQUAKE=new AttackCard(CARD_NAME.EARTHQUAKE,1)
     const PANDEMIC=new AttackCard(CARD_NAME.PANDEMIC,1)
     const BLACKOUT=new AttackCard(CARD_NAME.BLACKOUT,1)
+    const PAINT=new AttackCard(CARD_NAME.PAINT,2)
 
     export const LIST:FortuneCard[]=[
         SHIELD,DISCOUNT,ANGEL,GO_OLYMPIC,GO_SPECIAL,GO_ISLAND,
         GO_START,GO_TRAVEL,OLYMPIC,DONATE_LAND,SELLOFF,
-        LAND_CHANGE,EARTHQUAKE,PANDEMIC,BLACKOUT
+        LAND_CHANGE,EARTHQUAKE,PANDEMIC,BLACKOUT,PAINT
     ]
     export function drawAmong(list:CARD_NAME[]){
         return chooseRandom(LIST.filter((card)=>list.includes(card.name as CARD_NAME)))

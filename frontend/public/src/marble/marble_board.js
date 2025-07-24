@@ -230,6 +230,7 @@ class TileObject {
 		this.decorator
 		this.effectOverlay
 		this.blocker
+		this.paint
 	}
 	setLandFlag(flagobj) {}
 	setHouse(houseobj, num) {}
@@ -424,6 +425,7 @@ export class MarbleScene extends Board {
 		this.blackhole = new MapFeature("blackhole")
 		this.whitehole = new MapFeature("whitehole")
 		this.lock = new MapFeature("lock")
+		this.paints = new Map() //pos => MapFeature
 		this.tilegroup
 		this.tileoutergroup
 		this.forcemove_pin
@@ -1397,6 +1399,10 @@ export class MarbleScene extends Board {
 					this.animateBuildingDestroy(tileobj.buildings[i], "house", "destroy")
 				}
 			}
+			let b = tileobj.paint
+			if (b) this.canvas.remove(b)
+			tileobj.paint = null
+			this.paints.delete(p)
 
 			// tileobj.buildings.forEach((b) => {
 			// 	// this.canvas.remove(b)
@@ -1460,6 +1466,35 @@ export class MarbleScene extends Board {
 			let b = tile.blocker
 			this.canvas.remove(b)
 			tile.removeBlocker()
+		} else if (change.state === "paint") {
+			if (this.paints.has(change.pos)) return
+			let b = getLandMarkCoord(this.getCoord(change.pos))
+			//console.log("paint")
+			//console.log(change)
+			let paint = new fabric.Image(document.getElementById("paint_" + COLORS[change.invoker]), {
+				objectCaching: false,
+				evented: false,
+				visible: false,
+			})
+			paint.scale(0.7)
+			this.lockFabricObject(paint)
+			this.canvas.add(paint)
+			tile.paint = paint
+
+			let paintobj = new MapFeature("paint")
+			paintobj.image = paint
+			paintobj.image.set({ left: b.x, top: b.y - 70, visible: true })
+			paintobj.image.bringToFront()
+			this.canvas.bringToFront(paintobj.image)
+			paintobj.pos = change.pos
+			this.paints.set(change.pos, paintobj)
+		} else if (change.state === "clear_paint") {
+			let b = tile.paint
+			if (b) this.canvas.remove(b)
+			tile.paint = null
+			this.paints.delete(change.pos)
+			//console.log("clear_paint")
+			//console.log(change)
 		}
 		this.render()
 	}

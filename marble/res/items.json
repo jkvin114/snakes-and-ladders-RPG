@@ -1407,6 +1407,30 @@
     },
     {
         "code": 85,
+        "item_name": "new_perfume",
+        "itemname_kor": "사장님의 향수",
+        "abilities": [
+            {
+                "ability_name": "perfume",
+                "chance": 0,
+                "value": 20,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            },
+             {
+                "ability_name": "attack_card_on_arrive_to_player",
+                "chance": 40,
+                "value": 0,
+                "upgrade_value": 0,
+                "first_only": false,
+                "limit": 0
+            }
+        ],
+        "tier": 9
+    },
+    {
+        "code": 86,
         "item_name": "thief_scroll",
         "itemname_kor": "사기꾼의 인술서",
         "abilities": [

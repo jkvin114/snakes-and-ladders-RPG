@@ -100,6 +100,7 @@ export enum ABILITY_NAME {
 	PAINT_ON_ARRIVE_ENEMY_LANDMARK="paint_on_arrive_enemy_landmark",
 	THROW_ENEMY_ON_ARRIVE_ENEMY_LANDMARK="throw_enemy_on_arrive_enemy_landmark",
 	MOVE_TO_PLAYER_AND_STEAL_CARD_ON_ARRIVE_MY_LAND="ninja_scroll_steal_card",
+	ATTACK_ON_ARRIVE_TO_PLAYER="attack_card_on_arrive_to_player",
 }
 const ABILITY_REGISTRY = new Map<ABILITY_NAME, Ability>()
 
@@ -486,7 +487,7 @@ ABILITY_REGISTRY.set(
 	ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND,
 	new MoveAbilty(ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND)
 	.on(EVENT_TYPE.ARRIVE_MY_LAND)
-	.desc("내 땅 도착시 $c% 확률로 원하는 상대에게 이동 후 보유돈 $v% 강탈/공격카드(정전,매각,체인지) 발동")
+	.desc("내 땅 도착시 $c% 확률로 원하는 상대에게 이동 후 보유돈 $v% 강탈/공격카드(정전,매각,체인지,페인트) 발동")
 	.setAlerts(["원하는 상대에게 이동!","보유돈 강탈/공격카드 획득!"])
 )
 ABILITY_REGISTRY.set(
@@ -615,7 +616,7 @@ ABILITY_REGISTRY.set(
 	ABILITY_NAME.MULTIPLY_BUYOUT_PRICE,
 	new Ability(ABILITY_NAME.MULTIPLY_BUYOUT_PRICE)
 	.on(EVENT_TYPE.CLAIM_BUYOUT_PRICE)
-	.desc("상대방이 내땅을 인수할 경우 $c% 확률로 인수비용이 $v%배 증가")
+	.desc("상대방이 내땅을 인수할 경우 $c% 확률로 인수비용이 $v배 증가")
 	.setAlerts(["인수비용 증가!"])
 )
 ABILITY_REGISTRY.set(
@@ -638,9 +639,15 @@ ABILITY_REGISTRY.set(
 	new Ability(ABILITY_NAME.PAINT_ON_ARRIVE_ENEMY_LANDMARK)
 	.on(EVENT_TYPE.ARRIVE_ENEMY_LAND)
 	.desc("상대 랜드마크 도착 시 $c%로 통행료 면제 후 2턴 동안 내 땅으로 만듬(페인트)")
-	.setAlerts(["통행료 면제!","2턴간 주인 변경!"])
+	.setAlerts(["통행료 면제 후 2턴간 주인 변경!"])
 )
-
+ABILITY_REGISTRY.set(
+	ABILITY_NAME.ATTACK_ON_ARRIVE_TO_PLAYER,
+	new Ability(ABILITY_NAME.ATTACK_ON_ARRIVE_TO_PLAYER)
+	.on(EVENT_TYPE.ARRIVE_TO_ENEMY)
+	.desc("상대 말에게 도착시 $c%확률로 공격카드(정전,매각,체인지,페인트) 발동")
+	.setAlerts(["공격카드 발동!"])
+)
 ABILITY_REGISTRY.set(
 	ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_CARD_ON_ARRIVE_MY_LAND,
 	new Ability(ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_CARD_ON_ARRIVE_MY_LAND)

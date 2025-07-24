@@ -302,7 +302,21 @@ export class ChangeLandOwnerAction extends InstantAction{
 		game.setPositionOwner(this.pos,this.owner)
 	}
 }
-
+export class LandPaintAction extends InstantAction{
+	pos:number
+	newowner:number
+	duration:number
+	constructor(turn: number,pos:number,newowner:number,duration:number) {
+		super(ACTION_TYPE.PAINT_LAND,turn)
+		this.pos=pos
+		this.newowner=newowner
+		this.priority=Action.PRIORITY_IMMEDIATE
+		this.duration=duration
+	}
+	execute(game: MarbleGame): void {
+		game.paintTile(this.newowner,this.pos,this.duration)
+	}
+}
 export class ActionModifier extends InstantAction{
 	static readonly TYPE_OFF=0
 	static readonly TYPE_BLOCK=1

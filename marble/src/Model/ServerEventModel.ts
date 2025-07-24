@@ -4,7 +4,7 @@ import type { BUILDING } from "../Marble/tile/Tile";
 
 export namespace ServerEventModel{
     export interface tileStateChange{
-        state:string,pos:number,duration?:number
+        state:string,pos:number,duration?:number,invoker?:number
     }
     export interface ItemSetting{
         randomCount:number,items:{code:number,locked:boolean,selected:boolean}[],poolJson:string

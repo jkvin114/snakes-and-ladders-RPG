@@ -153,6 +153,7 @@ class LandTile extends BuildableTile{
     }
     /**
      * 랜드마크 건설
+     * 건설시 페인트 효과 삭제 후 실 소유권 변경
      */
     buildLandMark(){
         this.land=true
@@ -160,6 +161,11 @@ class LandTile extends BuildableTile{
         this.building=true
         this.hotel=true
         this.landMark=true
+
+        if(this.paintOriginalOwner!==-1){
+            this.paintEffect=null
+            this.paintOriginalOwner = -1
+        } 
     }
     /**
      * 

@@ -77,7 +77,9 @@ abstract class BuildableTile extends Tile{
     festival:boolean
     land:boolean
     protected statusEffects:TileStatusEffect|null
-    
+    protected paintEffect:TileStatusEffect|null
+    protected paintOriginalOwner:number
+
     abstract getBaseToll():number
     abstract getBuildPrice():number
     abstract getBuyOutPrice():number
@@ -100,7 +102,8 @@ abstract class BuildableTile extends Tile{
         this.land=false
         this.multiplier=new TilePriceMultiplier()
         this.statusEffects=null
-
+        this.paintOriginalOwner = -1
+        this.paintEffect=null
     }
     setMultiplierLock(lock:boolean){
         this.multiplier.locked=lock
@@ -121,6 +124,29 @@ abstract class BuildableTile extends Tile{
         let had=(this.statusEffects!=null)
         this.statusEffects=null
         return had
+    }
+    setPaint(originalOwner:number,dur:number = 2){
+        this.paintEffect = new TileStatusEffect("paint",dur)
+        if(this.paintOriginalOwner===-1){
+            this.paintOriginalOwner = originalOwner
+        }
+        //페인트 있는 상태에서 또 페인트가 걸리면 원 주인 유지
+        
+        return true
+    }
+    /**
+     * return original owner if cooldown expired
+     */
+    cooldownPaint():number{
+        if(!this.paintEffect || this.paintOriginalOwner === -1) return -1
+        let removed= this.paintEffect.cooldown()
+        if(removed) {
+            let owner = this.paintOriginalOwner
+            this.paintEffect=null
+            this.paintOriginalOwner = -1
+            return owner
+        }
+        return -1
     }
     /**
      * 

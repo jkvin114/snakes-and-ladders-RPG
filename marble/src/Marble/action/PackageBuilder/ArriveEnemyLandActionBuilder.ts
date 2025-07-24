@@ -9,7 +9,7 @@ import { TileFilter } from "../../tile/TileFilter"
 import {  Action, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
-import {  ApplyPlayerEffectAction, ClaimBuyoutAction, ClaimTollAction, LandModifierAction,  RequestMoveAction, StealMultiplierAction } from "../InstantAction"
+import {  ApplyPlayerEffectAction, ClaimBuyoutAction, ClaimTollAction, LandModifierAction,  LandPaintAction,  RequestMoveAction, StealMultiplierAction } from "../InstantAction"
 import { MoveTileSelectionAction } from "../QueryAction"
 import { ActionPackageBuilder, DefendableActionBuilder } from "./ActionPackageBuilder"
 
@@ -133,6 +133,7 @@ export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
 
 		const follow_healing = ABILITY_NAME.FOLLOW_ON_ENEMY_HEALING
 		const bubble = ABILITY_NAME.ROOT_ON_ENEMY_ARRIVE_MY_LANDMARK
+		const paint = ABILITY_NAME.PAINT_ON_ARRIVE_ENEMY_LANDMARK
 
 		//offence:도착한 플레이어능력
 		//defence:땅주인 능력
@@ -153,6 +154,11 @@ export class ArriveEnemyLandActionBuilder extends DefendableActionBuilder {
 		if (healing_invoked && this.defences.has(follow_healing) && !enemyMoved) {
 			pkg.addExecuted(follow_healing, this.defender.turn)
 			pkg.addAction(new RequestMoveAction(this.defender.turn, this.game.map.travel, MOVETYPE.FORCE_WALK,this.game.thisturn), follow_healing)
+		}
+		if(this.tile.isLandMark() && this.offences.get(paint)){
+			this.tollFree = true
+			pkg.addExecuted(paint, this.invoker.turn)
+			pkg.addAction(new LandPaintAction(this.invoker.turn, this.tile.position,this.invoker.turn,2), paint)
 		}
 
 		if(!this.tollFree)

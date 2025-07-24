@@ -18,6 +18,9 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 	private movetype: MOVETYPE
 	private stayed: MarblePlayer[]
 	overrideArrival: boolean
+	private static ATTACK_CARDS = [CARD_NAME.BLACKOUT,CARD_NAME.SELLOFF,CARD_NAME.LAND_CHANGE,CARD_NAME.PAINT]
+	//private static ATTACK_CARDS = [CARD_NAME.PAINT]
+
 	constructor(game: MarbleGame, trace: ActionTrace, invoker: MarblePlayer, pos: number, movetype: MOVETYPE) {
 		super(game, trace, invoker, EVENT_TYPE.ARRIVE_TO_ENEMY)
 		this.pos = pos
@@ -101,14 +104,20 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
 	}
     private newPerfume(pkg:ActionPackage,stayed: MarblePlayer){
         const ninjascroll=ABILITY_NAME.MOVE_TO_PLAYER_AND_STEAL_ON_ARRIVE_MY_LAND
+		const attackcard = ABILITY_NAME.ATTACK_ON_ARRIVE_TO_PLAYER
         if(this.trace.thisMoveHasAbility(ninjascroll))
         {
             let value = this.invoker.getAbilityValueAmount(ninjascroll)
             pkg.addExecuted(ninjascroll, this.invoker.turn,1)
-			console.log(value)
 		    pkg.addBefore(new PayPercentMoneyAction(stayed.turn, this.invoker.turn, value))
-            pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong([CARD_NAME.BLACKOUT,CARD_NAME.LAND_CHANGE,CARD_NAME.LAND_CHANGE])))
+            pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong(MeetPlayerActionBuilder.ATTACK_CARDS)))
             return true
+        }
+		else if(this.offences.has(attackcard))
+        {
+            pkg.addExecuted(attackcard, this.invoker.turn)
+            pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong(MeetPlayerActionBuilder.ATTACK_CARDS)))
+            return false
         }
         return false
     }

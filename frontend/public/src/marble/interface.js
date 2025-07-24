@@ -321,6 +321,10 @@ const TILE_SELECTIONS = {
 		title: "강제 이동",
 		desc: "강제이동시킬 플레이어를 선택하세요",
 	},
+	paint: {
+		title: "페인트",
+		desc: "2턴동안 대여할 상대 땅을 선택하세요",
+	},
 }
 const FORTUNECARD = {
 	shield: {
@@ -397,6 +401,11 @@ const FORTUNECARD = {
 		title: "도시 정전",
 		desc: "도시에 정전을 일으켜 무료 통과",
 		image: "",
+	},
+	paint: {
+		title: "페인트",
+		desc: "상대 관광지나 랜드마크를 2턴간 대여",
+		image: "paint-brush.png",
 	},
 }
 
