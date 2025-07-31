@@ -4,7 +4,6 @@ import { ClientResponseModel as cm } from "../../../Model/ClientResponseModel"
 import { ServerRequestModel as sm } from "../../../Model/ServerRequestModel"
 import { ISLAND_POS } from "../../mapconfig"
 import { TILE_TYPE } from "../../tile/Tile"
-import { chooseRandom } from "../../util"
 import { BooleanChoice, BuildChoice, CardChoice, DiceChoice, IslandChoice, TileChoice } from "../ActionChoice"
 import { ActionSelector } from "./ActionSelector"
 import { RandomAgent } from "./RandomAgent"
@@ -33,7 +32,7 @@ export class RationalRandomAgent extends RandomAgent{
 	}
 	chooseBuild(req: sm.LandBuildSelection): Promise<number[]> {
         let actions=new BuildChoice().generate(req).filter(b=>b.length>0)
-        let a=actions.length===0?[]:chooseRandom(actions)
+        let a=actions.length===0?[]:this.game.rand.chooseRandom(actions)
 		return new Promise((resolve) => resolve(a))
 	}
 	chooseLoan(amount: number): Promise<boolean> {
@@ -56,25 +55,25 @@ export class RationalRandomAgent extends RandomAgent{
         }
 		if(choices.length===0) return super.chooseMoveTileFor(req)
 		
-		return new Promise((resolve) => resolve(chooseRandom(choices)))
+		return new Promise((resolve) => resolve(this.game.rand.chooseRandom(choices)))
 	}
 	protected chooseStartBuildTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(chooseRandom(new TileChoice().generateNoCancel(req))))
+		return new Promise((resolve) => resolve(this.game.rand.chooseRandom(new TileChoice().generateNoCancel(req))))
 	}
 	protected chooseGodHandBuildTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(chooseRandom(new TileChoice().generateNoCancel(req))))
+		return new Promise((resolve) => resolve(this.game.rand.chooseRandom(new TileChoice().generateNoCancel(req))))
 	}
 	protected chooseOlympicTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(chooseRandom(new TileChoice().generateNoCancel(req))))
+		return new Promise((resolve) => resolve(this.game.rand.chooseRandom(new TileChoice().generateNoCancel(req))))
 	}
 	protected chooseAttackTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(chooseRandom(new TileChoice().generateNoCancel(req))))
+		return new Promise((resolve) => resolve(this.game.rand.chooseRandom(new TileChoice().generateNoCancel(req))))
 	}
 	protected chooseBlackholeTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(chooseRandom(new TileChoice().generateNoCancel(req))))
+		return new Promise((resolve) => resolve(this.game.rand.chooseRandom(new TileChoice().generateNoCancel(req))))
 	}
 	protected chooseBuyoutTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(chooseRandom(new TileChoice().generateNoCancel(req))))
+		return new Promise((resolve) => resolve(this.game.rand.chooseRandom(new TileChoice().generateNoCancel(req))))
 	}
 
 	chooseAttackDefenceCard(req: sm.AttackDefenceCardSelection): Promise<cm.UseCard> {

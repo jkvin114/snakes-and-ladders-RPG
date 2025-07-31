@@ -140,5 +140,7 @@ export namespace ServerEventModel{
         players: PlayerStat[];
         createdAt: any;
         updatedAt: any;
+        seed:number
+        itemseed:number
     }
 }

@@ -49,8 +49,10 @@ export default class Room {
 		//this.onBeforeGameStart()
 		// this.instant = false
 		// this.gametype = gametype as GameType
+		let seed=0
+		let itemseed=0
 		Logger.log("create game loop",roomName)
-		this.gameloop = MarbleGameLoop.createLoop(roomName, this.isTeam, this.map, this.playerlist, this.gametype)
+		this.gameloop = MarbleGameLoop.createLoop(roomName, this.isTeam, this.map, this.playerlist, this.gametype,seed,itemseed)
 		this.gameloop.registerItems(itemSetting)
 		this.gameloop.setGameEventObserver(this.eventObserver)
 		this.gameloop.setOnReset(() => this.reset())

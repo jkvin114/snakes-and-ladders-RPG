@@ -26,16 +26,13 @@ import { LandTile } from "./tile/LandTile"
 import { BUILDING, Tile, TILE_TYPE } from "./tile/Tile"
 import {
 	backwardBy,
-	chooseRandom,
 	cl,
 	distance,
 	forwardBy,
 	forwardDistance,
 	getTilesBewteen,
-	randInt,
 	range,
 	roundToNearest,
-	sample,
 	signedShortestDistance,
 } from "./util"
 import {
@@ -60,7 +57,6 @@ import { ActionPackage } from "./action/ActionPackage"
 import { AttackCard, CARD_NAME, CommandCard, DefenceCard, FortuneCardRegistry } from "./FortuneCard"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
 import { EVENT_TYPE } from "./Ability/EventType"
-import type { ServerRequestModel } from "../Model/ServerRequestModel"
 import {
 	ArriveBlackholeActionBuilder,
 	ArriveIslandActionBuilder,
@@ -90,8 +86,9 @@ import { GAME_EFFECT, GameType } from "./enum"
 import { ProtoPlayer } from "../Model/models"
 import { Logger } from "../logger"
 import { RideWaterStreamActionBuilder } from "./action/PackageBuilder/RideWaterStreamActionBuilder"
+import { Random } from "../Random"
 
-const MAP = ["world", "god_hand","water","magicgarden"]
+
 class MarbleGame {
 	readonly map: MarbleGameMap
 	//cycle: number
@@ -120,13 +117,20 @@ class MarbleGame {
 	private stateVectors:number[][]
 	readonly rname: string
 	readonly gametype:GameType
-	constructor(players: ProtoPlayer[], rname: string, isTeam: boolean, map: number,gametype:GameType) {
+	readonly rand:Random
+	readonly itemseed : number
+	readonly seed :number
+	constructor(players: ProtoPlayer[], rname: string, isTeam: boolean, map: number,gametype:GameType,seed:number = 0,itemseed:number = 0) {
 		this.isTeam = isTeam
 		this.rname = rname
-		this.map = new MarbleGameMap(MAP[map % MAP.length])
+		this.seed = seed === 0 ? Math.floor(Math.random()*10000000 ): seed
+		this.itemseed = itemseed === 0 ? Math.floor(Math.random()*10000000 ): itemseed
+		this.rand = new Random(this.seed)
+
+		this.map = new MarbleGameMap(map,this.rand)
 		this.state=new GameState(new SimpleVectorizer())
 		this.gametype=gametype
-		this.mediator = new PlayerMediator(this, this.map, players, this.START_MONEY)
+		this.mediator = new PlayerMediator(this, this.map, players, this.START_MONEY,this.rand)
 		this.playerTotal = this.mediator.playerCount + this.mediator.aiCount
 		this.eventEmitter = new MarbleGameEventObserver(rname)
 		this.clientsReady = 0
@@ -140,6 +144,7 @@ class MarbleGame {
 		this.totalturn=0
 		this.saveStateVector=false
 		this.stateVectors=[]
+		
 
 		this.debug=true
 	}
@@ -196,7 +201,7 @@ class MarbleGame {
 	}
 	setItems(itemSetting: ServerEventModel.ItemSetting) {
 		try {
-			this.mediator.registerAbilities(itemSetting)
+			this.mediator.registerAbilities(itemSetting,this.itemseed)
 		} catch (e) {
 			Logger.error("set items error",e)
 		}
@@ -303,7 +308,7 @@ class MarbleGame {
 	}
 
 	getDiceModifiers(source: ActionTrace, oddEven: number,dcMultiplier:number = 1) {
-		let dc = sample(this.thisPlayer().getDiceControlChance() * dcMultiplier)
+		let dc = this.rand.sample(this.thisPlayer().getDiceControlChance() * dcMultiplier)
 		let abilities = this.thisPlayer().sampleAbility(EVENT_TYPE.GENERATE_DICE_NUMBER, source)
 		let isExactDc = false
 		let isDouble = false
@@ -352,7 +357,7 @@ class MarbleGame {
 		let player = this.thisPlayer()
 		if (oddeven > 0) player.useOddEven()
 
-		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven, modifiers)
+		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven,this.rand, modifiers)
 		return this.onThrowDice(dice1, dice2, multiplier, modifiers.dc, action)
 	}
 
@@ -365,7 +370,7 @@ class MarbleGame {
 		let modifiers = this.getDiceModifiers(action.source, oddeven,2)
 		if (oddeven > 0) player.useOddEven()
 
-		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven, modifiers)
+		const [dice1, dice2] = DiceNumberGenerator.generate(target, oddeven,this.rand, modifiers)
 		const diceresult = {
 				dice: [dice1, dice2],
 				isDouble: dice1 === dice2,
@@ -598,8 +603,8 @@ class MarbleGame {
 		}
 	}
 	attemptIslandEscape(paid: boolean, turn: number, source: ActionTrace, price: number) {
-		let dice1 = randInt(6) + 1
-		let dice2 = randInt(6) + 1
+		let dice1 = this.rand.randInt(6) + 1
+		let dice2 = this.rand.randInt(6) + 1
 		let player = this.mediator.pOfTurn(turn)
 		source.reset()
 		let data = {
@@ -709,7 +714,7 @@ class MarbleGame {
 	drawCard(turn: number, affectingAbility: ABILITY_NAME, goldFortuneChance: number) {
 		this.executeAbility([{ name: affectingAbility, turn: turn }])
 
-		return FortuneCardRegistry.draw(goldFortuneChance, affectingAbility)
+		return FortuneCardRegistry.draw(goldFortuneChance, affectingAbility,this.rand)
 	}
 
 	arriveCardTile(moverTurn: number, source: ActionTrace) {
@@ -835,7 +840,7 @@ class MarbleGame {
 
 		if(source.hasTag(ActionTraceTag.FORCEMOVED) || this.thisturn !== moverTurn) return
 
-		this.pushSingleAction(new AskGodHandSpecialAction(moverTurn, true,specialType), source)
+		this.pushSingleAction(new AskGodHandSpecialAction(moverTurn, this.totalturn >= 1,specialType), source)
 	}
 	chooseGodHandSpecialBuild(moverTurn: number, source: ActionTrace) {
 		let targetTiles = this.map.getTiles(
@@ -1397,7 +1402,9 @@ class MarbleGame {
 			isTeam:this.isTeam,
 			version:1,
 			players:playerstats,
-			createdAt:null,updatedAt:null
+			createdAt:null,updatedAt:null,
+			seed:this.seed,
+			itemseed:this.itemseed
 		}
 	}
 

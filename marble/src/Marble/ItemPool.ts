@@ -1,3 +1,4 @@
+import type { Random } from "../Random"
 import { shuffle } from "./util"
 
 export class ItemPool{
@@ -13,11 +14,11 @@ export class ItemPreset{
     /**
      * roll
      */
-    public roll():number[] {
+    public roll(rand:Random):number[] {
         let items = new Set<number>()
         for(const pool of this.pools){
             if(pool.entries && pool.entries.length>0){
-                let shuffled = shuffle(pool.entries)
+                let shuffled = rand.shuffle(pool.entries)
                 for(let i=0;i<Math.min(pool.entries.length,pool.count);++i){
                     if(typeof shuffled[i] === "number"){
                         items.add(shuffled[i] as number)

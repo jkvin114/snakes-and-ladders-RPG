@@ -9,7 +9,7 @@ export namespace MarbleGameRecordSchema{
         return await new MarbleGameRecord(data).save()
     }
     export const findAll = async function () {
-        return await MarbleGameRecord.find({}).limit(100)
+        return await MarbleGameRecord.find({}).limit(100).sort({ createdAt: "desc" })
     }
     export const findById = async function (id:MongoId) {
         return await MarbleGameRecord.findById(id)

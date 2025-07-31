@@ -1,18 +1,16 @@
-import * as csvParse from "csv-parse"
-import fs from "fs"
 import { ABILITY_NAME, ABILITY_REGISTRY } from "./Ability/AbilityRegistry"
 import { AbilityAttributes } from "./Ability/AbilityValues"
 import { Logger } from "../logger"
-const headers = ["code", "name", "name_kor", "ability", "chance", "value", "upgradevalue", "firstonly", "limit", "cost"]
+//const headers = ["code", "name", "name_kor", "ability", "chance", "value", "upgradevalue", "firstonly", "limit", "cost"]
 
 const DEV = false
 interface ProtoItemAbility {
 	ability_name: string
-	chance: number
-	value: number
-	upgrade_value: number
-	first_only: boolean
-	limit: number
+	chance?: number
+	value?: number
+	upgrade_value?: number
+	first_only?: boolean
+	limit?: number
 }
 interface ItemData {
 	code: number
@@ -20,19 +18,20 @@ interface ItemData {
 	itemname_kor: string
 	abilities: ProtoItemAbility[]
 	tier: number
+	isGroup?:boolean
 }
 interface ItemDescription {
 	code: number
-	 name: string
-	  desc: string
-	   cost: number
+	name: string
+	desc: string
+	cost: number
 }
 interface ParsedItemAbility {
 	name: ABILITY_NAME
 	attribute: AbilityAttributes
 }
 
-const myParser = csvParse.parse({ delimiter: ",", columns: headers, fromLine: 2, encoding: "utf-8" })
+//const myParser = csvParse.parse({ delimiter: ",", columns: headers, fromLine: 2, encoding: "utf-8" })
 const ITEMS = new Map<number, ItemData>() //: itemData[] = []
 export function registerItems() {
 	try {
@@ -62,14 +61,14 @@ export namespace ITEM_REGISTRY {
 			if (!ABILITY_REGISTRY.has(ab.ability_name as ABILITY_NAME)) continue
 			let value = new AbilityAttributes().setItemName(item.item_name, item.itemname_kor)
 
-			if (ab.chance !== 0) value.setChance(ab.chance)
-			if (ab.value !== 0) {
-				if (ab.upgrade_value !== 0) value.setValue(ab.value, ab.upgrade_value)
+			if (ab.chance && ab.chance !== 0) value.setChance(ab.chance)
+			if (ab.value && ab.value !== 0) {
+				if (ab.upgrade_value && ab.upgrade_value !== 0) value.setValue(ab.value, ab.upgrade_value)
 				else value.setValue(Number(ab.value))
 			}
 
 			if (ab.first_only) value.setFirstOnly()
-			else if (ab.limit!==0) value.setLimit(ab.limit)
+			else if (ab.limit && ab.limit!==0) value.setLimit(ab.limit)
 
 			ability.push({name:ab.ability_name as ABILITY_NAME,attribute:value})
 		}
@@ -92,7 +91,7 @@ export namespace ITEM_REGISTRY {
 			list.push({
 				code: code,
 				name: itemdata.itemname_kor,
-				desc: desc.join(" | "),
+				desc: desc.join(", "),
 				cost: item[1],
 			})
 		}

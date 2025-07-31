@@ -7,7 +7,6 @@ import { START_POS } from "../../mapconfig"
 import type { BuildableTile } from "../../tile/BuildableTile"
 import { BUILDING, TILE_TYPE } from "../../tile/Tile"
 import { TileFilter } from "../../tile/TileFilter"
-import { chooseRandom, cl } from "../../util"
 import { ACTION_TYPE, MOVETYPE } from "../Action"
 import type { ActionPackage } from "../ActionPackage"
 import { ActionTrace, ActionTraceTag } from "../ActionTrace"
@@ -107,7 +106,7 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 		let val = this.offences.get(mul)
 		if (!val) return false
 		pkg.addExecuted(mul, this.invoker.turn)
-		pkg.addAction(new AddMultiplierAction(this.invoker.turn, this.tile.position, chooseRandom([2, 4, 8])), mul)
+		pkg.addAction(new AddMultiplierAction(this.invoker.turn, this.tile.position, this.game.rand.chooseRandom([2, 4, 8])), mul)
 	}
 	
 	private redSticker(pkg: ActionPackage) {
@@ -163,7 +162,7 @@ export class OnBuildActionBuilder extends ActionPackageBuilder {
 				tiles = this.game.map.getTiles(this.invoker, TileFilter.EMPTY_LANDTILE())
 
 			if(tiles.length===0) return false
-			let pos=chooseRandom(tiles)
+			let pos=this.game.rand.chooseRandom(tiles)
 			pkg.addAction(new AutoBuildAction(this.invoker.turn,pos,[BUILDING.LANDMARK]),nirvana)
 			pkg.addExecuted(nirvana,this.invoker.turn)
 			if(pos===this.tile.position) this.indicateMainBuild=false

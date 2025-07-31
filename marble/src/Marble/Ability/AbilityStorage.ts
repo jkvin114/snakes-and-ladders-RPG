@@ -1,6 +1,6 @@
+import type { Random } from "../../Random";
 import { ActionTrace } from "../action/ActionTrace";
 import { AbilityTag } from "../Tags";
-import { sample } from "../util";
 import { Ability, AbilityExecution } from "./Ability";
 import { ABILITY_NAME, ABILITY_REGISTRY } from "./AbilityRegistry";
 import { AbilityAttributes, AbilityValue } from "./AbilityValues";
@@ -35,7 +35,15 @@ export class AbilityStorage {
 
             let ab=ABILITY_REGISTRY.get(ability[0])
             if(!ab) continue
-            this.abilityValues.set(ability[0],ability[1])
+
+            if(this.abilityValues.has(ability[0])){
+                if(ability[1].isBetterThan(this.abilityValues.get(ability[0])))
+                    this.abilityValues.set(ability[0],ability[1])
+            }
+            else{
+                this.abilityValues.set(ability[0],ability[1])
+            }
+            
             for(const event of ab.getEvents()){
                 if(this.permanentAbility.has(event))
                     this.permanentAbility.get(event)?.push(ability[0])
@@ -45,7 +53,7 @@ export class AbilityStorage {
             }
         }
     }
-    getAbilityForEvent(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValue>{
+    getAbilityForEvent(event:EVENT_TYPE,source:ActionTrace,rand:Random):Map<ABILITY_NAME,AbilityValue>{
         let abilities:ABILITY_NAME[]=[]
 
         if(this.permanentAbility.has(event)){
@@ -71,7 +79,7 @@ export class AbilityStorage {
             let value=this.abilityValues.get(ability)
             // console.log(ab)
             // console.log(value)
-            if(!ab || !value || !ab.isValidSource(source)|| !value.sample()) continue
+            if(!ab || !value || !ab.isValidSource(source)|| !value.sample(rand)) continue
             if(AbilityStorage.ONCE_IN_A_TURN.has(ability)){
                 if(this.turnLimitAbilites.has(ability)) continue
                 this.turnLimitAbilites.add(ability)

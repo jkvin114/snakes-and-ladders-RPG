@@ -884,8 +884,12 @@ export class MarbleScene extends Board {
 				y -= 20
 				break
 			case "olympic":
-				colorstop = ["#7FE2EB", "#3AA8CF"]
-				str = "올림픽"
+				colorstop = ["#F6E33E", "#F5AC12"]
+				if (this.Map.mapname === "marble_godhand") str = "신의 축복"
+				else if (this.Map.mapname === "marble_water") str = "박람회"
+				else if (this.Map.mapname === "marble_magicgarden") str = "축복의 마법"
+				else str = "올림픽"
+
 				break
 			case "colormonopoly":
 				colorstop = ["#7FE2EB", "#3AA8CF"]
@@ -1450,6 +1454,8 @@ export class MarbleScene extends Board {
 
 		if (change.state === "pandemic" || change.state === "blackout") {
 			this.setTileStatusEffect(change.pos, change.state, change.duration)
+		} else if (change.state === "olympic") {
+			this.setOlympic(change.pos)
 		} else if (change.state === "remove_effect") {
 			this.setTileStatusEffect(change.pos, "", 0)
 		} else if (change.state === "lift") {
@@ -1483,7 +1489,7 @@ export class MarbleScene extends Board {
 
 			let paintobj = new MapFeature("paint")
 			paintobj.image = paint
-			paintobj.image.set({ left: b.x, top: b.y - 70, visible: true })
+			paintobj.image.set({ left: b.x, top: b.y - 80, visible: true })
 			paintobj.image.bringToFront()
 			this.canvas.bringToFront(paintobj.image)
 			paintobj.pos = change.pos

@@ -1,5 +1,6 @@
 
-import { chooseRandom, clamp, randDice, range } from "./util"
+import type{ Random } from "../Random"
+import {  clamp,  range } from "./util"
 
 const DICES: number[][][] = range(12).map((total) =>
 	range(total - 1, 1)
@@ -20,7 +21,7 @@ export namespace DiceNumberGenerator {
 	 * @param modifiers 
 	 * @returns [dice1,dice2]
 	 */
-	export function generate(num: number, oddEven: number,modifiers: {
+	export function generate(num: number, oddEven: number,rand:Random,modifiers: {
 		dc: boolean;
 		exactDc: boolean;
 		isDouble: boolean;
@@ -34,25 +35,25 @@ export namespace DiceNumberGenerator {
 		num = clamp(num, 2, 12)
 		if (isdc) {
 			if (isExactDc) {
-				dice = chooseRandom(DICES[num])
+				dice = rand.chooseRandom(DICES[num])
 			} else {
 				let min = clamp(num - DC_ERROR, 2, 12)
 				let max = clamp(num + DC_ERROR, 2, 12)
-				dice = chooseRandom(([] as number[][]).concat(...range(max, min).map((t) => DICES[t])))
+				dice = rand.chooseRandom(([] as number[][]).concat(...range(max, min).map((t) => DICES[t])))
 			}
 		} else {
-			dice = [randDice(), randDice()]
+			dice = [rand.randDice(), rand.randDice()]
 		}
 		let total = dice[0] + dice[1]
 		if (oddEven === ODD && total % 2 === 0) {
 			total = total === 12 ? total - 1 : total + 1
-			dice = chooseRandom(DICES[total])
+			dice = rand.chooseRandom(DICES[total])
 		}
 		if (oddEven === EVEN && total % 2 === 1) {
 			if (dice[0] >= 6) dice[1] += 1
 			else if (dice[1] >= 6) dice[0] += 1
 			else {
-				dice[chooseRandom([0, 1])] += 1
+				dice[rand.chooseRandom([0, 1])] += 1
 			}
 		}
 

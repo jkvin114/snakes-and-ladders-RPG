@@ -7,14 +7,9 @@ import { MarblePlayer, MarblePlayerStat } from "./Player"
 import { AskLoanAction } from "./action/QueryAction"
 import { BuildableTile } from "./tile/BuildableTile"
 import {
-	chooseRandom,
-	chooseRandomMultiple,
 	distance,
 	getTilesBewteen,
-	randInt,
-	range,
-	shuffle,
-	triDist,
+	range
 } from "./util"
 import { CARD_NAME } from "./FortuneCard"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
@@ -43,6 +38,8 @@ import { AgentType, GameType, PlayerType } from "./enum"
 import { ProtoPlayer } from "../Model/models"
 import type { ItemPreset } from "./ItemPool"
 import { Logger } from "../logger"
+import { Random } from "../Random"
+
 const PLAYER_NAMES = [
 	"데니스",
 	"슬기",
@@ -73,19 +70,20 @@ class PlayerMediator {
 	playerCount: number
 	aiCount: number
 	private readonly names: string[]
-
-	constructor(game: MarbleGame, map: MarbleGameMap, playerlist: ProtoPlayer[], startmoney: number) {
+	readonly rand:Random
+	constructor(game: MarbleGame, map: MarbleGameMap, playerlist: ProtoPlayer[], startmoney: number,rand:Random) {
+		this.rand = rand
 		this.game = game
 		this.map = map
 		this.playerCount = 0
 		this.aiCount = 0
 		this.players = []
 		this.retiredPlayers = new Set<number>()
-		this.names = shuffle(PLAYER_NAMES)
+		this.names = this.rand.shuffle(PLAYER_NAMES)
 		for (let i = 0; i < playerlist.length; ++i) {
 			const p = playerlist[i]
 			if(p.type===PlayerType.EMPTY) continue
-			let champ = p.champ === -1 ? randInt(9) : p.champ
+			let champ = p.champ === -1 ? this.rand.randInt(9) : p.champ
 			let agenttype=DEFAULT_AGENT
 			if( !p.data ||  !p.data.agentType) {
 
@@ -116,7 +114,7 @@ class PlayerMediator {
 						champ,
 						p.team,
 						true,
-						startmoney,
+						startmoney,this.rand,
 						new MarblePlayerStat(stats),
 						agent
 					)
@@ -131,7 +129,7 @@ class PlayerMediator {
 				)
 				let playername = p.name===""?this.names[i]:p.name
 				this.players.push(
-					new MarblePlayer(i, playername, champ, p.team, false, startmoney, new MarblePlayerStat(stats), agent)
+					new MarblePlayer(i, playername, champ, p.team, false, startmoney,this.rand, new MarblePlayerStat(stats), agent)
 				)
 				this.playerCount += 1
 			}
@@ -160,10 +158,11 @@ class PlayerMediator {
 			p.cycleLevel = this.game.map.cycleStart
 		})
 	}
-	registerAbilities(itemSetting: ServerEventModel.ItemSetting) {
+	registerAbilities(itemSetting: ServerEventModel.ItemSetting,seed:number) {
 		let pool:ItemPreset=null
 		console.log(itemSetting.poolJson)
 		let meanItemCost = 0;
+		const random:Random = new Random(seed)
 		if(itemSetting.poolJson && false){
 			try{
 				pool = JSON.parse(itemSetting.poolJson) as ItemPreset
@@ -211,18 +210,18 @@ class PlayerMediator {
 		this.players.forEach((p) => {
 			if (meanItemCost > 0.4) p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
 			else if (meanItemCost > 0.2) {
-				let rand = Math.random()
+				let rand = random.randFloat(1)
 				if (rand < 0.3) p.saveCardAbility(ABILITY_NAME.ANGEL_CARD)
 				else if (rand < 0.7) p.saveCardAbility(ABILITY_NAME.DISCOUNT_CARD)
 			}
 			let itemcodes:number[] = []
 			if(pool){
-				itemcodes = pool.roll()
+				itemcodes = pool.roll(random)
 			}
 			else{
 				let randitems: number[] = itemSetting.items.filter((item) => item.selected).map((item) => item.code)
 
-				itemcodes = chooseRandomMultiple(randitems, itemSetting.randomCount).sort((a: number, b: number) => a - b)
+				itemcodes = random.chooseRandomMultiple(randitems, itemSetting.randomCount).sort((a: number, b: number) => a - b)
 				itemcodes.push(...itemSetting.items.filter((item) => item.locked).map((item) => item.code))
 			}
 			
@@ -238,7 +237,7 @@ class PlayerMediator {
 				}
 			}
 			p.registerPermanentAbilities(abs, itemcodes)
-			p.stat = new MarblePlayerStat(baseStats.map((val) => Math.floor(triDist(val, 6))))
+			p.stat = new MarblePlayerStat(baseStats.map((val) => Math.floor(random.triDist(val, 6))))
 		})
 	}
 	areEnemy(p1: number, p2: number) {
@@ -253,7 +252,7 @@ class PlayerMediator {
 		return list
 	}
 	getRandomEnemy(turn: number) {
-		return this.pOfTurn(chooseRandom(this.getEnemiesOf(turn).filter((turn) => !this.retiredPlayers.has(turn))))
+		return this.pOfTurn(this.rand.chooseRandom(this.getEnemiesOf(turn).filter((turn) => !this.retiredPlayers.has(turn))))
 	}
 
 	pOfTurn(turn: number): MarblePlayer {

@@ -436,6 +436,7 @@ export class GameInterface {
 		this.diceThrowerPos = 0
 		this.canChangeFullscreen = true
 		this.turnToUi = new Map()
+		this.fortuneCardTimeout = null
 		this.abilityBuffer = [
 			new AbilityBuffer(AbilityBuffer.TOP),
 			new AbilityBuffer(AbilityBuffer.BOTTOM),
@@ -908,6 +909,11 @@ export class GameInterface {
 			$("#fortunecard-confirm").show()
 		} else {
 			$("#fortunecard-check").show()
+			if (this.fortuneCardTimeout != null) clearTimeout(this.fortuneCardTimeout)
+
+			this.fortuneCardTimeout = setTimeout(() => {
+				$("#fortunecard").hide()
+			}, 2000)
 		}
 
 		$("#fortunecard").show()

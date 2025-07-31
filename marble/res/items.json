@@ -258,7 +258,7 @@
     {
         "code": 16,
         "item_name": "reverse_agreement",
-        "itemname_kor": "반격의 합의서",
+        "itemname_kor": "각설이의 깡통",
         "abilities": [
             {
                 "ability_name": "reverse_agreement",
@@ -1444,5 +1444,43 @@
             }
         ],
         "tier": 9
+    },
+    {
+        "code": 1000,
+        "item_name": "sophie",
+        "itemname_kor": "소피",
+        "abilities": [
+            {
+                "ability_name": "sophie",
+                "chance": 50
+            }, {
+                "ability_name": "teleport_invitation",
+                "chance": 95
+            } ,{
+                "ability_name": "dice_double",
+                "chance": 30
+            }
+        ],
+        "tier": 9,
+        "isGroup":true
+    },
+    {
+        "code": 1001,
+        "item_name": "watson",
+        "itemname_kor": "왓슨",
+        "abilities": [
+             {
+                "ability_name": "corner_special_move_on_arrive_corner",
+                "chance": 50
+            },{
+                "ability_name": "iaan",
+                "chance": 90
+            },{
+                "ability_name": "bubble",
+                "chance": 65
+            }
+        ],
+        "tier": 9,
+        "isGroup":true
     }
 ]

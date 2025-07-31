@@ -16,7 +16,7 @@ export default class GameController{
     constructor(game:MarbleGame,mapid:number){
         this.state=game
         this.eventEmitter = new MarbleGameEventObserver(this.state.rname)
-        this.map=new GameBoardController(new MarbleGameMap(MAP[mapid % MAP.length]))
+       // this.map=new GameBoardController(new MarbleGameMap(MAP[mapid % MAP.length]))
     }
     setClientInterface(ci: MarbleGameEventObserver) {
 		this.eventEmitter = ci
@@ -24,7 +24,7 @@ export default class GameController{
 	}
     setItems(itemSetting: ServerEventModel.ItemSetting) {
 		try {
-			this.state.mediator.registerAbilities(itemSetting)
+		//	this.state.mediator.registerAbilities(itemSetting)
 		} catch (e) {
 			console.error(e)
 		}

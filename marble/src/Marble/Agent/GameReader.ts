@@ -6,7 +6,7 @@ import { AbilityTag } from "../Tags"
 import { LandTile } from "../tile/LandTile"
 import { BUILDING, TILE_TYPE } from "../tile/Tile"
 import { TileFilter } from "../tile/TileFilter"
-import { backwardBy, forwardBy, getSameLineTiles, maxFor, pos2Line, shuffle } from "../util"
+import { backwardBy, forwardBy, getSameLineTiles, maxFor, pos2Line } from "../util"
 
 export default class GameReader {
 	private readonly game: MarbleGame
@@ -33,6 +33,12 @@ export default class GameReader {
     }
     get mapName(){
         return this.game.map.name
+    }
+    get canUseSpecial(){
+        return this.game.totalturn >= 1
+    }
+    get rand(){
+        return this.game.rand
     }
     specialPos() {
         return {
@@ -149,7 +155,7 @@ export default class GameReader {
         
         if(alerts.length===0) return -1
 
-        alerts = shuffle(alerts)
+        alerts = this.rand.shuffle(alerts)
 
         return maxFor(alerts,a=>a[1])[0]
     }

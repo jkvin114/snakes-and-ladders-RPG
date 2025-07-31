@@ -20,5 +20,7 @@ export const marbleGameRecordSchema=new mongoose.Schema({
     map:{ type: String, required: true },
     winType:{ type: String, required: true },
     winner:{ type: Number, required: true },
+    seed:{ type: Number, required: false },
+    itemseed:{ type: Number, required: false },
 },{timestamps:true})
 export const MarbleGameRecord = mongoose.model("MarbleGameRecord", marbleGameRecordSchema)

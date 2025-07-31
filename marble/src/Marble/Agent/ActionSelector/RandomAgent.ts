@@ -1,6 +1,5 @@
 import { ClientResponseModel as cm} from "../../../Model/ClientResponseModel"
 import { ServerRequestModel as sm} from "../../../Model/ServerRequestModel"
-import { chooseRandom } from "../../util"
 import { BooleanChoice, BuildChoice, CardChoice, DiceChoice, IslandChoice, TileChoice } from "../ActionChoice"
 import { ActionSelector } from "./ActionSelector"
 
@@ -15,57 +14,57 @@ export class RandomAgent extends ActionSelector {
 		return new Promise((resolve) => resolve({result:false,enemyLand:-1,myland:-1}))
 	}
 	protected chooseBlackholeTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	protected chooseBuyoutTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	protected chooseDonateTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	chooseCardObtain(req: sm.ObtainCardSelection): Promise<boolean> {
-		return new Promise((resolve) => resolve(new BooleanChoice().getRandom()))
+		return new Promise((resolve) => resolve(new BooleanChoice().getRandom(this.game.rand,)))
 	}
 	protected chooseGodHandBuildTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	chooseBuild(req: sm.LandBuildSelection): Promise<number[]> {
-		return new Promise((resolve) => resolve(new BuildChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new BuildChoice().getRandom(this.game.rand,req)))
 	}
 	ChooseDice(req: sm.DiceSelection): Promise<cm.PressDice> {
-		return new Promise((resolve) => resolve(new DiceChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new DiceChoice().getRandom(this.game.rand,req)))
 	}
 	chooseLoan(amount: number): Promise<boolean> {
-		return new Promise((resolve) => resolve(new BooleanChoice().getRandom()))
+		return new Promise((resolve) => resolve(new BooleanChoice().getRandom(this.game.rand)))
 	}
 	chooseBuyout(req: sm.BuyoutSelection): Promise<boolean> {
-		return new Promise((resolve) => resolve(new BooleanChoice().getRandom()))
+		return new Promise((resolve) => resolve(new BooleanChoice().getRandom(this.game.rand)))
 	}
 	protected chooseMoveTileFor(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	protected chooseStartBuildTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	protected chooseOlympicTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	protected chooseAttackTile(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 	chooseAttackDefenceCard(req: sm.AttackDefenceCardSelection): Promise<cm.UseCard> {
-		return new Promise((resolve) => resolve(new CardChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new CardChoice().getRandom(this.game.rand,req)))
 	}
 	chooseTollDefenceCard(req: sm.TollDefenceCardSelection): Promise<cm.UseCard> {
-		return new Promise((resolve) => resolve(new CardChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new CardChoice().getRandom(this.game.rand,req)))
 	}
 	chooseGodHand(req: sm.GodHandSpecialSelection): Promise<boolean> {
 		return new Promise((resolve) => resolve(true))
 	}
 	chooseIsland(req: sm.IslandSelection): Promise<boolean> {
-		return new Promise((resolve) => resolve(new IslandChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new IslandChoice().getRandom(this.game.rand,req)))
 	}
 	protected chooseSpecial(req: sm.TileSelection): Promise<cm.SelectTile> {
-		return new Promise((resolve) => resolve(new TileChoice().getRandom(req)))
+		return new Promise((resolve) => resolve(new TileChoice().getRandom(this.game.rand,req)))
 	}
 }

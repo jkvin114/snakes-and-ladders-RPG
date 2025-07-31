@@ -110,13 +110,13 @@ export class MeetPlayerActionBuilder extends DefendableActionBuilder {
             let value = this.invoker.getAbilityValueAmount(ninjascroll)
             pkg.addExecuted(ninjascroll, this.invoker.turn,1)
 		    pkg.addBefore(new PayPercentMoneyAction(stayed.turn, this.invoker.turn, value))
-            pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong(MeetPlayerActionBuilder.ATTACK_CARDS)))
+            pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong(MeetPlayerActionBuilder.ATTACK_CARDS,this.game.rand)))
             return true
         }
 		else if(this.offences.has(attackcard))
         {
             pkg.addExecuted(attackcard, this.invoker.turn)
-            pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong(MeetPlayerActionBuilder.ATTACK_CARDS)))
+            pkg.addBefore(new ObtainCardAction(this.invoker.turn, FortuneCardRegistry.drawAmong(MeetPlayerActionBuilder.ATTACK_CARDS,this.game.rand)))
             return false
         }
         return false

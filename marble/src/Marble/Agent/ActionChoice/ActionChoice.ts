@@ -1,9 +1,9 @@
-import { chooseRandom } from "../../util";
+import type { Random } from "../../../Random";
 
 export default abstract class ActionChoice<TReq,TAction>{
     abstract generate(req?:TReq):TAction[]
 
-    getRandom(req?:TReq):TAction{
-        return chooseRandom(this.generate(req))
+    getRandom(rand:Random,req?:TReq):TAction{
+        return rand.chooseRandom(this.generate(req))
     }
 }

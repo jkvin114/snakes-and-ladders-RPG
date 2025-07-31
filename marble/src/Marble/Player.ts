@@ -11,6 +11,7 @@ import type { MONOPOLY, MonopolyAlert } from "./GameMap"
 import { AbilityExecution } from "./Ability/Ability"
 import { ServerEventModel } from "../Model/ServerEventModel"
 import { AbilityTag } from "./Tags"
+import type { Random } from "../Random"
 
 class MarblePlayer{
     readonly name:string
@@ -39,10 +40,12 @@ class MarblePlayer{
     private abilityStorage:AbilityStorage
     private statusEffect:Set<string>
     readonly agent:ActionSelector
-    constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,stat:MarblePlayerStat,agent:ActionSelector){
+    readonly rand:Random
+    constructor(num:number,name:string,char:number,team:boolean,ai:boolean,money:number,rand:Random,stat:MarblePlayerStat,agent:ActionSelector){
         this.num=num
         this.turn=0
         this.name=name
+        this.rand = rand
         this.char=char
         this.team=team
         this.pos=0
@@ -184,7 +187,7 @@ class MarblePlayer{
         this.abilityStorage.use(name)
     }
     sampleAbility(event:EVENT_TYPE,source:ActionTrace):Map<ABILITY_NAME,AbilityValue>{
-        return this.abilityStorage.getAbilityForEvent(event,source)
+        return this.abilityStorage.getAbilityForEvent(event,source,this.rand)
     }
     hasOneAbilities(abilities:AbilityTag){
         return this.abilityStorage.hasOneAbilities(abilities)

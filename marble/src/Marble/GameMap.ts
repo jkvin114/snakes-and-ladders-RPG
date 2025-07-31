@@ -24,6 +24,7 @@ import {
 	pos2Line,
 	range,
 } from "./util"
+import { Random } from "../Random"
 
 const GOD_HAND_MAP = require("./../../res/godhand_map.json")
 const WORLD_MAP = require("./../../res/world_map.json")
@@ -40,6 +41,7 @@ export class MonopolyAlert {
 	type: MONOPOLY
 	pos: number[]
 }
+const MAP = ["world", "god_hand","water","magicgarden"]
 class MarbleGameMap {
 	readonly tiles: Tile[]
 	readonly corners: Set<Tile>
@@ -66,9 +68,10 @@ class MarbleGameMap {
 	liftedTile: number
 	lockedTile: number
 	waterstreamTiles: number[]
-
+	readonly rand:Random
 	readonly bankruptWinMultiplier: number
-	constructor(map: string) {
+	constructor(map: number,rand:Random) {
+		this.rand = rand
 		this.buildableTiles = new Map<number, BuildableTile>()
 		this.tiles = []
 		this.corners = new Set<Tile>()
@@ -76,10 +79,10 @@ class MarbleGameMap {
 		this.specials = new Set<Tile>()
 		this.sights = []
 		this.waterstreamTiles = []
-		this.name = map
+		this.name = MAP[map % MAP.length]
 		this.bankruptWinMultiplier = 1
 		this.cycleStart = 1
-		if (map === "god_hand") {
+		if (this.name === "god_hand") {
 			this.bankruptWinMultiplier = 2
 			this.setMap(GOD_HAND_MAP)
 
@@ -87,19 +90,19 @@ class MarbleGameMap {
 			this.island = GOD_HAND_MAP.island
 			this.olympic = GOD_HAND_MAP.olympic
 			this.travel = GOD_HAND_MAP.travel
-		} else if (map === "world") {
+		} else if (this.name === "world") {
 			this.setMap(WORLD_MAP)
 			this.start = WORLD_MAP.start
 			this.island = WORLD_MAP.island
 			this.olympic = WORLD_MAP.olympic
 			this.travel = WORLD_MAP.travel
-		} else if (map === "water") {
+		} else if (this.name === "water") {
 			this.setMap(WATER_MAP)
 			this.start = WATER_MAP.start
 			this.island = WATER_MAP.island
 			this.olympic = WATER_MAP.olympic
 			this.travel = WATER_MAP.travel
-		} else if (map === "magicgarden") {
+		} else if (this.name === "magicgarden") {
 			this.setMap(MAGICGARDEN_MAP)
 			this.start = MAGICGARDEN_MAP.start
 			this.island = MAGICGARDEN_MAP.island
@@ -515,6 +518,7 @@ class MarbleGameMap {
 		this.olympicPos = pos
 		this.olympicStage += 1
 		this.sendTileState("olympic", pos)
+		
 		this.updateMultiplier()
 	}
 	setFestival(pos: number, takeFrom?: number) {

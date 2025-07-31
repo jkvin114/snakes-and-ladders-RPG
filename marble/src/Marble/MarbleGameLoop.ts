@@ -73,9 +73,10 @@ class MarbleGameLoop{
 		isTeam: boolean,
         map:number,
         playerlist:ProtoPlayer[],
-        gametype:GameType
+        gametype:GameType,
+        seed:number=0,itemseed:number=0
 	): MarbleGameLoop {
-		return new MarbleGameLoop(rname,new MarbleGame(playerlist,this.name,isTeam,map,gametype),isTeam,gametype)
+		return new MarbleGameLoop(rname,new MarbleGame(playerlist,this.name,isTeam,map,gametype,seed,itemseed),isTeam,gametype)
 	}
     static createSimulationLoop(
 		rname: string,

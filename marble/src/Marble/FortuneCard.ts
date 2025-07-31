@@ -1,5 +1,5 @@
+import { Random } from "../Random"
 import { ABILITY_NAME } from "./Ability/AbilityRegistry"
-import { chooseRandom, chooseWeightedRandom } from "./util"
 
 export enum CARD_TYPE{
     ATTACK,DEFENCE,COMMAND
@@ -95,10 +95,10 @@ export namespace FortuneCardRegistry{
         GO_START,GO_TRAVEL,OLYMPIC,DONATE_LAND,SELLOFF,
         LAND_CHANGE,EARTHQUAKE,PANDEMIC,BLACKOUT,PAINT
     ]
-    export function drawAmong(list:CARD_NAME[]){
-        return chooseRandom(LIST.filter((card)=>list.includes(card.name as CARD_NAME)))
+    export function drawAmong(list:CARD_NAME[],rand:Random){
+        return rand.chooseRandom(LIST.filter((card)=>list.includes(card.name as CARD_NAME)))
     }
-    export function draw(goldCardChance:number,ability:ABILITY_NAME){
+    export function draw(goldCardChance:number,ability:ABILITY_NAME,rand:Random){
 
 
         if(ability===ABILITY_NAME.GET_TRAVEL_ON_DRAW_CARD) return GO_TRAVEL
@@ -109,7 +109,7 @@ export namespace FortuneCardRegistry{
             else return 1
         })
         // console.log(weights)
-      return LIST[chooseWeightedRandom(weights)] 
+      return LIST[rand.chooseWeightedRandom(weights)] 
        // return chooseRandom([EARTHQUAKE])
     }
 }

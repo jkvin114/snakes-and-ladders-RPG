@@ -1,4 +1,4 @@
-import { sample } from "../util"
+import type { Random } from "../../Random"
 
 export interface AbilityValue{
     value:number
@@ -64,6 +64,14 @@ export interface AbilityValue{
         this.firstOnly=true
         return this
     }
+    isBetterThan(other:AbilityAttributes){
+        if(other.baseChance < this.baseChance) return true
+        if(other.value < this.value) return true
+        if(other.upgradeValue < this.upgradeValue) return true
+        if(other.limit < this.limit) return true
+
+        return false
+    }
 
     use(){
         this.limitLeft=Math.max(0,this.limitLeft-1)
@@ -78,9 +86,9 @@ export interface AbilityValue{
         if(this.upgraded && this.upgradeValue!==0) return this.upgradeValue
         return this.value
     }
-    sample():boolean{
+    sample(rand:Random):boolean{
         let result=false
-        if(this.limitLeft>0) result = sample(this.currentChance*0.01)
+        if(this.limitLeft>0) result = rand.sample(this.currentChance*0.01)
 
         if(this.firstOnly) this.use() //처음만 발동되는 능력이면 발동여부 상관없이 사용 판정
 
